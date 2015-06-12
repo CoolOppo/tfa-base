@@ -158,7 +158,7 @@ function SWEP:DrawWorldModel()
 				ang:RotateAroundAxis( ang:Forward(),  self.Offset.Ang.Forward )
 				self:SetRenderOrigin( pos )
 				self:SetRenderAngles( ang )
-				self:SetModelScale( self.Offset.Scale or 0, 0 )
+				self:SetModelScale( self.Offset.Scale or 1, 0 )
 				self:DrawModel()
 			end
 		else

@@ -15,7 +15,8 @@ SWEP.ClSIDE_MODULES = {
 	"cl_viewbob.lua",
 	"cl_effects.lua",
 	"cl_hud.lua",
-	"cl_mods.lua"
+	"cl_mods.lua",
+	"cl_rendertarget.lua"
 }
 
 SWEP.CSMuzzleFlashes			= false
@@ -285,6 +286,20 @@ SWEP.Tracer				= 0 --Bullet tracer.  TracerName overrides this.
 SWEP.TracerName = nil --Change to a string of your tracer name
 SWEP.MuzzleFlashEffect = nil --Change to a string of your muzzle flash effect
 SWEP.DisableChambering = false --Disable round-in-the-chamber
+--RT Stuff
+	
+local clearcol = Color(0,0,0,0)
+local wepcol = Color(0,0,0,255)
+
+SWEP.RTMaterialOverride = nil
+
+SWEP.RTOpaque = false
+
+SWEP.RTCode = function( self )
+	
+	return
+	
+end
 
 --Stuff you shouldn't touch after this 
 SWEP.PenetrationCounter = 0 --BASE DEPENDENT VALUE.  DO NOT CHANGE OR THINGS MAY BREAK.  NO USE TO YOU.
