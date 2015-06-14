@@ -106,7 +106,7 @@ if CLIENT then
 		end
 		render.Clear( 0, 0, 0, 0, true, true )
 		render.SetViewPort(0,0,512,512)
-		self:RTCode()
+		self:RTCode(TFA_RTMat)
 		render.SetRenderTarget(oldrt)
 		render.SetViewPort(0,0,w,h)
 		
