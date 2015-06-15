@@ -32,7 +32,7 @@ function EFFECT:Init( data )
 		end
 	end
 	
-	if AddVel == vector_origin then
+	if game.SinglePlayer() then
 		AddVel = Entity(1):GetVelocity()
 	end
 	
