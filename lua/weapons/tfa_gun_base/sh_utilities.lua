@@ -325,19 +325,32 @@ function SWEP:GetMuzzlePos( ignorepos )
 	if fp then
 		local pos = vm:GetPos()
 		local ang = vm:GetAngles()
-		local rpos = vm:GetRenderOrigin()
-		local rang = vm:GetRenderAngles()
+		local rpos
+		local rang
+		
+		if vm.GetRenderOrigin then
+			rpos = vm:GetRenderOrigin()
+			rang = vm:GetRenderAngles()
+		else
+			rpos = pos
+			rang = ang
+		end
+		
 		if ignorepos then
 			vm:SetPos(ply:GetShootPos())
 			vm:SetAngles(ply:EyeAngles())
 			vm:SetRenderOrigin(ply:GetShootPos())
 			vm:SetRenderAngles(ply:EyeAngles())
 		end
+		
 		muzzlepos = vm:GetAttachment( obj )
 		vm:SetPos(pos)
 		vm:SetAngles(ang)
-		vm:SetRenderOrigin(rpos)
-		vm:SetRenderAngles(rang)
+		
+		if vm.SetRenderOrigin then
+			vm:SetRenderOrigin(rpos)
+			vm:SetRenderAngles(rang)
+		end
 	else
 		muzzlepos = self:GetAttachment(obj)
 	end
@@ -502,11 +515,11 @@ function SWEP:GetPenetrationMultiplier( matt )
 	elseif mat=="plastic" then
 		fac=5
 	elseif mat=="flesh" then
-		fac=4
+		fac=8
 	elseif mat=="ceramic" then
 		fac=2.25
 	elseif mat=="glass" then
-		fac=20
+		fac=80
 	elseif mat=="energy" then
 		fac=0.05
 	elseif mat=="slime" or mat=="sand" then

@@ -52,6 +52,7 @@ SWEP.Primary.Round 			= ("")					-- What kind of bullet does it shoot?
 SWEP.Primary.Cone			= 0.2					-- This is the accuracy of NPCs.  Not necessary in almost all cases, since I don't even think this base is compatible with NPCs.
 SWEP.Primary.Recoil		= 1						-- This is the recoil multiplier.  Really, you should keep this at 1 and change the KickUp, KickDown, and KickHorizontal variables.  However, you can change this as a multiplier too.
 SWEP.Primary.Damage		= 0.01					-- Damage, in standard damage points.
+SWEP.DamageType = nil--See DMG enum.  This might be DMG_SHOCK, DMG_BURN, etc.
 SWEP.Primary.Spread		= .01					--This is hip-fire acuracy.  Less is more (1 is horribly awful, .0001 is close to perfect)
 SWEP.FiresUnderwater = false
  
@@ -85,12 +86,17 @@ SWEP.Primary.RPM				= 600					-- This is in Rounds Per Minute / RPM
 SWEP.Primary.RPM_Semi				= nil					-- RPM for semi-automatic or burst fire.  This is in Rounds Per Minute / RPM
 SWEP.Primary.ClipSize			= 0					-- This is the size of a clip
 SWEP.Primary.DefaultClip			= 0					-- This is the number of bullets the gun gives you, counting a clip as defined directly above.
+SWEP.DisableChambering = false --Disable round-in-the-chamber
+
 SWEP.Primary.KickUp			= 0					-- This is the maximum upwards recoil (rise)
 SWEP.Primary.KickDown			= 0					-- This is the maximum downwards recoil (skeet)
 SWEP.Primary.KickHorizontal			= 0					-- This is the maximum sideways recoil (no real term)
 SWEP.Primary.StaticRecoilFactor = 0.5 	--Amount of recoil to directly apply to EyeAngles.  Enter what fraction or percentage (in decimal form) you want.  This is also affected by a convar that defaults to 0.5.
+
 SWEP.Primary.Automatic			= true					-- Automatic/Semi Auto
+
 SWEP.Primary.Ammo			= "none"					-- What kind of ammo
+
 SWEP.Primary.Range = -1 -- The distance the bullet can travel in source units.  Set to -1 to autodetect based on damage/rpm.
 SWEP.Primary.RangeFalloff = -1 -- The percentage of the range the bullet damage starts to fall off at.  Set to 0.8, for example, to start falling off after 80% of the range.
 
@@ -99,6 +105,7 @@ SWEP.Secondary.DefaultClip			= 0					-- Default number of bullets in a clip
 SWEP.Secondary.Automatic			= false					-- Automatic/Semi Auto
 SWEP.Secondary.Ammo			= "none"
 SWEP.Secondary.IronFOV			= 0					-- How much you 'zoom' in. Less is more!  Don't have this be <= 0 
+
 SWEP.SprintFOVOffset = 3.75 --Add this onto the FOV when we're sprinting.
 
 --Scoped vars.
@@ -279,13 +286,17 @@ SWEP.SmokeParticles = { pistol = "smoke_trail_controlled",
 	revolver = "smoke_trail_tfa",
 	silenced = "smoke_trail_controlled"
 }
+
 SWEP.DoMuzzleFlash = true --Do a muzzle flash?
 SWEP.CustomMuzzleFlash = true --Disable muzzle anim events and use our custom flashes?
 SWEP.AutoDetectMuzzleAttachment = false --For multi-barrel weapons, detect the proper attachment?
-SWEP.Tracer				= 0 --Bullet tracer.  TracerName overrides this.
-SWEP.TracerName = nil --Change to a string of your tracer name
 SWEP.MuzzleFlashEffect = nil --Change to a string of your muzzle flash effect
-SWEP.DisableChambering = false --Disable round-in-the-chamber
+
+SWEP.Tracer				= 0 --Bullet tracer.  TracerName overrides this.
+SWEP.TracerName = nil --Change to a string of your tracer name,or lua effect if chosen
+SWEP.TracerLua = false --Use lua effect, TFA Muzzle syntax
+SWEP.TracerCount = nil --0 disables, otherwise, 1 in X chance
+SWEP.TracerDelay = 0.01 --Delay for lua tracer effect
 --RT Stuff
 	
 local clearcol = Color(0,0,0,0)

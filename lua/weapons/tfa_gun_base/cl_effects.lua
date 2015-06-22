@@ -140,6 +140,21 @@ function SWEP:MakeMuzzleFlash(pos,normal,entity,attachment, usepos, usenormal)
 		util.Effect(self.MuzzleFlashEffect, ef)
 	end
 	
+	if self.TracerLua then
+		ef:SetOrigin(self.Owner.LastBulletHitPos and self.Owner.LastBulletHitPos or self.Owner:GetEyeTrace().HitPos)
+		
+		ef:SetFlags(TRACER_FLAG_USEATTACHMENT)
+		
+		if math.random(self.TracerCount and self.TracerCount or 0, 1)<=1 and self.TracerCount != 0 then
+			timer.Simple(self.TracerDelay and self.TracerDelay or 0, function()
+				if IsValid(self) and self.TracerName then
+					ef:SetOrigin(self.Owner.LastBulletHitPos and self.Owner.LastBulletHitPos or self.Owner:GetEyeTrace().HitPos)
+					util.Effect(self.TracerName,ef)
+				end
+			end)
+		end
+	end
+	
 end
 
 --[[ 

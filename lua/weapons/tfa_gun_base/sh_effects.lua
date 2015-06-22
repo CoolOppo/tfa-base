@@ -157,7 +157,7 @@ function SWEP:MakeMuzzleFlashSV(pos,normal,attachment, usepos, usenormal)
 	
 	svflashvec.x = self.Owner:EntIndex()
 	svflashvec.y = 1
-	svflashvec.z = 1
+	svflashvec.z = self:EntIndex()
 	ef:SetStart( svflashvec )
 	
 	local rpos = self:GetAttachment(attachment)
@@ -198,6 +198,21 @@ function SWEP:MakeMuzzleFlashSV(pos,normal,attachment, usepos, usenormal)
 		end
 	else
 		util.Effect(self.MuzzleFlashEffect, ef)
+	end
+	
+	if self.TracerLua then
+		ef:SetOrigin(self.Owner.LastBulletHitPos and self.Owner.LastBulletHitPos or self.Owner:GetEyeTrace().HitPos)
+		
+		ef:SetFlags(TRACER_FLAG_USEATTACHMENT)
+		
+		if math.random(self.TracerCount and self.TracerCount or 0, 1)<=1 and self.TracerCount != 0 then
+			timer.Simple(self.TracerDelay and self.TracerDelay or 0, function()
+				if IsValid(self) and self.TracerName then
+					ef:SetOrigin(self.Owner.LastBulletHitPos and self.Owner.LastBulletHitPos or self.Owner:GetEyeTrace().HitPos)
+					util.Effect(self.TracerName,ef)
+				end
+			end)
+		end
 	end
 	
 end

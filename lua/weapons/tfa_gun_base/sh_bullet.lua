@@ -1,4 +1,4 @@
-
+TRACER_FLAG_USEATTACHMENT       = 0x0002;
 SWEP.lastbul = nil
 SWEP.lastbulnoric = false
 
@@ -54,6 +54,7 @@ function cpbullet(tb1, tb2)
 	tb1.TracerName = tb2.TracerName
 	tb1.Force = tb2.Force
 	tb1.Damage = tb2.Damage
+	tb1.IsFirst = tb2.IsFirst
 end
 
 --[[ 
@@ -84,14 +85,49 @@ local function TFBulletCallback(a,b,c)
 	if self.lastbul then
 		bul=self.lastbul
 	end
-		
+	
 	local bulletdistance =  ( ( b.HitPos - b.StartPos ):Length( ) )
 	local damagescale = 0
 	damagescale = 1-( (bulletdistance-self.Primary.Range*self.Primary.RangeFalloff)/(self.Primary.Range * (1-self.Primary.RangeFalloff)) )
 	damagescale = ( 1-GetConVarNumber("sv_tfa_range_modifier",0.5) ) + ( math.Clamp(damagescale,0,1) * GetConVarNumber("sv_tfa_range_modifier",0.5) )
+	
 	if c then
 		c:ScaleDamage(damagescale)
 	end
+	
+	if self.DamageType then
+		c:SetDamageType(self.DamageType)
+		if c:IsDamageType(DMG_BURN) then
+			if b.Hit and IsValid(b.Entity) and !b.HitWorld and !b.HitSky then
+				if c:GetDamage()>1 then
+					b.Entity:Ignite(c:GetDamage()/2,1)
+				end
+			end
+		end
+		if c:IsDamageType(DMG_BLAST) then
+			if b.Hit then
+				local tmpdmg = c:GetDamage()
+				util.BlastDamage(self,self.Owner,b.HitPos,tmpdmg/2,tmpdmg)
+				local fx = EffectData()
+				fx:SetOrigin(b.HitPos)
+				fx:SetNormal(b.HitNormal)
+				if tmpdmg>90 then
+					util.Effect("Explosion",fx)
+				elseif tmpdmg>45 then
+					util.Effect("cball_explode",fx)				
+				else
+					util.Effect("ManhackSparks",fx)
+				end
+				c:ScaleDamage(0.15)
+			end
+		end
+	end
+	
+	if bul.IsFirst then
+		a.LastBulletHitPos = b.HitPos
+	end
+	
+	bul.IsFirst = false
 	TFACheckRicochetGateway(self, bul, b)
 	if CLIENT then
 		self:ImpactEffect(b.HitPos,b.HitNormal,b.MatType)
@@ -237,16 +273,25 @@ function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet,
 		else
 			TracerName = "Tracer"
 		end
-		if self.TracerName then
+		if self.TracerName and self.TracerName != "" then
 			TracerName = self.TracerName
 		end
+		
 		mainbul.Num 		= num_bullets
 		mainbul.Src 		= self.Owner:GetShootPos()			-- Source
 		mainbul.Dir 		= self.Owner:GetAimVector()			-- Dir of bullet
 		mainbul.Spread.x=aimcone-- Aim Cone X
 		mainbul.Spread.y=aimcone-- Aim Cone Y
-		mainbul.Tracer	= 3							-- Show a tracer on every x bullets
-		mainbul.TracerName = TracerName
+		mainbul.Tracer	= self.TracerCount and self.TracerCount or 3		-- Show a tracer on every x bullets
+		mainbul.IsFirst = true
+		
+		if !self.TracerLua then
+			mainbul.TracerName = TracerName
+		else
+			mainbul.Tracer = 0
+			mainbul.TracerName = ""
+		end
+		
 		mainbul.Force	= damage/3 * math.sqrt((self.Primary.KickUp+self.Primary.KickDown+self.Primary.KickHorizontal )) * GetConVarNumber("sv_tfa_force_multiplier",1) * self:GetAmmoForceMultiplier()				-- Amount of force to give to phys objects
 		mainbul.Damage	= damage
 		
@@ -321,6 +366,7 @@ function SWEP:CheckRicochet(bullet, tr)
 	
 	bullet.Damage = bullet.Damage * damagescale
 	bullet.Force = bullet.Force * damagescale
+	bullet.IsFirst = false
 	
 	local matname = self:GetMaterialConcise( tr.MatType )
 	local ricochetchance = 1
@@ -363,7 +409,7 @@ function SWEP:CheckRicochet(bullet, tr)
 			ricbul.Dir=((2 * tr.HitNormal * dp) + tr.Normal) + (VectorRand() * 0.02)
 			ricbul.Tracer=0
 			ricbul.TracerName = "None"
-			
+			ricbul.IsFirst = false
 			if GetConVarNumber("cl_tfa_fx_impact_ricochet_enabled",1) == 1 and GetConVarNumber("cl_tfa_fx_impact_enabled",1)==1 then
 				local fx = EffectData()
 				fx:SetOrigin(ricbul.Src)
@@ -455,6 +501,7 @@ function SWEP:CheckPenetration(bullet, tr2)
 		penbul.Dir=bullet.Dir*1
 		penbul.Tracer=0
 		penbul.TracerName = "None"
+		penbul.IsFirst = false
 			
 		if GetConVarNumber("cl_tfa_fx_impact_enabled",1)==1 then
 			local fx = EffectData()
@@ -473,7 +520,9 @@ function SWEP:CheckPenetration(bullet, tr2)
 		penbul.Force = 0.01
 		penbul.Tracer = 0
 		penbul.TracerName = "None"
+		penbul.IsFirst = false
 		self:ShootBullet(0,0,0,vector_origin,true,penbul)
+		bullet.IsFirst = false
 		return true
 	end
 	

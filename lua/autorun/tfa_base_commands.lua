@@ -1224,3 +1224,19 @@ function TFAPlayerBindPress(ply, b, p)
 end
 
 hook.Add("PlayerBindPress", "TFAInspectionMenu", TFAPlayerBindPress)
+
+hook.Add("PlayerSpawn","TFAExtinguishQOL", function(ply)
+	if IsValid(ply) then
+		if ply:IsOnFire() then
+			ply:Extinguish()
+		end
+	end
+end)
+
+game.AddParticles("particles/tfa_muzzleflashes.pcf")
+
+PrecacheParticleSystem("tfa_muzzle_rifle")
+
+PrecacheParticleSystem("tfa_muzzle_energy")
+
+PrecacheParticleSystem("tfa_muzzle_gauss")
