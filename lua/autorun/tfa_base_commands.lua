@@ -1200,6 +1200,21 @@ if SERVER then
 		
 		end
 	end)
+	
+	util.AddNetworkString( "tfaAltAttack" )
+
+	net.Receive("tfaAltAttack", function( length, client )
+	
+		if IsValid(client) and client:IsPlayer() and client:Alive() then
+			local ply = client
+			wep = ply:GetActiveWeapon()
+
+			if IsValid(wep) and wep.AltAttack then
+				wep:AltAttack()
+			end
+		
+		end
+	end)
 end
 
 function TFAPlayerBindPress(ply, b, p)
@@ -1213,12 +1228,22 @@ function TFAPlayerBindPress(ply, b, p)
 					return true
 				end
 			end
-			if wep.IsTFAWeapon then
+			if wep.ShotgunInterrupt then
 				if b == "+attack" and (wep:GetReloading() and wep.Shotgun and !wep:GetShotgunPumping() and !wep:GetShotgunNeedsPump()) then
 					wep:ShotgunInterrupt()
 					return true
 				end
-			end			
+			end		
+			if wep.AltAttack then
+				if b == "+zoom" then
+					wep:AltAttack()
+					if CLIENT then
+						net.Start("tfaAltAttack")
+						net.SendToServer()
+					end
+					return true
+				end
+			end		
 		end
 	end
 end

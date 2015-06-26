@@ -43,8 +43,8 @@ Purpose:  SWEP Construction Kit Compatibility / Basic Attachments.
 function SWEP:ViewModelDrawn()
 	local vm = self.Owner:GetViewModel()
 	if !IsValid(vm) then return end
-	if (!self.VElements) then return end
 	self:UpdateBonePositions(vm)
+	if (!self.VElements) then return end
 	if (!self.vRenderOrder) then
 		-- // we build a render order because sprites need to be drawn after models
 		self.vRenderOrder = {}
@@ -396,7 +396,7 @@ function SWEP:UpdateBonePositions(vm)
 		loopthrough = vbones
 		
 		for k, v in pairs( loopthrough ) do
-		
+			--print(v)
 			local bone = vm:LookupBone(k)
 			if (!bone) or (bone==-1) then continue end
 			

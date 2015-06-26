@@ -1,4 +1,20 @@
 --[[ 
+Function Name:  AnimForce
+Syntax: self:AnimForce(tostring(ACT_VM_IDLE)).
+Returns:  Nil
+Notes:  Fixes client/server disparity in singleplayer.
+Purpose:  Animation / Utility
+]]--
+
+function SWEP:AnimForce(str) 
+	local vm = LocalPlayer():GetViewModel()
+	if IsValid(vm) then
+		vm:SendViewModelMatchingSequence(vm:SelectWeightedSequence(tonumber(str)))
+	end
+	--self:ResetEvents()
+end
+
+--[[ 
 Function Name:  ChooseDrawAnim
 Syntax: self:ChooseDrawAnim().
 Returns:  Could we successfully find an animation?  Which action?
@@ -8,6 +24,7 @@ Purpose:  Animation / Utility
 
 function SWEP:ChooseDrawAnim()
 	if !self:OwnerIsValid() then return end
+	--self:ResetEvents()
 	local tanim = ACT_VM_DRAW
 	local success = true
 	if self.SequenceEnabled[ACT_VM_DRAW_SILENCED] and self:GetSilenced() then
@@ -37,6 +54,11 @@ function SWEP:ChooseDrawAnim()
 			end
 		end
 	end
+	
+	if game.SinglePlayer() then
+		self:CallOnClient("AnimForce",tanim)
+	end
+	
 	self.lastact = tanim
 	return success, tanim
 end
@@ -50,6 +72,7 @@ Purpose:  Animation / Utility
 
 function SWEP:ChooseInspectAnim()
 	if !self:OwnerIsValid() then return end
+	--self:ResetEvents()
 	local tanim = ACT_VM_FIDGET
 	local success = true
 	if self.SequenceEnabled[ACT_VM_FIDGET] then
@@ -67,6 +90,11 @@ function SWEP:ChooseInspectAnim()
 		tanim = tanim2
 		success=false
 	end
+	
+	if game.SinglePlayer() then
+		self:CallOnClient("AnimForce",tanim)
+	end
+	
 	self.lastact = tanim
 	
 	return success, tanim
@@ -82,6 +110,7 @@ Purpose:  Animation / Utility
 
 function SWEP:ChooseHolsterAnim()
 	if !self:OwnerIsValid() then return end
+	--self:ResetEvents()
 	local tanim = ACT_VM_HOLSTER
 	local success = true
 	if !self:GetSilenced() then
@@ -111,6 +140,11 @@ function SWEP:ChooseHolsterAnim()
 		tanim=tanim2
 		success=false
 	end
+	
+	if game.SinglePlayer() then
+		self:CallOnClient("AnimForce",tanim)
+	end
+	
 	self.lastact = tanim
 	
 	return success, tanim
@@ -126,6 +160,7 @@ Purpose:  Animation / Utility
 
 function SWEP:ChooseReloadAnim()
 	if !self:OwnerIsValid() then return end
+	--self:ResetEvents()
 	local tanim = ACT_VM_RELOAD
 	local success = true
 	if self.SequenceEnabled[ACT_VM_RELOAD_SILENCED] and self:GetSilenced() then
@@ -155,6 +190,11 @@ function SWEP:ChooseReloadAnim()
 			end
 		end
 	end
+	
+	if game.SinglePlayer() then
+		self:CallOnClient("AnimForce",tanim)
+	end
+	
 	self.lastact = tanim
 	return success, tanim
 end
@@ -169,6 +209,7 @@ Purpose:  Animation / Utility
 
 function SWEP:ChooseShotgunReloadAnim()
 	if !self:OwnerIsValid() then return end
+	--self:ResetEvents()
 	local tanim = ACT_SHOTGUN_RELOAD_START
 	local success = true
 	if self.SequenceEnabled[ACT_VM_RELOAD_SILENCED] and self:GetSilenced() then
@@ -199,6 +240,11 @@ function SWEP:ChooseShotgunReloadAnim()
 			end
 		end
 	end
+	
+	if game.SinglePlayer() then
+		self:CallOnClient("AnimForce",tanim)
+	end
+	
 	self.lastact = tanim
 	return success, tanim
 end
@@ -213,6 +259,7 @@ Purpose:  Animation / Utility
 
 function SWEP:ChooseIdleAnim()
 	if !self:OwnerIsValid() then return end
+	--self:ResetEvents()
 	local tanim=ACT_VM_IDLE
 	if self.SequenceEnabled[ACT_VM_IDLE_SILENCED]  and self:GetSilenced() then
 		self:SendWeaponAnim(ACT_VM_IDLE_SILENCED)
@@ -229,6 +276,11 @@ function SWEP:ChooseIdleAnim()
 			self:SendWeaponAnim(ACT_VM_IDLE)
 		end
 	end
+	
+	if game.SinglePlayer() then
+		self:CallOnClient("AnimForce",tanim)
+	end
+	
 	self.lastact = tanim
 	return true, tanim
 end
@@ -243,6 +295,7 @@ Purpose:  Animation / Utility
 
 function SWEP:ChooseShootAnim()
 	if !self:OwnerIsValid() then return end
+	--self:ResetEvents()
 	local tanim=ACT_VM_PRIMARYATTACK
 	local success = true
 	if self.SequenceEnabled[ACT_VM_PRIMARYATTACK_SILENCED]  and self:GetSilenced() then
@@ -302,9 +355,13 @@ function SWEP:ChooseShootAnim()
 	if self.Akimbo then
 		if self.SequenceEnabled[ACT_VM_SECONDARYATTACK] and self.AnimCycle==1 then
 			self:SendWeaponAnim(ACT_VM_SECONDARYATTACK)
+			tanim = ACT_VM_SECONDARYATTACK
 		end
-		self.AnimCycle = 1 - self.AnimCycle
-	end	
+	end
+	
+	if game.SinglePlayer() then
+		self:CallOnClient("AnimForce",tanim)
+	end
 	
 	self.lastact = tanim
 	return success, tanim
@@ -320,6 +377,7 @@ Purpose:  Animation / Utility
 
 function SWEP:ChooseSilenceAnim( val )
 	if !self:OwnerIsValid() then return end
+	--self:ResetEvents()
 	local tanim=ACT_VM_PRIMARYATTACK
 	local success = false
 	if val then
@@ -339,6 +397,11 @@ function SWEP:ChooseSilenceAnim( val )
 		local _
 		_, tanim = self:ChooseIdleAnim()
 	end
+	
+	if game.SinglePlayer() then
+		self:CallOnClient("AnimForce",tanim)
+	end
+	
 	self.lastact = tanim
 	return success, tanim
 	
@@ -354,6 +417,7 @@ Purpose:  Animation / Utility
 
 function SWEP:ChooseDryFireAnim()
 	if !self:OwnerIsValid() then return end
+	--self:ResetEvents()
 	local tanim=ACT_VM_DRYFIRE
 	local success = true
 	if self.SequenceEnabled[ACT_VM_DRYFIRE_SILENCED] and self:GetSilenced() and !self.ForceDryFireOff then
@@ -369,6 +433,11 @@ function SWEP:ChooseDryFireAnim()
 			_, tanim = self:ChooseIdleAnim()
 		end
 	end
+	
+	if game.SinglePlayer() then
+		self:CallOnClient("AnimForce",tanim)
+	end
+	
 	self.lastact = tanim
 	return success, tanim
 end

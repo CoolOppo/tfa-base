@@ -100,7 +100,9 @@ local function TFBulletCallback(a,b,c)
 		if c:IsDamageType(DMG_BURN) then
 			if b.Hit and IsValid(b.Entity) and !b.HitWorld and !b.HitSky then
 				if c:GetDamage()>1 then
-					b.Entity:Ignite(c:GetDamage()/2,1)
+					if b.Entity.Ignite then
+						b.Entity:Ignite(c:GetDamage()/2,1)
+					end
 				end
 			end
 		end
@@ -170,6 +172,16 @@ ricbul.Force	= 0.01
 ricbul.Damage	= 0.01
 ricbul.Callback = TFBulletCallback
 
+--minifunc 
+
+function SWEP:ToggleAkimbo()
+	
+	if self.Akimbo then
+		self.AnimCycle = 1-self.AnimCycle
+	end
+
+end
+
 --[[ 
 Function Name:  ShootBulletInformation
 Syntax: self:ShootBulletInformation( ). 
@@ -184,7 +196,10 @@ function SWEP:ShootBulletInformation()
 	
 	self.ConDamageMultiplier = GetConVar("sv_tfa_damage_multiplier"):GetFloat()
 	if (CLIENT and !game.SinglePlayer()) and !IsFirstTimePredicted() then return end
-
+	
+	if SERVER and game.SinglePlayer() then self:CallOnClient("ToggleAkimbo","") end
+	
+	self:ToggleAkimbo()
 
 	local CurrentDamage
 	local CurrentCone, CurrentRecoil = self:CalculateConeRecoil()
@@ -194,7 +209,7 @@ function SWEP:ShootBulletInformation()
 	basedamage = self.ConDamageMultiplier * self.Primary.Damage
 	CurrentDamage = basedamage * tmpranddamage
 	
-	if self.DoMuzzleFlash and ( (SERVER) or ( CLIENT and !self.AutoDetectMuzzleAttachment ) or (CLIENT and !self:IsFirstPerson() )  )then
+	if self.DoMuzzleFlash and ( (SERVER) or ( CLIENT and !self.AutoDetectMuzzleAttachment ) or (CLIENT and !self:IsFirstPerson() ) ) then
 		self:ShootEffects()
 	end
 	

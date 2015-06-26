@@ -38,11 +38,9 @@ Purpose:  FX
 	
 local blankvec = Vector(0,0,0)
 
-
-
-function SWEP:ShootEffects()
+function SWEP:ShootEffects( ovrarg )
 	
-	if ( ( (CLIENT and !SERVER) and !game.SinglePlayer() ) and !IsFirstTimePredicted() and !self.AutoDetectMuzzleAttachment) then print("canceled") return end
+	if ( ( (CLIENT and !SERVER) and !game.SinglePlayer() ) and !IsFirstTimePredicted() and !self.AutoDetectMuzzleAttachment and !ovrarg ) then print("canceled") return end
 	
 	--[[
 	if game.SinglePlayer() then
@@ -69,6 +67,9 @@ function SWEP:ShootEffects()
 	if fp then
 		tent = self.Owner:GetViewModel() 
 		attid=self:GetFPMuzzleAttachment()--tent:LookupAttachment(self.MuzzleAttachment and self.MuzzleAttachment or "muzzle" )
+		if self.Akimbo then
+			attid = 2-self.AnimCycle
+		end
 	else
 		attid = self:LookupAttachment("muzzle_flash" )
 		if attid == 0 then
@@ -78,18 +79,20 @@ function SWEP:ShootEffects()
 			attid = self.MuzzleAttachmentRaw
 		end
 		if self.Akimbo then
-			attid = 1+self.AnimCycle
+			attid = 2-self.AnimCycle
 		end
 	end
 	
 	if attid == 0 then
 		attid = 1
 	end
-		
-	if ( CLIENT or game.SinglePlayer() ) and self.DoMuzzleFlash and self.CustomMuzzleFlash then
+	
+	if ( ( CLIENT and !game.SinglePlayer() ) or ( SERVER and game.SinglePlayer() and !self.AutoDetectMuzzleAttachment ) or (CLIENT and self.AutoDetectMuzzleAttachment) or ( self.Akimbo and game.SinglePlayer()  ) and self.DoMuzzleFlash and self.CustomMuzzleFlash ) then
 		if !self:IsCurrentlyScoped() then
 			if fp then
 				self:MakeMuzzleSmoke(tent,attid)
+				self:MakeMuzzleFlash(blankvec,blankvec,tent,attid,false,false)
+				--[[
 				if false then--self.AttachmentCache[attid] then
 					local cach = self.AttachmentCache[attid]
 					local tmppos2, tmpang2 = LocalToWorld(cach[1],cach[2],self.Owner:GetShootPos(),self.Owner:EyeAngles())
@@ -97,6 +100,7 @@ function SWEP:ShootEffects()
 				else
 					self:MakeMuzzleFlash(blankvec,blankvec,tent,attid,false,false)
 				end
+				]]--
 			else
 				self:MakeMuzzleSmoke(tent,attid)
 				self:MakeMuzzleFlash(blankvec,blankvec,tent,attid,false,false)
@@ -131,6 +135,7 @@ function SWEP:ShootEffects()
 	end
 	
 end
+
 
 local svflashvec = Vector(1,1,1)
 

@@ -297,6 +297,20 @@ SWEP.TracerName = nil --Change to a string of your tracer name,or lua effect if 
 SWEP.TracerLua = false --Use lua effect, TFA Muzzle syntax
 SWEP.TracerCount = nil --0 disables, otherwise, 1 in X chance
 SWEP.TracerDelay = 0.01 --Delay for lua tracer effect
+
+--Event Table, used for custom events when a sequence is played
+
+SWEP.EventTable = {}
+
+--[[
+example:
+SWEP.EventTable = {
+	[ACT_VM_RELOAD] = {
+		{ ['time'] = 0.1, ['type'] = "lua", ['value'] = hifunc },
+		{ ['time'] = 0.2, ['type'] = "sound", ['value'] = Sound("CryGauss.1") }
+	}
+}
+]]--
 --RT Stuff
 	
 local clearcol = Color(0,0,0,0)
@@ -313,6 +327,7 @@ SWEP.RTCode = function( self )
 end
 
 --Stuff you shouldn't touch after this 
+SWEP.EventTimer = 0 --Don't change this, base dependent and does nothing for users anyways.
 SWEP.PenetrationCounter = 0 --BASE DEPENDENT VALUE.  DO NOT CHANGE OR THINGS MAY BREAK.  NO USE TO YOU.
 SWEP.DrawTime = 1  --BASE DEPENDENT VALUE.  DO NOT CHANGE OR THINGS MAY BREAK.  NO USE TO YOU.
 SWEP.TextCol = Color(255,255,255,255) --Primary text color
@@ -324,7 +339,7 @@ SWEP.Akimbo = false
 
 SWEP.CustomBulletCallback = nil
 
-SWEP.AnimCycle = 1
+SWEP.AnimCycle = 0 -- Start on the right
 
 SWEP.IsTFAWeapon = true
 
@@ -377,6 +392,8 @@ end
 
 --[[  Quadratic Interpolation Functions  ]]--
 
+local qerppower = 2
+
 --[[ 
 Function Name:  Power
 Syntax: pow(number you want to take the power of, it's power)
@@ -398,7 +415,7 @@ local function QerpIn(progress, startval, change, totaltime)
 	if !totaltime then
 		totaltime = 1
 	end
-	return startval + change * pow( progress/totaltime, 2)
+	return startval + change * pow( progress/totaltime, qerppower)
 end
 
 --[[ 
@@ -412,7 +429,7 @@ local function QerpOut(progress, startval, change, totaltime)
 	if !totaltime then
 		totaltime = 1
 	end
-	return startval - change * pow( progress/totaltime, 2)
+	return startval - change * pow( progress/totaltime, qerppower)
 end
 
 --[[ 
@@ -468,6 +485,28 @@ local function QerpVector( progress, startang, endang, totaltime )
 end
 
 --[[  Standard SWEP Functions  ]]--
+
+--[[ 
+Function Name:  ResetEvents
+Syntax: self:ResetEvents()
+Returns:  Nothing.
+Purpose:  Cleans up events table.
+]]--
+
+function SWEP:ResetEvents()
+	
+	if !self:OwnerIsValid() then return end
+	
+	if SERVER and game.SinglePlayer() then self:CallOnClient("ResetEvents","") end
+	
+	self.EventTimer = CurTime()
+	
+	for k,v in pairs(self.EventTable) do
+		for l,b in pairs(v) do
+			b.called = false
+		end
+	end
+end
 
 --[[ 
 Function Name:  SetupDataTables
@@ -739,6 +778,8 @@ function SWEP:Initialize()
 	if !self.Primary.ClipMax then
 		self.Primary.ClipMax = self.Primary.ClipSize * 3
 	end
+	
+	self:ResetEvents()
 end
 
 --[[ 
@@ -892,6 +933,8 @@ Purpose:  Standard SWEP Function
 
 function SWEP:Holster( switchtowep )
 
+	if !self:OwnerIsValid() then return end
+	
 	self:SetShotgunCancel( true )
 	
 	self:CleanParticles()
@@ -1014,12 +1057,12 @@ Purpose:  Standard SWEP Function
 
 function SWEP:Think2()
 	if !self:OwnerIsValid() then return end
+	self:ProcessEvents()
 	self:ProcessFireMode()
 	self:ProcessTimers()
 	self:UserInput()
 	self:IronsSprint()
 	self:ProcessHoldType()
-	
 	if self.Owner:GetVelocity():Length()>self.Owner:GetWalkSpeed()*0.4 then
 		--self:CleanParticles()
 	end
@@ -1149,7 +1192,7 @@ function SWEP:PrimaryAttack()
 	
 	if self:CanPrimaryAttack() and self.Owner:IsPlayer() then
 		if  self:GetRunSightsRatio()<0.1 then--and self:GetReloading()==false then
-			
+			self:ResetEvents()
 			self:SetInspecting(false)
 			self:SetInspectingRatio(0)
 			self:SetInspectingRatio(0)
@@ -1350,6 +1393,72 @@ function SWEP:PlayerThinkClient( ply )
 	
 end
 
+--[[
+Function Name:  ProcessEvents
+Syntax: self:ProcessEvents( ). 
+Returns:  Nothing.
+Notes: Critical for the event table to function.
+Purpose:  Main SWEP function
+]]--
+
+function SWEP:ProcessEvents()
+	if !self:OwnerIsValid() then return end
+	
+	local vm = self.Owner:GetViewModel()
+	
+	if !IsValid(vm) then return end
+
+	local evtbl = self.EventTable[vm:GetSequenceActivity(vm:GetSequence())]
+	
+	if !self.lastlastact then
+		self.lastlastact = 0
+	end
+	
+	if self.lastlastact != self.lastact then
+		self:ResetEvents()
+	end
+	
+	self.lastlastact = self.lastact
+	
+	if evtbl then
+		for k,v in pairs(evtbl) do
+			if !v.called then
+				if CurTime()>self.EventTimer+v.time then
+					v.called = true
+					if v.client then
+						if CLIENT then
+							if v.type == "lua" then
+								v.value(self,vm)
+							elseif v.type == "sound" then
+								self:EmitSound(v.value)
+							else
+								print("invalidtype")
+							end
+						elseif game.SinglePlayer() then
+							if v.type == "lua" then
+								v.value(self,vm)
+							elseif v.type == "sound" then
+								self:EmitSound(v.value)
+							else
+								print("invalidtype")
+							end							
+						end
+					end
+					if SERVER and v.server then
+						if v.type == "lua" then
+							v.value(self,vm)
+						elseif v.type == "sound" then
+							self:EmitSound(v.value)
+						else
+							print("invalidtype")
+						end
+					end
+				end
+			end
+		end
+	end
+end
+
 --[[ 
 Function Name:  PlayerThinkClientFrame
 Syntax: self:PlayerThinkClientFrame( player ).  Shouldn't be called manually, since it's called by before each frame.
@@ -1364,7 +1473,7 @@ function SWEP:PlayerThinkClientFrame( ply )
 	if !(CLIENT or game.SinglePlayer()) then
 		return
 	end
-
+	
 	self.ShouldDrawAmmoHUD=( ply:KeyDown(IN_USE) and ply:KeyDown(IN_RELOAD) ) or self:GetReloading() or self:GetFireModeChanging() or self:GetHUDThreshold() or (self:GetBoltTimer() and CurTime()>self:GetBoltTimerStart() and CurTime()<self:GetBoltTimerEnd() )
 
 	
@@ -1442,6 +1551,18 @@ Purpose:  Main SWEP function
 ]]--
 
 function SWEP:SecondaryAttack()
+	return false
+end
+
+--[[ 
+Function Name:  AltAttack
+Syntax: self:AltAttack( ).
+Returns:  Not sure that it returns anything.
+Notes: This is called when you do +zoom
+Purpose:  Main SWEP function
+]]--
+
+function SWEP:AltAttack()
 	return false
 end
 
@@ -1707,6 +1828,10 @@ function SWEP:GetViewModelPosition(pos, ang)
 	local gunbobintensity = GetConVarNumber("sv_tfa_gunbob_intensity",1) * 0.65 * 0.66
 	
 	pos, ang = self:CalculateBob( pos, ang, gunbobintensity)
+	
+	local qerp1 = Lerp(self.CLIronSightsProgress and self.CLIronSightsProgress or 0,0,self.ViewModelFlip and 1 or -1)*15
+	
+	ang:RotateAroundAxis(ang:Forward(),-Qerp(self.CLIronSightsProgress and self.CLIronSightsProgress or 0,qerp1,0))
 	
 	--End viewbob code
 	
@@ -2134,7 +2259,6 @@ Returns:  Nothing.  However, calculates OMG so much stuff what is this horrible 
 Notes:  This is essential.
 Purpose:  Don't remove this, seriously.
 ]]--
-
 function SWEP:ProcessTimers()
 	local isreloading,isshooting,isdrawing,isholstering, issighting, issprinting, htv, hudhangtime, isbolttimer, isinspecting
 	
@@ -2197,6 +2321,7 @@ function SWEP:ProcessTimers()
 					else
 						self:SetShotgunInsertingShell(true)
 						self.Weapon:SendWeaponAnim(ACT_VM_RELOAD)
+						self:ResetEvents()
 						if IsValid(self.Owner) then
 							local vm = self.Owner:GetViewModel()
 							if !self.ShellTime and IsValid(vm) then
@@ -2252,6 +2377,7 @@ function SWEP:ProcessTimers()
 					curclip = self:Clip1()
 					if (curclip<maxclip) then
 						self.Weapon:SendWeaponAnim(ACT_VM_RELOAD)
+						self:ResetEvents()
 						self:SetReloading(true)
 						self:SetShotgunInsertingShell(true)
 						if IsValid(self.Owner) then
@@ -2352,6 +2478,8 @@ function SWEP:ProcessTimers()
 		self:UpdateAttachmentCache()
 	end
 end
+
+--Below function is obsolete
 
 function SWEP:UpdateAttachmentCache()
 	local vm = self.Owner:GetViewModel()

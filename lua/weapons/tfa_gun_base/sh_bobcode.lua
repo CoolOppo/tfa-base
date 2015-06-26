@@ -3,6 +3,100 @@ local stepintervaloffset = 0
 
 SWEP.customboboffset = Vector(0,0,0)
 
+--[[  Quadratic Interpolation Functions  ]]--
+
+--[[ 
+Function Name:  Power
+Syntax: pow(number you want to take the power of, it's power)
+Returns:  The number to the power you specify
+Purpose:  Utility function
+]]--
+local function pow(num, power)
+	return math.pow(num, power)
+end
+
+--[[ 
+Function Name:  Qerp Inwards
+Syntax: QerpIn(progress, your starting value, how much it should change, across what period)
+Returns:  A number that you get when you quadratically fade into a value.  Kind of like a more advanced LERP.
+Purpose:  Utility function / Animation
+]]--
+
+local function QerpIn(progress, startval, change, totaltime)
+	if !totaltime then
+		totaltime = 1
+	end
+	return startval + change * pow( progress/totaltime, 2)
+end
+
+--[[ 
+Function Name:  Qerp Outwards
+Syntax: QerpOut(progress, your starting value, how much it should change, across what period)
+Returns:  A number that you get when you quadratically fade out of a value.  Kind of like a more advanced LERP.
+Purpose:  Utility function / Animation
+]]--
+
+local function QerpOut(progress, startval, change, totaltime)
+	if !totaltime then
+		totaltime = 1
+	end
+	return startval - change * pow( progress/totaltime, 2)
+end
+
+--[[ 
+Function Name:  Qerp
+Syntax: Qerp(progress, starting value, ending value, period)
+Note:  This is different syntax from QerpIn and QerpOut.  This uses a start and end value instead of a start value and change amount.
+Returns:  A number that you get when you quadratically fade out of and into a value.  Kind of like a more advanced LERP.
+Purpose:  Utility function / Animation
+]]--
+
+local function Qerp( progress, startval, endval, totaltime)
+	change = endval - startval
+	if !totaltime then
+		totaltime = 1
+	end
+	if progress < totaltime / 2 then return QerpIn(progress, startval, change/2, totaltime/2) end
+	return QerpOut(totaltime-progress, endval, change/2, totaltime/2)
+end
+
+--[[ 
+Function Name:  QerpAngle
+Syntax: QerpAngle(progress, starting value, ending value, period)
+Returns:  The quadratically interpolated angle.
+Purpose:  Utility function / Animation
+]]--
+
+local function QerpAngle( progress, startang, endang, totaltime )
+	if !totaltime then
+		totaltime = 1
+	end
+	return LerpAngle(Qerp(progress,0,1,totaltime),startang,endang)
+end
+
+--[[ 
+Function Name:  QerpVector
+Syntax: QerpVector(progress, starting value, ending value, period)
+Returns:  The quadratically interpolated vector.
+Purpose:  Utility function / Animation
+]]--
+
+local function QerpVector( progress, startang, endang, totaltime )
+	if !totaltime then
+		totaltime = 1
+	end
+	local startx, starty, startz, endx, endy, endz
+	startx=startang.x
+	starty=startang.y
+	startz=startang.z
+	endx=endang.x
+	endy=endang.y
+	endz=endang.z
+	return Vector(Qerp(progress, startx, endx, totaltime),Qerp(progress, starty, endy, totaltime),Qerp(progress, startz, endz, totaltime))
+end
+
+--Bob code
+
 
 function SWEP:DoBobFrame()
 	local tsv = GetConVarNumber("host_timescale", 1)
@@ -126,17 +220,16 @@ function SWEP:CalculateBob(pos, ang, ci)
 	self.customboboffset = self.customboboffset * ci
 	
 	ang:RotateAroundAxis(ang:Right(), 		(self.customboboffset.x))
-	ang:Normalize()
 	ang:RotateAroundAxis(ang:Up(), 		(self.customboboffset.y))
-	ang:Normalize()
 	ang:RotateAroundAxis(ang:Forward(), 	(self.customboboffset.z))
+	
 	ang:Normalize()
 	
 	local localisedmove,localisedangle = WorldToLocal(self.Owner:GetVelocity(),self.Owner:GetVelocity():Angle(),vector_origin,self.Owner:EyeAngles()) 
 	
 	ang:RotateAroundAxis(ang:Forward(), 		(math.Approach(localisedmove.y,0,1)/(runspeed/8)*tironsightscale ) * (ci or 1) * (-1 + 2 *(self.ViewModelFlip and 1 or 0) ))	
-	ang:Normalize()
 	ang:RotateAroundAxis(ang:Right(), 		(math.Approach(localisedmove.x,0,1)/(runspeed) )*tironsightscale * (ci or 1) * (-1 + 2 *(self.ViewModelFlip and 1 or 0) ) )
+	
 	ang:Normalize()
 	
 	pos:Add( ang:Right() * (self.customboboffset.x) )

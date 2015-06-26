@@ -101,8 +101,9 @@ function EFFECT:Init( data )
         dlight.b                = 40
         dlight.Brightness = 4.0
         dlight.size     = 110
-        dlight.DieTime  = CurTime() + 0.03
-   end
+        dlight.DieTime  = CurTime() + 0.1
+		dlight.Fade = 1000
+   end 
 	
 	ParticleEffectAttach("tfa_muzzle_rifle",PATTACH_POINT_FOLLOW,ent,data:GetAttachment())
 	
