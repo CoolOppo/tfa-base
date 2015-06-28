@@ -105,83 +105,12 @@ function EFFECT:Init( data )
 		dlight.Fade = 1000
    end 
 	
-	ParticleEffectAttach("tfa_muzzle_rifle",PATTACH_POINT_FOLLOW,ent,data:GetAttachment())
+	local att = math.max(1,data:GetAttachment())
 	
-	--[[
-	local emitter = ParticleEmitter( self.vOffset )
-		for i=0, 6 do
-			local particle = emitter:Add( "particles/flamelet"..math.random(1,5), self.vOffset + (dir * 1.7 * i))
-			if (particle) then
-				particle:SetVelocity((dir * 19 * i) + 1.05 * AddVel )
-				particle:SetLifeTime( 0 )
-				particle:SetDieTime( 0.1 )
-				particle:SetStartAlpha( math.Rand( 200, 255 ) )
-				particle:SetEndAlpha( 0 )
-				particle:SetStartSize( math.max(7 - 0.65 * i,1) )
-				particle:SetEndSize( 0 )
-				particle:SetRoll( math.Rand(0, 360) )
-				particle:SetRollDelta( math.Rand(-40, 40) )
-				particle:SetColor( 255 , 218 , 97 )
-				particle:SetLighting(false)
-				particle.FollowEnt = data:GetEntity()
-				particle.Att = self.Attachment
-				particle:SetThinkFunction( partfunc )
-				particle:SetNextThink(CurTime())
-			end
-		end
-		
-		for i=0, 5 do
-		
-			local particle = emitter:Add( "particles/smokey", self.vOffset + dir * math.Rand(6, 10 ))
-			if (particle) then
-				particle:SetVelocity(VectorRand() * 5 + dir * math.Rand(27,33) + 1.05 * AddVel )
-				particle:SetLifeTime( 0 )
-				particle:SetDieTime( math.Rand( 0.5, 0.5 ) )
-				particle:SetStartAlpha( math.Rand( 5, 15 ) )
-				particle:SetEndAlpha( 0 )
-				particle:SetStartSize( math.Rand(8,10) )
-				particle:SetEndSize( math.Rand(2,5) )
-				particle:SetRoll( math.Rand(0, 360) )
-				particle:SetRollDelta( math.Rand(-0.8, 0.8) )
-				
-				particle:SetAirResistance( 10 ) 
- 				 
- 				particle:SetGravity( Vector( 0, 0, 60 ) ) 
-				
-				particle:SetColor( 255 , 255 , 255 ) 
-			end
-			
-		end
-		
-		if GetConVarNumber("cl_tfa_fx_gasblur",1)==1 then
-			for i=0, 2 do
-				local particle = emitter:Add( "sprites/heatwave", self.vOffset + (dir * i) )
-				if (particle) then
-					particle:SetVelocity((dir * 25 * i) + 1.05 * AddVel )
-					particle:SetLifeTime( 0 )
-					particle:SetDieTime( math.Rand( 0.05, 0.15 ) )
-					particle:SetStartAlpha( math.Rand( 200, 225 ) )
-					particle:SetEndAlpha( 0 )
-					particle:SetStartSize( math.Rand(3,5) )
-					particle:SetEndSize( math.Rand(8,10) )
-					particle:SetRoll( math.Rand(0, 360) )
-					particle:SetRollDelta( math.Rand(-2, 2) )
-					
-					particle:SetAirResistance( 5 ) 
-					
-					particle.FollowEnt = data:GetEntity()
-					particle.Att = self.Attachment
-					particle:SetThinkFunction( partfunc )
-					 
-					particle:SetGravity( Vector( 0, 0, 40 ) ) 
-					
-					particle:SetColor( 255 , 255 , 255 ) 
-				end
-			end
-		end
-		
-	emitter:Finish() 
-	]]--
+	print(ent)
+	print(att)
+	
+	ParticleEffectAttach("tfa_muzzle_rifle",PATTACH_POINT_FOLLOW,ent,att)
 end 
 
 function EFFECT:Think( )

@@ -12,8 +12,10 @@ local function partfunc(self)
 		if self.Att then
 			local angpos = self.FollowEnt:GetAttachment(self.Att)
 			if angpos and angpos.Pos then
-				self:SetPos(angpos.Pos)
+				self.PrevAngPos = self.PrevAngPos and self.PrevAngPos or angpos.Pos
+				self:SetPos(self:GetPos()+angpos.Pos-self.PrevAngPos)
 				self:SetNextThink(CurTime())
+				self.PrevAngPos = angpos.Pos
 			end
 		end
 	end
@@ -43,18 +45,24 @@ function EFFECT:Init( data )
 	
 	local wepent = Entity(math.Round(self.StartPacket.z))
 	
-	if IsValid(wepent) then
-		if wepent.IsFirstPerson and !wepent:IsFirstPerson() then
-			data:SetEntity(wepent)
-			self.Position = blankvec
-		end
-	end
-	
 	local ownerent = player.GetByID(math.Round(self.StartPacket.x))
 	local serverside = false
 	if math.Round(self.StartPacket.y)==1 then
 		serverside = true
 	end
+	
+	if IsValid(wepent) then
+		if ( wepent.IsFirstPerson and !wepent:IsFirstPerson() ) or serverside then
+			data:SetEntity(wepent)
+			self.Position = blankvec
+		end
+	end
+	
+	--[[
+	self.Forward = ownerent:EyeAngles():Forward()
+	self.Angle = self.Forward:Angle()
+	self.Right = self.Angle:Right()
+	]]--
 	
 	if serverside then
 		if IsValid(ownerent) then
@@ -84,6 +92,9 @@ function EFFECT:Init( data )
 	self.vOffset = self.Position
 	dir = self.Forward
 	AddVel = AddVel * 1
+	
+	debugoverlay.Line(self.vOffset,self.vOffset+self.Forward*20,5,color_white,true)
+	
 	local emitter = ParticleEmitter( self.vOffset )
 		for i=0, 6 do
 			local particle = emitter:Add( "particles/flamelet"..math.random(1,5), self.vOffset + (dir * 1.7 * i))

@@ -156,6 +156,8 @@ function SWEP:MakeMuzzleFlash(pos,normal,entity,attachment, usepos, usenormal)
 	end
 	
 end
+	
+local blankvec = Vector(0,0,0)
 
 --[[ 
 Function Name:  ImpactEffect

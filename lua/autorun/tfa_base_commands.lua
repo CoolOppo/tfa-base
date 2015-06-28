@@ -1258,6 +1258,33 @@ hook.Add("PlayerSpawn","TFAExtinguishQOL", function(ply)
 	end
 end)
 
+hook.Add("PreDrawOpaqueRenderables","tfaweaponspredrawopaque",function()
+	for k,v in pairs(player.GetAll()) do
+		local wep = v:GetActiveWeapon()
+		if IsValid(wep) and wep.PreDrawOpaqueRenderables then
+			wep:PreDrawOpaqueRenderables()
+		end
+	end
+end)
+
+--For networking muzzles
+
+if SERVER then
+	util.AddNetworkString("tfa_base_muzzle_mp")
+end
+
+if CLIENT then
+	net.Receive( "tfa_base_muzzle_mp", function( length )
+		
+		local wep
+		wep = net.ReadEntity()
+		if IsValid(wep) and wep.MakeMuzzleFlashMP then
+			wep:MakeMuzzleFlashMP()
+		end
+		
+	end )
+end
+
 game.AddParticles("particles/tfa_muzzleflashes.pcf")
 
 PrecacheParticleSystem("tfa_muzzle_rifle")

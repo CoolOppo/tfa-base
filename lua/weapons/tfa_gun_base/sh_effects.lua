@@ -130,8 +130,115 @@ function SWEP:ShootEffects( ovrarg )
 	end
 	
 	if SERVER and !game.SinglePlayer() then
-		self:MakeMuzzleFlashSV(vector_origin,vector_origin,attid,false,false)
-		self:MakeMuzzleSmokeSV(attid)
+		--self:MakeMuzzleFlashSV(vector_origin,vector_origin,self,attid,false,false)
+		net.Start("tfa_base_muzzle_mp")
+		net.WriteEntity(self)
+		net.Broadcast()
+		--self:CallOnClient("MakeMuzzleFlashMP","MakeMuzzleFlashMP")
+	end
+	
+end
+
+--[[ 
+Function Name:  MakeMuzzleFlashMP
+Syntax: self:MakeMuzzleFlash( )
+Returns:  Nothing.
+Notes:    Used to make the muzzle flash effect, clientside, if you don't own the weapon.
+Purpose:  FX
+]]--
+
+local partcache = {}
+
+function SWEP:MakeMuzzleFlashMP()
+
+	local fxname = self.MuzzleFlashEffect
+	
+	if !fxname then
+		if (self:GetSilenced()) then
+			fxname = "tfa_muzzleflash_silenced"
+		else
+			local a=string.lower(self.Primary.Ammo)
+			if a=="buckshot" or a=="slam" or a=="airboatgun" then
+				fxname = "tfa_muzzleflash_shotgun"
+			else
+				fxname = "tfa_muzzleflash_rifle"
+			end
+		end
+	end
+	
+	--[[
+	if partcache[fxname] == nil then
+		
+		partcache[fxname] = false
+	
+		local fname = "lua/effects/"..fxname.."/shared.lua"
+		
+		local f = file.Open( fname, "r", "GAME" )
+		
+		if f then
+			local str = f:Read( f:Size() )
+			if str and string.find(str,"ParticleEffect") then
+				partcache[fxname] = true
+			end
+		end
+	
+	end
+	
+	if partcache[fxname] == false then
+		return false
+	end
+	]]--
+	
+	self:StopParticles()
+	
+	local lpl = LocalPlayer()
+	
+	if lpl==self.Owner then return end
+	
+	local fp = false
+	
+	local entity = self
+	
+	local attachment = self:LookupAttachment("muzzle_flash" )
+	
+	if attachment == 0 then
+		attachment = self:LookupAttachment(self.MuzzleAttachment )
+	end
+	
+	if attachment == 0 then
+		attachment = 1
+	end
+	
+	self:MakeMuzzleSmokeSV(attachment)
+	
+	local ef = EffectData()
+	
+	ef:SetOrigin(self:GetPos())
+	ef:SetEntity(self)
+		
+	ef:SetStart( Vector( self.Owner:EntIndex(),1,self:EntIndex() ) )
+	
+	local rpos = entity:GetAttachment(attachment)
+	
+	local ang = self.Owner:EyeAngles()
+	ef:SetNormal(self.Owner:GetAimVector())
+	--ef:SetNormal(Angle(math.Clamp(ang.p,-55,55),ang.y,ang.r):Forward())
+	
+	util.Effect(fxname, ef)
+	
+	if self.TracerLua then
+		ef:SetOrigin(self.Owner.LastBulletHitPos and self.Owner.LastBulletHitPos or self.Owner:GetEyeTrace().HitPos)
+		
+		ef:SetFlags(TRACER_FLAG_USEATTACHMENT)
+		
+		if math.random(self.TracerCount and self.TracerCount or 0, 1)<=1 and self.TracerCount != 0 then
+			timer.Simple(self.TracerDelay and self.TracerDelay or 0, function()
+				if IsValid(self) and self.TracerName then
+					ef:SetOrigin(self.Owner.LastBulletHitPos and self.Owner.LastBulletHitPos or self.Owner:GetEyeTrace().HitPos)
+					util.Effect(self.TracerName,ef)
+				end
+			end)
+		end
 	end
 	
 end
@@ -147,45 +254,27 @@ Notes:    Used to make multiplayer muzzleflashes.
 Purpose:  FX
 ]]--
 
-function SWEP:MakeMuzzleFlashSV(pos,normal,attachment, usepos, usenormal)
+function SWEP:MakeMuzzleFlashSV(pos,normal,ent, attachment, usepos, usenormal)
 	
-	if !self:OwnerIsValid() then return end
+	local entity = ent and ent or self
 	
-	local fp = false
+	if !IsValid(self.Owner) then return end
+	
+	local fp = self:IsFirstPerson()
 	
 	local ef = EffectData()
 	
-	ef:SetOrigin(pos)
+	ef:SetOrigin(blankvec)
 	ef:SetEntity(self)
 	
 	ef:SetAttachment( attachment )
 	
-	svflashvec.x = self.Owner:EntIndex()
-	svflashvec.y = 1
-	svflashvec.z = self:EntIndex()
-	ef:SetStart( svflashvec )
+	ef:SetStart( Vector( self.Owner:EntIndex(),1,self:EntIndex() ) )	
 	
-	local rpos = self:GetAttachment(attachment)
+	local rpos = entity:GetAttachment(attachment)
 	
-	if pos == vector_origin then
-		if rpos then
-			if rpos.Pos then
-				pos = rpos.Pos
-			else
-				pos = self:GetPos()
-			end
-		else
-			pos = self:GetPos()
-		end
-	end
-	
-	
-	if fp then
-		ef:SetNormal(self.Owner:EyeAngles():Forward())
-	else
-		local ang = self.Owner:EyeAngles()
-		ef:SetNormal(Angle(math.Clamp(ang.p,-55,55),ang.y,ang.r):Forward())
-	end
+	local ang = self.Owner:EyeAngles()
+	ef:SetNormal(Angle(math.Clamp(ang.p,-55,55),ang.y,ang.r):Forward())
 	
 	if usepos then
 		ef:SetOrigin(pos)
@@ -199,7 +288,12 @@ function SWEP:MakeMuzzleFlashSV(pos,normal,attachment, usepos, usenormal)
 		if (self:GetSilenced()) then
 			util.Effect("tfa_muzzleflash_silenced", ef)
 		else
-			util.Effect("tfa_muzzleflash_rifle", ef)
+			local a=string.lower(self.Primary.Ammo)
+			if a=="buckshot" or a=="slam" or a=="airboatgun" then
+				util.Effect("tfa_muzzleflash_shotgun", ef)
+			else
+				util.Effect("tfa_muzzleflash_rifle", ef)
+			end
 		end
 	else
 		util.Effect(self.MuzzleFlashEffect, ef)
@@ -231,8 +325,6 @@ Purpose:  FX
 ]]--
 
 function SWEP:MakeMuzzleSmokeSV(attachment)
-	
-	self:CleanParticles()
 	
 	local ef = EffectData()
 	ef:SetEntity(self)
