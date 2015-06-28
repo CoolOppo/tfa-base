@@ -395,11 +395,11 @@ function SWEP:GetAmmoForceMultiplier()
 			return 0.6--.308
 		end
 	elseif (am=="buckshot") then
-		return 0.2
+		return 1.0
 	elseif (am=="slam") then
-		return 0.25
+		return 0.4
 	elseif (am=="airboatgun") then 
-		return 0.3
+		return 0.35
 	elseif (am=="sniperpenetratedround") then
 		return 0.375--Wow you can shoot through 1.5 feet of concrete with AP M82 nice.
 	else
@@ -511,7 +511,7 @@ function SWEP:GetPenetrationMultiplier( matt )
 	if mat=="metal" then 
 		fac = 1.8 --Since most is aluminum and stuff
 	elseif mat=="wood" then
-		fac=2.8
+		fac=8
 	elseif mat=="plastic" then
 		fac=5
 	elseif mat=="flesh" then
@@ -525,9 +525,9 @@ function SWEP:GetPenetrationMultiplier( matt )
 	elseif mat=="slime" or mat=="sand" then
 		fac=0.7
 	elseif mat=="dirt" then
-		fac=5 --This is carboard, not dirt, in most cases.
+		fac=5 --This is plaster, not dirt, in most cases.
 	elseif mat=="foliage" then
-		fac=3
+		fac=6.5
 	end
 	
 	return fac
