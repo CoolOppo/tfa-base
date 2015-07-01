@@ -327,13 +327,19 @@ function SWEP:ChooseShootAnim()
 					self:SendWeaponAnim(ACT_VM_PRIMARYATTACK_EMPTY)
 					success=true
 					tanim = ACT_VM_PRIMARYATTACK_EMPTY
+				elseif self.SequenceEnabled[ACT_VM_PRIMARYATTACK_1] and self:GetIronSights() then
+					self:SendWeaponAnim(ACT_VM_PRIMARYATTACK_1)
+					tanim = ACT_VM_PRIMARYATTACK_1
 				else
 					success=true
 					tanim = ACT_VM_PRIMARYATTACK
 					self:SendWeaponAnim(ACT_VM_PRIMARYATTACK)
 				end			
 			else
-				if self.SequenceEnabled[ACT_VM_PRIMARYATTACK] then
+				if self.SequenceEnabled[ACT_VM_PRIMARYATTACK_1] and self:GetIronSights() then
+					self:SendWeaponAnim(ACT_VM_PRIMARYATTACK_1)
+					tanim = ACT_VM_PRIMARYATTACK_1
+				elseif self.SequenceEnabled[ACT_VM_PRIMARYATTACK] then
 					self:SendWeaponAnim(ACT_VM_PRIMARYATTACK)
 				else
 					success=false
@@ -342,7 +348,10 @@ function SWEP:ChooseShootAnim()
 				end
 			end
 		else
-			if self.SequenceEnabled[ACT_VM_PRIMARYATTACK] then
+			if self.SequenceEnabled[ACT_VM_PRIMARYATTACK_1] and self:GetIronSights() then
+				self:SendWeaponAnim(ACT_VM_PRIMARYATTACK_1)
+				tanim = ACT_VM_PRIMARYATTACK_1
+			elseif self.SequenceEnabled[ACT_VM_PRIMARYATTACK] then
 				self:SendWeaponAnim(ACT_VM_PRIMARYATTACK)
 			else
 				success=false
