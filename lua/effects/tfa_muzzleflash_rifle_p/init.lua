@@ -107,9 +107,6 @@ function EFFECT:Init( data )
 	
 	local att = math.max(1,data:GetAttachment())
 	
-	print(ent)
-	print(att)
-	
 	ParticleEffectAttach("tfa_muzzle_rifle",PATTACH_POINT_FOLLOW,ent,att)
 end 
 

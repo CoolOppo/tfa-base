@@ -401,7 +401,7 @@ function SWEP:GetAmmoForceMultiplier()
 	elseif (am=="airboatgun") then 
 		return 0.35
 	elseif (am=="sniperpenetratedround") then
-		return 0.375--Wow you can shoot through 1.5 feet of concrete with AP M82 nice.
+		return 0.1125--Wow you can shoot through 1.5 feet of concrete with AP M82 nice.
 	else
 		return 1
 	end
@@ -517,7 +517,7 @@ function SWEP:GetPenetrationMultiplier( matt )
 	elseif mat=="flesh" then
 		fac=8
 	elseif mat=="ceramic" then
-		fac=2.25
+		fac=1.35
 	elseif mat=="glass" then
 		fac=80
 	elseif mat=="energy" then
