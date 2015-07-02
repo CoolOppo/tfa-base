@@ -1289,6 +1289,10 @@ game.AddParticles("particles/tfa_muzzleflashes.pcf")
 
 PrecacheParticleSystem("tfa_muzzle_rifle")
 
+PrecacheParticleSystem("tfa_muzzle_sniper")
+
+PrecacheParticleSystem("tfa_muzzle_m82")
+
 PrecacheParticleSystem("tfa_muzzle_energy")
 
 PrecacheParticleSystem("tfa_muzzle_gauss")
