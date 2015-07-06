@@ -87,6 +87,11 @@ function SWEP:ShootEffects( ovrarg )
 		attid = 1
 	end
 	
+	if SERVER and !CLIENT and game.SinglePlayer() and self.AutoDetectMuzzleAttachment then
+		self:MakeMuzzleSmoke(tent,attid)
+		self:MakeMuzzleFlash(blankvec,blankvec,tent,attid,false,false)
+	end
+	
 	if ( ( CLIENT and !game.SinglePlayer() ) or ( SERVER and game.SinglePlayer() and !self.AutoDetectMuzzleAttachment ) or (CLIENT and self.AutoDetectMuzzleAttachment) or ( self.Akimbo and game.SinglePlayer()  ) and self.DoMuzzleFlash and self.CustomMuzzleFlash ) then
 		if !self:IsCurrentlyScoped() then
 			if fp then

@@ -29,6 +29,16 @@ function SWEP:DrawHUD()
 	if drawcrossy then
 		if GetConVarNumber("cl_tfa_hud_crosshair_enable_custom") == 1 then
 			if IsValid(LocalPlayer()) and self.Owner == LocalPlayer() then
+				ply = LocalPlayer()
+				
+				if !ply.interpposx then
+					ply.interpposx = ScrW()/2
+				end
+				
+				if !ply.interpposy then
+					ply.interpposy = ScrH()/2
+				end
+				
 				local x, y -- local, always
 				local s_cone,recoil
 				if !game.SinglePlayer() then
@@ -44,8 +54,16 @@ function SWEP:DrawHUD()
 					local trace = util.TraceLine( tr )
 					
 					local coords = trace.HitPos:ToScreen()
-					x, y = coords.x, coords.y
-
+	
+					coords.x = math.Clamp(coords.x,0,ScrW())
+					coords.y = math.Clamp(coords.y,0,ScrH())
+					
+					ply.interpposx = math.Approach(ply.interpposx,coords.x,(ply.interpposx-coords.x) * FrameTime() * 7.5 )
+					
+					ply.interpposy = math.Approach(ply.interpposy,coords.y,(ply.interpposy-coords.y) * FrameTime() * 7.5 )
+					
+					x, y = ply.interpposx, ply.interpposy
+					
 				else
 					x, y = ScrW() / 2.0, ScrH() / 2.0 -- Center of screen
 				end
@@ -56,7 +74,7 @@ function SWEP:DrawHUD()
 				crosslen = GetConVarNumber("cl_tfa_hud_crosshair_length", 1) * 0.01
 				crosshairwidth = GetConVarNumber("cl_tfa_hud_crosshair_width", 1) 
 				drawdot = GetConVarNumber("cl_tfa_hud_crosshair_dot",0)
-				local scale = (s_cone *  90 ) / self.Owner:GetFOV() * 680 * GetConVarNumber("cl_tfa_hud_crosshair_gap_scale",1)
+				local scale = (s_cone *  90 ) / self.Owner:GetFOV() * ScrH()/1.44 * GetConVarNumber("cl_tfa_hud_crosshair_gap_scale",1)
 				
 				local gap = scale
 				local length = 1

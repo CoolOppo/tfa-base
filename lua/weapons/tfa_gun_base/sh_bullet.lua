@@ -97,6 +97,18 @@ local function TFBulletCallback(a,b,c)
 	
 	if self.DamageType then
 		c:SetDamageType(self.DamageType)
+		if c:IsDamageType(DMG_SHOCK) or c:IsDamageType(DMG_BLAST) then
+			if b.Hit and IsValid(b.Entity) then
+				if b.Entity:GetClass()=="npc_strider" then
+					b.Entity:SetHealth(math.max(b.Entity:Health()-c:GetDamage(),2))
+					if b.Entity:Health()<=3 then
+						b.Entity:Extinguish()
+						b.Entity:Fire("sethealth","-1",0.01)
+						c:ScaleDamage(0)
+					end
+				end
+			end
+		end
 		if c:IsDamageType(DMG_BURN) then
 			if b.Hit and IsValid(b.Entity) and !b.HitWorld and !b.HitSky then
 				if c:GetDamage()>1 then

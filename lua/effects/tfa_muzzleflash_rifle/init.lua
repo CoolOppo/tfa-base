@@ -93,8 +93,6 @@ function EFFECT:Init( data )
 	dir = self.Forward
 	AddVel = AddVel * 1
 	
-	debugoverlay.Line(self.vOffset,self.vOffset+self.Forward*20,5,color_white,true)
-	
 	local emitter = ParticleEmitter( self.vOffset )
 		for i=0, 6 do
 			local particle = emitter:Add( "particles/flamelet"..math.random(1,5), self.vOffset + (dir * 1.7 * i))
