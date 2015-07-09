@@ -498,7 +498,7 @@ function SWEP:ResetEvents()
 	
 	if !self:OwnerIsValid() then return end
 	
-	if SERVER and game.SinglePlayer() then self:CallOnClient("ResetEvents","") end
+	if game.SinglePlayer() and !CLIENT then self:CallOnClient("ResetEvents","") end
 	
 	self.EventTimer = CurTime()
 	
@@ -1442,7 +1442,9 @@ Purpose:  Main SWEP function
 ]]--
 
 function SWEP:ProcessEvents()
+	
 	if !self:OwnerIsValid() then return end
+	if game.SinglePlayer() and !CLIENT then self:CallOnClient("ProcessEvents","") end
 	
 	local vm = self.Owner:GetViewModel()
 	
@@ -1474,14 +1476,14 @@ function SWEP:ProcessEvents()
 							else
 								print("invalidtype")
 							end
-						elseif game.SinglePlayer() then
-							if v.type == "lua" then
-								v.value(self,vm)
-							elseif v.type == "sound" then
-								self:EmitSound(v.value)
-							else
-								print("invalidtype")
-							end							
+						--elseif game.SinglePlayer() then
+						--	if v.type == "lua" then
+						--		v.value(self,vm)
+						--	elseif v.type == "sound" then
+						--		self:EmitSound(v.value)
+						--	else
+						--		print("invalidtype")
+						--	end							
 						end
 					end
 					if SERVER and v.server then

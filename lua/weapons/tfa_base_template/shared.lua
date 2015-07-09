@@ -1,7 +1,9 @@
---[[GENERAL]]--
+SWEP.Gun					= ("tfa_base_template") --Make sure this is unique.  Specically, your folder name.  
+if (GetConVar(SWEP.Gun.."_allowed")) != nil then
+	if not (GetConVar(SWEP.Gun.."_allowed"):GetBool()) then SWEP.Base = "tfa_blacklisted" SWEP.PrintName = SWEP.Gun return end
+end
+SWEP.Base				= "tfa_gun_base"
 SWEP.Category				= "TFA Template" --The category.  Please, just choose something generic or something I've already done if you plan on only doing like one swep.
-SWEP.Gun					= "tfa_base_template" --Make sure this is unique.  Specically, your folder name.  
-SWEP.Base 					= "tfa_gun_base"
 SWEP.Author				= "" --Author Tooltip
 SWEP.Contact				= "" --Contact Info Tooltip
 SWEP.Purpose				= "" --Purpose Tooltip
@@ -164,14 +166,15 @@ SWEP.RunSightsAng = Vector (0,0,0) --Change this, using SWEP Creation Kit prefer
 
 SWEP.data 				= {}
 SWEP.data.ironsights			= 1 --Enable Ironsights
+SWEP.Secondary.IronFOV			= 0					-- How much you 'zoom' in. Less is more!  Don't have this be <= 0.  A good value for ironsights is like 70.
 
 SWEP.IronSightsPos = Vector (0,0,0) --Change this, using SWEP Creation Kit preferably
 SWEP.IronSightsAng = Vector (0,0,0) --Change this, using SWEP Creation Kit preferably
 
 --[[INSPECTION]]--
 
-SWEP.InspectPos = Vector(0,0,0) --Replace with a vector, in style of ironsights position, to be used for inspection
-SWEP.InspectAng = Vector(0,0,0) --Replace with a vector, in style of ironsights angle, to be used for inspection
+SWEP.InspectPos = nil --Replace with a vector, in style of ironsights position, to be used for inspection
+SWEP.InspectAng = nil --Replace with a vector, in style of ironsights angle, to be used for inspection
 SWEP.InspectionLoop = true --Setting false will cancel inspection once the animation is done.  CS:GO style.
 
 --[[VIEWMODEL ANIMATION HANDLING]]--
@@ -259,8 +262,8 @@ SWEP.EventTable = {} --Event Table, used for custom events when an action is pla
 --example:
 --SWEP.EventTable = {
 --	[ACT_VM_RELOAD] = {
---		{ ['time'] = 0.1, ['type'] = "lua", ['value'] = examplefunction },
---		{ ['time'] = 0.2, ['type'] = "sound", ['value'] = Sound("ExampleGun.Sound1") }
+--		{ ['time'] = 0.1, ['type'] = "lua", ['value'] = examplefunction, ['client'] = true, ['server'] = false  },
+--		{ ['time'] = 0.2, ['type'] = "sound", ['value'] = Sound("ExampleGun.Sound1", ['client'] = true, ['server'] = false ) }
 --	}
 --}
 
@@ -354,29 +357,6 @@ SWEP.CanDryFireAnimateSilenced=false
 SWEP.CanSilencerAttachAnimate=false
 SWEP.CanSilencerDetachAnimate=false
 
-SWEP.actlist = { --A list of ACT_VMs to autodetect
-	ACT_VM_DRAW,
-	ACT_VM_DRAW_EMPTY,
-	ACT_VM_DRAW_SILENCED,
-	ACT_VM_HOLSTER,
-	ACT_VM_HOLSTER_EMPTY,
-	ACT_VM_IDLE,
-	ACT_VM_IDLE_EMPTY,
-	ACT_VM_IDLE_SILENCED,
-	ACT_VM_PRIMARYATTACK,
-	ACT_VM_PRIMARYATTACK_1,
-	ACT_VM_PRIMARYATTACK_EMPTY,
-	ACT_VM_PRIMARYATTACK_SILENCED,
-	ACT_VM_SECONDARYATTACK,
-	ACT_VM_RELOAD,
-	ACT_VM_RELOAD_EMPTY,
-	ACT_VM_RELOAD_SILENCED,
-	ACT_VM_ATTACH_SILENCER,
-	ACT_VM_DETACH_SILENCER,
-	ACT_VM_FIDGET,
-	ACT_SHOTGUN_RELOAD_START
-}
-
 --Misc
 
 SWEP.ShouldDrawAmmoHUD=false--THIS IS PROCEDURALLY CHANGED AND SHOULD NOT BE TWEAKED.  BASE DEPENDENT VALUE.  DO NOT CHANGE OR THINGS MAY BREAK.  NO USE TO YOU.
@@ -388,7 +368,6 @@ SWEP.Secondary.ClipSize			= 0					-- Size of a clip
 SWEP.Secondary.DefaultClip			= 0					-- Default ammo to give...
 SWEP.Secondary.Automatic			= false					-- Automatic/Semi Auto
 SWEP.Secondary.Ammo			= "none" -- Self explanitory, ammo type.
-SWEP.Secondary.IronFOV			= 0					-- How much you 'zoom' in. Less is more!  Don't have this be <= 0.  A good value for ironsights is like 70.
 
 --Convar support
 
@@ -419,3 +398,5 @@ else
 		print("Default clips will be not be modified")
 	end
 end
+
+SWEP.Base				= "tfa_gun_base"
