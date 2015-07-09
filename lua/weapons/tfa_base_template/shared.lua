@@ -1,6 +1,7 @@
 --[[GENERAL]]--
 SWEP.Category				= "TFA Template" --The category.  Please, just choose something generic or something I've already done if you plan on only doing like one swep.
 SWEP.Gun					= "tfa_base_template" --Make sure this is unique.  Specically, your folder name.  
+SWEP.Base 					= "tfa_gun_base"
 SWEP.Author				= "" --Author Tooltip
 SWEP.Contact				= "" --Contact Info Tooltip
 SWEP.Purpose				= "" --Purpose Tooltip
@@ -95,7 +96,7 @@ SWEP.ProjectileEntity = nil --Entity to shoot
 SWEP.ProjectileVelocity = 0 --Entity to shoot's velocity
 SWEP.ProjectileModel = nil --Entity to shoot's model
 
---[[VIEWMODEL]]-
+--[[VIEWMODEL]]--
 
 SWEP.ViewModel			= "models/your/path/here.mdl" --Viewmodel path
 SWEP.ViewModelFOV			= 65		-- This controls how big the viewmodel looks.  Less is more.
