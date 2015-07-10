@@ -1,5 +1,38 @@
 
 --[[ 
+Function Name:  AutoDetectMuzzle
+Syntax: self:AutoDetectMuzzle().  Call only once, or it's redundant.
+Returns:  Nothing.
+Notes:  Detects the proper muzzle flash effect if you haven't specified one.
+Purpose:  Autodetection
+]]--
+
+function SWEP:AutoDetectMuzzle()
+	if !self.MuzzleFlashEffect then
+		
+		local a=string.lower(self.Primary.Ammo)
+		local cat = string.lower(self.Category and self.Category or "")
+		
+		if self.Silenced or self:GetSilenced() then
+			self.MuzzleFlashEffect = "tfa_muzzleflash_silenced"
+		elseif string.find(a,"357") or self.Revolver or string.find(cat,"revolver") then
+			self.MuzzleFlashEffect = "tfa_muzzleflash_revolver"		
+		elseif self.Shotgun or a=="buckshot" or a=="slam" or a=="airboatgun" or string.find(cat,"shotgun")  then
+			self.MuzzleFlashEffect = "tfa_muzzleflash_shotgun"			
+		elseif string.find(a,"smg") or string.find(cat,"smg") or string.find(cat,"submachine") or string.find(cat,"sub-machine")  then
+			self.MuzzleFlashEffect = "tfa_muzzleflash_smg"		
+		elseif string.find(a,"sniper") or string.find(cat,"sniper")  then
+			self.MuzzleFlashEffect = "tfa_muzzleflash_sniper"		
+		elseif string.find(a,"pistol") or string.find(cat,"pistol")  then
+			self.MuzzleFlashEffect = "tfa_muzzleflash_pistol"
+		elseif string.find(a,"ar2") or string.find(a,"rifle") or ( string.find(cat,"revolver") and !string.find(cat,"rifle") ) then
+			self.MuzzleFlashEffect = "tfa_muzzleflash_rifle"
+		else
+			self.MuzzleFlashEffect = "tfa_muzzleflash_generic"		
+		end
+	end
+end
+--[[ 
 Function Name:  AutoDetectDamage
 Syntax: self:AutoDetectDamage().  Call only once.  Hopefully you call this only once on like SWEP:Initialize() or something.
 Returns:  Nothing.

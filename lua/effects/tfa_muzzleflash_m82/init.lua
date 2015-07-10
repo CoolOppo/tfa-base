@@ -86,7 +86,7 @@ function EFFECT:Init( data )
 	
 	self.vOffset = self.Position
 	dir = self.Forward
-	AddVel = AddVel * 1
+	AddVel = AddVel * 0.05
 
 	if IsValid(ent) then
 		dlight = DynamicLight(ent:EntIndex())

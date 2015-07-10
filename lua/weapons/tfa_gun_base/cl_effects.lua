@@ -124,20 +124,13 @@ function SWEP:MakeMuzzleFlash(pos,normal,entity,attachment, usepos, usenormal)
 	if usenormal then
 		ef:SetNormal(normal)
 	end
+
+	local fxname = self.MuzzleFlashEffect and self.MuzzleFlashEffect or ""
 	
-	if !self.MuzzleFlashEffect then
-		if (self:GetSilenced()) then
-			util.Effect("tfa_muzzleflash_silenced", ef)
-		else
-			local a=string.lower(self.Primary.Ammo)
-			if a=="buckshot" or a=="slam" or a=="airboatgun" then
-				util.Effect("tfa_muzzleflash_shotgun", ef)
-			else
-				util.Effect("tfa_muzzleflash_rifle", ef)
-			end
-		end
+	if (self:GetSilenced()) then
+		util.Effect("tfa_muzzleflash_silenced", ef)
 	else
-		util.Effect(self.MuzzleFlashEffect, ef)
+		util.Effect(fxname, ef)
 	end
 	
 	if self.TracerLua then

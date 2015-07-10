@@ -154,23 +154,7 @@ Purpose:  FX
 
 local partcache = {}
 
-function SWEP:MakeMuzzleFlashMP()
-
-	local fxname = self.MuzzleFlashEffect
-	
-	if !fxname then
-		if (self:GetSilenced()) then
-			fxname = "tfa_muzzleflash_silenced"
-		else
-			local a=string.lower(self.Primary.Ammo)
-			if a=="buckshot" or a=="slam" or a=="airboatgun" then
-				fxname = "tfa_muzzleflash_shotgun"
-			else
-				fxname = "tfa_muzzleflash_rifle"
-			end
-		end
-	end
-	
+function SWEP:MakeMuzzleFlashMP()	
 	--[[
 	if partcache[fxname] == nil then
 		
@@ -229,7 +213,14 @@ function SWEP:MakeMuzzleFlashMP()
 	ef:SetNormal(self.Owner:GetAimVector())
 	--ef:SetNormal(Angle(math.Clamp(ang.p,-55,55),ang.y,ang.r):Forward())
 	
-	util.Effect(fxname, ef)
+
+	local fxname = self.MuzzleFlashEffect and self.MuzzleFlashEffect or ""
+	
+	if (self:GetSilenced()) then
+		util.Effect("tfa_muzzleflash_silenced", ef)
+	else
+		util.Effect(fxname, ef)
+	end
 	
 	if self.TracerLua then
 		ef:SetOrigin(self.Owner.LastBulletHitPos and self.Owner.LastBulletHitPos or self.Owner:GetEyeTrace().HitPos)

@@ -758,6 +758,8 @@ function SWEP:Initialize()
 	
 	self:CreateFireModes()
 	
+	self:AutoDetectMuzzle()
+	
 	self:AutoDetectRange()
 	
 	self.DefaultHoldType = self.HoldType
@@ -901,6 +903,7 @@ function SWEP:Deploy()
 	self:SetInspectingRatio(0)
 	self:SetBursting(false)
 	self:SetUpSpread()
+	self:AutoDetectMuzzle()
 	self.PenetrationCounter = 0
 	if CLIENT or game.SinglePlayer() then
 		self.CLSpreadRatio=1
@@ -1476,11 +1479,13 @@ function SWEP:ProcessEvents()
 							else
 								print("invalidtype")
 							end
-						--elseif game.SinglePlayer() then
+						elseif game.SinglePlayer() then
 						--	if v.type == "lua" then
 						--		v.value(self,vm)
 						--	elseif v.type == "sound" then
-						--		self:EmitSound(v.value)
+							if v.type == "sound" then
+								self:EmitSound(v.value)
+							end
 						--	else
 						--		print("invalidtype")
 						--	end							

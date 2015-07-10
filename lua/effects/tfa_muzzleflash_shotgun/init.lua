@@ -7,20 +7,6 @@ end
 
 local blankvec = Vector(0,0,0)
 
-local function partfunc(self)
-	if IsValid(self.FollowEnt) then
-		if self.Att then
-			local angpos = self.FollowEnt:GetAttachment(self.Att)
-			if angpos and angpos.Pos then
-				self.PrevAngPos = self.PrevAngPos and self.PrevAngPos or angpos.Pos
-				self:SetPos(self:GetPos()+angpos.Pos-self.PrevAngPos)
-				self:SetNextThink(CurTime())
-				self.PrevAngPos = angpos.Pos
-			end
-		end
-	end
-end
-				
 function EFFECT:Init( data )
 	
 	self.StartPacket = data:GetStart()
@@ -91,41 +77,70 @@ function EFFECT:Init( data )
 	
 	self.vOffset = self.Position
 	dir = self.Forward
-	AddVel = AddVel * 1
+	AddVel = AddVel * 0.05
 	
-	debugoverlay.Line(self.vOffset,self.vOffset+self.Forward*20,5,color_white,true)
+	local dot = dir:GetNormalized():Dot( EyeAngles():Forward() )
+	local dotang = math.deg( math.acos( math.abs(dot) ) )	
+	local halofac =  math.Clamp( 1 - (dotang/90), 0, 1)
 	
 	local emitter = ParticleEmitter( self.vOffset )
+		
 		for i=0, 6 do
-			local particle = emitter:Add( "particles/flamelet"..math.random(1,5), self.vOffset + (dir * 1.6 * i))
+			local particle = emitter:Add( "effects/muzzleflash"..math.random(1,4), self.vOffset )
+			
+			if (particle) then
+				particle:SetVelocity( dir*4 + 1.05 * AddVel )
+				particle:SetLifeTime( 0 )
+				particle:SetDieTime( 0.1 )
+				particle:SetStartAlpha( math.Rand( 200, 255 ) )
+				particle:SetEndAlpha( 0 )
+				particle:SetStartSize( 14 * (halofac*0.8+0.2), 0, 1)
+				particle:SetEndSize( 0 )
+				local r = math.Rand(-180, 180) * 3.14/180
+				particle:SetRoll( r )
+				particle:SetRollDelta( math.sqrt(math.Clamp(r,-90,90))/9 )
+				particle:SetColor( 255 , 218 , 97 )
+				particle:SetLighting(false)
+				particle.FollowEnt = data:GetEntity()
+				particle.Att = self.Attachment
+				TFARegPartThink(particle,TFAMuzzlePartFunc)
+			end
+		end
+		
+		for i=0, 4 do
+			local particle = emitter:Add( "particles/flamelet"..math.random(1,5), self.vOffset + (dir * 1.4 * i))
 			if (particle) then
 				particle:SetVelocity((dir * 15 * i) + 1.05 * AddVel )
 				particle:SetLifeTime( 0 )
 				particle:SetDieTime( 0.1 )
 				particle:SetStartAlpha( math.Rand( 200, 255 ) )
 				particle:SetEndAlpha( 0 )
-				particle:SetStartSize( math.max(8 - 0.65 * i,1) )
+				particle:SetStartSize( math.max(7.5 - 1 * i,1) )
 				particle:SetEndSize( 0 )
 				particle:SetRoll( math.Rand(0, 360) )
 				particle:SetRollDelta( math.Rand(-40, 40) )
 				particle:SetColor( 255 , 218 , 97 )
 				particle:SetLighting(false)
+				particle.FollowEnt = data:GetEntity()
+				particle.Att = self.Attachment
+				TFARegPartThink(particle,TFAMuzzlePartFunc)
 			end
 		end
 		
-		for i=0, 7 do
+		for i=0, 8 do
 		
 			local particle = emitter:Add( "particles/smokey", self.vOffset + dir * math.Rand(6, 10 ))
 			if (particle) then
-				particle:SetVelocity(VectorRand() * 5 + dir * math.Rand(27,33) + 1.05 * AddVel )
+				particle:SetVelocity(VectorRand() * 8.5 + dir * math.Rand(12,20) + 1.05 * AddVel )
 				particle:SetLifeTime( 0 )
-				particle:SetDieTime( math.Rand( 0.5, 0.5 ) )
-				particle:SetStartAlpha( math.Rand( 5, 15 ) )
+				particle:SetDieTime( math.Rand( 0.75, 0.75 ) )
+				particle:SetStartAlpha( math.Rand( 10, 20 ) )
 				particle:SetEndAlpha( 0 )
 				particle:SetStartSize( math.Rand(8,10) )
-				particle:SetEndSize( math.Rand(2,5) )
+				particle:SetEndSize( math.Rand(3,5) )
 				particle:SetRoll( math.Rand(0, 360) )
 				particle:SetRollDelta( math.Rand(-0.8, 0.8) )
+				particle:SetLighting(true)
 				
 				particle:SetAirResistance( 10 ) 
  				 
@@ -137,7 +152,7 @@ function EFFECT:Init( data )
 		end
 		
 		if GetConVarNumber("cl_tfa_fx_gasblur",1)==1 then
-			for i=0, 3 do
+			for i=0, 2 do
 				local particle = emitter:Add( "sprites/heatwave", self.vOffset + (dir * i) )
 				if (particle) then
 					particle:SetVelocity((dir * 25 * i) + 1.05 * AddVel )

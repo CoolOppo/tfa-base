@@ -1285,6 +1285,56 @@ if CLIENT then
 	end )
 end
 
+--More Muzzle Stuff
+
+TFAFlareParts = {}
+
+if CLIENT or game.SinglePlayer() then
+	hook.Add("PreDrawEffects", "TFAMuzzleUpdate", function()
+		for k,v in pairs(TFAFlareParts) do
+			if v and v.ThinkFunc then
+				v:ThinkFunc()
+			end
+		end
+	end)
+end
+
+
+function TFARegPartThink( particle, partfunc )
+	if !particle or !partfunc then return end
+	particle.ThinkFunc = partfunc
+	if IsValid(particle.FollowEnt) and particle.Att then
+		local angpos = particle.FollowEnt:GetAttachment(particle.Att)
+		particle.OffPos = WorldToLocal(particle:GetPos(),particle:GetAngles(),angpos.Pos,angpos.Ang)
+	end
+	table.insert(TFAFlareParts,#TFAFlareParts+1,particle)
+	timer.Simple( particle:GetDieTime(), function()
+		if particle then
+			table.RemoveByValue(TFAFlareParts,particle)
+		end
+	end)
+
+end
+
+function TFAMuzzlePartFunc(self)
+	if IsValid(self.FollowEnt) then
+		if self.Att and self.OffPos then
+			local angpos = self.FollowEnt:GetAttachment(self.Att)
+			if angpos and angpos.Pos then
+				local tmppos = LocalToWorld(self.OffPos,self:GetAngles(),angpos.Pos,angpos.Ang)
+				self:SetPos(tmppos+self:GetVelocity()*FrameTime())
+				self.OffPos = WorldToLocal(self:GetPos(),self:GetAngles(),angpos.Pos,angpos.Ang)
+				--[[
+				self.PrevAngPos = self.PrevAngPos and self.PrevAngPos or angpos.Pos
+				dif = angpos.Pos-self.PrevAngPos
+				self:SetPos(self:GetPos()+dif*1)
+				self.PrevAngPos = angpos.Pos
+				]]--
+			end
+		end
+	end
+end
+
 game.AddParticles("particles/tfa_muzzleflashes.pcf")
 
 PrecacheParticleSystem("tfa_muzzle_rifle")
