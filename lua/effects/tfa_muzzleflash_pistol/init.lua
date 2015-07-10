@@ -86,7 +86,7 @@ function EFFECT:Init( data )
 	local emitter = ParticleEmitter( self.vOffset )
 		
 		for i=0, 4 do
-			local particle = emitter:Add( "effects/muzzleflash"..math.random(1,4), self.vOffset )
+			local particle = emitter:Add( "effects/scotchmuzzleflash"..math.random(1,4), self.vOffset )
 			
 			if (particle) then
 				particle:SetVelocity( dir*4 + 1.05 * AddVel )
