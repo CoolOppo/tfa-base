@@ -64,7 +64,7 @@ if CLIENT then
 	local props = {
 		['$translucent'] = 1
 	}
-	local TFA_RTMat = CreateMaterial("tfa_rtmaterial","UnLitGeneric", props )--Material("models/weapons/kf2/shared/optic")
+	local TFA_RTMat = CreateMaterial("tfa_rtmaterial","UnLitGeneric", props )--Material("models/weapons/TFA/shared/optic")
 	local TFA_RTScreen = GetRenderTargetEx("TFA_RT_Screen",	512,	512,	RT_SIZE_NO_CHANGE,	MATERIAL_RT_DEPTH_SEPARATE,	0,	CREATERENDERTARGETFLAGS_UNFILTERABLE_OK, IMAGE_FORMAT_ARGB8888	)
 	local TFA_RTScreenO = GetRenderTargetEx("TFA_RT_ScreenO",	512,	512,	RT_SIZE_NO_CHANGE,	MATERIAL_RT_DEPTH_SEPARATE,	0,	CREATERENDERTARGETFLAGS_UNFILTERABLE_OK, IMAGE_FORMAT_RGB888	)
 	
@@ -72,13 +72,15 @@ if CLIENT then
 	
 	local oldVmModel = ""
 	
-	local function KF2RenderScreen()
+	local function TFARenderScreen()
 		
 		if !IsValid(LocalPlayer()) or !IsValid(LocalPlayer():GetActiveWeapon()) then return end
 		
 		local self = LocalPlayer():GetActiveWeapon()
 		
 		local vm = self.Owner:GetViewModel()
+		
+		if !IsValid(vm) then return end
 		
 		if oldVmModel != vm:GetModel() then
 			local matcount = #vm:GetMaterials()
@@ -119,5 +121,5 @@ if CLIENT then
 		self.Owner:GetViewModel():SetSubMaterial(self.RTMaterialOverride,"!tfa_rtmaterial")
 	end
 
-	hook.Add("RenderScene","KF2SCREENS",KF2RenderScreen)
+	hook.Add("RenderScene","TFASCREENS",TFARenderScreen)
 end

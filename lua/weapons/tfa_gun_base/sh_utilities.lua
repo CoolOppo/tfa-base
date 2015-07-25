@@ -8,6 +8,12 @@ Purpose:  Utility
 ]]--
 
 function SWEP:ResetSightsProgress()
+
+	if self.Callback.ResetSightsProgress then
+		local val = self.Callback.ResetSightsProgress(self)
+		if val then return val end
+	end
+		
 	self.RunSightsProgress=0
 	if CLIENT then
 		self.CLNearWallProgress=0 --BASE DEPENDENT VALUE.  DO NOT CHANGE OR THINGS MAY BREAK.  NO USE TO YOU.
@@ -33,7 +39,14 @@ Purpose:  Utility
 ]]--
 
 function SWEP:DoAmmoCheck()
+	
 	if IsValid(self) then
+
+		if self.Callback.DoAmmoCheck then
+			local val = self.Callback.DoAmmoCheck(self)
+			if val then return val end
+		end
+	
 		if SERVER and (GetConVar("sv_tfa_weapon_strip"):GetBool()) then 
 			if self:Clip1() == 0 && self.Owner:GetAmmoCount( self:GetPrimaryAmmoType() ) == 0 then
 				timer.Simple(.1, function()
@@ -59,6 +72,12 @@ Purpose:  Utility
 ]]--
 
 function SWEP:PlaySound( snd )
+
+	if self.Callback.PlaySound then
+		local val = self.Callback.PlaySound(self, snd)
+		if val then return val end
+	end
+	
 	if !snd then return end
 	if !string.find(tostring(snd),"table") or !tostring(snd) then
 		self:EmitSound(snd)
@@ -78,6 +97,11 @@ Purpose:  Utility
 ]]--
 
 function SWEP:GetFireModeName()
+
+	if self.Callback.GetFireModeName then
+		local val = self.Callback.GetFireModeName(self)
+		if val then return val end
+	end
 	
 	local fm = self:GetFireMode()
 	local fmn = string.lower(self.FireModes[fm])
@@ -127,6 +151,12 @@ Purpose:  Utility
 ]]--
 
 function SWEP:IsSafety()
+
+	if self.Callback.IsSafety then
+		local val = self.Callback.IsSafety(self)
+		if val then return val end
+	end
+	
 	local fm = self.FireModes[self:GetFireMode()]
 	local fmn = string.lower(fm and fm or self.FireModes[1] )
 	
@@ -146,6 +176,12 @@ Purpose:  Utility
 ]]--
 
 function SWEP:FindEvenBurstNumber()
+
+	if self.Callback.FindEvenBurstNumber then
+		local val = self.Callback.FindEvenBurstNumber(self)
+		if val then return val end
+	end
+	
 	if (self.Primary.ClipSize % 3 ==0 ) then
 		return 3
 	elseif (self.Primary.ClipSize % 2 == 0 ) then
@@ -172,6 +208,11 @@ Purpose:  Utility
 
 function SWEP:GetAmmoReserve()
 
+	if self.Callback.GetAmmoReserve then
+		local val = self.Callback.GetAmmoReserve(self)
+		if val then return val end
+	end
+
 	local wep = self
 	if ( !IsValid( wep ) ) then return -1 end
 	
@@ -190,6 +231,11 @@ Purpose:  Utility
 ]]--
 
 function SWEP:GetRPM()
+
+	if self.Callback.GetRPM then
+		local val = self.Callback.GetRPM(self)
+		if val then return val end
+	end
 	
 	if !self.Primary.Automatic then
 		if self.Primary.RPM_Semi then
@@ -213,6 +259,12 @@ Purpose:  Utility
 ]]--
 
 function SWEP:IsCurrentlyScoped()
+
+	if self.Callback.IsCurrentlyScoped then
+		local val = self.Callback.IsCurrentlyScoped(self)
+		if val then return val end
+	end
+	
 	if CLIENT then
 		return ( (self.CLIronSightsProgress > self.ScopeOverlayThreshold)  and self.Scoped)
 	else
@@ -229,6 +281,11 @@ Purpose:  Utility
 ]]--
 
 function SWEP:IsFirstPerson()
+
+	if IsValid(self) and self.Callback.IsFirstPerson then
+		local val = self.Callback.IsFirstPerson(self)
+		if val then return val end
+	end
 	
 	if !IsValid(self) or !self:OwnerIsValid() then return false end
 	
@@ -274,6 +331,12 @@ Purpose:  Utility
 function SWEP:GetFPMuzzleAttachment( )
 	if !IsValid(self) then return nil end
 	if !IsValid(self.Owner) then return nil end
+
+	if self.Callback.GetFPMuzzleAttachment then
+		local val = self.Callback.GetFPMuzzleAttachment(self)
+		if val then return val end
+	end
+	
 	local ply=self.Owner
 	local vm = ply:GetViewModel()
 	local obj = vm:LookupAttachment( self.MuzzleAttachment and self.MuzzleAttachment or "1")
@@ -305,7 +368,14 @@ Purpose:  Utility
 ]]--
 
 function SWEP:GetMuzzlePos( ignorepos )
+	
 	if !IsValid(self.Owner) then return nil end
+
+	if self.Callback.GetMuzzlePos then
+		local val = self.Callback.GetMuzzlePos(self, ignorepos)
+		if val then return val end
+	end
+	
 	local ply=self.Owner
 	local fp = self:IsFirstPerson()
 	local vm = ply:GetViewModel()
@@ -367,6 +437,11 @@ Purpose:  Utility
 ]]--
 
 function SWEP:GetAmmoForceMultiplier()
+
+	if self.Callback.GetAmmoForceMultiplier then
+		local val = self.Callback.GetAmmoForceMultiplier(self)
+		if val then return val end
+	end
 	
 	if !self.PrintName then
 		self.PrintName = ""
@@ -417,6 +492,12 @@ Purpose:  Utility
 ]]--
 
 function SWEP:OwnerIsValid()
+
+	if self.Callback.OwnerIsValid then
+		local val = self.Callback.OwnerIsValid(self)
+		if val then return val end
+	end
+	
 	if !IsValid(self.Owner) then return false end
 	if !self.Owner:IsPlayer() then return false end
 	if !self.Owner:Alive() then return false end
@@ -433,6 +514,12 @@ Purpose:  Utility
 ]]--
 
 function SWEP:GetAmmoRicochetMultiplier()
+
+	if self.Callback.GetAmmoRicochetMultiplier then
+		local val = self.Callback.GetAmmoRicochetMultiplier(self)
+		if val then return val end
+	end
+	
 	local am = string.lower(self.Primary.Ammo)
 	if ( am=="pistol" ) then
 		return 1.25
@@ -464,6 +551,12 @@ Purpose:  Utility
 ]]--
 
 function SWEP:GetMaterialConcise( mat ) 
+
+	if self.Callback.GetMaterialConcise then
+		local val = self.Callback.GetMaterialConcise(self, mat)
+		if val then return val end
+	end
+	
 	local matname
 	if (mat==MAT_GLASS) then
 		matname = "glass"
@@ -506,6 +599,12 @@ Purpose:  Utility
 ]]--
 
 function SWEP:GetPenetrationMultiplier( matt )
+
+	if self.Callback.GetPenetrationMultiplier then
+		local val = self.Callback.GetPenetrationMultiplier(self, matt)
+		if val then return val end
+	end
+	
 	local mat = self:GetMaterialConcise( matt )
 	local fac = 1
 	if mat=="metal" then 
@@ -530,7 +629,7 @@ function SWEP:GetPenetrationMultiplier( matt )
 		fac=6.5
 	end
 	
-	return fac
+	return fac * (self.Primary.PenetrationMultiplier and self.Primary.PenetrationMultiplier or 1)
 	
 end
 
@@ -543,6 +642,12 @@ Purpose:  Utility
 ]]--
 
 function SWEP:CanDustEffect( mat )
+
+	if self.Callback.CanDustEffect then
+		local val = self.Callback.CanDustEffect(self, mat)
+		if val then return val end
+	end
+	
 	local n = self:GetMaterialConcise( mat )
 	if n=="energy" or n=="dirt" or n=="ceramic" or n=="plastic" or n=="wood" then
 		return true
@@ -560,6 +665,12 @@ Purpose:  Utility
 ]]--
 
 function SWEP:CanSparkEffect( mat )
+
+	if self.Callback.CanSparkEffect then
+		local val = self.Callback.CanSparkEffect(self, mat)
+		if val then return val end
+	end
+	
 	local n = self:GetMaterialConcise( mat )
 	if n=="default" or n=="metal" then
 		return true
@@ -578,6 +689,11 @@ Purpose:  Utility
 function SWEP:CPTbl( tabl )
 	if (tabl == nil) then return end
 	if (!tabl) then return end 
+
+	if self.Callback.CPTbl then
+		local val = self.Callback.CPTbl(self, tabl)
+		if val then return val end
+	end
 	
 	local result = {}
 	

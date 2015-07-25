@@ -25,6 +25,7 @@ function EFFECT:Init( data )
 	end
 	
 	self.Position = data:GetOrigin()
+	
 	self.Forward = data:GetNormal()
 	self.Angle = self.Forward:Angle()
 	self.Right = self.Angle:Right()
@@ -38,7 +39,7 @@ function EFFECT:Init( data )
 	end
 	
 	if IsValid(wepent) then
-		if ( wepent.IsFirstPerson and !wepent:IsFirstPerson() ) or serverside then
+		if ( wepent.IsFirstPerson and !wepent:IsFirstPerson() and wepent.IsCurrentlyScoped and !wepent:IsCurrentlyScoped() ) or serverside then
 			data:SetEntity(wepent)
 			self.Position = blankvec
 		end
@@ -66,7 +67,7 @@ function EFFECT:Init( data )
 			local rpos = self.WeaponEnt:GetAttachment(self.Attachment)
 			if rpos and rpos.Pos then
 				self.Position = rpos.Pos
-				if data:GetNormal()==vector_origin then
+				if rvec(data:GetNormal())==vector_origin then
 					self.Forward = rpos.Ang:Up()
 					self.Angle = self.Forward:Angle()
 					self.Right = self.Angle:Right()
@@ -76,6 +77,7 @@ function EFFECT:Init( data )
 	end
 	
 	self.vOffset = self.Position
+	
 	dir = self.Forward
 	AddVel = AddVel * 0.05
 	

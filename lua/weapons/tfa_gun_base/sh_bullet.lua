@@ -3,41 +3,6 @@ SWEP.lastbul = nil
 SWEP.lastbulnoric = false
 
 --[[ 
-Function Name:  PlayerCarryingTFAWeapon
-Syntax: self:PlayerCarryingTFAWeapon( player ). 
-Returns:   Are they carrying a TFA weapon, who, what gun.
-Notes:   This is a local function, only usable in this module.
-Purpose:  Utility
-]]--
-
-local function PlayerCarryingTFAWeapon( ply )
-	if !ply then
-		if CLIENT then
-			if IsValid(LocalPlayer()) then
-				ply = LocalPlayer()
-			else
-				return false, nil, nil
-			end
-		else	
-			return false, nil, nil
-		end
-	end
-	
-	if not ( IsValid(ply) and ply:IsPlayer() and ply:Alive() )then return end
-
-	local wep = ply:GetActiveWeapon()
-	if IsValid(wep) then
-		local n=wep:GetClass()
-		local nfind=string.find(n,"tfa")
-		if (wep.Base and ( string.find(wep.Base,"tfa_gun_base") or string.find(wep.Base,"tfa_shotty_base") or string.find(wep.Base,"tfa_scoped_base") ) )then
-			return true, ply, wep
-		end
-		return false, ply, wep
-	end
-	return false, ply, nil
-end
-
---[[ 
 Function Name:  cpbullet
 Syntax: self:cpbullet( bullet table 1, bullet table 2 ). 
 Returns:   Nothing.
@@ -66,6 +31,7 @@ Purpose:  Bullet
 ]]--
 
 local function TFBulletCallback(a,b,c)
+	
 	local self
 	
 	local d = c:GetDamage()
@@ -75,6 +41,8 @@ local function TFBulletCallback(a,b,c)
 	end
 	
 	local cary=PlayerCarryingTFAWeapon(a)
+	
+	--print(cary)
 	
 	if !cary then 
 		return
@@ -187,6 +155,11 @@ ricbul.Callback = TFBulletCallback
 --minifunc 
 
 function SWEP:ToggleAkimbo()
+
+	if self.Callback.ToggleAkimbo then
+		local val = self.Callback.ToggleAkimbo(self)
+		if val then return val end
+	end
 	
 	if self.Akimbo then
 		self.AnimCycle = 1-self.AnimCycle
@@ -203,6 +176,12 @@ Purpose:  Bullet
 ]]--
 
 function SWEP:ShootBulletInformation()
+
+	if self.Callback.ShootBulletInformation then
+		local val = self.Callback.ShootBulletInformation(self)
+		if val then return val end
+	end
+	
 	self.lastbul = nil
 	self.lastbulnoric = false
 	
@@ -237,6 +216,11 @@ Purpose:  Bullet
 ]]--
 
 function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet, bulletoverride)
+
+	if self.Callback.ShootBullet then
+		local val = self.Callback.ShootBullet(self, damage, recoil, num_bullets, aimcone, disablericochet, bulletoverride)
+		if val then return val end
+	end
 
 	if (CLIENT and !game.SinglePlayer()) and !IsFirstTimePredicted() then return end
 	
@@ -331,6 +315,8 @@ function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet,
 		
 		if self.CustomBulletCallback then
 			mainbul.Callback = self.CustomBulletCallback
+		else
+			mainbul.Callback = TFBulletCallback
 		end
 		
 		self.Owner:FireBullets(mainbul)
@@ -350,6 +336,9 @@ Purpose:  Bullet
 ]]--
 
 function TFACheckRicochetGateway(self, bullet, tr)
+	
+	--print("ric check gateway")
+
 	if !bullet then
 		return
 	end
@@ -375,6 +364,14 @@ Purpose:  Bullet
 ]]--
 
 function SWEP:CheckRicochet(bullet, tr)
+
+	if self.Callback.CheckRicochet then
+		local val = self.Callback.CheckRicochet(self, bullet, tr)
+		if val then return val end
+	end
+	
+	--print("ric check")
+
 	if ( CLIENT and !SERVER) and !IsFirstTimePredicted() then return false end
 	
 	if !tr.Hit or tr.HitSky then return false end
@@ -469,6 +466,14 @@ Purpose:  Bullet
 ]]--
 
 function SWEP:CheckPenetration(bullet, tr2)
+
+	if self.Callback.CheckPenetration then
+		local val = self.Callback.CheckPenetration(self, bullet, tr2)
+		if val then return val end
+	end
+
+	--print("pen check")
+
 	if !IsValid(self) or !IsValid(self.Owner) then return false end
 	
 	local dir=tr2.Normal
@@ -513,7 +518,6 @@ function SWEP:CheckPenetration(bullet, tr2)
 	tr.FractionLeftSolid = solidfraction
 	local penetrationdistance = bullet.Force * 0.5
 	penetrationdistance = penetrationdistance * self:GetPenetrationMultiplier(tr2.MatType)
-	
 	
 	if tr.PenetrationDist < penetrationdistance and (tr.HitPos:Distance(tr.PenetrationPos)>0.1) then
 		cpbullet(penbul,bullet)

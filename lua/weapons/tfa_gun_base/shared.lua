@@ -80,7 +80,7 @@ SWEP.Primary.SpreadIncrement = 1/3.5 --What percentage of the modifier is added 
 SWEP.Primary.SpreadRecovery = 3 --How much the spread recovers, per second.
 
 ]]--
-
+SWEP.Primary.PenetrationMultiplier = 1
 SWEP.Primary.NumShots	= 1 --The number of shots the gun/bow fires.  
 SWEP.Primary.RPM				= 600					-- This is in Rounds Per Minute / RPM
 SWEP.Primary.RPM_Semi				= nil					-- RPM for semi-automatic or burst fire.  This is in Rounds Per Minute / RPM
@@ -116,6 +116,10 @@ SWEP.Scoped				= false  --Draw a scope overlay?
 SWEP.ScopeOverlayThreshold = 0.875 --Percentage you have to be sighted in to see the scope.
 SWEP.BoltTimerOffset = 0.25 --How long you stay sighted in after shooting, with a bolt action.
 
+--Revolver vars
+
+SWEP.Revolver = false
+
 --Shotgun Vars
 
 SWEP.Shotgun = false
@@ -134,6 +138,10 @@ SWEP.OnlyBurstFire		= false --No auto, only burst?
 SWEP.DefaultFireMode 	= "" --Default to auto or whatev
 
 --Sighting Code
+SWEP.IronSightsAng = Vector(0,0,0)
+SWEP.IronSightsPos = Vector(0,0,0)
+SWEP.RunSightsAng = Vector(0,0,0)
+SWEP.RunSightsPos = Vector(0,0,0)
 SWEP.CLNearWallProgress=0 --BASE DEPENDENT VALUE.  DO NOT CHANGE OR THINGS MAY BREAK.  NO USE TO YOU.
 SWEP.CLRunSightsProgress=0 --BASE DEPENDENT VALUE.  DO NOT CHANGE OR THINGS MAY BREAK.  NO USE TO YOU.
 SWEP.CLIronSightsProgress=0 --BASE DEPENDENT VALUE.  DO NOT CHANGE OR THINGS MAY BREAK.  NO USE TO YOU.
@@ -327,6 +335,10 @@ SWEP.RTCode = function( self )
 	
 end
 
+--Callback system so that you can add onto base functions without copying
+
+SWEP.Callback = {}
+
 --Stuff you shouldn't touch after this 
 SWEP.EventTimer = 0 --Don't change this, base dependent and does nothing for users anyways.
 SWEP.PenetrationCounter = 0 --BASE DEPENDENT VALUE.  DO NOT CHANGE OR THINGS MAY BREAK.  NO USE TO YOU.
@@ -495,6 +507,11 @@ Purpose:  Cleans up events table.
 ]]--
 
 function SWEP:ResetEvents()
+
+	if self.Callback.ResetEvents then
+		local val = self.Callback.ResetEvents(self)
+		if val then return val end
+	end
 	
 	if !self:OwnerIsValid() then return end
 	
@@ -518,6 +535,12 @@ Purpose:  Networking.
 
 
 function SWEP:SetupDataTables()
+
+	if self.Callback.SetupDataTables then
+		local val = self.Callback.SetupDataTables(self)
+		if val then return val end
+	end
+	
 	self:NetworkVar("Bool", 0, "IronSights")
 	self:NetworkVar("Bool", 1, "IronSightsRaw")
 	self:NetworkVar("Bool", 2, "Holstering")
@@ -557,7 +580,7 @@ function SWEP:SetupDataTables()
 	self:NetworkVar("Float",16, "SpreadRatio")
 	self:NetworkVar("Float",17, "InspectingRatio")
 	self:NetworkVar("Int",0, "FireMode")
-	self:NetworkVar("Int",1, "BurstCount")
+	self:NetworkVar("Int",1, "BurstCount")	
 end
 
 --[[ 
@@ -569,6 +592,11 @@ Purpose:  Standard SWEP Function
 ]]--
 
 function SWEP:InitDrawCode( instr )
+
+	if self.Callback.InitDrawCode then
+		local val = self.Callback.InitDrawCode(self, instr)
+		if val then return val end
+	end
 
 	if CLIENT then
 		local t=string.Explode(",",instr,false)
@@ -642,6 +670,12 @@ Purpose:  Standard SWEP Function
 
 function SWEP:InitHolsterCode( instr )
 
+	if self.Callback.InitHolsterCode then
+		local val = self.Callback.InitHolsterCode(self, instr)
+		if val then return val end
+	end
+
+
 	self.LastDrawAnimTime=-1
 
 	if CLIENT then
@@ -690,6 +724,12 @@ Purpose:  Standard SWEP Function
 ]]--
 
 function SWEP:Precache()
+
+	if self.Callback.Precache then
+		local val = self.Callback.Precache(self)
+		if val then return val end
+	end
+	
 	if self.Primary.Sound then
 		util.PrecacheSound(self.Primary.Sound)
 	end
@@ -706,6 +746,11 @@ Purpose:  Standard SWEP Function
 ]]--
 
 function SWEP:Initialize()
+
+	if self.Callback.Initialize then
+		local val = self.Callback.Initialize(self)
+		if val then return val end
+	end
 	
 	self:SetWeaponHoldType(self.HoldType)
 	
@@ -798,6 +843,11 @@ Purpose:  Standard SWEP Function
 ]]--
 
 function SWEP:Deploy()
+
+	if self.Callback.Deploy then
+		local val = self.Callback.Deploy(self)
+		if val then return val end
+	end
 	
 	if (!self.Primary.Damage) or (self.Primary.Damage<=0.01) then
 		self:AutoDetectDamage()
@@ -931,6 +981,56 @@ function SWEP:Deploy()
 end
 
 --[[ 
+Function Name:  OnRemove
+Syntax: self:OnRemove()
+Notes:  Resets bone mods and cleans up.
+Returns:  Nil.
+Purpose:  Standard SWEP Function
+]]--
+
+function SWEP:OnRemove()
+
+	if self.Callback.OnRemove then
+		local val = self.Callback.OnRemove(self)
+		if val then return val end
+	end
+
+	if self.ResetBonePositions then
+		self:ResetBonePositions()
+	else
+		self:CallOnClient("ResetBonePositions","")
+	end
+
+end
+
+--[[ 
+Function Name:  OnDrop
+Syntax: self:OnDrop()
+Notes:  Resets bone mods and cleans up.
+Returns:  Nil.
+Purpose:  Standard SWEP Function
+]]--
+
+function SWEP:OnDrop()
+
+	if self.Callback.OnDrop then
+		local val = self.Callback.OnDrop(self)
+		if val then return val end
+	end
+	
+	if self.Callback.OnDrop then
+		self.Callback.OnDrop(self)
+	end
+
+	if self.ResetBonePositions then
+		self:ResetBonePositions()
+	else
+		self:CallOnClient("ResetBonePositions","")
+	end
+
+end
+
+--[[ 
 Function Name:  Holster
 Syntax: self:Holster( weapon entity to switch to )
 Notes:  This is kind of broken.  I had to manually select the new weapon using ply:ConCommand.  Returning true is simply not enough.  This is also essential to clearing out old networked vars and resetting them.
@@ -941,6 +1041,11 @@ Purpose:  Standard SWEP Function
 
 function SWEP:Holster( switchtowep )
 
+	if self.Callback.Holster then
+		local val = self.Callback.Holster(self, switchtowep)
+		if val then return val end
+	end
+	
 	if !self:OwnerIsValid() then return end
 	
 	self:SetShotgunCancel( true )
@@ -986,6 +1091,9 @@ function SWEP:Holster( switchtowep )
 			if self:GetHolsteringEnd()-CurTime()<0.05 and self:GetHolstering() then
 				self:SetCanHolster(true)
 				self:Holster(self:GetNWEntity("SwitchToWep",switchtowep))
+				if self.ResetBonePositions then
+					self:ResetBonePositions()
+				end
 				return true
 			end
 		end
@@ -999,6 +1107,9 @@ function SWEP:Holster( switchtowep )
 		local wep=self:GetNWEntity("SwitchToWep",switchtowep)
 		if IsValid( wep ) and IsValid(self.Owner) and self.Owner:HasWeapon( wep:GetClass() ) then
 			if CLIENT or game.SinglePlayer() then
+				if self.ResetBonePositions then
+					self:ResetBonePositions()
+				end
 				self.Owner:ConCommand("use " .. wep:GetClass())
 			end
 		end
@@ -1014,6 +1125,12 @@ Purpose:  Standard SWEP Function
 ]]--
 
 function SWEP:AdjustMouseSensitivity()
+
+	if self.Callback.AdjustMouseSensitivity then
+		local val = self.Callback.AdjustMouseSensitivity(self)
+		if val then return val end
+	end
+	
 	local sensval=1
 	if self:GetIronSights() then
 		sensval = sensval * GetConVarNumber("cl_tfa_scope_sensitivity",100)/100
@@ -1038,6 +1155,12 @@ Purpose:  Standard SWEP Function
 ]]--
 
 function SWEP:TranslateFOV( fov )
+
+	if self.Callback.TranslateFOV then
+		local val = self.Callback.TranslateFOV(self, fov)
+		if val then return val end
+	end
+	
 	local nfov=Lerp(self.CLIronSightsProgress,fov,self.Secondary.IronFOV)
 	return Lerp(self.CLRunSightsProgress,nfov,nfov+self.SprintFOVOffset)
 end
@@ -1051,6 +1174,11 @@ Purpose:  Standard SWEP Function
 ]]--
 
 function SWEP:Think()
+
+	if self.Callback.Think then
+		local val = self.Callback.Think(self)
+		if val then return val end
+	end
 	
 end
 
@@ -1065,6 +1193,12 @@ Purpose:  Standard SWEP Function
 
 function SWEP:Think2()
 	if !self:OwnerIsValid() then return end
+
+	if self.Callback.Think2 then
+		local val = self.Callback.Think2(self)
+		if val then return val end
+	end
+	
 	self:ProcessEvents()
 	self:ProcessFireMode()
 	self:ProcessTimers()
@@ -1086,6 +1220,12 @@ Purpose:  Feature
 
 
 function SWEP:PreDrawOpaqueRenderables()
+
+	if self.Callback.PreDrawOpaqueRenderables then
+		local val = self.Callback.PreDrawOpaqueRenderables(self)
+		if val then return val end
+	end
+	
 	if CLIENT and !game.SinglePlayer() then
 		local hand, offset, rotate
 
@@ -1120,6 +1260,12 @@ Purpose:  Feature
 ]]--
 
 function SWEP:ProcessFireMode()
+
+	if self.Callback.ProcessFireMode then
+		local val = self.Callback.ProcessFireMode(self)
+		if val then return val end
+	end
+	
 	if self.Owner:KeyPressed(IN_RELOAD) and self.Owner:KeyDown(IN_USE) and !(CLIENT and !IsFirstTimePredicted() ) then
 		if  self.SelectiveFire then
 			local fm = self:GetFireMode()
@@ -1173,6 +1319,11 @@ Purpose:  Main SWEP function
 ]]--
 
 function SWEP:PrimaryAttack()
+
+	if self.Callback.PrimaryAttack then
+		local val = self.Callback.PrimaryAttack(self)
+		if val then return val end
+	end
 	
 	if ( self:GetHolstering() ) then
 		if (self.ShootWhileHolster==false) then
@@ -1307,6 +1458,12 @@ Purpose:  Main SWEP function
 ]]--
 
 function SWEP:UserInput()
+
+	if self.Callback.UserInput then
+		local val = self.Callback.UserInput(self)
+		if val then return val end
+	end
+	
 	self.OldIronsights=(self:GetIronSights())
 	local is=false
 	if IsValid(self.Owner) then
@@ -1349,6 +1506,11 @@ Purpose:  Main SWEP function
 ]]--
 
 function SWEP:PlayerThink( ply )
+
+	if self.Callback.PlayerThink then
+		local val = self.Callback.PlayerThink(self, ply)
+		if val then return val end
+	end
 	
 	self:Think2()
 	
@@ -1421,6 +1583,11 @@ Purpose:  Main SWEP function
 ]]--
 
 function SWEP:PlayerThinkServer( ply )
+
+	if self.Callback.PlayerThinkServer then
+		local val = self.Callback.PlayerThinkServer(self, ply)
+		if val then return val end
+	end
 	
 end
 
@@ -1433,6 +1600,11 @@ Purpose:  Main SWEP function
 ]]--
 
 function SWEP:PlayerThinkClient( ply )
+
+	if self.Callback.PlayerThinkClient then
+		local val = self.Callback.PlayerThinkClient(self, ply)
+		if val then return val end
+	end
 	
 end
 
@@ -1447,6 +1619,12 @@ Purpose:  Main SWEP function
 function SWEP:ProcessEvents()
 	
 	if !self:OwnerIsValid() then return end
+
+	if self.Callback.ProcessEvents then
+		local val = self.Callback.ProcessEvents(self)
+		if val then return val end
+	end
+	
 	if game.SinglePlayer() and !CLIENT then self:CallOnClient("ProcessEvents","") end
 	
 	local vm = self.Owner:GetViewModel()
@@ -1516,6 +1694,11 @@ Purpose:  Main SWEP function
 
 function SWEP:PlayerThinkClientFrame( ply )
 	if ply != self:GetOwner() then return end
+
+	if self.Callback.PlayerThinkClientFrame then
+		local val = self.Callback.PlayerThinkClientFrame(self, ply)
+		if val then return val end
+	end
 	
 	if !(CLIENT or game.SinglePlayer()) then
 		return
@@ -1598,6 +1781,12 @@ Purpose:  Main SWEP function
 ]]--
 
 function SWEP:SecondaryAttack()
+
+	if self.Callback.SecondaryAttack then
+		local val = self.Callback.SecondaryAttack(self)
+		if val then return val end
+	end
+	
 	return false
 end
 
@@ -1610,6 +1799,12 @@ Purpose:  Main SWEP function
 ]]--
 
 function SWEP:AltAttack()
+
+	if self.Callback.AltAttack then
+		local val = self.Callback.AltAttack(self)
+		if val then return val end
+	end
+	
 	return false
 end
 
@@ -1622,6 +1817,11 @@ Purpose:  Main SWEP function
 ]]--
 
 function SWEP:Reload()
+
+	if self.Callback.Reload then
+		local val = self.Callback.Reload(self)
+		if val then return val end
+	end
 		
 	self:SetBurstCount(0)
 	self:SetBursting(false)
@@ -1743,6 +1943,11 @@ Purpose:  Main SWEP function
 ]]--
 
 function SWEP:GetViewModelPosition(pos, ang)
+
+	if self.Callback.GetViewModelPosition then
+		local val,val2 = self.Callback.GetViewModelPosition(self, pos, ang)
+		if val then return val,val2 end
+	end
 
 	local isp=math.Clamp(self.CLIronSightsProgress,0,1)--self:GetIronSightsRatio()
 	local rsp=math.Clamp(self.CLRunSightsProgress,0,1)--self:GetRunSightsRatio()
@@ -1902,6 +2107,12 @@ Purpose:  Main SWEP function
 ]]--
 
 function SWEP:CalculateConeRecoil()
+
+	if self.Callback.CalculateConeRecoil then
+		local val,val2 = self.Callback.CalculateConeRecoil(self)
+		if val then return val,val2 end
+	end
+	
 	if !IsValid(self) then return 0, 0 end
 	if !IsValid(self.Owner) then return 0, 0 end
 	local CurrentRecoil
@@ -1968,6 +2179,12 @@ Purpose:  Main SWEP function
 function SWEP:ClientCalculateConeRecoil()
 	if !IsValid(self) then return 0, 0 end
 	if !IsValid(self.Owner) then return 0, 0 end
+
+	if self.Callback.ClientCalculateConeRecoil then
+		local val,val2 = self.Callback.ClientCalculateConeRecoil(self)
+		if val then return val,val2 end
+	end
+	
 	local CurrentRecoil
 	local CurrentCone
 	local basedamage
@@ -2032,6 +2249,11 @@ Purpose:  Feature
 function SWEP:CalculateNearWallSH()
 
 	if !IsValid(self.Owner) then return end
+
+	if self.Callback.CalculateNearWallSH then
+		local val = self.Callback.CalculateNearWallSH(self)
+		if val then return val end
+	end
 	
 	local vnearwall
 	
@@ -2072,6 +2294,11 @@ function SWEP:CalculateNearWallCLF()
 
 	if !( CLIENT or game.SinglePlayer() ) then return end
 	if !IsValid(self.Owner) then return end
+
+	if self.Callback.CalculateNearWallCLF then
+		local val = self.Callback.CalculateNearWallCLF(self)
+		if val then return val end
+	end
 	
 	local vnearwall
 	
@@ -2107,6 +2334,12 @@ Purpose:  Feature.
 ]]--
 
 function SWEP:IronsSprint()
+
+	if self.Callback.IronsSprint then
+		local val = self.Callback.IronsSprint(self)
+		if val then return val end
+	end
+	
 	local is,oldis,spr, rld, dr, hl, nw, isbolttimer, insp
 	spr=self:GetSprinting()
 	is=self:GetIronSights()
@@ -2225,6 +2458,12 @@ Purpose:  Feature.
 
 
 function SWEP:ProcessHoldType()
+
+	if self.Callback.ProcessHoldType then
+		local val = self.Callback.ProcessHoldType(self)
+		if val then return val end
+	end
+	
 	local dholdt, sprintholdtype
 	dholdt = self.DefaultHoldType and self.DefaultHoldType or self.HoldType
 	
@@ -2278,6 +2517,12 @@ function SWEP:ProcessHoldType()
 end
 
 function SWEP:CompleteReload()
+
+	if self.Callback.CompleteReload then
+		local val = self.Callback.CompleteReload(self)
+		if val then return val end
+	end
+	
 	if !self.Shotgun then
 		local hudhangtime = 1
 		
@@ -2311,6 +2556,12 @@ Notes:  This is essential.
 Purpose:  Don't remove this, seriously.
 ]]--
 function SWEP:ProcessTimers()
+
+	if self.Callback.ProcessTimers then
+		local val = self.Callback.ProcessTimers(self)
+		if val then return val end
+	end
+	
 	local isreloading,isshooting,isdrawing,isholstering, issighting, issprinting, htv, hudhangtime, isbolttimer, isinspecting
 	
 	isreloading=self:GetReloading()
@@ -2533,6 +2784,12 @@ end
 --Below function is obsolete
 
 function SWEP:UpdateAttachmentCache()
+
+	if self.Callback.UpdateAttachmentCache then
+		local val = self.Callback.UpdateAttachmentCache(self)
+		if val then return val end
+	end
+	
 	local vm = self.Owner:GetViewModel()
 	if IsValid(vm) then
 		local i=1
@@ -2548,6 +2805,12 @@ function SWEP:UpdateAttachmentCache()
 end
 
 function SWEP:ToggleInspect()
+
+	if self.Callback.ToggleInspect then
+		local val = self.Callback.ToggleInspect(self)
+		if val then return val end
+	end
+	
 	local oldinsp = self:GetInspecting()
 	self:SetInspecting(!oldinsp)
 	if CLIENT then
@@ -2559,6 +2822,12 @@ function SWEP:ToggleInspect()
 end
 
 function SWEP:ShotgunInterrupt()
+
+	if self.Callback.ShotgunInterrupt then
+		local val = self.Callback.ShotgunInterrupt(self)
+		if val then return val end
+	end
+	
 	if (self:GetReloading() and self.Shotgun and !self:GetShotgunPumping() and !self:GetShotgunNeedsPump()) then
 		if CLIENT then
 			net.Start("tfaShotgunInterrupt")

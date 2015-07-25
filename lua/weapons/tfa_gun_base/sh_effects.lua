@@ -114,8 +114,8 @@ function SWEP:ShootEffects( ovrarg )
 			if fp then
 				local temppos = self.Owner:GetShootPos()
 				local tempang = self.Owner:EyeAngles()
-				temppos:Add(tempang:Forward()*9)
-				temppos:Add(tempang:Up()*-3)
+				temppos:Add( tempang:Forward()*9 )
+				temppos:Add( tempang:Up()*(-3) )
 				self:MakeMuzzleFlash(temppos,tempang:Forward(),tent,attid,true,true)
 			else
 				self:MakeMuzzleSmoke(tent,attid)

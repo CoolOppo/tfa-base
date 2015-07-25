@@ -769,7 +769,7 @@ end
 
 --Local function for detecting TFA Base weapons.
 
-local function PlayerCarryingTFAWeapon( ply )
+function PlayerCarryingTFAWeapon( ply )
 	if !ply then
 		if CLIENT then
 			if IsValid(LocalPlayer()) then
@@ -777,18 +777,18 @@ local function PlayerCarryingTFAWeapon( ply )
 			else
 				return false, nil, nil
 			end
-		else	
+		elseif game.SinglePlayer() then
+			ply = Entity(1)
+		else
 			return false, nil, nil
 		end
 	end
 	
-	if not ( IsValid(ply) and ply:IsPlayer() and ply:Alive() )then return end
+	if not ( IsValid(ply) and ply:IsPlayer() and ply:Alive() ) then return end
 
 	local wep = ply:GetActiveWeapon()
 	if IsValid(wep) then
-		local n=wep:GetClass()
-		local nfind=string.find(n,"tfa")
-		if (wep.Base and ( string.find(wep.Base,"tfa_gun_base") or string.find(wep.Base,"tfa_shotty_base") or string.find(wep.Base,"tfa_scoped_base") ) )then
+		if (wep.IsTFAWeapon)then
 			return true, ply, wep
 		end
 		return false, ply, wep
@@ -1221,7 +1221,17 @@ function TFAPlayerBindPress(ply, b, p)
 	if p and IsValid(ply) then
 		local wep = ply:GetActiveWeapon()
 
-		if IsValid(wep) then
+		if IsValid(wep) then	
+			if wep.AltAttack then
+				if b == "+zoom" then
+					wep:AltAttack()
+					if CLIENT then
+						net.Start("tfaAltAttack")
+						net.SendToServer()
+					end
+					return true
+				end
+			end	
 			if wep.ToggleInspect then
 				if b == "+menu_context"  then
 					wep:ToggleInspect()
@@ -1231,16 +1241,6 @@ function TFAPlayerBindPress(ply, b, p)
 			if wep.ShotgunInterrupt then
 				if b == "+attack" and (wep:GetReloading() and wep.Shotgun and !wep:GetShotgunPumping() and !wep:GetShotgunNeedsPump()) then
 					wep:ShotgunInterrupt()
-					return true
-				end
-			end		
-			if wep.AltAttack then
-				if b == "+zoom" then
-					wep:AltAttack()
-					if CLIENT then
-						net.Start("tfaAltAttack")
-						net.SendToServer()
-					end
 					return true
 				end
 			end		
@@ -1288,9 +1288,19 @@ end
 --More Muzzle Stuff
 
 TFAFlareParts = {}
+TFAVMAttachments = {}
 
 if CLIENT or game.SinglePlayer() then
 	hook.Add("PreDrawEffects", "TFAMuzzleUpdate", function()
+		if IsValid(LocalPlayer()) and IsValid(LocalPlayer():GetActiveWeapon()) and IsValid(LocalPlayer():GetViewModel()) then
+			local wep = LocalPlayer():GetActiveWeapon()
+			local vm = LocalPlayer():GetViewModel()
+			local i = 1
+			while i<=#vm:GetAttachments() do
+				TFAVMAttachments[i] = vm:GetAttachment(i)
+				i=i+1
+			end
+		end
 		for k,v in pairs(TFAFlareParts) do
 			if v and v.ThinkFunc then
 				v:ThinkFunc()
@@ -1299,14 +1309,20 @@ if CLIENT or game.SinglePlayer() then
 	end)
 end
 
-
 function TFARegPartThink( particle, partfunc )
 	if !particle or !partfunc then return end
 	particle.ThinkFunc = partfunc
 	if IsValid(particle.FollowEnt) and particle.Att then
 		local angpos = particle.FollowEnt:GetAttachment(particle.Att)
-		particle.OffPos = WorldToLocal(particle:GetPos(),particle:GetAngles(),angpos.Pos,angpos.Ang)
+		if angpos and angpos.Pos then
+			particle.OffPos = WorldToLocal(particle:GetPos(),particle:GetAngles(),angpos.Pos,angpos.Ang)
+		end
 	end
+	--[[
+	if particle and particle.ThinkFunc then
+		particle:ThinkFunc(true)
+	end
+	]]--
 	table.insert(TFAFlareParts,#TFAFlareParts+1,particle)
 	timer.Simple( particle:GetDieTime(), function()
 		if particle then
@@ -1316,21 +1332,55 @@ function TFARegPartThink( particle, partfunc )
 
 end
 
-function TFAMuzzlePartFunc(self)
+function TFAMuzzlePartFunc(self,first)
+	if self.isfirst==nil then
+		self.isfirst = false
+		first = true
+	end
+	local vm = LocalPlayer():GetViewModel()
+	local wep = LocalPlayer():GetActiveWeapon()
+	if IsValid(wep) and wep.IsCurrentlyScoped and wep:IsCurrentlyScoped() then return end
 	if IsValid(self.FollowEnt) then
+		local owent = self.FollowEnt.Owner or self.FollowEnt
+		
+		local firvel
+		
+		if first then
+			firvel = owent:GetVelocity() * FrameTime() * 1.1
+		else
+			firvel = vector_origin
+		end
+		
 		if self.Att and self.OffPos then
-			local angpos = self.FollowEnt:GetAttachment(self.Att)
-			if angpos and angpos.Pos then
-				local tmppos = LocalToWorld(self.OffPos,self:GetAngles(),angpos.Pos,angpos.Ang)
-				self:SetPos(tmppos+self:GetVelocity()*FrameTime())
-				self.OffPos = WorldToLocal(self:GetPos(),self:GetAngles(),angpos.Pos,angpos.Ang)
-				--[[
-				self.PrevAngPos = self.PrevAngPos and self.PrevAngPos or angpos.Pos
-				dif = angpos.Pos-self.PrevAngPos
-				self:SetPos(self:GetPos()+dif*1)
-				self.PrevAngPos = angpos.Pos
-				]]--
-			end
+			if self.FollowEnt == vm then
+				local angpos = TFAVMAttachments[self.Att]
+				if angpos and angpos.Pos then
+					local tmppos = LocalToWorld(self.OffPos,self:GetAngles(),angpos.Pos,angpos.Ang)
+					local npos = tmppos+self:GetVelocity()*FrameTime()
+					self.OffPos = WorldToLocal(npos + firvel * 0.5,self:GetAngles(),angpos.Pos,angpos.Ang)
+					self:SetPos( npos + firvel)
+					--[[
+					self.PrevAngPos = self.PrevAngPos and self.PrevAngPos or angpos.Pos
+					dif = angpos.Pos-self.PrevAngPos
+					self:SetPos(self:GetPos()+dif*1)
+					self.PrevAngPos = angpos.Pos
+					]]--
+				end
+			else
+				local angpos =self.FollowEnt:GetAttachment(self.Att)
+				if angpos and angpos.Pos then
+					local tmppos = LocalToWorld(self.OffPos,self:GetAngles(),angpos.Pos,angpos.Ang)
+					local npos = tmppos+self:GetVelocity()*FrameTime()
+					self.OffPos = WorldToLocal(npos + firvel * 0.5,self:GetAngles(),angpos.Pos,angpos.Ang)
+					self:SetPos( npos + firvel)
+					--[[
+					self.PrevAngPos = self.PrevAngPos and self.PrevAngPos or angpos.Pos
+					dif = angpos.Pos-self.PrevAngPos
+					self:SetPos(self:GetPos()+dif*1)
+					self.PrevAngPos = angpos.Pos
+					]]--
+				end
+			end			
 		end
 	end
 end

@@ -15,6 +15,12 @@ Purpose:  HUD
 function SWEP:DrawHUD()
 	
     cam.Start3D(); cam.End3D() --Workaround for vec:ToScreen()
+
+	if self.Callback.DrawHUD then
+		local val = self.Callback.DrawHUD(self)
+		if val then return val end
+	end
+	
 	--Crosshair
 	local drawcrossy
 	

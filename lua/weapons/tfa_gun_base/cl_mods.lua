@@ -442,6 +442,26 @@ Purpose:  SWEP Construction Kit Compatibility / Basic Attachments.
 ]]--
  
 function SWEP:ResetBonePositions(vm)
+	
+	if SERVER then
+		self:CallOnClient("ResetBonePositions","")
+	end
+	
+	if !vm or vm=="" then	
+		local pl
+		if LocalPlayer then
+			pl = LocalPlayer()
+		else
+			pl = Entity(1)
+		end
+		
+		local pl = self.Owner and self.Owner or pl
+		
+		if !IsValid(pl) or !pl.GetViewModel then return end
+		
+		vm = pl:GetViewModel()
+	end
+	if !IsValid(vm) then return end
 	if (!vm:GetBoneCount()) then return end
 	for i=0, vm:GetBoneCount() do
 		vm:ManipulateBoneScale( i, Vector(1, 1, 1) )
