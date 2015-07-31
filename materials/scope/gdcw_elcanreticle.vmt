@@ -1,15 +1,15 @@
 "Unlittwotexture"
 	{
 	// Original shader: VertexLitTexture
-	"$basetexture" 	"scope\gdcw_elcanreticle"
-	"$selfillum" 	1
-	"$texture2"	"scope\gdcw_noise"	
-	"$additive" 	1
+	$basetexture  	"scope\gdcw_elcanreticle"
+	$selfillum  	1
+	$texture2 	"scope\gdcw_noise"	
+	$additive  	1
 	"Proxies"
 	{
 	"TextureScroll"
 	{
-	"texturescrollvar" "$texture2transform"
+	"texturescrollvar" $texture2transform 
 	"texturescrollrate" 10
 	"texturescrollangle" -55
 	}

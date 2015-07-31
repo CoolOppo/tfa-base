@@ -1311,6 +1311,31 @@ function SWEP:ProcessFireMode()
 end
 
 --[[ 
+Function Name:  CanPrimaryAttack
+Syntax: self:CanPrimaryAttack()
+Returns:  True/false can we shoot
+Notes: Set clip to -1 to use reserve.
+Purpose:  Main SWEP function
+]]--
+
+function SWEP:CanPrimaryAttack()
+
+	if ( self.Weapon:Clip1() <= 0 and self.Primary.ClipSize!=-1 ) then
+
+		self:EmitSound( "Weapon_Pistol.Empty" )
+		self:SetNextPrimaryFire(CurTime()+1/(self:GetRPM()/60))
+		self:Reload()
+		return false
+
+	elseif (self.Primary.ClipSize==-1 and self.Weapon:Ammo1()<=0) then
+		return false
+	end
+
+	return true
+
+end
+
+--[[ 
 Function Name:  PrimaryAttack
 Syntax: self:PrimaryAttack().  However, to shoot a bullet, ShootBulletInformation or ShootBullet should be called.  This is really only for when the player or the burst fire mechanism willingly fires.
 Returns:  Nothing.
@@ -1324,6 +1349,8 @@ function SWEP:PrimaryAttack()
 		local val = self.Callback.PrimaryAttack(self)
 		if val then return val end
 	end
+	
+	if !self:OwnerIsValid() then return end
 	
 	if ( self:GetHolstering() ) then
 		if (self.ShootWhileHolster==false) then
@@ -1384,7 +1411,7 @@ function SWEP:PrimaryAttack()
 	
 	if !self:CanPrimaryAttack() then return end
 	
-	if self:CanPrimaryAttack() and self.Owner:IsPlayer() then
+	--if self.Owner:IsPlayer() then
 		if  self:GetRunSightsRatio()<0.1 then--and self:GetReloading()==false then
 			self:ResetEvents()
 			self:SetInspecting(false)
@@ -1446,7 +1473,7 @@ function SWEP:PrimaryAttack()
 			
 			self:DoAmmoCheck()
 		end
-	end
+	--end
 end
 
 --[[ 
@@ -1822,7 +1849,7 @@ function SWEP:Reload()
 		local val = self.Callback.Reload(self)
 		if val then return val end
 	end
-		
+	
 	self:SetBurstCount(0)
 	self:SetBursting(false)
 	self:SetNextBurst(CurTime()-1)
@@ -1882,7 +1909,9 @@ function SWEP:Reload()
 	if (CurTime()<self:GetReloadingEnd()) then
 		self:SetReloadingEnd(CurTime()-1)
 	end
- 
+	
+	if self.Primary.ClipSize==-1 then return end
+	
 	if ( self:Clip1() < (self.Primary.ClipSize + ( (not self.DisableChambering and not self.BoltAction and not self.Shotgun and not (self.Revolver) and not ( (self.DefaultHoldType and self.DefaultHoldType or self.HoldType) == "revolver" ) ) and 1 or 0 )  ) and self.Owner:GetAmmoCount( self.Primary.Ammo ) > 0 ) then
 	
 		self:SetReloading(true)

@@ -23,7 +23,9 @@ SWEP.Weight				= 50			-- rank relative ot other weapons. bigger is better
 SWEP.AutoSwitchTo			= true		-- Auto switch to if we pick it up
 SWEP.AutoSwitchFrom			= true		-- Auto switch from if you pick up a better weapon
 SWEP.Secondary.IronFOV			= 90					-- How much you 'zoom' in. Less is more!  Don't have this be <= 0 
-SWEP.WeaponLength	=	5
+SWEP.WeaponLength	=	16--16 = 1 foot
+SWEP.MoveSpeed = 0.9--Multiply the player's movespeed by this.
+SWEP.IronSightsMoveSpeed = 0.8 --Multiply the player's movespeed by this when sighting.
 --[[TTT CRAP]]--
 
 SWEP.Kind = WEAPON_EQUIP
@@ -203,11 +205,13 @@ SWEP.sounds = 0
 
 --[[Stop editing here for normal users of my base.  Code starts here.]]--
 
+--[[
 function SWEP:Precache()
 	util.PrecacheSound(self.Primary.Sound)
 	util.PrecacheModel(self.ViewModel)
 	util.PrecacheModel(self.WorldModel)
 end
+]]--
 
 SWEP.Callback = {}
 
@@ -261,18 +265,18 @@ function SWEP:HitThing(ent, posv, normalv, damage, tr)
 			bullet.Dir 	= normalv -- Dir of bullet
 			
 			bullet.Spread 	= vector_origin	 -- Aim Cone
-			bullet.Tracer	= 1000 -- Show a tracer on every x bullets 
-			bullet.Force	= damage/64 -- Amount of force to give to phys objects
+			bullet.Tracer	= 0 -- Show a tracer on every x bullets 
+			bullet.Force	= damage/16 -- Amount of force to give to phys objects
 			bullet.Damage	= damage
 			bullet.Distance = self.HitRange
-			
+			bullet.HullSize = self.WeaponLength/self.SlashPrecision
 			bullet.AmmoType = self.AmmoType
 			
 			bullet.Callback = function(a,b,c)
-				c:SetDamageType(self.DamageType)
 				local self = a:GetActiveWeapon()
 				if !IsValid(self) then return end
 				if !self.sounds then return end
+				c:SetDamageType(self.DamageType)
 				if (self.sounds<self.SlashSounds) then
 					local hitmat=b.MatType
 					if (hitmat==MAT_METAL or hitmat==MAT_GRATE or hitmat==MAT_VENT or hitmat==MAT_COMPUTER) then
@@ -325,9 +329,9 @@ function SWEP:PrimaryAttack()
 	
 	if self:IsSafety() then return end
 	
-	if self:GetIronSightsRatio()>0.25 then return end
+	if self:GetIronSightsRatio()>0.7 then return end
 	
-	if self:GetRunSightsRatio()>0.25 then return end
+	if self:GetRunSightsRatio()>0.7 then return end
 	
 	if (self:GetChangingSilence()) then return end
 	
@@ -381,13 +385,21 @@ function SWEP:PrimaryAttack()
 	end
 end
 
-function SWEP:Think()
-	if !self:OwnerIsValid() then return end
+SWEP.Callback.IronsSprint = function(self)
 	
-	if self:GetShooting() then
-		self:SetNextIdleAnim(-1)
+	local ply;
+	ply = self.Owner
+	
+	local ts,seq,ct,ft,len,strikepercent,swingprogress,sws,swe;
+	seq = self.Sequences[self:GetNWInt("Slash",1)]
+	swe=ply:GetNWFloat("TFM_SwingStart",CurTime())+seq.endt
+	if CurTime()<swe then
 		self:SetIronSights(false)
 	end
+end
+
+SWEP.Callback.Think2 = function(self)
+	if !self:OwnerIsValid() then return end
 	
 	local ply;
 	ply = self.Owner
@@ -402,7 +414,13 @@ function SWEP:Think()
 		sws=ply:GetNWFloat("TFM_SwingStart",CurTime())+seq.startt
 		swe=ply:GetNWFloat("TFM_SwingStart",CurTime())+seq.endt
 		swingprogress=(CurTime()-sws)/len
+		
+		if CurTime()<swe then
+			self:SetIronSights(false)
+		end
+		
 		if (CurTime()>sws) and CurTime()<swe then
+			--self:SetNextIdleAnim(-1)
 			if ft>len/self.SlashPrecision then
 				if (strikepercent>0) then
 					local aimoff,cutangle,fac2,jitfac;

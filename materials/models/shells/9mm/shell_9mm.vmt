@@ -1,4 +1,4 @@
 "VertexLitGeneric"
 {
-"$basetexture" "models\shellz\9mm"
+$basetexture  "models\shellz\9mm"
 }

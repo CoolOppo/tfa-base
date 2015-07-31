@@ -48,8 +48,8 @@ hook.Add("EntityTakeDamage","TFM_Block",function(ent, dmginfo)
 	if ent:IsPlayer() then
 		local wep;
 		wep=ent:GetActiveWeapon()
-		if (dmginfo:IsDamageType(DMG_SLASH) or dmginfo:IsDamageType(DMG_CLUB) or (wep.NinjaMode and wep.NinjaMode==true and (dmginfo:IsDamageType(DMG_CRUSH) or dmginfo:IsDamageType(DMG_BULLET)))) then
-			if ( wep.Base and string.find(wep.Base,"tfa") and string.find(wep.Base,"melee") ) then
+		if ( wep.IsTFAWeapon and wep.BlockAngle ) then
+			if (dmginfo:IsDamageType(DMG_SLASH) or dmginfo:IsDamageType(DMG_CLUB) or (wep.NinjaMode and wep.NinjaMode==true and (dmginfo:IsDamageType(DMG_CRUSH) or dmginfo:IsDamageType(DMG_BULLET)))) then
 				if ( wep:GetIronSights() ) then
 					local damageinflictor,blockthreshold;
 					damageinflictor=dmginfo:GetInflictor()

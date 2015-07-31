@@ -240,6 +240,7 @@ function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet,
 				ang:RotateAroundAxis(ang:Up(),-aimcone/2 + math.Rand(0,aimcone))
 				dir = ang:Forward()
 				ent:SetPos(self.Owner:GetShootPos())
+				ent.Owner = self.Owner
 				ent:SetAngles(self.Owner:EyeAngles())
 				if self.ProjectileModel then
 					ent:SetModel(self.ProjectileModel)
@@ -257,6 +258,7 @@ function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet,
 				end
 				
 				ent.Owner = self.Owner
+				constraint.NoCollide(ent,self.Owner,0,0)
 				
 				table.insert(shots,#shots+1,ent)
 				

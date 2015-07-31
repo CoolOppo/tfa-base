@@ -142,19 +142,28 @@ function SWEP:DrawHUD()
 		xx = postoscreen.x
 		yy = postoscreen.y
 		if self:GetInspectingRatio()<0.01 then
-			local str =  string.upper( "MAG: "..self:Clip1() )
-			if (self:Clip1() > self.Primary.ClipSize) then
-				str =  string.upper( "MAG: "..self.Primary.ClipSize.." + "..( self:Clip1()-self.Primary.ClipSize ) )
+			local str
+			if self.Primary.ClipSize and self.Primary.ClipSize != -1 then
+				str =  string.upper( "MAG: "..self:Clip1() )
+				if (self:Clip1() > self.Primary.ClipSize) then
+					str =  string.upper( "MAG: "..self.Primary.ClipSize.." + "..( self:Clip1()-self.Primary.ClipSize ) )
+				end
+				draw.DrawText( str, "TFASleek", xx+1, yy+1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT )
+				draw.DrawText( str, "TFASleek", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT )
+				str =  string.upper( "RESERVE: "..self:GetAmmoReserve() )
+				yy = yy + TFASleekFontHeight
+				xx = xx - TFASleekFontHeight / 3
+				draw.DrawText( str, "TFASleekMedium", xx+1, yy+1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT )
+				draw.DrawText( str, "TFASleekMedium", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT )
+				yy = yy + TFASleekFontHeightMedium
+				xx = xx - TFASleekFontHeightMedium / 3
+			else
+				str =  string.upper( "AMMO: "..self:Ammo1() )
+				draw.DrawText( str, "TFASleek", xx+1, yy+1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT )
+				draw.DrawText( str, "TFASleek", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT )	
+				yy = yy + TFASleekFontHeightMedium
+				xx = xx - TFASleekFontHeightMedium / 3		
 			end
-			draw.DrawText( str, "TFASleek", xx+1, yy+1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT )
-			draw.DrawText( str, "TFASleek", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT )
-			str =  string.upper( "RESERVE: "..self:GetAmmoReserve() )
-			yy = yy + TFASleekFontHeight
-			xx = xx - TFASleekFontHeight / 3
-			draw.DrawText( str, "TFASleekMedium", xx+1, yy+1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT )
-			draw.DrawText( str, "TFASleekMedium", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT )
-			yy = yy + TFASleekFontHeightMedium
-			xx = xx - TFASleekFontHeightMedium / 3
 			str = string.upper( self:GetFireModeName() )
 			draw.DrawText( str, "TFASleekSmall", xx+1, yy+1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT )
 			draw.DrawText( str, "TFASleekSmall", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT )
