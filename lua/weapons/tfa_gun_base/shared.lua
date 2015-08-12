@@ -339,6 +339,18 @@ end
 
 SWEP.Callback = {}
 
+--Blowblack Function
+
+SWEP.BlowbackEnabled = false --Enable Blowback?
+SWEP.BlowbackVector = Vector(0,-1,0) --Vector to move bone <or root> relative to bone <or view> orientation.
+SWEP.BlowbackCurrentRoot = 0 --Amount of blowback currently, for root
+SWEP.BlowbackCurrent = 0 --Amount of blowback currently, for bones
+SWEP.BlowbackBoneMods = nil --Viewmodel bone mods via SWEP Creation Kit
+SWEP.Blowback_Only_Iron = true --Only do blowback on ironsights
+SWEP.Blowback_PistolMode = false --Do we recover from blowback when empty?
+SWEP.Blowback_Shell_Enabled = true
+SWEP.Blowback_Shell_Effect = "ShellEject"
+
 --Stuff you shouldn't touch after this 
 SWEP.EventTimer = 0 --Don't change this, base dependent and does nothing for users anyways.
 SWEP.PenetrationCounter = 0 --BASE DEPENDENT VALUE.  DO NOT CHANGE OR THINGS MAY BREAK.  NO USE TO YOU.
@@ -976,6 +988,12 @@ function SWEP:Deploy()
 	self:CorrectScopeFOV( self.DefaultFOV and self.DefaultFOV or self.Owner:GetFOV() )
 	
 	self.customboboffset=Vector(0,0,0)
+	
+	self:ResetEvents()
+	
+	if SERVER then
+		self:CallOnClient("ResetEvents","")
+	end
 	
 	return true
 end
@@ -1782,6 +1800,12 @@ function SWEP:PlayerThinkClientFrame( ply )
 	self.CLAmmoHUDProgress = math.Approach( self.CLAmmoHUDProgress, (self.ShouldDrawAmmoHUD  or self:GetInspecting()) and 1 or 0, FrameTime() / GetConVarNumber("cl_tfa_hud_ammodata_fadein",0.2) )
 	self:DoBobFrame()
 	
+	if !self.Blowback_PistolMode or self:Clip1()==-1 or self:Clip1()>0 then
+		self.BlowbackCurrent = math.Approach(self.BlowbackCurrent,0,self.BlowbackCurrent*FrameTime()*15)
+	end
+	
+	self.BlowbackCurrentRoot = math.Approach(self.BlowbackCurrentRoot,0,self.BlowbackCurrentRoot*FrameTime()*15)
+	
 	local tmptable = {}
 	tmptable.Ang = self.Owner:EyeAngles()
 	tmptable.Pos = self.Owner:GetShootPos()
@@ -2104,6 +2128,14 @@ function SWEP:GetViewModelPosition(pos, ang)
 		
 	pos=QerpVector( inspectrat, pos, target)
 	
+	if self.BlowbackEnabled then
+		--if !(  self.Blowback_PistolMode and !( self:Clip1()==-1 or self:Clip1()>0 ) ) then
+			pos:Add( ang:Right() * (self.BlowbackVector.x) * self.BlowbackCurrentRoot )
+			pos:Add( ang:Forward() * (self.BlowbackVector.y) * self.BlowbackCurrentRoot )
+			pos:Add( ang:Up() * (self.BlowbackVector.z) * self.BlowbackCurrentRoot)
+		--end
+	end
+	
 	--Start viewbob code
 	
 	local gunbobintensity = GetConVarNumber("sv_tfa_gunbob_intensity",1) * 0.65 * 0.66
@@ -2111,6 +2143,8 @@ function SWEP:GetViewModelPosition(pos, ang)
 	pos, ang = self:CalculateBob( pos, ang, gunbobintensity)
 	
 	local qerp1 = Lerp(self.CLIronSightsProgress and self.CLIronSightsProgress or 0,0,self.ViewModelFlip and 1 or -1)*15
+	
+	if !ang then return end 
 	
 	ang:RotateAroundAxis(ang:Forward(),-Qerp(self.CLIronSightsProgress and self.CLIronSightsProgress or 0,qerp1,0))
 	

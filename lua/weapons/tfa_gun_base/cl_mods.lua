@@ -41,6 +41,7 @@ Purpose:  SWEP Construction Kit Compatibility / Basic Attachments.
 ]]--
 
 function SWEP:ViewModelDrawn()
+	if !IsValid(self) or !self:OwnerIsValid() then return end
 	local vm = self.Owner:GetViewModel()
 	if !IsValid(vm) then return end
 	self:UpdateBonePositions(vm)
@@ -377,11 +378,16 @@ Purpose:  SWEP Construction Kit Compatibility / Basic Attachments.
 
 function SWEP:UpdateBonePositions(vm)
 	
-	if self.ViewModelBoneMods then
+	if self.ViewModelBoneMods or self.BlowbackBoneMods then
+		
+		if !self.ViewModelBoneMods then
+			self.ViewModelBoneMods = {}
+		end
 		
 		if (!vm:GetBoneCount()) then return end
 		
-		local loopthrough = self.ViewModelBoneMods
+		local loopthrough = {}
+		
 		local vbones = {}
 		for i=0, vm:GetBoneCount() do
 			local bonename = vm:GetBoneName(i)
@@ -393,6 +399,15 @@ function SWEP:UpdateBonePositions(vm)
 					pos = Vector(0,0,0),
 					angle = Angle(0,0,0)
 				}
+			end
+			if self.BlowbackBoneMods[bonename] then
+				if !self.SequenceEnabled[ACT_VM_RELOAD_EMPTY] or !( self.Blowback_PistolMode and self:GetReloading() ) then
+					vbones[bonename].pos = vbones[bonename].pos + self.BlowbackBoneMods[bonename].pos * self.BlowbackCurrent
+					vbones[bonename].angle = vbones[bonename].angle + self.BlowbackBoneMods[bonename].angle * self.BlowbackCurrent
+					vbones[bonename].scale = Lerp(self.BlowbackCurrent, vbones[bonename].scale,vbones[bonename].scale  *  self.BlowbackBoneMods[bonename].scale )
+				else
+					self.BlowbackCurrent = math.Approach(self.BlowbackCurrent,0,self.BlowbackCurrent*FrameTime()*30)
+				end
 			end
 		end
 		

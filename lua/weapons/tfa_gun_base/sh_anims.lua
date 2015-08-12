@@ -7,9 +7,16 @@ Purpose:  Animation / Utility
 ]]--
 
 function SWEP:AnimForce(str) 
+	
+	if !str then return end
+	
 	local vm = LocalPlayer():GetViewModel()
 	if IsValid(vm) then
-		vm:SendViewModelMatchingSequence(vm:SelectWeightedSequence(tonumber(str)))
+		local strnum = tonumber(str)
+		if !strnum then return end
+		local nm = vm:SelectWeightedSequence(strnum)
+		if !nm then return end
+		vm:SendViewModelMatchingSequence(nm)
 	end
 	--self:ResetEvents()
 end
@@ -295,46 +302,60 @@ Purpose:  Animation / Utility
 
 function SWEP:ChooseShootAnim()
 	if !self:OwnerIsValid() then return end
-	--self:ResetEvents()
-	local tanim=ACT_VM_PRIMARYATTACK
-	local success = true
-	if self.SequenceEnabled[ACT_VM_PRIMARYATTACK_SILENCED]  and self:GetSilenced() then
-		if self.SequenceEnabled[ACT_VM_DRYFIRE_SILENCED] and !self.ForceDryFireOff then
-			if (self:Clip1()==0) then
-				self:SendWeaponAnim(ACT_VM_DRYFIRE_SILENCED)
-				tanim=ACT_VM_DRYFIRE_SILENCED
-			else
-				self:SendWeaponAnim(ACT_VM_PRIMARYATTACK_SILENCED)
-				tanim=ACT_VM_PRIMARYATTACK_SILENCED
-			end
-		else
-			if (self:Clip1()==0) then
-				success=false
-				local _
-				_, tanim = self:ChooseIdleAnim()
-			else
-				self:SendWeaponAnim(ACT_VM_PRIMARYATTACK_SILENCED)
-				tanim=ACT_VM_PRIMARYATTACK_SILENCED
-			end
-		end			
-	else
-		if ( self.SequenceEnabled[ACT_VM_DRYFIRE] or self.SequenceEnabled[ACT_VM_PRIMARYATTACK_EMPTY] ) then
-			if (self:Clip1()==0 and  self.SequenceEnabled[ACT_VM_DRYFIRE] and !self.ForceDryFireOff ) then
-				self:SendWeaponAnim(ACT_VM_DRYFIRE)
-				tanim=ACT_VM_DRYFIRE
-			elseif (self:Clip1()==1 and self.SequenceEnabled[ACT_VM_PRIMARYATTACK_EMPTY]  and !self.ForceEmptyFireOff ) then
-				if self.SequenceEnabled[ACT_VM_PRIMARYATTACK_EMPTY] then
-					self:SendWeaponAnim(ACT_VM_PRIMARYATTACK_EMPTY)
-					success=true
-					tanim = ACT_VM_PRIMARYATTACK_EMPTY
-				elseif self.SequenceEnabled[ACT_VM_PRIMARYATTACK_1] and self:GetIronSights() then
-					self:SendWeaponAnim(ACT_VM_PRIMARYATTACK_1)
-					tanim = ACT_VM_PRIMARYATTACK_1
+	
+	if !self.BlowbackEnabled or ( !self:GetIronSights() and self.Blowback_Only_Iron) then
+	
+		local tanim=ACT_VM_PRIMARYATTACK
+		local success = true
+		if self.SequenceEnabled[ACT_VM_PRIMARYATTACK_SILENCED]  and self:GetSilenced() then
+			if self.SequenceEnabled[ACT_VM_DRYFIRE_SILENCED] and !self.ForceDryFireOff then
+				if (self:Clip1()==0) then
+					self:SendWeaponAnim(ACT_VM_DRYFIRE_SILENCED)
+					tanim=ACT_VM_DRYFIRE_SILENCED
 				else
-					success=true
-					tanim = ACT_VM_PRIMARYATTACK
-					self:SendWeaponAnim(ACT_VM_PRIMARYATTACK)
-				end			
+					self:SendWeaponAnim(ACT_VM_PRIMARYATTACK_SILENCED)
+					tanim=ACT_VM_PRIMARYATTACK_SILENCED
+				end
+			else
+				if (self:Clip1()==0) then
+					success=false
+					local _
+					_, tanim = nil, nil-- self:ChooseIdleAnim()
+				else
+					self:SendWeaponAnim(ACT_VM_PRIMARYATTACK_SILENCED)
+					tanim=ACT_VM_PRIMARYATTACK_SILENCED
+				end
+			end			
+		else
+			if ( self.SequenceEnabled[ACT_VM_DRYFIRE] or self.SequenceEnabled[ACT_VM_PRIMARYATTACK_EMPTY] ) then
+				if (self:Clip1()==0 and  self.SequenceEnabled[ACT_VM_DRYFIRE] and !self.ForceDryFireOff ) then
+					self:SendWeaponAnim(ACT_VM_DRYFIRE)
+					tanim=ACT_VM_DRYFIRE
+				elseif (self:Clip1()==1 and self.SequenceEnabled[ACT_VM_PRIMARYATTACK_EMPTY]  and !self.ForceEmptyFireOff ) then
+					if self.SequenceEnabled[ACT_VM_PRIMARYATTACK_EMPTY] then
+						self:SendWeaponAnim(ACT_VM_PRIMARYATTACK_EMPTY)
+						success=true
+						tanim = ACT_VM_PRIMARYATTACK_EMPTY
+					elseif self.SequenceEnabled[ACT_VM_PRIMARYATTACK_1] and self:GetIronSights() then
+						self:SendWeaponAnim(ACT_VM_PRIMARYATTACK_1)
+						tanim = ACT_VM_PRIMARYATTACK_1
+					else
+						success=true
+						tanim = ACT_VM_PRIMARYATTACK
+						self:SendWeaponAnim(ACT_VM_PRIMARYATTACK)
+					end			
+				else
+					if self.SequenceEnabled[ACT_VM_PRIMARYATTACK_1] and self:GetIronSights() then
+						self:SendWeaponAnim(ACT_VM_PRIMARYATTACK_1)
+						tanim = ACT_VM_PRIMARYATTACK_1
+					elseif self.SequenceEnabled[ACT_VM_PRIMARYATTACK] then
+						self:SendWeaponAnim(ACT_VM_PRIMARYATTACK)
+					else
+						success=false
+						local _
+						_, tanim = nil, nil--self:ChooseIdleAnim()
+					end
+				end
 			else
 				if self.SequenceEnabled[ACT_VM_PRIMARYATTACK_1] and self:GetIronSights() then
 					self:SendWeaponAnim(ACT_VM_PRIMARYATTACK_1)
@@ -344,36 +365,74 @@ function SWEP:ChooseShootAnim()
 				else
 					success=false
 					local _
-					_, tanim = self:ChooseIdleAnim()
+					_, tanim = nil, nil--self:ChooseIdleAnim()
 				end
 			end
-		else
-			if self.SequenceEnabled[ACT_VM_PRIMARYATTACK_1] and self:GetIronSights() then
-				self:SendWeaponAnim(ACT_VM_PRIMARYATTACK_1)
-				tanim = ACT_VM_PRIMARYATTACK_1
-			elseif self.SequenceEnabled[ACT_VM_PRIMARYATTACK] then
-				self:SendWeaponAnim(ACT_VM_PRIMARYATTACK)
-			else
-				success=false
-				local _
-				_, tanim = self:ChooseIdleAnim()
+		end
+		
+		if self.Akimbo then
+			if self.SequenceEnabled[ACT_VM_SECONDARYATTACK] and self.AnimCycle==1 then
+				self:SendWeaponAnim(ACT_VM_SECONDARYATTACK)
+				tanim = ACT_VM_SECONDARYATTACK
 			end
 		end
+		
+		if game.SinglePlayer() then
+			self:CallOnClient("AnimForce",tanim)
+		end
+		
+		self.lastact = tanim
+		return success, tanim
+		
+	else
+		
+		if game.SinglePlayer() and SERVER then
+			self:CallOnClient("BlowbackFull","")
+		end
+		
+		self:BlowbackFull()
+		
+		return true, ACT_VM_IDLE
+		
 	end
+end
+
+function SWEP:BlowbackFull()
 	
-	if self.Akimbo then
-		if self.SequenceEnabled[ACT_VM_SECONDARYATTACK] and self.AnimCycle==1 then
-			self:SendWeaponAnim(ACT_VM_SECONDARYATTACK)
-			tanim = ACT_VM_SECONDARYATTACK
+	if IsValid(self) then
+		self.BlowbackCurrent = 1
+		self.BlowbackCurrentRoot = 1
+		if self.Blowback_Shell_Enabled and ( ( CLIENT and !game.SinglePlayer() ) or ( SERVER and game.SinglePlayer() ) ) then
+			timer.Simple(0, function()
+				if IsValid(self) and self:OwnerIsValid() then
+					local vm = self.Owner:GetViewModel()
+					if IsValid(vm) then
+						local fx = EffectData()
+						fx:SetEntity(vm)
+						local attid = vm:LookupAttachment(self.ShellAttachment)
+						attid = math.Clamp(attid and attid or 0,1,127)
+						fx:SetAttachment(attid)
+						local attpos = vm:GetAttachment(attid)
+						if attpos and attpos.Pos then
+							if !game.SinglePlayer() then
+								fx:SetOrigin(attpos.Pos)
+							else
+								fx:SetOrigin(attpos.Pos + self.Owner:GetShootPos() - self.Owner:GetPos() )
+							end
+							--fx:SetStart(attpos.Pos)
+						end
+						if attpos and attpos.Ang then
+							fx:SetAngles(attpos.Ang)
+							fx:SetNormal(attpos.Ang:Forward())
+						end
+						--debugoverlay.Axis( attpos.Pos, attpos.Ang, 15, 5, true)
+						util.Effect(self.Blowback_Shell_Effect,fx)
+					end
+				end
+			end)
 		end
 	end
 	
-	if game.SinglePlayer() then
-		self:CallOnClient("AnimForce",tanim)
-	end
-	
-	self.lastact = tanim
-	return success, tanim
 end
 
 --[[ 
@@ -439,7 +498,7 @@ function SWEP:ChooseDryFireAnim()
 		else
 			success=false
 			local _
-			_, tanim = self:ChooseIdleAnim()
+			_, tanim = nil, nil--self:ChooseIdleAnim()
 		end
 	end
 	

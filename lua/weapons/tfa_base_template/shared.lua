@@ -193,6 +193,19 @@ SWEP.SprintBobMult=1.5 -- More is more bobbing, proportionally.  This is multipl
 SWEP.IronBobMult=0  -- More is more bobbing, proportionally.  This is multiplication, not addition.  You want to make this < 1 for sighting, 0 to outright disable.
 SWEP.AllowViewAttachment = true --Allow the view to sway based on weapon attachment while reloading or drawing, IF THE CLIENT HAS IT ENABLED IN THEIR CONVARS!!!!11111oneONEELEVEN
 
+
+--[[VIEWMODEL BLOWBACK]]--
+
+SWEP.BlowbackEnabled = false --Enable Blowback?
+SWEP.BlowbackVector = Vector(0,-1,0) --Vector to move bone <or root> relative to bone <or view> orientation.
+SWEP.BlowbackCurrentRoot = 0 --Amount of blowback currently, for root
+SWEP.BlowbackCurrent = 0 --Amount of blowback currently, for bones
+SWEP.BlowbackBoneMods = nil --Viewmodel bone mods via SWEP Creation Kit
+SWEP.Blowback_Only_Iron = true --Only do blowback on ironsights
+SWEP.Blowback_PistolMode = false --Do we recover from blowback when empty?
+SWEP.Blowback_Shell_Enabled = true
+SWEP.Blowback_Shell_Effect = "ShellEject"
+
 --[[HOLDTYPES]]--
 
 SWEP.IronSightHoldTypeOverride=""  --This variable overrides the ironsights holdtype, choosing it instead of something from the above tables.  Change it to "" to disable.

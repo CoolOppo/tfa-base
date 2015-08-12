@@ -223,6 +223,7 @@ function SWEP:DrawHUD()
 		if self.Secondary.UseMatador then
 			tbl=TFA_SCOPE_MATADOR
 		end
+		if !tbl then tbl = TFA_SCOPE_MILDOT end
 		local w,h = ScrW(), ScrH()
 		for k,v in pairs(tbl) do
 			local dimension = h
