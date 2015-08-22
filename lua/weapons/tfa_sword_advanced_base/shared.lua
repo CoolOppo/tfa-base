@@ -23,7 +23,7 @@ SWEP.Weight				= 50			-- rank relative ot other weapons. bigger is better
 SWEP.AutoSwitchTo			= true		-- Auto switch to if we pick it up
 SWEP.AutoSwitchFrom			= true		-- Auto switch from if you pick up a better weapon
 SWEP.Secondary.IronFOV			= 90					-- How much you 'zoom' in. Less is more!  Don't have this be <= 0 
-SWEP.WeaponLength	=	16--16 = 1 foot
+SWEP.WeaponLength	=	8--16 = 1 foot
 SWEP.MoveSpeed = 0.9--Multiply the player's movespeed by this.
 SWEP.IronSightsMoveSpeed = 0.8 --Multiply the player's movespeed by this when sighting.
 --[[TTT CRAP]]--
@@ -171,6 +171,10 @@ SWEP.IronBobMult=1  -- More is more bobbing, proportionally.  This is multiplica
 SWEP.NinjaMode=false --Can block bullets/everything
 SWEP.DrawTime=0.2--Time you can't swing after drawing
 SWEP.BlockAngle=135--Think of the player's view direction as being the middle of a sector, with the sector's angle being this
+SWEP.BlockMaximum = 0.1 --Multiply damage by this for a maximumly effective block
+SWEP.BlockMinimum = 0.7 --Multiply damage by this for a minimumly effective block
+SWEP.BlockWindow = 0.5 --Time to absorb maximum damage
+SWEP.BlockFadeTime = 1 --Time for blocking to do minimum damage.  Does not include block window
 SWEP.PrevBlocking=false--Don't change this, just related to the block procedural animation
 SWEP.BlockProceduralAnimTime=0.15--Change how slow or quickly the player moves their sword to block
 
@@ -203,6 +207,8 @@ SWEP.WElements = {}--World elements
 
 SWEP.sounds = 0
 
+SWEP.Action = true --Use action IDs?
+
 --[[Stop editing here for normal users of my base.  Code starts here.]]--
 
 --[[
@@ -218,9 +224,51 @@ SWEP.Callback = {}
 SWEP.Callback.Deploy = function(self)
 	
 	self:SetNWFloat("SharedRandomVal",CurTime())
+	self:SetBlockStart(-1)
+	self.PrevBlockRat = 0
+end
+
+SWEP.Callback.SetupDataTables = function(self)
+	self:NetworkVar("Float",20, "BlockStart")
 
 end
 
+SWEP.Callback.UserInput = function(self)
+	
+	self.OldIronsights=(self:GetIronSights())
+	local is=false
+	if IsValid(self.Owner) then
+		--if ( (CLIENT and GetConVarNumber("cl_tfa_ironsights_toggle",0)==0) or ( SERVER and self.Owner:GetInfoNum("cl_tfa_ironsights_toggle",0)==0) ) then
+			if self.Owner:KeyDown(IN_ATTACK2) then
+				is=true
+			end
+		--else
+			--is=self:GetIronSightsRaw()
+			--if self.Owner:KeyPressed(IN_ATTACK2) then
+			--	is=!is
+			--end
+		--end
+	end
+	
+	if self.data and self.data.ironsights == 0 then
+		is=false
+	end
+	
+	self:SetIronSightsRaw(is)
+	self:SetIronSights(is)
+	self.OldSprinting=(self:GetSprinting())
+	local spr=false
+	if IsValid(self.Owner) then
+		local isnumber = (is and 1 or 0)
+		if self.Owner:KeyDown(IN_SPEED) and self.Owner:GetVelocity():Length()>self.Owner:GetWalkSpeed()*(self.MoveSpeed*(1-isnumber)+self.IronSightsMoveSpeed*(isnumber)) then
+			spr=true
+		end
+	end
+	
+	self:SetSprinting(spr)
+	
+	return true
+end
 
 function SWEP:DoImpactEffect(tr, dmg)
 	local impactpos, impactnormal, seq;
@@ -339,7 +387,7 @@ function SWEP:PrimaryAttack()
 		return
 	end
 	
-	if self:GetShooting() then return end
+	--if self:GetShooting() then return end
 	
 	self:SetShooting(true)
 	self.sounds = 0
@@ -401,8 +449,23 @@ end
 SWEP.Callback.Think2 = function(self)
 	if !self:OwnerIsValid() then return end
 	
+	local isr = self:GetIronSightsRatio()
+	
 	local ply;
 	ply = self.Owner
+	
+	if self.PrevBlockRat<=0.3 and isr>0.3 then
+		self:SetBlockStart(CurTime())
+		--print(CurTime())
+	end
+	
+	if isr<0.1 and self.PrevBlockRat>0.1 then
+		self:SetBlockStart(-1)
+		--print(-1)
+	end
+	
+	self.PrevBlockRat = isr
+	
 	if self:GetShooting() then
 		local ts,seq,ct,ft,len,strikepercent,swingprogress,sws,swe;
 		seq = self.Sequences[self:GetNWInt("Slash",1)]
@@ -519,7 +582,7 @@ function SWEP:ChooseShootAnim( mynewvar )
 	seqid = seqid and seqid or 0
 	local actid = vm:GetSequenceActivity(seqid)
 	
-	if actid and actid>=0 then
+	if actid and actid>=0 and self.Action then
 		self:SendWeaponAnim(actid)
 	else
 		vm:SetSequence(seqid)

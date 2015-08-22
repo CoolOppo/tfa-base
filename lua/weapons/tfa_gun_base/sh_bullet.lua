@@ -105,12 +105,16 @@ local function TFBulletCallback(a,b,c)
 		end
 	end
 	
-	if bul.IsFirst then
-		a.LastBulletHitPos = b.HitPos
+	if bul then
+		if bul.IsFirst then
+			a.LastBulletHitPos = b.HitPos
+		end
+		
+		bul.IsFirst = false
+	
+		TFACheckRicochetGateway(self, bul, b)
 	end
 	
-	bul.IsFirst = false
-	TFACheckRicochetGateway(self, bul, b)
 	if CLIENT then
 		self:ImpactEffect(b.HitPos,b.HitNormal,b.MatType)
 	end
@@ -242,6 +246,8 @@ function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet,
 				ent:SetPos(self.Owner:GetShootPos())
 				ent.Owner = self.Owner
 				ent:SetAngles(self.Owner:EyeAngles())
+				ent.damage = self.Primary.Damage
+				ent.mydamage = self.Primary.Damage
 				if self.ProjectileModel then
 					ent:SetModel(self.ProjectileModel)
 				end
@@ -467,6 +473,19 @@ Notes:    Used to test penetration.
 Purpose:  Bullet
 ]]--
 
+local TFADecalMats = {
+	[MAT_ANTLION] = "Impact.Antlion",
+	[MAT_ALIENFLESH] = "Impact.Antlion",
+	[MAT_FLESH] = "Impact.BloodyFlesh",
+	[MAT_GLASS] = "Impact.Glass",
+	[MAT_GRATE] = "Impact.Metal",
+	[MAT_METAL] = "Impact.Metal",
+	[MAT_VENT] = "Impact.Metal",
+	[MAT_COMPUTER] = "Impact.Metal",
+	[MAT_SAND] = "Impact.Sand",
+	[MAT_WOOD] = "Impact.Wood"
+}
+
 function SWEP:CheckPenetration(bullet, tr2)
 
 	if self.Callback.CheckPenetration then
@@ -532,6 +551,8 @@ function SWEP:CheckPenetration(bullet, tr2)
 		penbul.Spread.y = 0.01
 		penbul.Src=hitpos
 		penbul.Dir=bullet.Dir*1
+		penbul.Range = 56756
+		penbul.Distance = 56756
 		penbul.Tracer=0
 		penbul.TracerName = "None"
 		penbul.IsFirst = false
@@ -545,16 +566,27 @@ function SWEP:CheckPenetration(bullet, tr2)
 		end
 		
 		self:ShootBullet(0,0,0,vector_origin,false,penbul)
-		penbul.Src = hitpos
-		penbul.Dir = tr2.Normal * -1
-		penbul.Spread = vector_origin
-		penbul.Num = 1
-		penbul.Damage = 0
-		penbul.Force = 0.01
-		penbul.Tracer = 0
-		penbul.TracerName = "None"
-		penbul.IsFirst = false
-		self:ShootBullet(0,0,0,vector_origin,true,penbul)
+		
+		local trace3 = {}
+		trace3.start = hitpos
+		trace3.endpos = hitpos + tr2.Normal:GetNormalized() * -16
+		trace3.ignoreworld = false
+		trace3.mask = MASK_SHOT
+		local tr4 = util.TraceLine(trace3)
+		if tr4.Hit and tr4.HitPos:Distance(hitpos)<4 then
+			penbul.Src = hitpos
+			penbul.Dir = tr2.Normal * -1
+			penbul.Spread = vector_origin
+			penbul.Num = 1
+			penbul.Damage = 0
+			penbul.Force = 0.01
+			penbul.Range = 1
+			penbul.Distance = 1
+			penbul.Tracer = 0
+			penbul.TracerName = "None"
+			penbul.IsFirst = false
+			self:ShootBullet(0,0,0,vector_origin,true,penbul)
+		end
 		bullet.IsFirst = false
 		return true
 	end

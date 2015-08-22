@@ -550,10 +550,55 @@ if GetConVar("sv_tfa_damage_mult_max") == nil then
 	--print("Damage Multiplier con var created")
 end
 
-if GetConVar("sv_tfa_default_clip") == nil then
-	CreateConVar("sv_tfa_default_clip", "-1", { FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE }, "How many clips will a weapon spawn with? Negative reverts to default values.")
-	--print("Default clip size con var created")
+function TFAUpdateDefaultClip()
+	local dfc = math.Round(GetConVarNumber("sv_tfa_default_clip"))
+	local weplist = weapons.GetList()
+	if !weplist or #weplist<=0 then return end
+	for k,v in pairs(weplist) do
+		local cl = v.ClassName and v.ClassName or v
+		local wep = weapons.GetStored(cl)
+		if wep and ( wep.IsTFAWeapon or string.find( string.lower( wep.Base and wep.Base or "" ),"tfa") ) then
+			
+			if !wep.Primary then
+				wep.Primary = {}
+			end
+			
+			if !wep.Primary.TrueDefaultClip then
+				wep.Primary.TrueDefaultClip = wep.Primary.DefaultClip
+			end
+			
+			if !wep.Primary.TrueDefaultClip then
+				wep.Primary.TrueDefaultClip = 0
+			end
+			
+			if dfc<0 then
+				wep.Primary.DefaultClip = wep.Primary.TrueDefaultClip
+			else
+				if wep.Primary.ClipSize and wep.Primary.ClipSize>0 then
+					wep.Primary.DefaultClip = wep.Primary.ClipSize * dfc
+				else
+					wep.Primary.DefaultClip = wep.Primary.TrueDefaultClip * dfc				
+				end
+			end
+		end
+	end
 end
+	
+hook.Add("InitPostEntity","TFADefaultClipPE", TFAUpdateDefaultClip)
+
+if TFAUpdateDefaultClip then
+	TFAUpdateDefaultClip()
+end
+
+--if GetConVar("sv_tfa_default_clip") == nil then
+	local cv = CreateConVar("sv_tfa_default_clip", "-1", { FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE }, "How many clips will a weapon spawn with? Negative reverts to default values.")
+	
+	cvars.AddChangeCallback( "sv_tfa_default_clip", function( convar_name, value_old, value_new )
+		print("Update Default Clip")
+		TFAUpdateDefaultClip()
+	end, "TFAUpdateDefaultClip" )
+	--print("Default clip size con var created")
+--end
 
 if GetConVar("sv_tfa_viewbob_intensity") == nil then
 	CreateConVar("sv_tfa_viewbob_intensity", "1", { FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE }, "How much the player view itself bobs.")
@@ -621,6 +666,10 @@ end
 
 if GetConVar("sv_tfa_compatibility_footstep") == nil then
 	CreateConVar("sv_tfa_compatibility_footstep", "0", { FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE }, "This should be used if you have an addon that breaks TFA Base's running, sprinting, etc. animations.")
+end
+
+if GetConVar("sv_tfa_arrow_lifetime") == nil then
+	CreateConVar("sv_tfa_arrow_lifetime", "30", { FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE }, "Arrow lifetime.")
 end
 
 --Clientside Convars
@@ -798,37 +847,25 @@ end
 
 --Blacklist convar creation
 
-TFAWeaponTable = {}
-
-local function UpdateWeaponTable()
-	
-	local f, d = file.Find("lua/weapons/tfa_*","GAME")
-	
-	TFAWeaponTable = {}
-	
-	local i = 1
-	
-	for k,v in pairs(d) do
-		if string.find(v,"base") then
-			--continue
-		else			
-			if GetConVar("tfa_blacklist_"..string.Replace(v,"tfa_","")) == nil then
-				CreateConVar("tfa_blacklist_"..string.Replace(v,"tfa_",""), "0", { FCVAR_PROTECTED, FCVAR_ARCHIVE }, "Blacklist the "..v.."?")
-			end
-			if !TFAWeaponTable[i] or TFAWeaponTable[i]!=v then
-				table.insert(TFAWeaponTable,i,v)
-				i=i+1
+function TFABlacklistPE()
+	local weplist = weapons.GetList()
+	if !weplist or #weplist<=0 then return end
+	for k,v in pairs(weplist) do
+		local cl = v.ClassName and v.ClassName or v
+		local wep = weapons.GetStored(cl)
+		if wep and ( wep.IsTFAWeapon or string.find( string.lower( wep.Base and wep.Base or "" ),"tfa") or string.find(string.lower(v.Folder and v.Folder or ""),"tfa") ) then	
+			if GetConVar("tfa_bl_"..cl) == nil then
+				CreateConVar("tfa_bl_"..cl, "0", { FCVAR_PROTECTED, FCVAR_ARCHIVE }, "Blacklist the "..(wep.PrintName and wep.PrintName or cl).."?")
 			end
 		end
 	end
-
 end
+	
+hook.Add("InitPostEntity","TFABlacklistPE", TFABlacklistPE)
 
-UpdateWeaponTable()
-
-hook.Add( "InitPostEntity" , "InitPostEntityTFABlackList", function( )
-	UpdateWeaponTable()
-end)
+if TFABlacklistPE then
+	TFABlacklistPE()
+end
 
 --Disable spawning of blacklisted guns
 
@@ -836,7 +873,7 @@ local redcol = Color(255,0,0,255)
 
 hook.Add( "WeaponEquip" , "TFAEquipBlacklist", function( wep )
 	local v=wep:GetClass()
-	if GetConVarNumber("tfa_blacklist_"..string.Replace(v,"tfa_",""),0)==1 then
+	if GetConVarNumber("tfa_bl_"..v,0)==1 then
 		print("SWEP Blocked:")
 		print(v)
 		if chat and chat.AddText then chat.AddText(redcol,ply,"This gun is blacklisted!") else ply:ChatPrint("This gun is blacklisted!") end
@@ -847,7 +884,7 @@ end)
 
 hook.Add( "PlayerCanPickupWeapon" , "TFAPickUpBlacklist", function( ply, wep )
 	local v=wep:GetClass()
-	if GetConVarNumber("tfa_blacklist_"..string.Replace(v,"tfa_",""),0)==1 then
+	if GetConVarNumber("tfa_bl_"..v,0)==1 then
 		print("This player tried to pick up a blacklisted swep:")
 		print(ply)
 		print("SWEP:")
@@ -860,7 +897,7 @@ end)
 
 hook.Add( "PlayerSwitchWeapon" , "TFAWepSwitchBlacklist", function( ply, oldwep, wep )
 	local v=wep:GetClass()
-	if GetConVarNumber("tfa_blacklist_"..string.Replace(v,"tfa_",""),0)==1 then
+	if GetConVarNumber("tfa_bl_"..v,0)==1 then
 		print("This player tried to switch to a blacklisted swep:")
 		print(ply)
 		print("SWEP:")
@@ -872,7 +909,7 @@ hook.Add( "PlayerSwitchWeapon" , "TFAWepSwitchBlacklist", function( ply, oldwep,
 end)
 
 hook.Add( "PlayerGiveSWEP" , "TFAGiveSWEPBlacklist", function( ply, v, swep )
-	if GetConVarNumber("sv_tfa_blacklist_"..string.Replace(v,"tfa_",""),0)==1 then
+	if GetConVarNumber("tfa_bl_"..v,0)==1 then
 		print("This player tried to give themselves a blacklisted swep:")
 		print(ply)
 		print("SWEP:")
@@ -883,7 +920,7 @@ hook.Add( "PlayerGiveSWEP" , "TFAGiveSWEPBlacklist", function( ply, v, swep )
 end)
 
 hook.Add( "PlayerSpawnSWEP" , "TFASpawnSWEPBlacklist", function( ply, v, swep )
-	if GetConVarNumber("tfa_blacklist_"..string.Replace(v,"tfa_",""),0)==1 then
+	if GetConVarNumber("tfa_bl_"..v,0)==1 then
 		print("This player tried to spawn themselves a blacklisted swep:")
 		print(ply)
 		print("SWEP:")
@@ -1385,6 +1422,22 @@ function TFAMuzzlePartFunc(self,first)
 	end
 end
 
+--[[Efficient Lerp Angle]]--
+
+local normalize = math.NormalizeAngle
+
+function JuckeyLerpAngle(delta, from, to)
+	local delta = math.Clamp(delta, 0, 1)
+
+	to.p = normalize( to.p - from.p )
+	to.y = normalize( to.y - from.y )
+	to.r = normalize( to.r - from.r )
+	
+	return from + to*delta
+end
+
+--[[Parti-COOLs]]--
+
 game.AddParticles("particles/tfa_muzzleflashes.pcf")
 
 PrecacheParticleSystem("tfa_muzzle_rifle")
@@ -1396,3 +1449,13 @@ PrecacheParticleSystem("tfa_muzzle_m82")
 PrecacheParticleSystem("tfa_muzzle_energy")
 
 PrecacheParticleSystem("tfa_muzzle_gauss")
+
+--[[Bow Ammo]]--
+
+game.AddAmmoType({
+	name = "tfbow_ammo",
+	dmgtype = DMG_SLASH,
+	tracer = 0,
+	minsplash = 5,
+	maxsplash = 5
+})

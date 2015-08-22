@@ -384,6 +384,10 @@ function SWEP:UpdateBonePositions(vm)
 			self.ViewModelBoneMods = {}
 		end
 		
+		if !self.BlowbackBoneMods then
+			self.BlowbackBoneMods = {}
+		end
+		
 		if (!vm:GetBoneCount()) then return end
 		
 		local loopthrough = {}

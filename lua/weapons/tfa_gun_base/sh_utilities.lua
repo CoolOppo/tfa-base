@@ -1,4 +1,17 @@
 
+function SWEP:UpdateConDamage()
+	
+	if !IsValid(self) then return end
+	
+	if !self.DamageConVar then
+		self.DamageConVar = GetConVar("sv_tfa_damage_multiplier")
+	end
+	
+	if self.DamageConVar and self.DamageConVar.GetFloat then
+		self.ConDamageMultiplier = self.DamageConVar:GetFloat()
+	end
+end
+
 --[[ 
 Function Name:  ResetSightsProgress
 Syntax: self:ResetSightsProgress( ). 

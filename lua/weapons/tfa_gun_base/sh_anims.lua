@@ -413,6 +413,18 @@ function SWEP:BlowbackFull()
 						attid = math.Clamp(attid and attid or 0,1,127)
 						fx:SetAttachment(attid)
 						local attpos = vm:GetAttachment(attid)
+						
+						if attpos and attpos.Pos and attpos.Ang and self.ViewModelFlip then
+							local localpos = vm:WorldToLocal(attpos.Pos)
+							local localang = vm:WorldToLocalAngles(attpos.Ang)
+							localpos = localpos * Vector(-1,1,1)
+							localang = Angle(localang.p,localang.y+180,localang.r)
+							local worldpos = vm:LocalToWorld(localpos)
+							local worldang = vm:LocalToWorldAngles(localang)
+							attpos.Pos = worldpos
+							attpos.Ang = worldang
+						end
+						
 						if attpos and attpos.Pos then
 							if !game.SinglePlayer() then
 								fx:SetOrigin(attpos.Pos)
@@ -421,6 +433,9 @@ function SWEP:BlowbackFull()
 							end
 							--fx:SetStart(attpos.Pos)
 						end
+						
+						--debugoverlay.Axis(attpos.Pos,attpos.Ang,64,15,true)
+							
 						if attpos and attpos.Ang then
 							fx:SetAngles(attpos.Ang)
 							fx:SetNormal(attpos.Ang:Forward())

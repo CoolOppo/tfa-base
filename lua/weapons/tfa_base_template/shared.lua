@@ -307,13 +307,7 @@ if string.find(gm,"ttt") or string.find(gm,"terrorist") then
 	SWEP.AutoSpawnable = false
 	SWEP.AllowDrop = true
 	SWEP.AmmoEnt = "item_ammo_smg1_ttt"
-	SWEP.Base = "weapon_tttbase"
-	DEFINE_BASECLASS("weapon_tttbase")
-else
-	SWEP.Base = "weapon_base"
-	DEFINE_BASECLASS("weapon_base")
 end
-
 
 
 --[[MISC INFO FOR MODELERS]]--
@@ -386,31 +380,5 @@ SWEP.Secondary.Ammo			= "none" -- Self explanitory, ammo type.
 --Convar support
 
 SWEP.ConDamageMultiplier = 1
-
-if GetConVar("sv_tfa_damage_multiplier") == nil then
-	SWEP.ConDamageMultiplier = 1
-	print("tfa_damage_multiplier is missing!  You might've hit the lua limit.  Contact the SWEP author(s). Reverting multiplier to 1.")
-else
-	SWEP.ConDamageMultiplier = GetConVar("sv_tfa_damage_multiplier"):GetFloat()
-	if SWEP.ConDamageMultiplier < 0 then
-		SWEP.ConDamageMultiplier = SWEP.ConDamageMultiplier * -1
-		print("Your damage multiplier was in the negatives. What were you thinking? Your damage multiplier is now corrected to "..SWEP.ConDamageMultiplier..".")
-	end
-end
-
-function tfa_new_clips(cvar, previous, new)
-	print("The default clip multiplier has changed. A server restart will be required to apply these changes.")
-end
-cvars.AddChangeCallback("sv_tfa_default_clip", tfa_new_clips)
-
-if GetConVarNumber("sv_tfa_default_clip") == nil then
-	print("sv_tfa_default_clip is missing! You have likely reached the lua limit.")
-else
-	if GetConVar("sv_tfa_default_clip"):GetInt() >= 0 then
-		print("Weapons on the TFA Base will now spawn with " .. GetConVarNumber("sv_tfa_default_clip") .. " clips/quivers.")
-	else
-		print("Default clips will be not be modified")
-	end
-end
 
 SWEP.Base				= "tfa_gun_base"

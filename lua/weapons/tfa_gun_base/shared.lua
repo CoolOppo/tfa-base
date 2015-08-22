@@ -374,47 +374,6 @@ end
 
 SWEP.ConDamageMultiplier = 1
 
-if GetConVar("sv_tfa_damage_multiplier") == nil then
-	SWEP.ConDamageMultiplier = 1
-	print("tfa_damage_multiplier is missing!  You might've hit the lua limit.  Contact the SWEP author(s). Reverting multiplier to 1.")
-else
-	SWEP.ConDamageMultiplier = GetConVar("sv_tfa_damage_multiplier"):GetFloat()
-	if SWEP.ConDamageMultiplier < 0 then
-		SWEP.ConDamageMultiplier = SWEP.ConDamageMultiplier * -1
-		print("Your damage multiplier was in the negatives. What were you thinking? Your damage multiplier is now corrected to "..SWEP.ConDamageMultiplier..".")
-	end
-end
---[[
-function tfa_convar_damage_multiplier(cvar, previous, new)
-	print("multiplier has been changed ")
-	if GetConVar("sv_tfa_damage_multiplier") == nil then
-		SWEP.ConDamageMultiplier = 1
-		print("tfa_damage_multiplier is missing! Reverting to defaults.")
-	else
-		SWEP.ConDamageMultiplier = GetConVar("sv_tfa_damage_multiplier"):GetFloat()
-		if SWEP.ConDamageMultiplier < 0 then
-			SWEP.ConDamageMultiplier = SWEP.ConDamageMultiplier * -1
-			print("Your damage multiplier was in the negatives. What were you thinking? Your damage multiplier is now corrected to "..SWEP.ConDamageMultiplier..".")
-		end
-	end
-end
-cvars.AddChangeCallback("sv_tfa_damage_multiplier", tfa_convar_damage_multiplier)
-]]--
-function tfa_new_clips(cvar, previous, new)
-	print("The default clip multiplier has changed. A server restart will be required to apply these changes.")
-end
-cvars.AddChangeCallback("sv_tfa_default_clip", tfa_new_clips)
-
-if GetConVarNumber("sv_tfa_default_clip") == nil then
-	print("sv_tfa_default_clip is missing! You have likely reached the lua limit.")
-else
-	if GetConVar("sv_tfa_default_clip"):GetInt() >= 0 then
-		print("Weapons on the TFA Base will now spawn with " .. GetConVarNumber("sv_tfa_default_clip") .. " clips/quivers.")
-	else
-		print("Default clips will be not be modified")
-	end
-end
-
 --[[  Quadratic Interpolation Functions  ]]--
 
 local qerppower = 2
@@ -495,6 +454,8 @@ Returns:  The quadratically interpolated vector.
 Purpose:  Utility function / Animation
 ]]--
 
+local myqerpvec = Vector()
+
 local function QerpVector( progress, startang, endang, totaltime )
 	if !totaltime then
 		totaltime = 1
@@ -506,7 +467,10 @@ local function QerpVector( progress, startang, endang, totaltime )
 	endx=endang.x
 	endy=endang.y
 	endz=endang.z
-	return Vector(Qerp(progress, startx, endx, totaltime),Qerp(progress, starty, endy, totaltime),Qerp(progress, startz, endz, totaltime))
+	myqerpvec.x = Qerp(progress, startx, endx, totaltime)
+	myqerpvec.y = Qerp(progress, starty, endy, totaltime)
+	myqerpvec.z = Qerp(progress, startz, endz, totaltime)
+	return myqerpvec
 end
 
 --[[  Standard SWEP Functions  ]]--
@@ -784,7 +748,7 @@ function SWEP:Initialize()
 		self.Primary.IronAccuracy = self.Primary.Accuracy * 0.2
 	end
 	
-	if GetConVarNumber("sv_tfa_blacklist_"..self.Gun,0)==1  then
+	if GetConVarNumber("tfa_bl_"..self:GetClass(),0)==1 then
 		self.Spawnable				= false
 		self.AdminSpawnable			= false
 		
@@ -994,6 +958,8 @@ function SWEP:Deploy()
 	if SERVER then
 		self:CallOnClient("ResetEvents","")
 	end
+	
+	self:UpdateConDamage()
 	
 	return true
 end
@@ -1369,6 +1335,8 @@ function SWEP:PrimaryAttack()
 	end
 	
 	if !self:OwnerIsValid() then return end
+	
+	self:UpdateConDamage()
 	
 	if ( self:GetHolstering() ) then
 		if (self.ShootWhileHolster==false) then
@@ -1936,7 +1904,7 @@ function SWEP:Reload()
 	
 	if self.Primary.ClipSize==-1 then return end
 	
-	if ( self:Clip1() < (self.Primary.ClipSize + ( (not self.DisableChambering and not self.BoltAction and not self.Shotgun and not (self.Revolver) and not ( (self.DefaultHoldType and self.DefaultHoldType or self.HoldType) == "revolver" ) ) and 1 or 0 )  ) and self.Owner:GetAmmoCount( self.Primary.Ammo ) > 0 ) then
+	if ( self:Clip1() < (self.Primary.ClipSize + ( (not self.DisableChambering and not self.BoltAction and not self.Shotgun and not (self.Revolver) and not ( (self.DefaultHoldType and self.DefaultHoldType or self.HoldType) == "revolver" ) ) and 1 or 0 ) * (self.Akimbo and 2 or 1)  ) and self.Owner:GetAmmoCount( self.Primary.Ammo ) > 0 ) then
 	
 		self:SetReloading(true)
 		
@@ -2598,7 +2566,7 @@ function SWEP:CompleteReload()
 			
 			local maxclip=self.Primary.ClipSize
 			local curclip = self:Clip1()
-			local amounttoreplace=math.min(maxclip-curclip+( ( (self:Clip1()>0) and not self.DisableChambering and not self.BoltAction and not (self.Revolver) and not ( (self.DefaultHoldType and self.DefaultHoldType or self.HoldType) == "revolver" ) and 1 or 0 ) ),self.Owner:GetAmmoCount(self.Primary.Ammo))
+			local amounttoreplace=math.min(maxclip-curclip+( ( (self:Clip1()>0) and not self.DisableChambering and not self.BoltAction and not (self.Revolver) and not ( (self.DefaultHoldType and self.DefaultHoldType or self.HoldType) == "revolver" ) and 1 or 0 ) * (self.Akimbo and 2 or 1) ),self.Owner:GetAmmoCount(self.Primary.Ammo))
 			self:SetClip1(curclip+amounttoreplace)
 			self.Owner:RemoveAmmo(amounttoreplace, self.Primary.Ammo)
 		end

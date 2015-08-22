@@ -95,8 +95,10 @@ function EFFECT:Init( data )
 			particle:SetDieTime( 0.1 )
 			particle:SetStartAlpha( math.Rand( 200, 255 ) )
 			particle:SetEndAlpha( 0 )
-			particle:SetStartSize( 8 * (halofac*0.8+0.2), 0, 1)
-			particle:SetEndSize( 0 )
+			--particle:SetStartSize( 8 * (halofac*0.8+0.2), 0, 1)
+			--particle:SetEndSize( 0 )
+			particle:SetStartSize( 3 * (halofac*0.8+0.2), 0, 1)
+			particle:SetEndSize( 8 * (halofac*0.8+0.2), 0, 1 )
 			local r = math.Rand(-10, 10) * 3.14/180
 			particle:SetRoll( r )
 			particle:SetRollDelta( r/5)
@@ -108,18 +110,41 @@ function EFFECT:Init( data )
 				particle:SetPos(vector_origin)
 		end
 		
-		for i=0, 6 do
+		particle = emitter:Add( "effects/scotchmuzzleflash"..math.random(1,4), self.vOffset )
+			
+			if (particle) then
+				particle:SetVelocity( dir*4 + 1.05 * AddVel )
+				particle:SetLifeTime( 0 )
+				particle:SetDieTime( 0.15 )
+				particle:SetStartAlpha( math.Rand( 225, 255 ) )
+				particle:SetEndAlpha( 0 )
+				--particle:SetStartSize( 7.5 * (halofac*0.8+0.2), 0, 1)
+				--particle:SetEndSize( 0 )
+				particle:SetStartSize( 3 * (halofac*0.8+0.2), 0, 1)
+				particle:SetEndSize( 8 * (halofac*0.8+0.2) )
+				particle:SetRoll( math.rad(math.Rand(0, 360)) )
+				particle:SetRollDelta( math.rad(math.Rand(-40, 40)) )
+				particle:SetColor( 255 , 218 , 97 )
+				particle:SetLighting(false)
+				particle.FollowEnt = data:GetEntity()
+				particle.Att = self.Attachment
+				TFARegPartThink(particle,TFAMuzzlePartFunc)
+			end
+			
+		for i=0, 5 do
 			local particle = emitter:Add( "particles/flamelet"..math.random(1,5), self.vOffset + (dir * 0.6 * i))
 			if (particle) then
 				particle:SetVelocity((dir * 19 * i) + 1.05 * AddVel )
 				particle:SetLifeTime( 0 )
-				particle:SetDieTime( 0.1 )
+				particle:SetDieTime( 0.075 )
 				particle:SetStartAlpha( math.Rand( 200, 255 ) )
 				particle:SetEndAlpha( 0 )
-				particle:SetStartSize( math.max(5.4 - 0.55 * i,1) )
-				particle:SetEndSize( 0 )
-				particle:SetRoll( math.Rand(0, 360) )
-				particle:SetRollDelta( math.Rand(-40, 40) )
+				--particle:SetStartSize( math.max(5.4 - 0.55 * i,1) )
+				--particle:SetEndSize( 0 )
+				particle:SetStartSize( math.max(5.4 - 0.55 * i,1)*0.5 )
+				particle:SetEndSize( math.max(5.4 - 0.55 * i,1)*0.75 )
+				particle:SetRoll( math.rad(math.Rand(0, 360)) )
+				particle:SetRollDelta( math.rad(math.Rand(-40, 40)) )
 				particle:SetColor( 255 , 218 , 97 )
 				particle:SetLighting(false)
 				particle.FollowEnt = data:GetEntity()
@@ -129,18 +154,18 @@ function EFFECT:Init( data )
 			end
 		end
 		
-		for i=0, 4 do
+		for i=0, 6 do
 		
 			local particle = emitter:Add( "particles/smokey", self.vOffset + dir * math.Rand(6, 10 ))
 			if (particle) then
-				particle:SetVelocity(VectorRand() * 7 + dir * math.Rand(18,25) + 1.05 * AddVel )
+				particle:SetVelocity(VectorRand() * 10 + dir * math.Rand(15,20) + 1.05 * AddVel )
 				particle:SetLifeTime( 0 )
-				particle:SetDieTime( math.Rand( 0.5, 0.5 ) )
-				particle:SetStartAlpha( math.Rand( 5, 10 ) )
+				particle:SetDieTime( math.Rand( 0.6, 0.7 ) )
+				particle:SetStartAlpha( math.Rand( 6, 10 ) )
 				particle:SetEndAlpha( 0 )
-				particle:SetStartSize( math.Rand(8,10) )
-				particle:SetEndSize( math.Rand(2,5) )
-				particle:SetRoll( math.Rand(0, 360) )
+				particle:SetStartSize( math.Rand(5,7) )
+				particle:SetEndSize( math.Rand(12,14) )
+				particle:SetRoll( math.rad(math.Rand(0, 360)) )
 				particle:SetRollDelta( math.Rand(-0.8, 0.8) )
 				particle:SetLighting(true)
 				
@@ -175,6 +200,7 @@ function EFFECT:Init( data )
 				end
 			end
 		end
+		
 	emitter:Finish() 
 end 
 

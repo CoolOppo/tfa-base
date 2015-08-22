@@ -58,7 +58,10 @@ hook.Add("EntityTakeDamage","TFM_Block",function(ent, dmginfo)
 					end
 					blockthreshold=wep.BlockAngle/2 or 90
 					if (IsValid(damageinflictor) and (math.abs((ent:GetAimVector():Angle()-(damageinflictor:GetPos()-ent:GetPos()):Angle()).y)<=blockthreshold) )or (math.abs((ent:GetAimVector():Angle()-(dmginfo:GetDamagePosition()-ent:GetPos()):Angle()).y)<=blockthreshold) then
-						dmginfo:ScaleDamage(0)
+						local fac = math.Clamp( ( CurTime()-wep:GetBlockStart()-wep.BlockWindow )/wep.BlockFadeTime, 0, 1)
+						local dmgscale = Lerp( fac, wep.BlockMaximum, wep.BlockMinimum)
+						--print(fac)
+						dmginfo:ScaleDamage(dmgscale)
 						dmginfo:SetDamagePosition(vector_origin)
 						wep:EmitSound(wep.Primary.Sound_Impact_Metal)	
 						if wep.BlockAnim then
