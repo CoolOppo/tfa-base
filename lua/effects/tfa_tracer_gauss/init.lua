@@ -21,7 +21,7 @@ function EFFECT:Init( data )
 		
 		-- Keep the start and end pos - we're going to interpolate between them
 		self.StartPos = self:GetTracerShootPos( self.Position, self.WeaponEnt, self.Attachment )
-		print(self.StartPos)
+		
         self.EndPos = data:GetOrigin()
 		
         self.Entity:SetRenderBoundsWS( self.StartPos, self.EndPos )

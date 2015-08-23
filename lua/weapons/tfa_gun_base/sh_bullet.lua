@@ -303,6 +303,7 @@ function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet,
 		mainbul.Spread.y=aimcone-- Aim Cone Y
 		mainbul.Tracer	= self.TracerCount and self.TracerCount or 3		-- Show a tracer on every x bullets
 		mainbul.IsFirst = true
+		mainbul.AmmoType = self:GetPrimaryAmmoType()
 		
 		if !self.TracerLua then
 			mainbul.TracerName = TracerName

@@ -1768,7 +1768,7 @@ function SWEP:PlayerThinkClientFrame( ply )
 	self.CLAmmoHUDProgress = math.Approach( self.CLAmmoHUDProgress, (self.ShouldDrawAmmoHUD  or self:GetInspecting()) and 1 or 0, FrameTime() / GetConVarNumber("cl_tfa_hud_ammodata_fadein",0.2) )
 	self:DoBobFrame()
 	
-	if !self.Blowback_PistolMode or self:Clip1()==-1 or self:Clip1()>0 then
+	if !self.Blowback_PistolMode or self:Clip1()==-1 or self:Clip1()>0 or self:GetReloading() then
 		self.BlowbackCurrent = math.Approach(self.BlowbackCurrent,0,self.BlowbackCurrent*FrameTime()*15)
 	end
 	
