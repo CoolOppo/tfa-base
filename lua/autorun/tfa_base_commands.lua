@@ -1459,3 +1459,22 @@ game.AddAmmoType({
 	minsplash = 5,
 	maxsplash = 5
 })
+
+--[[Sounds]]--
+
+sound.Add({
+	name = 			"TFA.IronIn",
+	channel = 		CHAN_USER_BASE+12,
+	volume = 		1.0,
+	sound = 			{ "weapons/tfa/ironin.wav" },
+	pitch = { 97, 103 }
+})
+
+sound.Add({
+	name = 			"TFA.IronOut",
+	channel = 		CHAN_USER_BASE+12,
+	volume = 		1.0,
+	sound = 			{ "weapons/tfa/ironout.wav" },
+	pitch = { 97, 103 }
+})
+

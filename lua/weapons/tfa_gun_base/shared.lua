@@ -161,6 +161,7 @@ SWEP.ChangeStateAccuracyMultiplier=1.5 --Less is more.  A change of state is whe
 SWEP.JumpAccuracyMultiplier=2--Less is more.  Accuracy * 2 = Half as accurate.  Accuracy * 5 = 1/5 as accurate
 SWEP.WalkAccuracyMultiplier=1.35--Less is more.  Accuracy * 2 = Half as accurate.  Accuracy * 5 = 1/5 as accurate
 SWEP.IronSightTime = 0.3 --The time to enter ironsights/exit it.
+SWEP.RunSightTime = nil --Time to enter sprint/exit it
 SWEP.NearWallTime = 0.25 --The time to pull up  your weapon or put it back down
 SWEP.ToCrouchTime = 0.05 --The time it takes to enter crouching state
 SWEP.WeaponLength = 40 --Almost 3 feet Feet.  This should be how far the weapon sticks out from the player.  This is used for calculating the nearwall trace.
@@ -444,7 +445,7 @@ local function QerpAngle( progress, startang, endang, totaltime )
 	if !totaltime then
 		totaltime = 1
 	end
-	return LerpAngle(Qerp(progress,0,1,totaltime),startang,endang)
+	return JuckeyLerpAngle(Qerp(progress,0,1,totaltime),startang,endang)
 end
 
 --[[ 
@@ -1457,6 +1458,10 @@ function SWEP:PrimaryAttack()
 				end
 			end
 			
+			if self.EjectionSmoke then
+				self:EjectionSmoke()
+			end
+			
 			self:DoAmmoCheck()
 		end
 	--end
@@ -1565,24 +1570,27 @@ function SWEP:PlayerThink( ply )
 		insp = 1
 	end
 	
-	local val1,val2
-	val1=isr
-	local newratio=math.Approach( isr, is, FrameTime() / self.IronSightTime)
+	local ftv = FrameTime()
+	local compensatedft = ftv / ( self.IronSightTime * 0.4 )
+	local compensatedft_sp = ftv / ( ( self.RunSightTime and self.RunSightTime or self.IronSightTime*2 ) * 0.4 )
+	local compensatedft_cr = ftv / self.ToCrouchTime
+	
+	
+	local newratio=math.Approach( isr, is, (is-isr)*compensatedft)
 	self:SetIronSightsRatio( newratio )
-	val2=self:GetIronSightsRatio()
+	newratio=math.Approach( rsr, rs, (rs-rsr)*compensatedft_sp)
+	self:SetRunSightsRatio( newratio )
 	
-	self:SetRunSightsRatio( math.Approach( rsr, rs, FrameTime() / self.IronSightTime) )
+	self:SetInspectingRatio( math.Approach( inspr, insp, ftv / self.IronSightTime) )
 	
-	self:SetInspectingRatio( math.Approach( inspr, insp, FrameTime() / self.IronSightTime) )
-	
-	self:SetCrouchingRatio( math.Approach( self:GetCrouchingRatio(), (self.Owner:Crouching() and 1 or 0), FrameTime() / self.ToCrouchTime) )
+	self:SetCrouchingRatio( math.Approach( self:GetCrouchingRatio(), (self.Owner:Crouching() and 1 or 0), ftv / self.ToCrouchTime) )
 	
 	local jv = !self.Owner:IsOnGround()
 	
-	self:SetJumpingRatio( math.Approach( self:GetJumpingRatio(), (jv and 1 or 0), FrameTime() / self.ToCrouchTime) )
+	self:SetJumpingRatio( math.Approach( self:GetJumpingRatio(), (jv and 1 or 0), ftv / self.ToCrouchTime) )
 	
 	if self.Primary.SpreadRecovery then
-		self:SetSpreadRatio( math.Clamp( self:GetSpreadRatio() - self.Primary.SpreadRecovery*FrameTime(), 1, self.Primary.SpreadMultiplierMax) )
+		self:SetSpreadRatio( math.Clamp( self:GetSpreadRatio() - self.Primary.SpreadRecovery*ftv, 1, self.Primary.SpreadMultiplierMax) )
 	end
 	
 end
@@ -1751,12 +1759,13 @@ function SWEP:PlayerThinkClientFrame( ply )
 		rs = 1
 	end
 	
-	local compensatedft = ftv / self.IronSightTime
+	local compensatedft = ftv / ( self.IronSightTime * 0.4 )
+	local compensatedft_sp = ftv / ( ( self.RunSightTime and self.RunSightTime or self.IronSightTime*2 ) * 0.4 )
 	local compensatedft_cr = ftv / self.ToCrouchTime
 	
-	local newratio=math.Approach( isr, is, compensatedft)
+	local newratio=math.Approach( isr, is, (is-isr)*compensatedft)
 	self.CLIronSightsProgress = newratio 
-	newratio=math.Approach( rsr, rs, compensatedft)
+	newratio=math.Approach( rsr, rs, (rs-rsr)*compensatedft_sp)
 	self.CLRunSightsProgress = newratio 
 	newratio=math.Approach( crouchr, self.Owner:Crouching() and 1 or 0, compensatedft_cr)
 	self.CLCrouchProgress = newratio 
@@ -1947,12 +1956,73 @@ function SWEP:Reload()
 		local AnimationTime = self.Owner:GetViewModel():SequenceDuration()
 		self.prevdrawcount=self.drawcount
 		self:SetReloadingEnd(CurTime()+AnimationTime)
-        self.ReloadingTime = CurTime() + AnimationTime
-        self:SetNextPrimaryFire(CurTime() + ( self.SequenceLengthOverride[tanim] and self.SequenceLengthOverride[tanim] or ( AnimationTime) ) )
-        self:SetNextSecondaryFire(CurTime() + ( self.SequenceLengthOverride[tanim] and self.SequenceLengthOverride[tanim] or ( AnimationTime) ) )
+		self.ReloadingTime = CurTime() + AnimationTime
+		self:SetNextPrimaryFire(CurTime() + ( self.SequenceLengthOverride[tanim] and self.SequenceLengthOverride[tanim] or ( AnimationTime) ) )
+		self:SetNextSecondaryFire(CurTime() + ( self.SequenceLengthOverride[tanim] and self.SequenceLengthOverride[tanim] or ( AnimationTime) ) )
 		
 		
 	end 
+end
+
+--[[ 
+Function Name:  Sway
+Syntax: self:Sway( ang ).
+Returns:  New angle.
+Notes:  This is used for calculating the swep viewmodel sway.
+Purpose:  Main SWEP function
+]]--
+
+local oldang = Angle()
+local anga = Angle()
+local angb = Angle()
+local angc = Angle()
+local posfac = 0.75
+
+function SWEP:Sway(pos,ang)
+	--angrange = our availalbe ranges
+	--rate = rate to restore our angle to the proper one
+	--fac = factor to multiply by
+	--each is interpolated from normal value to the ironsights value using iron sights ratio
+	
+	local angrange = Lerp(self:GetIronSightsRatio(),7.5,2.5)
+	local rate = Lerp(self:GetIronSightsRatio(),7.5,10)
+	local fac = Lerp(self:GetIronSightsRatio(),0.6,0.15)
+	
+	--calculate angle differences
+	
+	anga = self.Owner:EyeAngles() - oldang
+	oldang = self.Owner:EyeAngles()
+	
+	angb.y = angb.y + (0-angb.y)*FrameTime()*5
+	angb.p = angb.p + (0-angb.p)*FrameTime()*5
+	
+	--fix jitter
+	
+	if angb.y < 50 and anga.y > 0 and anga.y < 25 then angb.y = angb.y + anga.y/5 end
+	if angb.y > -50 and anga.y < 0 and anga.y > -25 then angb.y = angb.y + anga.y/5 end
+	if angb.p < 50 and anga.p < 0 and anga.p < 25 then angb.p = angb.p - anga.p/5 end
+	if angb.p > -50 and anga.p > 0 and anga.p > -25 then angb.p = angb.p - anga.p/5 end
+	
+	--limit range
+	
+	angb.p = math.Clamp(angb.p,-angrange,angrange)
+	angb.y = math.Clamp(angb.y,-angrange,angrange)
+	
+	--recover
+	
+	angc.y = angc.y + (angb.y/15 - angc.y)*FrameTime()*rate
+	angc.p = angc.p + (angb.p/15 - angc.p)*FrameTime()*rate
+	
+	--finally, blend it into the angle
+	
+	ang:RotateAroundAxis(oldang:Up(),angc.y*15*(self.ViewModelFlip and -1 or 1)*fac)
+	ang:RotateAroundAxis(oldang:Right(),angc.p*15*fac)
+	ang:RotateAroundAxis(oldang:Forward(),angc.y*10*fac)
+	
+	pos:Add( oldang:Right() * angc.y*posfac )
+	pos:Add( oldang:Up() * -angc.p*posfac )
+	
+	return pos,ang
 end
 
 --[[ 
@@ -1969,7 +2039,27 @@ function SWEP:GetViewModelPosition(pos, ang)
 		local val,val2 = self.Callback.GetViewModelPosition(self, pos, ang)
 		if val then return val,val2 end
 	end
-
+	--[[
+	
+	ang:Normalize()
+	
+	if !self.OldAng then
+		self.OldAng = ang
+	end
+	
+	
+	local newang = ang * 1
+	
+	ang.p = math.Approach(self.OldAng.p,ang.p, (ang.p - self.OldAng.p) * FrameTime() * 15)
+	ang.y = math.Approach(self.OldAng.y,ang.y, (ang.y - self.OldAng.y) * FrameTime() * 15)
+	ang.r = math.Approach(self.OldAng.r,ang.r, (ang.r - self.OldAng.r) * FrameTime() * 15)
+	
+	self.OldAng = ang
+	
+	]]--
+	
+	pos,ang = self:Sway(pos,ang)
+	
 	local isp=math.Clamp(self.CLIronSightsProgress,0,1)--self:GetIronSightsRatio()
 	local rsp=math.Clamp(self.CLRunSightsProgress,0,1)--self:GetRunSightsRatio()
 	local nwp=math.Clamp(self.CLNearWallProgress,0,1)--self:GetNearWallRatio()
@@ -2017,12 +2107,16 @@ function SWEP:GetViewModelPosition(pos, ang)
 	local ang4=Angle(ang.p,ang.y,ang.r)	
 	local ang5=Angle(ang.p,ang.y,ang.r)	
 	
+	--[[
 	self.SwayScale 	= Lerp(isp,1,self.IronBobMult)
 	self.SwayScale  = Lerp(rsp,self.SwayScale,self.SprintBobMult)
+	]]--
 	
 	--self.BobScale 	= Lerp(isp,1,self.IronBobMult)
 	--self.BobScale  = Lerp(rsp,self.BobScale,self.SprintBobMult)
 	self.BobScale = 0 
+	self.SwayScale = 0
+	
 	self.BobScaleCustom 	= Lerp(isp,1,self.IronBobMult)
 	self.BobScaleCustom  = Lerp(rsp,self.BobScaleCustom,self.SprintBobMult)
 	
@@ -2128,6 +2222,10 @@ function SWEP:GetViewModelPosition(pos, ang)
 end
 
 --[[ Generic Backend Functions  ]]--
+
+function SWEP:GetPrimaryAmmoType() 
+	return self.PRimary.Ammo and self.Primary.Ammo or ""
+end
 
 --[[ 
 Function Name:  CalculateConeRecoil
@@ -2464,7 +2562,7 @@ function SWEP:IronsSprint()
 		self:SetBursting(false)
 	end
 	
-	if (oldis!=is) and IsFirstTimePredicted() then
+	if (oldis!=is) and ( ( CLIENT and IsFirstTimePredicted() ) or ( SERVER and game.SinglePlayer() ) ) then
 		if (is==false) then
 			self:EmitSound("TFA.IronOut")
 		else

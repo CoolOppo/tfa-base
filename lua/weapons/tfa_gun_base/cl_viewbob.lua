@@ -5,6 +5,7 @@ Returns:  Nothing.
 Notes:  Used to calculate view angles.
 Purpose:  Feature
 ]]--
+
 local blankvecbak = Vector(0,0,0)
 local blankvec = Vector(0,0,0)
 local blankang = Angle(0,0,0)

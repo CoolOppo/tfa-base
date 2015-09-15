@@ -42,7 +42,8 @@ end
 
 function SWEP:PrimaryAttack()
 	vm = self.Owner:GetViewModel()
-	if SERVER and self:CanPrimaryAttack() and self.Owner:IsPlayer() then
+	--[[self:CanPrimaryAttack()]]--
+	if SERVER and self:GetNextPrimaryFire()<CurTime() and self.Owner:IsPlayer() then
 	self.Weapon:SendWeaponAnim( ACT_VM_IDLE )
 		if !self.Owner:KeyDown(IN_SPEED) and !self.Owner:KeyDown(IN_RELOAD) then
 			self.Slash = self.Slash + 1
@@ -132,7 +133,7 @@ function SWEP:SecondaryAttack()
 	pos = self.Owner:GetShootPos()
 	ang = self.Owner:GetAimVector()
 	vm = self.Owner:GetViewModel()
-	if self:CanPrimaryAttack() and self.Owner:IsPlayer() then
+	if self:GetNextSecondaryFire()<CurTime() and self.Owner:IsPlayer() then
 	self.Weapon:SendWeaponAnim( ACT_VM_IDLE )
 		if !self.Owner:KeyDown(IN_SPEED) and !self.Owner:KeyDown(IN_RELOAD) then
 			self.Weapon:EmitSound(self.Primary.Sound)//stab noise

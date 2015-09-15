@@ -71,7 +71,7 @@ local function QerpAngle( progress, startang, endang, totaltime )
 	if !totaltime then
 		totaltime = 1
 	end
-	return LerpAngle(Qerp(progress,0,1,totaltime),startang,endang)
+	return JuckeyLerpAngle(Qerp(progress,0,1,totaltime),startang,endang)
 end
 
 --[[ 
@@ -219,11 +219,13 @@ function SWEP:CalculateBob(pos, ang, ci)
 	
 	self.customboboffset = self.customboboffset * ci
 	
+	pos:Add( ang:Right() * (self.customboboffset.x) * -1.33)
+	pos:Add( ang:Forward() * (self.customboboffset.y) * -1 )
+	pos:Add( ang:Up() * (self.customboboffset.z) )
+	
 	ang:RotateAroundAxis(ang:Right(), 		(self.customboboffset.x))
 	ang:RotateAroundAxis(ang:Up(), 		(self.customboboffset.y))
 	ang:RotateAroundAxis(ang:Forward(), 	(self.customboboffset.z))
-	
-	ang:Normalize()
 	
 	local localisedmove,localisedangle = WorldToLocal(self.Owner:GetVelocity(),self.Owner:GetVelocity():Angle(),vector_origin,self.Owner:EyeAngles()) 
 	
@@ -231,10 +233,6 @@ function SWEP:CalculateBob(pos, ang, ci)
 	ang:RotateAroundAxis(ang:Right(), 		(math.Approach(localisedmove.x,0,1)/(runspeed) )*tironsightscale * (ci or 1) * (-1 + 2 *(self.ViewModelFlip and 1 or 0) ) )
 	
 	ang:Normalize()
-	
-	pos:Add( ang:Right() * (self.customboboffset.x) )
-	pos:Add( ang:Forward() * (self.customboboffset.y) )
-	pos:Add( ang:Up() * (self.customboboffset.z) )
 	
 	return pos, ang 
 end

@@ -15,7 +15,7 @@ Purpose:  HUD
 function SWEP:DrawHUD()
 	
     cam.Start3D(); cam.End3D() --Workaround for vec:ToScreen()
-
+	
 	if self.Callback.DrawHUD then
 		local val = self.Callback.DrawHUD(self)
 		if val then return val end
@@ -29,8 +29,8 @@ function SWEP:DrawHUD()
 		drawcrossy=self.DrawCrosshair
 	end
 	
-	local crossa = GetConVarNumber("cl_tfa_hud_crosshair_color_a", 220) * math.min(1-self.CLIronSightsProgress, 1-self.CLRunSightsProgress, 1-self.CLNearWallProgress)
-	local outa = GetConVarNumber("cl_tfa_hud_crosshair_outline_color_a", 255) * math.min(1-self.CLIronSightsProgress, 1-self.CLRunSightsProgress, 1-self.CLNearWallProgress)
+	local crossa = GetConVarNumber("cl_tfa_hud_crosshair_color_a", 220) * math.pow(math.min(1-self.CLIronSightsProgress, 1-self.CLRunSightsProgress, 1-self.CLNearWallProgress),2)
+	local outa = GetConVarNumber("cl_tfa_hud_crosshair_outline_color_a", 255) * math.pow(math.min(1-self.CLIronSightsProgress, 1-self.CLRunSightsProgress, 1-self.CLNearWallProgress),2)
 	self.DrawCrosshair = false
 	if drawcrossy then
 		if GetConVarNumber("cl_tfa_hud_crosshair_enable_custom") == 1 then

@@ -532,10 +532,24 @@ function SWEP:ChooseShootAnim( mynewvar )
 				table.insert(selection,#selection+1,k)
 			end
 		end
-	elseif math.abs(fwd)>ply:GetWalkSpeed()/2 then
+	elseif fwd>ply:GetWalkSpeed()/2 then
 		for k,v in pairs(self.Sequences) do
-			if (v.up or v.down) then
+			if (v.up) then
 				table.insert(selection,#selection+1,k)
+			end
+		end
+	elseif fwd<ply:GetWalkSpeed()/2 then
+		for k,v in pairs(self.Sequences) do
+			if (v.down) then
+				table.insert(selection,#selection+1,k)
+			end
+		end
+	end
+	
+	if #selection<=0 and math.abs(fwd)<ply:GetWalkSpeed()/2 and math.abs(hor)<ply:GetWalkSpeed()/2 then
+		for k,v in pairs(self.Sequences) do
+			if v.up or v.down then
+				table.insert(selection,#selection+1,k)		
 			end
 		end
 	end
