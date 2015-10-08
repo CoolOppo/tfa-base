@@ -1,3 +1,6 @@
+game.AddParticles("particles/doktor_muzzleflash.pcf")
+PrecacheParticleSystem("VES_fire_1_FP")
+
 local function rvec(vec)
 	vec.x=math.Round(vec.x)
 	vec.y=math.Round(vec.y)
@@ -107,7 +110,7 @@ function EFFECT:Init( data )
 	
 	local att = math.max(1,data:GetAttachment())
 	
-	ParticleEffectAttach("tfa_muzzle_rifle",PATTACH_POINT_FOLLOW,ent,att)
+	ParticleEffectAttach("VES_fire_1_FP",PATTACH_POINT_FOLLOW,ent,att)
 end 
 
 function EFFECT:Think( )

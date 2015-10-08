@@ -72,7 +72,101 @@ if CLIENT then
 	
 	local oldVmModel = ""
 	
+	local oldwepclass = ""
+	
 	local function TFARenderScreen()
+		
+		for k,v in pairs(player.GetAll()) do
+			
+			if IsValid(v) then
+			
+				local self = v:GetActiveWeapon()
+				
+				if IsValid(self) and self!=LocalPlayer() then
+					
+					--start
+		
+					local vm = self.Owner:GetViewModel()
+					
+					if IsValid(vm) then
+						
+						if v.oldVmModel != vm:GetModel() or ( IsValid(self) and oldwepclass != self:GetClass() ) then
+							local matcount = #vm:GetMaterials()
+							local i=0
+							while i<=matcount do
+								self.Owner:GetViewModel():SetSubMaterial(i,"")
+								i=i+1
+							end
+							v.oldVmModel = vm:GetModel()
+							
+							if IsValid(self) then
+								self.MaterialCached = nil
+						
+								v.oldwepclass = self:GetClass()
+						
+								local ow = self.Owner
+								if IsValid(ow) then
+									local owweps = ow:GetWeapons()
+									for k,v in pairs(owweps) do
+										if IsValid(v) and v:GetClass() == v.oldwepclass then
+											v.MaterialCached = nil							
+										end
+									end
+								end
+							end
+							
+						else
+						
+							v.oldwepclass = ""
+							
+							v.oldwepclass = self:GetClass()
+							
+							if self.MaterialTable then
+								
+								local vm = self.Owner:GetViewModel()
+								
+								if !self.MaterialCached then
+									self.MaterialCached = {}
+								
+									local mats = vm:GetMaterials()
+									
+									local i = 0
+									
+									while i<#mats do
+										self:SetSubMaterial(i,"")
+										vm:SetSubMaterial(i,"")
+										i=i+1
+									end
+									
+								end
+								
+								if #self.MaterialTable>=1 then
+									self:SetMaterial(self.MaterialTable[1])
+								else
+									self:SetMaterial("")
+								end
+								
+								for k,v in ipairs(self.MaterialTable) do
+									if !self.MaterialCached[k] then
+										self:SetSubMaterial(k-1,v)
+										self:SetSubMaterial(k,v)
+										vm:SetSubMaterial(k-1,v)
+										self.MaterialCached[k] = true
+									end
+								end
+								
+							end
+						end
+					end
+					
+					
+					--end of block
+					
+				end
+				
+			end
+		
+		end
 		
 		if !IsValid(LocalPlayer()) or !IsValid(LocalPlayer():GetActiveWeapon()) then return end
 		
@@ -82,7 +176,7 @@ if CLIENT then
 		
 		if !IsValid(vm) then return end
 		
-		if oldVmModel != vm:GetModel() then
+		if oldVmModel != vm:GetModel() or ( IsValid(self) and oldwepclass != self:GetClass() ) then
 			local matcount = #vm:GetMaterials()
 			local i=0
 			while i<=matcount do
@@ -90,10 +184,76 @@ if CLIENT then
 				i=i+1
 			end
 			oldVmModel = vm:GetModel()
+			
+			if IsValid(self) then
+				self.MaterialCached = nil
+		
+				oldwepclass = self:GetClass()
+		
+				local ow = self.Owner
+				if IsValid(ow) then
+					local owweps = ow:GetWeapons()
+					for k,v in pairs(owweps) do
+						if IsValid(v) and v:GetClass() == oldwepclass then
+							v.MaterialCached = nil							
+						end
+					end
+				end
+			end
+			
 			return
 		end
 		
-		if !IsValid(self) or !self.RTMaterialOverride or !self.RTCode then return end
+		oldwepclass = ""
+		
+		if !IsValid(self) then return end
+		
+		oldwepclass = self:GetClass()
+		
+		if self.MaterialTable then
+			
+			local vm = self.Owner:GetViewModel()
+			
+			if !self.MaterialCached then
+				self.MaterialCached = {}
+			
+				local mats = vm:GetMaterials()
+				
+				local i = 0
+				
+				while i<#mats do
+					vm:SetSubMaterial(i,"")
+					i=i+1
+				end
+				
+				i = 0
+				
+				mats = self:GetMaterials()
+				
+				while i<#mats do
+					self:SetSubMaterial(i,"")
+					i=i+1
+				end
+				
+			end
+			
+			if #self.MaterialTable>=1 then
+				self:SetMaterial(self.MaterialTable[1])
+			else
+				self:SetMaterial("")
+			end
+			
+			for k,v in ipairs(self.MaterialTable) do
+				if !self.MaterialCached[k] then
+					self:SetSubMaterial(k-1,v)
+					vm:SetSubMaterial(k-1,v)
+					self.MaterialCached[k] = true
+				end
+			end
+			
+		end
+		
+		if !self.RTMaterialOverride or !self.RTCode then return end
 		
 		oldVmModel = vm:GetModel()
 		
@@ -108,7 +268,7 @@ if CLIENT then
 		end
 		render.Clear( 0, 0, 0, 0, true, true )
 		render.SetViewPort(0,0,512,512)
-		self:RTCode(TFA_RTMat)
+		self:RTCode(TFA_RTMat,w,h)
 		render.SetRenderTarget(oldrt)
 		render.SetViewPort(0,0,w,h)
 		

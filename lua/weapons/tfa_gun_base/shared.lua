@@ -142,6 +142,7 @@ SWEP.IronSightsAng = Vector(0,0,0)
 SWEP.IronSightsPos = Vector(0,0,0)
 SWEP.RunSightsAng = Vector(0,0,0)
 SWEP.RunSightsPos = Vector(0,0,0)
+SWEP.IronSightsSensitivity = 1
 SWEP.CLNearWallProgress=0 --BASE DEPENDENT VALUE.  DO NOT CHANGE OR THINGS MAY BREAK.  NO USE TO YOU.
 SWEP.CLRunSightsProgress=0 --BASE DEPENDENT VALUE.  DO NOT CHANGE OR THINGS MAY BREAK.  NO USE TO YOU.
 SWEP.CLIronSightsProgress=0 --BASE DEPENDENT VALUE.  DO NOT CHANGE OR THINGS MAY BREAK.  NO USE TO YOU.
@@ -1128,6 +1129,8 @@ function SWEP:AdjustMouseSensitivity()
 			sensval = sensval * self.IronSightsMoveSpeed
 		end
 	end
+	
+	sensval = sensval * Lerp( CLIENT and self.CLIronSightsProgress or self:GetIronSightsRatio() , 1, self.IronSightsSensitivity)
 	
 	return sensval
 end

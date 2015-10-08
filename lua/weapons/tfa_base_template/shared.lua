@@ -25,6 +25,7 @@ SWEP.Weight				= 30			-- This controls how "good" the weapon is for autopickup.
 
 --Firing related
 SWEP.Primary.Sound 			= Sound("")				-- This is the sound of the weapon, when you shoot.
+SWEP.Primary.SilencedSound 			= nil				-- This is the sound of the weapon, when silenced.
 SWEP.Primary.PenetrationMultiplier = 1 --Change the amount of something this gun can penetrate through
 SWEP.Primary.Damage		= 0.01					-- Damage, in standard damage points.
 SWEP.DamageType = nil--See DMG enum.  This might be DMG_SHOCK, DMG_BURN, DMG_BULLET, etc.
@@ -34,12 +35,16 @@ SWEP.Primary.RPM				= 600					-- This is in Rounds Per Minute / RPM
 SWEP.Primary.RPM_Semi				= nil					-- RPM for semi-automatic or burst fire.  This is in Rounds Per Minute / RPM
 SWEP.FiresUnderwater = false
 
+SWEP.CanBeSilenced = false --Can we silence?  Requires animations.
+SWEP.Silenced = false --Silenced by default?
+
 -- Selective Fire Stuff
 
 SWEP.SelectiveFire		= false --Allow selecting your firemode?
 SWEP.DisableBurstFire	= false --Only auto/single?
 SWEP.OnlyBurstFire		= false --No auto, only burst/single?
 SWEP.DefaultFireMode 	= "" --Default to auto or whatev
+SWEP.FireModeName = nil --Change to a text value to override it
 
 --Ammo Related
 
@@ -104,6 +109,7 @@ SWEP.ProjectileModel = nil --Entity to shoot's model
 SWEP.ViewModel			= "models/your/path/here.mdl" --Viewmodel path
 SWEP.ViewModelFOV			= 65		-- This controls how big the viewmodel looks.  Less is more.
 SWEP.ViewModelFlip			= false		-- Set this to true for CSS models, or false for everything else (with a righthanded viewmodel.)
+SWEP.MaterialTable = nil --Make sure the viewmodel and the worldmodel have the same material ids.  Next, fill this in with your desired submaterials.
 SWEP.UseHands = false --Use gmod c_arms system.
 SWEP.VMPos = Vector(0,0,0) --The viewmodel positional offset, constantly.  Subtract this from any other modifications to viewmodel position. 
 SWEP.VMAng = Vector(0,0,0) --The viewmodel angular offset, constantly.   Subtract this from any other modifications to viewmodel angle. 
@@ -134,6 +140,7 @@ SWEP.ThirdPersonReloadDisable=false --Disable third person reload?  True disable
 
 --[[SCOPES]]--
 
+SWEP.IronSightsSensitivity = 1 --Useful for a RT scope.  Change this to 0.25 for 25% sensitivity.  This is if normal FOV compenstaion isn't your thing for whatever reason, so don't change it for normal scopes.
 SWEP.BoltAction			= false  --Unscope/sight after you shoot?
 SWEP.Scoped				= false  --Draw a scope overlay?
 

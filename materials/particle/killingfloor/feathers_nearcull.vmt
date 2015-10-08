@@ -1,0 +1,8 @@
+SpriteCard
+{
+$basetexture "particle/killingfloor/feathers"
+$depthblend 1
+
+$startfadesize 0.01
+$endfadesize 0.04
+}

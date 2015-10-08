@@ -8,6 +8,7 @@ Purpose:  Animation / Utility
 
 function SWEP:AnimForce(str) 
 	
+
 	if !str then return end
 	
 	local vm = LocalPlayer():GetViewModel()
@@ -167,6 +168,12 @@ Purpose:  Animation / Utility
 
 function SWEP:ChooseReloadAnim()
 	if !self:OwnerIsValid() then return end
+	
+	if self.Callback.ChooseReloadAnim then
+		local retval = self.Callback.ChooseReloadAnim(self)
+		if retval != nil then return retval end
+	end
+	
 	--self:ResetEvents()
 	local tanim = ACT_VM_RELOAD
 	local success = true

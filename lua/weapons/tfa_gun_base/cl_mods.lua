@@ -405,7 +405,7 @@ function SWEP:UpdateBonePositions(vm)
 				}
 			end
 			if self.BlowbackBoneMods[bonename] then
-				if !self.SequenceEnabled[ACT_VM_RELOAD_EMPTY] or !( self.Blowback_PistolMode and self:GetReloading() ) then
+				if !( self.SequenceEnabled[ACT_VM_RELOAD_EMPTY] and self:GetReloading() ) or !( self.Blowback_PistolMode and self:GetReloading() ) then
 					vbones[bonename].pos = vbones[bonename].pos + self.BlowbackBoneMods[bonename].pos * self.BlowbackCurrent
 					vbones[bonename].angle = vbones[bonename].angle + self.BlowbackBoneMods[bonename].angle * self.BlowbackCurrent
 					vbones[bonename].scale = Lerp(self.BlowbackCurrent, vbones[bonename].scale,vbones[bonename].scale  *  self.BlowbackBoneMods[bonename].scale )

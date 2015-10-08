@@ -1,0 +1,5 @@
+SpriteCard
+{
+$basetexture "particle/celestia/celestia_sparkle"
+$translucent 1
+}

@@ -1,0 +1,7 @@
+UnlitGeneric
+{
+$basetexture "particle\VES advanced rifle\muzzleflash_purple"
+$additive 1
+$vertexcolor 1
+$vertexalpha 1
+}
