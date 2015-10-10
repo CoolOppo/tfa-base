@@ -93,7 +93,7 @@ function SWEP:ViewModelDrawn()
 			
 			if (v.bodygroup) then
 				for k, v in pairs( v.bodygroup ) do
-					if (model:GetBodygroup(k) != v) then
+					if (type(k)=="number") and (model:GetBodygroup(k) != v) then
 						model:SetBodygroup(k, v)
 					end
 				end
