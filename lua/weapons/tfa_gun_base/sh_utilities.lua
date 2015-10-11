@@ -1,3 +1,10 @@
+function SWEP:IsVehicleHidden()
+	if !self:OwnerIsValid() then return true end
+	if ( self.Owner:InVehicle() and !self.Owner:GetAllowWeaponsInVehicle() and !(self:GetDrawing() or self:GetHolstering() ) ) then
+		return true
+	end
+	return false
+end
 
 function SWEP:UpdateConDamage()
 	

@@ -328,8 +328,23 @@ function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet,
 			mainbul.Callback = TFBulletCallback
 		end
 		
-		self.Owner:FireBullets(mainbul)
-		
+		if IsValid(self.Owner:GetVehicle()) then
+			local veh = self.Owner:GetVehicle()
+			local phys = veh:GetPhysicsObject()
+			if IsValid(phys) then
+				veh.oldcollide = phys:IsCollisionEnabled()
+				veh.oldcollisiongroup = veh:GetCollisionGroup()
+				phys:EnableCollisions(false)
+				veh:SetCollisionGroup(COLLISION_GROUP_DEBRIS)
+			end
+			self.Owner:FireBullets(mainbul)
+			if IsValid(veh) and IsValid(phys) then
+				phys:EnableCollisions(veh.oldcollide and veh.oldcollide or true)
+				veh:SetCollisionGroup(veh.oldcollisiongroup and veh.oldcollisiongroup or COLLISION_GROUP_NONE)
+			end
+		else
+			self.Owner:FireBullets(mainbul)
+		end
 		
 	end
 	

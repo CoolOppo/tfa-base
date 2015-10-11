@@ -932,12 +932,25 @@ end)
 
 --Main weapon think
 
-hook.Add( "PlayerTick" , "PlayerTickTFA", function( ply )
-	local isc, ply, wep = PlayerCarryingTFAWeapon(ply)
-	if isc then
-		if wep.PlayerThink then
-			wep:PlayerThink( ply )
+hook.Add( "Tick" , "PlayerTickTFA", function( )
+	if SERVER then
+		for k,ply in pairs(player.GetAll()) do
+			local isc, ply, wep = PlayerCarryingTFAWeapon(ply)
+			if isc then
+				if wep.PlayerThink then
+					wep:PlayerThink( ply )
+				end
+			end
 		end
+	end
+	if CLIENT and IsValid(LocalPlayer()) then
+		local ply = LocalPlayer()
+		local isc, ply, wep = PlayerCarryingTFAWeapon(ply)
+		if isc then
+			if wep.PlayerThink then
+				wep:PlayerThink( ply )
+			end
+		end	
 	end
 end)
 	
