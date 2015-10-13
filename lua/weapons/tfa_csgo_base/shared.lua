@@ -439,23 +439,23 @@ end
 SWEP.VElements = {
 	["digit6"] = { type = "Quad", bone = "v_weapon.stattrack", rel = "", pos = Vector(0.25, -0.35, 0.4), angle = Angle(0, 90, 90), size = 0.01, draw_func = function( self ) 
 		DrawStattrackNumber(self,Stattrack_Calc(self,6))
-	end},
+	end, stattrack = true},
 	["digit5"] = { type = "Quad", bone = "v_weapon.stattrack", rel = "", pos = Vector(0.25, -0.1, 0.4), angle = Angle(0, 90, 90), size = 0.01, draw_func = function( self ) 
 		DrawStattrackNumber(self,Stattrack_Calc(self,5))
-	end},
+	end, stattrack = true},
 	["digit4"] = { type = "Quad", bone = "v_weapon.stattrack", rel = "", pos = Vector(0.25, 0.15, 0.4), angle = Angle(0, 90, 90), size = 0.01, draw_func = function( self ) 
 		DrawStattrackNumber(self,Stattrack_Calc(self,4))
-	end},
+	end, stattrack = true},
 	["digit3"] = { type = "Quad", bone = "v_weapon.stattrack", rel = "", pos = Vector(0.25, 0.4, 0.4), angle = Angle(0, 90, 90), size = 0.01, draw_func = function( self ) 
 		DrawStattrackNumber(self,Stattrack_Calc(self,3))
-	end},
+	end, stattrack = true},
 	["digit2"] = { type = "Quad", bone = "v_weapon.stattrack", rel = "", pos = Vector(0.25, 0.65, 0.4), angle = Angle(0, 90, 90), size = 0.01, draw_func = function( self ) 
 		DrawStattrackNumber(self,Stattrack_Calc(self,2))
-	end},
+	end, stattrack = true},
 	["digit1"] = { type = "Quad", bone = "v_weapon.stattrack", rel = "", pos = Vector(0.25, 0.9, 0.4), angle = Angle(0, 90, 90), size = 0.01, draw_func = function( self ) 
 		DrawStattrackNumber(self,Stattrack_Calc(self,1))
-	end},
-	["stattrak"] = { type = "Model", model = "models/weapons/tfa_csgo/stattrack.mdl", bone = "v_weapon.stattrack", rel = "", pos = Vector(0, 0, 0), angle = Angle(0, -90, 0), size = Vector(1, 1, 1), color = Color(255, 255, 255, 255), surpresslightning = false, material = "", skin = 0, bodygroup = {} }
+	end, stattrack = true },
+	["stattrak"] = { type = "Model", model = "models/weapons/tfa_csgo/stattrack.mdl", bone = "v_weapon.stattrack", rel = "", pos = Vector(0, 0, 0), angle = Angle(0, -90, 0), size = Vector(1, 1, 1), color = Color(255, 255, 255, 255), surpresslightning = false, material = "", skin = 0, bodygroup = {}, stattrack = true }
 }
 
 SWEP.Kills = 0
@@ -624,5 +624,45 @@ function SWEP:Holster( switchtowep )
 			end
 		end
 		return true
+	end
+end
+
+if CLIENT then
+	CreateClientConVar("cl_tfa_csgo_stattrack",1,true,true)
+end
+
+function SWEP:UpdateStattrack()
+	local dostattrack = GetConVarNumber("cl_tfa_csgo_stattrack",1)==1
+	for k,v in pairs(self.VElements) do
+		if v.stattrack then
+			if v.color then 
+				v.pos.z = dostattrack and 0 or 4000
+			elseif v.pos then
+				v.pos.z = dostattrack and 0.4 or 4000			
+			end
+		end
+	end
+end
+
+function SWEP:Think2()
+	if !self:OwnerIsValid() then return end
+
+	if self.Callback.Think2 then
+		local val = self.Callback.Think2(self)
+		if val then return val end
+	end
+	
+	self:ProcessEvents()
+	self:ProcessFireMode()
+	self:ProcessTimers()
+	self:UserInput()
+	self:IronsSprint()
+	self:ProcessHoldType()
+	if self.Owner:GetVelocity():Length()>self.Owner:GetWalkSpeed()*0.4 then
+		--self:CleanParticles()
+	end
+	
+	if CLIENT then
+		self:UpdateStattrack()
 	end
 end

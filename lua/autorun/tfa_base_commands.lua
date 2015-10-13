@@ -506,8 +506,6 @@ if CLIENT then
 	end
 	
 	hook.Add("PopulateToolMenu", "tfaAddOption", tfaAddOption)
-
-
 else
 	AddCSLuaFile()
 end
