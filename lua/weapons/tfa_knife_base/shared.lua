@@ -250,7 +250,7 @@ function SWEP:ThrowKnife()
 	
 		self.Weapon:EmitSound(self.Primary.Sound)
 		if (SERVER) then
-			local knife = ents.Create("tfa_css_thrown_knife")
+			local knife = ents.Create("tfa_thrown_blade")
 			if IsValid(knife) then
 				knife:SetAngles(self.Owner:EyeAngles())
 				knife:SetPos(self.Owner:GetShootPos())
@@ -259,7 +259,7 @@ function SWEP:ThrowKnife()
 				knife:SetPhysicsAttacker(self.Owner)
 				knife:Spawn()
 				knife:Activate()
-				knife:SetNWString("WeaponToGive", self.Gun)
+				knife:SetNWString("Wep", self.Gun)
 				self.Owner:SetAnimation(PLAYER_ATTACK1)
 				local phys = knife:GetPhysicsObject()
 				phys:SetVelocity(self.Owner:GetAimVector() * 1500)
