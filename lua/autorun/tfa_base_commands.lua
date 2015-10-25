@@ -98,7 +98,8 @@ if CLIENT then
 	
 	local tfaOptionCL = {Options = {}, CVars = {}, Label = "#Presets", MenuButton = "1", Folder = "TFA SWEP Settings Client"}
 	
-	tfaOptionCL.Options["#Default"] = { cl_tfa_scope_sensitivity_autoscale = "1",
+	tfaOptionCL.Options["#Default"] = { cl_tfa_3dscope = "1",
+								cl_tfa_scope_sensitivity_autoscale = "1",
 								cl_tfa_scope_sensitivity =	"100",
 								cl_tfa_ironsights_toggle = "1",
 								cl_tfa_ironsights_resight = "1",
@@ -108,6 +109,10 @@ if CLIENT then
 	panel:AddControl("ComboBox", tfaOptionCL)
 	
 	--These are the panel controls.  Adding these means that you don't have to go into the console.
+		panel:AddControl("CheckBox", {
+		Label = "Enable 3D Scopes (Re-Draw Gun After Changing)",
+		Command = "cl_tfa_3dscope",
+	})
 	
 		panel:AddControl("CheckBox", {
 		Label = "Use Viebob While Drawing",
@@ -506,6 +511,8 @@ if CLIENT then
 	end
 	
 	hook.Add("PopulateToolMenu", "tfaAddOption", tfaAddOption)
+
+
 else
 	AddCSLuaFile()
 end
@@ -930,25 +937,12 @@ end)
 
 --Main weapon think
 
-hook.Add( "Tick" , "PlayerTickTFA", function( )
-	if SERVER then
-		for k,ply in pairs(player.GetAll()) do
-			local isc, ply, wep = PlayerCarryingTFAWeapon(ply)
-			if isc then
-				if wep.PlayerThink then
-					wep:PlayerThink( ply )
-				end
-			end
+hook.Add( "PlayerTick" , "PlayerTickTFA", function( ply )
+	local isc, ply, wep = PlayerCarryingTFAWeapon(ply)
+	if isc then
+		if wep.PlayerThink then
+			wep:PlayerThink( ply )
 		end
-	end
-	if CLIENT and IsValid(LocalPlayer()) then
-		local ply = LocalPlayer()
-		local isc, ply, wep = PlayerCarryingTFAWeapon(ply)
-		if isc then
-			if wep.PlayerThink then
-				wep:PlayerThink( ply )
-			end
-		end	
 	end
 end)
 	

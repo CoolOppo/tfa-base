@@ -1792,7 +1792,7 @@ function SWEP:PlayerThinkClientFrame( ply )
 	
 	self.pre_vm_muzzlepos=self:GetMuzzlePos( true ) or tmptable
 	
-	if self:IsCurrentlyScoped() or self:IsVehicleHidden() then
+	if self:IsCurrentlyScoped() then
 		self.Owner:DrawViewModel(false)
 		local vmod= self.Owner:GetViewModel()
 		if IsValid(vmod) then

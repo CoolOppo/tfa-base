@@ -21,8 +21,6 @@ function SWEP:DrawHUD()
 		if val then return val end
 	end
 	
-	if self:IsVehicleHidden() then return end
-	
 	--Crosshair
 	local drawcrossy
 	

@@ -449,8 +449,6 @@ end
 SWEP.Callback.Think2 = function(self)
 	if !self:OwnerIsValid() then return end
 	
-	if !self.PrevBlockRat then return end
-	
 	local isr = self:GetIronSightsRatio()
 	
 	local ply;
