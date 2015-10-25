@@ -391,6 +391,7 @@ function SWEP:UpdateSkin()
 			local str = self.Skins[self.Skin].tbl[1]
 			if type(str) == "string" then
 				self:SetMaterial(self.Skins[self.Skin].tbl[1])
+				return
 			end
 		end
 	end
@@ -432,7 +433,7 @@ local function DrawStattrackNumber( self, number )
 	render.PopFilterMag()
 end
 
-local function Stattrack_Calc( self, digit )
+local function Stattrack_Calc( self, digit )	
 	local stattrack_string
 	if !self.Kills then self.Kills = 0 end
 	stattrack_string = tostring(math.min(math.Round(self.Kills),999999))
@@ -445,23 +446,24 @@ end
 SWEP.VElements = {
 	["digit6"] = { type = "Quad", bone = "v_weapon.stattrack", rel = "", pos = Vector(0.25, -0.35, 0.4), angle = Angle(0, 90, 90), size = 0.01, draw_func = function( self ) 
 		DrawStattrackNumber(self,Stattrack_Calc(self,6))
-	end},
+	end, stattrack = true},
 	["digit5"] = { type = "Quad", bone = "v_weapon.stattrack", rel = "", pos = Vector(0.25, -0.1, 0.4), angle = Angle(0, 90, 90), size = 0.01, draw_func = function( self ) 
 		DrawStattrackNumber(self,Stattrack_Calc(self,5))
-	end},
+	end, stattrack = true},
 	["digit4"] = { type = "Quad", bone = "v_weapon.stattrack", rel = "", pos = Vector(0.25, 0.15, 0.4), angle = Angle(0, 90, 90), size = 0.01, draw_func = function( self ) 
 		DrawStattrackNumber(self,Stattrack_Calc(self,4))
-	end},
+	end, stattrack = true},
 	["digit3"] = { type = "Quad", bone = "v_weapon.stattrack", rel = "", pos = Vector(0.25, 0.4, 0.4), angle = Angle(0, 90, 90), size = 0.01, draw_func = function( self ) 
 		DrawStattrackNumber(self,Stattrack_Calc(self,3))
-	end},
+	end, stattrack = true},
 	["digit2"] = { type = "Quad", bone = "v_weapon.stattrack", rel = "", pos = Vector(0.25, 0.65, 0.4), angle = Angle(0, 90, 90), size = 0.01, draw_func = function( self ) 
 		DrawStattrackNumber(self,Stattrack_Calc(self,2))
-	end},
+	end, stattrack = true},
 	["digit1"] = { type = "Quad", bone = "v_weapon.stattrack", rel = "", pos = Vector(0.25, 0.9, 0.4), angle = Angle(0, 90, 90), size = 0.01, draw_func = function( self ) 
 		DrawStattrackNumber(self,Stattrack_Calc(self,1))
-	end},
-	["stattrak"] = { type = "Model", model = "models/weapons/tfa_csgo/stattrack.mdl", bone = "v_weapon.stattrack", rel = "", pos = Vector(0, 0, 0), angle = Angle(0, -90, 0), size = Vector(1, 1, 1), color = Color(255, 255, 255, 255), surpresslightning = false, material = "", skin = 0, bodygroup = {} }
+		self:UpdateStattrack()
+	end, stattrack = true },
+	["stattrak"] = { type = "Model", model = "models/weapons/tfa_csgo/stattrack.mdl", bone = "v_weapon.stattrack", rel = "", pos = Vector(0, 0, 0), angle = Angle(0, -90, 0), size = Vector(1, 1, 1), color = Color(255, 255, 255, 255), surpresslightning = false, material = "", skin = 0, bodygroup = {}, stattrack = true }
 }
 
 SWEP.Kills = 0
@@ -631,15 +633,17 @@ function SWEP:Holster( switchtowep )
 		end
 		return true
 	end
-<<<<<<< HEAD
 end
 
 if CLIENT then
-	CreateClientConVar("cl_tfa_csgo_stattrack",1,true,true)
+	if !GetConVar("cl_tfa_csgo_stattrack") then
+		CreateClientConVar("cl_tfa_csgo_stattrack",1,true,true)
+	end
 end
 
 function SWEP:UpdateStattrack()
 	local dostattrack = GetConVarNumber("cl_tfa_csgo_stattrack",1)==1
+	--print(dostattrack)
 	for k,v in pairs(self.VElements) do
 		if v.stattrack then
 			if v.color then 
@@ -668,10 +672,4 @@ function SWEP:Think2()
 	if self.Owner:GetVelocity():Length()>self.Owner:GetWalkSpeed()*0.4 then
 		--self:CleanParticles()
 	end
-	
-	if CLIENT then
-		self:UpdateStattrack()
-	end
-=======
->>>>>>> parent of a7a0125... Stattrack Hiding
 end

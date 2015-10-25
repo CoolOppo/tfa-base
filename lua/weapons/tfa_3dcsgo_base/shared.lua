@@ -1,4 +1,4 @@
-DEFINE_BASECLASS("tfa_gun_base")
+DEFINE_BASECLASS("tfa_csgo_base")
 SWEP.Secondary.ScopeZoom			= 1
 SWEP.Secondary.UseACOG			= false	
 SWEP.Secondary.UseMilDot			= false		
@@ -214,12 +214,12 @@ SWEP.RTCode = function( self, rt, scrw, scrh )
 			crosscol.r = GetConVarNumber("cl_tfa_hud_crosshair_color_r")
 			crosscol.g = GetConVarNumber("cl_tfa_hud_crosshair_color_g")
 			crosscol.b = GetConVarNumber("cl_tfa_hud_crosshair_color_b")
-			crosscol.a = GetConVarNumber("cl_tfa_hud_crosshair_color_a")
+			crosscol.a = GetConVarNumber("cl_tfa_hud_crosshair_color_a")*(1-math.Clamp(self.Owner:GetVelocity():Length()/120,0,1)*0.6)
 			surface.SetDrawColor(crosscol)
 		end
 		surface.SetMaterial(self.myreticule)
-		local tmpborderw = rtw*(1-self.ScopeReticule_Scale[1])/2
-		local tmpborderh = rth*(1-self.ScopeReticule_Scale[2])/2
+		local tmpborderw = rtw*(1-self.ScopeReticule_Scale[1])/2*(1-math.Clamp(self.Owner:GetVelocity():Length()/120,0,1)*0.2)
+		local tmpborderh = rth*(1-self.ScopeReticule_Scale[2])/2*(1-math.Clamp(self.Owner:GetVelocity():Length()/120,0,1)*0.2)
 		surface.DrawTexturedRect(rtow+tmpborderw,rtoh+tmpborderh,rtw-tmpborderw*2,rth-tmpborderh*2)		
 		surface.SetDrawColor(color_black)
 		draw.NoTexture()

@@ -442,11 +442,16 @@ Returns:  The quadratically interpolated angle.
 Purpose:  Utility function / Animation
 ]]--
 
+function util_NormalizeAngles(a)
+a.p = math.NormalizeAngle(a.p)
+a.y = math.NormalizeAngle(a.y)
+a.r = math.NormalizeAngle(a.r)
+return a
+end
+
+
 local function QerpAngle( progress, startang, endang, totaltime )
-	if !totaltime then
-		totaltime = 1
-	end
-	return JuckeyLerpAngle(Qerp(progress,0,1,totaltime),startang,endang)
+	return util_NormalizeAngles(JuckeyLerpAngle(Qerp(progress,0,1,totaltime),startang,endang))
 end
 
 --[[ 
@@ -2025,7 +2030,7 @@ function SWEP:Sway(pos,ang)
 	pos:Add( oldang:Right() * angc.y*posfac )
 	pos:Add( oldang:Up() * -angc.p*posfac )
 	
-	return pos,ang
+	return pos,util_NormalizeAngles(ang)
 end
 
 --[[ 
@@ -2035,6 +2040,11 @@ Returns:  New position and angle.
 Notes:  This is used for calculating the swep viewmodel position.  However, don't put per-frame logic in this.  Instead do that in PlayerThinkClientFrame
 Purpose:  Main SWEP function
 ]]--
+	
+local ang2=Angle()
+local ang3=Angle()
+local ang4=Angle()
+local ang5=Angle()
 
 function SWEP:GetViewModelPosition(pos, ang)
 
@@ -2104,11 +2114,21 @@ function SWEP:GetViewModelPosition(pos, ang)
 	 --The viewmodel angular offset, constantly. 
 	ang:RotateAroundAxis(ang:Up(), 		self.VMAng.y)
 	ang:RotateAroundAxis(ang:Forward(), 	self.VMAng.z)
-	 
-	local ang2=Angle(ang.p,ang.y,ang.r)
-	local ang3=Angle(ang.p,ang.y,ang.r)	
-	local ang4=Angle(ang.p,ang.y,ang.r)	
-	local ang5=Angle(ang.p,ang.y,ang.r)	
+	
+	ang:Normalize()
+	
+	ang2.p = ang.p
+	ang3.p = ang.p
+	ang4.p = ang.p
+	ang5.p = ang.p
+	ang2.y = ang.y
+	ang3.y = ang.y
+	ang4.y = ang.y
+	ang5.y = ang.y
+	ang2.r = ang.r
+	ang3.r = ang.r
+	ang4.r = ang.r
+	ang5.r = ang.r
 	
 	--[[
 	self.SwayScale 	= Lerp(isp,1,self.IronBobMult)
