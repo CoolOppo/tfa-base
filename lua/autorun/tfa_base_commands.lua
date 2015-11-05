@@ -1038,7 +1038,7 @@ end
 
 --Movement speed
 
-if GetConVarNumber("sv_tfa_compatibility_movement",0)!=1 then
+if !(Clockwork) and GetConVarNumber("sv_tfa_compatibility_movement",0)!=1 then
 	hook.Add("SetupMove","tfa_setupmove",function( ply, movedata, commanddata ) 
 
 		local iscarryingtfaweapon, pl, wep = PlayerCarryingTFAWeapon( ply )
@@ -1483,3 +1483,57 @@ sound.Add({
 	pitch = { 97, 103 }
 })
 
+--Skin System
+
+if SERVER then
+	AddCSLuaFile()
+	util.AddNetworkString("TFA_CSGO_SKIN")
+	util.AddNetworkString("TFA_CSGO_SKIN_BROADCAST")
+	
+	net.Receive("TFA_CSGO_SKIN",function(client,len) 
+	
+		local ent = net.ReadEntity()
+		
+		if IsValid(ent) then
+			if ent.Owner == client then
+				local skin = net.ReadString()
+				ent:SetNWString("skin",skin and skin or "")
+				if ent.UpdateSkin then
+					if ent.CallOnClient then
+						ent:CallOnClient("UpdateSkin","")
+					end
+					ent:UpdateSkin()
+				end
+				
+				net.Start("TFA_CSGO_SKIN_BROADCAST")
+				net.WriteEntity(ent)
+				net.WriteString(skin)
+				net.Broadcast()
+			end
+		end
+	
+	end)
+end
+
+if CLIENT then
+	net.Receive("TFA_CSGO_SKIN_BROADCAST",function() 
+	
+		local ent = net.ReadEntity()
+		
+		if IsValid(ent) then
+			
+			local skin = net.ReadString()
+			
+			ent.Skin = skin and skin or ""
+			
+			ent:SetNWString("skin",skin and skin or "")
+			
+			if ent.UpdateSkin then
+				ent:UpdateSkin()
+				ent:CallOnClient("UpdateSkin","")
+			end
+			
+		end
+	
+	end)
+end

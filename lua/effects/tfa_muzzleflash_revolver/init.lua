@@ -85,6 +85,20 @@ function EFFECT:Init( data )
 	local dotang = math.deg( math.acos( math.abs(dot) ) )	
 	local halofac =  math.sqrt(math.Clamp( 1 - (dotang/90), 0, 1))
 	
+	if CLIENT and !IsValid(ownerent) then ownerent = LocalPlayer() end
+	
+	local dlight = DynamicLight( ownerent:EntIndex() )
+	if ( dlight ) then
+		dlight.pos = self.vOffset - ownerent:EyeAngles():Right()*5 + 1.05 * ownerent:GetVelocity() * FrameTime()
+		dlight.r = 255
+		dlight.g = 192
+		dlight.b = 64
+		dlight.brightness = 4.5
+		dlight.Decay = 1000
+		dlight.Size = 96
+		dlight.DieTime = CurTime() + 0.5
+	end
+	
 	local emitter = ParticleEmitter( self.vOffset )
 		
 		--local particle = emitter:Add( "effects/muzzleflashX_nemole", self.vOffset )

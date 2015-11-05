@@ -34,6 +34,7 @@ function EFFECT:Init( data )
 	local wepent = Entity(math.Round(self.StartPacket.z))
 	
 	local ownerent = player.GetByID(math.Round(self.StartPacket.x))
+	
 	local serverside = false
 	if math.Round(self.StartPacket.y)==1 then
 		serverside = true
@@ -85,29 +86,68 @@ function EFFECT:Init( data )
 	local dotang = math.deg( math.acos( math.abs(dot) ) )	
 	local halofac =  math.Clamp( 1 - (dotang/90), 0, 1)
 	
+	if CLIENT and !IsValid(ownerent) then ownerent = LocalPlayer() end
+	
+	local dlight = DynamicLight( ownerent:EntIndex() )
+	if ( dlight ) then
+		dlight.pos = self.vOffset - ownerent:EyeAngles():Right()*5 + 1.05 * ownerent:GetVelocity() * FrameTime()
+		dlight.r = 255
+		dlight.g = 192
+		dlight.b = 80
+		dlight.brightness = 4
+		dlight.Decay = 1750
+		dlight.Size = 96
+		dlight.DieTime = CurTime() + 0.3
+	end
+	
 	local emitter = ParticleEmitter( self.vOffset )
 		
-		local particle = emitter:Add( "effects/muzzleflashX_nemole", self.vOffset )
-		
-		if (particle) then
-			particle:SetVelocity( dir*4 + 1.05 * AddVel )
-			particle:SetLifeTime( 0 )
-			particle:SetDieTime( 0.1 )
-			particle:SetStartAlpha( math.Rand( 200, 255 ) )
-			particle:SetEndAlpha( 0 )
-			--particle:SetStartSize( 8 * (halofac*0.8+0.2), 0, 1)
-			--particle:SetEndSize( 0 )
-			particle:SetStartSize( 3 * (halofac*0.8+0.2), 0, 1)
-			particle:SetEndSize( 8 * (halofac*0.8+0.2), 0, 1 )
-			local r = math.Rand(-10, 10) * 3.14/180
-			particle:SetRoll( r )
-			particle:SetRollDelta( r/5)
-			particle:SetColor( 255 , 218 , 97 )
-			particle:SetLighting(false)
-			particle.FollowEnt = data:GetEntity()
-			particle.Att = self.Attachment
-			TFARegPartThink(particle,TFAMuzzlePartFunc)
-				particle:SetPos(vector_origin)
+		if math.random(1,2)!=1 then
+			local particle = emitter:Add( "effects/muzzleflashX_nemole", self.vOffset )
+			
+			if (particle) then
+				particle:SetVelocity( dir*4 + 1.05 * AddVel )
+				particle:SetLifeTime( 0 )
+				particle:SetDieTime( 0.1 )
+				particle:SetStartAlpha( math.Rand( 200, 255 ) )
+				particle:SetEndAlpha( 0 )
+				--particle:SetStartSize( 8 * (halofac*0.8+0.2), 0, 1)
+				--particle:SetEndSize( 0 )
+				particle:SetStartSize( 3 * (halofac*0.8+0.2), 0, 1)
+				particle:SetEndSize( 8 * (halofac*0.8+0.2), 0, 1 )
+				local r = math.Rand(-10, 10) * 3.14/180
+				particle:SetRoll( r )
+				particle:SetRollDelta( r/5)
+				particle:SetColor( 255 , 255 , 255 )
+				particle:SetLighting(false)
+				particle.FollowEnt = data:GetEntity()
+				particle.Att = self.Attachment
+				TFARegPartThink(particle,TFAMuzzlePartFunc)
+					particle:SetPos(vector_origin)
+			end
+		else
+			local particle = emitter:Add( "effects/muzzleflashX_nemole", self.vOffset )
+			
+			if (particle) then
+				particle:SetVelocity( dir*4 + 1.05 * AddVel )
+				particle:SetLifeTime( 0 )
+				particle:SetDieTime( 0.1 )
+				particle:SetStartAlpha( math.Rand( 200, 255 ) )
+				particle:SetEndAlpha( 0 )
+				--particle:SetStartSize( 8 * (halofac*0.8+0.2), 0, 1)
+				--particle:SetEndSize( 0 )
+				particle:SetStartSize( 3 * (halofac*0.8+0.2) * 0.3, 0, 1)
+				particle:SetEndSize( 8 * (halofac*0.8+0.2) * 0.3, 0, 1 )
+				local r = math.Rand(-10, 10) * 3.14/180
+				particle:SetRoll( r )
+				particle:SetRollDelta( r/5)
+				particle:SetColor( 255 , 255 , 255 )
+				particle:SetLighting(false)
+				particle.FollowEnt = data:GetEntity()
+				particle.Att = self.Attachment
+				TFARegPartThink(particle,TFAMuzzlePartFunc)
+					particle:SetPos(vector_origin)
+			end		
 		end
 		
 		particle = emitter:Add( "effects/scotchmuzzleflash"..math.random(1,4), self.vOffset )
@@ -124,7 +164,7 @@ function EFFECT:Init( data )
 				particle:SetEndSize( 8 * (halofac*0.8+0.2) )
 				particle:SetRoll( math.rad(math.Rand(0, 360)) )
 				particle:SetRollDelta( math.rad(math.Rand(-40, 40)) )
-				particle:SetColor( 255 , 218 , 97 )
+				particle:SetColor( 255 , 255 , 255 )
 				particle:SetLighting(false)
 				particle.FollowEnt = data:GetEntity()
 				particle.Att = self.Attachment
