@@ -34,6 +34,7 @@ function EFFECT:Init( data )
 	local wepent = Entity(math.Round(self.StartPacket.z))
 	
 	local ownerent = player.GetByID(math.Round(self.StartPacket.x))
+	
 	local serverside = false
 	if math.Round(self.StartPacket.y)==1 then
 		serverside = true
@@ -91,93 +92,48 @@ function EFFECT:Init( data )
 	if ( dlight ) then
 		dlight.pos = self.vOffset - ownerent:EyeAngles():Right()*5 + 1.05 * ownerent:GetVelocity() * FrameTime()
 		dlight.r = 255
-		dlight.g = 140
-		dlight.b = 32
+		dlight.g = 255
+		dlight.b = 255
 		dlight.brightness = 5
 		dlight.Decay = 1750
-		dlight.Size = 128
+		dlight.Size = 96
 		dlight.DieTime = CurTime() + 0.3
 	end
 	
 	local emitter = ParticleEmitter( self.vOffset )
-		
-		--local particle = emitter:Add( "effects/muzzleflashX_nemole", self.vOffset )
-		
-		if (particle) then
-			particle:SetVelocity( dir*4 + 1.05 * AddVel )
-			particle:SetLifeTime( 0 )
-			particle:SetDieTime( 0.08 )
-			particle:SetStartAlpha( math.Rand( 200, 255 ) )
-			particle:SetEndAlpha( 0 )
-			--particle:SetStartSize( 8 * (halofac*0.8+0.2), 0, 1)
-			--particle:SetEndSize( 0 )
-			particle:SetStartSize( 2 * (halofac*0.8+0.2), 0, 1)
-			particle:SetEndSize( 4 * (halofac*0.8+0.2), 0, 1 )
-			local r = math.Rand(-10, 10) * 3.14/180
-			particle:SetRoll( r )
-			particle:SetRollDelta( r/5)
-			particle:SetColor( 255 , 218 , 97 )
-			particle:SetLighting(false)
-			particle.FollowEnt = data:GetEntity()
-			particle.Att = self.Attachment
-			TFARegPartThink(particle,TFAMuzzlePartFunc)
-				particle:SetPos(vector_origin)
-		end
-		
-		for i=1,1 do
-			particle = emitter:Add( "effects/scotchmuzzleflash"..math.random(1,4), self.vOffset )
+	
+	for i=1,2 do
 			
-			if (particle) then
-				particle:SetVelocity( dir*4 + 1.05 * AddVel )
-				particle:SetLifeTime( 0 )
-				particle:SetDieTime( 0.10 )
-				particle:SetStartAlpha( math.Rand( 225, 255 ) )
-				particle:SetEndAlpha( 0 )
-				--particle:SetStartSize( 7.5 * (halofac*0.8+0.2), 0, 1)
-				--particle:SetEndSize( 0 )
-				particle:SetStartSize( 6 * (halofac*0.8+0.2), 0, 1)
-				particle:SetEndSize( 10 * (halofac*0.8+0.2) )
-				particle:SetRoll( math.rad(math.Rand(0, 360)) )
-				particle:SetRollDelta( math.rad(math.Rand(-40, 40)) )
-				particle:SetColor( 255 , 218 , 97 )
-				particle:SetLighting(false)
-				particle.FollowEnt = data:GetEntity()
-				particle.Att = self.Attachment
-				TFARegPartThink(particle,TFAMuzzlePartFunc)
-			end
+			particle = emitter:Add( "effects/splash"..tostring(math.random(1,2)), self.vOffset )
+				
+				if (particle) then
+					particle:SetVelocity( dir*4 + 1.05 * AddVel )
+					particle:SetLifeTime( 0 )
+					particle:SetDieTime( 0.15 )
+					particle:SetStartAlpha( math.Rand( 32, 64 ) )
+					particle:SetEndAlpha( 0 )
+					--particle:SetStartSize( 7.5 * (halofac*0.8+0.2), 0, 1)
+					--particle:SetEndSize( 0 )
+					particle:SetStartSize( 3 * (halofac*0.8+0.2), 0, 1)
+					particle:SetEndSize( 8 * (halofac*0.8+0.2) )
+					particle:SetRoll( math.rad(math.Rand(0, 360)) )
+					particle:SetRollDelta( math.rad(math.Rand(-40, 40)) )
+					particle:SetColor( 255 , 255 , 255 )
+					particle:SetLighting(false)
+					particle.FollowEnt = data:GetEntity()
+					particle.Att = self.Attachment
+					TFARegPartThink(particle,TFAMuzzlePartFunc)
+				end
 		end
 		
-		for i=0, 5 do
-			local particle = emitter:Add( "particles/flamelet"..math.random(1,5), self.vOffset + (dir * 0.6 * i))
-			if (particle) then
-				particle:SetVelocity((dir * 19 * i) + 1.05 * AddVel )
-				particle:SetLifeTime( 0 )
-				particle:SetDieTime( 0.075 )
-				particle:SetStartAlpha( math.Rand( 200, 255 ) )
-				particle:SetEndAlpha( 0 )
-				--particle:SetStartSize( math.max(5.4 - 0.55 * i,1) )
-				--particle:SetEndSize( 0 )
-				particle:SetStartSize( math.max(5.4 - 0.55 * i,1)*0.55 )
-				particle:SetEndSize( math.max(5.4 - 0.55 * i,1)*0.95 )
-				particle:SetRoll( math.rad(math.Rand(0, 360)) )
-				particle:SetRollDelta( math.rad(math.Rand(-40, 40)) )
-				particle:SetColor( 255 , 218 , 97 )
-				particle:SetLighting(false)
-				particle.FollowEnt = data:GetEntity()
-				particle.Att = self.Attachment
-				TFARegPartThink(particle,TFAMuzzlePartFunc)
-				particle:SetPos(vector_origin)
-			end
-		end
-		
-		for i=0, 7 do
+		for i=0, 6 do
 		
 			local particle = emitter:Add( "particles/smokey", self.vOffset + dir * math.Rand(6, 10 ))
 			if (particle) then
 				particle:SetVelocity(VectorRand() * 10 + dir * math.Rand(15,20) + 1.05 * AddVel )
 				particle:SetLifeTime( 0 )
 				particle:SetDieTime( math.Rand( 0.6, 0.7 ) )
-				particle:SetStartAlpha( math.Rand( 8, 12 ) )
+				particle:SetStartAlpha( math.Rand( 6, 10 ) )
 				particle:SetEndAlpha( 0 )
 				particle:SetStartSize( math.Rand(5,7) )
 				particle:SetEndSize( math.Rand(12,14) )
@@ -194,39 +150,11 @@ function EFFECT:Init( data )
 			
 		end
 		
-		local sparkcount = math.random(4,6)		
-		for i=0, sparkcount do
-			local particle = emitter:Add("effects/yellowflare", self.Position)
-			if (particle) then
-			
-				particle:SetVelocity(VectorRand() * 40 + dir * math.Rand(40,100) + 1.05 * AddVel )
-				particle:SetLifeTime( 0 )
-				particle:SetDieTime( math.Rand( 0.4, 0.7 ) )
-				particle:SetStartAlpha(255)
-				particle:SetEndAlpha( 0 )
-				particle:SetStartSize(.3)
-				particle:SetEndSize(2)
-				particle:SetRoll( math.rad(math.Rand(0, 360)) )
-				particle:SetGravity(Vector(0, 0, -50))
-				particle:SetAirResistance(50)
-				particle:SetStartLength(0.1)
-				particle:SetEndLength(0)
-				particle:SetColor( 255 , 215 , 192 ) 
-				particle:SetVelocityScale(true)
-				particle:SetThinkFunction( function( pa )
-					pa:SetVelocity( pa:GetVelocity() + VectorRand()*5)
-					pa:SetNextThink( CurTime() + 0.01 )
-				end )
-				particle:SetNextThink( CurTime() + 0.01 )
-				
-			end
-		end
-		
 		if GetConVarNumber("cl_tfa_fx_gasblur",1)==1 then
-			for i=0, 3 do
+			for i=0, 2 do
 				local particle = emitter:Add( "sprites/heatwave", self.vOffset + (dir * i) )
 				if (particle) then
-					particle:SetVelocity((dir * 25 * i) + 1.05 * AddVel + VectorRand()*5 )
+					particle:SetVelocity((dir * 25 * i) + 1.05 * AddVel )
 					particle:SetLifeTime( 0 )
 					particle:SetDieTime( math.Rand( 0.05, 0.15 ) )
 					particle:SetStartAlpha( math.Rand( 200, 225 ) )

@@ -91,7 +91,9 @@ if CLIENT then
 					if IsValid(vm) then
 						
 						if v.oldVmModel != vm:GetModel() or ( IsValid(self) and oldwepclass != self:GetClass() ) then
-							local matcount = #vm:GetMaterials()
+							local mats = vm:GetMaterials()
+							if !mats then return end
+							local matcount = #mats
 							local i=0
 							while i<=matcount do
 								self.Owner:GetViewModel():SetSubMaterial(i,"")

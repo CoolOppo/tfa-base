@@ -88,6 +88,36 @@ Purpose:  Autodetection
 ]]--
 
 function SWEP:IconFix()
+	self.Gun = self.ClassName
+	local tselicon
+	local proceed = true
+	if self.WepSelectIcon then
+		tselicon = string.lower(type(self.WepSelectIcon))
+	else
+		tselicon = nil
+	end
+	
+	if self.WepSelectIcon then
+		if tselicon == "string" then
+			self.WepSelectIcon = surface.GetTextureID(self.WepSelectIcon)
+			proceed = false
+			print("string")
+		--[[elseif tselicon == "number" or tselicon == "integer" or tselicon == "int" and self.WepSelectIcon!=212 then
+			--We're good
+			proceed = false
+			print(self.WepSelectIcon)
+			print("int")]]--
+		else
+		
+		end
+	end
+	
+	if proceed then
+		if file.Exists("materials/vgui/hud/"..self.ClassName..".vmt","GAME") then
+			self.WepSelectIcon = surface.GetTextureID("vgui/hud/"..self.ClassName)
+		end
+	end
+	--[[
 	local ff = file.Find(self.WepSelectIcon,"GAME")
 	if !ff or #ff<=0 then
 		local tstr = "materials/"..self.WepSelectIcon.."*"
@@ -110,7 +140,7 @@ function SWEP:IconFix()
 			end
 		end
 	end
-	self.WepSelectIcon = surface.GetTextureID(self.WepSelectIcon)
+	]]--
 end
 
 --[[ 

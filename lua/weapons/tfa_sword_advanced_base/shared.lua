@@ -43,7 +43,7 @@ SWEP.IsSilent = true
 --[[Worldmodel Variables]]--
 
 SWEP.HoldType 				= "melee2"		-- how others view you carrying the weapon
-SWEP.BlockHoldType 				= "magic"		-- how others view you carrying the weapon, while blocking
+SWEP.BlockHoldType 				= "slam"		-- how others view you carrying the weapon, while blocking
 --[[
 Options:
 normal - Pistol Idle / Weaponless, hands at sides
@@ -454,12 +454,12 @@ SWEP.Callback.Think2 = function(self)
 	local ply;
 	ply = self.Owner
 	
-	if self.PrevBlockRat<=0.3 and isr>0.3 then
+	if self.PrevBlockRat and isr and self.PrevBlockRat<=0.3 and isr>0.3 then
 		self:SetBlockStart(CurTime())
 		--print(CurTime())
 	end
 	
-	if isr<0.1 and self.PrevBlockRat>0.1 then
+	if isr and self.PrevBlockRat and isr<0.1 and self.PrevBlockRat>0.1 then
 		self:SetBlockStart(-1)
 		--print(-1)
 	end

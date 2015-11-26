@@ -32,19 +32,11 @@ Purpose:  Bullet
 
 local function TFBulletCallback(a,b,c)
 	
-	local self
-	
-	local d = c:GetDamage()
-	
-	if !IsValid(self) then
-		self=a:GetActiveWeapon()
-	end
-	
-	local cary=PlayerCarryingTFAWeapon(a)
+	local cary,ply,self=PlayerCarryingTFAWeapon(a)
 	
 	--print(cary)
 	
-	if !cary then 
+	if !cary or !IsValid(self) then 
 		return
 	end
 	
@@ -103,6 +95,8 @@ local function TFBulletCallback(a,b,c)
 				c:ScaleDamage(0.15)
 			end
 		end
+	else
+		c:SetDamageType(DMG_BULLET)
 	end
 	
 	if bul then
@@ -113,10 +107,6 @@ local function TFBulletCallback(a,b,c)
 		bul.IsFirst = false
 	
 		TFACheckRicochetGateway(self, bul, b)
-	end
-	
-	if CLIENT then
-		self:ImpactEffect(b.HitPos,b.HitNormal,b.MatType)
 	end
 end
 

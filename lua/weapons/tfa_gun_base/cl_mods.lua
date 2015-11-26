@@ -77,9 +77,6 @@ function SWEP:ViewModelDrawn()
 			ang:RotateAroundAxis(ang:Right(), v.angle.p)
 			ang:RotateAroundAxis(ang:Forward(), v.angle.r)
 			model:SetAngles(ang)
-			local matrix = Matrix()
-			matrix:Scale(v.size)
-			model:EnableMatrix( "RenderMultiply", matrix )
 			
 			if (!v.material) or (v.material == "") then
 				model:SetMaterial("")
@@ -321,6 +318,37 @@ function SWEP:GetBoneOrientation( basetabl, tabl, ent, bone_override )
 end
 
 --[[ 
+Function Name:  CleanModels
+Syntax: self:CreateModels( elements table ). 
+Returns:   Nothing.
+Notes:  Removes all existing models.
+Purpose:  SWEP Construction Kit Compatibility / Basic Attachments.
+]]--
+
+function SWEP:CleanModels( tabl )
+	if (!tabl) then return end
+		-- // Create the clientside models here because Garry says we can't do it in the render hook
+	for k, v in pairs( tabl ) do
+		if (v.type == "Model" and v.curmodel) then
+			
+			if v.curmodel and v.curmodel.Remove then
+				v.curmodel:Remove()
+				v.curmodel = nil
+			else
+				v.curmodel = nil
+			end
+			
+		elseif ( v.type == "Sprite" and v.sprite and v.sprite != "" and (!v.spritemat or v.cursprite != v.sprite) ) then
+			
+			v.cursprite = nil
+			v.spritemat = nil
+			
+		end
+	end
+	
+end
+
+--[[ 
 Function Name:  CreateModels
 Syntax: self:CreateModels( elements table ). 
 Returns:   Nothing.
@@ -341,12 +369,15 @@ function SWEP:CreateModels( tabl )
 				v.curmodel:SetAngles(self:GetAngles())
 				v.curmodel:SetParent(self)
 				v.curmodel:SetNoDraw(true)
+				local matrix = Matrix()
+				matrix:Scale(v.size)
+				v.curmodel:EnableMatrix( "RenderMultiply", matrix )
 				v.curmodelname = v.model
 			else
 				v.curmodel = nil
 			end
 			
-		elseif (v.type == "Sprite" and v.sprite and v.sprite != "" and (!v.spritemat or v.cursprite != v.sprite) and file.Exists ("materials/"..v.sprite..".vmt", "GAME")) then
+		elseif ( v.type == "Sprite" and v.sprite and v.sprite != "" and (!v.spritemat or v.cursprite != v.sprite) ) then
 			
 			local name = v.sprite.."-"
 			local params = { ["$basetexture"] = v.sprite }

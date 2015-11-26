@@ -1,0 +1,15 @@
+"vertexlitgeneric"
+{
+	"$baseTexture" "models/shells/762nato/shell_762nato"
+	"$bumpmap" "models/shells/762nato/shell_762nato_normal"
+	"$phong" "1"
+
+//	"$phongexponent" "30"
+	"$phongboost" "1"	
+	"$phongfresnelranges"	"[1 3 6]"
+//	"$halflambert" "1"
+	"$phongexponenttexture" "models/shells/762nato/shell_762nato_exp"
+	"$phongalbedotint" "1"
+
+
+}

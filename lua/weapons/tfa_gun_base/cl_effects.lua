@@ -160,15 +160,32 @@ Notes:    Used to make the impact effect.  See utilities code for CanDustEffect.
 Purpose:  FX
 ]]--
 
-function SWEP:ImpactEffect(pos, normal, mattype)
+function SWEP:DoImpactEffect(tr,dmgtype)
+	local dmginfo = DamageInfo()
+	dmginfo:SetDamageType(dmgtype)
+	if dmginfo:IsDamageType(DMG_SLASH) or dmginfo:IsDamageType(DMG_CRUSH) or ( self.GetBashing and self:GetBashing() ) or self.IsKnife then
+		util.Decal("ManhackCut", tr.HitPos + tr.HitNormal, tr.HitPos - tr.HitNormal )
+		return true
+	end
+	
+	self:ImpactEffectFunc(tr.HitPos,tr.HitNormal,tr.MatType)
+end
+
+function SWEP:ImpactEffectFunc(pos, normal, mattype)
 	local fx = EffectData()
 	fx:SetOrigin(pos)
 	fx:SetNormal(normal)
+	
+	if self.ImpactEffect then
+		util.Effect(self.ImpactEffect,fx)		
+	end
+	
 	if self:CanDustEffect(mattype) then
 		if GetConVarNumber("cl_tfa_fx_impact_enabled",1)==1 then
 			util.Effect("tfa_bullet_impact",fx)
 		end
 	end
+	
 	if self:CanSparkEffect(mattype) then
 		if GetConVarNumber("cl_tfa_fx_impact_enabled",1)==1 then
 			util.Effect("tfa_metal_impact",fx)

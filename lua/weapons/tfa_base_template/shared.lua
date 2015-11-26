@@ -276,6 +276,10 @@ SWEP.TracerCount 		= 3 	--0 disables, otherwise, 1 in X chance
 SWEP.TracerLua 			= false --Use lua effect, TFA Muzzle syntax.  Currently obsolete.
 SWEP.TracerDelay		= 0.01 --Delay for lua tracer effect
 
+--Impact Effects
+
+SWEP.ImpactEffect = nil--Impact Effect
+
 --[[EVENT TABLE]]--
 
 SWEP.EventTable = {} --Event Table, used for custom events when an action is played.  This can even do stuff like playing a pump animation after shooting.

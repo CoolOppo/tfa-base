@@ -22,6 +22,8 @@ SWEP.DisableIdleAnimations = false --Enable idles
 
 --[[ Don't Edit Below ]]--
 
+SWEP.DamageType = DMG_SLASH
+
 SWEP.MuzzleFlashEffect = "" --No muzzle
 SWEP.DoMuzzleFlash = false --No muzzle
 SWEP.WeaponLength = 1 --No nearwall
@@ -103,7 +105,10 @@ function SWEP:PrimarySlash()
 						HullSize = 10,
 						Tracer = 0,
 						Src = self.Owner:GetShootPos(),
-						Dir = slashtrace.Normal
+						Dir = slashtrace.Normal,
+						Callback = function(a,b,c)
+							if c then c:SetDamageType(DMG_SLASH) end
+						end
 					})
 				else
 					local dmg = DamageInfo()
@@ -220,7 +225,10 @@ function SWEP:Stab()
 						HullSize = 10,
 						Tracer = 0,
 						Src = self.Owner:GetShootPos(),
-						Dir = stabtrace2.Normal
+						Dir = stabtrace2.Normal,
+						Callback = function(a,b,c)
+							if c then c:SetDamageType(DMG_SLASH) end
+						end
 					})
 				else
 					local dmg = DamageInfo()
@@ -274,9 +282,4 @@ function SWEP:Reload()
 	self:ThrowKnife()
 end
 
-function SWEP:DoImpactEffect( tr, damageType)
-	if tr.MatType != MAT_FLESH and tr.MatType != MAT_ALIENFLESH then
-		util.Decal("ManhackCut", tr.HitPos + tr.HitNormal, tr.HitPos - tr.HitNormal )
-		return true
-	end
-end
+SWEP.IsKnife = true

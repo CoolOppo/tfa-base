@@ -309,6 +309,8 @@ SWEP.TracerLua = false --Use lua effect, TFA Muzzle syntax
 SWEP.TracerCount = nil --0 disables, otherwise, 1 in X chance
 SWEP.TracerDelay = 0.01 --Delay for lua tracer effect
 
+SWEP.ImpactEffect = nil--Impact Effect
+
 --Event Table, used for custom events when a sequence is played
 
 SWEP.EventTable = {}
@@ -626,11 +628,13 @@ function SWEP:InitDrawCode( instr )
 		local vm = self.Owner:GetViewModel()
 		local seq = vm:SelectWeightedSequence( anim )
 		local seqtime = vm:SequenceDuration( seq )
+		local dt = CurTime()+ ( self.SequenceLengthOverride[anim] or seqtime ) 
 		if self.ShootWhileDraw==false then
-			self:SetNextPrimaryFire(CurTime()+ ( self.SequenceLengthOverride[anim] and self.SequenceLengthOverride[anim] or seqtime ) )
+			self:SetNextPrimaryFire(dt)
 		end
 		
-		self:SetDrawingEnd(CurTime()+seqtime)
+		self:SetDrawingEnd(dt)
+		self:SetNextIdleAnim(CurTime() + seqtime)
 		local myhangtimev = 1
 		if self:OwnerIsValid() then
 			if SERVER then
@@ -688,14 +692,18 @@ function SWEP:InitHolsterCode( instr )
 		end
 		
 		local seqtime=self.SequenceLength[tact]
-	
+		
+		self:SetNextIdleAnim(CurTime() + seqtime)
+		
+		local dt = CurTime()+ ( self.SequenceLengthOverride[tact] or  seqtime )
+		
 		if self.ShootWhileHolster==false then
-			self:SetNextPrimaryFire(CurTime()+ ( self.SequenceLengthOverride[tact] and self.SequenceLengthOverride[tact] or  seqtime ) )
+			self:SetNextPrimaryFire( dt )
 		end
 	
 		self:SetHolstering(true)
 	
-		self:SetHolsteringEnd(CurTime()+seqtime)
+		self:SetHolsteringEnd(dt)
 	end
 end
 
@@ -803,6 +811,7 @@ function SWEP:Initialize()
 		self:InitMods()
 		self:IconFix()
 	end
+	
 	self.drawcount=0
 	self.drawcount2=0
 	self.canholster=false
@@ -968,6 +977,8 @@ function SWEP:Deploy()
 	
 	self:UpdateConDamage()
 	
+	self.LastSys = SysTime()
+	
 	return true
 end
 
@@ -985,7 +996,12 @@ function SWEP:OnRemove()
 		local val = self.Callback.OnRemove(self)
 		if val then return val end
 	end
-
+	
+	if CLIENT then
+		self:CleanModels(self.VElements) -- create viewmodels
+		self:CleanModels(self.WElements) -- create worldmodels
+	end
+	
 	if self.ResetBonePositions then
 		self:ResetBonePositions()
 	else
@@ -1011,6 +1027,11 @@ function SWEP:OnDrop()
 	
 	if self.Callback.OnDrop then
 		self.Callback.OnDrop(self)
+	end
+	
+	if CLIENT then
+		self:CleanModels(self.VElements) -- create viewmodels
+		self:CleanModels(self.WElements) -- create worldmodels
 	end
 
 	if self.ResetBonePositions then
@@ -1098,9 +1119,16 @@ function SWEP:Holster( switchtowep )
 		local wep=self:GetNWEntity("SwitchToWep",switchtowep)
 		if IsValid( wep ) and IsValid(self.Owner) and self.Owner:HasWeapon( wep:GetClass() ) then
 			if CLIENT or game.SinglePlayer() then
+	
+				if CLIENT then
+					self:CleanModels(self.VElements) -- create viewmodels
+					self:CleanModels(self.WElements) -- create worldmodels
+				end
+				
 				if self.ResetBonePositions then
 					self:ResetBonePositions()
 				end
+				
 				self.Owner:ConCommand("use " .. wep:GetClass())
 			end
 		end
@@ -1949,25 +1977,25 @@ function SWEP:Reload()
 		end
 		
 		self:SetHoldType(self.DefaultHoldType and self.DefaultHoldType or self.HoldType)
-		if !self.ThirdPersonReloadDisable then
+		if !self.ThirdPersonReloadDisable and ( SERVER or ( CLIENT and !self:IsFirstPerson()  ) )  then
 			self.Owner:SetAnimation( PLAYER_RELOAD ) -- 3rd Person Animation
 		end
 		if (CLIENT) then
 			timer.Simple(0, function()
-				if !IsValid(self) then return end
-				if !IsValid(self.Owner) then return end
-				if !self.ThirdPersonReloadDisable then
+				if !self:OwnerIsValid() then return end
+				if !self.ThirdPersonReloadDisable and ( SERVER or ( CLIENT and !self:IsFirstPerson()  ) ) then
 					self.Owner:SetAnimation( PLAYER_RELOAD ) -- 3rd Person Animation
 				end
 			end)
 		end
 		local AnimationTime = self.Owner:GetViewModel():SequenceDuration()
+		local dt = CurTime() + ( self.SequenceLengthOverride[tanim] or ( AnimationTime ) )
 		self.prevdrawcount=self.drawcount
-		self:SetReloadingEnd(CurTime()+AnimationTime)
-		self.ReloadingTime = CurTime() + AnimationTime
-		self:SetNextPrimaryFire(CurTime() + ( self.SequenceLengthOverride[tanim] and self.SequenceLengthOverride[tanim] or ( AnimationTime) ) )
-		self:SetNextSecondaryFire(CurTime() + ( self.SequenceLengthOverride[tanim] and self.SequenceLengthOverride[tanim] or ( AnimationTime) ) )
-		
+		self:SetReloadingEnd(dt)
+		self.ReloadingTime = dt
+		self:SetNextPrimaryFire( dt )
+		self:SetNextSecondaryFire( dt )
+		self:SetNextIdleAnim(CurTime() + AnimationTime)
 		
 	end 
 end
@@ -1987,13 +2015,28 @@ local angc = Angle()
 local posfac = 0.75
 
 function SWEP:Sway(pos,ang)
+	
+	ang:Normalize()
+	
+	if !self.timescale_cv then self.timescale_cv = GetConVar("host_timescale") end
+	if !self.cheat_cv then self.cheat_cv = GetConVar("sv_cheats") end
+	
+	local ft = ( SysTime() - ( self.LastSys or SysTime() ) )*game.GetTimeScale()
+	
+	if ft>FrameTime() then ft = FrameTime() end
+	
+	ft = math.Clamp(ft,0,1/30)
+	
+	if self.cheat_cv and self.timescale_cv and self.cheat_cv:GetBool() then ft = ft * self.timescale_cv:GetFloat() end
+	
+	self.LastSys = SysTime()
 	--angrange = our availalbe ranges
 	--rate = rate to restore our angle to the proper one
 	--fac = factor to multiply by
 	--each is interpolated from normal value to the ironsights value using iron sights ratio
 	
 	local angrange = Lerp(self:GetIronSightsRatio(),7.5,2.5)
-	local rate = Lerp(self:GetIronSightsRatio(),7.5,10)
+	local rate = Lerp(self:GetIronSightsRatio(),15,30)
 	local fac = Lerp(self:GetIronSightsRatio(),0.6,0.15)
 	
 	--calculate angle differences
@@ -2001,8 +2044,8 @@ function SWEP:Sway(pos,ang)
 	anga = self.Owner:EyeAngles() - oldang
 	oldang = self.Owner:EyeAngles()
 	
-	angb.y = angb.y + (0-angb.y)*FrameTime()*5
-	angb.p = angb.p + (0-angb.p)*FrameTime()*5
+	angb.y = angb.y + (0-angb.y)*ft*5
+	angb.p = angb.p + (0-angb.p)*ft*5
 	
 	--fix jitter
 	
@@ -2018,8 +2061,8 @@ function SWEP:Sway(pos,ang)
 	
 	--recover
 	
-	angc.y = angc.y + (angb.y/15 - angc.y)*FrameTime()*rate
-	angc.p = angc.p + (angb.p/15 - angc.p)*FrameTime()*rate
+	angc.y = angc.y + (angb.y/15 - angc.y)*ft*rate
+	angc.p = angc.p + (angb.p/15 - angc.p)*ft*rate
 	
 	--finally, blend it into the angle
 	
@@ -2241,6 +2284,8 @@ function SWEP:GetViewModelPosition(pos, ang)
 		--pos:Add( ang:Up() * (-10) )
 	end
 	
+	ang:Normalize()
+	
 	return pos, ang 
 end
 
@@ -2420,7 +2465,7 @@ function SWEP:CalculateNearWallSH()
 	local traceres=util.TraceLine(tracedata)
 	if traceres.Hit then
 		if traceres.Fraction>0 and traceres.Fraction<1 then
-			if traceres.MatType!=MAT_FLESH and traceres.MatType!=MAT_GLASS then
+			if traceres.MatType!=MAT_FLESH and traceres.MatType!=MAT_GLASS and !( IsValid(traceres.Entity) and traceres.Entity:IsNPC() )then
 				vnearwall = true
 			end
 		end
@@ -2464,7 +2509,7 @@ function SWEP:CalculateNearWallCLF()
 	local traceres=util.TraceLine(tracedata)
 	if traceres.Hit then
 		if traceres.Fraction>0 and traceres.Fraction<1 then
-			if traceres.MatType!=MAT_FLESH and traceres.MatType!=MAT_GLASS then
+			if traceres.MatType!=MAT_FLESH and traceres.MatType!=MAT_GLASS and !( IsValid(traceres.Entity) and traceres.Entity:IsNPC() )then
 				vnearwall = true
 			end
 		end

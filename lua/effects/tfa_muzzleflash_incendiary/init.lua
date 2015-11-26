@@ -85,6 +85,20 @@ function EFFECT:Init( data )
 	local dotang = math.deg( math.acos( math.abs(dot) ) )	
 	local halofac =  math.Clamp( 1 - (dotang/90), 0, 1)
 	
+	if CLIENT and !IsValid(ownerent) then ownerent = LocalPlayer() end
+	
+	local dlight = DynamicLight( ownerent:EntIndex() )
+	if ( dlight ) then
+		dlight.pos = self.vOffset - ownerent:EyeAngles():Right()*5 + 1.05 * ownerent:GetVelocity() * FrameTime()
+		dlight.r = 255
+		dlight.g = 100
+		dlight.b = 32
+		dlight.brightness = 6
+		dlight.Decay = 1750
+		dlight.Size = 140
+		dlight.DieTime = CurTime() + 0.3
+	end
+	
 	local emitter = ParticleEmitter( self.vOffset )
 		
 		
@@ -151,6 +165,34 @@ function EFFECT:Init( data )
 				particle:SetColor( 255 , 255 , 255 ) 
 			end
 			
+		end
+		
+		local sparkcount = math.random(8,12)		
+		for i=0, sparkcount do
+			local particle = emitter:Add("effects/yellowflare", self.Position)
+			if (particle) then
+			
+				particle:SetVelocity(VectorRand() * 30 + dir * math.Rand(40,100) + 1.05 * AddVel )
+				particle:SetLifeTime( 0 )
+				particle:SetDieTime( math.Rand( 0.4, 0.7 ) )
+				particle:SetStartAlpha(255)
+				particle:SetEndAlpha( 0 )
+				particle:SetStartSize(.3)
+				particle:SetEndSize(2)
+				particle:SetRoll( math.rad(math.Rand(0, 360)) )
+				particle:SetGravity(Vector(0, 0, -50))
+				particle:SetAirResistance(50)
+				particle:SetStartLength(0.2)
+				particle:SetEndLength(0.05)
+				particle:SetColor( 255 , 215 , 192 ) 
+				particle:SetVelocityScale(true)
+				particle:SetThinkFunction( function( pa )
+					pa:SetVelocity( pa:GetVelocity() + VectorRand()*5)
+					pa:SetNextThink( CurTime() + 0.01 )
+				end )
+				particle:SetNextThink( CurTime() + 0.01 )
+				
+			end
 		end
 		
 		if GetConVarNumber("cl_tfa_fx_gasblur",1)==1 then

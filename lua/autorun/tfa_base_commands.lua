@@ -99,6 +99,7 @@ if CLIENT then
 	local tfaOptionCL = {Options = {}, CVars = {}, Label = "#Presets", MenuButton = "1", Folder = "TFA SWEP Settings Client"}
 	
 	tfaOptionCL.Options["#Default"] = { cl_tfa_3dscope = "1",
+								cl_tfa_3dscope_overlay = "0",
 								cl_tfa_scope_sensitivity_autoscale = "1",
 								cl_tfa_scope_sensitivity =	"100",
 								cl_tfa_ironsights_toggle = "1",
@@ -112,6 +113,10 @@ if CLIENT then
 		panel:AddControl("CheckBox", {
 		Label = "Enable 3D Scopes (Re-Draw Gun After Changing)",
 		Command = "cl_tfa_3dscope",
+	})
+		panel:AddControl("CheckBox", {
+		Label = "Enable 3D Scope Shadows (Re-Draw Gun After Changing)",
+		Command = "cl_tfa_3dscope_overlay",
 	})
 	
 		panel:AddControl("CheckBox", {
@@ -680,6 +685,15 @@ end
 --Clientside Convars
 
 if CLIENT then
+
+	if GetConVar("cl_tfa_3dscope") == nil then
+		CreateClientConVar("cl_tfa_3dscope",1,true,true)
+	end
+
+	if GetConVar("cl_tfa_3dscope_overlay") == nil then
+		CreateClientConVar("cl_tfa_3dscope_overlay",0,true,true)
+	end
+
 	if GetConVar("cl_tfa_scope_sensitivity_autoscale") == nil then
 		CreateClientConVar("cl_tfa_scope_sensitivity_autoscale", 100, true, true)
 		--print("Scope sensitivity autoscale con var created")
@@ -784,7 +798,7 @@ if CLIENT then
 	end
 		
 	if GetConVar("cl_tfa_fx_gasblur") == nil then
-		CreateClientConVar("cl_tfa_fx_gasblur", 1, true, true)
+		CreateClientConVar("cl_tfa_fx_gasblur", 0, true, true)
 	end
 		
 	if GetConVar("cl_tfa_fx_muzzlesmoke") == nil then
@@ -938,9 +952,9 @@ end)
 --Main weapon think
 
 hook.Add( "PlayerTick" , "PlayerTickTFA", function( ply )
-	local isc, ply, wep = PlayerCarryingTFAWeapon(ply)
-	if isc then
-		if wep.PlayerThink then
+	local wep = ply:GetActiveWeapon()
+	if IsValid(wep) then
+		if wep.PlayerThink and wep.IsTFAWeapon then
 			wep:PlayerThink( ply )
 		end
 	end
@@ -962,24 +976,23 @@ end)
 if CLIENT then
 	if GetConVarNumber("sv_tfa_compatibility_clientframe",0)!=1 then
 		hook.Add("PreRender", "prerender_tfabase", function()
-
-			local iscarryingtfaweapon, pl, wep = PlayerCarryingTFAWeapon()
 			
-			if iscarryingtfaweapon then
-				if wep.PlayerThinkClientFrame then
-					wep:PlayerThinkClientFrame(pl)
-				end
+			local ply = LocalPlayer()
+			if !IsValid(ply) then return end
+			local wep = ply:GetActiveWeapon()
+			if IsValid(wep) and wep.IsTFAWeapon and wep.PlayerThinkClientFrame then
+				wep:PlayerThinkClientFrame(ply)
 			end
 			
 		end)
 	else
 		hook.Add("Think", "prerender_tfabase", function()
-			local iscarryingtfaweapon, pl, wep = PlayerCarryingTFAWeapon()
-			
-			if iscarryingtfaweapon then
-				if wep.PlayerThinkClientFrame then
-					wep:PlayerThinkClientFrame(pl)
-				end
+		
+			local ply = LocalPlayer()
+			if !IsValid(ply) then return end
+			local wep = ply:GetActiveWeapon()
+			if IsValid(wep) and wep.IsTFAWeapon and wep.PlayerThinkClientFrame then
+				wep:PlayerThinkClientFrame(pl)
 			end
 			
 		end)
@@ -987,19 +1000,20 @@ if CLIENT then
 end
 
 --Post draw opaque renderables.  Not needed really, not used.
---[[
-hook.Add("PostDrawOpaqueRenderables", "postdrawopaquerenderables_tfabase", function()
 
-	local iscarryingtfaweapon, pl, wep = PlayerCarryingTFAWeapon()
+hook.Add("PostDrawTranslucentRenderables", "postdrawtranslucentrenderables_tfabase", function()
+
+	local ply = LocalPlayer()
+	if !IsValid(ply) then return end
 	
-	if iscarryingtfaweapon then
-		if wep.PostDrawOpaqueRenderables then
-			wep:PostDrawOpaqueRenderables(pl)
-		end
+	local wep = ply:GetActiveWeapon()
+	
+	if wep.PostDrawTranslucentRenderables_TFA then
+		wep:PostDrawTranslucentRenderables_TFA(pl)
 	end
 	
 end)
-]]--
+
 --SWEP footstep hook
 
 if GetConVarNumber("sv_tfa_compatibility_footstep",0)!=1 then
@@ -1337,10 +1351,13 @@ if CLIENT or game.SinglePlayer() then
 		if IsValid(LocalPlayer()) and IsValid(LocalPlayer():GetActiveWeapon()) and IsValid(LocalPlayer():GetViewModel()) then
 			local wep = LocalPlayer():GetActiveWeapon()
 			local vm = LocalPlayer():GetViewModel()
-			local i = 1
-			while i<=#vm:GetAttachments() do
-				TFAVMAttachments[i] = vm:GetAttachment(i)
-				i=i+1
+			local tbl = vm:GetAttachments()
+			if tbl then
+				local i = 1
+				while i<=#tbl do
+					TFAVMAttachments[i] = vm:GetAttachment(i)
+					i=i+1
+				end
 			end
 		end
 		for k,v in pairs(TFAFlareParts) do
@@ -1431,14 +1448,8 @@ end
 
 local normalize = math.NormalizeAngle
 
-function JuckeyLerpAngle(delta, from, to)
-	local delta = math.Clamp(delta, 0, 1)
-
-	to.p = normalize( to.p - from.p )
-	to.y = normalize( to.y - from.y )
-	to.r = normalize( to.r - from.r )
-	
-	return from + to*delta
+function JuckeyLerpAngle(delta, from, to)	
+	return LerpAngle(delta,from,to)  --Juckey please, your code was making that weird U thing happen
 end
 
 --[[Parti-COOLs]]--
@@ -1468,8 +1479,32 @@ game.AddAmmoType({
 --[[Sounds]]--
 
 sound.Add({
+	name = 			"TFA.Bash",
+	channel = 		CHAN_USER_BASE+13,
+	volume = 		1.0,
+	sound = 			{ "weapons/tfa/bash.wav" },
+	pitch = { 97, 103 }
+})
+
+sound.Add({
+	name = 			"TFA.Bash2",
+	channel = 		CHAN_USER_BASE+13,
+	volume = 		1.0,
+	sound = 			{ "weapons/tfa/bashmetalic.wav" },
+	pitch = { 97, 103 }
+})
+
+sound.Add({
+	name = 			"TFA.BashFlesh",
+	channel = 		CHAN_USER_BASE+13,
+	volume = 		1.0,
+	sound = 			{ "weapons/melee/bash_flesh.wav" },
+	pitch = { 97, 103 }
+})
+
+sound.Add({
 	name = 			"TFA.IronIn",
-	channel = 		CHAN_USER_BASE+12,
+	channel = 		CHAN_USER_BASE+13,
 	volume = 		1.0,
 	sound = 			{ "weapons/tfa/ironin.wav" },
 	pitch = { 97, 103 }
@@ -1477,7 +1512,7 @@ sound.Add({
 
 sound.Add({
 	name = 			"TFA.IronOut",
-	channel = 		CHAN_USER_BASE+12,
+	channel = 		CHAN_USER_BASE+13,
 	volume = 		1.0,
 	sound = 			{ "weapons/tfa/ironout.wav" },
 	pitch = { 97, 103 }

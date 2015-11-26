@@ -12,6 +12,22 @@ Notes:    Used to draw the HUD.  Can you read?
 Purpose:  HUD
 ]]--
 
+local crossa_cvar = GetConVar("cl_tfa_hud_crosshair_color_a")
+local outa_cvar = GetConVar("cl_tfa_hud_crosshair_outline_color_a")
+local crosscustomenable_cvar = GetConVar("cl_tfa_hud_crosshair_enable_custom")
+local crossr_cvar = GetConVar("cl_tfa_hud_crosshair_color_r")
+local crossg_cvar = GetConVar("cl_tfa_hud_crosshair_color_g")
+local crossb_cvar = GetConVar("cl_tfa_hud_crosshair_color_b")
+local crosslen_cvar = GetConVar("cl_tfa_hud_crosshair_length")
+local crosshairwidth_cvar = GetConVar("cl_tfa_hud_crosshair_width")
+local drawdot_cvar = GetConVar("cl_tfa_hud_crosshair_dot")
+local clen_usepixels = GetConVar("cl_tfa_hud_crosshair_length_use_pixels")
+local outline_enabled_cvar = GetConVar("cl_tfa_hud_crosshair_outline_enabled")
+local outr_cvar = GetConVar("cl_tfa_hud_crosshair_outline_color_r")
+local outg_cvar = GetConVar("cl_tfa_hud_crosshair_outline_color_g")
+local outb_cvar = GetConVar("cl_tfa_hud_crosshair_outline_color_b")
+local outlinewidth_cvar = GetConVar("cl_tfa_hud_crosshair_outline_width")
+local hudenabled_cvar = GetConVar("cl_tfa_hud_enabled")
 function SWEP:DrawHUD()
 	
     cam.Start3D(); cam.End3D() --Workaround for vec:ToScreen()
@@ -29,11 +45,11 @@ function SWEP:DrawHUD()
 		drawcrossy=self.DrawCrosshair
 	end
 	
-	local crossa = GetConVarNumber("cl_tfa_hud_crosshair_color_a", 220) * math.pow(math.min(1-self.CLIronSightsProgress, 1-self.CLRunSightsProgress, 1-self.CLNearWallProgress),2)
-	local outa = GetConVarNumber("cl_tfa_hud_crosshair_outline_color_a", 255) * math.pow(math.min(1-self.CLIronSightsProgress, 1-self.CLRunSightsProgress, 1-self.CLNearWallProgress),2)
+	local crossa = crossa_cvar:GetFloat() * math.pow(math.min(1-self.CLIronSightsProgress, 1-self.CLRunSightsProgress, 1-self.CLNearWallProgress),2)
+	local outa = outa_cvar:GetFloat() * math.pow(math.min(1-self.CLIronSightsProgress, 1-self.CLRunSightsProgress, 1-self.CLNearWallProgress),2)
 	self.DrawCrosshair = false
 	if drawcrossy then
-		if GetConVarNumber("cl_tfa_hud_crosshair_enable_custom") == 1 then
+		if crosscustomenable_cvar:GetBool() then
 			if IsValid(LocalPlayer()) and self.Owner == LocalPlayer() then
 				ply = LocalPlayer()
 				
@@ -74,35 +90,35 @@ function SWEP:DrawHUD()
 					x, y = ScrW() / 2.0, ScrH() / 2.0 -- Center of screen
 				end
 				local crossr,crossg,crossb, crosslen, crosshairwidth, drawdot
-				crossr = GetConVarNumber("cl_tfa_hud_crosshair_color_r", 225)
-				crossg = GetConVarNumber("cl_tfa_hud_crosshair_color_g", 225)
-				crossb = GetConVarNumber("cl_tfa_hud_crosshair_color_b", 225)
-				crosslen = GetConVarNumber("cl_tfa_hud_crosshair_length", 1) * 0.01
-				crosshairwidth = GetConVarNumber("cl_tfa_hud_crosshair_width", 1) 
-				drawdot = GetConVarNumber("cl_tfa_hud_crosshair_dot",0)
+				crossr = crossr_cvar:GetFloat()
+				crossg = crossg_cvar:GetFloat()
+				crossb = crossb_cvar:GetFloat()
+				crosslen = crosslen_cvar:GetFloat() * 0.01
+				crosshairwidth = crosshairwidth_cvar:GetFloat()
+				drawdot = drawdot_cvar:GetBool()
 				local scale = (s_cone *  90 ) / self.Owner:GetFOV() * ScrH()/1.44 * GetConVarNumber("cl_tfa_hud_crosshair_gap_scale",1)
 				
 				local gap = scale
 				local length = 1
-				if GetConVarNumber("cl_tfa_hud_crosshair_length_use_pixels",1)!=1 then
+				if !clen_usepixels:GetBool() then
 					length = gap + ScrH()*1.777*crosslen
 				else
 					length = gap + crosslen*100
 				end
 				--Outline
 				
-				if GetConVarNumber("cl_tfa_hud_crosshair_outline_enabled",1) == 1 then
+				if outline_enabled_cvar:GetBool() then
 					local outr,outg,outb,outlinewidth
-					outr = GetConVarNumber("cl_tfa_hud_crosshair_outline_color_r", 5)
-					outg = GetConVarNumber("cl_tfa_hud_crosshair_outline_color_g", 5)
-					outb = GetConVarNumber("cl_tfa_hud_crosshair_outline_color_b", 5)
-					outlinewidth = GetConVarNumber("cl_tfa_hud_crosshair_outline_width", 1) 
+					outr = outr_cvar:GetFloat()
+					outg = outg_cvar:GetFloat()
+					outb = outb_cvar:GetFloat()
+					outlinewidth = outlinewidth_cvar:GetFloat()
 					surface.SetDrawColor( outr, outg, outb, outa)
 					surface.DrawRect( math.Round(x - length - outlinewidth ) - crosshairwidth/2 , math.Round(y - outlinewidth) - crosshairwidth/2 , math.Round(length-gap + outlinewidth*2) + crosshairwidth, math.Round(outlinewidth*2)  + crosshairwidth)	-- Left
 					surface.DrawRect( math.Round(x + gap - outlinewidth) - crosshairwidth/2 , math.Round(y - outlinewidth) - crosshairwidth/2 , math.Round(length-gap + outlinewidth*2) + crosshairwidth, math.Round(outlinewidth*2)  + crosshairwidth)	-- Right
 					surface.DrawRect( math.Round(x  - outlinewidth) - crosshairwidth/2  , math.Round(y - length - outlinewidth) - crosshairwidth/2 , math.Round(outlinewidth*2 ) + crosshairwidth, math.Round(length-gap + outlinewidth*2 )  + crosshairwidth)	-- Top
 					surface.DrawRect( math.Round(x  - outlinewidth) - crosshairwidth/2  , math.Round(y + gap - outlinewidth) - crosshairwidth/2 , math.Round(outlinewidth*2) + crosshairwidth, math.Round(length-gap + outlinewidth*2 )  + crosshairwidth)	-- Bottom
-					if drawdot==1 then
+					if drawdot then
 						surface.DrawRect( math.Round(x-outlinewidth)-crosshairwidth/2,math.Round(y-outlinewidth)-crosshairwidth/2,math.Round(outlinewidth*2)+crosshairwidth,math.Round(outlinewidth*2)+crosshairwidth)--Dot
 					end
 				end
@@ -114,7 +130,7 @@ function SWEP:DrawHUD()
 				surface.DrawRect( math.Round(x + gap)  - crosshairwidth/2, math.Round(y)  - crosshairwidth/2, math.Round(length-gap ) + crosshairwidth, crosshairwidth)	-- Right
 				surface.DrawRect( math.Round(x)  - crosshairwidth/2, math.Round(y - length) - crosshairwidth/2, crosshairwidth, math.Round(length-gap)+crosshairwidth)	-- Top
 				surface.DrawRect( math.Round(x)  - crosshairwidth/2, math.Round(y + gap) - crosshairwidth/2, crosshairwidth, math.Round(length-gap)+crosshairwidth)	-- Bottom
-				if drawdot==1 then
+				if drawdot then
 					surface.DrawRect( math.Round(x)-crosshairwidth/2,math.Round(y)-crosshairwidth/2,crosshairwidth,crosshairwidth)--dot
 				end
 			end
@@ -126,7 +142,7 @@ function SWEP:DrawHUD()
 	end
 	--HUD
 	local angpos = self:GetMuzzlePos()
-	if angpos and ( GetConVarNumber("cl_tfa_hud_enabled",1) == 1 ) then
+	if angpos and ( hudenabled_cvar:GetBool() ) then
 		local pos = angpos.Pos
 		local textsize = self.textsize and self.textsize or 1
 		local pl = LocalPlayer() and LocalPlayer() or self.Owner
