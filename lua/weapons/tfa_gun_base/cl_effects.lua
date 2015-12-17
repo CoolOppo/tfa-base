@@ -42,7 +42,7 @@ function SWEP:MakeMuzzleSmoke(entity,attachment)
 	self:CleanParticles()
 	
 	local ht = self.DefaultHoldType and self.DefaultHoldType or self.HoldType
-	if ( (CLIENT ) and GetConVarNumber("cl_tfa_fx_muzzlesmoke",1)==1) then
+	if ( (CLIENT ) and GetTFAMZSmokeEnabled() ) then
 		if IsValid(entity) then
 			if attachment and attachment!=0 then
 				ParticleEffectAttach(self.SmokeParticles[ht],PATTACH_POINT_FOLLOW,entity,attachment)
@@ -171,24 +171,36 @@ function SWEP:DoImpactEffect(tr,dmgtype)
 	self:ImpactEffectFunc(tr.HitPos,tr.HitNormal,tr.MatType)
 end
 
+local impact_cl_enabled = GetConVar("cl_tfa_fx_impact_enabled")
+local impact_sv_enabled = GetConVar("sv_tfa_fx_impact_override")
+
 function SWEP:ImpactEffectFunc(pos, normal, mattype)
-	local fx = EffectData()
-	fx:SetOrigin(pos)
-	fx:SetNormal(normal)
 	
-	if self.ImpactEffect then
-		util.Effect(self.ImpactEffect,fx)		
+	local enabled
+	if impact_cl_enabled then
+		enabled = impact_cl_enabled:GetBool()
+	else
+		enabled = true
 	end
+	if impact_sv_enabled and impact_sv_enabled:GetInt()>=0 then enabled=impact_sv_enabled:GetBool() end
 	
-	if self:CanDustEffect(mattype) then
-		if GetConVarNumber("cl_tfa_fx_impact_enabled",1)==1 then
+	if enabled then
+		
+		local fx = EffectData()
+		fx:SetOrigin(pos)
+		fx:SetNormal(normal)
+	
+		if self:CanDustEffect(mattype) then
 			util.Effect("tfa_bullet_impact",fx)
 		end
-	end
-	
-	if self:CanSparkEffect(mattype) then
-		if GetConVarNumber("cl_tfa_fx_impact_enabled",1)==1 then
+		
+		if self:CanSparkEffect(mattype) then
 			util.Effect("tfa_metal_impact",fx)
 		end
+		
+		if self.ImpactEffect then
+			util.Effect(self.ImpactEffect,fx)		
+		end
+		
 	end
 end

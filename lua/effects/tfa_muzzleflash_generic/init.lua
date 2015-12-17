@@ -165,7 +165,7 @@ function EFFECT:Init( data )
 			
 		end
 		
-		if GetConVarNumber("cl_tfa_fx_gasblur",1)==1 then
+		if GetTFAGasEnabled() then
 			for i=0, 2 do
 				local particle = emitter:Add( "sprites/heatwave", self.vOffset + (dir * i) )
 				if (particle) then

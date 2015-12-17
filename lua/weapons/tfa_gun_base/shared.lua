@@ -9,7 +9,8 @@ SWEP.SH_MODULES = {
 	"sh_bullet.lua",
 	"sh_autodetection.lua",
 	"sh_utilities.lua",
-	"sh_effects.lua"
+	"sh_effects.lua",
+	"sh_attachments.lua"
 }
 SWEP.ClSIDE_MODULES = {
 	"cl_viewbob.lua",
@@ -24,6 +25,7 @@ SWEP.CSMuzzleX = false
 
 SWEP.Category				= "" --The category.  Please, just choose something generic or something I've already done if you plan on only doing like one swep.
 SWEP.Gun					= "tfa_gun_base" --Make sure this is unique.  
+SWEP.Manufacturer = nil --Gun Manufactrer (e.g. Hoeckler and Koch )
 SWEP.Author				= "TheForgottenArchitect" --DO NOT CHANGE, CUZ ITS ME.
 SWEP.Contact				= "theforgottenarchitect" --Contact me on steam.  Leave a comment first.
 SWEP.Purpose				= "" --Why do you want this?   Not really necesary.
@@ -40,9 +42,9 @@ SWEP.VMAng = Vector(0,0,0) --The viewmodel angular offset, constantly.
 SWEP.AllowViewAttachment = true --Allow the view to sway based on weapon attachment while reloading or drawing, IF THE CLIENT HAS IT ENABLED IN THEIR CONVARS!!!!11111oneoneELEVEN
 SWEP.InspectPosDef = Vector(9.779, -11.658, -2.241)
 SWEP.InspectAngDef = Vector(24.622, 42.915, 15.477)
-SWEP.InspectPos = nil --replace with a vector, in style of ironsights position, to be used for inspection
-SWEP.InspectAng= nil --replace with a vector, in style of ironsights angle, to be used for inspection
-SWEP.InspectionLoop = true --Setting false will cancel inspection once the animation is done.  CS:GO style.
+--SWEP.InspectPos = Vector(0,0,0) --replace with a vector, in style of ironsights position, to be used for inspection
+--SWEP.InspectAng= Vector(0,0,0) --replace with a vector, in style of ironsights angle, to be used for inspection
+SWEP.FidgetLoop = true --Setting false will cancel inspection once the animation is done.  CS:GO style.
 SWEP.Spawnable				= false --Can you, as a normal user, spawn this?
 SWEP.AdminSpawnable			= false --Can an adminstrator spawn this?  Does not tie into your admin mod necessarily, unless its coded to allow for GMod's default ranks somewhere in its code.  Evolve and ULX should work, but try to use weapon restriction rather than these.
 SWEP.HoldType 				= "smg"		-- This is how others view you carrying the weapon.
@@ -55,6 +57,34 @@ SWEP.Primary.Damage		= 0.01					-- Damage, in standard damage points.
 SWEP.DamageType = nil--See DMG enum.  This might be DMG_SHOCK, DMG_BURN, etc.
 SWEP.Primary.Spread		= .01					--This is hip-fire acuracy.  Less is more (1 is horribly awful, .0001 is close to perfect)
 SWEP.FiresUnderwater = false
+ 
+--Attachments
+ 
+SWEP.Attachments = {
+}
+
+--AnchorSystem
+
+SWEP.VMAnchors = {
+}
+
+--[[
+
+EXAMPLE 1:
+
+SWEP.VMAnchors = {
+	[1] = { bone = "muzzle",pos = Vector(0,0,0),ang = Vector(0,0,0) },
+	[2] = { bone = "shell",pos = Vector(0,0,0),ang = Vector(0,0,0) }
+}
+
+EXAMPLE 2:
+
+SWEP.VMAnchors = {
+	["muzzle"] = { bone = "muzzle",pos = Vector(0,0,0),ang = Vector(0,0,0) },
+	["shell"] = { bone = "shell",pos = Vector(0,0,0),ang = Vector(0,0,0) }
+}
+]]--
+
  
 --TTT WILL be broken, but this prevents lua errors if you try to spawn these guns.
 
@@ -86,7 +116,7 @@ SWEP.Primary.RPM				= 600					-- This is in Rounds Per Minute / RPM
 SWEP.Primary.RPM_Semi				= nil					-- RPM for semi-automatic or burst fire.  This is in Rounds Per Minute / RPM
 SWEP.Primary.ClipSize			= 0					-- This is the size of a clip
 SWEP.Primary.DefaultClip			= 0					-- This is the number of bullets the gun gives you, counting a clip as defined directly above.
-SWEP.DisableChambering = false --Disable round-in-the-chamber
+SWEP.DisableChambering = nil --Disable round-in-the-chamber
 
 SWEP.Primary.KickUp			= 0					-- This is the maximum upwards recoil (rise)
 SWEP.Primary.KickDown			= 0					-- This is the maximum downwards recoil (skeet)
@@ -142,12 +172,16 @@ SWEP.IronSightsAng = Vector(0,0,0)
 SWEP.IronSightsPos = Vector(0,0,0)
 SWEP.RunSightsAng = Vector(0,0,0)
 SWEP.RunSightsPos = Vector(0,0,0)
+SWEP.ProceduralHolsterPos = Vector(3,0,-5)
+SWEP.ProceduralHolsterAng = Vector(-40,-30,10)
+
 SWEP.IronSightsSensitivity = 1
 SWEP.CLNearWallProgress=0 --BASE DEPENDENT VALUE.  DO NOT CHANGE OR THINGS MAY BREAK.  NO USE TO YOU.
 SWEP.CLRunSightsProgress=0 --BASE DEPENDENT VALUE.  DO NOT CHANGE OR THINGS MAY BREAK.  NO USE TO YOU.
 SWEP.CLIronSightsProgress=0 --BASE DEPENDENT VALUE.  DO NOT CHANGE OR THINGS MAY BREAK.  NO USE TO YOU.
 SWEP.CLCrouchProgress=0 --BASE DEPENDENT VALUE.  DO NOT CHANGE OR THINGS MAY BREAK.  NO USE TO YOU.
 SWEP.CLJumpProgress=0 --BASE DEPENDENT VALUE.  DO NOT CHANGE OR THINGS MAY BREAK.  NO USE TO YOU.
+SWEP.ProceduralHolsterFactor = 0 --BASE DEPENDENT VALUE.  DO NOT CHANGE OR THINGS MAY BREAK.  NO USE TO YOU.
 SWEP.CLInspectingProgress=0
 SWEP.CLSpreadRatio=1--BASE DEPENDENT VALUE.  DO NOT CHANGE OR THINGS MAY BREAK.  NO USE TO YOU.
 SWEP.CLAmmoHUDProgress=0--BASE DEPENDENT VALUE.  DO NOT CHANGE OR THINGS MAY BREAK.  NO USE TO YOU.
@@ -181,6 +215,7 @@ SWEP.AllowReloadWhileSprinting=false --Can you reload when close to a wall and f
 SWEP.AllowReloadWhileNearWall=false --Can you reload when close to a wall and facing it?
 SWEP.SprintBobMult=1.5 -- More is more bobbing, proportionally.  This is multiplication, not addition.  You want to make this > 1 probably for sprinting.
 SWEP.IronBobMult=0  -- More is more bobbing, proportionally.  This is multiplication, not addition.  You want to make this < 1 for sighting, 0 to outright disable.
+SWEP.ProceduralHolsterTime = 0.3 --Time to procedurally holster if no animation.  Set to 0 to disable.
 --Advanced Projectile Support
 SWEP.ProjectileEntity = nil --Entity to shoot
 SWEP.ProjectileVelocity = 0 --Entity to shoot's velocity
@@ -546,6 +581,7 @@ function SWEP:SetupDataTables()
 	self:NetworkVar("Bool", 17, "BoltTimer")
 	self:NetworkVar("Bool", 18, "CanHolster")
 	self:NetworkVar("Bool", 19, "Inspecting")
+	self:NetworkVar("Bool", 20, "Fidgeting")
 	self:NetworkVar("Float",0, "DrawingEnd")
 	self:NetworkVar("Float",1, "HolsteringEnd")
 	self:NetworkVar("Float",2, "ReloadingEnd")
@@ -707,6 +743,44 @@ function SWEP:InitHolsterCode( instr )
 	end
 end
 
+
+--[[ 
+Function Name:  InitHolsterCode
+Syntax: self:InitHolsterCode("1 or 0, 1 or 0")
+Notes:  the instr parameter is deprecated since client autodetection has been improved and is actually better than the server.
+Returns:  Nothing
+Purpose:  Standard SWEP Function
+]]--
+
+function SWEP:InitHolsterCodeProcedural( )
+
+	if self.Callback.InitHolsterCodeProcedural then
+		local val = self.Callback.InitHolsterCodeProcedural(self, instr)
+		if val then return val end
+	end
+
+	self.LastDrawAnimTime=-1
+	
+	if SERVER or ( CLIENT and IsFirstTimePredicted() )then
+		
+		self:ChooseIdleAnim()
+		
+		local seqtime=self.ProceduralHolsterTime
+		
+		self:SetNextIdleAnim(CurTime() + seqtime)
+		
+		local dt = CurTime()+ self.ProceduralHolsterTime
+		
+		if self.ShootWhileHolster==false then
+			self:SetNextPrimaryFire( dt )
+		end
+	
+		self:SetHolstering(true)
+	
+		self:SetHolsteringEnd(dt)
+	end
+end
+
 --[[ 
 Function Name:  Precache
 Syntax: Should not be normally called.
@@ -824,6 +898,10 @@ function SWEP:Initialize()
 	end
 	
 	self:ResetEvents()
+	
+	self:DoBodyGroups()
+	
+	self:InitAttachments()
 end
 
 --[[ 
@@ -979,6 +1057,12 @@ function SWEP:Deploy()
 	
 	self.LastSys = SysTime()
 	
+	self.ProceduralHolsterFactor = 0
+	
+	self:DoBodyGroups()
+	
+	self:SetFidgeting(false)
+	
 	return true
 end
 
@@ -1043,6 +1127,84 @@ function SWEP:OnDrop()
 end
 
 --[[ 
+Function Name:  CanPickup
+Syntax: self:CanPickup( to pick up)
+Notes:  For picking up props.
+Returns:  True/False
+Purpose:  Self explanitory
+]]--
+
+function SWEP:CanPickup(ent)
+	local massLimit = 35
+	local sizeLimit = 128
+	
+	--Must be valid
+	if !IsValid(ent) then print("noent") return false end
+		
+	local count = ent:GetPhysicsObjectCount()
+
+	--Must have a physics object
+	if (!count) then
+		print("no count")
+		return false
+	end
+	
+	local objectMass = 0
+	local checkEnable = false
+	
+	if count>0 then
+		for i=0, count-1 do
+			local phys = ent:GetPhysicsObjectNum(i)
+			if IsValid(phys) then
+				objectMass = objectMass + phys:GetMass()
+				
+				if ( !phys:IsMoveable() ) then
+					print(phys)
+					return false
+				end
+				
+			end
+		end
+	else
+		local phys = ent:GetPhysicsObject()	
+		
+		if IsValid(phys) then
+			objectMass = objectMass + phys:GetMass()
+			
+			if ( !phys:IsMoveable() ) then
+				print(phys)
+				return false
+			end
+			
+		end	
+	end
+	
+	if ( massLimit > 0 and objectMass > massLimit ) then
+		print("toomass")
+		return false
+	end
+	
+	if ( sizeLimit > 0 ) then
+		local size = ent:OBBMaxs() - ent:OBBMins()
+		if ( size.x > sizeLimit or size.y > sizeLimit or size.z > sizeLimit ) then
+			print("toobig")
+			return false
+		end
+	end
+	
+	local itspos = (ent:GetPos()+ent:OBBCenter())
+	local dist = itspos :Distance(self.Owner:GetShootPos())
+	local ang1 = self.Owner:EyeAngles()
+	local ang2 = (itspos-self.Owner:GetShootPos()):Angle()
+	local angdif = ang1-ang2
+	
+	if dist>100 then return false end
+	if math.abs(math.NormalizeAngle(angdif.p))>90-dist/4 or math.abs(math.NormalizeAngle(angdif.y))>90-dist/4 then return false end
+	
+	return hook.Call("PlayerCanPickupItem",GAMEMODE,self.Owner,ent)
+end
+
+--[[ 
 Function Name:  Holster
 Syntax: self:Holster( weapon entity to switch to )
 Notes:  This is kind of broken.  I had to manually select the new weapon using ply:ConCommand.  Returning true is simply not enough.  This is also essential to clearing out old networked vars and resetting them.
@@ -1053,9 +1215,17 @@ Purpose:  Standard SWEP Function
 
 function SWEP:Holster( switchtowep )
 
+	
+
 	if self.Callback.Holster then
 		local val = self.Callback.Holster(self, switchtowep)
 		if val then return val end
+	end
+	
+	if self.WriteKills then
+		self:WriteKills()
+		
+		if SERVER then self:CallOnClient("WriteKills","") end
 	end
 	
 	if !self:OwnerIsValid() then return end
@@ -1073,9 +1243,13 @@ function SWEP:Holster( switchtowep )
 	end
 		
 	self.PenetrationCounter = 0
-
+	
 	if self==switchtowep then
 		return
+	end
+	
+	if !IsValid(switchtowep) then
+		switchtowep = self.Owner
 	end
 	
 	if switchtowep then
@@ -1095,19 +1269,34 @@ function SWEP:Holster( switchtowep )
 		self:SetReloadingEnd(CurTime()-1)
 	end
 	local hasholsteringanim = self.SequenceEnabled[ACT_VM_HOLSTER] or self.SequenceEnabled[ACT_VM_HOLSTER_EMPTY]
-	if self:GetCanHolster()==false and hasholsteringanim then
-		if !( self:GetHolstering() and CurTime()<self:GetHolsteringEnd() ) then
-			local holstertimerstring=(self.SequenceEnabled[ACT_VM_HOLSTER] and 1 or 0)..","..(self.SequenceEnabled[ACT_VM_HOLSTER_EMPTY] and 1 or 0)
-			self:InitHolsterCode(holstertimerstring)
-		else
-			if self:GetHolsteringEnd()-CurTime()<0.05 and self:GetHolstering() then
-				self:SetCanHolster(true)
-				self:Holster(self:GetNWEntity("SwitchToWep",switchtowep))
-				if self.ResetBonePositions then
-					self:ResetBonePositions()
+	if self:GetCanHolster()==false then
+		if hasholsteringanim then
+			if !( self:GetHolstering() and CurTime()<self:GetHolsteringEnd() ) then
+				local holstertimerstring=(self.SequenceEnabled[ACT_VM_HOLSTER] and 1 or 0)..","..(self.SequenceEnabled[ACT_VM_HOLSTER_EMPTY] and 1 or 0)
+				self:InitHolsterCode(holstertimerstring)
+			else
+				if self:GetHolsteringEnd()-CurTime()<0.05 and self:GetHolstering() then
+					self:SetCanHolster(true)
+					self:Holster(self:GetNWEntity("SwitchToWep",switchtowep))
+					if self.ResetBonePositions then
+						self:ResetBonePositions()
+					end
+					return true
 				end
-				return true
 			end
+		else
+			if !( self:GetHolstering() and CurTime()<self:GetHolsteringEnd() ) then
+				self:InitHolsterCodeProcedural()
+			else
+				if self:GetHolsteringEnd()-CurTime()<0.05 and self:GetHolstering() then
+					self:SetCanHolster(true)
+					self:Holster(self:GetNWEntity("SwitchToWep",switchtowep))
+					if self.ResetBonePositions then
+						self:ResetBonePositions()
+					end
+					return true
+				end
+			end		
 		end
 	else
 		self.DrawCrosshair = self.DrawCrosshairDefault or self.DrawCrosshair
@@ -1117,17 +1306,42 @@ function SWEP:Holster( switchtowep )
 		self:SetHolstering(false)
 		self:SetHolsteringEnd(CurTime()-0.1)
 		local wep=self:GetNWEntity("SwitchToWep",switchtowep)
-		if IsValid( wep ) and IsValid(self.Owner) and self.Owner:HasWeapon( wep:GetClass() ) then
+		--print(wep)
+		if wep==self.Owner then
+			--local pickuptrace = util.QuickTrace(self.Owner:GetShootPos(),self.Owner:GetAimVector()*92,function(ent) if ent==self.Owner or ent==self or ent:IsWorld() then return false end return true end)
+			--if pickuptrace.Hit and pickuptrace.Fraction<1 and IsValid(pickuptrace.Entity) then
+			local lhe = self.Owner:GetNWEntity("LastHeldEntity")
+			if IsValid(lhe) then
+				--[[
+				local itspos = lhe:GetPos()
+				local ang1 = self.Owner:EyeAngles()
+				local ang2 = (lhe:GetPos()-self.Owner:GetShootPos()):Angle()
+				local angdif = ang1-ang2
+				local dist = lhe:GetPos():Distance(self.Owner:GetShootPos())
+				if math.abs(math.NormalizeAngle(angdif.p))<=90-dist/4 and math.abs(math.NormalizeAngle(angdif.y))<=90-dist/4 and dist<100 then
+				]]--
+				--if self:CanPickup(lhe) then
+					self.Owner:ConCommand("+use")
+					timer.Simple(0.1,function()
+						if IsValid(self) and IsValid(self.Owner) then
+							self.Owner:ConCommand("-use")
+							if !IsValid(lhe) or ( lhe.IsPlayerHolding and !lhe:IsPlayerHolding() ) then
+								self:Deploy()
+							end	
+						end
+					end)
+				--end
+			else
+				self:Deploy()
+			end
+		elseif IsValid( wep ) and IsValid(self.Owner) and self.Owner:HasWeapon( wep:GetClass() ) then
 			if CLIENT or game.SinglePlayer() then
-	
-				if CLIENT then
-					self:CleanModels(self.VElements) -- create viewmodels
-					self:CleanModels(self.WElements) -- create worldmodels
-				end
 				
 				if self.ResetBonePositions then
 					self:ResetBonePositions()
 				end
+				
+				self:ResetVMBodyGroups()
 				
 				self.Owner:ConCommand("use " .. wep:GetClass())
 			end
@@ -1182,7 +1396,7 @@ function SWEP:TranslateFOV( fov )
 		if val then return val end
 	end
 	
-	local nfov=Lerp(self.CLIronSightsProgress,fov,self.Secondary.IronFOV)
+	local nfov=Lerp(self.CLIronSightsProgress,fov,fov*(self.Secondary.IronFOV/90))
 	return Lerp(self.CLRunSightsProgress,nfov,nfov+self.SprintFOVOffset)
 end
 
@@ -1566,6 +1780,14 @@ function SWEP:PlayerThink( ply )
 		if val then return val end
 	end
 	
+	local heldentindex = self.Owner:GetNWInt("LastHeldEntityIndex",-1)
+	local heldent = Entity(heldentindex)
+	
+	if heldentindex!=-1 and IsValid(heldent) and heldent.IsPlayerHolding and !heldent:IsPlayerHolding() then
+		self.Owner:SetNWInt("LastHeldEntityIndex",-1)
+		heldent = nil
+	end
+	
 	self:Think2()
 	
 	if SERVER then
@@ -1687,8 +1909,16 @@ function SWEP:ProcessEvents()
 	local vm = self.Owner:GetViewModel()
 	
 	if !IsValid(vm) then return end
+	
+	local actv = vm:GetSequenceActivity(vm:GetSequence())
+	
+	if actv==ACT_VM_RELOAD and self.SequenceEnabled[ACT_VM_RELOAD_EMPTY] and self:Clip1()==0 and !self:GetSilenced() then
+		actv=ACT_VM_RELOAD_EMPTY
+	end
 
-	local evtbl = self.EventTable[vm:GetSequenceActivity(vm:GetSequence())]
+	local evtbl = self.EventTable[actv]
+	
+	
 	
 	if !self.lastlastact then
 		self.lastlastact = 0
@@ -1771,7 +2001,7 @@ function SWEP:PlayerThinkClientFrame( ply )
 	local rs = 0
 	local rsr=self.CLRunSightsProgress
 	local insp = 0
-	local inspr = self:GetInspectingRatio()
+	local inspr = self.CLInspectingProgress--self:GetInspectingRatio()
 	local tsv = GetConVarNumber("host_timescale", 1)
 	local crouchr=self.CLCrouchProgress
 	local jumpr=self.CLJumpProgress
@@ -1805,7 +2035,7 @@ function SWEP:PlayerThinkClientFrame( ply )
 	self.CLRunSightsProgress = newratio 
 	newratio=math.Approach( crouchr, self.Owner:Crouching() and 1 or 0, compensatedft_cr)
 	self.CLCrouchProgress = newratio 
-	newratio=math.Approach( inspr, insp, compensatedft)
+	newratio=math.Approach( inspr, insp, (insp-inspr)*compensatedft)
 	self.CLInspectingProgress = newratio 
 	newratio=math.Approach( jumpr, 1 - (self.Owner:IsOnGround() and 1 or 0 ), compensatedft_cr)
 	self.CLJumpProgress = newratio
@@ -1825,7 +2055,15 @@ function SWEP:PlayerThinkClientFrame( ply )
 	
 	self.pre_vm_muzzlepos=self:GetMuzzlePos( true ) or tmptable
 	
-	if self:IsCurrentlyScoped() then
+	local heldentindex = self.Owner:GetNWInt("LastHeldEntityIndex",-1)
+	local heldent = Entity(heldentindex)
+	
+	if heldentindex!=-1 and IsValid(heldent) and heldent.IsPlayerHolding and !heldent:IsPlayerHolding() then
+		self.Owner:SetNWInt("LastHeldEntityIndex",-1)
+		heldent = nil
+	end
+	
+	if false then--self:IsHidden() then
 		self.Owner:DrawViewModel(false)
 		local vmod= self.Owner:GetViewModel()
 		if IsValid(vmod) then
@@ -1833,6 +2071,11 @@ function SWEP:PlayerThinkClientFrame( ply )
 		end
 	else
 		self.Owner:DrawViewModel(true)	
+	end
+	
+	local nhf = 1
+	if self:GetHolstering() then
+		self.ProceduralHolsterFactor = math.Approach(self.ProceduralHolsterFactor,nhf,(nhf-self.ProceduralHolsterFactor)*FrameTime()*10)	
 	end
 end
 
@@ -1949,7 +2192,7 @@ function SWEP:Reload()
 	
 	if self.Primary.ClipSize==-1 then return end
 	
-	if ( self:Clip1() < (self.Primary.ClipSize + ( (not self.DisableChambering and not self.BoltAction and not self.Shotgun and not (self.Revolver) and not ( (self.DefaultHoldType and self.DefaultHoldType or self.HoldType) == "revolver" ) ) and 1 or 0 ) * (self.Akimbo and 2 or 1)  ) and self.Owner:GetAmmoCount( self.Primary.Ammo ) > 0 ) then
+	if ( self:Clip1() < (self.Primary.ClipSize + ( self:CanChamber() and 1 or 0 ) * (self.Akimbo and 2 or 1)  ) and self.Owner:GetAmmoCount( self.Primary.Ammo ) > 0 ) then
 	
 		self:SetReloading(true)
 		
@@ -1997,7 +2240,10 @@ function SWEP:Reload()
 		self:SetNextSecondaryFire( dt )
 		self:SetNextIdleAnim(CurTime() + AnimationTime)
 		
-	end 
+	elseif self.SequenceEnabled[ACT_VM_FIDGET] and !self:GetIronSights() and !self:GetSprinting() and !self:GetFidgeting() then
+		self:SetFidgeting(true)
+		self:SetNextIdleAnim(-1)
+	end	
 end
 
 --[[ 
@@ -2013,6 +2259,8 @@ local anga = Angle()
 local angb = Angle()
 local angc = Angle()
 local posfac = 0.75
+
+local gunswaycvar = GetConVar("cl_tfa_gunbob_intensity")
 
 function SWEP:Sway(pos,ang)
 	
@@ -2035,7 +2283,7 @@ function SWEP:Sway(pos,ang)
 	--fac = factor to multiply by
 	--each is interpolated from normal value to the ironsights value using iron sights ratio
 	
-	local angrange = Lerp(self:GetIronSightsRatio(),7.5,2.5)
+	local angrange = Lerp(self:GetIronSightsRatio(),7.5,2.5) * gunswaycvar:GetFloat()
 	local rate = Lerp(self:GetIronSightsRatio(),15,30)
 	local fac = Lerp(self:GetIronSightsRatio(),0.6,0.15)
 	
@@ -2083,11 +2331,19 @@ Returns:  New position and angle.
 Notes:  This is used for calculating the swep viewmodel position.  However, don't put per-frame logic in this.  Instead do that in PlayerThinkClientFrame
 Purpose:  Main SWEP function
 ]]--
+
+local cl_tfa_viewmodel_offset_x = GetConVar("cl_tfa_viewmodel_offset_x")
+local cl_tfa_viewmodel_offset_y = GetConVar("cl_tfa_viewmodel_offset_y")
+local cl_tfa_viewmodel_offset_z = GetConVar("cl_tfa_viewmodel_offset_z")
+local fovmod_add = GetConVar("cl_tfa_viewmodel_offset_fov")
+local fovmod_mult = GetConVar("cl_tfa_viewmodel_multiplier_fov")
 	
 local ang2=Angle()
 local ang3=Angle()
 local ang4=Angle()
 local ang5=Angle()
+
+local hidevec = Vector(0,0,-10000)
 
 function SWEP:GetViewModelPosition(pos, ang)
 
@@ -2114,7 +2370,17 @@ function SWEP:GetViewModelPosition(pos, ang)
 	
 	]]--
 	
+	if !self.ogviewmodelfov then self.ogviewmodelfov = self.ViewModelFOV end
+	
+	
+	local vmfov = self.ogviewmodelfov * fovmod_mult:GetFloat()
+	vmfov = vmfov + fovmod_add:GetFloat()
+	self.ViewModelFOV = vmfov
+	
+	
 	pos,ang = self:Sway(pos,ang)
+	
+	if self:IsHidden() then return pos + hidevec end
 	
 	local isp=math.Clamp(self.CLIronSightsProgress,0,1)--self:GetIronSightsRatio()
 	local rsp=math.Clamp(self.CLRunSightsProgress,0,1)--self:GetRunSightsRatio()
@@ -2185,6 +2451,7 @@ function SWEP:GetViewModelPosition(pos, ang)
 	
 	self.BobScaleCustom 	= Lerp(isp,1,self.IronBobMult)
 	self.BobScaleCustom  = Lerp(rsp,self.BobScaleCustom,self.SprintBobMult)
+	self.BobScaleCustom  = Lerp(self.CLInspectingProgress,self.BobScaleCustom,0)
 	
 	ang2:RotateAroundAxis(ang2:Right(), 		tmp_isa.x)
 	ang2:RotateAroundAxis(ang2:Up(), 		tmp_isa.y)
@@ -2266,7 +2533,7 @@ function SWEP:GetViewModelPosition(pos, ang)
 	
 	--Start viewbob code
 	
-	local gunbobintensity = GetConVarNumber("sv_tfa_gunbob_intensity",1) * 0.65 * 0.66
+	local gunbobintensity = GetConVarNumber("cl_tfa_gunbob_intensity",1) * 0.65 * 0.66
 	
 	pos, ang = self:CalculateBob( pos, ang, gunbobintensity)
 	
@@ -2283,6 +2550,22 @@ function SWEP:GetViewModelPosition(pos, ang)
 	if self.CLIronSightsProgress > self.ScopeOverlayThreshold and self.Scoped then
 		--pos:Add( ang:Up() * (-10) )
 	end
+	
+	pos:Add(ang:Right() * cl_tfa_viewmodel_offset_x:GetFloat() * (1-isp) )
+	pos:Add(ang:Forward() * cl_tfa_viewmodel_offset_y:GetFloat() * (1-isp) )
+	pos:Add(ang:Up() * cl_tfa_viewmodel_offset_z:GetFloat() * (1-isp) )
+	
+	if self:GetDrawing() then
+		self.ProceduralHolsterFactor = 0
+	end
+	
+	pos:Add(ang:Right() * self.ProceduralHolsterFactor * self.ProceduralHolsterPos.x * (self.ViewModelFlip and -1 or 1) )
+	pos:Add(ang:Forward() * self.ProceduralHolsterFactor * self.ProceduralHolsterPos.y )
+	pos:Add(ang:Up() * self.ProceduralHolsterFactor * self.ProceduralHolsterPos.z )
+	
+	ang:RotateAroundAxis(ang:Right(), self.ProceduralHolsterFactor * self.ProceduralHolsterAng.x )
+	ang:RotateAroundAxis(ang:Up(), self.ProceduralHolsterFactor * self.ProceduralHolsterAng.y * (self.ViewModelFlip and -1 or 1) )
+	ang:RotateAroundAxis(ang:Forward(), self.ProceduralHolsterFactor * self.ProceduralHolsterAng.z * (self.ViewModelFlip and -1 or 1) )
 	
 	ang:Normalize()
 	
@@ -2537,7 +2820,7 @@ function SWEP:IronsSprint()
 		if val then return val end
 	end
 	
-	local is,oldis,spr, rld, dr, hl, nw, isbolttimer, insp
+	local is,oldis,spr, rld, dr, hl, nw, isbolttimer, insp, fidg
 	spr=self:GetSprinting()
 	is=self:GetIronSights()
 	oldis=self.OldIronsights
@@ -2548,6 +2831,7 @@ function SWEP:IronsSprint()
 	ischangingsilence = self:GetChangingSilence()
 	isbolttimer = self:GetBoltTimer()
 	nw = false
+	fidg = self:GetFidgeting()
 	
 	if self:Clip1() ==  0 and (GetConVarNumber("sv_tfa_allow_dryfire",1)==0) then
 		if self:GetBursting() then
@@ -2578,6 +2862,10 @@ function SWEP:IronsSprint()
 		self:SetBursting(false)
 		self:SetNextBurst(CurTime() - 1)
 		self:SetBurstCount(0)
+	end
+	
+	if (is) then
+		if fidg then self:ChooseIdleAnim() self:SetFidgeting(false) end
 	end
 	
 	if (insp) then
@@ -2612,6 +2900,7 @@ function SWEP:IronsSprint()
 			self:SetInspecting(false)
 			self:SetInspectingRatio(0)
 			is=false
+			if fidg then self:SetFidgeting(false) end
 		end
 	end
 		
@@ -2622,12 +2911,14 @@ function SWEP:IronsSprint()
 		if !self.SightWhileHolster then
 			is=false
 		end
+		if fidg then self:SetFidgeting(false) end
 	end
 	
 	if (nw) then
 		is=false
 		self:SetInspecting(false)
 		self:SetBursting(false)
+		if fidg then self:ChooseIdleAnim() self:SetFidgeting(false) end
 	end
 	
 	if (oldis!=is) and ( ( CLIENT and IsFirstTimePredicted() ) or ( SERVER and game.SinglePlayer() ) ) then
@@ -2653,6 +2944,7 @@ Notes:  This calculates your holdtype.
 Purpose:  Feature.
 ]]--
 
+local dynholdtypecvar = GetConVar("sv_tfa_holdtype_dynamic",1)
 
 function SWEP:ProcessHoldType()
 
@@ -2668,7 +2960,7 @@ function SWEP:ProcessHoldType()
 		dholdt = "pistol"
 	end
 	
-	if GetConVarNumber("sv_tfa_holdtype_dynamic",1)!=1 then
+	if !dynholdtypecvar:GetBool() then
 		self:SetHoldType(dholdt)
 	end
 	
@@ -2732,7 +3024,7 @@ function SWEP:CompleteReload()
 			
 			local maxclip=self.Primary.ClipSize
 			local curclip = self:Clip1()
-			local amounttoreplace=math.min(maxclip-curclip+( ( (self:Clip1()>0) and not self.DisableChambering and not self.BoltAction and not (self.Revolver) and not ( (self.DefaultHoldType and self.DefaultHoldType or self.HoldType) == "revolver" ) and 1 or 0 ) * (self.Akimbo and 2 or 1) ),self.Owner:GetAmmoCount(self.Primary.Ammo))
+			local amounttoreplace=math.min(maxclip-curclip+( ( (self:Clip1()>0) and ( self:CanChamber() and 1 or 0 ) ) and 1 or 0 ) * (self.Akimbo and 2 or 1),self.Owner:GetAmmoCount(self.Primary.Ammo))
 			self:SetClip1(curclip+amounttoreplace)
 			self.Owner:RemoveAmmo(amounttoreplace, self.Primary.Ammo)
 		end
@@ -2759,7 +3051,7 @@ function SWEP:ProcessTimers()
 		if val then return val end
 	end
 	
-	local isreloading,isshooting,isdrawing,isholstering, issighting, issprinting, htv, hudhangtime, isbolttimer, isinspecting
+	local isreloading,isshooting,isdrawing,isholstering, issighting, issprinting, htv, hudhangtime, isbolttimer, isinspecting, isfidgeting
 	
 	isreloading=self:GetReloading()
 	isshooting=self:GetShooting()
@@ -2772,6 +3064,7 @@ function SWEP:ProcessTimers()
 	isfiremodechanging = self:GetFireModeChanging()
 	isinspecting = self:GetInspecting()
 	htv = self:GetHUDThreshold()
+	isfidgeting = self:GetFidgeting()
 	hudhangtime = 1
 	--[[
 	if self.DisableIdleAnimations and !isinspecting then
@@ -2954,15 +3247,15 @@ function SWEP:ProcessTimers()
 		--donothing
 	else
 		if self:GetNextIdleAnim()<CurTime() then
-			if self.lastact == ACT_VM_FIDGET and !self.InspectionLoop then
-				self:SetInspecting(false)
-				isinspecting = false
+			if self.lastact == ACT_VM_FIDGET then
+				self:SetFidgeting(false)
+				isfidgeting = false
 				self.lastact = 0
 				self:ChooseIdleAnim()
 				return
 			end
 			local success, tanim 
-			if isinspecting then
+			if isfidgeting then
 				success, tanim = self:ChooseInspectAnim()
 			elseif !self.DisableIdleAnimations then
 				success, tanim = self:ChooseIdleAnim()
@@ -3008,14 +3301,18 @@ function SWEP:ToggleInspect()
 		if val then return val end
 	end
 	
-	local oldinsp = self:GetInspecting()
-	self:SetInspecting(!oldinsp)
-	if CLIENT then
-		net.Start("tfaInspect")
-		net.WriteBool(!oldinsp)
-		net.SendToServer()
+	if !self:GetIronSights() and self:GetRunSightsRatio()<0.1 and self:GetNearWallRatio()<0.1 and !self:GetDrawing() and !self:GetHolstering() and !self:GetReloading() then
+	
+		local oldinsp = self:GetInspecting()
+		self:SetInspecting(!oldinsp)
+		if CLIENT then
+			net.Start("tfaInspect")
+			net.WriteBool(!oldinsp)
+			net.SendToServer()
+		end
+		self:SetNextIdleAnim( CurTime() - 1)
+		
 	end
-	self:SetNextIdleAnim( CurTime() - 1)
 end
 
 function SWEP:ShotgunInterrupt()

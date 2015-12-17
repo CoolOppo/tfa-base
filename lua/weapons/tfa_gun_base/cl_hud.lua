@@ -5,6 +5,533 @@ local function RoundDecimals(number,decimals)
 end
 
 --[[ 
+Function Name:  DoInspectionDerma
+Syntax: self:DoInspectionDerma( ). 
+Returns:  Nothing.
+Notes:    Used to manage our Derma.
+Purpose:  Used to manage our Derma.
+]]--
+
+local titlefont = nil
+local descriptionfont = nil
+local smallfont = nil
+
+function SWEP:MakeFonts()
+
+		
+		if !titlefont then
+			surface.CreateFont( "TFA_INSPECTION_TITLE", {
+				font = "Aral", -- Use the font-name which is shown to you by your operating system Font Viewer, not the file name
+				size = 64,
+				weight = 500,
+				blursize = 0,
+				scanlines = 0,
+				antialias = true,
+				underline = false,
+				italic = false,
+				strikeout = false,
+				symbol = false,
+				rotary = false,
+				shadow = false,
+				additive = false,
+				outline = false,
+			} )
+			titlefont = true
+		end
+		
+		if !descriptionfont then
+			surface.CreateFont( "TFA_INSPECTION_DESCR", {
+				font = "Aral", -- Use the font-name which is shown to you by your operating system Font Viewer, not the file name
+				size = 32,
+				weight = 500,
+				blursize = 0,
+				scanlines = 0,
+				antialias = true,
+				underline = false,
+				italic = false,
+				strikeout = false,
+				symbol = false,
+				rotary = false,
+				shadow = false,
+				additive = false,
+				outline = false,
+			} )
+			descriptionfont = true
+		end
+		
+		if !smallfont then
+			surface.CreateFont( "TFA_INSPECTION_SMALL", {
+				font = "Aral", -- Use the font-name which is shown to you by your operating system Font Viewer, not the file name
+				size = 24,
+				weight = 500,
+				blursize = 0,
+				scanlines = 0,
+				antialias = true,
+				underline = false,
+				italic = false,
+				strikeout = false,
+				symbol = false,
+				rotary = false,
+				shadow = false,
+				additive = false,
+				outline = false,
+			} )
+			smallfont = true
+		end
+end
+
+local function PanelPaintBars(myself,w,h)
+	w = 400
+	
+	local xx,ww,blockw,padw
+	xx = w*0.7
+	ww = w-xx
+	blockw = math.floor(ww/15)
+	padw = math.floor(ww/10)
+	
+	surface.SetDrawColor(ColorAlpha(TFA_INSPECTIONPANEL.BackgroundColor,TFA_INSPECTIONPANEL.Alpha/2))
+	
+	for i=0,9 do
+		surface.DrawRect(xx,2,blockw,h-5)
+		xx = math.floor(xx+padw)
+	end
+	
+	xx = w*0.7
+	
+	surface.SetDrawColor(TFA_INSPECTIONPANEL.BackgroundColor)
+	
+	for i=0,myself.Bars-1 do
+		surface.DrawRect(xx+1,3,blockw,h-5)
+		xx = math.floor(xx+padw)
+	end
+	
+	xx = w*0.7
+	
+	surface.SetDrawColor(TFA_INSPECTIONPANEL.SecondaryColor)
+	
+	for i=0,myself.Bars-1 do
+		surface.DrawRect(xx,2,blockw,h-5)
+		xx = math.floor(xx+padw)
+	end
+	
+end
+
+local function TextShadowPaint(myself,w,h)
+	if !myself.TextColor then myself.TextColor = color_white end
+	draw.SimpleText(myself.Text,myself.Font,2,h,ColorAlpha(color_black,myself.TextColor.a),TEXT_ALIGN_LEFT,TEXT_ALIGN_TOP)
+	draw.SimpleText(myself.Text,myself.Font,0,h-2,myself.TextColor,TEXT_ALIGN_LEFT,TEXT_ALIGN_TOP)
+end
+
+local function kmtofeet(km)
+	return km*3280.84
+end
+
+local function feettokm(feet)
+	return feet/3280.84
+end
+
+local function feettosource(feet)
+	return feet*16
+end
+
+local function sourcetofeet(u)
+	return u/16
+end
+
+local pad = 4
+local infotextpad = "  "
+
+local INSPECTION_BACKGROUND = Color(15,15,15,64)
+local INSPECTION_PRIMARYCOLOR = Color(245,245,245,255)
+local INSPECTION_SECONDARYCOLOR = Color(153,253,220,255)
+
+local worstaccuracy = 0.06
+local bestrpm = 1200
+local worstmove = 0.8
+local bestdamage = 100
+local bestrange = feettosource(kmtofeet(1))
+local worstrecoil = 1
+	
+local attachmentpanelscale = 1/4
+local attachmentcount = 16
+
+local hexpositions = {
+	[1] = { x = -186, y = -111},
+	[2] = { x = 0, y = -233},
+	[3] = { x = 186, y = -111},
+	[4] = { x = 186, y = 111},
+	[5] = { x = 0, y = 233},
+	[6] = { x = -186, y = 111}
+}
+
+
+SWEP.AmmoTypeStrings = {
+	["pistol"] = "Generic Pistol",
+	["smg1"] = "Generic SMG",
+	["ar2"] = "Generic Rifle",
+	["buckshot"] = "Generic Shotgun",
+	["357"] = "Generic Revolver",	
+	["SniperPenetratedRound"] = "Generic Sniper",	
+}
+
+function SWEP:DoInspectionDerma()
+	if !IsValid(TFA_INSPECTIONPANEL) and self.CLInspectingProgress>0.01 then
+		TFA_INSPECTIONPANEL = vgui.Create("DPanel")
+		TFA_INSPECTIONPANEL:SetSize(ScrW(),ScrH())
+		
+		self:MakeFonts()
+		
+		TFA_INSPECTIONPANEL.Think = function(myself,w,h)
+			local ply = LocalPlayer()
+			if !IsValid(ply) then myself:Remove() return end
+			local wep = ply:GetActiveWeapon()
+			if !IsValid(wep) or !wep.IsTFAWeapon or !(wep.CLInspectingProgress>0.01) then myself:Remove() return end
+			myself.Player = ply
+			myself.Weapon = wep
+		end
+		
+		TFA_INSPECTIONPANEL.Paint = function(myself,w,h)
+			local wep = self.Weapon
+			if IsValid(wep) then
+				myself.Alpha = wep.CLInspectingProgress * 255
+				myself.PrimaryColor = ColorAlpha(INSPECTION_PRIMARYCOLOR,TFA_INSPECTIONPANEL.Alpha)
+				myself.SecondaryColor = ColorAlpha(INSPECTION_SECONDARYCOLOR,TFA_INSPECTIONPANEL.Alpha)
+				myself.BackgroundColor = ColorAlpha(INSPECTION_BACKGROUND,TFA_INSPECTIONPANEL.Alpha)
+				if !myself.SideBar then myself.SideBar = surface.GetTextureID("vgui/inspectionhud/sidebar") end
+				if !myself.Hex then myself.Hex = surface.GetTextureID("vgui/inspectionhud/hex") end
+			end
+			--Derma_DrawBackgroundBlur( myself, SysTime()-wep.CLInspectingProgress )
+			--draw.NoTexture()
+			--surface.SetDrawColor(ColorAlpha(INSPECTION_BACKGROUND,TFA_INSPECTIONPANEL.Alpha*0.25))
+			--surface.DrawRect(0,0,w,h)
+		end
+		
+		local screenwidth,screenheight = ScrW(),ScrH()
+		local hv = math.Round(screenheight*0.8)
+		
+		local contentpanel = vgui.Create("DPanel",TFA_INSPECTIONPANEL)
+		contentpanel:SetPos(32,(screenheight-hv)/2)
+		contentpanel:DockPadding(32+pad,pad,pad,pad)
+		contentpanel:SetSize(screenwidth-32,hv)
+		contentpanel.Paint = function(myself,w,h)
+			
+			local mycol = TFA_INSPECTIONPANEL.SecondaryColor
+			
+			surface.SetDrawColor(mycol)
+			surface.SetTexture(TFA_INSPECTIONPANEL.SideBar or 1)
+			surface.DrawTexturedRect(0,0,32,h)
+		end
+		
+		local lbound = 32 + pad
+		
+		local titletext = contentpanel:Add("DPanel")
+		titletext.Text = self.PrintName or "TFA Weapon"
+		titletext.Think = function(myself)
+			myself.TextColor = (TFA_INSPECTIONPANEL.PrimaryColor)
+		end
+		titletext.Font = "TFA_INSPECTION_TITLE"
+		titletext:Dock(TOP)
+		titletext:SetSize(screenwidth-lbound,64)
+		titletext.Paint = TextShadowPaint
+		
+		local typetext = contentpanel:Add("DPanel")
+		typetext.Text = self:GetType()
+		typetext.Think = function(myself)
+			myself.TextColor = (TFA_INSPECTIONPANEL.PrimaryColor)
+		end
+		typetext.Font = "TFA_INSPECTION_DESCR"
+		typetext:Dock(TOP)
+		typetext:SetSize(screenwidth-lbound,32)
+		typetext.Paint = TextShadowPaint
+		
+		--Space things out for block1
+		
+		local spacer = contentpanel:Add("DPanel")
+		spacer:Dock(TOP)
+		spacer:SetSize(screenwidth-lbound,64)
+		spacer.Paint = function() end
+		
+		--First stat block
+		
+		local descriptiontext = contentpanel:Add("DPanel")
+		descriptiontext.Text = (self.Description or self.Category) or self.Base
+		descriptiontext.Think = function(myself)
+			myself.TextColor = TFA_INSPECTIONPANEL.SecondaryColor
+		end
+		descriptiontext.Font = "TFA_INSPECTION_SMALL"
+		descriptiontext:Dock(TOP)
+		descriptiontext:SetSize(screenwidth-lbound,24)
+		descriptiontext.Paint = TextShadowPaint
+		
+		local rpmtext = contentpanel:Add("DPanel")
+		rpmtext.Text = infotextpad .. "Firerate: " .. math.floor(self.Primary.RPM) .. "RPM"
+		rpmtext.Think = function(myself)
+			myself.TextColor = TFA_INSPECTIONPANEL.SecondaryColor
+		end
+		rpmtext.Font = "TFA_INSPECTION_SMALL"
+		rpmtext:Dock(TOP)
+		rpmtext:SetSize(screenwidth-lbound,24)
+		rpmtext.Paint = TextShadowPaint
+		
+		local capacitytext = contentpanel:Add("DPanel")
+		capacitytext.Text = infotextpad .. "Capacity: " .. self.Primary.ClipSize .. ( self:CanChamber() and (self.Akimbo and " + 2" or " + 1") or "" ) .. " Rounds"
+		capacitytext.Think = function(myself)
+			myself.TextColor = (TFA_INSPECTIONPANEL.SecondaryColor)
+		end
+		capacitytext.Font = "TFA_INSPECTION_SMALL"
+		capacitytext:Dock(TOP)
+		capacitytext:SetSize(screenwidth-lbound,24)
+		capacitytext.Paint = TextShadowPaint
+		
+		local ammotypetext = contentpanel:Add("DPanel")
+		ammotypetext.Text = infotextpad .. "Ammo: " .. ( self.AmmoTypeStrings[self.Primary.Ammo or "ammo" ] or language.GetPhrase( self.Primary.Ammo or "ammo" ) )
+		ammotypetext.Think = function(myself)
+			myself.TextColor = TFA_INSPECTIONPANEL.SecondaryColor
+		end
+		ammotypetext.Font = "TFA_INSPECTION_SMALL"
+		ammotypetext:Dock(TOP)
+		ammotypetext:SetSize(screenwidth-lbound,24)
+		ammotypetext.Paint = TextShadowPaint
+		
+		local makertext = contentpanel:Add("DPanel")
+		local mymaker = ( self.Manufacturer or self.Author)
+		if !mymaker or string.Trim(mymaker)=="" then mymaker = "The Forgotten Architect" end
+		makertext.Text = infotextpad .. "Maker: " .. mymaker
+		makertext.Think = function(myself)
+			myself.TextColor = TFA_INSPECTIONPANEL.SecondaryColor
+		end
+		makertext.Font = "TFA_INSPECTION_SMALL"
+		makertext:Dock(TOP)
+		makertext:SetSize(screenwidth-lbound,24)
+		makertext.Paint = TextShadowPaint
+		
+		--Bottom block (bars and such)
+		
+		local statspanel = contentpanel:Add("DPanel")
+		statspanel:SetSize(screenwidth-lbound,144)
+		statspanel.Paint = function() end
+		statspanel:Dock(BOTTOM)
+		
+		--Accuracy
+		
+		local accuracypanel = statspanel:Add("DPanel")
+		accuracypanel:SetSize(400,24)
+		accuracypanel.Think = function(myself)
+			if !IsValid(self) then return end
+			myself.Bars = math.Clamp(math.Round( (1-(self.Secondary.Ironsights!=0 and (self.Primary.IronAccuracy or self.Primary.IronSpread) or (self.Primary.Spread or self.Primary.Accuracy) )/worstaccuracy)*10 ),0,10)
+		end
+		accuracypanel.Paint = PanelPaintBars
+		accuracypanel:Dock(TOP)
+		
+		local accuracytext = accuracypanel:Add("DPanel")
+		accuracytext.Think = function(myself)
+			if !IsValid(self) then return end
+			local accuracystr = "Accuracy: " .. math.Round((self.Primary.Spread or self.Primary.Accuracy)*90) .. "°"
+			if self.Secondary.Ironsights!=0 then
+				accuracystr = accuracystr .. " || " .. math.Round((self.Primary.IronAccuracy or self.Primary.IronSpread)*90) .. "°"
+			end
+			myself.Text =  accuracystr 
+			myself.TextColor = (TFA_INSPECTIONPANEL.SecondaryColor)
+		end
+		accuracytext.Font = "TFA_INSPECTION_SMALL"
+		accuracytext:Dock(LEFT)
+		accuracytext:SetSize(screenwidth-lbound,24)
+		accuracytext.Paint = TextShadowPaint
+		
+		--Firerate
+		
+		local fireratepanel = statspanel:Add("DPanel")
+		fireratepanel:SetSize(400,24)
+		fireratepanel.Think = function(myself)
+			if !IsValid(self) then return end
+			myself.Bars = math.Clamp(math.Round( (self.Primary.RPM)/bestrpm *10),0,10)
+		end
+		fireratepanel.Paint = PanelPaintBars
+		fireratepanel:Dock(TOP)
+		
+		local fireratetext = fireratepanel:Add("DPanel")
+		fireratetext.Think = function(myself)
+			if !IsValid(self) then return end
+			local fireratestr = "Firerate: " .. self.Primary.RPM .. "RPM"
+			myself.Text =  fireratestr 
+			myself.TextColor = TFA_INSPECTIONPANEL.SecondaryColor
+		end
+		fireratetext.Font = "TFA_INSPECTION_SMALL"
+		fireratetext:Dock(LEFT)
+		fireratetext:SetSize(screenwidth-lbound,24)
+		fireratetext.Paint = TextShadowPaint
+		
+		--Mobility
+		
+		local mobilitypanel = statspanel:Add("DPanel")
+		mobilitypanel:SetSize(400,24)
+		mobilitypanel.Think = function(myself)
+			if !IsValid(self) then return end
+			myself.Bars = math.Clamp(math.Round((self.MoveSpeed-worstmove)/(1-worstmove) * 10),0,10)
+		end
+		mobilitypanel.Paint = PanelPaintBars
+		mobilitypanel:Dock(TOP)
+		
+		local mobilitytext = mobilitypanel:Add("DPanel")
+		mobilitytext.Think = function(myself)
+			if !IsValid(self) then return end
+			myself.Text = "Mobility: " .. math.Round(self.MoveSpeed*100) .. "%"
+			myself.TextColor = TFA_INSPECTIONPANEL.SecondaryColor
+		end
+		mobilitytext.Font = "TFA_INSPECTION_SMALL"
+		mobilitytext:Dock(LEFT)
+		mobilitytext:SetSize(screenwidth-lbound,24)
+		mobilitytext.Paint = TextShadowPaint
+		
+		--Damage
+		
+		local damagepanel = statspanel:Add("DPanel")
+		damagepanel:SetSize(400,24)
+		damagepanel.Think = function(myself)
+			if !IsValid(self) then return end
+			myself.Bars = math.Clamp(math.Round( (self.Primary.Damage*math.Round(self.Primary.NumShots*0.75))/bestdamage *10),0,10)
+		end
+		damagepanel.Paint = PanelPaintBars
+		damagepanel:Dock(TOP)
+		
+		local damagetext = damagepanel:Add("DPanel")
+		damagetext.Think = function(myself)
+			if !IsValid(self) then return end
+			local dmgstr = "Damage: " .. math.Round(self.Primary.Damage)
+			if self.Primary.NumShots!=1 then dmgstr = dmgstr .. "x" .. math.Round(self.Primary.NumShots) end
+			myself.Text =  dmgstr 
+			myself.TextColor = TFA_INSPECTIONPANEL.SecondaryColor
+		end
+		damagetext.Font = "TFA_INSPECTION_SMALL"
+		damagetext:Dock(LEFT)
+		damagetext:SetSize(screenwidth-lbound,24)
+		damagetext.Paint = TextShadowPaint
+		
+		--Range
+		
+		local rangepanel = statspanel:Add("DPanel")
+		rangepanel:SetSize(400,24)
+		rangepanel.Think = function(myself)
+			if !IsValid(self) then return end
+			myself.Bars = math.Clamp(math.Round( (self.Primary.Range)/bestrange * 10),0,10)
+		end
+		rangepanel.Paint = PanelPaintBars
+		rangepanel:Dock(TOP)
+		
+		local rangetext = rangepanel:Add("DPanel")
+		rangetext.Text = rangestr
+		rangetext.Think = function(myself)
+			if !IsValid(self) then return end
+			local rangestr = "Range: " .. math.Round(feettokm(sourcetofeet(self.Primary.Range)) * 100)/100 .. "K"
+			myself.Text =  rangestr 			
+			myself.TextColor = TFA_INSPECTIONPANEL.SecondaryColor
+		end
+		rangetext.Font = "TFA_INSPECTION_SMALL"
+		rangetext:Dock(LEFT)
+		rangetext:SetSize(screenwidth-lbound,24)
+		rangetext.Paint = TextShadowPaint
+		
+		--Stability
+		
+		local stabilitypanel = statspanel:Add("DPanel")
+		stabilitypanel:SetSize(400,24)
+		stabilitypanel.Think = function(myself)
+			if !IsValid(self) then return end
+			myself.Bars = math.Clamp(math.Round( (1-math.abs(self.Primary.KickUp + self.Primary.KickDown)/2/ worstrecoil) * 10),0,10)
+		end
+		stabilitypanel.Paint = PanelPaintBars
+		stabilitypanel:Dock(TOP)
+		
+		local stabilitytext = stabilitypanel:Add("DPanel")
+		stabilitytext.Text = stabilitystr
+		stabilitytext.Think = function(myself)
+			if !IsValid(self) then return end
+			local stabilitystr = "Stability: " .. math.Clamp(math.Round( (1-math.abs(self.Primary.KickUp + self.Primary.KickDown)/2/1)*100 ),0,100) .. "%"
+			myself.Text =  stabilitystr 		
+			myself.TextColor = TFA_INSPECTIONPANEL.SecondaryColor
+		end
+		stabilitytext.Font = "TFA_INSPECTION_SMALL"
+		stabilitytext:Dock(LEFT)
+		stabilitytext:SetSize(screenwidth-lbound,24)
+		stabilitytext.Paint = TextShadowPaint
+		
+	end
+	
+	if !IsValid(TFA_INSPECTIONPANEL) then
+		return
+	end
+	
+	if !self:OwnerIsValid() then return end
+		
+	cam.Start3D(); cam.End3D();
+		
+	local vm = self.Owner:GetViewModel()
+	
+	local attachmentpanelsize = attachmentpanelscale * ScrH()
+	
+	if !TFA_INSPECTIONPANEL.AttachmentPanels then
+		TFA_INSPECTIONPANEL.AttachmentPanels = {}
+		for i=1,attachmentcount do
+			local att = vm:GetAttachment(i)
+			if att and att.Pos and att.Ang then
+			
+				TFA_INSPECTIONPANEL.AttachmentPanels[i] = TFA_INSPECTIONPANEL:Add("DPanel")
+				local p = TFA_INSPECTIONPANEL.AttachmentPanels[i]
+				p = TFA_INSPECTIONPANEL.AttachmentPanels[i]
+				p:SetSize(attachmentpanelsize,attachmentpanelsize)
+				
+				local ts = att.Pos:ToScreen()
+				ts.x = math.Clamp(ts.x,attachmentpanelsize/2,ScrW()-attachmentpanelsize/2)
+				ts.y = math.Clamp(ts.y,attachmentpanelsize/2,ScrH()-attachmentpanelsize/2)
+				p:SetPos(ts.x-attachmentpanelsize/2,ts.y-attachmentpanelsize/2)
+				p.Paint = function(myself,w,h) end
+				
+				local hexsize = attachmentpanelsize/3.5
+				local centerx,centery = attachmentpanelsize/2, attachmentpanelsize/2
+				
+				for i=1,4 do
+					local hex = p:Add("DPanel")
+					local xoff,yoff = hexpositions[i].x/260	*hexsize,hexpositions[i].y/260*hexsize
+					hex:SetPos(centerx+xoff,centery+yoff)
+					hex:SetSize(hexsize,hexsize)
+					hex.Paint = function(myself,w,h)
+			
+						local mycol = TFA_INSPECTIONPANEL.PrimaryColor
+						
+						surface.SetDrawColor(mycol)
+						surface.SetTexture(TFA_INSPECTIONPANEL.Hex or 1)
+						surface.DrawTexturedRect(0,0,w,h)
+					
+					end
+				end
+			else
+				break
+			end
+		end
+	end
+
+	--Update Attachment Panel Positions
+	
+	for i=1,attachmentcount do
+		local att = vm:GetAttachment(i)
+		if att and att.Pos and att.Ang then
+			if !IsValid(TFA_INSPECTIONPANEL.AttachmentPanels[i]) then return end
+			
+			local p = TFA_INSPECTIONPANEL.AttachmentPanels[i]
+			p = TFA_INSPECTIONPANEL.AttachmentPanels[i]
+				
+			local ts = att.Pos:ToScreen()
+			ts.x = math.Clamp(ts.x,attachmentpanelsize/2,ScrW()-attachmentpanelsize/2)
+			ts.y = math.Clamp(ts.y,attachmentpanelsize/2,ScrH()-attachmentpanelsize/2)
+			p:SetPos(ts.x-attachmentpanelsize/2,ts.y-attachmentpanelsize/2)	
+		else
+			break
+		end
+	end
+	
+end
+
+--[[ 
 Function Name:  DrawHUD
 Syntax: self:DrawHUD( ). 
 Returns:  Nothing.
@@ -37,6 +564,8 @@ function SWEP:DrawHUD()
 		if val then return val end
 	end
 	
+	self:DoInspectionDerma()
+	
 	--Crosshair
 	local drawcrossy
 	
@@ -45,8 +574,8 @@ function SWEP:DrawHUD()
 		drawcrossy=self.DrawCrosshair
 	end
 	
-	local crossa = crossa_cvar:GetFloat() * math.pow(math.min(1-self.CLIronSightsProgress, 1-self.CLRunSightsProgress, 1-self.CLNearWallProgress),2)
-	local outa = outa_cvar:GetFloat() * math.pow(math.min(1-self.CLIronSightsProgress, 1-self.CLRunSightsProgress, 1-self.CLNearWallProgress),2)
+	local crossa = crossa_cvar:GetFloat() * math.pow(math.min(1-self.CLIronSightsProgress, 1-self.CLRunSightsProgress, 1-self.CLNearWallProgress, 1-self.CLInspectingProgress),2)
+	local outa = outa_cvar:GetFloat() * math.pow(math.min(1-self.CLIronSightsProgress, 1-self.CLRunSightsProgress, 1-self.CLNearWallProgress, 1-self.CLInspectingProgress),2)
 	self.DrawCrosshair = false
 	if drawcrossy then
 		if crosscustomenable_cvar:GetBool() then
@@ -141,75 +670,77 @@ function SWEP:DrawHUD()
 		end
 	end
 	--HUD
-	local angpos = self:GetMuzzlePos()
-	if angpos and ( hudenabled_cvar:GetBool() ) then
-		local pos = angpos.Pos
-		local textsize = self.textsize and self.textsize or 1
-		local pl = LocalPlayer() and LocalPlayer() or self.Owner
-		local ang = pl:EyeAngles()--(angpos.Ang):Up():Angle()
-		local myalpha = 225 * self.CLAmmoHUDProgress
-		ang:RotateAroundAxis(ang:Right(), 90)
-		ang:RotateAroundAxis(ang:Up(), -90)
-		ang:RotateAroundAxis(ang:Forward(), 0)
-		pos = pos + ang:Right()*( self.textupoffset and self.textupoffset or -2 * (textsize/1) )
-		pos = pos + ang:Up()*( self.textfwdoffset and self.textfwdoffset or 0 * (textsize/1)  )
-		pos = pos + ang:Forward()*( self.textrightoffset and self.textrightoffset or -1 * (textsize/1) )
-		local postoscreen = pos:ToScreen()
-		xx = postoscreen.x
-		yy = postoscreen.y
-		if self:GetInspectingRatio()<0.01 then
-			local str
-			if self.Primary.ClipSize and self.Primary.ClipSize != -1 then
-				str =  string.upper( "MAG: "..self:Clip1() )
-				if (self:Clip1() > self.Primary.ClipSize) then
-					str =  string.upper( "MAG: "..self.Primary.ClipSize.." + "..( self:Clip1()-self.Primary.ClipSize ) )
+	local mzpos = self:GetMuzzlePos()
+	if mzpos and mzpos.Pos and !self:IsHidden() then
+		if ( hudenabled_cvar:GetBool() ) then
+			local pos = mzpos.Pos
+			local textsize = self.textsize and self.textsize or 1
+			local pl = LocalPlayer() and LocalPlayer() or self.Owner
+			local ang = pl:EyeAngles()--(angpos.Ang):Up():Angle()
+			local myalpha = 225 * self.CLAmmoHUDProgress
+			ang:RotateAroundAxis(ang:Right(), 90)
+			ang:RotateAroundAxis(ang:Up(), -90)
+			ang:RotateAroundAxis(ang:Forward(), 0)
+			pos = pos + ang:Right()*( self.textupoffset and self.textupoffset or -2 * (textsize/1) )
+			pos = pos + ang:Up()*( self.textfwdoffset and self.textfwdoffset or 0 * (textsize/1)  )
+			pos = pos + ang:Forward()*( self.textrightoffset and self.textrightoffset or -1 * (textsize/1) )
+			local postoscreen = pos:ToScreen()
+			xx = postoscreen.x
+			yy = postoscreen.y
+			if self:GetInspectingRatio()<0.01 then
+				local str
+				if self.Primary.ClipSize and self.Primary.ClipSize != -1 then
+					str =  string.upper( "MAG: "..self:Clip1() )
+					if (self:Clip1() > self.Primary.ClipSize) then
+						str =  string.upper( "MAG: "..self.Primary.ClipSize.." + "..( self:Clip1()-self.Primary.ClipSize ) )
+					end
+					draw.DrawText( str, "TFASleek", xx+1, yy+1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT )
+					draw.DrawText( str, "TFASleek", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT )
+					str =  string.upper( "RESERVE: "..self:GetAmmoReserve() )
+					yy = yy + TFASleekFontHeight
+					xx = xx - TFASleekFontHeight / 3
+					draw.DrawText( str, "TFASleekMedium", xx+1, yy+1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT )
+					draw.DrawText( str, "TFASleekMedium", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT )
+					yy = yy + TFASleekFontHeightMedium
+					xx = xx - TFASleekFontHeightMedium / 3
+				else
+					str =  string.upper( "AMMO: "..self:Ammo1() )
+					draw.DrawText( str, "TFASleek", xx+1, yy+1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT )
+					draw.DrawText( str, "TFASleek", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT )	
+					yy = yy + TFASleekFontHeightMedium
+					xx = xx - TFASleekFontHeightMedium / 3		
 				end
+				str = string.upper( self:GetFireModeName() )
+				draw.DrawText( str, "TFASleekSmall", xx+1, yy+1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT )
+				draw.DrawText( str, "TFASleekSmall", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT )
+			--[[else
+				local str =  string.upper( "DAMAGE: "..RoundDecimals(self.Primary.Damage,1) )
+				if self.Primary.NumShots and self.Primary.NumShots > 1 then
+					str = str .. "x" .. math.Round(self.Primary.NumShots)
+				end
+				yy=yy-100
+				yy=math.Clamp(yy,0,ScrH())
+				xx=math.Clamp(xx,250,ScrW())
 				draw.DrawText( str, "TFASleek", xx+1, yy+1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT )
 				draw.DrawText( str, "TFASleek", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT )
-				str =  string.upper( "RESERVE: "..self:GetAmmoReserve() )
 				yy = yy + TFASleekFontHeight
-				xx = xx - TFASleekFontHeight / 3
-				draw.DrawText( str, "TFASleekMedium", xx+1, yy+1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT )
-				draw.DrawText( str, "TFASleekMedium", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT )
-				yy = yy + TFASleekFontHeightMedium
-				xx = xx - TFASleekFontHeightMedium / 3
-			else
-				str =  string.upper( "AMMO: "..self:Ammo1() )
+				str =  string.upper( "RPM: "..RoundDecimals(self.Primary.RPM,1) )
 				draw.DrawText( str, "TFASleek", xx+1, yy+1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT )
-				draw.DrawText( str, "TFASleek", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT )	
-				yy = yy + TFASleekFontHeightMedium
-				xx = xx - TFASleekFontHeightMedium / 3		
+				draw.DrawText( str, "TFASleek", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT )
+				yy = yy + TFASleekFontHeight
+				str =  string.upper( "Range: " .. RoundDecimals(self.Primary.Range/16000*0.305,3) .. "KM")
+				draw.DrawText( str, "TFASleek", xx+1, yy+1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT )
+				draw.DrawText( str, "TFASleek", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT )
+				yy = yy + TFASleekFontHeight
+				str =  string.upper( "Spread: " .. RoundDecimals(self.Primary.Spread and self.Primary.Spread or self.Primary.Accuracy, 2) )
+				draw.DrawText( str, "TFASleek", xx+1, yy+1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT )
+				draw.DrawText( str, "TFASleek", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT )
+				yy = yy + TFASleekFontHeight
+				str =  string.upper( "Spread Max: ".. RoundDecimals( ( self.Primary.SpreadMultiplierMax ) , 2) )
+				draw.DrawText( str, "TFASleek", xx+1, yy+1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT )
+				draw.DrawText( str, "TFASleek", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT )
+				yy = yy + TFASleekFontHeight]]--
 			end
-			str = string.upper( self:GetFireModeName() )
-			draw.DrawText( str, "TFASleekSmall", xx+1, yy+1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT )
-			draw.DrawText( str, "TFASleekSmall", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT )
-		else
-			local str =  string.upper( "DAMAGE: "..RoundDecimals(self.Primary.Damage,1) )
-			if self.Primary.NumShots and self.Primary.NumShots > 1 then
-				str = str .. "x" .. math.Round(self.Primary.NumShots)
-			end
-			yy=yy-100
-			yy=math.Clamp(yy,0,ScrH())
-			xx=math.Clamp(xx,250,ScrW())
-			draw.DrawText( str, "TFASleek", xx+1, yy+1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT )
-			draw.DrawText( str, "TFASleek", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT )
-			yy = yy + TFASleekFontHeight
-			str =  string.upper( "RPM: "..RoundDecimals(self.Primary.RPM,1) )
-			draw.DrawText( str, "TFASleek", xx+1, yy+1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT )
-			draw.DrawText( str, "TFASleek", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT )
-			yy = yy + TFASleekFontHeight
-			str =  string.upper( "Range: " .. RoundDecimals(self.Primary.Range/16000*0.305,3) .. "KM")
-			draw.DrawText( str, "TFASleek", xx+1, yy+1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT )
-			draw.DrawText( str, "TFASleek", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT )
-			yy = yy + TFASleekFontHeight
-			str =  string.upper( "Spread: " .. RoundDecimals(self.Primary.Spread and self.Primary.Spread or self.Primary.Accuracy, 2) )
-			draw.DrawText( str, "TFASleek", xx+1, yy+1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT )
-			draw.DrawText( str, "TFASleek", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT )
-			yy = yy + TFASleekFontHeight
-			str =  string.upper( "Spread Max: ".. RoundDecimals( ( self.Primary.SpreadMultiplierMax ) , 2) )
-			draw.DrawText( str, "TFASleek", xx+1, yy+1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT )
-			draw.DrawText( str, "TFASleek", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT )
-			yy = yy + TFASleekFontHeight
 		end
 	end
 	--Scope Overlay
@@ -265,3 +796,4 @@ function SWEP:DrawHUD()
 	end
 	
 end
+

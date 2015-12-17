@@ -3,7 +3,8 @@ if (GetConVar(SWEP.Gun.."_allowed")) != nil then
 	if not (GetConVar(SWEP.Gun.."_allowed"):GetBool()) then SWEP.Base = "tfa_blacklisted" SWEP.PrintName = SWEP.Gun return end
 end
 SWEP.Base				= "tfa_gun_base"
-SWEP.Category				= "TFA Template" --The category.  Please, just choose something generic or something I've already done if you plan on only doing like one swep.
+SWEP.Category				= "TFA Template" --The category.  Please, just choose something generic or something I've already done if you plan on only doing like one swep..  
+SWEP.Manufacturer = nil --Gun Manufactrer (e.g. Hoeckler and Koch )
 SWEP.Author				= "" --Author Tooltip
 SWEP.Contact				= "" --Contact Info Tooltip
 SWEP.Purpose				= "" --Purpose Tooltip
@@ -114,9 +115,21 @@ SWEP.UseHands = false --Use gmod c_arms system.
 SWEP.VMPos = Vector(0,0,0) --The viewmodel positional offset, constantly.  Subtract this from any other modifications to viewmodel position. 
 SWEP.VMAng = Vector(0,0,0) --The viewmodel angular offset, constantly.   Subtract this from any other modifications to viewmodel angle. 
 
+SWEP.VMBodyGroups = nil --{
+	--[0] = 1,
+	--[1] = 4,
+	--[2] = etc.
+--}
+
 --[[WORLDMODEL]]--
 
 SWEP.WorldModel			= "models/your/wmodel/path/here.mdl" -- Weapon world model path
+
+SWEP.WMBodyGroups = nil--{
+	--[0] = 1,
+	--[1] = 4,
+	--[2] = etc.
+--}
 
 SWEP.HoldType 				= ""		-- This is how others view you carrying the weapon. Options include:
 -- normal melee melee2 fist knife smg ar2 pistol rpg physgun grenade shotgun crossbow slam passive
@@ -181,9 +194,8 @@ SWEP.IronSightsAng = Vector (0,0,0) --Change this, using SWEP Creation Kit prefe
 
 --[[INSPECTION]]--
 
-SWEP.InspectPos = nil --Replace with a vector, in style of ironsights position, to be used for inspection
-SWEP.InspectAng = nil --Replace with a vector, in style of ironsights angle, to be used for inspection
-SWEP.InspectionLoop = true --Setting false will cancel inspection once the animation is done.  CS:GO style.
+--SWEP.InspectPos = Vector(0,0,0) --Replace with a vector, in style of ironsights position, to be used for inspection
+--SWEP.InspectAng = Vector(0,0,0) --Replace with a vector, in style of ironsights angle, to be used for inspection
 
 --[[VIEWMODEL ANIMATION HANDLING]]--
 

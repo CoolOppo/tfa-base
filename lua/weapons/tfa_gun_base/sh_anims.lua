@@ -392,6 +392,8 @@ function SWEP:ChooseShootAnim()
 		return success, tanim
 		
 	else
+	
+		self:ChooseIdleAnim()
 		
 		if game.SinglePlayer() and SERVER then
 			self:CallOnClient("BlowbackFull","")

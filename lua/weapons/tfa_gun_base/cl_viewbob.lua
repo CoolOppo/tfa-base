@@ -17,7 +17,7 @@ function SWEP:CalcView(ply, pos, ang, fov)
 	if ply != LocalPlayer() then return end
 	
 	if !CLIENT then return end
-	local viewbobintensity = 0.2 * GetConVarNumber("sv_tfa_viewbob_intensity",1)
+	local viewbobintensity = 0.2 * GetConVarNumber("cl_tfa_viewbob_intensity",1)
 	
 	pos, ang = self:CalculateBob( pos, ang, -viewbobintensity )
 	

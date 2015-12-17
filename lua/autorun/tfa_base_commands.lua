@@ -14,9 +14,13 @@ if CLIENT then
 								sv_tfa_force_multiplier = "1",
 								sv_tfa_dynamicaccuracy = "1",
 								sv_tfa_near_wall = "1",
-								sv_tfa_gunbob_intensity = "1",
-								sv_tfa_viewbob_intensity = "1",
-								sv_tfa_range_modifier = "0.5"
+								sv_tfa_range_modifier = "0.5",
+								sv_tfa_fx_impact_override = "-1",
+								sv_tfa_fx_muzzlesmoke_override = "-1",
+								sv_tfa_fx_gas_override = "-1",
+								sv_tfa_fx_ricochet_override = "-1",
+								sv_tfa_bullet_penetration = "1",
+								sv_tfa_bullet_ricochet = "1"								
 							   }				
 	panel:AddControl("ComboBox", tfaOptionSV)
 	
@@ -40,6 +44,16 @@ if CLIENT then
 		panel:AddControl("CheckBox", {
 		Label = "Strip Empty Weapons",
 		Command = "sv_tfa_weapon_strip",
+	})
+	
+		panel:AddControl("CheckBox", {
+		Label = "Enable Bullet Penetration",
+		Command = "sv_tfa_bullet_penetration",
+	})
+	
+		panel:AddControl("CheckBox", {
+		Label = "Enable Bullet Ricochet",
+		Command = "sv_tfa_bullet_ricochet",
 	})
 	
 		panel:AddControl("Slider", {
@@ -67,27 +81,53 @@ if CLIENT then
 	})
 	
 		panel:AddControl("Slider", {
-		Label 	= "Gun Bob Intensity",
-		Command 	= "sv_tfa_gunbob_intensity",
-		Type 		= "Float",
-		Min 		= "0",
-		Max 		= "2",
-	})
-	
-		panel:AddControl("Slider", {
-		Label 	= "View Bob Intensity",
-		Command 	= "sv_tfa_viewbob_intensity",
-		Type 		= "Float",
-		Min 		= "0",
-		Max 		= "2",
-	})
-	
-		panel:AddControl("Slider", {
 		Label 	= "Bullet Range Damage Degredation",
 		Command 	= "sv_tfa_range_modifier",
 		Type 		= "Float",
 		Min 		= "0",
 		Max 		= "1",
+	})
+	
+	panel:AddControl("Label", {Text = "Performance Overrides (Good for RP Servers)"})
+	
+	panel:AddControl("Slider", {
+		Label 	= "Gas Blur Effect Override (-1 to leave clientside)",
+		Command 	= "sv_tfa_fx_gas_override",
+		Type 		= "Integer",
+		Min 		= "-1",
+		Max 		= "1",
+	})
+	
+		panel:AddControl("Slider", {
+		Label 	= "Impact Effect Override (-1 to leave clientside)",
+		Command 	= "sv_tfa_fx_impact_override",
+		Type 		= "Integer",
+		Min 		= "-1",
+		Max 		= "1",
+	})
+	
+	panel:AddControl("Slider", {
+		Label 	= "Muzzle Smoke Effect Override (-1 to leave clientside)",
+		Command 	= "sv_tfa_fx_muzzlesmoke_override",
+		Type 		= "Integer",
+		Min 		= "-1",
+		Max 		= "1",
+	})
+	
+	panel:AddControl("Slider", {
+		Label 	= "Ricochet Effect Override (-1 to leave clientside)",
+		Command 	= "sv_tfa_fx_ricochet_override",
+		Type 		= "Integer",
+		Min 		= "-1",
+		Max 		= "1",
+	})	
+	
+	panel:AddControl("Slider", {
+		Label 	= "World Model Cull Distance (-1 to disable)",
+		Command 	= "sv_tfa_worldmodel_culldistance",
+		Type 		= "Integer",
+		Min 		= "-1",
+		Max 		= "4096",
 	})
 	
 	panel:AddControl("Label", {Text = "By TheForgottenArchitect"})
@@ -105,7 +145,13 @@ if CLIENT then
 								cl_tfa_ironsights_toggle = "1",
 								cl_tfa_ironsights_resight = "1",
 								cl_tfa_viewbob_reloading = "1",
-								cl_tfa_viewbob_drawing = "0"
+								cl_tfa_viewbob_drawing = "0",
+								sv_tfa_gunbob_intensity = "1",
+								sv_tfa_viewbob_intensity = "1",
+								cl_tfa_viewmodel_offset_x = "0",
+								cl_tfa_viewmodel_offset_y = "0",
+								cl_tfa_viewmodel_offset_z = "0",
+								cl_tfa_viewmodel_offset_fov = "0"
 							   }				
 	panel:AddControl("ComboBox", tfaOptionCL)
 	
@@ -148,6 +194,54 @@ if CLIENT then
 		Type 		= "Integer",
 		Min 		= "1",
 		Max 		= "100",
+	})
+	
+	panel:AddControl("Slider", {
+		Label 	= "Gun Bob Intensity",
+		Command 	= "cl_tfa_gunbob_intensity",
+		Type 		= "Float",
+		Min 		= "0",
+		Max 		= "2",
+	})
+	
+	panel:AddControl("Slider", {
+		Label 	= "View Bob Intensity",
+		Command 	= "cl_tfa_viewbob_intensity",
+		Type 		= "Float",
+		Min 		= "0",
+		Max 		= "2",
+	})
+	
+	panel:AddControl("Slider", {
+		Label 	= "Viemodel Offset - X",
+		Command 	= "cl_tfa_viewmodel_offset_x",
+		Type 		= "Float",
+		Min 		= "-2",
+		Max 		= "2",
+	})
+	
+	panel:AddControl("Slider", {
+		Label 	= "Viemodel Offset - Y",
+		Command 	= "cl_tfa_viewmodel_offset_y",
+		Type 		= "Float",
+		Min 		= "-2",
+		Max 		= "2",
+	})
+	
+	panel:AddControl("Slider", {
+		Label 	= "Viemodel Offset - Z",
+		Command 	= "cl_tfa_viewmodel_offset_z",
+		Type 		= "Float",
+		Min 		= "-2",
+		Max 		= "2",
+	})
+	
+	panel:AddControl("Slider", {
+		Label 	= "Viemodel Offset - FOV",
+		Command 	= "cl_tfa_viewmodel_offset_fov",
+		Type 		= "Float",
+		Min 		= "-5",
+		Max 		= "5",
 	})
 	
 	panel:AddControl("Label", {Text = "By TheForgottenArchitect"})
@@ -512,7 +606,7 @@ if CLIENT then
 		spawnmenu.AddToolMenuOption("Options", "TFA SWEP Base Settings", "tfaOptionPerformance", "Performance", "", "", tfaOptionPerformance)
 		spawnmenu.AddToolMenuOption("Options", "TFA SWEP Base Settings", "TFASwepBaseCrosshair", "HUD / Crosshair", "", "", tfaOptionHUD)
 		spawnmenu.AddToolMenuOption("Options", "TFA SWEP Base Settings", "TFASwepBaseServer", "Admin / Server", "", "", tfaOptionServer)
-		spawnmenu.AddToolMenuOption("Options", "TFA SWEP Base Settings", "TFASwepBaseRestriction", "Restriction", "", "", tfaOptionRestriction)
+		--spawnmenu.AddToolMenuOption("Options", "TFA SWEP Base Settings", "TFASwepBaseRestriction", "Restriction", "", "", tfaOptionRestriction)
 	end
 	
 	hook.Add("PopulateToolMenu", "tfaAddOption", tfaAddOption)
@@ -609,16 +703,6 @@ end
 	end, "TFAUpdateDefaultClip" )
 	--print("Default clip size con var created")
 --end
-
-if GetConVar("sv_tfa_viewbob_intensity") == nil then
-	CreateConVar("sv_tfa_viewbob_intensity", "1", { FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE }, "How much the player view itself bobs.")
-	--print("Viewbob intensity con var created")
-end
-
-if GetConVar("sv_tfa_gunbob_intensity") == nil then
-	CreateConVar("sv_tfa_gunbob_intensity", "1", { FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE }, "How much the gun itself bobs.")
-	--print("Viewbob intensity con var created")
-end
 	
 if GetConVar("sv_tfa_unique_slots") == nil then
 	CreateConVar("sv_tfa_unique_slots", "1", { FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE }, "Give TFA-based Weapons unique slots? 1 for true, 0 for false. RESTART AFTER CHANGING.")
@@ -682,9 +766,42 @@ if GetConVar("sv_tfa_arrow_lifetime") == nil then
 	CreateConVar("sv_tfa_arrow_lifetime", "30", { FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE }, "Arrow lifetime.")
 end
 
+if GetConVar("sv_tfa_arrow_lifetime") == nil then
+	CreateConVar("sv_tfa_arrow_lifetime", "30", { FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE }, "Arrow lifetime.")
+end
+
+if GetConVar("sv_tfa_fx_muzzlesmoke_override") == nil then
+	CreateConVar("sv_tfa_fx_muzzlesmoke_override", "-1", { FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE }, "-1 to let clients pick.  0 to force off.  1 to force on.")
+end
+
+if GetConVar("sv_tfa_fx_gas_override") == nil then
+	CreateConVar("sv_tfa_fx_gas_override", "-1", { FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE }, "-1 to let clients pick.  0 to force off.  1 to force on.")
+end
+
+if GetConVar("sv_tfa_fx_impact_override") == nil then
+	CreateConVar("sv_tfa_fx_impact_override", "-1", { FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE }, "-1 to let clients pick.  0 to force off.  1 to force on.")
+end
+
+if GetConVar("sv_tfa_fx_ricochet_override") == nil then
+	CreateConVar("sv_tfa_fx_ricochet_override", "-1", { FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE }, "-1 to let clients pick.  0 to force off.  1 to force on.")
+end
+
+if GetConVar("sv_tfa_worldmodel_culldistance") == nil then
+	CreateConVar("sv_tfa_worldmodel_culldistance", "-1", { FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE }, "-1 to leave unculled.  Anything else is feet*16.")
+end
+
 --Clientside Convars
 
 if CLIENT then
+
+	if GetConVar("cl_tfa_viewbob_intensity") == nil then
+		CreateClientConVar("cl_tfa_viewbob_intensity", 1, true, false)
+	end
+
+	if GetConVar("cl_tfa_gunbob_intensity") == nil then
+		CreateClientConVar("cl_tfa_gunbob_intensity", 1, true, false)
+		--print("Viewbob intensity con var created")
+	end
 
 	if GetConVar("cl_tfa_3dscope") == nil then
 		CreateClientConVar("cl_tfa_3dscope",1,true,true)
@@ -717,76 +834,76 @@ if CLIENT then
 	--Crosshair Params
 	
 	if GetConVar("cl_tfa_hud_crosshair_length") == nil then
-		CreateClientConVar("cl_tfa_hud_crosshair_length", 1, true, true)
+		CreateClientConVar("cl_tfa_hud_crosshair_length", 1, true, false)
 	end
 		
 	if GetConVar("cl_tfa_hud_crosshair_length_use_pixels") == nil then
-		CreateClientConVar("cl_tfa_hud_crosshair_length_use_pixels", 0, true, true)
+		CreateClientConVar("cl_tfa_hud_crosshair_length_use_pixels", 0, true, false)
 	end
 		
 	if GetConVar("cl_tfa_hud_crosshair_width") == nil then
-		CreateClientConVar("cl_tfa_hud_crosshair_width", 1, true, true)
+		CreateClientConVar("cl_tfa_hud_crosshair_width", 1, true, false)
 	end
 		
 	if GetConVar("cl_tfa_hud_crosshair_enable_custom") == nil then
-		CreateClientConVar("cl_tfa_hud_crosshair_enable_custom", 1, true, true)
+		CreateClientConVar("cl_tfa_hud_crosshair_enable_custom", 1, true, false)
 		--print("Custom crosshair con var created")
 	end
 		
 	if GetConVar("cl_tfa_hud_crosshair_gap_scale") == nil then
-		CreateClientConVar("cl_tfa_hud_crosshair_gap_scale", 1, true, true)
+		CreateClientConVar("cl_tfa_hud_crosshair_gap_scale", 1, true, false)
 	end
 	
 	if GetConVar("cl_tfa_hud_crosshair_dot") == nil then
-		CreateClientConVar("cl_tfa_hud_crosshair_dot", 0, true, true)
+		CreateClientConVar("cl_tfa_hud_crosshair_dot", 0, true, false)
 	end
 	
 	--Crosshair Color
 	if GetConVar("cl_tfa_hud_crosshair_color_r") == nil then
-		CreateClientConVar("cl_tfa_hud_crosshair_color_r", 225, true, true)
+		CreateClientConVar("cl_tfa_hud_crosshair_color_r", 225, true, false)
 		--print("Crosshair tweaking con vars created")
 	end
 		
 	if GetConVar("cl_tfa_hud_crosshair_color_g") == nil then
-		CreateClientConVar("cl_tfa_hud_crosshair_color_g", 225, true, true)
+		CreateClientConVar("cl_tfa_hud_crosshair_color_g", 225, true, false)
 	end
 		
 	if GetConVar("cl_tfa_hud_crosshair_color_b") == nil then
-		CreateClientConVar("cl_tfa_hud_crosshair_color_b", 225, true, true)
+		CreateClientConVar("cl_tfa_hud_crosshair_color_b", 225, true, false)
 	end
 		
 	if GetConVar("cl_tfa_hud_crosshair_color_a") == nil then
-		CreateClientConVar("cl_tfa_hud_crosshair_color_a", 200, true, true)
+		CreateClientConVar("cl_tfa_hud_crosshair_color_a", 200, true, false)
 	end
 	--Crosshair Outline
 	if GetConVar("cl_tfa_hud_crosshair_outline_color_r") == nil then
-		CreateClientConVar("cl_tfa_hud_crosshair_outline_color_r", 5, true, true)
+		CreateClientConVar("cl_tfa_hud_crosshair_outline_color_r", 5, true, false)
 	end
 		
 	if GetConVar("cl_tfa_hud_crosshair_outline_color_g") == nil then
-		CreateClientConVar("cl_tfa_hud_crosshair_outline_color_g", 5, true, true)
+		CreateClientConVar("cl_tfa_hud_crosshair_outline_color_g", 5, true, false)
 	end
 		
 	if GetConVar("cl_tfa_hud_crosshair_outline_color_b") == nil then
-		CreateClientConVar("cl_tfa_hud_crosshair_outline_color_b", 5, true, true)
+		CreateClientConVar("cl_tfa_hud_crosshair_outline_color_b", 5, true, false)
 	end
 		
 	if GetConVar("cl_tfa_hud_crosshair_outline_color_a") == nil then
-		CreateClientConVar("cl_tfa_hud_crosshair_outline_color_a", 200, true, true)
+		CreateClientConVar("cl_tfa_hud_crosshair_outline_color_a", 200, true, false)
 	end
 		
 	if GetConVar("cl_tfa_hud_crosshair_outline_width") == nil then
-		CreateClientConVar("cl_tfa_hud_crosshair_outline_width", 1, true, true)
+		CreateClientConVar("cl_tfa_hud_crosshair_outline_width", 1, true, false)
 	end
 		
 	if GetConVar("cl_tfa_hud_crosshair_outline_enabled") == nil then
-		CreateClientConVar("cl_tfa_hud_crosshair_outline_enabled", 1, true, true)
+		CreateClientConVar("cl_tfa_hud_crosshair_outline_enabled", 1, true, false)
 	end
 	
 	--Other stuff
 	
 	if GetConVar("cl_tfa_hud_ammodata_fadein") == nil then
-		CreateClientConVar("cl_tfa_hud_ammodata_fadein", 0.2, true, true)
+		CreateClientConVar("cl_tfa_hud_ammodata_fadein", 0.2, true, false)
 	end
 		
 	if GetConVar("cl_tfa_hud_hangtime") == nil then
@@ -794,7 +911,7 @@ if CLIENT then
 	end
 		
 	if GetConVar("cl_tfa_hud_enabled") == nil then
-		CreateClientConVar("cl_tfa_hud_enabled", 1, true, true)
+		CreateClientConVar("cl_tfa_hud_enabled", 1, true, false)
 	end
 		
 	if GetConVar("cl_tfa_fx_gasblur") == nil then
@@ -825,15 +942,96 @@ if CLIENT then
 	
 		
 	if GetConVar("cl_tfa_viewbob_drawing") == nil then
-		CreateClientConVar("cl_tfa_viewbob_drawing", 0, true, true)
+		CreateClientConVar("cl_tfa_viewbob_drawing", 0, true, false)
 	end
 	
 	if GetConVar("cl_tfa_viewbob_reloading") == nil then
-		CreateClientConVar("cl_tfa_viewbob_reloading", 1, true, true)
+		CreateClientConVar("cl_tfa_viewbob_reloading", 1, true, false)
+	end
+	
+	--Viewmodel Mods
+	
+	if GetConVar("cl_tfa_viewmodel_offset_x") == nil then
+		CreateClientConVar("cl_tfa_viewmodel_offset_x", 0, true, false)
+	end
+	
+	if GetConVar("cl_tfa_viewmodel_offset_y") == nil then
+		CreateClientConVar("cl_tfa_viewmodel_offset_y", 0, true, false)
+	end
+	
+	if GetConVar("cl_tfa_viewmodel_offset_z") == nil then
+		CreateClientConVar("cl_tfa_viewmodel_offset_z", 0, true, false)
+	end
+	
+	if GetConVar("cl_tfa_viewmodel_offset_fov") == nil then
+		CreateClientConVar("cl_tfa_viewmodel_offset_fov", 0, true, false)
+	end
+	
+	if GetConVar("cl_tfa_viewmodel_multiplier_fov") == nil then
+		CreateClientConVar("cl_tfa_viewmodel_multiplier_fov", 1, true, false)
 	end
 	
 	
 end
+
+--Helpers
+
+local gas_cl_enabled = GetConVar("cl_tfa_fx_gasblur")
+local gas_sv_enabled = GetConVar("sv_tfa_fx_gas_override")
+
+function GetTFAGasEnabled()
+	
+	local enabled
+	if gas_cl_enabled then
+		enabled = gas_cl_enabled:GetBool()
+	else
+		enabled = false
+	end
+	
+	if gas_sv_enabled and gas_sv_enabled:GetInt()>=0 then enabled=gas_sv_enabled:GetBool() end
+	
+	return enabled
+	
+end
+
+local muzzlesmoke_cl_enabled = GetConVar("cl_tfa_fx_muzzlesmoke")
+local muzzlesmoke_sv_enabled = GetConVar("sv_tfa_fx_muzzlesmoke_override")
+
+function GetTFAMZSmokeEnabled()
+	
+	local enabled
+	if muzzlesmoke_cl_enabled then
+		enabled = muzzlesmoke_cl_enabled:GetBool()
+	else
+		enabled = false
+	end
+	
+	if muzzlesmoke_sv_enabled and muzzlesmoke_sv_enabled:GetInt()>=0 then enabled=muzzlesmoke_sv_enabled:GetBool() end
+	
+	return enabled
+	
+end
+
+local ricofx_cl_enabled = GetConVar("cl_tfa_fx_impact_ricochet_enabled")
+local ricofx_sv_enabled = GetConVar("sv_tfa_fx_ricochet_override")
+
+function GetTFARicochetEnabled()
+	
+	local enabled
+	if ricofx_cl_enabled then
+		enabled = ricofx_cl_enabled:GetBool()
+	else
+		enabled = false
+	end
+	
+	if ricofx_sv_enabled and ricofx_sv_enabled:GetInt()>=0 then enabled=ricofx_sv_enabled:GetBool() end
+	
+	return enabled
+	
+end
+
+
+
 
 --Local function for detecting TFA Base weapons.
 
@@ -867,6 +1065,7 @@ end
 --Blacklist convar creation
 
 function TFABlacklistPE()
+	--[[
 	local weplist = weapons.GetList()
 	if !weplist or #weplist<=0 then return end
 	for k,v in pairs(weplist) do
@@ -878,6 +1077,7 @@ function TFABlacklistPE()
 			end
 		end
 	end
+	]]--
 end
 	
 hook.Add("InitPostEntity","TFABlacklistPE", TFABlacklistPE)
@@ -886,9 +1086,11 @@ if TFABlacklistPE then
 	TFABlacklistPE()
 end
 
---Disable spawning of blacklisted guns
+--Disable spawning of blacklisted guns, now depracated
 
 local redcol = Color(255,0,0,255)
+
+--[[
 
 hook.Add( "WeaponEquip" , "TFAEquipBlacklist", function( wep )
 	local v=wep:GetClass()
@@ -948,6 +1150,7 @@ hook.Add( "PlayerSpawnSWEP" , "TFASpawnSWEPBlacklist", function( ply, v, swep )
 		return false
 	end
 end)
+]]--
 
 --Main weapon think
 
@@ -960,15 +1163,19 @@ hook.Add( "PlayerTick" , "PlayerTickTFA", function( ply )
 	end
 end)
 	
---You can't pick up props while holding TFA guns.
+--You can't pick up props while holding TFA guns.  Well, you can now.
 
 hook.Add("AllowPlayerPickup","TFAPickupDisable", function(ply, ent)
+	ply:SetNWEntity("LastHeldEntity",ent)
+	ply:SetNWInt("LastHeldEntityIndex",ent.EntIndex and ent:EntIndex() or -1)
+	--[[
 	local iscarryingtfa, pl, wep = PlayerCarryingTFAWeapon(ply)
 	if iscarryingtfa then
 		return false
 	else
 		return
 	end
+	]]--
 end)
 
 --Client think per-frame
@@ -1482,15 +1689,15 @@ sound.Add({
 	name = 			"TFA.Bash",
 	channel = 		CHAN_USER_BASE+13,
 	volume = 		1.0,
-	sound = 			{ "weapons/tfa/bash.wav" },
+	sound = 			{ "weapons/tfa/bash1.wav", "weapons/tfa/bash2.wav"},
 	pitch = { 97, 103 }
 })
 
 sound.Add({
-	name = 			"TFA.Bash2",
+	name = 			"TFA.BashWall",
 	channel = 		CHAN_USER_BASE+13,
 	volume = 		1.0,
-	sound = 			{ "weapons/tfa/bashmetalic.wav" },
+	sound = 			"weapons/melee/rifle_swing_hit_world.wav",
 	pitch = { 97, 103 }
 })
 
@@ -1498,7 +1705,7 @@ sound.Add({
 	name = 			"TFA.BashFlesh",
 	channel = 		CHAN_USER_BASE+13,
 	volume = 		1.0,
-	sound = 			{ "weapons/melee/bash_flesh.wav" },
+	sound = 			{ "weapons/melee/rifle_swing_hit_infected7.wav", "weapons/melee/rifle_swing_hit_infected8.wav", "weapons/melee/rifle_swing_hit_infected9.wav", "weapons/melee/rifle_swing_hit_infected10.wav", "weapons/melee/rifle_swing_hit_infected11.wav", "weapons/melee/rifle_swing_hit_infected12.wav" },
 	pitch = { 97, 103 }
 })
 
@@ -1571,4 +1778,153 @@ if CLIENT then
 		end
 	
 	end)
+end
+
+--ATTACHMENTS
+
+TFA_ATT = {}
+
+function TFARegisterAttachment(att)
+
+	local base
+
+	if att.Base then
+		base = TFA_ATT[att.Base]
+	else
+		base = TFA_ATT["base"]
+	end
+	
+	if base then
+		for k,v in pairs(base) do
+			if !att[k] then att[k] = v end
+		end
+	end
+	
+	TFA_ATT[ att.ID or att.Name ] = att
+
+end
+
+TFA_ATTACHMENT_PATH = "tfa/att/"
+TFA_ATTACHMENT_ISUPDATING = false
+
+function TFAUpdateAttachments()
+	TFA_ATT = {}
+
+	TFA_ATTACHMENT_ISUPDATING = true
+
+	local tbl = file.Find(TFA_ATTACHMENT_PATH.."*base*","LUA","namedesc")
+	local addtbl = file.Find(TFA_ATTACHMENT_PATH.."*","LUA","namedesc")
+	
+	for k,v in ipairs(addtbl) do
+		if !string.find(v,"base") then
+			table.insert(tbl,#tbl+1,v)
+		end
+	end
+	
+	addtbl = nil
+	
+	for k,v in ipairs(tbl) do
+		
+		local id = v
+		
+		v = TFA_ATTACHMENT_PATH .. v
+	
+		ATTACHMENT = {}
+		
+		ATTACHMENT.ID = string.Replace(id,".lua","")
+		
+		if SERVER then
+			AddCSLuaFile(v)
+			include(v)
+		else
+			include(v)
+		end
+		
+		if ATTACHMENT.Model and type(ATTACHMENT.Model)=="string" and ATTACHMENT.Model != "" then
+			util.PrecacheModel(ATTACHMENT.Model)
+		end
+		
+		TFARegisterAttachment(ATTACHMENT)
+		
+		ATTACHMENT = nil
+	end
+	
+	TFA_ATTACHMENT_ISUPDATING = false
+end
+	
+hook.Add("InitPostEntity","TFAUpdateAttachmentsIPE", TFAUpdateAttachments)
+
+if TFAUpdateAttachments then
+	TFAUpdateAttachments()
+end
+
+--Inspection Blur
+
+local INSPECTION_BACKGROUND = Color(15,15,15,64)
+local INSPECTION_PRIMARYCOLOR = Color(245,245,245,255)
+local INSPECTION_SECONDARYCOLOR = Color(153,253,220,255)
+
+if CLIENT then
+	
+	local tfablurintensity = 0
+
+	local blur_mat = Material( "pp/bokehblur" )
+
+	local tab = {}
+	
+	tab[ "$pp_colour_addr" ] 		= 0
+	tab[ "$pp_colour_addg" ] 		= 0
+	tab[ "$pp_colour_addb" ] 		= 0
+	tab[ "$pp_colour_brightness" ] 	= 0
+	tab[ "$pp_colour_contrast" ] 	= 1
+	tab[ "$pp_colour_colour" ] 		= 1
+	tab[ "$pp_colour_mulr" ] 		= 0
+	tab[ "$pp_colour_mulg" ] 		= 0
+	tab[ "$pp_colour_mulb" ] 		= 0
+	
+	local function DrawBokehDOF()
+
+		render.UpdateScreenEffectTexture()
+
+		blur_mat:SetTexture( "$BASETEXTURE", render.GetScreenEffectTexture() )
+		blur_mat:SetTexture( "$DEPTHTEXTURE", render.GetResolvedFullFrameDepth() )
+
+		blur_mat:SetFloat( "$size", tfablurintensity*6 )
+		blur_mat:SetFloat( "$focus", 0 )
+		blur_mat:SetFloat( "$focusradius", 0.1 )
+
+		render.SetMaterial( blur_mat )
+		render.DrawScreenQuad()
+	
+	end
+
+	hook.Add("PreDrawViewModel","PreDrawViewModel_TFA_INSPECT",function()
+		tfablurintensity = 0
+		local ply = LocalPlayer()
+		if !IsValid(ply) then return end
+		local wep = ply:GetActiveWeapon()
+		if !IsValid(wep) then return end
+		tfablurintensity = (wep.CLInspectingProgress or 0)
+		local its = tfablurintensity*10
+		if its>0.01 then
+			DrawBokehDOF()
+			tab[ "$pp_colour_brightness" ] = -tfablurintensity*0.02
+			tab[ "$pp_colour_contrast" ] = 1-tfablurintensity*0.1
+			DrawColorModify( tab )
+		end
+		cam.IgnoreZ(true)
+	end)
+
+	hook.Add( "NeedsDepthPass", "NeedsDepthPass_TFA_Inspect", function()
+	
+		if tfablurintensity >0.01 then
+			DOFModeHack( true )
+			return true
+		else
+			DOFModeHack( false )
+		end
+		
+	end )
+
+	
 end

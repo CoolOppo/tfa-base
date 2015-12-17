@@ -32,6 +32,7 @@ function SWEP:InitMods()
 	end
 end
 
+
 --[[ 
 Function Name:  ViewModelDrawn
 Syntax: self:ViewModelDrawn().  Automatically called already.
@@ -140,6 +141,8 @@ Notes:  This draws the world model, plus its attachments.
 Purpose:  SWEP Construction Kit Compatibility / Basic Attachments.
 ]]--
 
+local culldistancecvar = GetConVar("sv_tfa_worldmodel_culldistance")
+
 function SWEP:DrawWorldModel()
 	if (self.ShowWorldModel == nil or self.ShowWorldModel) then
 	
@@ -167,7 +170,9 @@ function SWEP:DrawWorldModel()
 			end
 		end
 		
-		self:DrawModel()
+		if !(culldistancecvar:GetFloat()>=0 and self:GetPos():Distance(EyePos and EyePos() or LocalPlayer():GetShootPos())>culldistancecvar:GetFloat() ) then
+			self:DrawModel()
+		end
 	end
 	
 	if (!self.WElements) then return end
@@ -319,7 +324,7 @@ end
 
 --[[ 
 Function Name:  CleanModels
-Syntax: self:CreateModels( elements table ). 
+Syntax: self:CleanModels( elements table ). 
 Returns:   Nothing.
 Notes:  Removes all existing models.
 Purpose:  SWEP Construction Kit Compatibility / Basic Attachments.
@@ -332,8 +337,12 @@ function SWEP:CleanModels( tabl )
 		if (v.type == "Model" and v.curmodel) then
 			
 			if v.curmodel and v.curmodel.Remove then
-				v.curmodel:Remove()
-				v.curmodel = nil
+				
+				timer.Simple(0,function()
+					if v.curmodel and v.curmodel.Remove then v.curmodel:Remove() end
+					v.curmodel = nil
+				end)
+				
 			else
 				v.curmodel = nil
 			end

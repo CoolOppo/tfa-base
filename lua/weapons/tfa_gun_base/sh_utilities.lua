@@ -1,3 +1,226 @@
+--[[ 
+Function Name:  CanChamber
+Syntax: self:CanChamber().
+Returns:  If we can't chamber.
+Notes:
+Purpose:  You ain't no muslim, bruv
+]]--
+
+function SWEP:CanChamber()
+	if self.DisableChamberingNew!=nil then
+		return self.DisableChamberingNew
+	else
+		self.DisableChamberingNew = ( !self.BoltAction and !self.Shotgun and !self.Revolver and !self.DisableChambering )
+		return self.DisableChamberingNew
+	end
+end
+
+
+--[[ 
+Function Name:  GetType
+Syntax: self:GetType()
+Returns:  The weapon type ("shotgun","rifle","pistol","smg","sniper","dmr", or custom).
+Notes:  Sets the proper viewmodel bodygroups.
+Purpose:  You ain't no muslim, bruv
+]]--
+
+function SWEP:GetType()
+	if self.Type then return self.Type end
+	
+	local at = string.lower(self.Primary.Ammo or "")
+	
+	local ht = string.lower( (self.DefaultHoldType or self.HoldType) or "")
+	
+	local rpm = self.Primary.RPM or 600
+	
+	if self.Shotgun or at=="buckshot" then
+		self.Type="Shotgun"
+		return self:GetType()
+	end
+	
+	if self.Pistol or ( at=="pistol" and ht == "pistol" ) then
+		self.Type="Pistol"
+		return self:GetType()
+	end
+	
+	if self.SMG or ( at=="smg1" and ( ht=="smg" or ht == "pistol" ) ) then
+		self.Type="Sub-Machine Gun"
+		return self:GetType()
+	end
+	
+	if self.Revolver or ( at=="357" and ht=="revolver" ) then
+		self.Type="Revolver"
+		return self:GetType()
+	end
+	--Detect Sniper Type
+	
+	if ( self.Scoped or self.Scoped_3D ) and rpm<600 then
+		if rpm>180 then
+			self.Type = "Designated Marksman Rifle"
+			return self:GetType()
+		else
+			self.Type = "Sniper Rifle"
+			return self:GetType()
+		end
+	end
+	
+	--Detect based on holdtype
+	
+	if ht=="pistol" then
+		self.Type="Pistol"
+		return self:GetType()
+	end
+	
+	if ht=="revolver" then
+		self.Type="Revolver"
+		return self:GetType()
+	end
+	
+	if ht=="duel" then
+		if at=="pistol" then
+			self.Type = "Dual Pistols"
+			return self:GetType()
+		elseif at=="357" then
+			self.Type = "Dual Revolvers"
+			return self:GetType()
+		elseif at=="smg1" then
+			self.Type = "Dual Sub-Machine Guns"
+			return self:GetType()
+		else
+			self.Type = "Dual Guns"
+			return self:GetType()
+		end
+	end
+	
+	--If it's using rifle ammo, it's a rifle or a carbine
+	
+	if at=="ar2" then
+		if ht=="ar2" or ht=="shotgun" then
+			self.Type = "Rifle"
+			return self:GetType()
+		else
+			self.Type = "Carbine"
+			return self:GetType()
+		end	
+	end
+	
+	--Check SMG one last time
+	
+	if ht=="smg" or at=="smg1" then
+		self.Type="Sub-Machine Gun"
+		return self:GetType()
+	end
+	
+	--Fallback to generic
+	
+	self.Type = "Weapon"
+	
+	return self:GetType()
+	
+end
+
+--[[ 
+Function Name:  DoBodyGroups
+Syntax: self:DoBodyGroups().  Should be called only once for best performance.
+Returns:  Nothing.
+Notes:  Sets the proper viewmodel bodygroups.
+Purpose:  You ain't no muslim, bruv
+]]--
+
+function SWEP:DoBodyGroups()
+	if SERVER then self:CallOnClient("DoBodyGroups","") end
+	
+	if !IsValid(self) then return end
+	
+	if !self.WMBodyGroups then
+		self.WMBodyGroups = self.BodyGroups
+	end
+	
+	if self.WMBodyGroups and #self.WMBodyGroups>0 then
+		for k,v in pairs(self.WMBodyGroups) do
+			if type(k)=="number" then
+				self:SetBodygroup(k,v)
+			end
+		end
+	end
+	
+	if !self:OwnerIsValid() then return end
+	local vm = self.Owner:GetViewModel()
+	
+	if !self.VMBodyGroups then
+		self.VMBodyGroups = self.BodyGroups
+	end
+	
+	if self.VMBodyGroups and #self.VMBodyGroups>0 then
+		for k,v in pairs(self.VMBodyGroups) do
+			if type(k)=="number" then
+				vm:SetBodygroup(k,v)
+			end
+		end
+	end
+	
+end
+
+
+--[[ 
+Function Name:  ResetVMBodyGroups
+Syntax: self:DoBodyGroups().  Should be called only once for best performance.
+Returns:  Nothing.
+Notes:  Sets the proper viewmodel bodygroups.
+Purpose:  Bruv
+]]--
+
+function SWEP:ResetVMBodyGroups()
+	
+	if !IsValid(self) then return end
+	
+	if !self:OwnerIsValid() then return end
+	
+	local vm = self.Owner:GetViewModel()
+	
+	if !self.VMBodyGroups then
+		self.VMBodyGroups = self.BodyGroups
+	end
+	
+	if self.VMBodyGroups and #self.VMBodyGroups>0 then
+		for k,v in pairs(self.VMBodyGroups) do
+			if type(k)=="number" then
+				vm:SetBodygroup(k,0)
+			end
+		end
+	end
+	
+end
+
+--[[ 
+Function Name:  IsHidden
+Syntax: self:IsHidden( ). 
+Returns:   Should we hide self?.
+Notes:    
+Purpose:  Utility
+]]--
+
+function SWEP:IsHidden()
+	if !self:OwnerIsValid() then return true end
+	local vm = self.Owner:GetViewModel()
+	local heldentindex = self.Owner:GetNWInt("LastHeldEntityIndex",-1)
+	local heldent = Entity(heldentindex)
+	
+	if heldentindex!=-1 and IsValid(heldent) and heldent.IsPlayerHolding and !heldent:IsPlayerHolding() then
+		self.Owner:SetNWInt("LastHeldEntityIndex",-1)
+		heldent = nil
+	end
+	
+	return self:IsCurrentlyScoped() or ( IsValid(heldent) and (!heldent.IsPlayerHolding or heldent:IsPlayerHolding() ) ) or (self:GetHolstering() and vm:GetCycle()>0.9)
+end
+
+--[[ 
+Function Name:  UpdateConDamage
+Syntax: self:UpdateConDamage( ). 
+Returns:   Nothing.
+Notes:    Used to update damage multiplier.
+Purpose:  Utility
+]]--
 
 function SWEP:UpdateConDamage()
 	
@@ -9,6 +232,67 @@ function SWEP:UpdateConDamage()
 	
 	if self.DamageConVar and self.DamageConVar.GetFloat then
 		self.ConDamageMultiplier = self.DamageConVar:GetFloat()
+	end
+end
+
+--[[ 
+Function Name:  GetAnchor
+Syntax: self:GetAnchor( ). 
+Returns:   Nothing.
+Notes:    Used to reset the progress of some stuff , idk, can you read?
+Purpose:  Utility
+]]--
+
+local posvec = Vector()
+local angang = Angle()
+
+function SWEP:GetAnchor(id)
+	
+	if !self:OwnerIsValid() then return end
+	
+	local ifp = self:IsFirstPerson()
+	
+	local targent = ifp  and self.Owner:GetViewModel() or self
+	
+	local tbl
+	
+	if ifp then
+		tbl = self.VMAnchors[id] or self.VMAnchors[tonumber(id)]
+	end
+	
+	if tbl then
+		local bone
+		if type(tbl.bone) == "string" then bone = targent:LookupBone(tbl.bone) end
+		if type(tbl.bone) == "number" then bone = tbl.bone end
+		if !bone or bone<=0 then bone = 1 end
+		local pos, ang = posvec,angang
+		local m = targent:GetBoneMatrix(bone)
+		if (m) then
+			pos, ang = m:GetTranslation(), m:GetAngles()
+		end
+		
+		if (ifp and self.ViewModelFlip) then
+			ang.r = -ang.r
+		end
+		
+		local newpos,newang = LocalToWorld(tbl.pos,tbl.angle,pos,ang)
+		debugoverlay.Cross(newpos,5,0.1,color_white,true)
+		return newpos, newang
+	else
+		if type(id) == "number" then
+			local angpos = targent:GetAttachment(id)
+			if angpos then
+				return angpos.Pos,angpos.Ang
+			end
+		else
+			local ind = targent:LookupAttachment(id)
+			if !ind or ind<=0 then ind=tonumber(id) end
+			if !ind or ind<=0 then ind=1 end
+			local angpos = targent:GetAttachment(ind)
+			if angpos then
+				return angpos.Pos,angpos.Ang
+			end
+		end
 	end
 end
 
@@ -92,7 +376,7 @@ function SWEP:PlaySound( snd )
 	end
 	
 	if !snd then return end
-	if !string.find(tostring(snd),"table") or !tostring(snd) then
+	if type(snd)!="table" then
 		self:EmitSound(snd)
 	else
 		local num = math.random(1,#snd)
@@ -327,8 +611,6 @@ function SWEP:IsFirstPerson()
 	if self.Owner.ShouldDrawLocalPlayer and self.Owner:ShouldDrawLocalPlayer() then
 		return false
 	end
-	
-	if !IsValid(self.Owner:GetViewModel()) then return false end
 	
 	return true
 end

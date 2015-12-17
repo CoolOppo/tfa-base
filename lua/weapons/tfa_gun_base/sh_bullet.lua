@@ -433,7 +433,7 @@ function SWEP:CheckRicochet(bullet, tr)
 			ricbul.Tracer=0
 			ricbul.TracerName = "None"
 			ricbul.IsFirst = false
-			if GetConVarNumber("cl_tfa_fx_impact_ricochet_enabled",1) == 1 and GetConVarNumber("cl_tfa_fx_impact_enabled",1)==1 then
+			if GetTFARicochetEnabled() then
 				local fx = EffectData()
 				fx:SetOrigin(ricbul.Src)
 				fx:SetNormal(ricbul.Dir)
@@ -608,7 +608,7 @@ function SWEP:Recoil( recoil )
 		--sp_eyes:RotateAroundAxis(sp_eyes:Right(), tmprecoilang.p)
 		--sp_eyes:Normalize()
 		--sp_eyes:RotateAroundAxis(sp_eyes:Up(), tmprecoilang.y)
-		sp_eyes.p = sp_eyes.p + tmprecoilang.p
+		sp_eyes.p = sp_eyes.p + tmprecoilang.p * self.Primary.StaticRecoilFactor
 		sp_eyes:Normalize()
 		self.Owner:SetEyeAngles(sp_eyes)
 	end
@@ -621,7 +621,7 @@ function SWEP:Recoil( recoil )
 		--eyes:RotateAroundAxis(eyes:Right(), tmprecoilang2.p)
 		--eyes:Normalize()
 		--eyes:RotateAroundAxis(eyes:Up(), tmprecoilang2.y)
-		eyes.p = eyes.p + tmprecoilang2.p
+		eyes.p = eyes.p + tmprecoilang2.p * self.Primary.StaticRecoilFactor
 		eyes:Normalize()
 		self.Owner:SetEyeAngles(eyes)
 	end

@@ -59,7 +59,7 @@ function EFFECT:Init( data )
 	local attachment = data:GetAttachment()
 	
 	if attachment and attachment!=0 then
-		if ( GetConVarNumber("cl_tfa_fx_muzzlesmoke",1)==1 ) then
+		if ( GetTFAMZSmokeEnabled() ) then
 			ParticleEffectAttach(smokepart,PATTACH_POINT_FOLLOW,entity,attachment)
 		end
 	end

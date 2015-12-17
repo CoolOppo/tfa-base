@@ -23,7 +23,7 @@ function EFFECT:Init( data )
 			p:SetColor( 135, 135, 135 )
 		end
 		
-		if GetConVarNumber("cl_tfa_fx_gasblur",1)==1 then
+		if GetTFAGasEnabled() then
 			local p = emitter:Add( "sprites/heatwave", posoffset )
 
 			p:SetVelocity( 50 * data:GetNormal() + 0.5 * VectorRand() )

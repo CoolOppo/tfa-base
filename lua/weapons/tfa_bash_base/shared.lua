@@ -1,8 +1,8 @@
 DEFINE_BASECLASS("tfa_gun_base")
 
 SWEP.Secondary.Damage = 25
-SWEP.Secondary.BashSound = Sound("TFA.Bash2")
-SWEP.Secondary.Sound = Sound("")
+SWEP.Secondary.BashSound = Sound("TFA.Bash")
+SWEP.Secondary.Sound = Sound("TFA.BashWall")
 SWEP.Secondary.Sound_Flesh = Sound("TFA.BashFlesh")
 SWEP.Secondary.BashLength = 54
 SWEP.Secondary.BashDelay = 0.2	
@@ -121,6 +121,28 @@ function SWEP:AltAttack()
 						dmg:SetDamageType(DMG_SLASH)
 						slashtrace.Entity:TakeDamageInfo(dmg)
 					end		
+					
+					local ent = slashtrace.Entity
+					if IsValid(ent) and ent.GetPhysicsObject then
+						
+						local phys
+						
+						if ent:IsRagdoll() then
+							phys = ent:GetPhysicsObjectNum(slashtrace.PhysicsBone or 0)
+						else						
+							phys = ent:GetPhysicsObject()
+						end
+						
+						if IsValid(phys) then
+							if ent:IsPlayer() or ent:IsNPC() then
+								ent:SetVelocity(ent:GetVelocity()+self.Owner:GetAimVector()*self.Secondary.Damage*40)
+								phys:SetVelocity(phys:GetVelocity()+self.Owner:GetAimVector()*self.Secondary.Damage*40)
+							else
+								phys:ApplyForceOffset(self.Owner:GetAimVector()*self.Secondary.Damage/4,slashtrace.HitPos)
+							end
+						end
+						
+					end
 				end
 			end
 		end
