@@ -122,7 +122,7 @@ function EFFECT:Init( data )
 				particle:SetRollDelta( math.Rand(-40, 40) )
 				particle:SetColor( 255 , 218 , 97 )
 				particle:SetLighting(false)
-				particle.FollowEnt = data:GetEntity()
+				particle.FollowEnt = self.WeaponEnt
 				particle.Att = self.Attachment
 				particle:SetThinkFunction( partfunc )
 				particle:SetNextThink(CurTime())
@@ -168,7 +168,7 @@ function EFFECT:Init( data )
 					
 					particle:SetAirResistance( 5 ) 
 					
-					particle.FollowEnt = data:GetEntity()
+					particle.FollowEnt = self.WeaponEnt
 					particle.Att = self.Attachment
 					particle:SetThinkFunction( partfunc )
 					 

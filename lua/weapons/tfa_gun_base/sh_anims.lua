@@ -1,3 +1,9 @@
+ACT_VM_FIDGET_EMPTY = ACT_VM_FIDGET_EMPTY or ACT_CROSSBOW_FIDGET_UNLOADED
+
+function SWEP:UpdateLastAct(arg1)
+	self.lastact = tonumber(arg1)
+end
+
 --[[ 
 Function Name:  AnimForce
 Syntax: self:AnimForce(tostring(ACT_VM_IDLE)).
@@ -10,8 +16,8 @@ function SWEP:AnimForce(str)
 	
 
 	if !str then return end
-	
-	local vm = LocalPlayer():GetViewModel()
+	local ply = LocalPlayer and LocalPlayer() or self.Owner
+	local vm = ply:GetViewModel()
 	if IsValid(vm) then
 		local strnum = tonumber(str)
 		if !strnum then return end
@@ -68,6 +74,7 @@ function SWEP:ChooseDrawAnim()
 	end
 	
 	self.lastact = tanim
+	self:CallOnClient("UpdateLastAct",tostring(self.lastact))
 	return success, tanim
 end
 --[[ 
@@ -83,7 +90,10 @@ function SWEP:ChooseInspectAnim()
 	--self:ResetEvents()
 	local tanim = ACT_VM_FIDGET
 	local success = true
-	if self.SequenceEnabled[ACT_VM_FIDGET] then
+	if self.SequenceEnabled[ACT_VM_FIDGET_EMPTY] and math.Round(self:Clip1())==0 then
+		self:SendWeaponAnim(ACT_VM_FIDGET_EMPTY)
+		tanim=ACT_VM_FIDGET_EMPTY		
+	elseif self.SequenceEnabled[ACT_VM_FIDGET] then
 		--[[
 		local vm = self.Owner:GetViewModel()
 		if IsValid(vm) then
@@ -104,6 +114,7 @@ function SWEP:ChooseInspectAnim()
 	end
 	
 	self.lastact = tanim
+	self:CallOnClient("UpdateLastAct",tostring(self.lastact))
 	
 	return success, tanim
 end
@@ -154,6 +165,7 @@ function SWEP:ChooseHolsterAnim()
 	end
 	
 	self.lastact = tanim
+	self:CallOnClient("UpdateLastAct",tostring(self.lastact))
 	
 	return success, tanim
 end
@@ -210,6 +222,7 @@ function SWEP:ChooseReloadAnim()
 	end
 	
 	self.lastact = tanim
+	self:CallOnClient("UpdateLastAct",tostring(self.lastact))
 	return success, tanim
 end
 
@@ -230,7 +243,7 @@ function SWEP:ChooseShotgunReloadAnim()
 		self:SendWeaponAnim(ACT_VM_RELOAD_SILENCED)
 		tanim=ACT_VM_RELOAD_SILENCED
 	else
-		if self.SequenceEnabled[ACT_VM_RELOAD_EMPTY] then
+		if self.SequenceEnabled[ACT_VM_RELOAD_EMPTY] and self.KF2StyleShotgun then
 			if (self:Clip1()==0) then
 				self:SendWeaponAnim(ACT_VM_RELOAD_EMPTY)
 				tanim=ACT_VM_RELOAD_EMPTY
@@ -260,6 +273,7 @@ function SWEP:ChooseShotgunReloadAnim()
 	end
 	
 	self.lastact = tanim
+	self:CallOnClient("UpdateLastAct",tostring(self.lastact))
 	return success, tanim
 end
 
@@ -296,6 +310,7 @@ function SWEP:ChooseIdleAnim()
 	end
 	
 	self.lastact = tanim
+	self:CallOnClient("UpdateLastAct",tostring(self.lastact))
 	return true, tanim
 end
 
@@ -307,7 +322,7 @@ Notes:  Requires autodetection or otherwise the list of valid anims.
 Purpose:  Animation / Utility
 ]]--
 
-function SWEP:ChooseShootAnim()
+function SWEP:ChooseShootAnim( ifp )
 	if !self:OwnerIsValid() then return end
 	
 	if !self.BlowbackEnabled or ( !self:GetIronSights() and self.Blowback_Only_Iron) then
@@ -388,18 +403,29 @@ function SWEP:ChooseShootAnim()
 			self:CallOnClient("AnimForce",tanim)
 		end
 		
+		
+		if self.LuaShellEject and ifp and CLIENT then
+			--self:CallOnClient("MakeShellBridge","")
+			self:MakeShellBridge()
+		end
+		
 		self.lastact = tanim
 		return success, tanim
 		
 	else
 	
-		self:ChooseIdleAnim()
+		--self:SendWeaponAnim(-1)
 		
 		if game.SinglePlayer() and SERVER then
 			self:CallOnClient("BlowbackFull","")
 		end
 		
-		self:BlowbackFull()
+		if ifp then
+			self:BlowbackFull()
+		end
+		
+		self.lastact = -2
+		self:CallOnClient("UpdateLastAct",tostring(self.lastact))
 		
 		return true, ACT_VM_IDLE
 		
@@ -409,51 +435,11 @@ end
 function SWEP:BlowbackFull()
 	
 	if IsValid(self) then
+		self.lastact = -2
 		self.BlowbackCurrent = 1
 		self.BlowbackCurrentRoot = 1
 		if self.Blowback_Shell_Enabled and ( ( CLIENT and !game.SinglePlayer() ) or ( SERVER and game.SinglePlayer() ) ) then
-			timer.Simple(0, function()
-				if IsValid(self) and self:OwnerIsValid() then
-					local vm = self.Owner:GetViewModel()
-					if IsValid(vm) then
-						local fx = EffectData()
-						fx:SetEntity(vm)
-						local attid = vm:LookupAttachment(self.ShellAttachment)
-						attid = math.Clamp(attid and attid or 0,1,127)
-						fx:SetAttachment(attid)
-						local attpos = vm:GetAttachment(attid)
-						
-						if attpos and attpos.Pos and attpos.Ang and self.ViewModelFlip then
-							local localpos = vm:WorldToLocal(attpos.Pos)
-							local localang = vm:WorldToLocalAngles(attpos.Ang)
-							localpos = localpos * Vector(-1,1,1)
-							localang = Angle(localang.p,localang.y+180,localang.r)
-							local worldpos = vm:LocalToWorld(localpos)
-							local worldang = vm:LocalToWorldAngles(localang)
-							attpos.Pos = worldpos
-							attpos.Ang = worldang
-						end
-						
-						if attpos and attpos.Pos then
-							if !game.SinglePlayer() then
-								fx:SetOrigin(attpos.Pos)
-							else
-								fx:SetOrigin(attpos.Pos + self.Owner:GetShootPos() - self.Owner:GetPos() )
-							end
-							--fx:SetStart(attpos.Pos)
-						end
-						
-						--debugoverlay.Axis(attpos.Pos,attpos.Ang,64,15,true)
-							
-						if attpos and attpos.Ang then
-							fx:SetAngles(attpos.Ang)
-							fx:SetNormal(attpos.Ang:Forward())
-						end
-						--debugoverlay.Axis( attpos.Pos, attpos.Ang, 15, 5, true)
-						util.Effect(self.Blowback_Shell_Effect,fx)
-					end
-				end
-			end)
+				self:MakeShell(self.Blowback_Shell_Effect,0)
 		end
 	end
 	
@@ -495,6 +481,7 @@ function SWEP:ChooseSilenceAnim( val )
 	end
 	
 	self.lastact = tanim
+	self:CallOnClient("UpdateLastAct",tostring(self.lastact))
 	return success, tanim
 	
 end
@@ -531,5 +518,6 @@ function SWEP:ChooseDryFireAnim()
 	end
 	
 	self.lastact = tanim
+	self:CallOnClient("UpdateLastAct",tostring(self.lastact))
 	return success, tanim
 end

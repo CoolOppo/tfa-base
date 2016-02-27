@@ -41,11 +41,94 @@ Notes:  This draws the mods.
 Purpose:  SWEP Construction Kit Compatibility / Basic Attachments.
 ]]--
 
+SWEP.CameraAttachmentOffsets = {
+	{"p",0},
+	{"y",0},
+	{"r",0}
+}
+
+SWEP.CameraAttachment = nil
+SWEP.CameraAttachments = {
+	"camera",
+	"attach_camera",
+	"view",
+	"cam",
+	"look"
+}
+SWEP.CameraAngCache = nil
+
+local tmpvec = Vector(0,0,-2000)
+
 function SWEP:ViewModelDrawn()
 	if !IsValid(self) or !self:OwnerIsValid() then return end
 	local vm = self.Owner:GetViewModel()
-	if !IsValid(vm) then return end
+	
+	if self.UseHands then
+		local hands = self.Owner:GetHands()
+		if IsValid(hands) then
+			if !self:IsHidden() then
+				hands:SetParent(vm)
+			else
+				hands:SetParent(nil)
+				hands:SetPos(tmpvec)
+			end
+		end
+	end
+	
 	self:UpdateBonePositions(vm)
+	
+	if !self.CameraAttachment then
+		self.CameraAttachment = -1
+		for k,v in pairs(self.CameraAttachments) do
+			local attid = vm:LookupAttachment(v)
+			if attid and attid>0 then
+				self.CameraAttachment = attid
+				break
+			end
+		end
+	end
+	
+	if self.CameraAttachment and self.CameraAttachment>0 then
+		local angpos = vm:GetAttachment(self.CameraAttachment)
+		local angv = angpos.Ang
+		local off = vm:WorldToLocalAngles(angv)
+		local spd = 10
+		local cycl = vm:GetCycle()
+		local dissipatestart = 0
+		self.CameraAngCache = self.CameraAngCache or off
+		for k,v in pairs(self.CameraAttachmentOffsets) do
+			local offtype = v[1]
+			local offang = v[2]
+			if offtype=="p" then
+				off:RotateAroundAxis(off:Right(),offang)
+			elseif offtype=="y" then
+				off:RotateAroundAxis(off:Up(),offang)
+			elseif offtype=="r" then
+				off:RotateAroundAxis(off:Forward(),offang)
+			end
+		end
+		
+		if self.ViewModelFlip then
+			off = Angle()
+		end
+		
+		local actind = vm:GetSequenceActivity(vm:GetSequence())
+		if ( actind==ACT_VM_DRAW or actind==ACT_VM_HOLSTER_DRAW_EMPTY or actind==ACT_VM_DRAW_SILENCED ) and vm:GetCycle()<0.05 then
+			self.CameraAngCache.p = 0
+			self.CameraAngCache.y = 0
+			self.CameraAngCache.r = 0
+		end
+		if ( actind==ACT_VM_HOLSTER or actind==ACT_VM_HOLSTER_EMPTY ) and cycl>dissipatestart then
+			self.CameraAngCache.p = self.CameraAngCache.p * (1-cycl)/(1-dissipatestart)
+			self.CameraAngCache.y = self.CameraAngCache.y * (1-cycl)/(1-dissipatestart)
+			self.CameraAngCache.r = self.CameraAngCache.r * (1-cycl)/(1-dissipatestart)
+		end
+		self.CameraAngCache.p=math.ApproachAngle(self.CameraAngCache.p,off.p,(self.CameraAngCache.p-off.p)*FrameTime()*spd)
+		self.CameraAngCache.y=math.ApproachAngle(self.CameraAngCache.y,off.y,(self.CameraAngCache.y-off.y)*FrameTime()*spd)
+		self.CameraAngCache.r=math.ApproachAngle(self.CameraAngCache.r,off.r,(self.CameraAngCache.r-off.r)*FrameTime()*spd)
+		
+	end
+	
 	if (!self.VElements) then return end
 	if (!self.vRenderOrder) then
 		-- // we build a render order because sprites need to be drawn after models
@@ -146,13 +229,14 @@ local culldistancecvar = GetConVar("sv_tfa_worldmodel_culldistance")
 function SWEP:DrawWorldModel()
 	if (self.ShowWorldModel == nil or self.ShowWorldModel) then
 	
-		if game.SinglePlayer() then
+		if game.SinglePlayer() or CLIENT then
 			local hand, offset, rotate
 
 			local ply = self:GetOwner()
 
 			if IsValid( ply ) and self.Offset and self.Offset.Pos and self.Offset.Ang then
 				local handBone = ply:LookupBone( "ValveBiped.Bip01_R_Hand" )
+				if ply.SetupBones then ply:SetupBones() end
 				if handBone then
 					local pos, ang = ply:GetBonePosition( handBone )
 					pos = pos + ang:Forward() * self.Offset.Pos.Forward + ang:Right() * self.Offset.Pos.Right + ang:Up() * self.Offset.Pos.Up
@@ -161,12 +245,18 @@ function SWEP:DrawWorldModel()
 					ang:RotateAroundAxis( ang:Forward(),  self.Offset.Ang.Forward )
 					self:SetRenderOrigin( pos )
 					self:SetRenderAngles( ang )
-					self:SetModelScale( self.Offset.Scale or 1, 0 )
+					if self.Offset.Scale and ( !self.MyModelScale or ( self.Offset and self.MyModelScale!=self.Offset.Scale ) ) then
+						self:SetModelScale( self.Offset.Scale or 1, 0 )
+						self.MyModelScale = self.Offset.Scale
+					end
 				end
 			else
 				self:SetRenderOrigin( nil )
 				self:SetRenderAngles( nil )
-				self:SetModelScale( 1, 0 )
+				if !self.MyModelScale or self.MyModelScale!=1 then
+					self:SetModelScale( 1, 0 )
+					self.MyModelScale = 1
+				end
 			end
 		end
 		
@@ -501,6 +591,8 @@ Purpose:  SWEP Construction Kit Compatibility / Basic Attachments.
 ]]--
  
 function SWEP:ResetBonePositions(vm)
+	
+	if !self.ViewModelBoneMods and !self.BlowbackBoneMods then return end
 	
 	if SERVER then
 		self:CallOnClient("ResetBonePositions","")

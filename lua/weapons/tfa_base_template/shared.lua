@@ -277,6 +277,12 @@ SWEP.CustomMuzzleFlash = true --Disable muzzle anim events and use our custom fl
 SWEP.AutoDetectMuzzleAttachment = false --For multi-barrel weapons, detect the proper attachment?
 SWEP.MuzzleFlashEffect = nil --Change to a string of your muzzle flash effect.  Copy/paste one of the existing from the base.
 
+--Shell eject override
+
+SWEP.LuaShellEject = false
+SWEP.LuaShellEjectDelay = 0
+SWEP.LuaShellEffect = nil --Defaults to blowback
+
 --Tracer Stuff
 
 SWEP.Tracer				= 0		--Bullet tracer.  TracerName overrides this.

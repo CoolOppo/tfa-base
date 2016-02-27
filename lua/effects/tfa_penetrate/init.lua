@@ -64,6 +64,16 @@ function EFFECT:Init(data)
 		part:SetColor(200,200,200)
 				
 	emitter:Finish()
+	
+	self.WeaponEnt = data:GetEntity()
+	if !IsValid(self.WeaponEnt) then return end
+	if self.WeaponEnt.TracerName then
+		local fx = EffectData()
+		fx:SetStart(self.StartPos)
+		local traceres = util.QuickTrace(self.StartPos,self.Dir*9999999,nil)
+		fx:SetOrigin(traceres.HitPos or self.StartPos)
+		util.Effect(self.WeaponEnt.TracerName,fx)
+	end
 end
 
 function EFFECT:Think()

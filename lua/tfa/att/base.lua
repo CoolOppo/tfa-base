@@ -6,7 +6,8 @@ ATTACHMENT.Description = {
 	color_white,"Line1",
 	color_black,"Line2"
 }
-ATTACHMENT.Icon = "vgui/white"
+ATTACHMENT.Icon = nil --Revers to questionmark, please give it an icon though!
+ATTACHMENT.IconScale = 0.7
 ATTACHMENT.Type = "none"
 
 --[[
@@ -67,16 +68,18 @@ function ATTACHMENT:AttachBase(wep)--self refers to your weapon
 	self:DoIronSights(wep)
 	
 	if self.Type == "bodygroup" then
-		if !self.Bodygroups then return end
 		
 		if !wep.VMBodyGroups then wep.VMBodyGroups = {} end
 		if !wep.WMBodyGroups then wep.WMBodyGroups = {} end
 		if !wep.OGVMBodyGroups then wep.OGVMBodyGroups = {} end
 		if !wep.OGWMBodyGroups then wep.OGWMBodyGroups = {} end
 		
+		if !wep.AttachmentBodygroups then wep.AttachmentBodygroups = {} end
+		if !wep.AttachmentBodygroups[self.ID] then wep.AttachmentBodygroups[self.ID] = {} end
+		
 		local vg, wg
-		vg = self.Bodygroups.V
-		wg = self.Bodygroups.W
+		vg = wep.AttachmentBodygroups[self.ID].V or {}
+		wg = wep.AttachmentBodygroups[self.ID].W or {}
 		
 		if vg then
 			for k,v in pairs(vg) do
@@ -106,16 +109,18 @@ function ATTACHMENT:DetachBase(wep)--self refers to your weapon
 	self:RevertIronSights(wep)
 	
 	if self.Type == "bodygroup" then
-		if !self.Bodygroups then return end
 		
 		if !wep.VMBodyGroups then wep.VMBodyGroups = {} end
 		if !wep.WMBodyGroups then wep.WMBodyGroups = {} end
 		if !wep.OGVMBodyGroups then wep.OGVMBodyGroups = {} end
 		if !wep.OGWMBodyGroups then wep.OGWMBodyGroups = {} end
 		
+		if !wep.AttachmentBodygroups then wep.AttachmentBodygroups = {} end
+		if !wep.AttachmentBodygroups[self.ID] then wep.AttachmentBodygroups[self.ID] = {} end
+		
 		local vg, wg
-		vg = self.Bodygroups.V
-		wg = self.Bodygroups.W
+		vg = wep.AttachmentBodygroups[self.ID].V or {}
+		wg = wep.AttachmentBodygroups[self.ID].W or {}
 		
 		if vg then
 			for k,v in pairs(vg) do

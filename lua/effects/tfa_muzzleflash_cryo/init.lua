@@ -120,7 +120,7 @@ function EFFECT:Init( data )
 					particle:SetRollDelta( math.rad(math.Rand(-40, 40)) )
 					particle:SetColor( 255 , 255 , 255 )
 					particle:SetLighting(false)
-					particle.FollowEnt = data:GetEntity()
+					particle.FollowEnt = self.WeaponEnt
 					particle.Att = self.Attachment
 					TFARegPartThink(particle,TFAMuzzlePartFunc)
 				end

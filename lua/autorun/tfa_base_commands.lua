@@ -142,6 +142,8 @@ if CLIENT then
 								cl_tfa_3dscope_overlay = "0",
 								cl_tfa_scope_sensitivity_autoscale = "1",
 								cl_tfa_scope_sensitivity =	"100",
+								cl_tfa_inspection_ckey = "0",
+								cl_tfa_inspection_old = "0",
 								cl_tfa_ironsights_toggle = "1",
 								cl_tfa_ironsights_resight = "1",
 								cl_tfa_viewbob_reloading = "1",
@@ -151,7 +153,8 @@ if CLIENT then
 								cl_tfa_viewmodel_offset_x = "0",
 								cl_tfa_viewmodel_offset_y = "0",
 								cl_tfa_viewmodel_offset_z = "0",
-								cl_tfa_viewmodel_offset_fov = "0"
+								cl_tfa_viewmodel_offset_fov = "0",
+								cl_tfa_viewmodel_flip = "0"
 							   }				
 	panel:AddControl("ComboBox", tfaOptionCL)
 	
@@ -173,6 +176,16 @@ if CLIENT then
 		panel:AddControl("CheckBox", {
 		Label = "Use Viebob While Reloading",
 		Command = "cl_tfa_viewbob_reloading",
+	})
+	
+		panel:AddControl("CheckBox", {
+		Label = "Context Key Inspection",
+		Command = "cl_tfa_inspection_ckey",
+	})
+	
+		panel:AddControl("CheckBox", {
+		Label = "Legacy Text Inspection",
+		Command = "cl_tfa_inspection_old",
 	})
 	
 		panel:AddControl("CheckBox", {
@@ -244,6 +257,11 @@ if CLIENT then
 		Max 		= "5",
 	})
 	
+		panel:AddControl("CheckBox", {
+		Label = "Left Handed Viewmodel (Buggy)",
+		Command = "cl_tfa_viewmodel_flip",
+	})
+	
 	panel:AddControl("Label", {Text = "By TheForgottenArchitect"})
 	end
 
@@ -257,7 +275,8 @@ if CLIENT then
 								cl_tfa_fx_impact_ricochet_sparks = "20",
 								cl_tfa_fx_impact_ricochet_sparklife = "2",
 								cl_tfa_fx_gasblur = "1",
-								cl_tfa_fx_muzzlesmoke = "1"
+								cl_tfa_fx_muzzlesmoke = "1",
+								cl_tfa_inspection_bokeh = "0"
 							   }				
 	panel:AddControl("ComboBox", tfaOptionPerf)
 	
@@ -279,6 +298,11 @@ if CLIENT then
 		panel:AddControl("CheckBox", {
 		Label = "Use Ricochet FX",
 		Command = "cl_tfa_fx_impact_ricochet_enabled",
+	})
+	
+		panel:AddControl("CheckBox", {
+		Label = "Use Inspection BokehDOF",
+		Command = "cl_tfa_inspection_bokeh",
 	})
 	
 		panel:AddControl("Slider", {
@@ -324,7 +348,15 @@ if CLIENT then
 								cl_tfa_hud_crosshair_gap_scale = "1",
 								cl_tfa_hud_crosshair_outline_enabled = "1",
 								cl_tfa_hud_crosshair_outline_width = "1",
-								cl_tfa_hud_crosshair_dot = "0"
+								cl_tfa_hud_crosshair_dot = "0",
+								cl_tfa_hud_hitmarker_enabled = "1",
+								cl_tfa_hud_hitmarker_solidtime = "0.1",
+								cl_tfa_hud_hitmarker_fadetime = "0.3",
+								cl_tfa_hud_hitmarker_scale = "1",
+								cl_tfa_hud_hitmarker_color_r = "225",
+								cl_tfa_hud_hitmarker_color_g = "225",
+								cl_tfa_hud_hitmarker_color_b = "225",
+								cl_tfa_hud_hitmarker_color_a = "225",
 							   }		
 	
 	tfaOptionHUD.Options["Cross"] = {	cl_tfa_hud_crosshair_enable_custom = "1",
@@ -345,7 +377,15 @@ if CLIENT then
 								cl_tfa_hud_crosshair_gap_scale = "0",
 								cl_tfa_hud_crosshair_outline_enabled = "1",
 								cl_tfa_hud_crosshair_outline_width = "1",
-								cl_tfa_hud_crosshair_dot = "0"
+								cl_tfa_hud_crosshair_dot = "0",
+								cl_tfa_hud_hitmarker_enabled = "1",
+								cl_tfa_hud_hitmarker_solidtime = "0.1",
+								cl_tfa_hud_hitmarker_fadetime = "0.3",
+								cl_tfa_hud_hitmarker_scale = "1",
+								cl_tfa_hud_hitmarker_color_r = "225",
+								cl_tfa_hud_hitmarker_color_g = "225",
+								cl_tfa_hud_hitmarker_color_b = "225",
+								cl_tfa_hud_hitmarker_color_a = "225",
 							   }		
 	
 	tfaOptionHUD.Options["Dot/Minimalist"] = {	cl_tfa_hud_crosshair_enable_custom = "1",
@@ -366,7 +406,15 @@ if CLIENT then
 								cl_tfa_hud_crosshair_gap_scale = "0",
 								cl_tfa_hud_crosshair_outline_enabled = "1",
 								cl_tfa_hud_crosshair_outline_width = "1",
-								cl_tfa_hud_crosshair_dot = "0"
+								cl_tfa_hud_crosshair_dot = "0",
+								cl_tfa_hud_hitmarker_enabled = "0",
+								cl_tfa_hud_hitmarker_solidtime = "0.1",
+								cl_tfa_hud_hitmarker_fadetime = "0.3",
+								cl_tfa_hud_hitmarker_scale = "1",
+								cl_tfa_hud_hitmarker_color_r = "225",
+								cl_tfa_hud_hitmarker_color_g = "225",
+								cl_tfa_hud_hitmarker_color_b = "225",
+								cl_tfa_hud_hitmarker_color_a = "225",
 							   }	
 	
 	tfaOptionHUD.Options["Half Life 2"] = {	cl_tfa_hud_crosshair_enable_custom = "0",
@@ -387,7 +435,15 @@ if CLIENT then
 								cl_tfa_hud_crosshair_gap_scale = "1",
 								cl_tfa_hud_crosshair_outline_enabled = "0",
 								cl_tfa_hud_crosshair_outline_width = "0",
-								cl_tfa_hud_crosshair_dot = "1"
+								cl_tfa_hud_crosshair_dot = "1",
+								cl_tfa_hud_hitmarker_enabled = "0",
+								cl_tfa_hud_hitmarker_solidtime = "0.1",
+								cl_tfa_hud_hitmarker_fadetime = "0.3",
+								cl_tfa_hud_hitmarker_scale = "1",
+								cl_tfa_hud_hitmarker_color_r = "225",
+								cl_tfa_hud_hitmarker_color_g = "225",
+								cl_tfa_hud_hitmarker_color_b = "225",
+								cl_tfa_hud_hitmarker_color_a = "225",
 							   }	
 	
 	tfaOptionHUD.Options["Half Life 2 Enhanced"] = {	cl_tfa_hud_crosshair_enable_custom = "1",
@@ -408,7 +464,15 @@ if CLIENT then
 								cl_tfa_hud_crosshair_gap_scale = "1",
 								cl_tfa_hud_crosshair_outline_enabled = "0",
 								cl_tfa_hud_crosshair_outline_width = "0",
-								cl_tfa_hud_crosshair_dot = "1"
+								cl_tfa_hud_crosshair_dot = "1",
+								cl_tfa_hud_hitmarker_enabled = "1",
+								cl_tfa_hud_hitmarker_solidtime = "0.1",
+								cl_tfa_hud_hitmarker_fadetime = "0.3",
+								cl_tfa_hud_hitmarker_scale = "1",
+								cl_tfa_hud_hitmarker_color_r = "225",
+								cl_tfa_hud_hitmarker_color_g = "225",
+								cl_tfa_hud_hitmarker_color_b = "225",
+								cl_tfa_hud_hitmarker_color_a = "225",
 							   }				
 	panel:AddControl("ComboBox", tfaOptionHUD)
 	
@@ -506,6 +570,46 @@ if CLIENT then
 		Green = "cl_tfa_hud_crosshair_outline_color_g",
 		Blue = "cl_tfa_hud_crosshair_outline_color_b",
 		Alpha = "cl_tfa_hud_crosshair_outline_color_a",
+		ShowHSV = 1,
+		ShowRGB = 1,
+		Multiplier = 255
+	})
+	
+		panel:AddControl("CheckBox", {
+		Label = "Enable Hitmarker",
+		Command = "cl_tfa_hud_hitmarker_enabled",
+	})
+
+		panel:AddControl("Slider", {
+		Label 	= "Hitmaker Solid Time",
+		Command 	= "cl_tfa_hud_hitmarker_solidtime",
+		Type 		= "Float",
+		Min 		= "0",
+		Max 		= "1",
+	})
+
+		panel:AddControl("Slider", {
+		Label 	= "Hitmaker Fade Time",
+		Command 	= "cl_tfa_hud_hitmarker_fadetime",
+		Type 		= "Float",
+		Min 		= "0",
+		Max 		= "1",
+	})
+
+		panel:AddControl("Slider", {
+		Label 	= "Hitmaker Scale",
+		Command 	= "cl_tfa_hud_hitmarker_scale",
+		Type 		= "Float",
+		Min 		= "0",
+		Max 		= "5",
+	})
+	
+		panel:AddControl("Color", {
+		Label = "Hitmarker Color",
+		Red = "cl_tfa_hud_hitmarker_color_r",
+		Green = "cl_tfa_hud_hitmarker_color_g",
+		Blue = "cl_tfa_hud_hitmarker_color_b",
+		Alpha = "cl_tfa_hud_hitmarker_color_a",
 		ShowHSV = 1,
 		ShowRGB = 1,
 		Multiplier = 255
@@ -629,7 +733,7 @@ if GetConVar("sv_tfa_range_modifier") == nil then
 end
 	
 if GetConVar("sv_tfa_allow_dryfire") == nil then
-	CreateClientConVar("sv_tfa_allow_dryfire", 1, true, true)
+	CreateConVar("sv_tfa_allow_dryfire", "1", { FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE }, "Allow dryfire?")
 	--print("Dry fire con var created")
 end
 
@@ -794,6 +898,14 @@ end
 
 if CLIENT then
 
+	if GetConVar("cl_tfa_inspection_old") == nil then
+		CreateClientConVar("cl_tfa_inspection_old", 0, true, true)
+	end
+
+	if GetConVar("cl_tfa_inspection_ckey") == nil then
+		CreateClientConVar("cl_tfa_inspection_ckey", 0, true, true)
+	end
+
 	if GetConVar("cl_tfa_viewbob_intensity") == nil then
 		CreateClientConVar("cl_tfa_viewbob_intensity", 1, true, false)
 	end
@@ -899,6 +1011,39 @@ if CLIENT then
 	if GetConVar("cl_tfa_hud_crosshair_outline_enabled") == nil then
 		CreateClientConVar("cl_tfa_hud_crosshair_outline_enabled", 1, true, false)
 	end
+		
+	if GetConVar("cl_tfa_hud_hitmarker_enabled") == nil then
+		CreateClientConVar("cl_tfa_hud_hitmarker_enabled", 1, true, false)
+	end
+		
+	if GetConVar("cl_tfa_hud_hitmarker_fadetime") == nil then
+		CreateClientConVar("cl_tfa_hud_hitmarker_fadetime", 0.3, true, false)
+	end
+		
+	if GetConVar("cl_tfa_hud_hitmarker_solidtime") == nil then
+		CreateClientConVar("cl_tfa_hud_hitmarker_solidtime", 0.1, true, false)
+	end
+		
+	if GetConVar("cl_tfa_hud_hitmarker_scale") == nil then
+		CreateClientConVar("cl_tfa_hud_hitmarker_scale", 1, true, false)
+	end
+	
+	if GetConVar("cl_tfa_hud_hitmarker_color_r") == nil then
+		CreateClientConVar("cl_tfa_hud_hitmarker_color_r", 225, true, false)
+		--print("hitmarker tweaking con vars created")
+	end
+		
+	if GetConVar("cl_tfa_hud_hitmarker_color_g") == nil then
+		CreateClientConVar("cl_tfa_hud_hitmarker_color_g", 225, true, false)
+	end
+		
+	if GetConVar("cl_tfa_hud_hitmarker_color_b") == nil then
+		CreateClientConVar("cl_tfa_hud_hitmarker_color_b", 225, true, false)
+	end
+		
+	if GetConVar("cl_tfa_hud_hitmarker_color_a") == nil then
+		CreateClientConVar("cl_tfa_hud_hitmarker_color_a", 200, true, false)
+	end
 	
 	--Other stuff
 	
@@ -969,6 +1114,10 @@ if CLIENT then
 	
 	if GetConVar("cl_tfa_viewmodel_multiplier_fov") == nil then
 		CreateClientConVar("cl_tfa_viewmodel_multiplier_fov", 1, true, false)
+	end
+	
+	if GetConVar("cl_tfa_viewmodel_flip") == nil then
+		CreateClientConVar("cl_tfa_viewmodel_flip", 0, true, false)
 	end
 	
 	
@@ -1477,6 +1626,7 @@ if SERVER then
 			end
 		
 		end
+	
 	end)
 end
 
@@ -1537,12 +1687,11 @@ if SERVER then
 end
 
 if CLIENT then
-	net.Receive( "tfa_base_muzzle_mp", function( length )
-		
-		local wep
-		wep = net.ReadEntity()
-		if IsValid(wep) and wep.MakeMuzzleFlashMP then
-			wep:MakeMuzzleFlashMP()
+	net.Receive( "tfa_base_muzzle_mp", function( length,ply )
+	
+		local wep = net.ReadEntity()
+		if IsValid(wep) and wep.ShootEffectsCustom then
+			wep:ShootEffectsCustom( true )
 		end
 		
 	end )
@@ -1676,12 +1825,16 @@ PrecacheParticleSystem("tfa_muzzle_gauss")
 --[[Bow Ammo]]--
 
 game.AddAmmoType({
-	name = "tfbow_ammo",
-	dmgtype = DMG_SLASH,
+	name = "tfbow_arrow",
+	dmgtype = DMG_CLUB,
 	tracer = 0,
 	minsplash = 5,
 	maxsplash = 5
 })
+
+if CLIENT then
+	language.Add("tfbow_arrow_ammo","Arrows")
+end
 
 --[[Sounds]]--
 
@@ -1724,61 +1877,6 @@ sound.Add({
 	sound = 			{ "weapons/tfa/ironout.wav" },
 	pitch = { 97, 103 }
 })
-
---Skin System
-
-if SERVER then
-	AddCSLuaFile()
-	util.AddNetworkString("TFA_CSGO_SKIN")
-	util.AddNetworkString("TFA_CSGO_SKIN_BROADCAST")
-	
-	net.Receive("TFA_CSGO_SKIN",function(client,len) 
-	
-		local ent = net.ReadEntity()
-		
-		if IsValid(ent) then
-			if ent.Owner == client then
-				local skin = net.ReadString()
-				ent:SetNWString("skin",skin and skin or "")
-				if ent.UpdateSkin then
-					if ent.CallOnClient then
-						ent:CallOnClient("UpdateSkin","")
-					end
-					ent:UpdateSkin()
-				end
-				
-				net.Start("TFA_CSGO_SKIN_BROADCAST")
-				net.WriteEntity(ent)
-				net.WriteString(skin)
-				net.Broadcast()
-			end
-		end
-	
-	end)
-end
-
-if CLIENT then
-	net.Receive("TFA_CSGO_SKIN_BROADCAST",function() 
-	
-		local ent = net.ReadEntity()
-		
-		if IsValid(ent) then
-			
-			local skin = net.ReadString()
-			
-			ent.Skin = skin and skin or ""
-			
-			ent:SetNWString("skin",skin and skin or "")
-			
-			if ent.UpdateSkin then
-				ent:UpdateSkin()
-				ent:CallOnClient("UpdateSkin","")
-			end
-			
-		end
-	
-	end)
-end
 
 --ATTACHMENTS
 
@@ -1858,6 +1956,75 @@ if TFAUpdateAttachments then
 	TFAUpdateAttachments()
 end
 
+if SERVER then
+	util.AddNetworkString("tfa_att")
+	
+	net.Receive("tfa_att",function(length,client)
+		if IsValid(client) then
+			local wep = client:GetActiveWeapon()
+			if IsValid(wep) and wep.Attach and wep.Detach then
+				local attach = net.ReadBool()
+				local attachment = net.ReadString()
+				if attach then wep:Attach(attachment,true) else wep:Detach(attachment,true) end
+			end
+		end
+	end)
+end
+
+hook.Add("PlayerBindPress","TFA_Attachment_Binds",function(ply,bind,pressed)
+	if IsValid(ply) and pressed then
+		local first4 = string.sub(bind,1,4)
+		if first4=="slot" then
+			local wep = ply:GetActiveWeapon()
+			if IsValid(wep) and wep.CLInspectingProgress and wep.CLInspectingProgress>0.1 then
+				--print(string.sub(bind,5,6))
+				local slotstr = string.sub(bind,5,6)
+				if slotstr and wep.Attachments then
+					local slotnum = tonumber(slotstr)
+					if slotnum then
+						local attbl = wep.Attachments[slotnum]
+						if attbl and attbl.atts then
+						
+							local curatt = 0
+							local newatt
+							
+							for k,v in pairs(attbl.atts) do
+								if wep.AttachmentCache[v] and wep.AttachmentCache[v].active then
+									curatt = k
+								end
+							end
+							
+							newatt = curatt+1
+							
+							if newatt>#attbl.atts+1 then
+								newatt = 1
+							end
+							
+							if attbl.atts[curatt] then
+								wep:Detach(attbl.atts[curatt])
+								net.Start("tfa_att")
+								net.WriteBool(false)
+								net.WriteString(attbl.atts[curatt])
+								net.SendToServer()
+							end
+							
+							if attbl.atts[newatt] then
+								wep:Attach(attbl.atts[newatt])
+								net.Start("tfa_att")
+								net.WriteBool(true)
+								net.WriteString(attbl.atts[newatt])
+								net.SendToServer()
+							end
+							
+						end
+					end
+				end
+				return true
+			end
+		end
+	end	
+end)
+
 --Inspection Blur
 
 local INSPECTION_BACKGROUND = Color(15,15,15,64)
@@ -1865,6 +2032,8 @@ local INSPECTION_PRIMARYCOLOR = Color(245,245,245,255)
 local INSPECTION_SECONDARYCOLOR = Color(153,253,220,255)
 
 if CLIENT then
+	
+	local doblur = CreateClientConVar("cl_tfa_inspection_bokeh", 0, true, false)
 	
 	local tfablurintensity = 0
 
@@ -1882,8 +2051,9 @@ if CLIENT then
 	tab[ "$pp_colour_mulg" ] 		= 0
 	tab[ "$pp_colour_mulb" ] 		= 0
 	
-	local function DrawBokehDOF()
-
+	local function MyDrawBokehDOF()
+		if !doblur or !doblur:GetBool() then return end
+		
 		render.UpdateScreenEffectTexture()
 
 		blur_mat:SetTexture( "$BASETEXTURE", render.GetScreenEffectTexture() )
@@ -1907,7 +2077,9 @@ if CLIENT then
 		tfablurintensity = (wep.CLInspectingProgress or 0)
 		local its = tfablurintensity*10
 		if its>0.01 then
-			DrawBokehDOF()
+			if doblur and doblur:GetBool() then
+				MyDrawBokehDOF()
+			end
 			tab[ "$pp_colour_brightness" ] = -tfablurintensity*0.02
 			tab[ "$pp_colour_contrast" ] = 1-tfablurintensity*0.1
 			DrawColorModify( tab )
@@ -1916,15 +2088,97 @@ if CLIENT then
 	end)
 
 	hook.Add( "NeedsDepthPass", "NeedsDepthPass_TFA_Inspect", function()
-	
+		if !doblur or !doblur:GetBool() then return end
 		if tfablurintensity >0.01 then
 			DOFModeHack( true )
 			return true
-		else
-			DOFModeHack( false )
 		end
 		
 	end )
 
 	
+end
+
+--Hitmarker
+	
+if SERVER then
+	util.AddNetworkString( "tfaHitmarker" )
+end
+
+if CLIENT then
+	local lasthitmarkertime = -1
+	
+	local enabledcvar,solidtimecvar,fadetimecvar,scalecvar
+	local rcvar,gcvar,gcvar,acvar
+	
+	local c = Color(255,255,255,255)
+	
+	local spr
+	
+	net.Receive("tfaHitmarker",function()
+		lasthitmarkertime = CurTime()
+	end)
+	
+	hook.Add("HUDPaint","tfaDrawHitmarker",function()
+	
+		if !enabledcvar then
+			enabledcvar = GetConVar("cl_tfa_hud_hitmarker_enabled")
+		end
+		
+		if enabledcvar and enabledcvar:GetBool() then
+			
+			if !spr then
+				spr = Material("scope/hitmarker")
+			end
+			
+			if !solidtimecvar then
+				solidtimecvar = GetConVar("cl_tfa_hud_hitmarker_solidtime")
+			end
+		
+			if !fadetimecvar then
+				fadetimecvar = GetConVar("cl_tfa_hud_hitmarker_fadetime")
+			end
+		
+			if !scalecvar then
+				scalecvar = GetConVar("cl_tfa_hud_hitmarker_scale")
+			end
+		
+			if !rcvar then
+				rcvar = GetConVar("cl_tfa_hud_hitmarker_color_r")
+			end
+		
+			if !gcvar then
+				gcvar = GetConVar("cl_tfa_hud_hitmarker_color_g")
+			end
+		
+			if !bcvar then
+				bcvar = GetConVar("cl_tfa_hud_hitmarker_color_b")
+			end
+		
+			if !acvar then
+				acvar = GetConVar("cl_tfa_hud_hitmarker_color_a")
+			end
+		
+			local solidtime = solidtimecvar:GetFloat()
+			local fadetime = math.max(fadetimecvar:GetFloat(),0.001)
+			local s = 0.025*scalecvar:GetFloat()
+			
+			c.r = rcvar:GetFloat()
+			c.g = gcvar:GetFloat()
+			c.b = bcvar:GetFloat()
+			
+			local alpha = math.Clamp(lasthitmarkertime-CurTime()+solidtime+fadetime,0,fadetime)/fadetime
+			
+			c.a = acvar:GetFloat()*alpha
+			
+			local w,h = ScrW(),ScrH()
+			local sprw,sprh = h*s,h*s
+			
+			surface.SetDrawColor(c)
+			surface.SetMaterial(spr)
+			surface.DrawTexturedRect(w/2-sprw/2,h/2-sprh/2,sprw,sprh)
+			
+		end
+	end)
+
 end

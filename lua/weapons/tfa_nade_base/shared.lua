@@ -209,7 +209,6 @@ function SWEP:PrimaryAttack()
 			self:SetInspectingRatio(0)
 			self:SetInspectingRatio(0)
 			self:SendWeaponAnim(0)
-			self:UpdateAttachmentCache()
 			timer.Simple(self.Delay and self.Delay or 0.3, function()
 				if IsValid(self) then
 					self:ShootBulletInformation()

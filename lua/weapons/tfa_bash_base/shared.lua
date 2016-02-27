@@ -1,11 +1,18 @@
 DEFINE_BASECLASS("tfa_gun_base")
 
-SWEP.Secondary.Damage = 25
+SWEP.Secondary.BashDamage = 25
 SWEP.Secondary.BashSound = Sound("TFA.Bash")
-SWEP.Secondary.Sound = Sound("TFA.BashWall")
-SWEP.Secondary.Sound_Flesh = Sound("TFA.BashFlesh")
+SWEP.Secondary.BashHitSound = Sound("TFA.BashWall")
+SWEP.Secondary.BashHitSound_Flesh = Sound("TFA.BashFlesh")
 SWEP.Secondary.BashLength = 54
-SWEP.Secondary.BashDelay = 0.2	
+SWEP.Secondary.BashDelay = 0.2
+SWEP.Secondary.BashDamageType = DMG_SLASH
+
+SWEP.BashBase = true
+
+local lastresortanim = -2
+
+--SWEP.tmptoggle = true
 
 function SWEP:AltAttack()
 	if !self:OwnerIsValid() then return end
@@ -42,10 +49,33 @@ function SWEP:AltAttack()
 	
 	local vm = self.Owner:GetViewModel()
 	
-	self:SendWeaponAnim(ACT_VM_HITCENTER)
+	--if SERVER then
+		self:SendWeaponAnim(ACT_VM_HITCENTER)
+	--else
+		self:SendWeaponAnim(ACT_VM_HITCENTER)
+	--end
 	
-	self:SetNextPrimaryFire(CurTime()+vm:SequenceDuration())
-	self:SetNextSecondaryFire(CurTime()+vm:SequenceDuration())
+	
+	if !game.SinglePlayer() then
+		timer.Simple(vm:SequenceDuration()-0.05,function()
+			if IsValid(self) and self:OwnerIsValid() then
+				self:SendWeaponAnim(ACT_VM_IDLE)
+			end
+		end)
+		
+		timer.Simple(vm:SequenceDuration()-0.01,function()
+			if IsValid(self) and self:OwnerIsValid() then
+				if lastresortanim and lastresortanim>-2 then
+					self:SendWeaponAnim(lastresortanim)
+				end
+			end
+		end)
+	end
+	
+	self.tmptoggle = !self.tmptoggle
+	
+	self:SetNextPrimaryFire(CurTime()+(self.SequenceLengthOverride[ACT_VM_HITCENTER] or vm:SequenceDuration()))
+	self:SetNextSecondaryFire(CurTime()+(self.SequenceLengthOverride[ACT_VM_HITCENTER] or vm:SequenceDuration()))
 	
 	if CLIENT then
 		self:EmitSound(self.Secondary.BashSound )
@@ -64,7 +94,7 @@ function SWEP:AltAttack()
 				slash.mins = Vector(-10, -5, 0)
 				slash.maxs = Vector(10, 5, 5)
 				local slashtrace = util.TraceHull(slash)
-				local pain = self.Secondary.Damage
+				local pain = self.Secondary.BashDamage
 				
 				
 				
@@ -78,9 +108,10 @@ function SWEP:AltAttack()
 						ply:SetName( "bashingpl" .. ply:EntIndex() )
 						
 						slashtrace.Entity:SetKeyValue( "Speed", "500" )
-						slashtrace.Entity:SetKeyValue( "Open Direction", "Both directions" )
+						slashtrace.Entity:SetKeyValue( "Open Direction", "Both directions" )					
+						slashtrace.Entity:SetKeyValue( "opendir", "0" )
 						slashtrace.Entity:Fire( "unlock", "", .01 )
-						slashtrace.Entity:Fire( "openawayfrom", "bashingpl" .. ply:EntIndex() , .01 )
+						slashtrace.Entity:Fire( "openawayfrom", "bashingpl" .. ply:EntIndex() , .01 )	
 						
 						timer.Simple(0.02, function()
 							if IsValid(ply) then
@@ -95,7 +126,7 @@ function SWEP:AltAttack()
 						end)
 						
 					end
-					self:EmitSound( (slashtrace.MatType == MAT_FLESH or slashtrace.MatType == MAT_ALIENFLESH) and self.Secondary.Sound_Flesh or self.Secondary.Sound  )
+					self:EmitSound( (slashtrace.MatType == MAT_FLESH or slashtrace.MatType == MAT_ALIENFLESH) and self.Secondary.BashHitSound_Flesh or self.Secondary.BashHitSound  )
 					if game.GetTimeScale()>0.99 then
 						self.Owner:FireBullets({
 							Attacker = self.Owner,
@@ -108,7 +139,7 @@ function SWEP:AltAttack()
 							Src = self.Owner:GetShootPos(),
 							Dir = slashtrace.Normal,
 							Callback = function(a,b,c)
-								if c then c:SetDamageType(DMG_SLASH) end
+								if c then c:SetDamageType(self.Secondary.BashDamageType) end
 							end
 						})
 					else
@@ -118,7 +149,7 @@ function SWEP:AltAttack()
 						dmg:SetDamagePosition(self.Owner:GetShootPos())
 						dmg:SetDamageForce(self.Owner:GetAimVector()*(pain))
 						dmg:SetDamage(pain)
-						dmg:SetDamageType(DMG_SLASH)
+						dmg:SetDamageType(self.Secondary.BashDamageType)
 						slashtrace.Entity:TakeDamageInfo(dmg)
 					end		
 					
@@ -135,10 +166,10 @@ function SWEP:AltAttack()
 						
 						if IsValid(phys) then
 							if ent:IsPlayer() or ent:IsNPC() then
-								ent:SetVelocity(ent:GetVelocity()+self.Owner:GetAimVector()*self.Secondary.Damage*40)
-								phys:SetVelocity(phys:GetVelocity()+self.Owner:GetAimVector()*self.Secondary.Damage*40)
+								ent:SetVelocity(ent:GetVelocity()+self.Owner:GetAimVector()*self.Secondary.BashDamage*40)
+								phys:SetVelocity(phys:GetVelocity()+self.Owner:GetAimVector()*self.Secondary.BashDamage*40)
 							else
-								phys:ApplyForceOffset(self.Owner:GetAimVector()*self.Secondary.Damage/4,slashtrace.HitPos)
+								phys:ApplyForceOffset(self.Owner:GetAimVector()*self.Secondary.BashDamage/4,slashtrace.HitPos)
 							end
 						end
 						
@@ -154,6 +185,7 @@ function SWEP:GetBashing()
 	local bash,vm,seq,actid
 	
 	vm = self.Owner:GetViewModel()
+	if !IsValid(vm) then return end
 	seq = vm:GetSequence()
 	actid = vm:GetSequenceActivity(seq)
 	bash = (actid==ACT_VM_HITCENTER) and vm:GetCycle()>0 and vm:GetCycle()<0.65
@@ -169,7 +201,9 @@ function SWEP:IronsSprint()
 		if val then return val end
 	end
 	
-	local is,oldis,spr, rld, dr, hl, nw, isbolttimer, insp, bash
+	if !self:OwnerIsValid() then return end
+	
+	local is,oldis,spr, rld, dr, hl, nw, isbolttimer, insp, bash,seq,act,vm
 	spr=self:GetSprinting()
 	is=self:GetIronSights()
 	oldis=self.OldIronsights
@@ -181,6 +215,11 @@ function SWEP:IronsSprint()
 	isbolttimer = self:GetBoltTimer()
 	bash = self:GetBashing()
 	nw = false
+	vm = self.Owner:GetViewModel()
+	seq = vm:GetSequence()
+	act = vm:GetSequenceActivity(seq or 0)
+	
+	if act==ACT_VM_HOLSTER or act==ACT_VM_HOLSTER_EMPTY or self.ProceduralHolsterFactor>0.5 or self.IsHolding then hl = true end
 	
 	if self:Clip1() ==  0 and (GetConVarNumber("sv_tfa_allow_dryfire",1)==0) then
 		if self:GetBursting() then

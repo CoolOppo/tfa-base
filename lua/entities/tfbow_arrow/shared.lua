@@ -173,6 +173,7 @@ function ENT:Think()
 			bul.Dir=((tr.HitPos-bul.Src):GetNormalized())
 			
 			bul.Callback = function(a,b,c)
+				c:SetDamageType(bit.bor(DMG_NEVERGIB,DMG_CLUB))
 				if IsValid(self) and IsValid(self.Owner) then
 					if tr.HitWorld then
 						local arrowstuck=ents.Create("tfbow_arrow_stuck")

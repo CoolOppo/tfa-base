@@ -133,6 +133,7 @@ end
 
 function ENT:Initialize()
 	if SERVER then
+		
 		local mins = ( self:OBBMins() and self:OBBMins() or  Vector(0,0,0) ) - Vector(1,1,1)
 		local maxs = ( self:OBBMaxs() and self:OBBMaxs() or  Vector(0,0,0) ) + Vector(1,1,1)
 		self:PhysicsInitBox(mins,maxs)

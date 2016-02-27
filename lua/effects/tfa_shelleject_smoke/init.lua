@@ -2,7 +2,20 @@ function EFFECT:Init( data )
 	
 	self.Position = data:GetOrigin()
 	self.WeaponEnt = data:GetEntity()
+	if !IsValid(self.WeaponEnt) then return end
 	self.Attachment = data:GetAttachment()
+	
+	local owent = self.WeaponEnt.Owner or self.WeaponEnt:GetOwner()
+	if !IsValid(owent) then owent = self.WeaponEnt:GetParent() end
+	if IsValid(owent) and owent:IsPlayer() then
+		if owent!=LocalPlayer() or owent:ShouldDrawLocalPlayer() then
+			self.WeaponEnt = owent:GetActiveWeapon()
+			if !IsValid(self.WeaponEnt) then return end
+		else
+			self.WeaponEnt = owent:GetViewModel()
+			if !IsValid(self.WeaponEnt) then return end		
+		end
+	end
 		
 	-- Keep the start and end pos - we're going to interpolate between them
 	self.StartPos = self:GetTracerShootPos( self.Position, self.WeaponEnt, self.Attachment )

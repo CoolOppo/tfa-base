@@ -118,8 +118,9 @@ end
 
 local function TextShadowPaint(myself,w,h)
 	if !myself.TextColor then myself.TextColor = color_white end
-	draw.SimpleText(myself.Text,myself.Font,2,h,ColorAlpha(color_black,myself.TextColor.a),TEXT_ALIGN_LEFT,TEXT_ALIGN_TOP)
-	draw.SimpleText(myself.Text,myself.Font,0,h-2,myself.TextColor,TEXT_ALIGN_LEFT,TEXT_ALIGN_TOP)
+	draw.NoTexture()
+	draw.SimpleText(myself.Text,myself.Font,2,2,ColorAlpha(color_black,myself.TextColor.a),TEXT_ALIGN_LEFT,TEXT_ALIGN_TOP)
+	draw.SimpleText(myself.Text,myself.Font,0,0,myself.TextColor,TEXT_ALIGN_LEFT,TEXT_ALIGN_TOP)
 end
 
 local function kmtofeet(km)
@@ -142,6 +143,7 @@ local pad = 4
 local infotextpad = "  "
 
 local INSPECTION_BACKGROUND = Color(15,15,15,64)
+local INSPECTION_ACTIVECOLOR = Color(255,147,4,255)
 local INSPECTION_PRIMARYCOLOR = Color(245,245,245,255)
 local INSPECTION_SECONDARYCOLOR = Color(153,253,220,255)
 
@@ -156,12 +158,12 @@ local attachmentpanelscale = 1/4
 local attachmentcount = 16
 
 local hexpositions = {
-	[1] = { x = -186, y = -111},
-	[2] = { x = 0, y = -233},
-	[3] = { x = 186, y = -111},
-	[4] = { x = 186, y = 111},
-	[5] = { x = 0, y = 233},
-	[6] = { x = -186, y = 111}
+	[1] = { x = 0, y = -233},
+	[2] = { x = 186, y = -111},
+	[3] = { x = 186, y = 111},
+	[4] = { x = 0, y = 233},
+	[5] = { x = -186, y = 111},
+	[6] = { x = -186, y = -111}
 }
 
 
@@ -174,8 +176,50 @@ SWEP.AmmoTypeStrings = {
 	["SniperPenetratedRound"] = "Generic Sniper",	
 }
 
-function SWEP:DoInspectionDerma()
-	if !IsValid(TFA_INSPECTIONPANEL) and self.CLInspectingProgress>0.01 then
+function SWEP:BuildAttachmentUICache()
+	self.AttachmentUICache = {}	
+	
+	self.AttachmentCache = self.AttachmentCache or {}	
+	self.Attachments = self.Attachments or {}
+	
+	for keyv,tab in pairs(self.Attachments) do
+		if tab.atts and tab.cat and tab.anchor then
+			self.AttachmentUICache[tab.cat] = {
+				key = keyv,
+				attachment = tab.anchor.att or 1,
+				x = tab.anchor.xoff or 0,
+				y = tab.anchor.yoff or 0,
+				atts = {}
+			}
+			for k,attid in pairs(tab.atts) do
+				local tbl = TFA_ATT[attid]
+				if tbl then
+					self.AttachmentUICache[tab.cat].atts[attid] = {
+						title = tbl.Name or "Generic Attachment",
+						icon = tbl.Icon or "vgui/inspectionhud/qmark",
+						iconscale = tbl.IconScale or 0.7,
+						desc = tbl.Description or {color_white,"Generic Attachment Description"}
+					}
+				end
+			end
+		end
+	end	
+	
+end
+
+local function DrawTexturedRectRotatedPoint( x, y, w, h, rot, x0, y0 )
+
+	local c = math.cos( math.rad( rot ) )
+	local s = math.sin( math.rad( rot ) )
+
+	local newx = y0 * s - x0 * c
+	local newy = y0 * c + x0 * s
+
+	surface.DrawTexturedRectRotated( x + newx, y + newy, w, h, rot )
+
+end
+
+function SWEP:GenerateInspectionDerma()
 		TFA_INSPECTIONPANEL = vgui.Create("DPanel")
 		TFA_INSPECTIONPANEL:SetSize(ScrW(),ScrH())
 		
@@ -197,6 +241,7 @@ function SWEP:DoInspectionDerma()
 				myself.PrimaryColor = ColorAlpha(INSPECTION_PRIMARYCOLOR,TFA_INSPECTIONPANEL.Alpha)
 				myself.SecondaryColor = ColorAlpha(INSPECTION_SECONDARYCOLOR,TFA_INSPECTIONPANEL.Alpha)
 				myself.BackgroundColor = ColorAlpha(INSPECTION_BACKGROUND,TFA_INSPECTIONPANEL.Alpha)
+				myself.ActiveColor =  ColorAlpha(INSPECTION_ACTIVECOLOR,TFA_INSPECTIONPANEL.Alpha)
 				if !myself.SideBar then myself.SideBar = surface.GetTextureID("vgui/inspectionhud/sidebar") end
 				if !myself.Hex then myself.Hex = surface.GetTextureID("vgui/inspectionhud/hex") end
 			end
@@ -283,15 +328,21 @@ function SWEP:DoInspectionDerma()
 		capacitytext:SetSize(screenwidth-lbound,24)
 		capacitytext.Paint = TextShadowPaint
 		
-		local ammotypetext = contentpanel:Add("DPanel")
-		ammotypetext.Text = infotextpad .. "Ammo: " .. ( self.AmmoTypeStrings[self.Primary.Ammo or "ammo" ] or language.GetPhrase( self.Primary.Ammo or "ammo" ) )
-		ammotypetext.Think = function(myself)
-			myself.TextColor = TFA_INSPECTIONPANEL.SecondaryColor
+		local an = game.GetAmmoName(self:GetPrimaryAmmoType())
+		
+		if an and an!="" and string.len(an)>1 then
+		
+			local ammotypetext = contentpanel:Add("DPanel")
+			ammotypetext.Text = infotextpad .. "Ammo: " .. ( self.AmmoTypeStrings[self.Primary.Ammo or "ammo" ] or language.GetPhrase( an .. "_ammo" ) )
+			ammotypetext.Think = function(myself)
+				myself.TextColor = TFA_INSPECTIONPANEL.SecondaryColor
+			end
+			ammotypetext.Font = "TFA_INSPECTION_SMALL"
+			ammotypetext:Dock(TOP)
+			ammotypetext:SetSize(screenwidth-lbound,24)
+			ammotypetext.Paint = TextShadowPaint
+		
 		end
-		ammotypetext.Font = "TFA_INSPECTION_SMALL"
-		ammotypetext:Dock(TOP)
-		ammotypetext:SetSize(screenwidth-lbound,24)
-		ammotypetext.Paint = TextShadowPaint
 		
 		local makertext = contentpanel:Add("DPanel")
 		local mymaker = ( self.Manufacturer or self.Author)
@@ -305,6 +356,59 @@ function SWEP:DoInspectionDerma()
 		makertext:SetSize(screenwidth-lbound,24)
 		makertext.Paint = TextShadowPaint
 		
+		--Attachment block (title and description of an attachment)
+		
+		TFA_INSPECTIONPANEL.UpdateAttachment = function(attid)
+			if IsValid(contentpanel.attpanel) then contentpanel.attpanel:Remove() end
+			
+			contentpanel.attpanel = contentpanel:Add("DPanel")
+			contentpanel.attpanel.Paint = function(myself,w,h) end
+			
+			local tbl = TFA_ATT[attid]			
+			if !tbl then return end			
+		
+			local header = contentpanel.attpanel:Add("DPanel")
+			print(tbl.Name)
+			header.Text = tbl.Name or "New Attachment"
+			header.Think = function(myself)
+				myself.TextColor = (TFA_INSPECTIONPANEL.PrimaryColor)
+			end
+			header.Font = "TFA_INSPECTION_TITLE"
+			header:Dock(TOP)
+			header:SetSize(screenwidth-lbound,64)
+			header.Paint = TextShadowPaint
+			
+			local c = TFA_INSPECTIONPANEL.PrimaryColor
+			
+			if tbl.Description then
+				for k,line in pairs(tbl.Description) do
+					if type(line) == "vector" then
+						c.r = line.x
+						c.g = line.y
+						c.b = line.z
+					elseif type(line) == "table" then
+						c.r = line.r
+						c.g = line.g
+						c.b = line.b
+						c.a = line.a					
+					elseif type(line) == "string" then
+						local descline = contentpanel.attpanel:Add("DPanel")
+						descline.Text = line or "New Attachment"
+						descline.c = c
+						descline.Think = function(myself)
+							myself.TextColor = ColorAlpha(myself.c,TFA_INSPECTIONPANEL.Alpha)
+						end
+						descline.Font = "TFA_INSPECTION_DESCR"
+						descline:Dock(TOP)
+						descline:SetSize(screenwidth-lbound,32)
+						descline.Paint = TextShadowPaint
+					end
+				end
+			end
+			
+			contentpanel.attpanel:SizeToContents()
+			
+		end
 		--Bottom block (bars and such)
 		
 		local statspanel = contentpanel:Add("DPanel")
@@ -455,6 +559,11 @@ function SWEP:DoInspectionDerma()
 		stabilitytext:SetSize(screenwidth-lbound,24)
 		stabilitytext.Paint = TextShadowPaint
 		
+end
+
+function SWEP:DoInspectionDerma()
+	if !IsValid(TFA_INSPECTIONPANEL) and self.CLInspectingProgress>0.01 then
+		self:GenerateInspectionDerma()
 	end
 	
 	if !IsValid(TFA_INSPECTIONPANEL) then
@@ -462,6 +571,8 @@ function SWEP:DoInspectionDerma()
 	end
 	
 	if !self:OwnerIsValid() then return end
+	
+	if !self.AttachmentUICache then self:BuildAttachmentUICache() end
 		
 	cam.Start3D(); cam.End3D();
 		
@@ -469,41 +580,135 @@ function SWEP:DoInspectionDerma()
 	
 	local attachmentpanelsize = attachmentpanelscale * ScrH()
 	
+	local padfac = 0.1
+	
 	if !TFA_INSPECTIONPANEL.AttachmentPanels then
 		TFA_INSPECTIONPANEL.AttachmentPanels = {}
-		for i=1,attachmentcount do
+		for category,tab in pairs(self.AttachmentUICache) do
+			local i = tab.attachment
+			local anchor_x,anchor_y = tab.x,tab.y
 			local att = vm:GetAttachment(i)
 			if att and att.Pos and att.Ang then
 			
 				TFA_INSPECTIONPANEL.AttachmentPanels[i] = TFA_INSPECTIONPANEL:Add("DPanel")
 				local p = TFA_INSPECTIONPANEL.AttachmentPanels[i]
 				p = TFA_INSPECTIONPANEL.AttachmentPanels[i]
-				p:SetSize(attachmentpanelsize,attachmentpanelsize)
-				
-				local ts = att.Pos:ToScreen()
-				ts.x = math.Clamp(ts.x,attachmentpanelsize/2,ScrW()-attachmentpanelsize/2)
-				ts.y = math.Clamp(ts.y,attachmentpanelsize/2,ScrH()-attachmentpanelsize/2)
-				p:SetPos(ts.x-attachmentpanelsize/2,ts.y-attachmentpanelsize/2)
-				p.Paint = function(myself,w,h) end
+				p:SetSize(attachmentpanelsize+attachmentpanelsize*padfac*2,attachmentpanelsize+attachmentpanelsize*padfac*2)
 				
 				local hexsize = attachmentpanelsize/3.5
-				local centerx,centery = attachmentpanelsize/2, attachmentpanelsize/2
+				local centerx,centery = attachmentpanelsize/2+attachmentpanelsize*padfac, attachmentpanelsize/2+attachmentpanelsize*padfac
+				local hexi = 0
 				
-				for i=1,4 do
+				local ts = att.Pos:ToScreen()
+				p.anchor_x = anchor_x * ScrW()
+				p.anchor_y = anchor_y * ScrH()
+				ts.x = math.Clamp(ts.x+p.anchor_x,attachmentpanelsize/2,ScrW()-attachmentpanelsize/2)
+				ts.y = math.Clamp(ts.y+p.anchor_y,attachmentpanelsize/2,ScrH()-attachmentpanelsize/2)
+				p:SetPos(ts.x-attachmentpanelsize/2-attachmentpanelsize*padfac,ts.y-attachmentpanelsize/2-attachmentpanelsize*padfac)
+				p.activehex = -1
+				p.key = tab.key
+				p.Paint = function(myself,w,h)
+				
+					if !myself.selbar then myself.selbar = Material("vgui/inspectionhud/selector_bar") end
+					
+					if !myself.lastpaint then
+						myself.lastpaint = RealTime()-FrameTime()
+					end
+					
+					local delta = RealTime()-myself.lastpaint
+					
+					myself.lastpaint = RealTime()
+					
+					local ang = math.NormalizeAngle(-90 + ( myself.activehex - 1 ) * 60)
+					if !myself.ang then myself.ang = ang end
+					myself.ang = math.ApproachAngle(myself.ang,ang,(ang-myself.ang)*delta*15)
+					
+					myself.ang = math.NormalizeAngle(myself.ang)
+					
+					local rads = math.rad(myself.ang)
+					local xx,yy = w/2+hexsize/2,h/2+hexsize/2
+					local wuv,huv = hexsize/2, math.max(hexsize/15,2)
+					local gapscale = 0.25
+					
+					draw.NoTexture()
+					surface.SetDrawColor(TFA_INSPECTIONPANEL.PrimaryColor)
+					surface.SetMaterial(myself.selbar)
+					surface.DrawTexturedRectRotated(xx+math.cos(rads)*wuv*gapscale,yy+math.sin(rads)*wuv*gapscale,wuv*(1-gapscale)*2,wuv*(1-gapscale)*2,-myself.ang)
+					
+					draw.SimpleText(myself.key,"TFA_INSPECTION_SMALL",xx,yy,TFA_INSPECTIONPANEL.PrimaryColor,TEXT_ALIGN_CENTER,TEXT_ALIGN_CENTER)
+				end
+				
+				for kk,vv in pairs(tab.atts) do
+					hexi = hexi + 1
 					local hex = p:Add("DPanel")
-					local xoff,yoff = hexpositions[i].x/260	*hexsize,hexpositions[i].y/260*hexsize
+					local xoff,yoff = hexpositions[hexi].x/260	*hexsize,hexpositions[hexi].y/260*hexsize
 					hex:SetPos(centerx+xoff,centery+yoff)
 					hex:SetSize(hexsize,hexsize)
+					hex.icon = vv.icon
+					hex.iconscale = vv.iconscale
+					hex.attachment = kk
+					hex.parent = p
+					hex.hexi = hexi
 					hex.Paint = function(myself,w,h)
+					
+						if !IsValid(self) then return end
+					
+						if !myself.iconmat then myself.iconmat = surface.GetTextureID(myself.icon) end
+					
+						local mys_isactive = self.AttachmentCache[myself.attachment].active
+						
+						if mys_isactive then myself.parent.activehex = myself.hexi end
 			
-						local mycol = TFA_INSPECTIONPANEL.PrimaryColor
+						local mycol = mys_isactive and TFA_INSPECTIONPANEL.ActiveColor or TFA_INSPECTIONPANEL.PrimaryColor
 						
 						surface.SetDrawColor(mycol)
 						surface.SetTexture(TFA_INSPECTIONPANEL.Hex or 1)
 						surface.DrawTexturedRect(0,0,w,h)
+						
+						surface.SetTexture(myself.iconmat or 1)
+						surface.DrawTexturedRect(w*(1-myself.iconscale)/2,h*(1-myself.iconscale)/2,w*myself.iconscale,h*myself.iconscale)
 					
 					end
+					
+					if hexi>=5 then break end
 				end
+				
+				hexi = hexi + 1
+				
+				local hex = p:Add("DPanel")
+				local xoff,yoff = hexpositions[hexi].x/260	*hexsize,hexpositions[hexi].y/260*hexsize
+				hex:SetPos(centerx+xoff,centery+yoff)
+				hex:SetSize(hexsize,hexsize)
+				hex.icon = "vgui/inspectionhud/no"
+				hex.iconscale = 0.7
+				hex.key = tab.key
+				hex.parent = p
+				hex.hexi = hexi
+				hex.Paint = function(myself,w,h)
+					
+					if !IsValid(self) then return end
+				
+					if !myself.iconmat then myself.iconmat = surface.GetTextureID(myself.icon) end
+					
+					local mys_isactive = true
+					
+					for kkk,vvv in pairs(self.AttachmentCache) do
+						if vvv.key == myself.key and vvv.active then mys_isactive = false end
+					end
+						
+					if mys_isactive then myself.parent.activehex = myself.hexi end
+					
+					local mycol = mys_isactive and TFA_INSPECTIONPANEL.ActiveColor or TFA_INSPECTIONPANEL.PrimaryColor
+					
+					surface.SetDrawColor(mycol)
+					surface.SetTexture(TFA_INSPECTIONPANEL.Hex or 1)
+					surface.DrawTexturedRect(0,0,w,h)
+					
+					surface.SetTexture(myself.iconmat or 1)
+					surface.DrawTexturedRect(w*(1-myself.iconscale)/2,h*(1-myself.iconscale)/2,w*myself.iconscale,h*myself.iconscale)
+					
+				end
+				
 			else
 				break
 			end
@@ -521,9 +726,9 @@ function SWEP:DoInspectionDerma()
 			p = TFA_INSPECTIONPANEL.AttachmentPanels[i]
 				
 			local ts = att.Pos:ToScreen()
-			ts.x = math.Clamp(ts.x,attachmentpanelsize/2,ScrW()-attachmentpanelsize/2)
-			ts.y = math.Clamp(ts.y,attachmentpanelsize/2,ScrH()-attachmentpanelsize/2)
-			p:SetPos(ts.x-attachmentpanelsize/2,ts.y-attachmentpanelsize/2)	
+			ts.x = math.Clamp(ts.x+p.anchor_x,attachmentpanelsize/2,ScrW()-attachmentpanelsize/2)
+			ts.y = math.Clamp(ts.y+p.anchor_y,attachmentpanelsize/2,ScrH()-attachmentpanelsize/2)
+			p:SetPos(ts.x-attachmentpanelsize/2,ts.y-attachmentpanelsize/2)
 		else
 			break
 		end
@@ -555,6 +760,7 @@ local outg_cvar = GetConVar("cl_tfa_hud_crosshair_outline_color_g")
 local outb_cvar = GetConVar("cl_tfa_hud_crosshair_outline_color_b")
 local outlinewidth_cvar = GetConVar("cl_tfa_hud_crosshair_outline_width")
 local hudenabled_cvar = GetConVar("cl_tfa_hud_enabled")
+local cvar_tfa_inspection_old = GetConVar("cl_tfa_inspection_old")
 function SWEP:DrawHUD()
 	
     cam.Start3D(); cam.End3D() --Workaround for vec:ToScreen()
@@ -564,7 +770,9 @@ function SWEP:DrawHUD()
 		if val then return val end
 	end
 	
-	self:DoInspectionDerma()
+	if !cvar_tfa_inspection_old:GetBool() then
+		self:DoInspectionDerma()
+	end
 	
 	--Crosshair
 	local drawcrossy
@@ -713,7 +921,7 @@ function SWEP:DrawHUD()
 				str = string.upper( self:GetFireModeName() )
 				draw.DrawText( str, "TFASleekSmall", xx+1, yy+1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT )
 				draw.DrawText( str, "TFASleekSmall", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT )
-			--[[else
+			elseif cvar_tfa_inspection_old:GetBool() then
 				local str =  string.upper( "DAMAGE: "..RoundDecimals(self.Primary.Damage,1) )
 				if self.Primary.NumShots and self.Primary.NumShots > 1 then
 					str = str .. "x" .. math.Round(self.Primary.NumShots)
@@ -739,7 +947,7 @@ function SWEP:DrawHUD()
 				str =  string.upper( "Spread Max: ".. RoundDecimals( ( self.Primary.SpreadMultiplierMax ) , 2) )
 				draw.DrawText( str, "TFASleek", xx+1, yy+1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT )
 				draw.DrawText( str, "TFASleek", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT )
-				yy = yy + TFASleekFontHeight]]--
+				yy = yy + TFASleekFontHeight
 			end
 		end
 	end

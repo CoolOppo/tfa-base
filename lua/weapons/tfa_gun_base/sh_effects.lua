@@ -1,3 +1,87 @@
+local fx,sp
+
+function SWEP:MakeShellBridge()
+		--self:MakeShell(self.LuaShellEffect or self.Blowback_Shell_Effect,self.LuaShellEjectDelay)
+		
+		if self.LuaShellEjectDelay>0 then
+			timer.Simple(self.LuaShellEjectDelay, function()
+				if IsValid(self) and self:OwnerIsValid() then
+					self:MakeShell(ef)					
+				end
+			end)
+		else
+			self:MakeShell(ef)
+		end
+		
+end
+
+function SWEP:MakeShell(ef)
+	if IsValid(self) and self:OwnerIsValid() then
+		local vm = ( !self.Owner.ShouldDrawLocalPlayer or self.Owner:ShouldDrawLocalPlayer() ) and self.Owner:GetViewModel() or self
+		if IsValid(vm) then
+			local fx = EffectData()
+			fx:SetEntity(vm)
+			local attid = vm:LookupAttachment(self.ShellAttachment)
+			attid = math.Clamp(attid and attid or 2,1,127)
+			--[[
+			local fx = EffectData()
+			fx:SetEntity(vm)
+			local attid = vm:LookupAttachment(self.ShellAttachment)
+			attid = math.Clamp(attid and attid or 2,1,127)
+			fx:SetAttachment(attid)
+			local attpos = vm:GetAttachment(attid)
+			
+			if attpos and attpos.Pos and attpos.Ang and self.ViewModelFlip then
+				local localpos = vm:WorldToLocal(attpos.Pos)
+				local localang = vm:WorldToLocalAngles(attpos.Ang)
+				localpos = localpos * Vector(-1,1,1)
+				localang = Angle(localang.p,localang.y+180,localang.r)
+				local worldpos = vm:LocalToWorld(localpos)
+				local worldang = vm:LocalToWorldAngles(localang)
+				attpos.Pos = worldpos
+				attpos.Ang = worldang
+			end
+			
+			if attpos and attpos.Pos then
+				if game.SinglePlayer() and SERVER then
+					fx:SetOrigin(attpos.Pos + self.Owner:GetShootPos() - self.Owner:GetPos() )
+				elseif game.SinglePlayer() then
+					attpos.Pos = attpos.Pos + Vector(0,0,16)
+					print(attpos.Pos)
+					debugoverlay.Cross(attpos.Pos,5,5,color_white,true)					
+				else
+					fx:SetOrigin(attpos.Pos)
+				end
+				--fx:SetStart(attpos.Pos)
+			end
+			
+			--debugoverlay.Axis(attpos.Pos,attpos.Ang,64,15,true)
+				
+			if attpos and attpos.Ang then
+				fx:SetAngles(attpos.Ang)
+				fx:SetNormal(attpos.Ang:Forward())
+			end
+			
+			fx:SetMagnitude(100)
+			fx:SetScale(100)
+			
+			--debugoverlay.Axis( attpos.Pos, attpos.Ang, 15, 5, true)
+			util.Effect(ef,fx)
+			]]--
+			local angpos = vm:GetAttachment(attid)
+			local fx = EffectData()
+			fx:SetEntity(self)
+			fx:SetAttachment(attid)
+			fx:SetMagnitude(1)
+			fx:SetScale(1)
+			fx:SetOrigin(angpos.Pos)
+			fx:SetNormal(angpos.Ang:Forward())
+			util.Effect("tfa_shell",fx)
+		end
+	end
+end
+
+
 --[[ 
 Function Name:  CleanParticles
 Syntax: self:CleanParticles(). 
@@ -56,18 +140,54 @@ function SWEP:EjectionSmoke()
 end
 
 --[[ 
+Function Name:  ShootEffectsCustom
+Syntax: self:ShootEffectsCustom(). 
+Returns:  Nothing.
+Notes:    Calls the proper muzzleflash, muzzle smoke, muzzle light code.
+Purpose:  FX
+]]--
+
+function SWEP:ShootEffectsCustom( ifp )
+	
+	if !sp then sp = game.SinglePlayer() end
+	
+	if SERVER and !sp then
+		net.Start("tfa_base_muzzle_mp")
+		net.WriteEntity(self)
+		net.SendOmit(self.Owner)
+	end
+	
+	--if sp and !CLIENT then self:CallOnClient("ShootEffectsCustom","") return end
+	
+	if ( CLIENT and ifp ) or (sp) then
+		fx = EffectData()
+		fx:SetOrigin(self.Owner:GetShootPos())
+		fx:SetNormal(self.Owner:EyeAngles():Forward())
+		fx:SetEntity(self)
+		fx:SetAttachment( self.MuzzleAttachmentRaw or self:LookupAttachment(self.MuzzleAttachment) )
+		
+		if (self:GetSilenced()) then
+			util.Effect("tfa_muzzleflash_silenced", fx)
+		else
+			util.Effect(self.MuzzleFlashEffect or "", fx)
+		end
+	end
+	
+end
+
+--[[ 
 Function Name:  ShootEffects
 Syntax: self:ShootEffects(). 
 Returns:  Nothing.
-Notes:    Calls the proper muzzleflash, muzzle smoke, muzzle light code.
+Notes:    --USED TO-- Calls the proper muzzleflash, muzzle smoke, muzzle light code.
 Purpose:  FX
 ]]--
 	
 local blankvec = Vector(0,0,0)
 
-function SWEP:ShootEffects( ovrarg )
+function SWEP:ShootEffects( )
 	
-	if ( ( (CLIENT and !SERVER) and !game.SinglePlayer() ) and !IsFirstTimePredicted() and !self.AutoDetectMuzzleAttachment and !ovrarg ) then print("canceled") return end
+	--if ( ( (CLIENT and !SERVER) and !game.SinglePlayer() ) and !IsFirstTimePredicted() and !self.AutoDetectMuzzleAttachment and !ovrarg ) then print("canceled") return end
 	
 	--[[
 	if game.SinglePlayer() then
@@ -78,7 +198,7 @@ function SWEP:ShootEffects( ovrarg )
 	end
 	]]--
 	
-	if !IsValid(self) or !self:OwnerIsValid() then return end
+	if !self:OwnerIsValid() then return end
 	
 	--self:MuzzleLight()
 	

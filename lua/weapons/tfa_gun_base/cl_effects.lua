@@ -27,6 +27,9 @@ function SWEP:FireAnimationEvent(pos, ang, event, options)
 			return true 
 		end 
 	end
+	if self.LuaShellEject then
+		if ( event == 6001 or event>5031 ) then return true end		
+	end
 end
 
 --[[ 
@@ -161,14 +164,25 @@ Purpose:  FX
 ]]--
 
 function SWEP:DoImpactEffect(tr,dmgtype)
+	
+	if tr.HitSky then return true end
+	
+	local ib = self.BashBase and IsValid(self) and self:GetBashing()
+	
 	local dmginfo = DamageInfo()
 	dmginfo:SetDamageType(dmgtype)
-	if dmginfo:IsDamageType(DMG_SLASH) or dmginfo:IsDamageType(DMG_CRUSH) or ( self.GetBashing and self:GetBashing() ) or self.IsKnife then
+	if dmginfo:IsDamageType(DMG_SLASH) or (ib and self.Secondary.BashDamageType == DMG_SLASH and tr.MatType != MAT_FLESH and tr.MatType != MAT_ALIENFLESH ) or  (self and self.DamageType and self.DamageType==DMG_SLASH) then
 		util.Decal("ManhackCut", tr.HitPos + tr.HitNormal, tr.HitPos - tr.HitNormal )
 		return true
 	end
 	
-	self:ImpactEffectFunc(tr.HitPos,tr.HitNormal,tr.MatType)
+	if ib and self.Secondary.BashDamageType == DMG_GENERIC then return true end
+	
+	if ib then return end
+	
+	if IsValid(self) then
+		self:ImpactEffectFunc(tr.HitPos,tr.HitNormal,tr.MatType)
+	end
 end
 
 local impact_cl_enabled = GetConVar("cl_tfa_fx_impact_enabled")

@@ -8,10 +8,11 @@ Purpose:  You ain't no muslim, bruv
 
 function SWEP:CanChamber()
 	if self.DisableChamberingNew!=nil then
-		return self.DisableChamberingNew
+		return !self.DisableChamberingNew
 	else
-		self.DisableChamberingNew = ( !self.BoltAction and !self.Shotgun and !self.Revolver and !self.DisableChambering )
-		return self.DisableChamberingNew
+		if self.Category == "TFA Pistols" and self.HoldType == "revolver" then self.Revolver = true end
+		self.DisableChamberingNew = self.BoltAction or self.Shotgun or self.Revolver or self.DisableChambering
+		return !self.DisableChamberingNew
 	end
 end
 
@@ -203,6 +204,8 @@ Purpose:  Utility
 function SWEP:IsHidden()
 	if !self:OwnerIsValid() then return true end
 	local vm = self.Owner:GetViewModel()
+	local seq = vm:GetSequence()
+	local act = vm:GetSequenceActivity(seq or 0)
 	local heldentindex = self.Owner:GetNWInt("LastHeldEntityIndex",-1)
 	local heldent = Entity(heldentindex)
 	
@@ -211,7 +214,7 @@ function SWEP:IsHidden()
 		heldent = nil
 	end
 	
-	return self:IsCurrentlyScoped() or ( IsValid(heldent) and (!heldent.IsPlayerHolding or heldent:IsPlayerHolding() ) ) or (self:GetHolstering() and vm:GetCycle()>0.9)
+	return self:IsCurrentlyScoped() or ( IsValid(heldent) and (!heldent.IsPlayerHolding or heldent:IsPlayerHolding() ) ) or ( (act==ACT_VM_HOLSTER or act==ACT_VM_HOLSTER_EMPTY) and vm:GetCycle()>0.9) or ( (act==ACT_VM_DRAW or act==ACT_VM_DRAW_EMPTY or act==ACT_VM_DRAW_SILENCED) and vm:GetCycle()<0.05 and vm:GetCycle()!=0 and !self.isfirstdraw)
 end
 
 --[[ 

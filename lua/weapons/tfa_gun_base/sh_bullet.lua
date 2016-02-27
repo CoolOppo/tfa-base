@@ -32,6 +32,11 @@ Purpose:  Bullet
 
 local function TFBulletCallback(a,b,c)
 	
+	if SERVER and IsValid(a) and a:IsPlayer() and IsValid(b.Entity) and ( b.Entity:IsPlayer() or b.Entity:IsNPC() ) then
+		net.Start("tfaHitmarker")
+		net.Send(a)
+	end
+	
 	local cary,ply,self=PlayerCarryingTFAWeapon(a)
 	
 	--print(cary)
@@ -169,10 +174,10 @@ Notes:    Used to generate a bullet table which is then sent to self:ShootBullet
 Purpose:  Bullet
 ]]--
 
-function SWEP:ShootBulletInformation()
+function SWEP:ShootBulletInformation( ifp )
 
 	if self.Callback.ShootBulletInformation then
-		local val = self.Callback.ShootBulletInformation(self)
+		local val = self.Callback.ShootBulletInformation(self, ifp)
 		if val then return val end
 	end
 	
@@ -180,9 +185,9 @@ function SWEP:ShootBulletInformation()
 	self.lastbulnoric = false
 	
 	self.ConDamageMultiplier = GetConVar("sv_tfa_damage_multiplier"):GetFloat()
-	if (CLIENT and !game.SinglePlayer()) and !IsFirstTimePredicted() then return end
+	if (CLIENT and !game.SinglePlayer()) and !ifp then return end
 	
-	if SERVER and game.SinglePlayer() then self:CallOnClient("ToggleAkimbo","") end
+	if SERVER and game.SinglePlayer() and self.Akimbo then self:CallOnClient("ToggleAkimbo","") end
 	
 	self:ToggleAkimbo()
 
@@ -194,9 +199,13 @@ function SWEP:ShootBulletInformation()
 	basedamage = self.ConDamageMultiplier * self.Primary.Damage
 	CurrentDamage = basedamage * tmpranddamage
 	
+	--[[
 	if self.DoMuzzleFlash and ( (SERVER) or ( CLIENT and !self.AutoDetectMuzzleAttachment ) or (CLIENT and !self:IsFirstPerson() ) ) then
 		self:ShootEffects()
 	end
+	]]--
+	
+	self:ShootEffectsCustom( ifp )
 	
 	self:ShootBullet(CurrentDamage, CurrentRecoil, self.Primary.NumShots, CurrentCone)
 end
@@ -208,6 +217,8 @@ Returns:   Nothing.
 Notes:    Used to shoot a bullet.
 Purpose:  Bullet
 ]]--
+
+local soundspeed = 1125.33 * 16
 
 function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet, bulletoverride)
 
@@ -272,7 +283,7 @@ function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet,
 			
 		end		
 	else
-
+		
 		local TracerName
 		
 		if self.Tracer == 1 then
@@ -286,6 +297,8 @@ function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet,
 			TracerName = self.TracerName
 		end
 		
+		mainbul.Attacker 		= self.Owner
+		mainbul.Inflictor 		= self
 		mainbul.Num 		= num_bullets
 		mainbul.Src 		= self.Owner:GetShootPos()			-- Source
 		mainbul.Dir 		= self.Owner:GetAimVector()			-- Dir of bullet
@@ -294,6 +307,15 @@ function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet,
 		mainbul.Tracer	= self.TracerCount and self.TracerCount or 3		-- Show a tracer on every x bullets
 		mainbul.IsFirst = true
 		mainbul.AmmoType = self:GetPrimaryAmmoType()
+		if self.ProjectileVelocity and self.ProjectileVelocity>0 then
+			mainbul.Velocity = self.ProjectileVelocity
+		else
+			mainbul.Velocity = self.Primary.Velocity or self.Velocity or math.sqrt(self.Primary.Damage/25)*soundspeed
+		end
+		penbul.Tracer = 0
+		penbul.TracerName = ""
+		ricbul.Tracer = 0
+		ricbul.TracerName = ""
 		
 		if !self.TracerLua then
 			mainbul.TracerName = TracerName
@@ -319,11 +341,9 @@ function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet,
 		end
 		
 		self.Owner:FireBullets(mainbul)
-		
+		--ShootPhysicalBullet(mainbul)
 		
 	end
-	
-	self:Recoil( recoil )
 end
 
 --[[ 
@@ -430,8 +450,8 @@ function SWEP:CheckRicochet(bullet, tr)
 			ricbul.Spread = vector_origin
 			ricbul.Src=tr.HitPos
 			ricbul.Dir=((2 * tr.HitNormal * dp) + tr.Normal) + (VectorRand() * 0.02)
-			ricbul.Tracer=0
-			ricbul.TracerName = "None"
+			ricbul.Tracer=0--(self.TracerName and self.TracerName!="")
+			ricbul.TracerName = ""--self.TracerName or "None"
 			ricbul.IsFirst = false
 			if GetTFARicochetEnabled() then
 				local fx = EffectData()
@@ -544,8 +564,8 @@ function SWEP:CheckPenetration(bullet, tr2)
 		penbul.Dir=bullet.Dir*1
 		penbul.Range = 56756
 		penbul.Distance = 56756
-		penbul.Tracer=0
-		penbul.TracerName = "None"
+		penbul.Tracer=self.TracerName and 1 or 0
+		penbul.TracerName = self.TracerName or ""
 		penbul.IsFirst = false
 			
 		if GetConVarNumber("cl_tfa_fx_impact_enabled",1)==1 then
@@ -553,6 +573,7 @@ function SWEP:CheckPenetration(bullet, tr2)
 			fx:SetOrigin(penbul.Src)
 			fx:SetNormal(penbul.Dir)
 			fx:SetMagnitude(1)
+			fx:SetEntity(self)
 			util.Effect("tfa_penetrate",fx)
 		end
 		
@@ -593,8 +614,10 @@ Notes:    Used to add recoil to the player owner.
 Purpose:  Bullet
 ]]--
 
-function SWEP:Recoil( recoil )
+function SWEP:Recoil( recoil, ifp )
 	if !IsValid(self) or !IsValid(self.Owner) then return end
+	
+	math.randomseed(CurTime())
 	
 	local tmprecoilang = Angle(math.Rand(self.Primary.KickDown,self.Primary.KickUp) * recoil * -1, math.Rand(-self.Primary.KickHorizontal,self.Primary.KickHorizontal) * recoil, 0)
 	
@@ -602,6 +625,7 @@ function SWEP:Recoil( recoil )
 	local tmprecoilangclamped = Angle(math.Clamp(tmprecoilang.p,-maxdist,maxdist),tmprecoilang.y,0)
 	self.Owner:ViewPunch(tmprecoilangclamped * (1 - self.Primary.StaticRecoilFactor))
 	
+	--[[
 	if SERVER and game.SinglePlayer() and !self.Owner:IsNPC()  then 
 		local sp_eyes = self.Owner:EyeAngles()
 		local vpa = self.Owner:GetViewPunchAngles()
@@ -625,10 +649,18 @@ function SWEP:Recoil( recoil )
 		eyes:Normalize()
 		self.Owner:SetEyeAngles(eyes)
 	end
+	]]--
 	
+	if (game.SinglePlayer() and SERVER) or ( CLIENT and ifp ) then
+		local neweyeang = self.Owner:EyeAngles() + tmprecoilang*self.Primary.StaticRecoilFactor
+		neweyeang.p = math.Clamp(neweyeang.p,-90+math.abs(self.Owner:GetViewPunchAngles().p),90-math.abs(self.Owner:GetViewPunchAngles().p))
+		self.Owner:SetEyeAngles( neweyeang )
+	end
+	
+	--[[
 	local nvpa = self.Owner:GetViewPunchAngles()
 	local overamount = math.abs(self.Owner:EyeAngles().p + nvpa.p)-89
 	
 	self.Owner:SetViewPunchAngles( Angle(math.Approach(nvpa.p,0,overamount),nvpa.y,nvpa.r) )
-	
+	]]--
 end

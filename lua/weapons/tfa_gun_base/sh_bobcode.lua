@@ -169,7 +169,7 @@ Notes:  This is really important and slightly messy.
 Purpose:  Feature
 ]]--
 
-function SWEP:CalculateBob(pos, ang, ci)
+function SWEP:CalculateBob(pos, ang, ci, igvmf)
 
 	if !self:OwnerIsValid() then return end
 
@@ -227,10 +227,17 @@ function SWEP:CalculateBob(pos, ang, ci)
 	ang:RotateAroundAxis(ang:Up(), 		(self.customboboffset.y))
 	ang:RotateAroundAxis(ang:Forward(), 	(self.customboboffset.z))
 	
+	tironsightscale = math.pow(tironsightscale,2)
+	
 	local localisedmove,localisedangle = WorldToLocal(self.Owner:GetVelocity(),self.Owner:GetVelocity():Angle(),vector_origin,self.Owner:EyeAngles()) 
 	
-	ang:RotateAroundAxis(ang:Forward(), 		(math.Approach(localisedmove.y,0,1)/(runspeed/8)*tironsightscale ) * (ci or 1) * (-1 + 2 *(self.ViewModelFlip and 1 or 0) ))	
-	ang:RotateAroundAxis(ang:Right(), 		(math.Approach(localisedmove.x,0,1)/(runspeed) )*tironsightscale * (ci or 1) * (-1 + 2 *(self.ViewModelFlip and 1 or 0) ) )
+	if igvmf then
+		ang:RotateAroundAxis(ang:Forward(), 		(math.Approach(localisedmove.y,0,1)/(runspeed/8)*tironsightscale ) * (ci or 1) )	
+		ang:RotateAroundAxis(ang:Right(), 		(math.Approach(localisedmove.x,0,1)/(runspeed) )*tironsightscale * (ci or 1)  )
+	else
+		ang:RotateAroundAxis(ang:Forward(), 		(math.Approach(localisedmove.y,0,1)/(runspeed/8)*tironsightscale ) * (ci or 1) * (-1 + 2 *(self.ViewModelFlip and 1 or 0) ))	
+		ang:RotateAroundAxis(ang:Right(), 		(math.Approach(localisedmove.x,0,1)/(runspeed) )*tironsightscale * (ci or 1) * (-1 + 2 *(self.ViewModelFlip and 1 or 0) ) )
+	end
 	
 	ang:Normalize()
 	

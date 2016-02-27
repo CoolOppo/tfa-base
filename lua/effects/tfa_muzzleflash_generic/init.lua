@@ -115,7 +115,7 @@ function EFFECT:Init( data )
 				particle:SetRollDelta( math.sqrt(math.Clamp(r,-90,90))/9 )
 				particle:SetColor( 255 , 218 , 97 )
 				particle:SetLighting(false)
-				particle.FollowEnt = data:GetEntity()
+				particle.FollowEnt = self.WeaponEnt
 				particle.Att = self.Attachment
 				TFARegPartThink(particle,TFAMuzzlePartFunc)
 			end
@@ -135,7 +135,7 @@ function EFFECT:Init( data )
 				particle:SetRollDelta( math.Rand(-10, 10) )
 				particle:SetColor( 255 , 218 , 97 )
 				particle:SetLighting(false)
-				particle.FollowEnt = data:GetEntity()
+				particle.FollowEnt = self.WeaponEnt
 				particle.Att = self.Attachment
 				TFARegPartThink(particle,TFAMuzzlePartFunc)
 			end
@@ -181,7 +181,7 @@ function EFFECT:Init( data )
 					
 					particle:SetAirResistance( 5 ) 
 					
-					particle.FollowEnt = data:GetEntity()
+					particle.FollowEnt = self.WeaponEnt
 					particle.Att = self.Attachment
 					TFARegPartThink(particle,TFAMuzzlePartFunc)
 					 

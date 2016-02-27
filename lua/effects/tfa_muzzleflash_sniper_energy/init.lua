@@ -100,7 +100,7 @@ function EFFECT:Init( data )
 			particle:SetRollDelta( r/5)
 			particle:SetColor( 0 , 0 , 255 )
 			particle:SetLighting(false)
-			particle.FollowEnt = data:GetEntity()
+			particle.FollowEnt = self.WeaponEnt
 			particle.Att = self.Attachment
 			TFARegPartThink(particle,TFAMuzzlePartFunc)
 		end
@@ -113,15 +113,15 @@ function EFFECT:Init( data )
 				particle:SetLifeTime( 0 )
 				particle:SetDieTime( 0.1 )
 				particle:SetStartAlpha( math.Rand( 200, 255 ) )
-				particle:SetEndAlpha( 0 )
-				particle:SetStartSize( 30 * (halofac*0.8+0.2), 0, 1)
+				particle:SetEndAlpha( 24 )
+				particle:SetStartSize( 6)
 				particle:SetEndSize( 0 )
 				local r = math.Rand(-180, 180) * 3.14/180
 				particle:SetRoll( r )
 				particle:SetRollDelta( math.sqrt(math.Clamp(r,-90,90))/9 )
 				particle:SetColor( 0 , 0 , 255 )
 				particle:SetLighting(false)
-				particle.FollowEnt = data:GetEntity()
+				particle.FollowEnt = self.WeaponEnt
 				particle.Att = self.Attachment
 				TFARegPartThink(particle,TFAMuzzlePartFunc)
 			end
@@ -135,13 +135,13 @@ function EFFECT:Init( data )
 				particle:SetDieTime( 0.1 )
 				particle:SetStartAlpha( math.Rand( 200, 255 ) )
 				particle:SetEndAlpha( 0 )
-				particle:SetStartSize( math.max(5 - 0.65 * i,1) )
-				particle:SetEndSize( 0 )
+				particle:SetStartSize( 4 )
+				particle:SetEndSize( math.max(6 - 0.65 * i,1) )
 				particle:SetRoll( math.Rand(0, 360) )
 				particle:SetRollDelta( math.Rand(-40, 40) )
 				particle:SetColor( 0 , 0 , 255 )
 				particle:SetLighting(false)
-				particle.FollowEnt = data:GetEntity()
+				particle.FollowEnt = self.WeaponEnt
 				particle.Att = self.Attachment
 				TFARegPartThink(particle,TFAMuzzlePartFunc)
 			end
@@ -163,7 +163,7 @@ function EFFECT:Init( data )
 					
 					particle:SetAirResistance( 5 ) 
 					
-					particle.FollowEnt = data:GetEntity()
+					particle.FollowEnt = self.WeaponEnt
 					particle.Att = self.Attachment
 					TFARegPartThink(particle,TFAMuzzlePartFunc)
 					 

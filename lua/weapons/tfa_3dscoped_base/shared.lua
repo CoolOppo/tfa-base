@@ -126,6 +126,8 @@ SWEP.Callback.Deploy = function(self)
 	end)
 end
 
+local flipcv
+
 local cd = {}
 
 local crosscol = Color(255,255,255,255)
@@ -134,9 +136,11 @@ SWEP.RTOpaque = true
 
 SWEP.RTCode = function( self, rt, scrw, scrh )
 	
-	if !self.myshadowmask then self.myshadowmask = Material(self.ScopeShadow and self.ScopeShadow or "vgui/scope_shadowmask") end
-	if !self.myreticule then self.myreticule = Material(self.ScopeReticule and self.ScopeReticule or "scope/gdcw_scopesightonly") end
-	if !self.mydirt then self.mydirt = Material(self.ScopeDirt and self.ScopeDirt or "vgui/scope_dirt") end
+	if !self.myshadowmask then self.myshadowmask = surface.GetTextureID(self.ScopeShadow or "vgui/scope_shadowmask_test") end
+	if !self.myreticule then self.myreticule = Material(self.ScopeReticule or "scope/gdcw_scopesightonly") end
+	if !self.mydirt then self.mydirt = Material(self.ScopeDirt or "vgui/scope_dirt") end
+	
+	if !flipcv then flipcv=GetConVar("cl_tfa_viewmodel_flip") end
 
 	local vm = self.Owner:GetViewModel()
 	
@@ -156,6 +160,9 @@ SWEP.RTCode = function( self, rt, scrw, scrh )
 	
 	scrpos.x = scrpos.x - scrw/2 + self.ScopeOverlayTransforms[1]
 	scrpos.y = scrpos.y - scrh/2 + self.ScopeOverlayTransforms[2]
+	
+	scrpos.x = math.Clamp(scrpos.x,-1024,1024)
+	scrpos.y = math.Clamp(scrpos.y,-1024,1024)
 	
 	--scrpos.x = scrpos.x * ( 2 - self.CLIronSightsProgress*1 )
 	--scrpos.y = scrpos.y * ( 2 - self.CLIronSightsProgress*1 )
@@ -182,6 +189,10 @@ SWEP.RTCode = function( self, rt, scrw, scrh )
 	if AngPos then
 	
 		ang = AngPos.Ang
+		if flipcv:GetBool() then
+			ang.y = -ang.y
+		end
+		
 		for k,v in pairs(self.ScopeAngleTransforms) do
 			if v[1] == "P" then
 				ang:RotateAroundAxis(ang:Right(),v[2])				
@@ -222,10 +233,10 @@ SWEP.RTCode = function( self, rt, scrw, scrh )
 	
 	cam.Start2D()
 		draw.NoTexture()
-		surface.SetMaterial(self.myshadowmask)
+		surface.SetTexture(self.myshadowmask)
 		surface.SetDrawColor(color_white)
 		if self:Do3DScopeOverlay() then
-			surface.DrawTexturedRect(scrpos.x+rtow,scrpos.y+rtoh,rtw,rth)
+			surface.DrawTexturedRect(scrpos.x+rtow-rtw/2,scrpos.y+rtoh-rth/2,rtw*2,rth*2)
 		end
 		if self.ScopeReticule_CrossCol then
 			crosscol.r = GetConVarNumber("cl_tfa_hud_crosshair_color_r")
