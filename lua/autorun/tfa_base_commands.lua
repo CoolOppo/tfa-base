@@ -2083,8 +2083,8 @@ if CLIENT then
 			tab[ "$pp_colour_brightness" ] = -tfablurintensity*0.02
 			tab[ "$pp_colour_contrast" ] = 1-tfablurintensity*0.1
 			DrawColorModify( tab )
+			cam.IgnoreZ(true)
 		end
-		--cam.IgnoreZ(true)
 	end)
 
 	hook.Add( "NeedsDepthPass", "NeedsDepthPass_TFA_Inspect", function()

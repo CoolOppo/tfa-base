@@ -36,6 +36,7 @@ SWEP.MuzzleAttachment			= "1" 		-- Should be "1" for CSS models or "muzzle" for 
 --SWEP.MuzzleAttachmentRaw = 1 --This will override whatever string you gave.  This is the raw attachment number.  This is overridden or created when a gun makes a muzzle event.
 SWEP.ShellAttachment			= "2" 		-- Should be "2" for CSS models or "shell" for hl2 models
 SWEP.DrawCrosshair			= true		-- Draw the crosshair?
+SWEP.DrawCrosshairIS = false --Draw crosshair in ironsights
 SWEP.ViewModelFOV			= 65		-- This controls how big the viewmodel looks.  Less is more.
 SWEP.ViewModelFlip			= false		-- Set this to true for CSS models, or false for everything else (with a righthanded viewmodel.)  Note that this breaks c_arms if you set it to true.
 SWEP.UseHands = false --Use c_hands a.k.a playermodel hands?  Disable for CS:S or HL2 direct ports, or anything containing v_arms.

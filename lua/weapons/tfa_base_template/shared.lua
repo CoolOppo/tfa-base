@@ -12,6 +12,7 @@ SWEP.Instructions				= "" --Instructions Tooltip
 SWEP.Spawnable				= false --Can you, as a normal user, spawn this?
 SWEP.AdminSpawnable			= false --Can an adminstrator spawn this?  Does not tie into your admin mod necessarily, unless its coded to allow for GMod's default ranks somewhere in its code.  Evolve and ULX should work, but try to use weapon restriction rather than these.
 SWEP.DrawCrosshair			= true		-- Draw the crosshair?
+SWEP.DrawCrosshairIS = false --Draw the crosshair in ironsights?
 SWEP.PrintName				= "TFA Base Template"		-- Weapon name (Shown on HUD)	
 SWEP.Slot				= 2				-- Slot in the weapon selection menu.  Subtract 1, as this starts at 0.
 SWEP.SlotPos				= 73			-- Position in the slot
@@ -171,6 +172,16 @@ SWEP.Secondary.UseSVD			= false		 --Overlay option
 SWEP.Secondary.UseParabolic		= false		 --Overlay option
 SWEP.Secondary.UseElcan			= false	 --Overlay option
 SWEP.Secondary.UseGreenDuplex		= false		 --Overlay option
+
+if surface then
+	SWEP.Secondary.ScopeTable = nil --[[
+		{
+			scopetex = surface.GetTextureID("scope/gdcw_closedsight"),
+			reticletex = surface.GetTextureID("scope/gdcw_acogchevron"),
+			dottex = surface.GetTextureID("scope/gdcw_acogcross")
+		}
+	]]--
+end
 
 --[[SHOTGUN CODE]]--
 

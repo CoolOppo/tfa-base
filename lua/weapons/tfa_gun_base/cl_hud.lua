@@ -782,8 +782,8 @@ function SWEP:DrawHUD()
 		drawcrossy=self.DrawCrosshair
 	end
 	
-	local crossa = crossa_cvar:GetFloat() * math.pow(math.min(1-self.CLIronSightsProgress, 1-self.CLRunSightsProgress, 1-self.CLNearWallProgress, 1-self.CLInspectingProgress),2)
-	local outa = outa_cvar:GetFloat() * math.pow(math.min(1-self.CLIronSightsProgress, 1-self.CLRunSightsProgress, 1-self.CLNearWallProgress, 1-self.CLInspectingProgress),2)
+	local crossa = crossa_cvar:GetFloat() * math.pow(math.min(1-( (self.CLIronSightsProgress and !self.DrawCrosshairIS ) and self.CLIronSightsProgress  or 0), 1-self.CLRunSightsProgress, 1-self.CLNearWallProgress, 1-self.CLInspectingProgress),2)
+	local outa = outa_cvar:GetFloat() * math.pow(math.min(1-( (self.CLIronSightsProgress and !self.DrawCrosshairIS) and self.CLIronSightsProgress  or 0), 1-self.CLRunSightsProgress, 1-self.CLNearWallProgress, 1-self.CLInspectingProgress),2)
 	self.DrawCrosshair = false
 	if drawcrossy then
 		if crosscustomenable_cvar:GetBool() then
@@ -977,6 +977,9 @@ function SWEP:DrawHUD()
 		end
 		if self.Secondary.UseMatador then
 			tbl=TFA_SCOPE_MATADOR
+		end
+		if self.Secondary.ScopeTable then
+			tbl=self.Secondary.ScopeTable		
 		end
 		if !tbl then tbl = TFA_SCOPE_MILDOT end
 		local w,h = ScrW(), ScrH()
