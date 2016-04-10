@@ -12,13 +12,20 @@ function EFFECT:Init( data )
 	self.Position = self:GetTracerShootPos( data:GetOrigin(), self.WeaponEnt, self.Attachment )
 	
 	if IsValid(self.WeaponEnt.Owner) then
-		if self.WeaponEnt.Owner:ShouldDrawLocalPlayer() then
-			ang = self.WeaponEnt.Owner:GetAimVector():Angle()
-ang:Normalize()
-			--ang.p = math.Clamp(ang.p,-55,55)
-			self.Forward = ang:Forward()
+		if self.WeaponEnt.Owner == LocalPlayer() then
+			if self.WeaponEnt.Owner:ShouldDrawLocalPlayer() then
+				ang = self.WeaponEnt.Owner:EyeAngles()
+				ang:Normalize()
+				--ang.p = math.max(math.min(ang.p,55),-55)
+				self.Forward = ang:Forward()
+			else
+				self.WeaponEnt = self.WeaponEnt.Owner:GetViewModel()
+			end
 		else
-			self.WeaponEnt = self.WeaponEnt.Owner:GetViewModel()
+			ang = self.WeaponEnt.Owner:EyeAngles()
+			ang:Normalize()
+			--ang.p = math.max(math.min(ang.p,55),-55)
+			self.Forward = ang:Forward()			
 		end
 	end
 	

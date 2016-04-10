@@ -1,3 +1,74 @@
+local CMIX_BLEND = 0
+local CMIX_MULT = 1
+
+local c1t = {}
+local c2t = {}
+
+local function ColorMix(c1,c2,fac,t)
+	c1t.r = c1.r
+	c1t.g = c1.g
+	c1t.b = c1.b
+	c1t.a = c1.a
+	c2t.r = c2.r
+	c2t.g = c2.g
+	c2t.b = c2.b
+	c2t.a = c2.a
+	for k,v in pairs(c1t) do
+		if t==CMIX_MULT then
+			c1t[k] = Lerp(fac,v,( c1t[k]/255 * c2t[k]/255 ) * 255)
+		else
+			c1t[k] = Lerp(fac,v,c2t[k])
+		end			
+	end
+	return Color(c1t.r,c1t.g,c1t.b,c1t.a)
+end
+
+local c_red = Color(255,0,0,255)
+local c_grn = Color(0,255,0,255)
+local hostilenpcmaps = {
+	["gm_lasers"] = true,
+	["gm_locals"] = true,
+	["gm_raid"] = true,
+	["gm_slam"] = true
+}
+local mymap
+local function GetTeamColor(ent)
+		
+	if !cl_tfa_hud_crosshair_color_teamcvar then cl_tfa_hud_crosshair_color_teamcvar = GetConVar("cl_tfa_hud_crosshair_color_team")	end
+	
+	if !cl_tfa_hud_crosshair_color_teamcvar:GetBool() then return color_white end
+	
+	if !mymap then mymap = game.GetMap() end
+	
+	local ply = LocalPlayer()
+	if !IsValid(ply) then return color_white end
+	
+	if ent:IsPlayer() then
+		if GAMEMODE.TeamBased then
+			if ent:Team()==ply:Team() then return c_grn else return c_red end
+		end
+		return c_red
+	end
+	
+	if ent:IsNPC() then
+		local disp = ent:GetNWInt("tfa_disposition",-1)
+		if disp>0 then
+			if disp == (D_FR or 2) or  disp == (D_HT or 1) then
+				return c_red			
+			else
+				return c_grn
+			end
+		end
+		if IsFriendEntityName( ent:GetClass() ) and !hostilenpcmaps[mymap] then
+			return c_grn
+		else
+			return c_red
+		end
+	end
+	
+	return color_white	
+	
+end
 
 local function RoundDecimals(number,decimals)
 	local decfactor = math.pow(10,decimals)
@@ -744,6 +815,7 @@ Notes:    Used to draw the HUD.  Can you read?
 Purpose:  HUD
 ]]--
 
+local crosscol = Color(255,255,255,255)
 local crossa_cvar = GetConVar("cl_tfa_hud_crosshair_color_a")
 local outa_cvar = GetConVar("cl_tfa_hud_crosshair_outline_color_a")
 local crosscustomenable_cvar = GetConVar("cl_tfa_hud_crosshair_enable_custom")
@@ -782,8 +854,12 @@ function SWEP:DrawHUD()
 		drawcrossy=self.DrawCrosshair
 	end
 	
-	local crossa = crossa_cvar:GetFloat() * math.pow(math.min(1-( (self.CLIronSightsProgress and !self.DrawCrosshairIS ) and self.CLIronSightsProgress  or 0), 1-self.CLRunSightsProgress, 1-self.CLNearWallProgress, 1-self.CLInspectingProgress),2)
-	local outa = outa_cvar:GetFloat() * math.pow(math.min(1-( (self.CLIronSightsProgress and !self.DrawCrosshairIS) and self.CLIronSightsProgress  or 0), 1-self.CLRunSightsProgress, 1-self.CLNearWallProgress, 1-self.CLInspectingProgress),2)
+	self.clrelp = self.clrelp or 0
+	
+	self.clrelp = math.Approach( self.clrelp, ( self:GetReloading() and 0 or 1 ), ( ( self:GetReloading() and 0 or 1 )-self.clrelp ) * FrameTime() * 15 )
+	
+	local crossa = crossa_cvar:GetFloat() * math.pow(math.min(1-( (self.CLIronSightsProgress and !self.DrawCrosshairIS ) and self.CLIronSightsProgress  or 0), 1-self.CLRunSightsProgress, 1-self.CLNearWallProgress, 1-self.CLInspectingProgress, self.clrelp),2)
+	local outa = outa_cvar:GetFloat() * math.pow(math.min(1-( (self.CLIronSightsProgress and !self.DrawCrosshairIS) and self.CLIronSightsProgress  or 0), 1-self.CLRunSightsProgress, 1-self.CLNearWallProgress, 1-self.CLInspectingProgress, self.clrelp),2)
 	self.DrawCrosshair = false
 	if drawcrossy then
 		if crosscustomenable_cvar:GetBool() then
@@ -826,11 +902,27 @@ function SWEP:DrawHUD()
 				else
 					x, y = ScrW() / 2.0, ScrH() / 2.0 -- Center of screen
 				end
-				local crossr,crossg,crossb, crosslen, crosshairwidth, drawdot
+				
+				if !self.selftbl then
+					self.selftbl = {ply,self}
+				end
+				
+				local crossr,crossg,crossb, crosslen, crosshairwidth, drawdot,teamcol
+				local targent = util.QuickTrace(ply:GetShootPos(),ply:EyeAngles():Forward()*999999999,self.selftbl).Entity
+				teamcol = GetTeamColor(targent)
 				crossr = crossr_cvar:GetFloat()
 				crossg = crossg_cvar:GetFloat()
 				crossb = crossb_cvar:GetFloat()
 				crosslen = crosslen_cvar:GetFloat() * 0.01
+				crosscol.r = crossr
+				crosscol.g = crossg
+				crosscol.b = crossb
+				crosscol.a = crossa
+				crosscol = ColorMix(crosscol,teamcol,1,CMIX_MULT)
+				crossr = crosscol.r
+				crossg = crosscol.g
+				crossb = crosscol.b
+				crossa = crosscol.a
 				crosshairwidth = crosshairwidth_cvar:GetFloat()
 				drawdot = drawdot_cvar:GetBool()
 				local scale = (s_cone *  90 ) / self.Owner:GetFOV() * ScrH()/1.44 * GetConVarNumber("cl_tfa_hud_crosshair_gap_scale",1)

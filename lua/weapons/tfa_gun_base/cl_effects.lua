@@ -18,9 +18,11 @@ function SWEP:FireAnimationEvent(pos, ang, event, options)
 		if (event == 5001 or event == 5011 or event == 5021 or event == 5031) then 
 			if self.AutoDetectMuzzleAttachment then
 				self.MuzzleAttachmentRaw = math.Clamp( math.floor( ( event - 4991 ) / 10 ), 1, 4)
+				net.Start("tfa_base_muzzle_mp")
+				net.SendToServer()
 				timer.Simple(0, function()
 					if IsValid(self) then
-						self:ShootEffects()
+						self:ShootEffectsCustom( true )
 					end
 				end)
 			end

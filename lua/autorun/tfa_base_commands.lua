@@ -20,7 +20,8 @@ if CLIENT then
 								sv_tfa_fx_gas_override = "-1",
 								sv_tfa_fx_ricochet_override = "-1",
 								sv_tfa_bullet_penetration = "1",
-								sv_tfa_bullet_ricochet = "1"								
+								sv_tfa_bullet_ricochet = "1",
+								sv_tfa_reloads_legacy = "0"								
 							   }				
 	panel:AddControl("ComboBox", tfaOptionSV)
 	
@@ -54,6 +55,11 @@ if CLIENT then
 		panel:AddControl("CheckBox", {
 		Label = "Enable Bullet Ricochet",
 		Command = "sv_tfa_bullet_ricochet",
+	})
+	
+		panel:AddControl("CheckBox", {
+		Label = "Enable Legacy-Style Reloading",
+		Command = "sv_tfa_reloads_legacy",
 	})
 	
 		panel:AddControl("Slider", {
@@ -335,6 +341,7 @@ if CLIENT then
 								cl_tfa_hud_crosshair_color_g = "225",
 								cl_tfa_hud_crosshair_color_b = "225",
 								cl_tfa_hud_crosshair_color_a = "225",
+								cl_tfa_hud_crosshair_color_team = "1",
 								cl_tfa_hud_crosshair_outline_color_r = "5",
 								cl_tfa_hud_crosshair_outline_color_g = "5",
 								cl_tfa_hud_crosshair_outline_color_b = "5",
@@ -364,6 +371,7 @@ if CLIENT then
 								cl_tfa_hud_crosshair_color_g = "255",
 								cl_tfa_hud_crosshair_color_b = "255",
 								cl_tfa_hud_crosshair_color_a = "200",
+								cl_tfa_hud_crosshair_color_team = "1",
 								cl_tfa_hud_crosshair_outline_color_r = "154",
 								cl_tfa_hud_crosshair_outline_color_g = "152",
 								cl_tfa_hud_crosshair_outline_color_b = "175",
@@ -393,6 +401,7 @@ if CLIENT then
 								cl_tfa_hud_crosshair_color_g = "72",
 								cl_tfa_hud_crosshair_color_b = "72",
 								cl_tfa_hud_crosshair_color_a = "85",
+								cl_tfa_hud_crosshair_color_team = "1",
 								cl_tfa_hud_crosshair_outline_color_r = "225",
 								cl_tfa_hud_crosshair_outline_color_g = "225",
 								cl_tfa_hud_crosshair_outline_color_b = "225",
@@ -417,11 +426,42 @@ if CLIENT then
 								cl_tfa_hud_hitmarker_color_a = "225",
 							   }	
 	
+	tfaOptionHUD.Options["Rockstar/GTAV/MP3"] = {	cl_tfa_hud_crosshair_enable_custom = "1",
+								cl_tfa_hud_crosshair_color_r = "225",
+								cl_tfa_hud_crosshair_color_g = "225",
+								cl_tfa_hud_crosshair_color_b = "225",
+								cl_tfa_hud_crosshair_color_a = "85",
+								cl_tfa_hud_crosshair_color_team = "1",
+								cl_tfa_hud_crosshair_outline_color_r = "30",
+								cl_tfa_hud_crosshair_outline_color_g = "30",
+								cl_tfa_hud_crosshair_outline_color_b = "30",
+								cl_tfa_hud_crosshair_outline_color_a = "85",
+								cl_tfa_hud_enabled = "1",
+								cl_tfa_hud_ammodata_fadein = "0.1",
+								cl_tfa_hud_hangtime = "0.5",
+								cl_tfa_hud_crosshair_length_use_pixels = "0",
+								cl_tfa_hud_crosshair_length = "0",
+								cl_tfa_hud_crosshair_width = "2",
+								cl_tfa_hud_crosshair_gap_scale = "0",
+								cl_tfa_hud_crosshair_outline_enabled = "1",
+								cl_tfa_hud_crosshair_outline_width = "1",
+								cl_tfa_hud_crosshair_dot = "0",
+								cl_tfa_hud_hitmarker_enabled = "1",
+								cl_tfa_hud_hitmarker_solidtime = "0.1",
+								cl_tfa_hud_hitmarker_fadetime = "0.3",
+								cl_tfa_hud_hitmarker_scale = "1",
+								cl_tfa_hud_hitmarker_color_r = "225",
+								cl_tfa_hud_hitmarker_color_g = "225",
+								cl_tfa_hud_hitmarker_color_b = "225",
+								cl_tfa_hud_hitmarker_color_a = "8",
+							   }
+	
 	tfaOptionHUD.Options["Half Life 2"] = {	cl_tfa_hud_crosshair_enable_custom = "0",
 								cl_tfa_hud_crosshair_color_r = "255",
 								cl_tfa_hud_crosshair_color_g = "255",
 								cl_tfa_hud_crosshair_color_b = "255",
 								cl_tfa_hud_crosshair_color_a = "225",
+								cl_tfa_hud_crosshair_color_team = "1",
 								cl_tfa_hud_crosshair_outline_color_r = "5",
 								cl_tfa_hud_crosshair_outline_color_g = "5",
 								cl_tfa_hud_crosshair_outline_color_b = "5",
@@ -451,6 +491,7 @@ if CLIENT then
 								cl_tfa_hud_crosshair_color_g = "255",
 								cl_tfa_hud_crosshair_color_b = "255",
 								cl_tfa_hud_crosshair_color_a = "225",
+								cl_tfa_hud_crosshair_color_team = "1",
 								cl_tfa_hud_crosshair_outline_color_r = "5",
 								cl_tfa_hud_crosshair_outline_color_g = "5",
 								cl_tfa_hud_crosshair_outline_color_b = "5",
@@ -549,6 +590,11 @@ if CLIENT then
 		ShowHSV = 1,
 		ShowRGB = 1,
 		Multiplier = 255
+	})
+	
+		panel:AddControl("CheckBox", {
+		Label = "Enable Crosshair Teamcolor",
+		Command = "cl_tfa_hud_crosshair_color_team",
 	})
 	
 		panel:AddControl("CheckBox", {
@@ -894,6 +940,10 @@ if GetConVar("sv_tfa_worldmodel_culldistance") == nil then
 	CreateConVar("sv_tfa_worldmodel_culldistance", "-1", { FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE }, "-1 to leave unculled.  Anything else is feet*16.")
 end
 
+if GetConVar("sv_tfa_reloads_legacy") == nil then
+	CreateConVar("sv_tfa_reloads_legacy", "0", { FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE }, "-1 to leave unculled.  Anything else is feet*16.")
+end
+
 --Clientside Convars
 
 if CLIENT then
@@ -987,6 +1037,11 @@ if CLIENT then
 	if GetConVar("cl_tfa_hud_crosshair_color_a") == nil then
 		CreateClientConVar("cl_tfa_hud_crosshair_color_a", 200, true, false)
 	end
+		
+	if GetConVar("cl_tfa_hud_crosshair_color_team") == nil then
+		CreateClientConVar("cl_tfa_hud_crosshair_color_team", 1, true, false)
+	end
+	
 	--Crosshair Outline
 	if GetConVar("cl_tfa_hud_crosshair_outline_color_r") == nil then
 		CreateClientConVar("cl_tfa_hud_crosshair_outline_color_r", 5, true, false)
@@ -1686,6 +1741,17 @@ if SERVER then
 	util.AddNetworkString("tfa_base_muzzle_mp")
 end
 
+if SERVER then
+	net.Receive( "tfa_base_muzzle_mp", function( length,ply )
+	
+		local wep = ply:GetActiveWeapon()
+		if IsValid(wep) and wep.ShootEffectsCustom then
+			wep:ShootEffectsCustom()
+		end
+		
+	end )
+end
+
 if CLIENT then
 	net.Receive( "tfa_base_muzzle_mp", function( length,ply )
 	
@@ -1757,6 +1823,8 @@ function TFAMuzzlePartFunc(self,first)
 	if IsValid(wep) and wep.IsCurrentlyScoped and wep:IsCurrentlyScoped() then return end
 	if IsValid(self.FollowEnt) then
 		local owent = self.FollowEnt.Owner or self.FollowEnt
+		
+		if !IsValid(owent) then return end
 		
 		local firvel
 		

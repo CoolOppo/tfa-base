@@ -11,7 +11,7 @@ EFFECT.InValid = false;
 
 local Mat_Impact                      = Material( "effects/combinemuzzle2" );
 local Mat_Beam            = Material( "effects/tool_tracer" );
-local Mat_TracePart            = Material( "effects/gauss_ring" );
+local Mat_TracePart            = Material( "effects/select_ring" );
 
 function EFFECT:Init( data )	
 

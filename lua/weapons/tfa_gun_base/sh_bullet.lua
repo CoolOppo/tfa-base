@@ -205,7 +205,9 @@ function SWEP:ShootBulletInformation( ifp )
 	end
 	]]--
 	
-	self:ShootEffectsCustom( ifp )
+	if !self.AutoDetectMuzzleAttachment then
+		self:ShootEffectsCustom( ifp )
+	end
 	
 	self:ShootBullet(CurrentDamage, CurrentRecoil, self.Primary.NumShots, CurrentCone)
 end
@@ -302,6 +304,7 @@ function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet,
 		mainbul.Num 		= num_bullets
 		mainbul.Src 		= self.Owner:GetShootPos()			-- Source
 		mainbul.Dir 		= self.Owner:GetAimVector()			-- Dir of bullet
+		mainbul.HullSize = self.Primary.HullSize or 0
 		mainbul.Spread.x=aimcone-- Aim Cone X
 		mainbul.Spread.y=aimcone-- Aim Cone Y
 		mainbul.Tracer	= self.TracerCount and self.TracerCount or 3		-- Show a tracer on every x bullets

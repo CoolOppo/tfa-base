@@ -407,6 +407,8 @@ function SWEP:ChooseShootAnim( ifp )
 		if self.LuaShellEject and ifp and CLIENT then
 			--self:CallOnClient("MakeShellBridge","")
 			self:MakeShellBridge()
+		elseif game.SinglePlayer() and SERVER then
+			self:MakeShellBridge()		
 		end
 		
 		self.lastact = tanim

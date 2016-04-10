@@ -223,8 +223,9 @@ SWEP.UnSightOnReload=true --Cancel out ironsights for reloading.
 SWEP.AllowReloadWhileSprinting=false --Can you reload when close to a wall and facing it?
 SWEP.AllowReloadWhileNearWall=false --Can you reload when close to a wall and facing it?
 SWEP.SprintBobMult=1.5 -- More is more bobbing, proportionally.  This is multiplication, not addition.  You want to make this > 1 probably for sprinting.
-SWEP.IronBobMult=0.05  -- More is more bobbing, proportionally.  This is multiplication, not addition.  You want to make this < 1 for sighting, 0 to outright disable.
-SWEP.ProceduralHolsterTime = 0.3 --Time to procedurally holster if no animation.  Set to 0 to disable.
+SWEP.IronBobMult=0.0  -- More is more bobbing, proportionally.  This is multiplication, not addition.  You want to make this < 1 for sighting, 0 to outright disable.
+SWEP.IronBobMultWalk=0.2  -- More is more bobbing, proportionally.  This is multiplication, not addition.  You want to make this < 1 for sighting, 0 to outright disable.
+SWEP.ProceduralHolsterTime = 0.4 --Time to procedurally holster if no animation.  Set to 0 to disable.
 --Advanced Projectile Support
 SWEP.ProjectileEntity = nil --Entity to shoot
 SWEP.ProjectileVelocity = 0 --Entity to shoot's velocity
@@ -267,9 +268,29 @@ SWEP.SprintHoldTypes = { pistol = "normal",
 	magic = "normal",
 	revolver = "normal"
 }
+--These holdtypes are used in reloading.  Syntax:  DefaultHoldType=NewHoldType
+SWEP.ReloadHoldTypes = { pistol = "pistol",
+	smg = "smg",
+	grenade = "melee",
+	ar2 = "ar2",
+	shotgun = "shotgun",
+	rpg = "ar2",
+	physgun = "physgun",
+	crossbow = "crossbow",
+	melee = "pistol",
+	slam = "smg",
+	normal = "pistol",
+	melee2 = "pistol",
+	knife = "pistol",
+	duel = "duel",
+	camera = "pistol",
+	magic = "pistol",
+	revolver = "revolver"
+}
 
 SWEP.IronSightHoldTypeOverride=""  --This variable overrides the ironsights holdtype, choosing it instead of something from the above tables.  Change it to "" to disable.
 SWEP.SprintHoldTypeOverride=""  --This variable overrides the sprint holdtype, choosing it instead of something from the above tables.  Change it to "" to disable.
+SWEP.ReloadHoldTypeOverride=""  --This variable overrides the reload holdtype, choosing it instead of something from the above tables.  Change it to "" to disable.
 --Override allowed VAnimations.  Necessary for lazy modelers/animators.
 SWEP.ForceDryFireOff = true
 SWEP.DisableIdleAnimations = true
@@ -538,8 +559,8 @@ end
 
 
 local vm,seq,act,sp
-local host_timescale_cv,sv_cheats_cv,cl_vm_flip_cv
-local is,isr,rs,rsr,insp,inspr,tsv,crouchr,jumpr,ftv,ftvc,newratio,jv
+local host_timescale_cv,sv_cheats_cv,cl_vm_flip_cv,legacy_reloads_cv
+local is,isr,rs,rsr,insp,inspr,tsv,crouchr,jumpr,ftv,ftvc,newratio,jv,rel_proc
 local compensatedft,compensatedft_cr,compensatedft_sp
 local heldentindex,heldent
 
@@ -841,10 +862,6 @@ function SWEP:Initialize()
 		if val then return val end
 	end
 	
-	self:SetWeaponHoldType(self.HoldType)
-	
-	self:SetHoldType(self.HoldType)
-	
 	if (!self.Primary.Damage) or (self.Primary.Damage<=0.01) then
 		self:AutoDetectDamage()
 	end
@@ -932,6 +949,9 @@ function SWEP:Initialize()
 	if self.ViewModelFlipDefault == nil then
 		self.ViewModelFlipDefault = self.ViewModelFlip
 	end
+	
+	self:SetDrawing(true)
+	self:ProcessHoldType()
 end
 
 --[[ 
@@ -1578,6 +1598,62 @@ function SWEP:PreDrawOpaqueRenderables()
 end
 
 --[[ 
+Function Name:  CycleFireMode
+Syntax: self:CycleFireMode()
+Returns:  Nothing.
+Notes: Cycles to next firemode.
+Purpose:  Feature
+]]--
+
+function SWEP:CycleFireMode()
+	
+	local fm = self:GetFireMode()
+	fm = fm + 1
+	if fm>=#self.FireModes then
+		fm = 1
+	end
+	
+	self:SetFireMode(fm)
+	
+	self.Weapon:EmitSound("Weapon_AR2.Empty")
+	
+	self.Weapon:SetNextBurst( CurTime()+math.max( 1/(self:GetRPM()/60), 0.25 ) )
+	self.Weapon:SetNextPrimaryFire( CurTime()+math.max( 1/(self:GetRPM()/60), 0.25 ) )
+
+	self:SetFireModeChanging( true )
+	
+	self:SetFireModeChangeEnd( CurTime() + math.max( 1/(self:GetRPM()/60), 0.25 ) )
+end
+
+--[[ 
+Function Name:  CycleSafety
+Syntax: self:CycleSafety()
+Returns:  Nothing.
+Notes: Toggles safety
+Purpose:  Feature
+]]--
+
+function SWEP:CycleSafety()
+	
+	local fm = self:GetFireMode()
+	if fm !=#self.FireModes then
+		self.LastFireMode = fm
+		self:SetFireMode(#self.FireModes)
+	else
+		self:SetFireMode(self.LastFireMode or 1)
+	end
+	
+	self.Weapon:EmitSound("Weapon_AR2.Empty")
+	
+	self.Weapon:SetNextBurst( CurTime()+math.max( 1/(self:GetRPM()/60), 0.25 ) )
+	self.Weapon:SetNextPrimaryFire( CurTime()+math.max( 1/(self:GetRPM()/60), 0.25 ) )
+
+	self:SetFireModeChanging( true )
+
+	self:SetFireModeChangeEnd( CurTime() + math.max( 1/(self:GetRPM()/60), 0.25 ) )
+end
+
+--[[ 
 Function Name:  ProcessFireMode
 Syntax: self:ProcessFireMode()
 Returns:  Nothing.
@@ -1594,39 +1670,9 @@ function SWEP:ProcessFireMode()
 	
 	if self.Owner:KeyPressed(IN_RELOAD) and self.Owner:KeyDown(IN_USE) and !(CLIENT and !IsFirstTimePredicted() ) then
 		if self.SelectiveFire and !self.Owner:KeyDown(IN_SPEED) then
-			local fm = self:GetFireMode()
-			fm = fm + 1
-			if fm>=#self.FireModes then
-				fm = 1
-			end
-			
-			self:SetFireMode(fm)
-			
-			self.Weapon:EmitSound("Weapon_AR2.Empty")
-			
-			self.Weapon:SetNextBurst( CurTime()+math.max( 1/(self:GetRPM()/60), 0.25 ) )
-			self.Weapon:SetNextPrimaryFire( CurTime()+math.max( 1/(self:GetRPM()/60), 0.25 ) )
-
-			self:SetFireModeChanging( true )
-			
-			self:SetFireModeChangeEnd( CurTime() + math.max( 1/(self:GetRPM()/60), 0.25 ) )
+			self:CycleFireMode()
 		elseif self.Owner:KeyDown(IN_SPEED) then
-			local fm = self:GetFireMode()
-			if fm !=#self.FireModes then
-				self.LastFireMode = fm
-				self:SetFireMode(#self.FireModes)
-			else
-				self:SetFireMode(self.LastFireMode or 1)
-			end
-			
-			self.Weapon:EmitSound("Weapon_AR2.Empty")
-			
-			self.Weapon:SetNextBurst( CurTime()+math.max( 1/(self:GetRPM()/60), 0.25 ) )
-			self.Weapon:SetNextPrimaryFire( CurTime()+math.max( 1/(self:GetRPM()/60), 0.25 ) )
-
-			self:SetFireModeChanging( true )
-			
-			self:SetFireModeChangeEnd( CurTime() + math.max( 1/(self:GetRPM()/60), 0.25 ) )
+			self:CycleSafety()
 		end
 	end
 	
@@ -1701,7 +1747,15 @@ function SWEP:PrimaryAttack()
 		return
 	end
 	
-	if self:IsSafety() then self.Weapon:EmitSound("Weapon_AR2.Empty") return end
+	if self:IsSafety() then 
+		self.Weapon:EmitSound("Weapon_AR2.Empty")
+		self.LastSafetyShoot = self.LastSafetyShoot or 0
+		if CurTime()<self.LastSafetyShoot+0.2 then
+			self:CycleSafety()		
+		end
+		self.LastSafetyShoot = CurTime()
+		return 
+	end
 	
 	if (self:GetChangingSilence()) then return end
 	
@@ -1742,6 +1796,8 @@ function SWEP:PrimaryAttack()
 	
 	--if self.Owner:IsPlayer() then
 		if  self:GetRunSightsRatio()<0.1 then--and self:GetReloading()==false then
+			self.ProceduralHolsterFactor = 0
+			self:SetHolstering(false)
 			self:ResetEvents()
 			self:SetInspecting(false)
 			self:SetInspectingRatio(0)
@@ -1868,6 +1924,8 @@ Purpose:  Main SWEP function
 ]]--
 
 function SWEP:PlayerThink( ply )	
+
+	if !legacy_reloads_cv then legacy_reloads_cv = GetConVar("sv_tfa_reloads_legacy") end
 	
 	if !vm then vm = self.Owner:GetViewModel() end
 	if sp==nil then sp=game.SinglePlayer() end
@@ -1906,7 +1964,14 @@ function SWEP:PlayerThink( ply )
 	
 	is = self:GetIronSights() and 1 or 0
 	insp = self:GetIronSights() and 1 or 0
-	rs = ( self:GetSprinting() or self:IsSafety() ) and 1 or 0 
+	
+	rel_proc = ( self:GetReloading() ) and !legacy_reloads_cv:GetBool()
+	
+	if self.Owner.TFACasting or ( self.Owner.tfacastoffset and self.Owner.tfacastoffset>0.1) then rel_proc = true end
+	
+	rs = ( ( self:GetSprinting() or self:IsSafety() ) and !rel_proc) and 1 or 0 
+	
+	
 	isr=self:GetIronSightsRatio()
 	rsr=self:GetRunSightsRatio()
 	tsv = 1
@@ -1958,21 +2023,24 @@ function SWEP:PlayerThinkServer( ply )
 		if val then return val end
 	end
 	
-	local nhf = 1
+	local nhf = 0
 	local vm = ply:GetViewModel()
 	
 	if (self:GetHolstering()) then
-		local seq = 0
-		local act = -1
-		if IsValid(vm) then
-			seq = vm:GetSequence()
-			act = vm:GetSequenceActivity(act)
-		end
-		if act!=ACT_VM_HOLSTER and act!=ACT_VM_HOLSTER_EMPTY then
-			self.ProceduralHolsterFactor = math.Approach(self.ProceduralHolsterFactor,nhf,(nhf-self.ProceduralHolsterFactor)*FrameTime()*10)
-		end
 	end
 	
+	local seq = 0
+	local act = -1
+	if IsValid(vm) then
+		seq = vm:GetSequence()
+		act = vm:GetSequenceActivity(act)
+	end
+	
+	if act!=ACT_VM_HOLSTER and act!=ACT_VM_HOLSTER_EMPTY and self:GetHolstering() then
+		nhf = 1
+	end
+	
+	self.ProceduralHolsterFactor = math.Approach(self.ProceduralHolsterFactor,nhf,(nhf-self.ProceduralHolsterFactor)*FrameTime()*self.ProceduralHolsterTime*10)
 end
 
 --[[ 
@@ -2085,6 +2153,8 @@ Purpose:  Main SWEP function
 ]]--
 
 function SWEP:PlayerThinkClientFrame( ply )
+
+	if !legacy_reloads_cv then legacy_reloads_cv = GetConVar("sv_tfa_reloads_legacy") end
 	
 	if ply != self:GetOwner() then return end
 	
@@ -2109,7 +2179,11 @@ function SWEP:PlayerThinkClientFrame( ply )
 	
 	is = self:GetIronSights() and 1 or 0
 	insp = self:GetInspecting() and 1 or 0
-	rs = ( self:GetSprinting() or self:IsSafety() ) and 1 or 0 
+	
+	rel_proc = ( self:GetReloading() ) and !legacy_reloads_cv:GetBool()
+	if self.Owner.TFACasting or ( self.Owner.tfacastoffset and self.Owner.tfacastoffset>0.1) then rel_proc = true end
+	
+	rs = ( ( self:GetSprinting() or self:IsSafety() ) and !rel_proc) and 1 or 0 
 	isr=self.CLIronSightsProgress
 	rsr=self.CLRunSightsProgress
 	inspr = self.CLInspectingProgress
@@ -2169,13 +2243,13 @@ function SWEP:PlayerThinkClientFrame( ply )
 		self.Owner:DrawViewModel(true)	
 	end
 	
-	local nhf = 1
+	local nhf = 0
 	
-	if (self:GetHolstering()) then
-		if act!=ACT_VM_HOLSTER and act!=ACT_VM_HOLSTER_EMPTY then
-			self.ProceduralHolsterFactor = math.Approach(self.ProceduralHolsterFactor,nhf,(nhf-self.ProceduralHolsterFactor)*ftvc*10)
-		end
+	if act!=ACT_VM_HOLSTER and act!=ACT_VM_HOLSTER_EMPTY and self:GetHolstering() then
+		nhf = 1
 	end
+	
+	self.ProceduralHolsterFactor = math.Approach(self.ProceduralHolsterFactor,nhf,(nhf-self.ProceduralHolsterFactor)*FrameTime()*self.ProceduralHolsterTime*10)
 end
 
 --[[ 
@@ -2249,6 +2323,8 @@ Purpose:  Main SWEP function
 
 function SWEP:Reload()
 
+	if !legacy_reloads_cv then legacy_reloads_cv = GetConVar("sv_tfa_reloads_legacy") end
+
 	if self.Callback.Reload then
 		local val = self.Callback.Reload(self)
 		if val then return val end
@@ -2306,7 +2382,7 @@ function SWEP:Reload()
 		return
 	end
 	
-	if (self:GetSprinting() ) and !self.AllowReloadWhileSprinting then
+	if (self:GetSprinting() ) and ( !self.AllowReloadWhileSprinting and legacy_reloads_cv:GetBool() ) then
 		return
 	end
 	
@@ -2346,13 +2422,17 @@ function SWEP:Reload()
 			self:SetShotgunPumping(false)
 		end
 		
-		self:SetHoldType(self.DefaultHoldType and self.DefaultHoldType or self.HoldType)
-		if !self.ThirdPersonReloadDisable and ( SERVER or ( CLIENT and !self:IsFirstPerson()  ) )  then
-			self.Owner:SetAnimation( PLAYER_RELOAD ) -- 3rd Person Animation
-		end
+		timer.Simple(0, function()
+			if !IsValid(self) or !self:OwnerIsValid() then return end
+			self:SetHoldType(self.DefaultHoldType and self.DefaultHoldType or self.HoldType)
+			if !self.ThirdPersonReloadDisable and ( SERVER or ( CLIENT and !self:IsFirstPerson()  ) )  then
+				self.Owner:SetAnimation( PLAYER_RELOAD ) -- 3rd Person Animation
+			end
+		end)
+		
 		if (CLIENT) then
 			timer.Simple(0, function()
-				if !self:OwnerIsValid() then return end
+				if !IsValid(self) or !self:OwnerIsValid() then return end
 				if !self.ThirdPersonReloadDisable and ( SERVER or ( CLIENT and !self:IsFirstPerson()  ) ) then
 					self.Owner:SetAnimation( PLAYER_RELOAD ) -- 3rd Person Animation
 				end
@@ -2392,6 +2472,8 @@ local posfac = 0.75
 local gunswaycvar = GetConVar("cl_tfa_gunbob_intensity")
 
 function SWEP:Sway(pos,ang)
+
+	if !self:OwnerIsValid() then return pos,ang end
 	
 	ang:Normalize()
 	
@@ -2578,7 +2660,9 @@ function SWEP:GetViewModelPosition(pos, ang)
 	self.BobScale = 0 
 	self.SwayScale = 0
 	
-	self.BobScaleCustom 	= Lerp(isp,1,self.IronBobMult)
+	local mvfac = self.Owner:GetVelocity():Length()/self.Owner:GetRunSpeed()
+	
+	self.BobScaleCustom 	= Lerp(isp,1,Lerp(mvfac,self.IronBobMult,self.IronBobMultWalk))
 	self.BobScaleCustom  = Lerp(rsp,self.BobScaleCustom,self.SprintBobMult)
 	self.BobScaleCustom  = Lerp(self.CLInspectingProgress,self.BobScaleCustom,0.2)
 	
@@ -2974,6 +3058,8 @@ function SWEP:IronsSprint()
 	
 	if act==ACT_VM_HOLSTER or act==ACT_VM_HOLSTER_EMPTY or self.ProceduralHolsterFactor>0.5 or self.IsHolding then hl = true end
 	
+	if self.Owner.TFACasting or ( self.Owner.tfacastoffset and self.Owner.tfacastoffset>0.1) then spr = false end
+	
 	if self:Clip1() ==  0 and (GetConVarNumber("sv_tfa_allow_dryfire",1)==0) then
 		if self:GetBursting() then
 			self:SetBursting(false)
@@ -3102,56 +3188,36 @@ function SWEP:ProcessHoldType()
 		if val then return val end
 	end
 	
-	local dholdt, sprintholdtype
-	dholdt = self.DefaultHoldType and self.DefaultHoldType or self.HoldType
-	
-	if !dholdt or self.dholdt == "" then
-		dholdt = "pistol"
+	if !self.DefaultHoldType then self.DefaultHoldType = self.HoldType or "ar2" end
+	if !self.SprintHoldType then
+		self.SprintHoldType = self.SprintHoldTypes[self.DefaultHoldType] or "passive"
+		if self.SprintHoldTypeOverride and self.SprintHoldTypeOverride!="" then
+			self.SprintHoldType = self.SprintHoldTypeOverride
+		end
 	end
-	
-	if !dynholdtypecvar:GetBool() then
-		self:SetHoldType(dholdt)
+	if !self.IronHoldType then
+		self.IronHoldType = self.IronSightHoldTypes[self.DefaultHoldType] or "rpg"
+		if self.IronSightHoldTypeOverride and self.IronSightHoldTypeOverride!="" then
+			self.IronHoldType = self.IronSightHoldTypeOverride
+		end
 	end
-	
-	sprintholdtype = self.SprintHoldTypes[ dholdt ]
-	
-	if self.SprintHoldTypeOverride then
-		if self.SprintHoldTypeOverride!="" then
-			sprintholdtype = self.SprintHoldTypeOverride
+	if !self.ReloadHoldType then
+		self.ReloadHoldType = self.ReloadHoldTypes[self.DefaultHoldType] or "rpg"
+		if self.ReloadHoldTypeOverride and self.ReloadHoldTypeOverride!="" then
+			self.ReloadHoldType = self.ReloadHoldTypeOverride
 		end
 	end
 	
-	if !sprintholdtype or sprintholdtype == "" then
-		sprintholdtype = dholdt
-	end
 	
-	ironholdtype = self.IronSightHoldTypes[ dholdt ]
+	local curhold,targhold
+	curhold = self:GetHoldType()
+	targhold = self.DefaultHoldType
 	
-	if self.IronSightHoldTypeOverride then
-		if self.IronSightHoldTypeOverride!="" then
-			ironholdtype = self.IronSightHoldTypeOverride
-		end
-	end
+	if self:GetIronSights() then targhold = self.IronHoldType end
+	if self:GetSprinting() or self:GetHolstering() or self:IsSafety() then targhold = self.SprintHoldType end
+	if self:GetReloading() then targhold = self.ReloadHoldType end
 	
-	if !ironholdtype or ironholdtype == "" then
-		ironholdtype = dholdt
-	end
-	
-	if ( !self:GetIronSights() and !self:GetSprinting() and !self:IsSafety() and self:GetHoldType() != dholdt ) then
-		self:SetHoldType(dholdt)
-	end
-	
-	if ( self:GetIronSights() and !self:GetSprinting() and !self:IsSafety() and self:GetHoldType() != ironholdtype ) then
-		self:SetHoldType(ironholdtype)
-	end
-	
-	if ( self:GetSprinting() and !self:IsSafety() and self:GetHoldType() != sprintholdtype ) then
-		self:SetHoldType(sprintholdtype)
-	end
-	
-	if ( self:IsSafety() and self:GetHoldType() != sprintholdtype ) then
-		self:SetHoldType(sprintholdtype)
-	end
+	if targhold != curhold then self:SetHoldType(targhold) end
 end
 
 function SWEP:CompleteReload()

@@ -180,7 +180,7 @@ function SWEP:DetectValidAnimations()
 		end
 	end
 	
-	if !IsValid(self.Owner) then return end
+	if !self:OwnerIsValid() then return end
 	
 	local vm=self.Owner:GetViewModel()
 	if IsValid(vm) then

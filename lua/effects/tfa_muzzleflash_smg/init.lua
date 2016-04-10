@@ -152,6 +152,38 @@ function EFFECT:Init( data )
 			
 		end
 		
+		local sparkcount = math.random(1,2)		
+		for i=0, sparkcount do
+			local particle = emitter:Add("effects/yellowflare", self.Position)
+			if (particle) then
+			
+				particle:SetVelocity( ( VectorRand() + Vector(0,0,0.3) ) * 20 * Vector(0.8,0.8,0.6) + dir * math.Rand(50,60) + 1.15 * AddVel )
+				particle:SetLifeTime( 0 )
+				particle:SetDieTime( math.Rand( 0.25, 0.4 ) )
+				particle:SetStartAlpha(255)
+				particle:SetEndAlpha( 0 )
+				particle:SetStartSize(.5)
+				particle:SetEndSize(1.35)
+				particle:SetRoll( math.rad(math.Rand(0, 360)) )
+				particle:SetGravity(Vector(0, 0, -50))
+				particle:SetAirResistance(40)
+				particle:SetStartLength(0.2)
+				particle:SetEndLength(0.05)
+				particle:SetColor( 255 , 200 , 128 ) 
+				particle:SetVelocityScale(true)
+				particle:SetThinkFunction( function( pa )
+					pa.ranvel = pa.ranvel or VectorRand()*4
+					pa.ranvel.x = math.Approach(pa.ranvel.x,math.Rand(-4,4),0.5)
+					pa.ranvel.y = math.Approach(pa.ranvel.y,math.Rand(-4,4),0.5)
+					pa.ranvel.z = math.Approach(pa.ranvel.z,math.Rand(-4,4),0.5)
+					pa:SetVelocity( pa:GetVelocity() + pa.ranvel*0.4)
+					pa:SetNextThink( CurTime() + 0.01 )
+				end )
+				particle:SetNextThink( CurTime() + 0.01 )
+				
+			end
+		end
+		
 		if GetTFAGasEnabled() then
 			for i=0, 1 do
 				local particle = emitter:Add( "sprites/heatwave", self.vOffset + (dir * i) )

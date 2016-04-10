@@ -19,7 +19,7 @@ function SWEP:InitMods()
 	self:CreateModels(self.WElements) -- create worldmodels
 	
 	--Build the bones and such.
-	if IsValid(self.Owner) then
+	if self:OwnerIsValid() then
 		local vm = self.Owner:GetViewModel()
 		if IsValid(vm) then
 			self:ResetBonePositions(vm)
@@ -245,10 +245,10 @@ function SWEP:DrawWorldModel()
 					ang:RotateAroundAxis( ang:Forward(),  self.Offset.Ang.Forward )
 					self:SetRenderOrigin( pos )
 					self:SetRenderAngles( ang )
-					if self.Offset.Scale and ( !self.MyModelScale or ( self.Offset and self.MyModelScale!=self.Offset.Scale ) ) then
+					--if self.Offset.Scale and ( !self.MyModelScale or ( self.Offset and self.MyModelScale!=self.Offset.Scale ) ) then
 						self:SetModelScale( self.Offset.Scale or 1, 0 )
 						self.MyModelScale = self.Offset.Scale
-					end
+					--end
 				end
 			else
 				self:SetRenderOrigin( nil )

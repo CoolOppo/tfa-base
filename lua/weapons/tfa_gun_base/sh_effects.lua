@@ -147,7 +147,7 @@ Notes:    Calls the proper muzzleflash, muzzle smoke, muzzle light code.
 Purpose:  FX
 ]]--
 
-function SWEP:ShootEffectsCustom( ifp )
+function SWEP:ShootEffectsCustom( ifp, tp )
 	
 	if !sp then sp = game.SinglePlayer() end
 	
@@ -160,12 +160,19 @@ function SWEP:ShootEffectsCustom( ifp )
 	--if sp and !CLIENT then self:CallOnClient("ShootEffectsCustom","") return end
 	
 	if ( CLIENT and ifp ) or (sp) then
+	
+		local att = math.max(1,self.MuzzleAttachmentRaw or self:LookupAttachment(self.MuzzleAttachment))
+		
+		self:CleanParticles()
+		
 		fx = EffectData()
 		fx:SetOrigin(self.Owner:GetShootPos())
 		fx:SetNormal(self.Owner:EyeAngles():Forward())
 		fx:SetEntity(self)
-		fx:SetAttachment( self.MuzzleAttachmentRaw or self:LookupAttachment(self.MuzzleAttachment) )
+		fx:SetAttachment( att )
 		
+		util.Effect("tfa_muzzlesmoke", fx)
+			
 		if (self:GetSilenced()) then
 			util.Effect("tfa_muzzleflash_silenced", fx)
 		else

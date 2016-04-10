@@ -12,13 +12,20 @@ function EFFECT:Init( data )
 	self.Position = self:GetTracerShootPos( data:GetOrigin(), self.WeaponEnt, self.Attachment )
 	
 	if IsValid(self.WeaponEnt.Owner) then
-		if self.WeaponEnt.Owner:ShouldDrawLocalPlayer() then
-			ang = self.WeaponEnt.Owner:GetAimVector():Angle()
-ang:Normalize()
-			--ang.p = math.Clamp(ang.p,-55,55)
-			self.Forward = ang:Forward()
+		if self.WeaponEnt.Owner == LocalPlayer() then
+			if self.WeaponEnt.Owner:ShouldDrawLocalPlayer() then
+				ang = self.WeaponEnt.Owner:EyeAngles()
+				ang:Normalize()
+				--ang.p = math.max(math.min(ang.p,55),-55)
+				self.Forward = ang:Forward()
+			else
+				self.WeaponEnt = self.WeaponEnt.Owner:GetViewModel()
+			end
 		else
-			self.WeaponEnt = self.WeaponEnt.Owner:GetViewModel()
+			ang = self.WeaponEnt.Owner:EyeAngles()
+			ang:Normalize()
+			--ang.p = math.max(math.min(ang.p,55),-55)
+			self.Forward = ang:Forward()			
 		end
 	end
 	
@@ -171,6 +178,38 @@ ang:Normalize()
 				particle:SetColor( 255 , 255 , 255 ) 
 			end
 			
+		end
+		
+		local sparkcount = math.random(2,3)		
+		for i=0, sparkcount do
+			local particle = emitter:Add("effects/yellowflare", self.Position)
+			if (particle) then
+			
+				particle:SetVelocity( ( VectorRand() + Vector(0,0,0.3) ) * 20 * Vector(0.8,0.8,0.6) + dir * math.Rand(50,60) + 1.15 * AddVel )
+				particle:SetLifeTime( 0 )
+				particle:SetDieTime( math.Rand( 0.25, 0.4 ) )
+				particle:SetStartAlpha(255)
+				particle:SetEndAlpha( 0 )
+				particle:SetStartSize(.5)
+				particle:SetEndSize(1.35)
+				particle:SetRoll( math.rad(math.Rand(0, 360)) )
+				particle:SetGravity(Vector(0, 0, -50))
+				particle:SetAirResistance(40)
+				particle:SetStartLength(0.2)
+				particle:SetEndLength(0.05)
+				particle:SetColor( 255 , 200 , 158 ) 
+				particle:SetVelocityScale(true)
+				particle:SetThinkFunction( function( pa )
+					pa.ranvel = pa.ranvel or VectorRand()*4
+					pa.ranvel.x = math.Approach(pa.ranvel.x,math.Rand(-4,4),0.5)
+					pa.ranvel.y = math.Approach(pa.ranvel.y,math.Rand(-4,4),0.5)
+					pa.ranvel.z = math.Approach(pa.ranvel.z,math.Rand(-4,4),0.5)
+					pa:SetVelocity( pa:GetVelocity() + pa.ranvel*0.6)
+					pa:SetNextThink( CurTime() + 0.01 )
+				end )
+				particle:SetNextThink( CurTime() + 0.01 )
+				
+			end
 		end
 		
 		if GetTFAGasEnabled() then
