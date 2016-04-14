@@ -1,98 +1,54 @@
-local function rvec(vec)
-	vec.x=math.Round(vec.x)
-	vec.y=math.Round(vec.y)
-	vec.z=math.Round(vec.z)
-	return vec
-end
-
 local blankvec = Vector(0,0,0)
+local AddVel = Vector()
+local dif = Vector(0,0,0)
+local ang
 
-local function partfunc(self)
-	if IsValid(self.FollowEnt) then
-		if self.Att then
-			local angpos = self.FollowEnt:GetAttachment(self.Att)
-			if angpos and angpos.Pos then
-				self:SetPos(angpos.Pos)
-				self:SetNextThink(CurTime())
-			end
-		end
-	end
-end
-				
 function EFFECT:Init( data )
 	
-	self.StartPacket = data:GetStart()
+	self.WeaponEnt = data:GetEntity()
+	if !IsValid(self.WeaponEnt) then return end
 	self.Attachment = data:GetAttachment()
-
-	local AddVel = vector_origin
 	
-	if LocalPlayer then
-		if IsValid(LocalPlayer()) then
-			AddVel = LocalPlayer():GetVelocity()
+	self.Position = self:GetTracerShootPos( data:GetOrigin(), self.WeaponEnt, self.Attachment )
+	
+	if IsValid(self.WeaponEnt.Owner) then
+		if self.WeaponEnt.Owner == LocalPlayer() then
+			if self.WeaponEnt.Owner:ShouldDrawLocalPlayer() then
+				ang = self.WeaponEnt.Owner:EyeAngles()
+				ang:Normalize()
+				--ang.p = math.max(math.min(ang.p,55),-55)
+				self.Forward = ang:Forward()
+			else
+				self.WeaponEnt = self.WeaponEnt.Owner:GetViewModel()
+			end
+		else
+			ang = self.WeaponEnt.Owner:EyeAngles()
+			ang:Normalize()
+			--ang.p = math.max(math.min(ang.p,55),-55)
+			self.Forward = ang:Forward()			
 		end
 	end
 	
-	if AddVel == vector_origin then
-		AddVel = Entity(1):GetVelocity()
-	end
-	
-	self.Position = data:GetOrigin()
-	self.Forward = data:GetNormal()
+	self.Forward = self.Forward or data:GetNormal()
 	self.Angle = self.Forward:Angle()
 	self.Right = self.Angle:Right()
 	
-	local wepent = Entity(math.Round(self.StartPacket.z))
+	self.vOffset = self.Position
+	dir = self.Forward
 	
-	if IsValid(wepent) then
-		if wepent.IsFirstPerson and !wepent:IsFirstPerson() then
-			data:SetEntity(wepent)
-			self.Position = blankvec
-		end
-	end
-	
-	local ownerent = player.GetByID(math.Round(self.StartPacket.x))
-	local serverside = false
-	if math.Round(self.StartPacket.y)==1 then
-		serverside = true
-	end
-	
-	local ent = data:GetEntity()
-	
-	if serverside then
-		if IsValid(ownerent) then
-			if LocalPlayer() == ownerent then
-				return
-			end
-			ent = ownerent:GetActiveWeapon()
-			AddVel = ownerent:GetVelocity()
-		end
-	end
-	
-	if (!self.Position) or ( rvec(self.Position) == blankvec ) then
-		self.WeaponEnt = data:GetEntity()
-		self.Attachment = data:GetAttachment()
-		if self.WeaponEnt and IsValid(self.WeaponEnt) then
-			local rpos = self.WeaponEnt:GetAttachment(self.Attachment)
-			if rpos and rpos.Pos then
-				self.Position = rpos.Pos
-				if data:GetNormal()==vector_origin then
-					self.Forward = rpos.Ang:Up()
-					self.Angle = self.Forward:Angle()
-					self.Right = self.Angle:Right()
-				end
-			end
-		end
+	if IsValid(LocalPlayer()) then
+		AddVel = LocalPlayer():GetVelocity()
 	end
 	
 	self.vOffset = self.Position
 	dir = self.Forward
 	AddVel = AddVel * 0.05
-
-	if IsValid(ent) then
-		dlight = DynamicLight(ent:EntIndex())
-	else
-		dlight = DynamicLight(0)	
-	end
+	
+	local dot = dir:GetNormalized():Dot( EyeAngles():Forward() )
+	local dotang = math.deg( math.acos( math.abs(dot) ) )	
+	local halofac =  math.Clamp( 1 - (dotang/90), 0, 1)
+	
+	if CLIENT and !IsValid(ownerent) then ownerent = LocalPlayer() end
 	
     if (dlight) then
         dlight.Pos              = self.Position + dir * 1 - dir:Angle():Right()*5
@@ -104,7 +60,7 @@ function EFFECT:Init( data )
         dlight.DieTime  = CurTime() + 0.03
    end
 	
-	ParticleEffectAttach("tfa_muzzle_energy",PATTACH_POINT_FOLLOW,ent,data:GetAttachment())
+	ParticleEffectAttach("tfa_muzzle_energy",PATTACH_POINT_FOLLOW,self.WeaponEnt,data:GetAttachment())
 	
 	--[[
 	local emitter = ParticleEmitter( self.vOffset )

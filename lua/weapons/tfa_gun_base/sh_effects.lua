@@ -151,10 +151,10 @@ function SWEP:ShootEffectsCustom( ifp, tp )
 	
 	if !sp then sp = game.SinglePlayer() end
 	
-	if SERVER and !sp then
+	if ( SERVER and sp and self.ParticleMuzzleFlash ) or ( SERVER and !sp ) then
 		net.Start("tfa_base_muzzle_mp")
 		net.WriteEntity(self)
-		net.SendOmit(self.Owner)
+		if (sp) then net.Broadcast() else net.SendOmit(self.Owner) end
 	end
 	
 	--if sp and !CLIENT then self:CallOnClient("ShootEffectsCustom","") return end
@@ -162,6 +162,10 @@ function SWEP:ShootEffectsCustom( ifp, tp )
 	if ( CLIENT and ifp ) or (sp) then
 	
 		local att = math.max(1,self.MuzzleAttachmentRaw or self:LookupAttachment(self.MuzzleAttachment))
+		
+		if self.Akimbo then
+			att = 2-self.AnimCycle
+		end
 		
 		self:CleanParticles()
 		

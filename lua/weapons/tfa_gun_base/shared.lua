@@ -2107,37 +2107,50 @@ function SWEP:ProcessEvents()
 		for k,v in pairs(evtbl) do
 			if !v.called then
 				if CurTime()>self.EventTimer+v.time then
+					
 					v.called = true
-					if v.client then
-						if CLIENT then
-							if v.type == "lua" then
-								v.value(self,vm)
-							elseif v.type == "sound" then
-								self:EmitSound(v.value)
-							else
-								print("invalidtype")
-							end
-						elseif game.SinglePlayer() then
-						--	if v.type == "lua" then
-						--		v.value(self,vm)
-						--	elseif v.type == "sound" then
-							if v.type == "sound" then
-								self:EmitSound(v.value)
-							end
-						--	else
-						--		print("invalidtype")
-						--	end							
-						end
+					
+					if v.client == nil then
+						v.client = true
 					end
-					if SERVER and v.server then
-						if v.type == "lua" then
-							v.value(self,vm)
-						elseif v.type == "sound" then
-							self:EmitSound(v.value)
-						else
-							print("invalidtype")
+					
+					if v.type == "lua" then
+					
+						if v.server == nil then
+							v.server = true
+						end	
+						
+						if ( v.client and CLIENT and (!v.client_predictedonly or self.Owner==LocalPlayer()) ) or ( v.server and SERVER ) then						
+							if v.value then v.value(self,vm) end
 						end
+						
+					elseif v.type == "snd" or v.type=="sound" then
+					
+						if v.server == nil then
+							v.server = false
+						end
+						
+						if SERVER then
+							if v.client then
+								net.Start("tfaSoundEvent")
+								net.WriteEntity(self)
+								net.WriteString(v.value or "")
+								if game.SinglePlayer() then net.Broadcast() else net.SendOmit(self.Owner) end
+							elseif v.server then
+								if v.value and v.value!="" then
+									self:EmitSound(v.value)
+								end
+							end
+						end
+						
+						if CLIENT and v.client and self.Owner==LocalPlayer() and !game.SinglePlayer() then
+							if v.value and v.value!="" then
+								self:EmitSound(v.value)
+							end
+						end
+						
 					end
+					
 				end
 			end
 		end

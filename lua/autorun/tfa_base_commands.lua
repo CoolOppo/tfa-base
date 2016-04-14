@@ -1683,6 +1683,8 @@ if SERVER then
 		end
 	
 	end)
+	
+	util.AddNetworkString( "tfaSoundEvent" )
 end
 
 function TFAPlayerBindPress(ply, b, p)
@@ -1734,6 +1736,20 @@ hook.Add("PreDrawOpaqueRenderables","tfaweaponspredrawopaque",function()
 		end
 	end
 end)
+
+--receive sounds in mp
+
+if CLIENT then
+	net.Receive( "tfaSoundEvent", function( length,ply )
+	
+		local wep = net.ReadEntity()
+		local snd = net.ReadString()
+		if IsValid(wep) and snd and snd!="" then
+			wep:EmitSound(snd)
+		end
+		
+	end )
+end
 
 --For networking muzzles
 
