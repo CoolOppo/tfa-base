@@ -96,14 +96,16 @@ local function QerpVector( progress, startang, endang, totaltime )
 end
 
 --Bob code
-
+local tsv,ftv,ftvc,ws,rs
+local owvel, meetswalkgate, meetssprintgate, walkfactorv, runfactorv, sprintfactorv
 
 function SWEP:DoBobFrame()
-	local tsv = GetConVarNumber("host_timescale", 1)
-	local ftv = FrameTime()
-	local ftvc = tsv*ftv
+	tsv = GetConVarNumber("host_timescale", 1)
+	ftv = FrameTime()
+	ws = self.Owner:GetWalkSpeed()
+	rs = self.Owner:GetRunSpeed()
 	
-	local owvel, meetswalkgate, meetssprintgate, walkfactorv, runfactorv, sprintfactorv
+	ftv = ftv * 200/ws
 	
 	if !self.bobtimevar then
 		self.bobtimevar = 0
@@ -114,17 +116,18 @@ function SWEP:DoBobFrame()
 	meetssprintgate = false
 	meetswalkgate = false
 	
-	if owvel <= self.Owner:GetWalkSpeed() * 0.55 then
+	if owvel <= ws * 0.55 then
 		meetswalkgate = true
 	end
 	
-	if owvel > self.Owner:GetWalkSpeed() * 1.2 then
+	if owvel > rs * 0.8 then
 		meetssprintgate = true
 	end
 	
 	walkfactorv = 10.25
 	runfactorv = 18
 	sprintfactorv = 24
+	
 	if !self.bobtimehasbeensprinting then
 		self.bobtimehasbeensprinting = 0
 	end
@@ -141,7 +144,7 @@ function SWEP:DoBobFrame()
 		self.bobtimehasbeensprinting = math.Approach( self.bobtimehasbeensprinting, 0, ftv/(5/60))
 	end
 	
-	if owvel>1 and owvel<=self.Owner:GetWalkSpeed()*0.1 and owvel>self.tprevvel then
+	if owvel>1 and owvel<=ws*0.1 and owvel>self.tprevvel then
 		if self.Owner:IsOnGround() then
 			local val1=math.Round(self.bobtimevar/stepinterval)*stepinterval+stepintervaloffset
 			local val2=math.Round(self.bobtimevar/stepinterval)*stepinterval-stepintervaloffset
@@ -169,11 +172,12 @@ Notes:  This is really important and slightly messy.
 Purpose:  Feature
 ]]--
 
+local customboboffsetx,customboboffsety,customboboffsetz,mypi,curtimecompensated, owvel, runspeed, sprintspeed, timehasbeensprinting, tironsightscale
+	
+
 function SWEP:CalculateBob(pos, ang, ci, igvmf)
 
 	if !self:OwnerIsValid() then return end
-
-	local customboboffsetx,customboboffsety,customboboffsetz,mypi,curtimecompensated, owvel, runspeed, sprintspeed, timehasbeensprinting, tironsightscale
 	
 	if !ci then
 		ci = 1

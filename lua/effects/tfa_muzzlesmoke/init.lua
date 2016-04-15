@@ -10,11 +10,13 @@ function EFFECT:Init( data )
 	self.Attachment = data:GetAttachment()
 
 	local smokepart = "smoke_trail_tfa" 
+	
 	if self.WeaponEnt.SmokeParticles then
-		smokepart = self.WeaponEnt.SmokeParticles[self.WeaponEnt.DefaultHoldType or self.WeaponEnt.HoldType]
+		smokepart = self.WeaponEnt.SmokeParticles[self.WeaponEnt.DefaultHoldType or self.WeaponEnt.HoldType] or smokepart
 	end
+	
 	if self.WeaponEnt.SmokeParticles then
-		smokepart = self.WeaponEnt.SmokeParticles[self.WeaponEnt.DefaultHoldType or self.WeaponEnt.HoldType]
+		smokepart = self.WeaponEnt.SmokeParticles[self.WeaponEnt.DefaultHoldType or self.WeaponEnt.HoldType] or smokepart
 	end
 	
 	

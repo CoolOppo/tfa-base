@@ -29,7 +29,7 @@ function EFFECT:Init( data )
 	if IsValid(self.WeaponEntOG) and self.WeaponEntOG.ShellAttachment then
 		self.Attachment = self.WeaponEnt:LookupAttachment(self.WeaponEntOG.ShellAttachment)
 		if !self.Attachment or self.Attachment<=0 then
-			self.Attachmen = 2
+			self.Attachment = 2
 		end
 	end
 	

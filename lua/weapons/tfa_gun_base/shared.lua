@@ -1085,10 +1085,6 @@ function SWEP:Deploy()
 	end
 	self:SetNextIdleAnim(CurTime()-1)
 	local vm = self.Owner:GetViewModel()
-	if IsValid(vm) then
-		self:SendWeaponAnim(0)
-		self.DefaultAtt = vm:GetAttachment(self:GetFPMuzzleAttachment())
-	end
 	local drawtimerstring=(self.SequenceEnabled[ACT_VM_DRAW] and 1 or 0)..","..(self.SequenceEnabled[ACT_VM_DRAW_EMPTY] and 1 or 0)
 	
 	self:InitDrawCode(drawtimerstring)
@@ -1802,7 +1798,7 @@ function SWEP:PrimaryAttack()
 			self:SetInspecting(false)
 			self:SetInspectingRatio(0)
 			self:SetInspectingRatio(0)
-			self:SendWeaponAnim(0)
+			--self:SendWeaponAnim(0)
 			self:ShootBulletInformation( SERVER or (CLIENT and IsFirstTimePredicted() ) ) 
 			local success, tanim = self:ChooseShootAnim( SERVER or (CLIENT and IsFirstTimePredicted() ) ) -- View model animation
 			if self:OwnerIsValid() and self.Owner.SetAnimation then
@@ -2083,11 +2079,16 @@ function SWEP:ProcessEvents()
 	
 	if !IsValid(vm) then return end
 	
-	local actv = vm:GetSequenceActivity(vm:GetSequence())
+	local actv = self.lastact--[[vm:GetSequenceActivity(vm:GetSequence())
 	
 	if actv==ACT_VM_RELOAD and self.SequenceEnabled[ACT_VM_RELOAD_EMPTY] and self:Clip1()==0 and !self:GetSilenced() then
 		actv=ACT_VM_RELOAD_EMPTY
 	end
+	
+	if self.BlowbackCurrentRoot>0.1 then
+		actv=ACT_VM_PRIMARYATTACK
+	end
+	]]--
 
 	local evtbl = self.EventTable[actv]
 	
@@ -2165,8 +2166,11 @@ Notes: Critical for the clientside/predicted ironsights.
 Purpose:  Main SWEP function
 ]]--
 
-function SWEP:PlayerThinkClientFrame( ply )
+local rtime,RealFrameTime
 
+function SWEP:PlayerThinkClientFrame( ply )
+	
+	
 	if !legacy_reloads_cv then legacy_reloads_cv = GetConVar("sv_tfa_reloads_legacy") end
 	
 	if ply != self:GetOwner() then return end
@@ -2203,9 +2207,12 @@ function SWEP:PlayerThinkClientFrame( ply )
 	tsv = 1
 	if sv_cheats_cv:GetBool() then tsv = tsv * host_timescale_cv:GetFloat() end
 	tsv = tsv * game.GetTimeScale()
+	rtime=RealTime()
+	RealFrameTime = rtime-(self.lastrealtime or rtime)
+	self.lastrealtime = rtime
 	crouchr=self.CLCrouchProgress
 	jumpr=self.CLJumpProgress
-	ftv = math.max( FrameTime(), 1/GetConVarNumber("fps_max",120))
+	ftv = math.max( RealFrameTime, 1/GetConVarNumber("fps_max",120))
 	ftvc = tsv*ftv
 	seq = 0
 	act = -2
@@ -2233,10 +2240,10 @@ function SWEP:PlayerThinkClientFrame( ply )
 	self:DoBobFrame()
 	
 	if !self.Blowback_PistolMode or self:Clip1()==-1 or self:Clip1()>0.1 or ( self.Blowback_PistolMode_Disabled[act] and act!=-1 and self.lastact!=-2) then
-		self.BlowbackCurrent = math.Approach(self.BlowbackCurrent,0,self.BlowbackCurrent*FrameTime()*15)
+		self.BlowbackCurrent = math.Approach(self.BlowbackCurrent,0,self.BlowbackCurrent*RealFrameTime*15)
 	end
 	
-	self.BlowbackCurrentRoot = math.Approach(self.BlowbackCurrentRoot,0,self.BlowbackCurrentRoot*FrameTime()*15)
+	self.BlowbackCurrentRoot = math.Approach(self.BlowbackCurrentRoot,0,self.BlowbackCurrentRoot*RealFrameTime*15)
 	
 	local heldentindex = self.Owner:GetNWInt("LastHeldEntityIndex",-1)
 	local heldent = Entity(heldentindex)
@@ -2250,9 +2257,15 @@ function SWEP:PlayerThinkClientFrame( ply )
 		self.Owner:DrawViewModel(false)
 		local vmod= self.Owner:GetViewModel()
 		if IsValid(vmod) then
-			vmod:StopParticles()
+			if !self.hiddenHasYetToStopParticles then
+				vmod:StopParticles()
+				self.hiddenHasYetToStopParticles = true
+			end
 		end
 	else
+		if self.hiddenHasYetToStopParticles then
+			self.hiddenHasYetToStopParticles = false
+		end
 		self.Owner:DrawViewModel(true)	
 	end
 	
