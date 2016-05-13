@@ -404,11 +404,12 @@ function SWEP:ChooseShootAnim( ifp )
 		end
 		
 		
-		if self.LuaShellEject and ifp and CLIENT then
-			--self:CallOnClient("MakeShellBridge","")
-			self:MakeShellBridge()
-		elseif game.SinglePlayer() and SERVER then
-			self:MakeShellBridge()		
+		if self.LuaShellEject then
+			if ifp and CLIENT then
+				self:MakeShellBridge()
+			elseif game.SinglePlayer() and SERVER then
+				self:MakeShellBridge()		
+			end
 		end
 		
 		self.lastact = tanim
@@ -441,7 +442,7 @@ function SWEP:BlowbackFull()
 		self.BlowbackCurrent = 1
 		self.BlowbackCurrentRoot = 1
 		if self.Blowback_Shell_Enabled and ( ( CLIENT and !game.SinglePlayer() ) or ( SERVER and game.SinglePlayer() ) ) then
-				self:MakeShell(self.Blowback_Shell_Effect,0)
+			self:MakeShellBridge()
 		end
 	end
 	

@@ -859,43 +859,15 @@ function SWEP:Initialize()
 
 	if self.Callback.Initialize then
 		local val = self.Callback.Initialize(self)
-		if val then return val end
+		if val then print(val) return val end
 	end
 	
 	if (!self.Primary.Damage) or (self.Primary.Damage<=0.01) then
 		self:AutoDetectDamage()
 	end
 	
-	if !self.Primary.Accuracy then
-		if self.Primary.ConeSpray then
-			self.Primary.Accuracy  = ( 5 / self.Primary.ConeSpray) / 90
-		else
-			self.Primary.Accuracy = 0.01
-		end
-	end
-	
 	if !self.Primary.IronAccuracy then
-		self.Primary.IronAccuracy = self.Primary.Accuracy * 0.2
-	end
-	
-	if GetConVarNumber("tfa_bl_"..self:GetClass(),0)==1 then
-		self.Spawnable				= false
-		self.AdminSpawnable			= false
-		
-		if SERVER then
-			timer.Simple(0, function()
-				if IsValid(self) then
-					if IsValid(self.Owner) then
-						print("Blacklisted weapon was spawned by:")
-						print(self.Owner)
-						self.Owner:StripWeapon(self:GetClass())
-						if self.Owner.SetAmmo then
-							self.Owner:SetAmmo( math.Clamp(self:GetAmmoReserve()-self.Primary.DefaultClip,0,99999),self:GetPrimaryAmmoType())
-						end
-					end
-				end
-			end)
-		end
+		self.Primary.IronAccuracy = ( self.Primary.Accuracy or self.Primary.Spread or 0 ) * 0.2
 	end
 	
 	if self.MuzzleAttachment == "1" then
@@ -933,10 +905,6 @@ function SWEP:Initialize()
 	
 	self:DetectValidAnimations()
 	self:SetDeploySpeed(self.SequenceLength[ACT_VM_DRAW])
-	
-	if !self.Primary.ClipMax then
-		self.Primary.ClipMax = self.Primary.ClipSize * 3
-	end
 	
 	self:ResetEvents()
 	
@@ -1664,7 +1632,7 @@ function SWEP:ProcessFireMode()
 		if val then return val end
 	end
 	
-	if self.Owner:KeyPressed(IN_RELOAD) and self.Owner:KeyDown(IN_USE) and !(CLIENT and !IsFirstTimePredicted() ) then
+	if self.Owner:KeyPressed(IN_RELOAD) and self.Owner:KeyDown(IN_USE) and !(CLIENT and !IsFirstTimePredicted() ) and !self:GetReloading() then
 		if self.SelectiveFire and !self.Owner:KeyDown(IN_SPEED) then
 			self:CycleFireMode()
 		elseif self.Owner:KeyDown(IN_SPEED) then
@@ -2212,8 +2180,8 @@ function SWEP:PlayerThinkClientFrame( ply )
 	self.lastrealtime = rtime
 	crouchr=self.CLCrouchProgress
 	jumpr=self.CLJumpProgress
-	ftv = math.max( RealFrameTime, 1/GetConVarNumber("fps_max",120))
-	ftvc = tsv*ftv
+	ftv = math.max( RealFrameTime, 1/GetConVarNumber("fps_max",120))*tsv
+	ftvc = ftv
 	seq = 0
 	act = -2
 	if IsValid(vm) then
@@ -2240,10 +2208,10 @@ function SWEP:PlayerThinkClientFrame( ply )
 	self:DoBobFrame()
 	
 	if !self.Blowback_PistolMode or self:Clip1()==-1 or self:Clip1()>0.1 or ( self.Blowback_PistolMode_Disabled[act] and act!=-1 and self.lastact!=-2) then
-		self.BlowbackCurrent = math.Approach(self.BlowbackCurrent,0,self.BlowbackCurrent*RealFrameTime*15)
+		self.BlowbackCurrent = math.Approach(self.BlowbackCurrent,0,self.BlowbackCurrent*ftv*15)
 	end
 	
-	self.BlowbackCurrentRoot = math.Approach(self.BlowbackCurrentRoot,0,self.BlowbackCurrentRoot*RealFrameTime*15)
+	self.BlowbackCurrentRoot = math.Approach(self.BlowbackCurrentRoot,0,self.BlowbackCurrentRoot*ftv*15)
 	
 	local heldentindex = self.Owner:GetNWInt("LastHeldEntityIndex",-1)
 	local heldent = Entity(heldentindex)

@@ -457,6 +457,8 @@ function SWEP:IsSafety()
 		if val then return val end
 	end
 	
+	if !self.FireModes then return false end
+	
 	local fm = self.FireModes[self:GetFireMode()]
 	local fmn = string.lower(fm and fm or self.FireModes[1] )
 	

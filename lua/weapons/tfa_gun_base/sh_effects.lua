@@ -1,21 +1,19 @@
 local fx,sp
 
 function SWEP:MakeShellBridge()
-		--self:MakeShell(self.LuaShellEffect or self.Blowback_Shell_Effect,self.LuaShellEjectDelay)
-		
 		if self.LuaShellEjectDelay>0 then
 			timer.Simple(self.LuaShellEjectDelay, function()
 				if IsValid(self) and self:OwnerIsValid() then
-					self:MakeShell(ef)					
+					self:MakeShell()					
 				end
 			end)
 		else
-			self:MakeShell(ef)
+			self:MakeShell()
 		end
 		
 end
 
-function SWEP:MakeShell(ef)
+function SWEP:MakeShell()
 	if IsValid(self) and self:OwnerIsValid() then
 		local vm = ( !self.Owner.ShouldDrawLocalPlayer or self.Owner:ShouldDrawLocalPlayer() ) and self.Owner:GetViewModel() or self
 		if IsValid(vm) then
