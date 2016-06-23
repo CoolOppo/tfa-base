@@ -1,3 +1,11 @@
+function SWEP:SetUnpredictedHolstering( val )
+	self.IsHolsteringCL = val
+end
+
+function SWEP:GetUnpredictedHolstering( )
+	return ( self.IsHolsteringCL == nil ) and false or self.IsHolsteringCL
+end
+
 --[[ 
 Function Name:  CanChamber
 Syntax: self:CanChamber().
@@ -118,6 +126,18 @@ function SWEP:GetType()
 	
 	return self:GetType()
 	
+end
+
+--[[ 
+Function Name:  GetProceduralReloading
+Syntax: self:GetProceduralReloading()
+Returns:  Are we reloading, procedurally?.
+Notes:  
+Purpose: 
+]]--
+
+function SWEP:GetProceduralReloading()
+	return self.DoProceduralReload and self:GetReloading()
 end
 
 --[[ 

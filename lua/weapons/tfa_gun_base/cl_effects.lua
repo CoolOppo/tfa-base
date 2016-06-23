@@ -30,7 +30,7 @@ function SWEP:FireAnimationEvent(pos, ang, event, options)
 		end 
 	end
 	if self.LuaShellEject then
-		if ( event == 6001 or event>5031 ) then return true end		
+		if (  event!= 5004 ) then return true end		
 	end
 end
 
@@ -184,6 +184,11 @@ function SWEP:DoImpactEffect(tr,dmgtype)
 	
 	if IsValid(self) then
 		self:ImpactEffectFunc(tr.HitPos,tr.HitNormal,tr.MatType)
+	end
+	
+	if self.ImpactDecal and self.ImpactDecal != "" then
+		util.Decal(self.ImpactDecal, tr.HitPos + tr.HitNormal, tr.HitPos - tr.HitNormal )
+		return true
 	end
 end
 

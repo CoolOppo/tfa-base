@@ -41,33 +41,16 @@ function SWEP:ChooseDrawAnim()
 	--self:ResetEvents()
 	local tanim = ACT_VM_DRAW
 	local success = true
+	
 	if self.SequenceEnabled[ACT_VM_DRAW_SILENCED] and self:GetSilenced() then
-		self:SendWeaponAnim(ACT_VM_DRAW_SILENCED)
 		tanim=ACT_VM_DRAW_SILENCED
+	elseif self.SequenceEnabled[ACT_VM_DRAW_EMPTY] and (self:Clip1()==0) then
+		tanim=ACT_VM_DRAW_EMPTY
 	else
-		if self.SequenceEnabled[ACT_VM_DRAW_EMPTY] then
-			if (self:Clip1()==0) then
-				self:SendWeaponAnim(ACT_VM_DRAW_EMPTY)
-				tanim=ACT_VM_DRAW_EMPTY
-			else
-				if self.SequenceEnabled[ACT_VM_DRAW] then
-					self:SendWeaponAnim(ACT_VM_DRAW)
-				else
-					local _,tanim2 = self:ChooseIdleAnim()
-					tanim = tanim2
-					success=false
-				end
-			end
-		else
-			if self.SequenceEnabled[ACT_VM_DRAW] then
-				self:SendWeaponAnim(ACT_VM_DRAW)
-			else
-				local _,tanim2 = self:ChooseIdleAnim()
-				tanim = tanim2
-				success=false
-			end
-		end
+		tanim = ACT_VM_DRAW
 	end
+	
+	self:SendWeaponAnim(tanim)
 	
 	if game.SinglePlayer() then
 		self:CallOnClient("AnimForce",tanim)
@@ -127,37 +110,19 @@ Notes:  Requires autodetection or otherwise the list of valid anims.
 Purpose:  Animation / Utility
 ]]--
 
+ACT_VM_HOLSTER_SILENCED = ACT_VM_HOLSTER_SILENCED or ACT_CROSSBOW_HOLSTER_UNLOADED
+
 function SWEP:ChooseHolsterAnim()
 	if !self:OwnerIsValid() then return end
 	--self:ResetEvents()
-	local tanim = ACT_VM_HOLSTER
+	local tanim = ACT_VM_IDLE
 	local success = true
-	if !self:GetSilenced() then
-		if self.SequenceEnabled[ACT_VM_HOLSTER_EMPTY] then
-			if ( self:Clip1()==0 ) then
-				self:SendWeaponAnim(ACT_VM_HOLSTER_EMPTY)
-				tanim = ACT_VM_HOLSTER_EMPTY
-			else
-				if self.SequenceEnabled[ACT_VM_HOLSTER] then
-					self:SendWeaponAnim(ACT_VM_HOLSTER)
-				else
-					self:SendWeaponAnim(ACT_VM_HOLSTER_EMPTY)
-					tanim = ACT_VM_HOLSTER_EMPTY
-				end	
-			end
-		else
-			if self.SequenceEnabled[ACT_VM_HOLSTER] then
-				self:SendWeaponAnim(ACT_VM_HOLSTER)
-			else
-				local _,tanim2 = self:ChooseIdleAnim()
-				tanim=tanim2
-				success=false
-			end
-		end
-	else
-		local _,tanim2 = self:ChooseIdleAnim()
-		tanim=tanim2
-		success=false
+	if self:GetSilenced() and self.SequenceEnabled[ACT_VM_HOLSTER_SILENCED] then
+		tanim = ACT_VM_HOLSTER_SILENCED
+	elseif self.SequenceEnabled[ACT_VM_HOLSTER_EMPTY] and self:Clip1()==0 then
+		tanim = ACT_VM_HOLSTER_EMPTY		
+	elseif self.SequenceEnabled[ACT_VM_HOLSTER] then
+		tanim = ACT_VM_HOLSTER
 	end
 	
 	if game.SinglePlayer() then
@@ -167,7 +132,31 @@ function SWEP:ChooseHolsterAnim()
 	self.lastact = tanim
 	self:CallOnClient("UpdateLastAct",tostring(self.lastact))
 	
-	return success, tanim
+	return true, tanim
+end
+
+--[[ 
+Function Name:  ChooseProceduralReloadAnim
+Syntax: self:ChooseProceduralReloadAnim().
+Returns:  Could we successfully find an animation?  Which action?
+Notes:  Uses some holster code
+Purpose:  Animation / Utility
+]]--
+
+
+function SWEP:ChooseProceduralReloadAnim()
+	if !self:OwnerIsValid() then return end
+	
+	if self.Callback.ChooseProceduralReloadAnim then
+		local retval = self.Callback.ChooseProceduralReloadAnim(self)
+		if retval != nil then return retval end
+	end
+	
+	if !self.DisableIdleAnimations then
+		self:SendWeaponAnim(ACT_VM_IDLE)
+	end
+	
+	return true, ACT_VM_IDLE
 end
 
 --[[ 
@@ -187,35 +176,18 @@ function SWEP:ChooseReloadAnim()
 	end
 	
 	--self:ResetEvents()
-	local tanim = ACT_VM_RELOAD
+	local tanim
 	local success = true
+	
 	if self.SequenceEnabled[ACT_VM_RELOAD_SILENCED] and self:GetSilenced() then
-		self:SendWeaponAnim(ACT_VM_RELOAD_SILENCED)
 		tanim=ACT_VM_RELOAD_SILENCED
+	elseif self.SequenceEnabled[ACT_VM_RELOAD_EMPTY] and (self:Clip1()==0) then
+		tanim=ACT_VM_RELOAD_EMPTY
 	else
-		if self.SequenceEnabled[ACT_VM_RELOAD_EMPTY] then
-			if (self:Clip1()==0) then
-				self:SendWeaponAnim(ACT_VM_RELOAD_EMPTY)
-				tanim=ACT_VM_RELOAD_EMPTY
-			else
-				if self.SequenceEnabled[ACT_VM_RELOAD] then
-					self:SendWeaponAnim(ACT_VM_RELOAD)
-				else
-					local _,tanim2 = self:ChooseIdleAnim()
-					tanim = tanim2
-					success=false
-				end
-			end
-		else
-			if self.SequenceEnabled[ACT_VM_RELOAD] then
-				self:SendWeaponAnim(ACT_VM_RELOAD)
-			else
-				local _,tanim2 = self:ChooseIdleAnim()
-				tanim = tanim2
-				success=false
-			end
-		end
+		tanim = ACT_VM_RELOAD
 	end
+	
+	self:SendWeaponAnim(tanim)
 	
 	if game.SinglePlayer() then
 		self:CallOnClient("AnimForce",tanim)
@@ -327,77 +299,26 @@ function SWEP:ChooseShootAnim( ifp )
 	
 	if !self.BlowbackEnabled or ( !self:GetIronSights() and self.Blowback_Only_Iron) then
 	
-		local tanim=ACT_VM_PRIMARYATTACK
+		local tanim
 		local success = true
+		
+		
+		
 		if self.SequenceEnabled[ACT_VM_PRIMARYATTACK_SILENCED]  and self:GetSilenced() then
-			if self.SequenceEnabled[ACT_VM_DRYFIRE_SILENCED] and !self.ForceDryFireOff then
-				if (self:Clip1()==0) then
-					self:SendWeaponAnim(ACT_VM_DRYFIRE_SILENCED)
-					tanim=ACT_VM_DRYFIRE_SILENCED
-				else
-					self:SendWeaponAnim(ACT_VM_PRIMARYATTACK_SILENCED)
-					tanim=ACT_VM_PRIMARYATTACK_SILENCED
-				end
-			else
-				if (self:Clip1()==0) then
-					success=false
-					local _
-					_, tanim = nil, nil-- self:ChooseIdleAnim()
-				else
-					self:SendWeaponAnim(ACT_VM_PRIMARYATTACK_SILENCED)
-					tanim=ACT_VM_PRIMARYATTACK_SILENCED
-				end
-			end			
+			tanim = ACT_VM_PRIMARYATTACK_SILENCED
+		elseif self:Clip1()==1 and self.SequenceEnabled[ACT_VM_PRIMARYATTACK_EMPTY]  and !self.ForceEmptyFireOff then
+			tanim = ACT_VM_PRIMARYATTACK_EMPTY		
+		elseif self:Clip1()==0 and self.SequenceEnabled[ACT_VM_DRYFIRE] and !self.ForceDryFireOff then
+			tanim = ACT_VM_DRYFIRE		
+		elseif self.Akimbo and self.SequenceEnabled[ACT_VM_SECONDARYATTACK] and self.AnimCycle==1 then
+			tanim = ACT_VM_SECONDARYATTACK
+		elseif self:GetIronSights() and self.SequenceEnabled[ACT_VM_PRIMARYATTACK_1] then
+			tanim = ACT_VM_PRIMARYATTACK_1
 		else
-			if ( self.SequenceEnabled[ACT_VM_DRYFIRE] or self.SequenceEnabled[ACT_VM_PRIMARYATTACK_EMPTY] ) then
-				if (self:Clip1()==0 and  self.SequenceEnabled[ACT_VM_DRYFIRE] and !self.ForceDryFireOff ) then
-					self:SendWeaponAnim(ACT_VM_DRYFIRE)
-					tanim=ACT_VM_DRYFIRE
-				elseif (self:Clip1()==1 and self.SequenceEnabled[ACT_VM_PRIMARYATTACK_EMPTY]  and !self.ForceEmptyFireOff ) then
-					if self.SequenceEnabled[ACT_VM_PRIMARYATTACK_EMPTY] then
-						self:SendWeaponAnim(ACT_VM_PRIMARYATTACK_EMPTY)
-						success=true
-						tanim = ACT_VM_PRIMARYATTACK_EMPTY
-					elseif self.SequenceEnabled[ACT_VM_PRIMARYATTACK_1] and self:GetIronSights() then
-						self:SendWeaponAnim(ACT_VM_PRIMARYATTACK_1)
-						tanim = ACT_VM_PRIMARYATTACK_1
-					else
-						success=true
-						tanim = ACT_VM_PRIMARYATTACK
-						self:SendWeaponAnim(ACT_VM_PRIMARYATTACK)
-					end			
-				else
-					if self.SequenceEnabled[ACT_VM_PRIMARYATTACK_1] and self:GetIronSights() then
-						self:SendWeaponAnim(ACT_VM_PRIMARYATTACK_1)
-						tanim = ACT_VM_PRIMARYATTACK_1
-					elseif self.SequenceEnabled[ACT_VM_PRIMARYATTACK] then
-						self:SendWeaponAnim(ACT_VM_PRIMARYATTACK)
-					else
-						success=false
-						local _
-						_, tanim = nil, nil--self:ChooseIdleAnim()
-					end
-				end
-			else
-				if self.SequenceEnabled[ACT_VM_PRIMARYATTACK_1] and self:GetIronSights() then
-					self:SendWeaponAnim(ACT_VM_PRIMARYATTACK_1)
-					tanim = ACT_VM_PRIMARYATTACK_1
-				elseif self.SequenceEnabled[ACT_VM_PRIMARYATTACK] then
-					self:SendWeaponAnim(ACT_VM_PRIMARYATTACK)
-				else
-					success=false
-					local _
-					_, tanim = nil, nil--self:ChooseIdleAnim()
-				end
-			end
+			tanim = ACT_VM_PRIMARYATTACK		
 		end
 		
-		if self.Akimbo then
-			if self.SequenceEnabled[ACT_VM_SECONDARYATTACK] and self.AnimCycle==1 then
-				self:SendWeaponAnim(ACT_VM_SECONDARYATTACK)
-				tanim = ACT_VM_SECONDARYATTACK
-			end
-		end
+		self:SendWeaponAnim( tanim )
 		
 		if game.SinglePlayer() then
 			self:CallOnClient("AnimForce",tanim)
@@ -433,6 +354,7 @@ function SWEP:ChooseShootAnim( ifp )
 		return true, ACT_VM_IDLE
 		
 	end
+	
 end
 
 function SWEP:BlowbackFull()

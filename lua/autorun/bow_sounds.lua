@@ -2,7 +2,7 @@ if SERVER then AddCSLuaFile() end
 
 sound.Add({
 	name = 			"Weapon_Bow.1",
-	channel = 		CHAN_USER_BASE+10,
+	channel = 		CHAN_STATIC,
 	volume = 		1.0,
 	sound = 			{ "weapons/tfbow/fire1.wav", "weapons/tfbow/fire2.wav", "weapons/tfbow/fire3.wav" }
 })

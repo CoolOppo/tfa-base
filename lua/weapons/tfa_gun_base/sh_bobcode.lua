@@ -71,7 +71,7 @@ local function QerpAngle( progress, startang, endang, totaltime )
 	if !totaltime then
 		totaltime = 1
 	end
-	return JuckeyLerpAngle(Qerp(progress,0,1,totaltime),startang,endang)
+	return FastLerpAngle(Qerp(progress,0,1,totaltime),startang,endang)
 end
 
 --[[ 

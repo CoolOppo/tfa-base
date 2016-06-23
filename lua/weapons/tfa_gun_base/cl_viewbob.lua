@@ -38,7 +38,7 @@ function SWEP:CalcView(ply, pos, ang, fov)
 	vb_d = GetConVarNumber("cl_tfa_viewbob_drawing",1)
 	vb_r = GetConVarNumber("cl_tfa_viewbob_reloading",1)
 	
-	if ( ( ( vb_d==1 and self:GetDrawing() ) or ( vb_r==1 and self:GetReloading() ) ) and self.AllowViewAttachment ) then
+	if ( ( ( vb_d==1 and self:GetDrawing() ) or ( vb_r==1 and self:GetReloading() ) ) and self.AllowViewAttachment and !self:GetProceduralReloading() ) then
 	
 		local threshold = 0.325 --Time before the animation actually finishes, that we start reverting.
 		local spd = 260

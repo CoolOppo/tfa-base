@@ -8,7 +8,7 @@ ENT.Contact			= "Don't"
 ENT.Purpose			= "Arrow Entity"
 ENT.Instructions	= "Arrow that's stuck in ground"
 
-TFArrowEnts={}
+TFArrowEnts=TFArrowEnts or {}
 
 function GetBoneCenter(ent, bone)
 	local bonechildren = ent:GetChildBones( bone )
@@ -99,7 +99,7 @@ function ENT:UpdatePosition()
 		local bonepos,bonerot
 		if enthasbonesnw then
 			if ent.SetupBones then
-				ent:SetupBones(ent:GetBoneCount(), ent.GetModelPhysBoneCount and ent:GetModelPhysBoneCount() or 32  )
+				ent:SetupBones(ent:GetBoneCount(), ent:GetPhysicsObjectCount() or 32 )
 			end
 			bonepos,bonerot = ent:GetBonePosition(targbonenw)
 			bonescale = ent:GetManipulateBoneScale(targbonenw):Length()

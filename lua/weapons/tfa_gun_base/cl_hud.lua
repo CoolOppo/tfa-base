@@ -835,6 +835,8 @@ local hudenabled_cvar = GetConVar("cl_tfa_hud_enabled")
 local cvar_tfa_inspection_old = GetConVar("cl_tfa_inspection_old")
 function SWEP:DrawHUD()
 	
+	self.CLOldNearWallProgress = self.CLOldNearWallProgress or 0
+	
     cam.Start3D(); cam.End3D() --Workaround for vec:ToScreen()
 	
 	if self.Callback.DrawHUD then
@@ -858,8 +860,8 @@ function SWEP:DrawHUD()
 	
 	self.clrelp = math.Approach( self.clrelp, ( self:GetReloading() and 0 or 1 ), ( ( self:GetReloading() and 0 or 1 )-self.clrelp ) * FrameTime() * 15 )
 	
-	local crossa = crossa_cvar:GetFloat() * math.pow(math.min(1-( (self.CLIronSightsProgress and !self.DrawCrosshairIS ) and self.CLIronSightsProgress  or 0), 1-self.CLRunSightsProgress, 1-self.CLNearWallProgress, 1-self.CLInspectingProgress, self.clrelp),2)
-	local outa = outa_cvar:GetFloat() * math.pow(math.min(1-( (self.CLIronSightsProgress and !self.DrawCrosshairIS) and self.CLIronSightsProgress  or 0), 1-self.CLRunSightsProgress, 1-self.CLNearWallProgress, 1-self.CLInspectingProgress, self.clrelp),2)
+	local crossa = crossa_cvar:GetFloat() * math.pow(math.min(1-( (self.CLIronSightsProgress and !self.DrawCrosshairIS ) and self.CLIronSightsProgress  or 0), 1-self.CLRunSightsProgress, 1-self.CLOldNearWallProgress, 1-self.CLInspectingProgress, self.clrelp),2)
+	local outa = outa_cvar:GetFloat() * math.pow(math.min(1-( (self.CLIronSightsProgress and !self.DrawCrosshairIS) and self.CLIronSightsProgress  or 0), 1-self.CLRunSightsProgress, 1-self.CLOldNearWallProgress, 1-self.CLInspectingProgress, self.clrelp),2)
 	self.DrawCrosshair = false
 	if drawcrossy then
 		if crosscustomenable_cvar:GetBool() then

@@ -121,18 +121,20 @@ Purpose:  FX
 function SWEP:EjectionSmoke()
 	if !IsValid(self) then return end
 	if !self:OwnerIsValid() then return end
-	local vm = self.Owner:GetViewModel()
-	if IsValid(vm) then
-		local att = vm:LookupAttachment(self.ShellAttachment)
-		if !att or att<=0 then att = 2 end
-		local angpos = vm:GetAttachment(self.ShellAttachment)
-		if angpos and angpos.Pos then
-			local fx = EffectData()
-			fx:SetEntity(vm)
-			fx:SetOrigin(angpos.Pos)
-			fx:SetAttachment(att)
-			fx:SetNormal(angpos.Ang:Forward())
-			util.Effect("tfa_shelleject_smoke",fx)
+	if !GetTFAMZSmokeEnabled or GetTFAMZSmokeEnabled() then
+		local vm = self.Owner:GetViewModel()
+		if IsValid(vm) then
+			local att = vm:LookupAttachment(self.ShellAttachment)
+			if !att or att<=0 then att = 2 end
+			local angpos = vm:GetAttachment(self.ShellAttachment)
+			if angpos and angpos.Pos then
+				local fx = EffectData()
+				fx:SetEntity(vm)
+				fx:SetOrigin(angpos.Pos)
+				fx:SetAttachment(att)
+				fx:SetNormal(angpos.Ang:Forward())
+				util.Effect("tfa_shelleject_smoke",fx)
+			end
 		end
 	end
 end

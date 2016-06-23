@@ -21,7 +21,8 @@ if CLIENT then
 								sv_tfa_fx_ricochet_override = "-1",
 								sv_tfa_bullet_penetration = "1",
 								sv_tfa_bullet_ricochet = "1",
-								sv_tfa_reloads_legacy = "0"								
+								sv_tfa_reloads_legacy = "0",
+								sv_tfa_cmenu = "1"							
 							   }				
 	panel:AddControl("ComboBox", tfaOptionSV)
 	
@@ -45,6 +46,11 @@ if CLIENT then
 		panel:AddControl("CheckBox", {
 		Label = "Strip Empty Weapons",
 		Command = "sv_tfa_weapon_strip",
+	})
+	
+		panel:AddControl("CheckBox", {
+		Label = "Enable Custom C-Menu",
+		Command = "sv_tfa_cmenu",
 	})
 	
 		panel:AddControl("CheckBox", {
@@ -770,6 +776,11 @@ end
 
 if GetConVar("sv_tfa_weapon_strip") == nil then
 	CreateConVar("sv_tfa_weapon_strip", "0", { FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE }, "Allow the removal of empty weapons? 1 for true, 0 for false")
+	--print("Weapon strip/removal con var created")
+end
+
+if GetConVar("sv_tfa_cmenu") == nil then
+	CreateConVar("sv_tfa_cmenu", "1", { FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE }, "Allow custom context menu?")
 	--print("Weapon strip/removal con var created")
 end
 	
@@ -1703,7 +1714,7 @@ function TFAPlayerBindPress(ply, b, p)
 				end
 			end	
 			if wep.ToggleInspect then
-				if b == "+menu_context"  then
+				if b == "+menu_context" and GetConVarNumber("sv_tfa_cmenu",1)==1  then
 					wep:ToggleInspect()
 					return true
 				end
@@ -1887,9 +1898,11 @@ end
 --[[Efficient Lerp Angle]]--
 
 local normalize = math.NormalizeAngle
-
-function JuckeyLerpAngle(delta, from, to)	
-	return LerpAngle(delta,from,to)  --Juckey please, your code was making that weird U thing happen
+local LerpAngleV = LerpAngle
+local angledelta
+function FastLerpAngle(delta, from, to)
+	return LerpAngleV(delta,from,to)
+	--Juckey's code didn't work, so I did this
 end
 
 --[[Parti-COOLs]]--
@@ -2268,12 +2281,16 @@ if CLIENT then
 end
 
 if CLIENT then
+
+	local eastereggcvar = CreateClientConVar("cl_tfa_eegg", 1, true, true)
+	
 	local localplayer
 	local plytbl
 	local drawicon
 	local lmang
 	local lastvisible
 	hook.Add("PostDrawTranslucentRenderables","MaskTFA",function()
+		if eastereggcvar and !eastereggcvar:GetBool() then return end
 		if !IsValid(localplayer) then localplayer = LocalPlayer() end
 		if !IsValid(localplayer) then return end
 		if !lmang then lmang = Material("vgui/obscure") end

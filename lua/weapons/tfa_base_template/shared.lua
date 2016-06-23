@@ -238,6 +238,12 @@ SWEP.Blowback_PistolMode = false --Do we recover from blowback when empty?
 SWEP.Blowback_Shell_Enabled = true
 SWEP.Blowback_Shell_Effect = "ShellEject"
 
+
+--[[VIEWMODEL PROCEDURAL ANIMATION]]--
+
+SWEP.DoProceduralReload = true--Animate first person reload using lua?
+SWEP.ProceduralReloadTime = 1 --Procedural reload time?
+
 --[[HOLDTYPES]]--
 
 SWEP.IronSightHoldTypeOverride=""  --This variable overrides the ironsights holdtype, choosing it instead of something from the above tables.  Change it to "" to disable.
@@ -310,6 +316,7 @@ SWEP.TracerDelay		= 0.01 --Delay for lua tracer effect
 --Impact Effects
 
 SWEP.ImpactEffect = nil--Impact Effect
+SWEP.ImpactDecal = nil--Impact Decal
 
 --[[EVENT TABLE]]--
 
