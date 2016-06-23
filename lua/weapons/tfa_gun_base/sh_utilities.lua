@@ -1,3 +1,7 @@
+function SWEP:UpdateViewModel()
+	if !IsValid(self.OwnerViewModel) then self.OwnerViewModel=self.Owner:GetViewModel() end
+end
+
 function SWEP:SetUnpredictedHolstering( val )
 	self.IsHolsteringCL = val
 end

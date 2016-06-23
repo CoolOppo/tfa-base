@@ -731,6 +731,8 @@ function SWEP:Deploy()
 	
 	if !IsValid(self.OwnerViewModel) then self.OwnerViewModel=self.Owner:GetViewModel() end
 	
+	if IsValid(self.Owner) then self:CallOnClient("UpdateViewModel","") end
+	
 	if self.Owner:KeyDown(IN_ATTACK2) and self.SightWhileDraw then
 		self:SetIronSights(true)
 	end
@@ -1903,24 +1905,19 @@ function SWEP:PlayerThinkClientFrame( ply )
 	end
 	
 	local nhf = 0
-	--[[
 	if CurTime()>( self.HolsterEndUnpredicted or 9999999 ) then self:SetUnpredictedHolstering(false) end
 	
-	if act!=ACT_VM_HOLSTER and act!=ACT_VM_HOLSTER_EMPTY and ( self:GetHolstering() or self:GetUnpredictedHolstering() ) then
+	if act==ACT_VM_HOLSTER or act==ACT_VM_HOLSTER_EMPTY then 
+		nhf = 0
+	elseif ( sp and self:GetHolstering() ) or self:GetUnpredictedHolstering() then
 		nhf = 1
 	end
 	
-	if self:GetProceduralReloading() then
-		--if act==ACT_VM_IDLE then
-			nhf = 1
-		--else
-		--	self:SetReloading(false)
-		--	self:SetReloadingEnd(-1)
-		--end
-	end
-	]]--
+	print(act)
 	
-	if self:GetUnpredictedHolstering() or ( sp and self:GetHolstering() )then nhf =1 end
+	if self:GetProceduralReloading() then
+		nhf = 1
+	end
 	
 	self.ProceduralHolsterFactor = math.Approach(self.ProceduralHolsterFactor,nhf,(nhf-self.ProceduralHolsterFactor)*ftv*self.ProceduralHolsterTime*10)
 	

@@ -125,8 +125,12 @@ function SWEP:ChooseHolsterAnim()
 		tanim = ACT_VM_HOLSTER
 	end
 	
-	if game.SinglePlayer() then
-		self:CallOnClient("AnimForce",tanim)
+	if tanim!=ACT_VM_IDLE then
+		self:SendWeaponAnim(tanim)
+		
+		if game.SinglePlayer() then
+			self:CallOnClient("AnimForce",tanim)
+		end
 	end
 	
 	self.lastact = tanim
