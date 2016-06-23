@@ -1913,16 +1913,17 @@ function SWEP:PlayerThinkClientFrame( ply )
 		nhf = 1
 	end
 	
-	print(act)
-	
 	if self:GetProceduralReloading() then
 		nhf = 1
 	end
 	
+	if nhf == 0 then self:SetUnpredictedHolstering(false) end
+	
 	self.ProceduralHolsterFactor = math.Approach(self.ProceduralHolsterFactor,nhf,(nhf-self.ProceduralHolsterFactor)*ftv*self.ProceduralHolsterTime*10)
 	
-	if self:GetDrawing() and !self:GetProceduralReloading() and !( self.GetUnpredictedHolstering and self:GetUnpredictedHolstering() ) then
+	if self:GetDrawing() and !self:GetProceduralReloading() and nfh!=1 then
 		self.ProceduralHolsterFactor = 0
+		self:SetUnpredictedHolstering(false)
 	end
 end
 
