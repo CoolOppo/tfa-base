@@ -1,5 +1,7 @@
+local cyc, seq, act
+
 function SWEP:UpdateViewModel()
-	if !IsValid(self.OwnerViewModel) then self.OwnerViewModel=self.Owner:GetViewModel() end
+	if !self.OwnerViewModel then self.OwnerViewModel=self.Owner:GetViewModel() end
 end
 
 function SWEP:SetUnpredictedHolstering( val )
@@ -170,7 +172,7 @@ function SWEP:DoBodyGroups()
 	end
 	
 	if !self:OwnerIsValid() then return end
-	local vm = self.Owner:GetViewModel()
+	local vm = self.OwnerViewModel
 	
 	if !self.VMBodyGroups then
 		self.VMBodyGroups = self.BodyGroups
@@ -201,7 +203,7 @@ function SWEP:ResetVMBodyGroups()
 	
 	if !self:OwnerIsValid() then return end
 	
-	local vm = self.Owner:GetViewModel()
+	local vm = self.OwnerViewModel
 	
 	if !self.VMBodyGroups then
 		self.VMBodyGroups = self.BodyGroups
@@ -227,18 +229,19 @@ Purpose:  Utility
 
 function SWEP:IsHidden()
 	if !self:OwnerIsValid() then return true end
-	local vm = self.Owner:GetViewModel()
-	local seq = vm:GetSequence()
-	local act = vm:GetSequenceActivity(seq or 0)
+	local vm = self.OwnerViewModel
+	if !IsValid(vm) then return true end
+	cyc = vm:GetCycle()
+	seq = vm:GetSequence()
+	act = vm:GetSequenceActivity(seq or 0)
 	local heldentindex = self.Owner:GetNWInt("LastHeldEntityIndex",-1)
 	local heldent = Entity(heldentindex)
-	
 	if heldentindex!=-1 and IsValid(heldent) and heldent.IsPlayerHolding and !heldent:IsPlayerHolding() then
 		self.Owner:SetNWInt("LastHeldEntityIndex",-1)
 		heldent = nil
 	end
 	
-	return self:IsCurrentlyScoped() or ( IsValid(heldent) and (!heldent.IsPlayerHolding or heldent:IsPlayerHolding() ) ) or ( (act==ACT_VM_HOLSTER or act==ACT_VM_HOLSTER_EMPTY) and vm:GetCycle()>0.9) or ( (act==ACT_VM_DRAW or act==ACT_VM_DRAW_EMPTY or act==ACT_VM_DRAW_SILENCED) and vm:GetCycle()<0.05 and vm:GetCycle()!=0 and !self.isfirstdraw)
+	return self:IsCurrentlyScoped() or ( IsValid(heldent) and (!heldent.IsPlayerHolding or heldent:IsPlayerHolding() ) ) or ( (act==ACT_VM_HOLSTER or act==ACT_VM_HOLSTER_EMPTY) and cyc>0.9) or ( (act==ACT_VM_DRAW or act==ACT_VM_DRAW_EMPTY or act==ACT_VM_DRAW_SILENCED) and cyc<0.05 and cyc!=0 )
 end
 
 --[[ 
@@ -259,67 +262,6 @@ function SWEP:UpdateConDamage()
 	
 	if self.DamageConVar and self.DamageConVar.GetFloat then
 		self.ConDamageMultiplier = self.DamageConVar:GetFloat()
-	end
-end
-
---[[ 
-Function Name:  GetAnchor
-Syntax: self:GetAnchor( ). 
-Returns:   Nothing.
-Notes:    Used to reset the progress of some stuff , idk, can you read?
-Purpose:  Utility
-]]--
-
-local posvec = Vector()
-local angang = Angle()
-
-function SWEP:GetAnchor(id)
-	
-	if !self:OwnerIsValid() then return end
-	
-	local ifp = self:IsFirstPerson()
-	
-	local targent = ifp  and self.Owner:GetViewModel() or self
-	
-	local tbl
-	
-	if ifp then
-		tbl = self.VMAnchors[id] or self.VMAnchors[tonumber(id)]
-	end
-	
-	if tbl then
-		local bone
-		if type(tbl.bone) == "string" then bone = targent:LookupBone(tbl.bone) end
-		if type(tbl.bone) == "number" then bone = tbl.bone end
-		if !bone or bone<=0 then bone = 1 end
-		local pos, ang = posvec,angang
-		local m = targent:GetBoneMatrix(bone)
-		if (m) then
-			pos, ang = m:GetTranslation(), m:GetAngles()
-		end
-		
-		if (ifp and self.ViewModelFlip) then
-			ang.r = -ang.r
-		end
-		
-		local newpos,newang = LocalToWorld(tbl.pos,tbl.angle,pos,ang)
-		debugoverlay.Cross(newpos,5,0.1,color_white,true)
-		return newpos, newang
-	else
-		if type(id) == "number" then
-			local angpos = targent:GetAttachment(id)
-			if angpos then
-				return angpos.Pos,angpos.Ang
-			end
-		else
-			local ind = targent:LookupAttachment(id)
-			if !ind or ind<=0 then ind=tonumber(id) end
-			if !ind or ind<=0 then ind=1 end
-			local angpos = targent:GetAttachment(ind)
-			if angpos then
-				return angpos.Pos,angpos.Ang
-			end
-		end
 	end
 end
 
@@ -625,7 +567,7 @@ function SWEP:IsFirstPerson()
 	
 	if gmsdlp then return false end
 	
-	local vm = self.Owner:GetViewModel()
+	local vm = self.OwnerViewModel
 	
 	if IsValid(vm) then
 		if vm:GetNoDraw() or vm:IsEffectActive(EF_NODRAW) then
@@ -662,7 +604,7 @@ function SWEP:GetFPMuzzleAttachment( )
 	end
 	
 	local ply=self.Owner
-	local vm = ply:GetViewModel()
+	local vm = self.OwnerViewModel
 	local obj = vm:LookupAttachment( self.MuzzleAttachment and self.MuzzleAttachment or "1")
 	
 	if self:GetSilenced() then
@@ -702,7 +644,7 @@ function SWEP:GetMuzzlePos( ignorepos )
 	
 	local ply=self.Owner
 	local fp = self:IsFirstPerson()
-	local vm = ply:GetViewModel()
+	local vm = self.OwnerViewModel
 	local obj = 0--vm:LookupAttachment( self.MuzzleAttachment and self.MuzzleAttachment or "1")
 	
 	if fp then
@@ -788,19 +730,23 @@ function SWEP:GetAmmoForceMultiplier()
 	elseif ( am=="smg1" ) then
 		return 0.475 --P90 penetrates 3 inches of the ol' crete, and is very capable at penetrating wood or sheet metal.  It can go through about 6 inches of wood or about 2.28 inches of light metal (most in-game is aluminum or light steel.)
 	elseif (am=="ar2") then
-		if (string.find(string.lower(self.PrintName),"machine") or string.find(string.lower(self.Category),"machine")) then
+		if self.afmult_ismachinegun == nil then
+			self.afmult_ismachinegun = (string.find(string.lower(self.PrintName),"machine") or string.find(string.lower(self.Category),"machine"))
+		end
+		
+		if self.afmult_ismachinegun then
 			return 1.1--50 BMG
 		else
 			return 0.6--.308
 		end
 	elseif (am=="buckshot") then
-		return 1.0
-	elseif (am=="slam") then
 		return 0.4
+	elseif (am=="slam") then
+		return 0.6
 	elseif (am=="airboatgun") then 
-		return 0.35
+		return 0.8
 	elseif (am=="sniperpenetratedround") then
-		return 0.15
+		return 0.7 --Gotta compensate for 
 	else
 		return 1
 	end
@@ -816,16 +762,10 @@ Purpose:  Utility
 ]]--
 
 function SWEP:OwnerIsValid()
-
-	if self.Callback.OwnerIsValid then
-		local val = self.Callback.OwnerIsValid(self)
-		if val then return val end
-	end
 	
 	if !IsValid(self.Owner) then return false end
 	if !self.Owner:IsPlayer() then return false end
 	if !self.Owner:Alive() then return false end
-	if ! (self.Owner:GetActiveWeapon() == self) then return end
 	return true
 end
 
@@ -942,7 +882,7 @@ function SWEP:GetPenetrationMultiplier( matt )
 	elseif mat=="ceramic" then
 		fac=1.5
 	elseif mat=="glass" then
-		fac=80
+		fac=10
 	elseif mat=="energy" then
 		fac=0.05
 	elseif mat=="slime" or mat=="sand" then

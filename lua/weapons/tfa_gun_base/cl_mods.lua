@@ -506,9 +506,11 @@ Notes:   Updates the bones for a viewmodel.
 Purpose:  SWEP Construction Kit Compatibility / Basic Attachments.
 ]]--
 
+local bpos, bang
+
 function SWEP:UpdateBonePositions(vm)
 	
-	if self.ViewModelBoneMods or self.BlowbackBoneMods then
+	if self.ViewModelBoneMods then
 		
 		if !self.ViewModelBoneMods then
 			self.ViewModelBoneMods = {}
@@ -577,6 +579,16 @@ function SWEP:UpdateBonePositions(vm)
 			end
 			
 		end
+	elseif self.BlowbackBoneMods then
+		for bonename, tbl in pairs(self.BlowbackBoneMods) do
+			local bone = vm:LookupBone( bonename )
+			if bone and bone>=0 then
+				bpos = tbl.pos * self.BlowbackCurrent
+				bang = tbl.angle * self.BlowbackCurrent
+				vm:ManipulateBonePosition( bone, bpos )
+				vm:ManipulateBoneAngles( bone, bang )
+			end
+		end
 	else
 		self:ResetBonePositions(vm)
 	end
@@ -590,28 +602,16 @@ Notes:   Resets the bones for a viewmodel.
 Purpose:  SWEP Construction Kit Compatibility / Basic Attachments.
 ]]--
  
-function SWEP:ResetBonePositions(vm)
+function SWEP:ResetBonePositions(val)
 	
-	if !self.ViewModelBoneMods and !self.BlowbackBoneMods then return end
+	if !self.ViewModelBoneMods and !self.BlowbackBoneMods and !val then return end
 	
 	if SERVER then
 		self:CallOnClient("ResetBonePositions","")
 	end
 	
-	if !vm or vm=="" then	
-		local pl
-		if LocalPlayer then
-			pl = LocalPlayer()
-		else
-			pl = Entity(1)
-		end
-		
-		local pl = self.Owner and self.Owner or pl
-		
-		if !IsValid(pl) or !pl.GetViewModel then return end
-		
-		vm = pl:GetViewModel()
-	end
+	vm = self.Owner:GetViewModel()
+	
 	if !IsValid(vm) then return end
 	if (!vm:GetBoneCount()) then return end
 	for i=0, vm:GetBoneCount() do

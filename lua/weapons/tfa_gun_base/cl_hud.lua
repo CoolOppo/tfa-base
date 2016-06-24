@@ -833,6 +833,7 @@ local outb_cvar = GetConVar("cl_tfa_hud_crosshair_outline_color_b")
 local outlinewidth_cvar = GetConVar("cl_tfa_hud_crosshair_outline_width")
 local hudenabled_cvar = GetConVar("cl_tfa_hud_enabled")
 local cvar_tfa_inspection_old = GetConVar("cl_tfa_inspection_old")
+local cgapscale_cvar = GetConVar("cl_tfa_hud_crosshair_gap_scale")
 function SWEP:DrawHUD()
 	
 	self.CLOldNearWallProgress = self.CLOldNearWallProgress or 0
@@ -927,7 +928,7 @@ function SWEP:DrawHUD()
 				crossa = crosscol.a
 				crosshairwidth = crosshairwidth_cvar:GetFloat()
 				drawdot = drawdot_cvar:GetBool()
-				local scale = (s_cone *  90 ) / self.Owner:GetFOV() * ScrH()/1.44 * GetConVarNumber("cl_tfa_hud_crosshair_gap_scale",1)
+				local scale = (s_cone *  90 ) / self.Owner:GetFOV() * ScrH()/1.44 * cgapscale_cvar:GetFloat()
 				
 				local gap = scale
 				local length = 1

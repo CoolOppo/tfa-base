@@ -411,6 +411,12 @@ end
 
 SWEP.ConDamageMultiplier = 1
 
+--[[ Localize Lerp  ]]--
+
+local function l_Lerp( v, f, t )
+	return f + (t-f)*v
+end
+
 --[[  Quadratic Interpolation Functions  ]]--
 
 local qerppower = 2
@@ -477,16 +483,19 @@ Returns:  The quadratically interpolated angle.
 Purpose:  Utility function / Animation
 ]]--
 
-function util_NormalizeAngles(a)
-a.p = math.NormalizeAngle(a.p)
-a.y = math.NormalizeAngle(a.y)
-a.r = math.NormalizeAngle(a.r)
-return a
+local l_NormalizeAngle = math.NormalizeAngle
+
+local LerpAngle = LerpAngle
+
+local function util_NormalizeAngles(a)
+	a.p = l_NormalizeAngle(a.p)
+	a.y = l_NormalizeAngle(a.y)
+	a.r = l_NormalizeAngle(a.r)
+	return a
 end
 
-
 local function QerpAngle( progress, startang, endang, totaltime )
-	return util_NormalizeAngles(FastLerpAngle(Qerp(progress,0,1,totaltime),startang,endang))
+	return util_NormalizeAngles(LerpAngle(Qerp(progress,0,1,totaltime),startang,endang))
 end
 
 --[[ 
@@ -713,6 +722,11 @@ Returns:  True/False to allow quickswitch.  Why not?  You should really return t
 Purpose:  Standard SWEP Function
 ]]--
 
+local hudhangtime_cvar
+if CLIENT then
+	hudhangtime_cvar = GetConVar("cl_tfa_hud_hangtime")
+end
+
 function SWEP:Deploy()
 
 	if self.Callback.Deploy then
@@ -812,7 +826,7 @@ function SWEP:Deploy()
 		if SERVER then
 			myhangtimev = self.Owner:GetInfoNum("cl_tfa_hud_hangtime",1)
 		else
-			myhangtimev = GetConVarNumber("cl_tfa_hud_hangtime",1)
+			myhangtimev = hudhangtime_cvar:GetFloat()
 		end
 	end
 	self:SetHUDThresholdEnd(CurTime()+seqtime+myhangtimev)
@@ -868,9 +882,9 @@ function SWEP:OnRemove()
 	end
 	
 	if self.ResetBonePositions then
-		self:ResetBonePositions()
+		self:ResetBonePositions( true )
 	else
-		self:CallOnClient("ResetBonePositions","")
+		self:CallOnClient("ResetBonePositions","aaa")
 	end
 
 end
@@ -898,11 +912,11 @@ function SWEP:OnDrop()
 		self:CleanModels(self.VElements) -- create viewmodels
 		self:CleanModels(self.WElements) -- create worldmodels
 	end
-
+	
 	if self.ResetBonePositions then
-		self:ResetBonePositions()
+		self:ResetBonePositions( true )
 	else
-		self:CallOnClient("ResetBonePositions","")
+		self:CallOnClient("ResetBonePositions","aaa")
 	end
 
 end
@@ -1068,8 +1082,14 @@ function SWEP:Holster( switchtowep )
 			end
 		end
 	else
+	
+		if self.ResetBonePositions then
+			self:ResetBonePositions( true )
+		else
+			self:CallOnClient("ResetBonePositions","aaa")
+		end
+		
 		if CLIENT then
-			self:ResetBonePositions()
 			self:CleanModels(self.VElements)
 			self:CleanModels(self.WElements)
 		end
@@ -1084,6 +1104,13 @@ Returns:  SWEP sensitivity multiplier.
 Purpose:  Standard SWEP Function
 ]]--
 
+local sensitivity_cvar,sensitivity_fov_cvar,sensitivity_speed_cvar
+if CLIENT then
+	sensitivity_cvar = GetConVar("cl_tfa_scope_sensitivity")
+	sensitivity_fov_cvar = GetConVar("cl_tfa_scope_sensitivity_autoscale")
+	sensitivity_speed_cvar = GetConVar("sv_tfa_scope_gun_speed_scale")
+end
+
 function SWEP:AdjustMouseSensitivity()
 
 	if self.Callback.AdjustMouseSensitivity then
@@ -1093,18 +1120,18 @@ function SWEP:AdjustMouseSensitivity()
 	
 	local sensval=1
 	if self:GetIronSights() then
-		sensval = sensval * GetConVarNumber("cl_tfa_scope_sensitivity",100)/100
-		if GetConVarNumber("cl_tfa_scope_sensitivity_autoscale",1)==1 then
+		sensval = sensval * sensitivity_cvar:GetFloat()/100
+		if sensitivity_fov_cvar:GetFloat() then
 			sensval =  sensval*(self.Owner:GetFOV()/self.DefaultFOV)
 		else
 			sensval = sensval
 		end
-		if GetConVarNumber("sv_tfa_scope_gun_speed_scale",0)==1 then
+		if sensitivity_speed_cvar:GetFloat() then
 			sensval = sensval * self.IronSightsMoveSpeed
 		end
 	end
 	
-	sensval = sensval * Lerp( CLIENT and self.CLIronSightsProgress or self:GetIronSightsRatio() , 1, self.IronSightsSensitivity)
+	sensval = sensval * l_Lerp( CLIENT and self.CLIronSightsProgress or self:GetIronSightsRatio() , 1, self.IronSightsSensitivity)
 	
 	return sensval
 end
@@ -1123,8 +1150,8 @@ function SWEP:TranslateFOV( fov )
 		if val then return val end
 	end
 	
-	local nfov=Lerp(self.CLIronSightsProgress,fov,fov*(self.Secondary.IronFOV/90))
-	return Lerp(self.CLRunSightsProgress,nfov,nfov+self.SprintFOVOffset)
+	local nfov=l_Lerp(self.CLIronSightsProgress,fov,fov*(self.Secondary.IronFOV/90))
+	return l_Lerp(self.CLRunSightsProgress,nfov,nfov+self.SprintFOVOffset)
 end
 
 --[[ 
@@ -1214,43 +1241,12 @@ Purpose:  Feature
 
 
 function SWEP:PreDrawOpaqueRenderables()
+	
 	if self.Callback.PreDrawOpaqueRenderables then
 		local val = self.Callback.PreDrawOpaqueRenderables(self)
 		if val then return val end
 	end
-	--[[
 	
-	if CLIENT and !sp then
-		local hand, offset, rotate
-
-		local ply = self:GetOwner()
-
-		if IsValid( ply ) and self.Offset and self.Offset.Pos and self.Offset.Ang then
-			local handBone = ply:LookupBone( "ValveBiped.Bip01_R_Hand" )
-			if handBone then
-				if ply.SetupBones then ply:SetupBones() end
-				local pos, ang = ply:GetBonePosition( handBone )
-				pos = pos + ang:Forward() * self.Offset.Pos.Forward + ang:Right() * self.Offset.Pos.Right + ang:Up() * self.Offset.Pos.Up
-				ang:RotateAroundAxis( ang:Up(), self.Offset.Ang.Up)
-				ang:RotateAroundAxis( ang:Right(), self.Offset.Ang.Right )
-				ang:RotateAroundAxis( ang:Forward(),  self.Offset.Ang.Forward )
-				self:SetRenderOrigin( pos )
-				self:SetRenderAngles( ang )
-				if self.Offset.Scale and ( !self.MyModelScale or ( self.Offset and self.MyModelScale!=self.Offset.Scale ) ) then
-					self:SetModelScale( self.Offset.Scale or 1, 0 )
-					self.MyModelScale = self.Offset.Scale
-				end
-			end
-		else
-			self:SetRenderOrigin( nil )
-			self:SetRenderAngles( nil )
-			if !self.MyModelScale or self.MyModelScale!=1 then
-				self:SetModelScale( 1, 0 )
-				self.MyModelScale = 1
-			end
-		end
-	end
-	]]--
 end
 
 --[[ 
@@ -1530,6 +1526,11 @@ Notes: Processes raw ironsights, sprinting, etc. before they're corrected in SWE
 Purpose:  Main SWEP function
 ]]--
 
+local ironsights_toggle_cvar
+if CLIENT then
+	ironsights_toggle_cvar = GetConVar("cl_tfa_ironsights_toggle")
+end
+
 function SWEP:UserInput()
 
 	if self.Callback.UserInput then
@@ -1540,7 +1541,7 @@ function SWEP:UserInput()
 	self.OldIronsights=(self:GetIronSights())
 	local is=false
 	if IsValid(self.Owner) then
-		if ( (CLIENT and GetConVarNumber("cl_tfa_ironsights_toggle",0)==0) or ( SERVER and self.Owner:GetInfoNum("cl_tfa_ironsights_toggle",0)==0) ) then
+		if ( (CLIENT and !ironsights_toggle_cvar:GetBool() ) or ( SERVER and self.Owner:GetInfoNum("cl_tfa_ironsights_toggle",0)==0) ) then
 			if self.Owner:KeyDown(IN_ATTACK2) then
 				is=true
 			end
@@ -1677,6 +1678,8 @@ function SWEP:PlayerThinkServer( ply )
 		if val then return val end
 	end
 	
+	self:UpdateViewModel()
+	
 end
 
 --[[ 
@@ -1713,7 +1716,7 @@ function SWEP:ProcessEvents()
 		if val then return val end
 	end
 	
-	if sp and !CLIENT then self:CallOnClient("ProcessEvents","") end
+	--if sp and !CLIENT then self:CallOnClient("ProcessEvents","") end
 	
 	if !IsValid(self.OwnerViewModel) then return end
 	
@@ -1805,11 +1808,18 @@ Purpose:  Main SWEP function
 ]]--
 
 local rtime,RealFrameTime
+local host_timescale_cv = GetConVar("host_timescale")
+local sv_cheats_cv = GetConVar("sv_cheats")
+local fps_max_cvar = GetConVar("fps_max")
+local ammo_fadein_cvar
+if CLIENT then
+	ammo_fadein_cvar = GetConVar("cl_tfa_hud_ammodata_fadein")
+end
 
 function SWEP:PlayerThinkClientFrame( ply )
 	
-	if !host_timescale_cv then host_timescale_cv = GetConVar("host_timescale") end
-	if !sv_cheats_cv then sv_cheats_cv = GetConVar("sv_cheats") end
+	
+	self:UpdateViewModel()
 	
 	tsv = 1
 	if sv_cheats_cv:GetBool() then tsv = tsv * host_timescale_cv:GetFloat() end
@@ -1847,7 +1857,7 @@ function SWEP:PlayerThinkClientFrame( ply )
 	inspr = self.CLInspectingProgress
 	crouchr=self.CLCrouchProgress
 	jumpr=self.CLJumpProgress
-	ftv = math.max( RealFrameTime, 1/GetConVarNumber("fps_max",120))*tsv
+	ftv = math.max( RealFrameTime, 1/ fps_max_cvar:GetFloat() )*tsv
 	ftvc = ftv
 	seq = 0
 	act = -2
@@ -1871,7 +1881,7 @@ function SWEP:PlayerThinkClientFrame( ply )
 	newratio=math.Approach( jumpr, 1 - (self.Owner:IsOnGround() and 1 or 0 ), compensatedft_cr)
 	self.CLJumpProgress = newratio
 	self.CLSpreadRatio = math.Clamp(self.CLSpreadRatio - self.Primary.SpreadRecovery * ftv, 1, self.Primary.SpreadMultiplierMax)
-	self.CLAmmoHUDProgress = math.Approach( self.CLAmmoHUDProgress, (self.ShouldDrawAmmoHUD  or self:GetInspecting()) and 1 or 0, FrameTime() / GetConVarNumber("cl_tfa_hud_ammodata_fadein",0.2) )
+	self.CLAmmoHUDProgress = math.Approach( self.CLAmmoHUDProgress, (self.ShouldDrawAmmoHUD  or self:GetInspecting()) and 1 or 0, FrameTime() / ammo_fadein_cvar:GetFloat() )
 	self:DoBobFrame()
 	
 	if !self.Blowback_PistolMode or self:Clip1()==-1 or self:Clip1()>0.1 or ( self.Blowback_PistolMode_Disabled[act] and act!=-1 and self.lastact!=-2) then
@@ -1996,6 +2006,8 @@ Notes:  This reloads the gun, and the way it does so is slightly hacky and depen
 Purpose:  Main SWEP function
 ]]--
 
+local dryfire_cvar = GetConVar("sv_tfa_allow_dryfire")
+
 function SWEP:Reload()
 
 	if !legacy_reloads_cv then legacy_reloads_cv = GetConVar("sv_tfa_reloads_legacy") end
@@ -2015,7 +2027,7 @@ function SWEP:Reload()
 		return
 	end
 	
-	if  ( GetConVarNumber("sv_tfa_allow_dryfire",1)==1 ) then
+	if  ( dryfire_cvar:GetBool() ) then
 		if not self.Owner:KeyDown(IN_RELOAD) then
 			local s, tanim = self:ChooseDryFireAnim()
 			return
@@ -2173,9 +2185,9 @@ function SWEP:Sway(pos,ang)
 	--fac = factor to multiply by
 	--each is interpolated from normal value to the ironsights value using iron sights ratio
 	
-	local angrange = Lerp(self:GetIronSightsRatio(),7.5,2.5) * gunswaycvar:GetFloat()
-	local rate = Lerp(self:GetIronSightsRatio(),15,30)
-	local fac = Lerp(self:GetIronSightsRatio(),0.6,0.15)
+	local angrange = l_Lerp(self:GetIronSightsRatio(),7.5,2.5) * gunswaycvar:GetFloat()
+	local rate = l_Lerp(self:GetIronSightsRatio(),15,30)
+	local fac = l_Lerp(self:GetIronSightsRatio(),0.6,0.15)
 	
 	--calculate angle differences
 	
@@ -2222,6 +2234,7 @@ Notes:  This is used for calculating the swep viewmodel position.  However, don'
 Purpose:  Main SWEP function
 ]]--
 
+local gunbob_intensity_cvar = GetConVar("cl_tfa_gunbob_intensity")
 local cl_tfa_viewmodel_offset_x = GetConVar("cl_tfa_viewmodel_offset_x")
 local cl_tfa_viewmodel_offset_y = GetConVar("cl_tfa_viewmodel_offset_y")
 local cl_tfa_viewmodel_offset_z = GetConVar("cl_tfa_viewmodel_offset_z")
@@ -2235,31 +2248,16 @@ local ang5=Angle()
 
 local hidevec = Vector(0,0,-10000)
 
+local targpos,targang,ft, mvfac
+
+local ironsights_expensive = false
+
 function SWEP:GetViewModelPosition(pos, ang)
 
 	if self.Callback.GetViewModelPosition then
 		local val,val2 = self.Callback.GetViewModelPosition(self, pos, ang)
 		if val then return val,val2 end
 	end
-	
-	--[[
-	
-	ang:Normalize()
-	
-	if !self.OldAng then
-		self.OldAng = ang
-	end
-	
-	
-	local newang = ang * 1
-	
-	ang.p = math.Approach(self.OldAng.p,ang.p, (ang.p - self.OldAng.p) * FrameTime() * 15)
-	ang.y = math.Approach(self.OldAng.y,ang.y, (ang.y - self.OldAng.y) * FrameTime() * 15)
-	ang.r = math.Approach(self.OldAng.r,ang.r, (ang.r - self.OldAng.r) * FrameTime() * 15)
-	
-	self.OldAng = ang
-	
-	]]--
 	
 	if !self.ogviewmodelfov then self.ogviewmodelfov = self.ViewModelFOV end
 	
@@ -2331,20 +2329,20 @@ function SWEP:GetViewModelPosition(pos, ang)
 	ang5.r = ang.r
 	
 	--[[
-	self.SwayScale 	= Lerp(isp,1,self.IronBobMult)
-	self.SwayScale  = Lerp(rsp,self.SwayScale,self.SprintBobMult)
+	self.SwayScale 	= l_Lerp(isp,1,self.IronBobMult)
+	self.SwayScale  = l_Lerp(rsp,self.SwayScale,self.SprintBobMult)
 	]]--
 	
-	--self.BobScale 	= Lerp(isp,1,self.IronBobMult)
-	--self.BobScale  = Lerp(rsp,self.BobScale,self.SprintBobMult)
+	--self.BobScale 	= l_Lerp(isp,1,self.IronBobMult)
+	--self.BobScale  = l_Lerp(rsp,self.BobScale,self.SprintBobMult)
 	self.BobScale = 0 
 	self.SwayScale = 0
 	
 	local mvfac = self.Owner:GetVelocity():Length()/self.Owner:GetRunSpeed()
 	
-	self.BobScaleCustom 	= Lerp(isp,1,Lerp(mvfac,self.IronBobMult,self.IronBobMultWalk))
-	self.BobScaleCustom  = Lerp(rsp,self.BobScaleCustom,self.SprintBobMult)
-	self.BobScaleCustom  = Lerp(self.CLInspectingProgress,self.BobScaleCustom,0.2)
+	self.BobScaleCustom 	= l_Lerp(isp,1,l_Lerp(mvfac,self.IronBobMult,self.IronBobMultWalk))
+	self.BobScaleCustom  = l_Lerp(rsp,self.BobScaleCustom,self.SprintBobMult)
+	self.BobScaleCustom  = l_Lerp(self.CLInspectingProgress,self.BobScaleCustom,0.2)
 	
 	ang2:RotateAroundAxis(ang2:Right(), 		tmp_isa.x)
 	ang2:RotateAroundAxis(ang2:Up(), 		tmp_isa.y)
@@ -2426,11 +2424,11 @@ function SWEP:GetViewModelPosition(pos, ang)
 	
 	--Start viewbob code
 	
-	local gunbobintensity = GetConVarNumber("cl_tfa_gunbob_intensity",1) * 0.65 * 0.66
+	local gunbobintensity = gunbob_intensity_cvar:GetFloat() * 0.65 * 0.66
 	
 	pos, ang = self:CalculateBob( pos, ang, gunbobintensity)
 	
-	local qerp1 = Lerp(self.CLIronSightsProgress and self.CLIronSightsProgress or 0,0,self.ViewModelFlip and 1 or -1)*15
+	local qerp1 = l_Lerp(self.CLIronSightsProgress and self.CLIronSightsProgress or 0,0,self.ViewModelFlip and 1 or -1)*15
 	
 	if !ang then return end 
 	
@@ -2458,7 +2456,7 @@ function SWEP:GetViewModelPosition(pos, ang)
 	
 	ang:Normalize()
 	
-	return pos, ang 
+	return pos, ang
 end
 
 --[[ Generic Backend Functions  ]]--
@@ -2474,6 +2472,8 @@ Returns:  Spray cone, Recoil
 Notes:  This is serverside/shared.  For per-frame, like used for the HUD, use ClientCalculateConeRecoil
 Purpose:  Main SWEP function
 ]]--
+
+local dynacc_cvar = GetConVar("sv_tfa_dynamicaccuracy")
 
 function SWEP:CalculateConeRecoil()
 
@@ -2491,7 +2491,7 @@ function SWEP:CalculateConeRecoil()
 	local dynacc = false 
 	local isr=self:GetIronSightsRatio()
 	
-	if GetConVarNumber("sv_tfa_dynamicaccuracy",1)==1 and ( !(self.Primary.NumShots>1) ) then
+	if dynacc_cvar:GetBool() and ( self.Primary.NumShots<=1 ) then
 		dynacc=true
 	end
 	
@@ -2502,34 +2502,34 @@ function SWEP:CalculateConeRecoil()
 	local recv = self.Primary.Recoil * 5
 	
 	if dynacc then
-		CurrentCone = Lerp( isr_2, Lerp(isr_1, acv, acv*self.ChangeStateAccuracyMultiplier) , self.Primary.IronAccuracy)
-		CurrentRecoil = Lerp( isr_2, Lerp(isr_1, recv, recv*self.ChangeStateRecoilMultiplier) , recv*self.IronRecoilMultiplier)
+		CurrentCone = l_Lerp( isr_2, l_Lerp(isr_1, acv, acv*self.ChangeStateAccuracyMultiplier) , self.Primary.IronAccuracy)
+		CurrentRecoil = l_Lerp( isr_2, l_Lerp(isr_1, recv, recv*self.ChangeStateRecoilMultiplier) , recv*self.IronRecoilMultiplier)
 	else
-		CurrentCone = Lerp(isr,acv,self.Primary.IronAccuracy)
-		CurrentRecoil = Lerp(isr,recv,recv*self.IronRecoilMultiplier)
+		CurrentCone = l_Lerp(isr,acv,self.Primary.IronAccuracy)
+		CurrentRecoil = l_Lerp(isr,recv,recv*self.IronRecoilMultiplier)
 	end
 	
 	local crc_1=math.Clamp(self:GetCrouchingRatio()*2,0,1)
 	local crc_2=math.Clamp((self:GetCrouchingRatio()-0.5)*2,0,1)
 	
 	if dynacc then
-		CurrentCone = Lerp( crc_2, Lerp(crc_1, CurrentCone, CurrentCone*self.ChangeStateAccuracyMultiplier) , CurrentCone * self.CrouchAccuracyMultiplier)
-		CurrentRecoil = Lerp( crc_2, Lerp(crc_1, CurrentRecoil, self.Primary.Recoil*self.ChangeStateRecoilMultiplier) , CurrentRecoil * self.CrouchRecoilMultiplier)
+		CurrentCone = l_Lerp( crc_2, l_Lerp(crc_1, CurrentCone, CurrentCone*self.ChangeStateAccuracyMultiplier) , CurrentCone * self.CrouchAccuracyMultiplier)
+		CurrentRecoil = l_Lerp( crc_2, l_Lerp(crc_1, CurrentRecoil, self.Primary.Recoil*self.ChangeStateRecoilMultiplier) , CurrentRecoil * self.CrouchRecoilMultiplier)
 	end
 	
 	local ovel = self.Owner:GetVelocity():Length()
 	local vfc_1 = math.Clamp(ovel/180,0,1)
 	
 	if dynacc then
-		CurrentCone = Lerp( vfc_1, CurrentCone, CurrentCone * self.WalkAccuracyMultiplier )
-		CurrentRecoil = Lerp( vfc_1, CurrentRecoil, CurrentRecoil * self.WallRecoilMultiplier )
+		CurrentCone = l_Lerp( vfc_1, CurrentCone, CurrentCone * self.WalkAccuracyMultiplier )
+		CurrentRecoil = l_Lerp( vfc_1, CurrentRecoil, CurrentRecoil * self.WallRecoilMultiplier )
 	end
 	
 	local jr = self:GetJumpingRatio()
 	
 	if dynacc then
-		CurrentCone = Lerp(jr, CurrentCone, CurrentCone * self.JumpAccuracyMultiplier)
-		CurrentRecoil = Lerp(jr, CurrentRecoil, CurrentRecoil * self.JumpRecoilMultiplier)
+		CurrentCone = l_Lerp(jr, CurrentCone, CurrentCone * self.JumpAccuracyMultiplier)
+		CurrentRecoil = l_Lerp(jr, CurrentRecoil, CurrentRecoil * self.JumpRecoilMultiplier)
 	end
 	
 	CurrentCone = CurrentCone * self:GetSpreadRatio()
@@ -2561,7 +2561,7 @@ function SWEP:ClientCalculateConeRecoil()
 	local dynacc = false 
 	local isr=self.CLIronSightsProgress
 	
-	if GetConVarNumber("sv_tfa_dynamicaccuracy",1)==1 and ( !(self.Primary.NumShots>1) ) then
+	if dynacc_cvar:GetBool() and ( self.Primary.NumShots<=1 ) then
 		dynacc=true
 	end
 	
@@ -2572,34 +2572,34 @@ function SWEP:ClientCalculateConeRecoil()
 	local recv = self.Primary.Recoil * 5
 	
 	if dynacc then
-		CurrentCone = Lerp( isr_2, Lerp(isr_1, acv, acv*self.ChangeStateAccuracyMultiplier) , self.Primary.IronAccuracy)
-		CurrentRecoil = Lerp( isr_2, Lerp(isr_1, recv, recv*self.ChangeStateRecoilMultiplier) , recv*self.IronRecoilMultiplier)
+		CurrentCone = l_Lerp( isr_2, l_Lerp(isr_1, acv, acv*self.ChangeStateAccuracyMultiplier) , self.Primary.IronAccuracy)
+		CurrentRecoil = l_Lerp( isr_2, l_Lerp(isr_1, recv, recv*self.ChangeStateRecoilMultiplier) , recv*self.IronRecoilMultiplier)
 	else
-		CurrentCone = Lerp(isr,acv,self.Primary.IronAccuracy)
-		CurrentRecoil = Lerp(isr,recv,recv*self.IronRecoilMultiplier)
+		CurrentCone = l_Lerp(isr,acv,self.Primary.IronAccuracy)
+		CurrentRecoil = l_Lerp(isr,recv,recv*self.IronRecoilMultiplier)
 	end
 	
 	local crc_1=math.Clamp(self.CLCrouchProgress*2,0,1)
 	local crc_2=math.Clamp((self.CLCrouchProgress-0.5)*2,0,1)
 	
 	if dynacc then
-		CurrentCone = Lerp( crc_2, Lerp(crc_1, CurrentCone, CurrentCone*self.ChangeStateAccuracyMultiplier) , CurrentCone * self.CrouchAccuracyMultiplier)
-		CurrentRecoil = Lerp( crc_2, Lerp(crc_1, CurrentRecoil, self.Primary.Recoil*self.ChangeStateRecoilMultiplier) , CurrentCone * self.CrouchRecoilMultiplier)
+		CurrentCone = l_Lerp( crc_2, l_Lerp(crc_1, CurrentCone, CurrentCone*self.ChangeStateAccuracyMultiplier) , CurrentCone * self.CrouchAccuracyMultiplier)
+		CurrentRecoil = l_Lerp( crc_2, l_Lerp(crc_1, CurrentRecoil, self.Primary.Recoil*self.ChangeStateRecoilMultiplier) , CurrentCone * self.CrouchRecoilMultiplier)
 	end
 	
 	local ovel = self.Owner:GetVelocity():Length()
 	local vfc_1 = math.Clamp(ovel/180,0,1)
 	
 	if dynacc then
-		CurrentCone = Lerp( vfc_1, CurrentCone, CurrentCone * self.WalkAccuracyMultiplier )
-		CurrentRecoil = Lerp( vfc_1, CurrentRecoil, CurrentRecoil * self.WallRecoilMultiplier )
+		CurrentCone = l_Lerp( vfc_1, CurrentCone, CurrentCone * self.WalkAccuracyMultiplier )
+		CurrentRecoil = l_Lerp( vfc_1, CurrentRecoil, CurrentRecoil * self.WallRecoilMultiplier )
 	end
 	
 	local jr = self.CLJumpProgress
 	
 	if dynacc then
-		CurrentCone = Lerp(jr, CurrentCone, CurrentCone * self.JumpAccuracyMultiplier)
-		CurrentRecoil = Lerp(jr, CurrentRecoil, CurrentRecoil * self.JumpRecoilMultiplier)
+		CurrentCone = l_Lerp(jr, CurrentCone, CurrentCone * self.JumpAccuracyMultiplier)
+		CurrentRecoil = l_Lerp(jr, CurrentRecoil, CurrentRecoil * self.JumpRecoilMultiplier)
 	end
 	
 	CurrentCone = CurrentCone * self.CLSpreadRatio
@@ -2614,6 +2614,8 @@ Returns:  Nothing.  However, calculates nearwall for the server.
 Notes:  This is the server/shared equivalent of CalculateNearWallCLF.
 Purpose:  Feature
 ]]--
+
+local nearwall_cvar = GetConVar("sv_tfa_near_wall")
 
 function SWEP:CalculateNearWallSH()
 
@@ -2643,7 +2645,7 @@ function SWEP:CalculateNearWallSH()
 		end
 	end
 	
-	if GetConVarNumber("sv_tfa_near_wall",1)==0 then
+	if !nearwall_cvar:GetBool() then
 		vnearwall = false
 	end
 	
@@ -2691,7 +2693,7 @@ function SWEP:CalculateNearWallCLF( ft )
 		end
 	end
 	
-	if GetConVarNumber("sv_tfa_near_wall",1)==0 then
+	if !nearwall_cvar:GetBool() then
 		vnearwall = false
 	end
 	
@@ -2710,6 +2712,8 @@ Returns:  Nothing.
 Notes:  This corrects ironsights so that you can't sight and sprint at the same time, etc.
 Purpose:  Feature.
 ]]--
+
+local ironsights_resight_cvar = GetConVar("cl_tfa_ironsights_resight")
 
 function SWEP:IronsSprint()
 
@@ -2740,13 +2744,13 @@ function SWEP:IronsSprint()
 	
 	if self.Owner.TFACasting or ( self.Owner.tfacastoffset and self.Owner.tfacastoffset>0.1) then spr = false end
 	
-	if self:Clip1() ==  0 and (GetConVarNumber("sv_tfa_allow_dryfire",1)==0) then
+	if self:Clip1() ==  0 and ( !dryfire_cvar:GetBool() ) then
 		if self:GetBursting() then
 			self:SetBursting(false)
 			self:SetNextBurst(CurTime() - 1)
 			self:SetBurstCount(0)
 		end
-	elseif self:Clip1() < 0 and IsValid(self.Owner) and self:GetAmmoReserve()<=0 and (GetConVarNumber("sv_tfa_allow_dryfire",1)==0) then
+	elseif self:Clip1() < 0 and IsValid(self.Owner) and self:GetAmmoReserve()<=0 and ( !dryfire_cvar:GetBool() ) then
 		if self:GetBursting() then
 			self:SetBursting(false)
 			self:SetNextBurst(CurTime() - 1)
@@ -2846,7 +2850,7 @@ function SWEP:IronsSprint()
 	
 	self:SetIronSights(is)
 	self:SetSprinting(spr)
-	if ( (CLIENT and GetConVarNumber("cl_tfa_ironsights_resight",0)==0) or ( SERVER and self.Owner:GetInfoNum("cl_tfa_ironsights_resight",0)==0) ) then
+	if ( (CLIENT and !ironsights_resight_cvar:GetBool() ) or ( SERVER and self.Owner:GetInfoNum("cl_tfa_ironsights_resight",0)==0) ) then
 		self:SetIronSightsRaw(is)
 	end
 end
@@ -2914,7 +2918,7 @@ function SWEP:CompleteReload()
 			if SERVER then
 				hudhangtime = self.Owner:GetInfoNum("cl_tfa_hud_hangtime",1)
 			else
-				hudhangtime = GetConVarNumber("cl_tfa_hud_hangtime",1)
+				hudhangtime = hudhangtime_cvar:GetFloat()
 			end
 			
 			local maxclip=self.Primary.ClipSize
@@ -2939,14 +2943,15 @@ Returns:  Nothing.  However, calculates OMG so much stuff what is this horrible 
 Notes:  This is essential.
 Purpose:  Don't remove this, seriously.
 ]]--
+	
+local isreloading,isshooting,isdrawing,isholstering, issighting, issprinting, htv, hudhangtime, isbolttimer, isinspecting, isfidgeting
+	
 function SWEP:ProcessTimers()
 
 	if self.Callback.ProcessTimers then
 		local val = self.Callback.ProcessTimers(self)
 		if val then return val end
 	end
-	
-	local isreloading,isshooting,isdrawing,isholstering, issighting, issprinting, htv, hudhangtime, isbolttimer, isinspecting, isfidgeting
 	
 	isreloading=self:GetReloading()
 	isshooting=self:GetShooting()
@@ -2962,9 +2967,9 @@ function SWEP:ProcessTimers()
 	isfidgeting = self:GetFidgeting()
 	hudhangtime = 1
 	
-	if isfidgeting then
+	if isfidgeting and !htv then
 		self:SetHUDThreshold(true)
-		self:SetHUDThresholdEnd(CurTime() + hudhangtime)
+		self:SetHUDThresholdEnd( self:GetNextIdleAnim() + hudhangtime)
 	end
 	
 	--[[
@@ -2972,13 +2977,13 @@ function SWEP:ProcessTimers()
 		self:SetNextIdleAnim(CurTime()+30)
 	end
 	]]--
-	if self:OwnerIsValid() then
-		if SERVER then
-			hudhangtime = self.Owner:GetInfoNum("cl_tfa_hud_hangtime",1)
-		else
-			hudhangtime = GetConVarNumber("cl_tfa_hud_hangtime",1)
-		end
+	
+	if SERVER then
+		hudhangtime = self.Owner:GetInfoNum("cl_tfa_hud_hangtime",1)
+	else
+		hudhangtime = hudhangtime_cvar:GetFloat()
 	end
+	
 	isbolttimer = self:GetBoltTimer()
 	if isdrawing and CurTime()>self:GetDrawingEnd() then
 		if IsValid(self.OwnerViewModel) then

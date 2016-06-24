@@ -96,11 +96,10 @@ local function QerpVector( progress, startang, endang, totaltime )
 end
 
 --Bob code
-local tsv,ftv,ftvc,ws,rs
+local ftv,ftvc,ws,rs
 local owvel, meetswalkgate, meetssprintgate, walkfactorv, runfactorv, sprintfactorv
 
 function SWEP:DoBobFrame()
-	tsv = GetConVarNumber("host_timescale", 1)
 	ftv = FrameTime()
 	ws = self.Owner:GetWalkSpeed()
 	rs = self.Owner:GetRunSpeed()

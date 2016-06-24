@@ -76,13 +76,14 @@ if CLIENT then
 	
 	local function TFARenderScreen()
 		
+		--[[
 		for k,v in pairs(player.GetAll()) do
 			
 			if IsValid(v) then
 			
 				local self = v:GetActiveWeapon()
 				
-				if IsValid(self) and self!=LocalPlayer() then
+				if IsValid(self) and v!=LocalPlayer() then
 					
 					--start
 		
@@ -169,6 +170,8 @@ if CLIENT then
 			end
 		
 		end
+		
+		]]--
 		
 		if !IsValid(LocalPlayer()) or !IsValid(LocalPlayer():GetActiveWeapon()) then return end
 		
