@@ -211,7 +211,6 @@ function bullet:Penetrate( ply , traceres, dmginfo, weapon )
 	damagescale = math.Clamp(damagescale / math.max(1-weapon.Primary.RangeFalloff,0.01),0,1)
 	damagescale = ( 1-GetConVarNumber("sv_tfa_range_modifier",0.5) ) + ( math.Clamp(1-damagescale,0,1) * GetConVarNumber("sv_tfa_range_modifier",0.5) )
 	
-	print(damagescale)
 	dmginfo:ScaleDamage(damagescale)
 	dmginfo:SetDamageType( weapon.DamageType or weapon.Primary.DamageType or DMG_BULLET )
 	
