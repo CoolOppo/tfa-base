@@ -880,12 +880,6 @@ function SWEP:OnRemove()
 		self:CleanModels(self.VElements) -- create viewmodels
 		self:CleanModels(self.WElements) -- create worldmodels
 	end
-	
-	if self.ResetBonePositions then
-		self:ResetBonePositions( true )
-	else
-		self:CallOnClient("ResetBonePositions","aaa")
-	end
 
 end
 
@@ -911,12 +905,6 @@ function SWEP:OnDrop()
 	if CLIENT then
 		self:CleanModels(self.VElements) -- create viewmodels
 		self:CleanModels(self.WElements) -- create worldmodels
-	end
-	
-	if self.ResetBonePositions then
-		self:ResetBonePositions( true )
-	else
-		self:CallOnClient("ResetBonePositions","aaa")
 	end
 
 end
@@ -1082,17 +1070,12 @@ function SWEP:Holster( switchtowep )
 			end
 		end
 	else
-	
-		if self.ResetBonePositions then
-			self:ResetBonePositions( true )
-		else
-			self:CallOnClient("ResetBonePositions","aaa")
-		end
 		
 		if CLIENT then
 			self:CleanModels(self.VElements)
 			self:CleanModels(self.WElements)
 		end
+		
 		return true
 	end
 end
@@ -1919,7 +1902,7 @@ function SWEP:PlayerThinkClientFrame( ply )
 	
 	if act==ACT_VM_HOLSTER or act==ACT_VM_HOLSTER_EMPTY then 
 		nhf = 0
-	elseif ( sp and self:GetHolstering() ) or self:GetUnpredictedHolstering() then
+	elseif ( self:GetHolstering() ) or self:GetUnpredictedHolstering() then
 		nhf = 1
 	end
 	
@@ -2240,7 +2223,8 @@ local cl_tfa_viewmodel_offset_y = GetConVar("cl_tfa_viewmodel_offset_y")
 local cl_tfa_viewmodel_offset_z = GetConVar("cl_tfa_viewmodel_offset_z")
 local fovmod_add = GetConVar("cl_tfa_viewmodel_offset_fov")
 local fovmod_mult = GetConVar("cl_tfa_viewmodel_multiplier_fov")
-	
+
+local tmp_nwsightsang
 local ang2=Angle()
 local ang3=Angle()
 local ang4=Angle()
@@ -2250,7 +2234,7 @@ local hidevec = Vector(0,0,-10000)
 
 local targpos,targang,ft, mvfac
 
-local ironsights_expensive = false
+local qerp_threshold = 0.01
 
 function SWEP:GetViewModelPosition(pos, ang)
 
@@ -2344,34 +2328,42 @@ function SWEP:GetViewModelPosition(pos, ang)
 	self.BobScaleCustom  = l_Lerp(rsp,self.BobScaleCustom,self.SprintBobMult)
 	self.BobScaleCustom  = l_Lerp(self.CLInspectingProgress,self.BobScaleCustom,0.2)
 	
-	ang2:RotateAroundAxis(ang2:Right(), 		tmp_isa.x)
-	ang2:RotateAroundAxis(ang2:Up(), 		tmp_isa.y)
-	ang2:RotateAroundAxis(ang2:Forward(), 	tmp_isa.z)
+	if isp>qerp_threshold then
+		ang2:RotateAroundAxis(ang2:Right(), 		tmp_isa.x)
+		ang2:RotateAroundAxis(ang2:Up(), 		tmp_isa.y)
+		ang2:RotateAroundAxis(ang2:Forward(), 	tmp_isa.z)
 	
-	ang=QerpAngle(isp, ang, ang2)
-	
-	ang3:RotateAroundAxis(ang3:Right(), 		tmp_rsa.x)
-	ang3:RotateAroundAxis(ang3:Up(), 		tmp_rsa.y)
-	ang3:RotateAroundAxis(ang3:Forward(), 	tmp_rsa.z)
-	
-	ang=QerpAngle(rsp, ang, ang3)
-	
-	local tmp_nwsightsang = tmp_rsa
-	if self.NearWallSightsAng then
-		tmp_nwsightsang = self.NearWallSightsAng
+		ang=QerpAngle(isp, ang, ang2)
 	end
 	
-	ang4:RotateAroundAxis(ang4:Right(), 		tmp_nwsightsang.x)
-	ang4:RotateAroundAxis(ang4:Up(), 		tmp_nwsightsang.y)
-	ang4:RotateAroundAxis(ang4:Forward(), 	tmp_nwsightsang.z)
+	if rsp>qerp_threshold then
+		ang3:RotateAroundAxis(ang3:Right(), 		tmp_rsa.x)
+		ang3:RotateAroundAxis(ang3:Up(), 		tmp_rsa.y)
+		ang3:RotateAroundAxis(ang3:Forward(), 	tmp_rsa.z)
+		
+		ang=QerpAngle(rsp, ang, ang3)
+	end
 	
-	ang=QerpAngle(nwp, ang, ang4)
+	if nwp>qerp_threshold then
+		tmp_nwsightsang = tmp_rsa
+		if self.NearWallSightsAng then
+			tmp_nwsightsang = self.NearWallSightsAng
+		end
+		
+		ang4:RotateAroundAxis(ang4:Right(), 		tmp_nwsightsang.x)
+		ang4:RotateAroundAxis(ang4:Up(), 		tmp_nwsightsang.y)
+		ang4:RotateAroundAxis(ang4:Forward(), 	tmp_nwsightsang.z)
+		
+		ang=QerpAngle(nwp, ang, ang4)
+	end
 	
-	ang5:RotateAroundAxis(ang5:Right(), 		tmp_inspecta.x)
-	ang5:RotateAroundAxis(ang5:Up(), 		tmp_inspecta.y)
-	ang5:RotateAroundAxis(ang5:Forward(), 	tmp_inspecta.z)
-	
-	ang=QerpAngle(inspectrat, ang, ang5)
+	if inspectrat>qerp_threshold then
+		ang5:RotateAroundAxis(ang5:Right(), 		tmp_inspecta.x)
+		ang5:RotateAroundAxis(ang5:Up(), 		tmp_inspecta.y)
+		ang5:RotateAroundAxis(ang5:Forward(), 	tmp_inspecta.z)
+		
+		ang=QerpAngle(inspectrat, ang, ang5)
+	end
 	
 	opos:Add( ang:Right() * (self.VMPos.x) )
 	opos:Add( ang:Forward() * (self.VMPos.y) )
@@ -2381,40 +2373,48 @@ function SWEP:GetViewModelPosition(pos, ang)
 	pos:Add( ang:Forward() * (self.VMPos.y) )
 	pos:Add( ang:Up() * (self.VMPos.z) )
 	
-	target = pos * 1 -- Copy pos to target
-	target:Add( ang:Right() * (tmp_ispos.x) )
-	target:Add( ang:Forward() * (tmp_ispos.y) )
-	target:Add( ang:Up() * (tmp_ispos.z) )
-		
-	pos=QerpVector( isp, pos, target)
-	
-	target = pos * 1 -- Copy pos to target
-	target:Add( ang:Right() * (tmp_rspos.x) )
-	target:Add( ang:Forward() * (tmp_rspos.y) )
-	target:Add( ang:Up() * (tmp_rspos.z) )
-		
-	pos=QerpVector( rsp, pos, target)
-	
-	local tmp_nwsightspos = tmp_rspos
-	if self.NearWallSightsPos then
-		tmp_nwsightspos = self.NearWallSightsPos
+	if isp>qerp_threshold then
+		target = pos * 1 -- Copy pos to target
+		target:Add( ang:Right() * (tmp_ispos.x) )
+		target:Add( ang:Forward() * (tmp_ispos.y) )
+		target:Add( ang:Up() * (tmp_ispos.z) )
+			
+		pos=QerpVector( isp, pos, target)
 	end
 	
-	target = opos * 1 -- Copy pos to target
-	target:Add( ang:Right() * (tmp_nwsightspos.x) )
-	target:Add( ang:Forward() * (tmp_nwsightspos.y) )
-	target:Add( ang:Up() * (tmp_nwsightspos.z) )
-		
-	pos=QerpVector( nwp, pos, target)
+	if rsp>qerp_threshold then
+		target = pos * 1 -- Copy pos to target
+		target:Add( ang:Right() * (tmp_rspos.x) )
+		target:Add( ang:Forward() * (tmp_rspos.y) )
+		target:Add( ang:Up() * (tmp_rspos.z) )
+			
+		pos=QerpVector( rsp, pos, target)
+	end
 	
-	target = opos * 1 -- Copy pos to target
-	target:Add( ang:Right() * (tmp_inspectpos.x) )
-	target:Add( ang:Forward() * (tmp_inspectpos.y) )
-	target:Add( ang:Up() * (tmp_inspectpos.z) )
+	if nwp>qerp_threshold then
+		tmp_nwsightspos = tmp_rspos
+		if self.NearWallSightsPos then
+			tmp_nwsightspos = self.NearWallSightsPos
+		end
 		
-	pos=QerpVector( inspectrat, pos, target)
+		target = opos * 1 -- Copy pos to target
+		target:Add( ang:Right() * (tmp_nwsightspos.x) )
+		target:Add( ang:Forward() * (tmp_nwsightspos.y) )
+		target:Add( ang:Up() * (tmp_nwsightspos.z) )
+			
+		pos=QerpVector( nwp, pos, target)
+	end
 	
-	if self.BlowbackEnabled then
+	if inspectrat>qerp_threshold then
+		target = opos * 1 -- Copy pos to target
+		target:Add( ang:Right() * (tmp_inspectpos.x) )
+		target:Add( ang:Forward() * (tmp_inspectpos.y) )
+		target:Add( ang:Up() * (tmp_inspectpos.z) )
+			
+		pos=QerpVector( inspectrat, pos, target)
+	end
+	
+	if self.BlowbackEnabled and self.BlowbackCurrentRoot>qerp_threshold then
 		--if !(  self.Blowback_PistolMode and !( self:Clip1()==-1 or self:Clip1()>0 ) ) then
 			pos:Add( ang:Right() * (self.BlowbackVector.x) * self.BlowbackCurrentRoot )
 			pos:Add( ang:Forward() * (self.BlowbackVector.y) * self.BlowbackCurrentRoot )
@@ -3108,7 +3108,6 @@ function SWEP:ProcessTimers()
 		self:SetCanHolster(true)
 		self:SetHolstering(false)
 		if IsFirstTimePredicted() and ( CLIENT or sp ) then
-			self:ResetBonePositions()
 			self:CleanModels(self.VElements)
 			self:CleanModels(self.WElements)
 		end

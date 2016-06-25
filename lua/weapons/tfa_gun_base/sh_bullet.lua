@@ -78,6 +78,8 @@ Purpose:  Bullet
 
 local soundspeed = 1125.33 * 16
 
+local TracerName
+
 function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet, bulletoverride)
 
 	if self.Callback.ShootBullet then
@@ -129,8 +131,6 @@ function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet,
 			
 		end		
 	else
-	
-		local TracerName
 		
 		if self.Tracer == 1 then
 			TracerName = "Ar2Tracer"
@@ -152,6 +152,7 @@ function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet,
 		bullet.Spread.x=aimcone-- Aim Cone X
 		bullet.Spread.y=aimcone-- Aim Cone Y
 		bullet.Tracer	= self.TracerCount and self.TracerCount or 3		-- Show a tracer on every x bullets
+		bullet.TracerName = TracerName
 		bullet.PenetrationCount = 0
 		bullet.AmmoType = self:GetPrimaryAmmoType()
 		bullet.Force	= damage/3 * math.sqrt((self.Primary.KickUp+self.Primary.KickDown+self.Primary.KickHorizontal )) * GetConVarNumber("sv_tfa_force_multiplier",1) * self:GetAmmoForceMultiplier()				-- Amount of force to give to phys objects
@@ -200,10 +201,13 @@ local decalbul = {
 }
 
 local penetration_cvar = GetConVar("sv_tfa_bullet_penetration")
+local ricochet_cvar = GetConVar("sv_tfa_bullet_ricochet")
 
 function bullet:Penetrate( ply , traceres, dmginfo, weapon )
 	
-	if !IsValid(weapon) or !SERVER then return end
+	if !IsValid(weapon) then return end
+	
+	local hitent = traceres.Entity
 	
 	local bulletdistance =  ( ( traceres.HitPos - traceres.StartPos ):Length( ) )
 	local damagescale = bulletdistance / weapon.Primary.Range
@@ -213,6 +217,52 @@ function bullet:Penetrate( ply , traceres, dmginfo, weapon )
 	
 	dmginfo:ScaleDamage(damagescale)
 	dmginfo:SetDamageType( weapon.DamageType or weapon.Primary.DamageType or DMG_BULLET )
+	
+	if SERVER and IsValid(ply) and ply:IsPlayer() and IsValid(hitent) and ( hitent:IsPlayer() or hitent:IsNPC() ) then
+		net.Start("tfaHitmarker")
+		net.Send(ply)
+	end
+	
+	if weapon.DamageType then
+		if dmginfo:IsDamageType(DMG_SHOCK) or dmginfo:IsDamageType(DMG_BLAST) then
+			if traceres.Hit and IsValid(hitent) then
+				if hitent:GetClass()=="npc_strider" then
+					hitent:SetHealth(math.max(hitent:Health()-dmginfo:GetDamage(),2))
+					if hitent:Health()<=3 then
+						hitent:Extinguish()
+						hitent:Fire("sethealth","-1",0.01)
+						dmginfo:ScaleDamage(0)
+					end
+				end
+			end
+		end
+		if dmginfo:IsDamageType(DMG_BURN) then
+			if traceres.Hit and IsValid(hitent) and !traceres.HitWorld and !traceres.HitSky then
+				if dmginfo:GetDamage()>1 then
+					if hitent.Ignite then
+						hitent:Ignite(dmginfo:GetDamage()/2,1)
+					end
+				end
+			end
+		end
+		if dmginfo:IsDamageType(DMG_BLAST) then
+			if traceres.Hit then
+				local tmpdmg = dmginfo:GetDamage()
+				util.BlastDamage(weapon,weapon.Owner,traceres.HitPos,tmpdmg/2,tmpdmg)
+				local fx = EffectData()
+				fx:SetOrigin(traceres.HitPos)
+				fx:SetNormal(traceres.HitNormal)
+				if tmpdmg>90 then
+					util.Effect("Explosion",fx)
+				elseif tmpdmg>45 then
+					util.Effect("cball_explode",fx)				
+				else
+					util.Effect("ManhackSparks",fx)
+				end
+				dmginfo:ScaleDamage(0.15)
+			end
+		end
+	end
 	
 	if penetration_cvar and !penetration_cvar:GetBool() then return end
 	
@@ -237,7 +287,8 @@ function bullet:Penetrate( ply , traceres, dmginfo, weapon )
 	self.Src 		= pentraceres.HitPos
 	self.Dir 		= traceres.Normal
 	if ( self.Num or 0 )<=1 then self.Spread = Vector(0,0,0) end
-	self.Tracer 	= 0
+	self.Tracer 	= weapon.TracerName and 1 or 0
+	self.TracerName = weapon.TracerName
 	self.Force		= Lerp( pentraceres.HitPos:Distance(traceres.HitPos)/penetrationoffset:Length(), self.Force, self.Force * mult/10 )
 	self.Damage		= Lerp( pentraceres.HitPos:Distance(traceres.HitPos)/penetrationoffset:Length(), self.Damage, self.Damage * mult/10 )
 	self.PenetrationCount = self.PenetrationCount + 1
@@ -260,6 +311,8 @@ function bullet:Penetrate( ply , traceres, dmginfo, weapon )
 end
 
 function bullet:Ricochet( ply, traceres, dmginfo, weapon)
+	
+	if ricochet_cvar and !ricochet_cvar:GetBool() then return end
 	
 	if self.PenetrationCount > weapon.MaxPenetrationCounter then
 		return
@@ -307,8 +360,6 @@ function bullet:Ricochet( ply, traceres, dmginfo, weapon)
 			self.Spread = vector_origin
 			self.Src=traceres.HitPos
 			self.Dir=((2 * traceres.HitNormal * dp) + traceres.Normal) + (VectorRand() * 0.02)
-			self.Tracer=0
-			self.TracerName = ""
 			
 			if GetTFARicochetEnabled() then
 				local fx = EffectData()
@@ -318,9 +369,11 @@ function bullet:Ricochet( ply, traceres, dmginfo, weapon)
 				util.Effect("tfa_ricochet",fx)
 			end
 			
-			if IsValid(ply) then
-				ply:FireBullets( self )
-			end
+			timer.Simple(0,function()
+				if IsValid(ply) then
+					ply:FireBullets( self )
+				end
+			end)
 			
 			self.PenetrationCount = self.PenetrationCount + 1
 			

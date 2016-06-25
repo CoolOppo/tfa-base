@@ -22,7 +22,7 @@ function SWEP:InitMods()
 	if self:OwnerIsValid() then
 		local vm = self.Owner:GetViewModel()
 		if IsValid(vm) then
-			self:ResetBonePositions(vm)
+			--self:ResetBonePositions(vm)
 			if (self.ShowViewModel == nil or self.ShowViewModel) then
 				vm:SetColor(Color(255,255,255,255))
 			else
@@ -130,6 +130,9 @@ function SWEP:ViewModelDrawn()
 	end
 	
 	if (!self.VElements) then return end
+	
+	self:CreateModels(self.VElements)
+	
 	if (!self.vRenderOrder) then
 		-- // we build a render order because sprites need to be drawn after models
 		self.vRenderOrder = {}
@@ -266,6 +269,8 @@ function SWEP:DrawWorldModel()
 	end
 	
 	if (!self.WElements) then return end
+	
+	self:CreateModels(self.WElements)
 	
 	if (!self.wRenderOrder) then
 		self.wRenderOrder = {}
@@ -422,7 +427,7 @@ Purpose:  SWEP Construction Kit Compatibility / Basic Attachments.
 
 function SWEP:CleanModels( tabl )
 	if (!tabl) then return end
-		-- // Create the clientside models here because Garry says we can't do it in the render hook
+	
 	for k, v in pairs( tabl ) do
 		if (v.type == "Model" and v.curmodel) then
 			
@@ -457,9 +462,9 @@ Purpose:  SWEP Construction Kit Compatibility / Basic Attachments.
 
 function SWEP:CreateModels( tabl )
 	if (!tabl) then return end
-		-- // Create the clientside models here because Garry says we can't do it in the render hook
+	
 	for k, v in pairs( tabl ) do
-		if (v.type == "Model" and v.model and v.model != "" and (!IsValid(v.curmodel) or v.curmodelname != v.model) and 
+		if (v.type == "Model" and v.model and (!IsValid(v.curmodel) or v.curmodelname != v.model) and v.model != "" and 
 				string.find(v.model, ".mdl") and file.Exists (v.model, "GAME") ) then
 			
 			v.curmodel = ClientsideModel(v.model, RENDERGROUP_VIEWMODEL)
@@ -507,6 +512,7 @@ Purpose:  SWEP Construction Kit Compatibility / Basic Attachments.
 ]]--
 
 local bpos, bang
+local onevec = Vector(1,1,1)
 
 function SWEP:UpdateBonePositions(vm)
 	
@@ -531,9 +537,9 @@ function SWEP:UpdateBonePositions(vm)
 				vbones[bonename] = self.ViewModelBoneMods[bonename]
 			else
 				vbones[bonename] = { 
-					scale = Vector(1,1,1),
-					pos = Vector(0,0,0),
-					angle = Angle(0,0,0)
+					scale = onevec,
+					pos = vector_origin,
+					angle = angle_zero
 				}
 			end
 			if self.BlowbackBoneMods[bonename] then
@@ -589,8 +595,6 @@ function SWEP:UpdateBonePositions(vm)
 				vm:ManipulateBoneAngles( bone, bang )
 			end
 		end
-	else
-		self:ResetBonePositions(vm)
 	end
 end
 	
@@ -604,10 +608,9 @@ Purpose:  SWEP Construction Kit Compatibility / Basic Attachments.
  
 function SWEP:ResetBonePositions(val)
 	
-	if !self.ViewModelBoneMods and !self.BlowbackBoneMods and !val then return end
-	
 	if SERVER then
 		self:CallOnClient("ResetBonePositions","")
+		return
 	end
 	
 	vm = self.Owner:GetViewModel()
@@ -620,3 +623,4 @@ function SWEP:ResetBonePositions(val)
 		vm:ManipulateBonePosition( i, vector_origin )
 	end
 end
+

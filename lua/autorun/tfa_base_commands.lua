@@ -20,7 +20,7 @@ if CLIENT then
 								sv_tfa_fx_gas_override = "-1",
 								sv_tfa_fx_ricochet_override = "-1",
 								sv_tfa_bullet_penetration = "1",
-								sv_tfa_bullet_ricochet = "1",
+								sv_tfa_bullet_ricochet = "0",
 								sv_tfa_reloads_legacy = "0",
 								sv_tfa_cmenu = "1"							
 							   }				
@@ -904,7 +904,7 @@ if GetConVar("sv_tfa_bullet_penetration") == nil then
 end
 	
 if GetConVar("sv_tfa_bullet_ricochet") == nil then
-	CreateConVar("sv_tfa_bullet_ricochet", "1", { FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE }, "Allow bullet ricochet?")
+	CreateConVar("sv_tfa_bullet_ricochet", "0", { FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE }, "Allow bullet ricochet?")
 end
 	
 if GetConVar("sv_tfa_holdtype_dynamic") == nil then

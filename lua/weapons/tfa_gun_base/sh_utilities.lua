@@ -740,7 +740,7 @@ function SWEP:GetAmmoForceMultiplier()
 			return 0.6--.308
 		end
 	elseif (am=="buckshot") then
-		return 0.4
+		return 0.6
 	elseif (am=="slam") then
 		return 0.6
 	elseif (am=="airboatgun") then 

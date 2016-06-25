@@ -60,6 +60,21 @@ SWEP.RTCode = function( self )
 end
 ]]--
 
+local onevec = Vector(1, 1, 1)
+
+function RBP( vm )
+	
+	local bc = vm:GetBoneCount()
+	if !bc or bc<=0 then return end
+	
+	for i=0, bc do
+		vm:ManipulateBoneScale( i, onevec )
+		vm:ManipulateBoneAngles( i, angle_zero )
+		vm:ManipulateBonePosition( i, vector_origin )
+	end
+
+end
+
 if CLIENT then
 	local props = {
 		['$translucent'] = 1
@@ -76,116 +91,24 @@ if CLIENT then
 	
 	local function TFARenderScreen()
 		
-		--[[
-		for k,v in pairs(player.GetAll()) do
-			
-			if IsValid(v) then
-			
-				local self = v:GetActiveWeapon()
-				
-				if IsValid(self) and v!=LocalPlayer() then
-					
-					--start
+		local lply = LocalPlayer()
 		
-					local vm = self.Owner:GetViewModel()
-					
-					if IsValid(vm) then
-						
-						if v.oldVmModel != vm:GetModel() or ( IsValid(self) and oldwepclass != self:GetClass() ) then
-							local mats = vm:GetMaterials()
-							if !mats then return end
-							local matcount = #mats
-							local i=0
-							while i<=matcount do
-								self.Owner:GetViewModel():SetSubMaterial(i,"")
-								i=i+1
-							end
-							v.oldVmModel = vm:GetModel()
-							
-							if IsValid(self) then
-								self.MaterialCached = nil
-						
-								v.oldwepclass = self:GetClass()
-						
-								local ow = self.Owner
-								if IsValid(ow) then
-									local owweps = ow:GetWeapons()
-									for k,v in pairs(owweps) do
-										if IsValid(v) and v:GetClass() == v.oldwepclass then
-											v.MaterialCached = nil							
-										end
-									end
-								end
-							end
-							
-						else
-						
-							v.oldwepclass = ""
-							
-							v.oldwepclass = self:GetClass()
-							
-							if self.MaterialTable then
-								
-								local vm = self.Owner:GetViewModel()
-								
-								if !self.MaterialCached then
-									self.MaterialCached = {}
-								
-									local mats = vm:GetMaterials()
-									
-									local i = 0
-									
-									while i<#mats do
-										self:SetSubMaterial(i,"")
-										vm:SetSubMaterial(i,"")
-										i=i+1
-									end
-									
-								end
-								
-								if #self.MaterialTable>=1 then
-									self:SetMaterial(self.MaterialTable[1])
-								else
-									self:SetMaterial("")
-								end
-								
-								for k,v in ipairs(self.MaterialTable) do
-									if !self.MaterialCached[k] then
-										self:SetSubMaterial(k-1,v)
-										self:SetSubMaterial(k,v)
-										vm:SetSubMaterial(k-1,v)
-										self.MaterialCached[k] = true
-									end
-								end
-								
-							end
-						end
-					end
-					
-					
-					--end of block
-					
-				end
-				
-			end
+		if !IsValid(lply) then return end
 		
-		end
-		
-		]]--
-		
-		if !IsValid(LocalPlayer()) or !IsValid(LocalPlayer():GetActiveWeapon()) then return end
-		
-		local self = LocalPlayer():GetActiveWeapon()
-		
-		local vm = self.Owner:GetViewModel()
+		local vm = lply:GetViewModel()
 		
 		if !IsValid(vm) then return end
 		
+		local self = lply:GetActiveWeapon()
+		
 		if oldVmModel != vm:GetModel() or ( IsValid(self) and oldwepclass != self:GetClass() ) then
+		
+			RBP(vm)
+			
 			local matcount = #vm:GetMaterials()
 			local i=0
 			while i<=matcount do
-				self.Owner:GetViewModel():SetSubMaterial(i,"")
+				vm:SetSubMaterial(i,"")
 				i=i+1
 			end
 			oldVmModel = vm:GetModel()
@@ -221,31 +144,13 @@ if CLIENT then
 			
 			if !self.MaterialCached then
 				self.MaterialCached = {}
-			
-				local mats = vm:GetMaterials()
 				
-				local i = 0
-				
-				while i<#mats do
-					vm:SetSubMaterial(i,"")
-					i=i+1
+				if #self.MaterialTable>=1 then
+					self:SetMaterial(self.MaterialTable[1])
+				else
+					self:SetMaterial("")
 				end
-				
-				i = 0
-				
-				mats = self:GetMaterials()
-				
-				while i<#mats do
-					self:SetSubMaterial(i,"")
-					i=i+1
-				end
-				
-			end
 			
-			if #self.MaterialTable>=1 then
-				self:SetMaterial(self.MaterialTable[1])
-			else
-				self:SetMaterial("")
 			end
 			
 			for k,v in ipairs(self.MaterialTable) do
