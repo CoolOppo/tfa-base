@@ -1,6 +1,7 @@
 local fx,sp
 
-function SWEP:MakeShellBridge()
+function SWEP:MakeShellBridge( ifp )
+	if ifp then
 		if self.LuaShellEjectDelay>0 then
 			timer.Simple(self.LuaShellEjectDelay, function()
 				if IsValid(self) and self:OwnerIsValid() then
@@ -10,7 +11,7 @@ function SWEP:MakeShellBridge()
 		else
 			self:MakeShell()
 		end
-		
+	end
 end
 
 function SWEP:MakeShell()
@@ -112,8 +113,6 @@ function SWEP:ShootEffectsCustom( ifp, tp )
 		net.WriteEntity(self)
 		if (sp) then net.Broadcast() else net.SendOmit(self.Owner) end
 	end
-	
-	--if sp and !CLIENT then self:CallOnClient("ShootEffectsCustom","") return end
 	
 	if ( CLIENT and ifp ) or (sp) then
 	

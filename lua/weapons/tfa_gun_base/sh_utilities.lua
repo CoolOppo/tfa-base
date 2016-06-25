@@ -614,6 +614,7 @@ function SWEP:GetFPMuzzleAttachment( )
 	
 	local ply=self.Owner
 	local vm = self.OwnerViewModel
+	if !IsValid(vm) then return 1 end
 	local obj = vm:LookupAttachment( self.MuzzleAttachment and self.MuzzleAttachment or "1")
 	
 	if self:GetSilenced() then

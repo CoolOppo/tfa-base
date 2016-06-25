@@ -301,6 +301,8 @@ Purpose:  Animation / Utility
 function SWEP:ChooseShootAnim( ifp )
 	if !self:OwnerIsValid() then return end
 	
+	self:MakeShellBridge( ifp )
+	
 	if !self.BlowbackEnabled or ( !self:GetIronSights() and self.Blowback_Only_Iron) then
 	
 		local tanim
@@ -328,15 +330,6 @@ function SWEP:ChooseShootAnim( ifp )
 			self:CallOnClient("AnimForce",tanim)
 		end
 		
-		
-		if self.LuaShellEject then
-			if ifp and CLIENT then
-				self:MakeShellBridge()
-			elseif game.SinglePlayer() and SERVER then
-				self:MakeShellBridge()		
-			end
-		end
-		
 		self.lastact = tanim
 		return success, tanim
 		
@@ -349,7 +342,7 @@ function SWEP:ChooseShootAnim( ifp )
 		end
 		
 		if ifp then
-			self:BlowbackFull()
+			self:BlowbackFull( ifp )
 		end
 		
 		self.lastact = -2
@@ -367,9 +360,6 @@ function SWEP:BlowbackFull()
 		self.lastact = -2
 		self.BlowbackCurrent = 1
 		self.BlowbackCurrentRoot = 1
-		if self.Blowback_Shell_Enabled and ( ( CLIENT and !game.SinglePlayer() ) or ( SERVER and game.SinglePlayer() ) ) then
-			self:MakeShellBridge()
-		end
 	end
 	
 end

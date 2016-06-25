@@ -1251,7 +1251,7 @@ if CLIENT then
 	ironsights_resight_cvar = GetConVar("cl_tfa_ironsights_resight")
 end
 
-local isreloading,isshooting,isdrawing,isholstering, issighting, issprinting, htv, hudhangtime, isbolttimer, isinspecting, isfidgeting, ct, owent, is_old, spr_old, ft, isnumber, rsnumber, isr, rsr, inspr
+local isreloading,isshooting,isdrawing,isholstering, issighting, issprinting, htv, hudhangtime, isbolttimer, isinspecting, isfidgeting, ct, owent, is_old, spr_old, ft, isnumber, rsnumber, isr, rsr, inspr,bash
 
 local tonetwork_thresh = 0.001
 
@@ -1278,6 +1278,7 @@ function SWEP:MainUpdate()
 	isinspecting = self:GetInspecting()
 	htv = self:GetHUDThreshold()
 	isfidgeting = self:GetFidgeting()
+	bash = self.GetBashing and self:GetBashing()
 	
 	if SERVER then
 		isr = self:GetIronSightsRatio()
@@ -1574,6 +1575,29 @@ function SWEP:MainUpdate()
 		issighting=false	
 	end
 	
+	if (bash) then
+		if issighting then
+			issighting = false
+		end
+		if issprinting then
+			issprinting = false
+		end
+		if isinspecting then
+			self:SetInspecting(false)
+			isinspecting = false
+		end
+		if isbursting then
+			isbursting = false
+			self:SetBursting(false)
+			self:SetNextBurst(CurTime() - 1)
+			self:SetBurstCount(0)
+		end
+		if nw then
+			self:SetNearWall(false)
+			nw = false
+		end
+	end
+	
 	if ( issprinting or self:IsSafety() ) then
 		issighting=false
 		if isinspecting then
@@ -1701,9 +1725,9 @@ function SWEP:MainUpdate()
 	rsnumber = (issprinting and 1 or 0)
 	
 	if SERVER then
-		if !sp then
+		--if !sp then
 			self:CalculateNearWallSH()
-		end
+		--end
 		
 		compensatedft = ft / ( self.IronSightTime * 0.4 )
 		compensatedft_sp = ft / ( ( self.RunSightTime and self.RunSightTime or self.IronSightTime*2 ) * 0.4 )
@@ -1802,6 +1826,8 @@ Purpose:  Feature
 
 function SWEP:CycleSafety()
 	
+	ct = l_CT()
+	
 	local fm = self:GetFireMode()
 	if fm !=#self.FireModes then
 		self.LastFireMode = fm
@@ -1812,12 +1838,12 @@ function SWEP:CycleSafety()
 	
 	self.Weapon:EmitSound("Weapon_AR2.Empty")
 	
-	self.Weapon:SetNextBurst( l_CT()+math.max( 1/(self:GetRPM()/60), 0.25 ) )
-	self.Weapon:SetNextPrimaryFire( l_CT()+math.max( 1/(self:GetRPM()/60), 0.25 ) )
+	self.Weapon:SetNextBurst( ct+math.max( 1/(self:GetRPM()/60), 0.25 ) )
+	self.Weapon:SetNextPrimaryFire( ct+math.max( 1/(self:GetRPM()/60), 0.25 ) )
 
 	self:SetFireModeChanging( true )
 
-	self:SetFireModeChangeEnd( l_CT() + math.max( 1/(self:GetRPM()/60), 0.25 ) )
+	self:SetFireModeChangeEnd( ct + math.max( 1/(self:GetRPM()/60), 0.25 ) )
 end
 
 --[[ 
@@ -1843,7 +1869,7 @@ function SWEP:ProcessFireMode()
 		end
 	end
 	
-	if string.find(string.lower(self.FireModes[self:GetFireMode()]),"auto") then
+	if self.FireModes[self:GetFireMode()] == "Automatic" then
 		self.Primary.Automatic = true
 	else
 		self.Primary.Automatic = false
@@ -2296,8 +2322,6 @@ Purpose:  Main SWEP function
 function SWEP:PlayerThinkClientFrame( ply )
 	
 	
-	self:UpdateViewModel()
-	
 	tsv = 1
 	if sv_cheats_cv:GetBool() then tsv = tsv * host_timescale_cv:GetFloat() end
 	tsv = tsv * game.GetTimeScale()
@@ -2317,7 +2341,7 @@ function SWEP:PlayerThinkClientFrame( ply )
 	
 	self.ShouldDrawAmmoHUD=( ply:KeyDown(IN_USE) and ply:KeyDown(IN_RELOAD) ) or self:GetReloading() or self:GetFireModeChanging() or self:GetHUDThreshold() or (self:GetBoltTimer() and l_CT()>self:GetBoltTimerStart() and l_CT()<self:GetBoltTimerEnd() )
 	
-	self:CalculateNearWallCLF( RealFrameTime)
+	self:CalculateNearWallCLF( RealFrameTime )
 	
 	self:ViewModelFlipFunc()
 	
@@ -3105,10 +3129,10 @@ Purpose:  Feature
 ]]--
 
 local nearwall_cvar = GetConVar("sv_tfa_near_wall")
-local trent
+local trent,bash
 
 function SWEP:CalculateNearWallSH()
-
+	
 	if !IsValid(self.Owner) then return end
 	
 	if !nearwall_cvar:GetBool() then
@@ -3124,25 +3148,28 @@ function SWEP:CalculateNearWallSH()
 	
 	vnearwall=false
 	
-	local tracedata = {}
-	tracedata.start=self.Owner:GetShootPos()
-	tracedata.endpos=tracedata.start+self.Owner:EyeAngles():Forward()*self.WeaponLength
-	tracedata.mask=MASK_SHOT
-	tracedata.ignoreworld=false
-	tracedata.filter=self.Owner
-	local traceres=util.TraceLine(tracedata)
-	if traceres.Hit then
-		if traceres.Fraction>0 and traceres.Fraction<1 then
-			trent = traceres.Entity
-			if traceres.MatType!=MAT_FLESH and traceres.MatType!=MAT_GLASS and !( IsValid(trent) and trent:IsNPC() )then
-				vnearwall = true
+	bash = self.GetBashing and self:GetBashing()
+	
+	if !bash then
+		local tracedata = {}
+		tracedata.start=self.Owner:GetShootPos()
+		tracedata.endpos=tracedata.start+self.Owner:EyeAngles():Forward()*self.WeaponLength
+		tracedata.mask=MASK_SHOT
+		tracedata.ignoreworld=false
+		tracedata.filter=self.Owner
+		local traceres=util.TraceLine(tracedata)
+		if traceres.Hit then
+			if traceres.Fraction>0 and traceres.Fraction<1 then
+				trent = traceres.Entity
+				if traceres.MatType!=MAT_FLESH and traceres.MatType!=MAT_GLASS and !( IsValid(trent) and trent:IsNPC() )then
+					vnearwall = true
+				end
 			end
 		end
+		self:SetNearWallRatio( l_mathApproach( self:GetNearWallRatio(), vnearwall and l_mathClamp(1-traceres.Fraction,0,1) or 0 , l_FT() / self.NearWallTime ) )
+	else
+		self:SetNearWallRatio( l_mathApproach( self:GetNearWallRatio(), 0 , l_FT() / self.NearWallTime ) )	
 	end
-	
-	if self.Owner.GetBashing and self.Owner:GetBashing() then vnearwall=false end
-	
-	self:SetNearWallRatio( l_mathApproach( self:GetNearWallRatio(), vnearwall and l_mathClamp(1-traceres.Fraction,0,1) or 0 , l_FT() / self.NearWallTime ) )
 	
 end
 
@@ -3153,6 +3180,8 @@ Returns:  Nothing.  However, calculates nearwall for the client.
 Notes:  This is clientside only.
 Purpose:  Feature
 ]]--
+
+local tg
 
 function SWEP:CalculateNearWallCLF( ft )
 	
@@ -3173,32 +3202,40 @@ function SWEP:CalculateNearWallCLF( ft )
 	local vnearwall
 	
 	vnearwall=false
-	local tracedata = {}
-	tracedata.start=self.Owner:GetShootPos()
-	tracedata.endpos=tracedata.start+self.Owner:EyeAngles():Forward()*self.WeaponLength
-	tracedata.mask=MASK_SHOT
-	tracedata.ignoreworld=false
-	tracedata.filter=self.Owner
-	local traceres=util.TraceLine(tracedata)
-	if traceres.Hit then
-		if traceres.Fraction>0 and traceres.Fraction<1 then
-			trent = traceres.Entity
-			if traceres.MatType!=MAT_FLESH and traceres.MatType!=MAT_GLASS and !( IsValid(trent) and trent:IsNPC() )then
-				vnearwall = true
+	
+	bash = self.GetBashing and self:GetBashing()
+	
+	if !bash then
+		
+		local tracedata = {}
+		tracedata.start=self.Owner:GetShootPos()
+		tracedata.endpos=tracedata.start+self.Owner:EyeAngles():Forward()*self.WeaponLength
+		tracedata.mask=MASK_SHOT
+		tracedata.ignoreworld=false
+		tracedata.filter=self.Owner
+		local traceres=util.TraceLine(tracedata)
+		if traceres.Hit then
+			if traceres.Fraction>0 and traceres.Fraction<1 then
+				trent = traceres.Entity
+				if traceres.MatType!=MAT_FLESH and traceres.MatType!=MAT_GLASS and !( IsValid(trent) and trent:IsNPC() )then
+					vnearwall = true
+				end
 			end
 		end
+	
+		tg = vnearwall and l_mathClamp(1-traceres.Fraction,0,1) or 0
+		
+		self.CLNearWallProgress =  l_mathApproach( self.CLNearWallProgress, tg , (ft / math.pow(self.NearWallAnimationTime, 2 ) ) * ( tg - self.CLNearWallProgress ) )
+		self.CLOldNearWallProgress =  l_mathApproach( self.CLOldNearWallProgress or 0, vnearwall and 1 or 0 , ft/ self.NearWallTime )
+		
+	else
+	
+		tg = 0
+		
+		self.CLNearWallProgress =  l_mathApproach( self.CLNearWallProgress, tg , (ft / math.pow(self.NearWallAnimationTime, 2 ) ) * ( tg - self.CLNearWallProgress ) )
+		self.CLOldNearWallProgress =  l_mathApproach( self.CLOldNearWallProgress or 0, vnearwall and 1 or 0 , ft/ self.NearWallTime )
+	
 	end
-	
-	if !nearwall_cvar:GetBool() then
-		vnearwall = false
-	end
-	
-	if self.Owner.GetBashing and self.Owner:GetBashing() then vnearwall=false end
-	
-	local tg = vnearwall and l_mathClamp(1-traceres.Fraction,0,1) or 0
-	
-	self.CLNearWallProgress =  l_mathApproach( self.CLNearWallProgress, tg , (ft / math.pow(self.NearWallAnimationTime, 2 ) ) * ( tg - self.CLNearWallProgress ) )
-	self.CLOldNearWallProgress =  l_mathApproach( self.CLOldNearWallProgress or 0, vnearwall and 1 or 0 , ft/ self.NearWallTime )
 end
 
 --[[ 
