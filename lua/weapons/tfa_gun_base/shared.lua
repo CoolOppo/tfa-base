@@ -411,11 +411,16 @@ end
 
 SWEP.ConDamageMultiplier = 1
 
---[[ Localize Lerp  ]]--
+--[[ Localize Functions  ]]--
 
 local function l_Lerp( v, f, t )
 	return f + (t-f)*v
 end
+
+local l_mathApproach = math.Approach
+local l_mathClamp = math.Clamp
+
+local l_CT = CurTime
 
 --[[  Quadratic Interpolation Functions  ]]--
 
@@ -549,7 +554,7 @@ function SWEP:ResetEvents()
 	
 	if sp and !CLIENT then self:CallOnClient("ResetEvents","") end
 	
-	self.EventTimer = CurTime()
+	self.EventTimer = l_CT()
 	
 	for k,v in pairs(self.EventTable) do
 		for l,b in pairs(v) do
@@ -773,16 +778,16 @@ function SWEP:Deploy()
 	self:SetShotgunNeedsPump(false )
 	self:SetFireModeChanging( false ) 
 	self:SetBoltTimer( false )
-	self:SetReloadingEnd(CurTime()-1)
-	self:SetShootingEnd(CurTime()-1)
-	self:SetDrawingEnd(CurTime()-1)
-	self:SetHolsteringEnd(CurTime()-1)
-	self:SetNextSilenceChange(CurTime()-1)
-	self:SetFireModeChangeEnd(CurTime()-1)
+	self:SetReloadingEnd(l_CT()-1)
+	self:SetShootingEnd(l_CT()-1)
+	self:SetDrawingEnd(l_CT()-1)
+	self:SetHolsteringEnd(l_CT()-1)
+	self:SetNextSilenceChange(l_CT()-1)
+	self:SetFireModeChangeEnd(l_CT()-1)
 	self:SetHUDThreshold(true)
-	self:SetHUDThresholdEnd(CurTime()+0.2)
-	self:SetBoltTimerStart(CurTime()-1)
-	self:SetBoltTimerEnd(CurTime()-1)
+	self:SetHUDThresholdEnd(l_CT()+0.2)
+	self:SetBoltTimerStart(l_CT()-1)
+	self:SetBoltTimerEnd(l_CT()-1)
 	self:SetDrawing(true)
 	self:SetHolstering(false); self:SetUnpredictedHolstering(false)
 	self:SetInspecting(false)
@@ -813,13 +818,13 @@ function SWEP:Deploy()
 	
 	local seq = self.OwnerViewModel:SelectWeightedSequence( anim or 0 )
 	local seqtime = self.OwnerViewModel:SequenceDuration( seq )
-	local dt = CurTime()+ ( self.SequenceLengthOverride[anim] or seqtime ) 
+	local dt = l_CT()+ ( self.SequenceLengthOverride[anim] or seqtime ) 
 	if self.ShootWhileDraw==false then
 		self:SetNextPrimaryFire(dt)
 	end
 	
 	self:SetDrawingEnd(dt)
-	self:SetNextIdleAnim(CurTime() + seqtime)
+	self:SetNextIdleAnim(l_CT() + seqtime)
 	
 	local myhangtimev = 1
 	if self:OwnerIsValid() then
@@ -829,7 +834,7 @@ function SWEP:Deploy()
 			myhangtimev = hudhangtime_cvar:GetFloat()
 		end
 	end
-	self:SetHUDThresholdEnd(CurTime()+seqtime+myhangtimev)
+	self:SetHUDThresholdEnd(l_CT()+seqtime+myhangtimev)
 	
 	
 	self:CorrectScopeFOV( self.DefaultFOV and self.DefaultFOV or self.Owner:GetFOV() )
@@ -1033,8 +1038,8 @@ function SWEP:Holster( switchtowep )
 	self:SetReloading(false)
 	self:SetDrawing(false)
 	self:SetInspecting(false)
-	self:SetDrawingEnd(CurTime()-1)
-	self:SetReloadingEnd(CurTime()-1)
+	self:SetDrawingEnd(l_CT()-1)
+	self:SetReloadingEnd(l_CT()-1)
 	
 	if IsFirstTimePredicted() then
 	
@@ -1057,13 +1062,13 @@ function SWEP:Holster( switchtowep )
 				seqtime = self.ProceduralHolsterTime
 				anim = -1
 			end
-			local dt = CurTime()+ ( self.SequenceLengthOverride[anim] or seqtime ) 
+			local dt = l_CT()+ ( self.SequenceLengthOverride[anim] or seqtime ) 
 			if self.ShootWhileDraw==false then
 				self:SetNextPrimaryFire(dt)
 			end
 			if CLIENT then
 				self:SetUnpredictedHolstering(true)
-				self:SetHolsteringEnd( CurTime() + 999 )
+				self:SetHolsteringEnd( l_CT() + 999 )
 			end
 			if SERVER then
 				self:SetHolsteringEnd( dt )
@@ -1252,12 +1257,12 @@ function SWEP:CycleFireMode()
 	
 	self.Weapon:EmitSound("Weapon_AR2.Empty")
 	
-	self.Weapon:SetNextBurst( CurTime()+math.max( 1/(self:GetRPM()/60), 0.25 ) )
-	self.Weapon:SetNextPrimaryFire( CurTime()+math.max( 1/(self:GetRPM()/60), 0.25 ) )
+	self.Weapon:SetNextBurst( l_CT()+math.max( 1/(self:GetRPM()/60), 0.25 ) )
+	self.Weapon:SetNextPrimaryFire( l_CT()+math.max( 1/(self:GetRPM()/60), 0.25 ) )
 
 	self:SetFireModeChanging( true )
 	
-	self:SetFireModeChangeEnd( CurTime() + math.max( 1/(self:GetRPM()/60), 0.25 ) )
+	self:SetFireModeChangeEnd( l_CT() + math.max( 1/(self:GetRPM()/60), 0.25 ) )
 end
 
 --[[ 
@@ -1280,12 +1285,12 @@ function SWEP:CycleSafety()
 	
 	self.Weapon:EmitSound("Weapon_AR2.Empty")
 	
-	self.Weapon:SetNextBurst( CurTime()+math.max( 1/(self:GetRPM()/60), 0.25 ) )
-	self.Weapon:SetNextPrimaryFire( CurTime()+math.max( 1/(self:GetRPM()/60), 0.25 ) )
+	self.Weapon:SetNextBurst( l_CT()+math.max( 1/(self:GetRPM()/60), 0.25 ) )
+	self.Weapon:SetNextPrimaryFire( l_CT()+math.max( 1/(self:GetRPM()/60), 0.25 ) )
 
 	self:SetFireModeChanging( true )
 
-	self:SetFireModeChangeEnd( CurTime() + math.max( 1/(self:GetRPM()/60), 0.25 ) )
+	self:SetFireModeChangeEnd( l_CT() + math.max( 1/(self:GetRPM()/60), 0.25 ) )
 end
 
 --[[ 
@@ -1331,7 +1336,7 @@ function SWEP:CanPrimaryAttack()
 	if ( self.Weapon:Clip1() <= 0 and self.Primary.ClipSize!=-1 ) then
 
 		self:EmitSound( "Weapon_Pistol.Empty" )
-		self:SetNextPrimaryFire(CurTime()+1/(self:GetRPM()/60))
+		self:SetNextPrimaryFire(l_CT()+1/(self:GetRPM()/60))
 		self:Reload()
 		return false
 
@@ -1366,7 +1371,7 @@ function SWEP:PrimaryAttack()
 		if (self.ShootWhileHolster==false) then
 			return
 		else
-			self:SetHolsteringEnd(CurTime()-0.1)
+			self:SetHolsteringEnd(l_CT()-0.1)
 			self:SetHolstering(false); self:SetUnpredictedHolstering(false)
 		end
 	end
@@ -1377,7 +1382,7 @@ function SWEP:PrimaryAttack()
 		self:SetShotgunInsertingShell(true)
 		self:SetShotgunPumping(false)
 		self:SetShotgunNeedsPump(true)
-		self:SetReloadingEnd(CurTime()-1)
+		self:SetReloadingEnd(l_CT()-1)
 		]]--
 		return
 	end
@@ -1385,10 +1390,10 @@ function SWEP:PrimaryAttack()
 	if self:IsSafety() then 
 		self.Weapon:EmitSound("Weapon_AR2.Empty")
 		self.LastSafetyShoot = self.LastSafetyShoot or 0
-		if CurTime()<self.LastSafetyShoot+0.2 then
+		if l_CT()<self.LastSafetyShoot+0.2 then
 			self:CycleSafety()		
 		end
-		self.LastSafetyShoot = CurTime()
+		self.LastSafetyShoot = l_CT()
 		return 
 	end
 	
@@ -1402,7 +1407,7 @@ function SWEP:PrimaryAttack()
 	
 	if self.FiresUnderwater == false and self.Owner:WaterLevel()>=3 then
 		if self:CanPrimaryAttack() then
-			self:SetNextPrimaryFire(CurTime()+0.5)
+			self:SetNextPrimaryFire(l_CT()+0.5)
 			self.Weapon:EmitSound("Weapon_AR2.Empty")
 		end
 		return
@@ -1414,14 +1419,14 @@ function SWEP:PrimaryAttack()
 			--self:SetSilenced(!self:GetSilenced())
 			local success, tanim = self:ChooseSilenceAnim(!self:GetSilenced())
 			self:SetChangingSilence(true)
-			self:SetNextSilenceChange(CurTime()+self.SequenceLength[tanim])
-			self:SetNextPrimaryFire(CurTime()+1/(self:GetRPM()/60))
+			self:SetNextSilenceChange(l_CT()+self.SequenceLength[tanim])
+			self:SetNextPrimaryFire(l_CT()+1/(self:GetRPM()/60))
 		end
 		
 		return
 	end
 	
-	if self:GetNextPrimaryFire()>CurTime() then return end
+	if self:GetNextPrimaryFire()>l_CT() then return end
 	
 	if self:GetReloading() then
 		self:CompleteReload()
@@ -1448,15 +1453,15 @@ function SWEP:PrimaryAttack()
 			self:SetShooting(true)
 			if tanim then
 				local seq = self.OwnerViewModel:SelectWeightedSequence(tanim)
-				self:SetShootingEnd(CurTime()+self.OwnerViewModel:SequenceDuration( seq ))
+				self:SetShootingEnd(l_CT()+self.OwnerViewModel:SequenceDuration( seq ))
 			else
-				self:SetShootingEnd(CurTime()+self.OwnerViewModel:SequenceDuration( ))
+				self:SetShootingEnd(l_CT()+self.OwnerViewModel:SequenceDuration( ))
 			end
 			if self.BoltAction then
 				self:SetBoltTimer(true)
 				local t1, t2
-				t1=CurTime()+self.BoltTimerOffset
-				t2=CurTime()+self.OwnerViewModel:SequenceDuration( seq )
+				t1=l_CT()+self.BoltTimerOffset
+				t2=l_CT()+self.OwnerViewModel:SequenceDuration( seq )
 				if t1<t2 then
 					self:SetBoltTimerStart(t1)
 					self:SetBoltTimerEnd(t2)
@@ -1469,16 +1474,16 @@ function SWEP:PrimaryAttack()
 			local CurrentCone, CurrentRecoil = self:CalculateConeRecoil()
 			self:Recoil( CurrentRecoil, SERVER or (CLIENT and IsFirstTimePredicted())  )
 			
-			self:SetSpreadRatio(math.Clamp(self:GetSpreadRatio() + self.Primary.SpreadIncrement, 1, self.Primary.SpreadMultiplierMax))
+			self:SetSpreadRatio(l_mathClamp(self:GetSpreadRatio() + self.Primary.SpreadIncrement, 1, self.Primary.SpreadMultiplierMax))
 			if ( CLIENT or sp ) and ( IsFirstTimePredicted() ) then
-				self.CLSpreadRatio = math.Clamp(self.CLSpreadRatio + self.Primary.SpreadIncrement, 1, self.Primary.SpreadMultiplierMax)
+				self.CLSpreadRatio = l_mathClamp(self.CLSpreadRatio + self.Primary.SpreadIncrement, 1, self.Primary.SpreadMultiplierMax)
 			end
 			self:SetBursting(true)
 	
-			self:SetNextBurst(CurTime()+1/(self:GetRPM()/60))
+			self:SetNextBurst(l_CT()+1/(self:GetRPM()/60))
 			self:SetBurstCount(self:GetBurstCount()+1)
 			
-			self:SetNextPrimaryFire(CurTime()+1/(self:GetRPM()/60))
+			self:SetNextPrimaryFire(l_CT()+1/(self:GetRPM()/60))
 			
 			if !self:GetSilenced() then
 				if self.Primary.Sound then
@@ -1509,6 +1514,15 @@ Notes: Processes raw ironsights, sprinting, etc. before they're corrected in SWE
 Purpose:  Main SWEP function
 ]]--
 
+
+local rtime,RealFrameTime
+local host_timescale_cv = GetConVar("host_timescale")
+local sv_cheats_cv = GetConVar("sv_cheats")
+local fps_max_cvar = GetConVar("fps_max")
+local ammo_fadein_cvar
+if CLIENT then
+	ammo_fadein_cvar = GetConVar("cl_tfa_hud_ammodata_fadein")
+end
 local ironsights_toggle_cvar
 if CLIENT then
 	ironsights_toggle_cvar = GetConVar("cl_tfa_ironsights_toggle")
@@ -1584,7 +1598,10 @@ function SWEP:PlayerThink( ply )
 		heldent = nil
 	end
 	
-	self:Think2()
+	
+	if ( CLIENT and ply==self.Owner ) or SERVER then
+		self:Think2()
+	end
 	
 	if SERVER then
 		if self.PlayerThinkServer then
@@ -1592,11 +1609,30 @@ function SWEP:PlayerThink( ply )
 		end
 	end
 	
-	if CLIENT then
+	if CLIENT and ply==self.Owner then
 		self:PlayerThinkClient(ply)
 	end
+	
+end
 
-	if ply != self:GetOwner() then return end
+--[[ 
+Function Name:  PlayerThinkServer
+Syntax: self:PlayerThinkServer( player ).  Shouldn't be called manually, since it's called by SWEP:PlayerThink().
+Returns:  Nothing.
+Notes: Unused ATM.
+Purpose:  Main SWEP function
+]]--
+
+local tonetwork_thresh = 0.0025
+
+function SWEP:PlayerThinkServer( ply )
+
+	if self.Callback.PlayerThinkServer then
+		local val = self.Callback.PlayerThinkServer(self, ply)
+		if val then return val end
+	end
+	
+	local ownent = self.Owner
 	
 	self:CalculateNearWallSH()
 	
@@ -1605,7 +1641,7 @@ function SWEP:PlayerThink( ply )
 	
 	rel_proc = ( self:GetReloading() ) and !legacy_reloads_cv:GetBool()
 	
-	if self.Owner.TFACasting or ( self.Owner.tfacastoffset and self.Owner.tfacastoffset>0.1) then rel_proc = true end
+	if ownent.TFACasting or ( ownent.tfacastoffset and ownent.tfacastoffset>0.1) then rel_proc = true end
 	
 	rs = ( ( self:GetSprinting() or self:IsSafety() ) and !rel_proc) and 1 or 0 
 	
@@ -1626,39 +1662,39 @@ function SWEP:PlayerThink( ply )
 	compensatedft_sp = ftv / ( ( self.RunSightTime and self.RunSightTime or self.IronSightTime*2 ) * 0.4 )
 	compensatedft_cr = ftv / self.ToCrouchTime
 	
-	
-	newratio=math.Approach( isr, is, (is-isr)*compensatedft)
-	self:SetIronSightsRatio( newratio )
-	newratio=math.Approach( rsr, rs, (rs-rsr)*compensatedft_sp)
-	self:SetRunSightsRatio( newratio )
-	
-	self:SetInspectingRatio( math.Approach( inspr, insp, ftv / self.IronSightTime) )
-	
-	self:SetCrouchingRatio( math.Approach( self:GetCrouchingRatio(), (self.Owner:Crouching() and 1 or 0), ftv / self.ToCrouchTime) )
-	
-	jv = !self.Owner:IsOnGround()
-	
-	self:SetJumpingRatio( math.Approach( self:GetJumpingRatio(), (jv and 1 or 0), ftv / self.ToCrouchTime) )
-	
-	if self.Primary.SpreadRecovery then
-		self:SetSpreadRatio( math.Clamp( self:GetSpreadRatio() - self.Primary.SpreadRecovery*ftv, 1, self.Primary.SpreadMultiplierMax) )
+	if isr>tonetwork_thresh then
+		newratio=l_mathApproach( isr, is, (is-isr)*compensatedft)
+		self:SetIronSightsRatio( newratio )
 	end
 	
-end
-
---[[ 
-Function Name:  PlayerThinkServer
-Syntax: self:PlayerThinkServer( player ).  Shouldn't be called manually, since it's called by SWEP:PlayerThink().
-Returns:  Nothing.
-Notes: Unused ATM.
-Purpose:  Main SWEP function
-]]--
-
-function SWEP:PlayerThinkServer( ply )
-
-	if self.Callback.PlayerThinkServer then
-		local val = self.Callback.PlayerThinkServer(self, ply)
-		if val then return val end
+	if rsr>tonetwork_thresh then
+		newratio=l_mathApproach( rsr, rs, (rs-rsr)*compensatedft_sp)
+		self:SetRunSightsRatio( newratio )
+	end
+	
+	if inspr>tonetwork_thresh then
+		self:SetInspectingRatio( l_mathApproach( inspr, insp, ftv / self.IronSightTime) )
+	end
+	
+	self.CrouchingRatioV = l_mathApproach( self.CrouchingRatioV or 0, (ownent:Crouching() and 0 or 1), ftv / self.ToCrouchTime)
+	
+	self.JumpingRatioV = l_mathApproach( self.JumpingRatioV or 0, (ownent:IsOnGround() and 0 or 1), ftv / self.ToCrouchTime)
+	
+	if self.CrouchingRatioV>tonetwork_thresh then
+		self:SetCrouchingRatio( self.CrouchingRatioV )
+	end
+	
+	if self.JumpingRatioV>tonetwork_thresh  then
+		self:SetJumpingRatio( self.JumpingRatioV )
+	end
+	
+	if self.Primary.SpreadRecovery then
+	
+		self.SpreadRatioV = l_mathClamp( self:GetSpreadRatio() - self.Primary.SpreadRecovery*ftv, 1, self.Primary.SpreadMultiplierMax)
+		
+		if self.SpreadRatioV>tonetwork_thresh then
+			self:SetSpreadRatio( self.SpreadRatioV )
+		end
 	end
 	
 	self:UpdateViewModel()
@@ -1731,7 +1767,7 @@ function SWEP:ProcessEvents()
 	if evtbl then
 		for k,v in pairs(evtbl) do
 			if !v.called then
-				if CurTime()>self.EventTimer+v.time then
+				if l_CT()>self.EventTimer+v.time then
 					
 					v.called = true
 					
@@ -1790,15 +1826,6 @@ Notes: Critical for the clientside/predicted ironsights.
 Purpose:  Main SWEP function
 ]]--
 
-local rtime,RealFrameTime
-local host_timescale_cv = GetConVar("host_timescale")
-local sv_cheats_cv = GetConVar("sv_cheats")
-local fps_max_cvar = GetConVar("fps_max")
-local ammo_fadein_cvar
-if CLIENT then
-	ammo_fadein_cvar = GetConVar("cl_tfa_hud_ammodata_fadein")
-end
-
 function SWEP:PlayerThinkClientFrame( ply )
 	
 	
@@ -1821,7 +1848,7 @@ function SWEP:PlayerThinkClientFrame( ply )
 		if val then return val end
 	end
 	
-	self.ShouldDrawAmmoHUD=( ply:KeyDown(IN_USE) and ply:KeyDown(IN_RELOAD) ) or self:GetReloading() or self:GetFireModeChanging() or self:GetHUDThreshold() or (self:GetBoltTimer() and CurTime()>self:GetBoltTimerStart() and CurTime()<self:GetBoltTimerEnd() )
+	self.ShouldDrawAmmoHUD=( ply:KeyDown(IN_USE) and ply:KeyDown(IN_RELOAD) ) or self:GetReloading() or self:GetFireModeChanging() or self:GetHUDThreshold() or (self:GetBoltTimer() and l_CT()>self:GetBoltTimerStart() and l_CT()<self:GetBoltTimerEnd() )
 	
 	self:CalculateNearWallCLF( RealFrameTime)
 	
@@ -1853,25 +1880,25 @@ function SWEP:PlayerThinkClientFrame( ply )
 	compensatedft_sp = ftv / ( ( self.RunSightTime or self.IronSightTime*2 ) * 0.4 )
 	compensatedft_cr = ftv / self.ToCrouchTime
 	
-	newratio=math.Approach( isr, is, (is-isr)*compensatedft)
+	newratio=l_mathApproach( isr, is, (is-isr)*compensatedft)
 	self.CLIronSightsProgress = newratio 
-	newratio=math.Approach( rsr, rs, (rs-rsr)*compensatedft_sp)
+	newratio=l_mathApproach( rsr, rs, (rs-rsr)*compensatedft_sp)
 	self.CLRunSightsProgress = newratio 
-	newratio=math.Approach( crouchr, self.Owner:Crouching() and 1 or 0, compensatedft_cr)
+	newratio=l_mathApproach( crouchr, self.Owner:Crouching() and 1 or 0, compensatedft_cr)
 	self.CLCrouchProgress = newratio 
-	newratio=math.Approach( inspr, insp, (insp-inspr)*compensatedft)
+	newratio=l_mathApproach( inspr, insp, (insp-inspr)*compensatedft)
 	self.CLInspectingProgress = newratio 
-	newratio=math.Approach( jumpr, 1 - (self.Owner:IsOnGround() and 1 or 0 ), compensatedft_cr)
+	newratio=l_mathApproach( jumpr, 1 - (self.Owner:IsOnGround() and 1 or 0 ), compensatedft_cr)
 	self.CLJumpProgress = newratio
-	self.CLSpreadRatio = math.Clamp(self.CLSpreadRatio - self.Primary.SpreadRecovery * ftv, 1, self.Primary.SpreadMultiplierMax)
-	self.CLAmmoHUDProgress = math.Approach( self.CLAmmoHUDProgress, (self.ShouldDrawAmmoHUD  or self:GetInspecting()) and 1 or 0, FrameTime() / ammo_fadein_cvar:GetFloat() )
+	self.CLSpreadRatio = l_mathClamp(self.CLSpreadRatio - self.Primary.SpreadRecovery * ftv, 1, self.Primary.SpreadMultiplierMax)
+	self.CLAmmoHUDProgress = l_mathApproach( self.CLAmmoHUDProgress, (self.ShouldDrawAmmoHUD  or self:GetInspecting()) and 1 or 0, FrameTime() / ammo_fadein_cvar:GetFloat() )
 	self:DoBobFrame()
 	
 	if !self.Blowback_PistolMode or self:Clip1()==-1 or self:Clip1()>0.1 or ( self.Blowback_PistolMode_Disabled[act] and act!=-1 and self.lastact!=-2) then
-		self.BlowbackCurrent = math.Approach(self.BlowbackCurrent,0,self.BlowbackCurrent*ftv*15)
+		self.BlowbackCurrent = l_mathApproach(self.BlowbackCurrent,0,self.BlowbackCurrent*ftv*15)
 	end
 	
-	self.BlowbackCurrentRoot = math.Approach(self.BlowbackCurrentRoot,0,self.BlowbackCurrentRoot*ftv*15)
+	self.BlowbackCurrentRoot = l_mathApproach(self.BlowbackCurrentRoot,0,self.BlowbackCurrentRoot*ftv*15)
 	
 	local heldentindex = self.Owner:GetNWInt("LastHeldEntityIndex",-1)
 	local heldent = Entity(heldentindex)
@@ -1898,7 +1925,7 @@ function SWEP:PlayerThinkClientFrame( ply )
 	end
 	
 	local nhf = 0
-	if CurTime()>( self.HolsterEndUnpredicted or 9999999 ) then self:SetUnpredictedHolstering(false) end
+	if l_CT()>( self.HolsterEndUnpredicted or 9999999 ) then self:SetUnpredictedHolstering(false) end
 	
 	if act==ACT_VM_HOLSTER or act==ACT_VM_HOLSTER_EMPTY then 
 		nhf = 0
@@ -1912,7 +1939,7 @@ function SWEP:PlayerThinkClientFrame( ply )
 	
 	if nhf == 0 then self:SetUnpredictedHolstering(false) end
 	
-	self.ProceduralHolsterFactor = math.Approach(self.ProceduralHolsterFactor,nhf,(nhf-self.ProceduralHolsterFactor)*ftv*self.ProceduralHolsterTime*10)
+	self.ProceduralHolsterFactor = l_mathApproach(self.ProceduralHolsterFactor,nhf,(nhf-self.ProceduralHolsterFactor)*ftv*self.ProceduralHolsterTime*10)
 	
 	if self:GetDrawing() and !self:GetProceduralReloading() and nfh!=1 then
 		self.ProceduralHolsterFactor = 0
@@ -2002,11 +2029,11 @@ function SWEP:Reload()
 	
 	self:SetBurstCount(0)
 	self:SetBursting(false)
-	self:SetNextBurst(CurTime()-1)
+	self:SetNextBurst(l_CT()-1)
 	
 	if self:GetReloading() then return end
 	
-	if (isbolttimer) and (CurTime()>self:GetBoltTimerStart()) and (CurTime()<self:GetBoldTimerEnd()) then
+	if (isbolttimer) and (l_CT()>self:GetBoltTimerStart()) and (l_CT()<self:GetBoldTimerEnd()) then
 		return
 	end
 	
@@ -2043,7 +2070,7 @@ function SWEP:Reload()
 		if (self.AllowReloadWhileHolster==false) then
 			return
 		else
-			self:SetHolsteringEnd(CurTime()-0.1)
+			self:SetHolsteringEnd(l_CT()-0.1)
 			self:SetHolstering(false); self:SetUnpredictedHolstering(false)
 		end
 	end
@@ -2056,8 +2083,8 @@ function SWEP:Reload()
 		return
 	end
 	
-	if (CurTime()<self:GetReloadingEnd()) then
-		self:SetReloadingEnd(CurTime()-1)
+	if (l_CT()<self:GetReloadingEnd()) then
+		self:SetReloadingEnd(l_CT()-1)
 	end
 	
 	if (self:GetChangingSilence()) then return end
@@ -2114,13 +2141,13 @@ function SWEP:Reload()
 		if self.DoProceduralReload then
 			AnimationTime = self.ProceduralReloadTime
 		end
-		local dt = CurTime() + ( self.SequenceLengthOverride[tanim] or ( AnimationTime ) )
+		local dt = l_CT() + ( self.SequenceLengthOverride[tanim] or ( AnimationTime ) )
 		self.prevdrawcount=self.drawcount
 		self:SetReloadingEnd(dt)
 		self.ReloadingTime = dt
 		self:SetNextPrimaryFire( dt )
 		self:SetNextSecondaryFire( dt )
-		self:SetNextIdleAnim(CurTime() + AnimationTime)
+		self:SetNextIdleAnim(l_CT() + AnimationTime)
 	elseif !self:CanCKeyInspect() and self.SequenceEnabled[ACT_VM_FIDGET] and !self:GetIronSights() and !self:GetSprinting() and !self:GetFidgeting() and !self:GetInspecting() then
 		if self:Clip1()>=1 then
 			self:SetFidgeting(true)
@@ -2158,7 +2185,7 @@ function SWEP:Sway(pos,ang)
 	
 	if ft>FrameTime() then ft = FrameTime() end
 	
-	ft = math.Clamp(ft,0,1/30)
+	ft = l_mathClamp(ft,0,1/30)
 	
 	if self.cheat_cv and self.timescale_cv and self.cheat_cv:GetBool() then ft = ft * self.timescale_cv:GetFloat() end
 	
@@ -2189,8 +2216,8 @@ function SWEP:Sway(pos,ang)
 	
 	--limit range
 	
-	angb.p = math.Clamp(angb.p,-angrange,angrange)
-	angb.y = math.Clamp(angb.y,-angrange,angrange)
+	angb.p = l_mathClamp(angb.p,-angrange,angrange)
+	angb.y = l_mathClamp(angb.y,-angrange,angrange)
 	
 	--recover
 	
@@ -2255,10 +2282,10 @@ function SWEP:GetViewModelPosition(pos, ang)
 	
 	if self:IsHidden() then return (pos + hidevec), ang end
 	
-	local isp=math.Clamp(self.CLIronSightsProgress,0,1)--self:GetIronSightsRatio()
-	local rsp=math.Clamp(self.CLRunSightsProgress,0,1)--self:GetRunSightsRatio()
-	local nwp=math.Clamp(self.CLNearWallProgress,0,1)--self:GetNearWallRatio()
-	local inspectrat=math.Clamp(self.CLInspectingProgress,0,1)--self:GetInspectingRatio()
+	local isp=l_mathClamp(self.CLIronSightsProgress,0,1)--self:GetIronSightsRatio()
+	local rsp=l_mathClamp(self.CLRunSightsProgress,0,1)--self:GetRunSightsRatio()
+	local nwp=l_mathClamp(self.CLNearWallProgress,0,1)--self:GetNearWallRatio()
+	local inspectrat=l_mathClamp(self.CLInspectingProgress,0,1)--self:GetInspectingRatio()
 	local tmp_ispos = self.SightsPos and self.SightsPos or self.IronSightsPos
 	local tmp_isa = self.SightsAng and self.SightsAng or self.IronSightsAng
 	local tmp_rspos = self.RunSightsPos and self.RunSightsPos or tmp_ispos
@@ -2495,8 +2522,8 @@ function SWEP:CalculateConeRecoil()
 		dynacc=true
 	end
 	
-	local isr_1=math.Clamp(isr*2,0,1)
-	local isr_2=math.Clamp((isr-0.5)*2,0,1)
+	local isr_1=l_mathClamp(isr*2,0,1)
+	local isr_2=l_mathClamp((isr-0.5)*2,0,1)
 	
 	local acv = self.Primary.Spread or self.Primary.Accuracy
 	local recv = self.Primary.Recoil * 5
@@ -2509,8 +2536,8 @@ function SWEP:CalculateConeRecoil()
 		CurrentRecoil = l_Lerp(isr,recv,recv*self.IronRecoilMultiplier)
 	end
 	
-	local crc_1=math.Clamp(self:GetCrouchingRatio()*2,0,1)
-	local crc_2=math.Clamp((self:GetCrouchingRatio()-0.5)*2,0,1)
+	local crc_1=l_mathClamp(self:GetCrouchingRatio()*2,0,1)
+	local crc_2=l_mathClamp((self:GetCrouchingRatio()-0.5)*2,0,1)
 	
 	if dynacc then
 		CurrentCone = l_Lerp( crc_2, l_Lerp(crc_1, CurrentCone, CurrentCone*self.ChangeStateAccuracyMultiplier) , CurrentCone * self.CrouchAccuracyMultiplier)
@@ -2518,7 +2545,7 @@ function SWEP:CalculateConeRecoil()
 	end
 	
 	local ovel = self.Owner:GetVelocity():Length()
-	local vfc_1 = math.Clamp(ovel/180,0,1)
+	local vfc_1 = l_mathClamp(ovel/180,0,1)
 	
 	if dynacc then
 		CurrentCone = l_Lerp( vfc_1, CurrentCone, CurrentCone * self.WalkAccuracyMultiplier )
@@ -2565,8 +2592,8 @@ function SWEP:ClientCalculateConeRecoil()
 		dynacc=true
 	end
 	
-	local isr_1=math.Clamp(isr*2,0,1)
-	local isr_2=math.Clamp((isr-0.5)*2,0,1)
+	local isr_1=l_mathClamp(isr*2,0,1)
+	local isr_2=l_mathClamp((isr-0.5)*2,0,1)
 	
 	local acv = self.Primary.Spread or self.Primary.Accuracy
 	local recv = self.Primary.Recoil * 5
@@ -2579,8 +2606,8 @@ function SWEP:ClientCalculateConeRecoil()
 		CurrentRecoil = l_Lerp(isr,recv,recv*self.IronRecoilMultiplier)
 	end
 	
-	local crc_1=math.Clamp(self.CLCrouchProgress*2,0,1)
-	local crc_2=math.Clamp((self.CLCrouchProgress-0.5)*2,0,1)
+	local crc_1=l_mathClamp(self.CLCrouchProgress*2,0,1)
+	local crc_2=l_mathClamp((self.CLCrouchProgress-0.5)*2,0,1)
 	
 	if dynacc then
 		CurrentCone = l_Lerp( crc_2, l_Lerp(crc_1, CurrentCone, CurrentCone*self.ChangeStateAccuracyMultiplier) , CurrentCone * self.CrouchAccuracyMultiplier)
@@ -2588,7 +2615,7 @@ function SWEP:ClientCalculateConeRecoil()
 	end
 	
 	local ovel = self.Owner:GetVelocity():Length()
-	local vfc_1 = math.Clamp(ovel/180,0,1)
+	local vfc_1 = l_mathClamp(ovel/180,0,1)
 	
 	if dynacc then
 		CurrentCone = l_Lerp( vfc_1, CurrentCone, CurrentCone * self.WalkAccuracyMultiplier )
@@ -2616,10 +2643,15 @@ Purpose:  Feature
 ]]--
 
 local nearwall_cvar = GetConVar("sv_tfa_near_wall")
+local trent
 
 function SWEP:CalculateNearWallSH()
 
 	if !IsValid(self.Owner) then return end
+	
+	if !nearwall_cvar:GetBool() then
+		return
+	end
 
 	if self.Callback.CalculateNearWallSH then
 		local val = self.Callback.CalculateNearWallSH(self)
@@ -2639,19 +2671,16 @@ function SWEP:CalculateNearWallSH()
 	local traceres=util.TraceLine(tracedata)
 	if traceres.Hit then
 		if traceres.Fraction>0 and traceres.Fraction<1 then
-			if traceres.MatType!=MAT_FLESH and traceres.MatType!=MAT_GLASS and !( IsValid(traceres.Entity) and traceres.Entity:IsNPC() )then
+			trent = traceres.Entity
+			if traceres.MatType!=MAT_FLESH and traceres.MatType!=MAT_GLASS and !( IsValid(trent) and trent:IsNPC() )then
 				vnearwall = true
 			end
 		end
 	end
 	
-	if !nearwall_cvar:GetBool() then
-		vnearwall = false
-	end
-	
 	if self.Owner.GetBashing and self.Owner:GetBashing() then vnearwall=false end
 	
-	self:SetNearWallRatio( math.Approach( self:GetNearWallRatio(), vnearwall and math.Clamp(1-traceres.Fraction,0,1) or 0 , FrameTime() / self.NearWallTime ) )
+	self:SetNearWallRatio( l_mathApproach( self:GetNearWallRatio(), vnearwall and l_mathClamp(1-traceres.Fraction,0,1) or 0 , FrameTime() / self.NearWallTime ) )
 	
 end
 
@@ -2669,6 +2698,10 @@ function SWEP:CalculateNearWallCLF( ft )
 	
 	if !( CLIENT or sp ) then return end
 	if !IsValid(self.Owner) then return end
+	
+	if !nearwall_cvar:GetBool() then
+		return
+	end
 
 	if self.Callback.CalculateNearWallCLF then
 		local val = self.Callback.CalculateNearWallCLF(self)
@@ -2687,7 +2720,8 @@ function SWEP:CalculateNearWallCLF( ft )
 	local traceres=util.TraceLine(tracedata)
 	if traceres.Hit then
 		if traceres.Fraction>0 and traceres.Fraction<1 then
-			if traceres.MatType!=MAT_FLESH and traceres.MatType!=MAT_GLASS and !( IsValid(traceres.Entity) and traceres.Entity:IsNPC() )then
+			trent = traceres.Entity
+			if traceres.MatType!=MAT_FLESH and traceres.MatType!=MAT_GLASS and !( IsValid(trent) and trent:IsNPC() )then
 				vnearwall = true
 			end
 		end
@@ -2699,10 +2733,10 @@ function SWEP:CalculateNearWallCLF( ft )
 	
 	if self.Owner.GetBashing and self.Owner:GetBashing() then vnearwall=false end
 	
-	local tg = vnearwall and math.Clamp(1-traceres.Fraction,0,1) or 0
+	local tg = vnearwall and l_mathClamp(1-traceres.Fraction,0,1) or 0
 	
-	self.CLNearWallProgress =  math.Approach( self.CLNearWallProgress, tg , (ft / math.pow(self.NearWallAnimationTime, 2 ) ) * ( tg - self.CLNearWallProgress ) )
-	self.CLOldNearWallProgress =  math.Approach( self.CLOldNearWallProgress or 0, vnearwall and 1 or 0 , ft/ self.NearWallTime )
+	self.CLNearWallProgress =  l_mathApproach( self.CLNearWallProgress, tg , (ft / math.pow(self.NearWallAnimationTime, 2 ) ) * ( tg - self.CLNearWallProgress ) )
+	self.CLOldNearWallProgress =  l_mathApproach( self.CLOldNearWallProgress or 0, vnearwall and 1 or 0 , ft/ self.NearWallTime )
 end
 
 --[[ 
@@ -2747,13 +2781,13 @@ function SWEP:IronsSprint()
 	if self:Clip1() ==  0 and ( !dryfire_cvar:GetBool() ) then
 		if self:GetBursting() then
 			self:SetBursting(false)
-			self:SetNextBurst(CurTime() - 1)
+			self:SetNextBurst(l_CT() - 1)
 			self:SetBurstCount(0)
 		end
 	elseif self:Clip1() < 0 and IsValid(self.Owner) and self:GetAmmoReserve()<=0 and ( !dryfire_cvar:GetBool() ) then
 		if self:GetBursting() then
 			self:SetBursting(false)
-			self:SetNextBurst(CurTime() - 1)
+			self:SetNextBurst(l_CT() - 1)
 			self:SetBurstCount(0)
 		end
 	end
@@ -2766,7 +2800,7 @@ function SWEP:IronsSprint()
 		is=false
 	end
 	
-	if (isbolttimer) and (CurTime()>self:GetBoltTimerStart()) and (CurTime()<self:GetBoltTimerEnd()) then
+	if (isbolttimer) and (l_CT()>self:GetBoltTimerStart()) and (l_CT()<self:GetBoltTimerEnd()) then
 		is=false	
 	end
 	
@@ -2775,7 +2809,7 @@ function SWEP:IronsSprint()
 		insp = false
 		self:SetInspecting(false)
 		self:SetBursting(false)
-		self:SetNextBurst(CurTime() - 1)
+		self:SetNextBurst(l_CT() - 1)
 		self:SetBurstCount(0)
 	end
 	
@@ -2795,14 +2829,14 @@ function SWEP:IronsSprint()
 		is=false
 		self:SetInspecting(false)
 		self:SetBursting(false)
-		self:SetNextBurst(CurTime() - 1)
+		self:SetNextBurst(l_CT() - 1)
 		self:SetBurstCount(0)
 	end
 	
 	if (ischangingsilence) then
 		is=false
 		self:SetBursting(false)
-		self:SetNextBurst(CurTime() - 1)
+		self:SetNextBurst(l_CT() - 1)
 		self:SetBurstCount(0)
 	end
 	
@@ -2932,7 +2966,7 @@ function SWEP:CompleteReload()
 		self:SetBurstCount(0)
 		self:SetBursting(false)
 		self:SetHUDThreshold(true)
-		self:SetHUDThresholdEnd(CurTime() + hudhangtime)
+		self:SetHUDThresholdEnd(l_CT() + hudhangtime)
 	end
 end
 
@@ -2943,8 +2977,8 @@ Returns:  Nothing.  However, calculates OMG so much stuff what is this horrible 
 Notes:  This is essential.
 Purpose:  Don't remove this, seriously.
 ]]--
-	
-local isreloading,isshooting,isdrawing,isholstering, issighting, issprinting, htv, hudhangtime, isbolttimer, isinspecting, isfidgeting
+
+local isreloading,isshooting,isdrawing,isholstering, issighting, issprinting, htv, hudhangtime, isbolttimer, isinspecting, isfidgeting, ct
 	
 function SWEP:ProcessTimers()
 
@@ -2952,6 +2986,8 @@ function SWEP:ProcessTimers()
 		local val = self.Callback.ProcessTimers(self)
 		if val then return val end
 	end
+	
+	ct = l_CT()
 	
 	isreloading=self:GetReloading()
 	isshooting=self:GetShooting()
@@ -2965,18 +3001,6 @@ function SWEP:ProcessTimers()
 	isinspecting = self:GetInspecting()
 	htv = self:GetHUDThreshold()
 	isfidgeting = self:GetFidgeting()
-	hudhangtime = 1
-	
-	if isfidgeting and !htv then
-		self:SetHUDThreshold(true)
-		self:SetHUDThresholdEnd( self:GetNextIdleAnim() + hudhangtime)
-	end
-	
-	--[[
-	if self.DisableIdleAnimations and !isinspecting then
-		self:SetNextIdleAnim(CurTime()+30)
-	end
-	]]--
 	
 	if SERVER then
 		hudhangtime = self.Owner:GetInfoNum("cl_tfa_hud_hangtime",1)
@@ -2984,20 +3008,25 @@ function SWEP:ProcessTimers()
 		hudhangtime = hudhangtime_cvar:GetFloat()
 	end
 	
+	if isfidgeting and !htv and hudhangtime then
+		self:SetHUDThreshold(true)
+		self:SetHUDThresholdEnd( self:GetNextIdleAnim() + hudhangtime)
+	end
+	
 	isbolttimer = self:GetBoltTimer()
-	if isdrawing and CurTime()>self:GetDrawingEnd() then
+	if isdrawing and ct>self:GetDrawingEnd() then
 		if IsValid(self.OwnerViewModel) then
 			self.DefaultAtt = self.OwnerViewModel:GetAttachment(self:GetFPMuzzleAttachment())
 		end
 		self:SetDrawing(false)
 		isdrawing=false
 	end
-	if isbolttimer and CurTime()>self:GetBoltTimerEnd() then
+	if isbolttimer and ct>self:GetBoltTimerEnd() then
 		self:SetBoltTimer(false)
-		self:SetBoltTimerStart(CurTime()-1)
-		self:SetBoltTimerEnd(CurTime()-1)
+		self:SetBoltTimerStart(ct-1)
+		self:SetBoltTimerEnd(ct-1)
 	end
-	if isreloading and CurTime()>self:GetReloadingEnd() then
+	if isreloading and ct>self:GetReloadingEnd() then
 		if !self.Shotgun then
 			self:CompleteReload()
 			isreloading = false
@@ -3013,23 +3042,23 @@ function SWEP:ProcessTimers()
 						self.Owner:RemoveAmmo(amounttoreplace, self.Primary.Ammo)
 						self.StartAnimInsertShell = false
 						self:SetReloading(true)
-						self:SetReloadingEnd(CurTime()+0)
-						self:SetNextPrimaryFire( CurTime() + 0.01 )
+						self:SetReloadingEnd(ct+0)
+						self:SetNextPrimaryFire( ct + 0.01 )
 					else
 						self:SetShotgunInsertingShell(true)
 						self.Weapon:SendWeaponAnim(ACT_VM_RELOAD)
 						self:ResetEvents()
 						if IsValid(self.Owner) then
 							if !self.ShellTime and IsValid(self.OwnerViewModel) then
-								self:SetReloadingEnd(CurTime()+self.OwnerViewModel:SequenceDuration( self.OwnerViewModel:SelectWeightedSequence(ACT_VM_RELOAD) ) )
-								self:SetNextPrimaryFire( CurTime()+ ( self.SequenceLengthOverride[ACT_VM_RELOAD] and self.SequenceLengthOverride[ACT_VM_RELOAD] or  self.OwnerViewModel:SequenceDuration( self.OwnerViewModel:SelectWeightedSequence(ACT_VM_RELOAD) ) )  )
+								self:SetReloadingEnd(ct+self.OwnerViewModel:SequenceDuration( self.OwnerViewModel:SelectWeightedSequence(ACT_VM_RELOAD) ) )
+								self:SetNextPrimaryFire( ct+ ( self.SequenceLengthOverride[ACT_VM_RELOAD] and self.SequenceLengthOverride[ACT_VM_RELOAD] or  self.OwnerViewModel:SequenceDuration( self.OwnerViewModel:SelectWeightedSequence(ACT_VM_RELOAD) ) )  )
 							else
-								self:SetReloadingEnd(CurTime()+self.ShellTime)
-								self:SetNextPrimaryFire( CurTime()+ self.ShellTime )
+								self:SetReloadingEnd(ct+self.ShellTime)
+								self:SetNextPrimaryFire( ct+ self.ShellTime )
 							end
 						else
-							self:SetReloadingEnd(CurTime()+self.ShellTime)
-							self:SetNextPrimaryFire( CurTime()+ self.ShellTime )
+							self:SetReloadingEnd(ct+self.ShellTime)
+							self:SetNextPrimaryFire( ct+ self.ShellTime )
 						end
 						self:SetReloading(true)
 						isreloading=true
@@ -3037,11 +3066,11 @@ function SWEP:ProcessTimers()
 				else
 					self:SetReloading(false)
 					self:SetShotgunPumping(false)
-					self:SetReloadingEnd(CurTime()-1)
-					self:SetNextPrimaryFire( CurTime() + 0.01 )
+					self:SetReloadingEnd(ct-1)
+					self:SetNextPrimaryFire( ct + 0.01 )
 					isreloading=false
 					self:SetHUDThreshold(true)
-					self:SetHUDThresholdEnd(CurTime() + hudhangtime)
+					self:SetHUDThresholdEnd(ct + hudhangtime)
 				end
 			else
 				local maxclip=self.Primary.ClipSize
@@ -3052,15 +3081,15 @@ function SWEP:ProcessTimers()
 					self:SendWeaponAnim(ACT_SHOTGUN_RELOAD_FINISH)
 					if IsValid(self.Owner) then
 						if IsValid(self.OwnerViewModel) then
-							self:SetReloadingEnd(CurTime()+self.OwnerViewModel:SequenceDuration( self.OwnerViewModel:SelectWeightedSequence(ACT_SHOTGUN_RELOAD_FINISH) ) )
-							self:SetNextPrimaryFire( CurTime()+ ( self.SequenceLengthOverride[ACT_SHOTGUN_RELOAD_FINISH] and self.SequenceLengthOverride[ACT_SHOTGUN_RELOAD_FINISH] or  self.OwnerViewModel:SequenceDuration( self.OwnerViewModel:SelectWeightedSequence(ACT_SHOTGUN_RELOAD_FINISH) ) )  )
+							self:SetReloadingEnd(ct+self.OwnerViewModel:SequenceDuration( self.OwnerViewModel:SelectWeightedSequence(ACT_SHOTGUN_RELOAD_FINISH) ) )
+							self:SetNextPrimaryFire( ct+ ( self.SequenceLengthOverride[ACT_SHOTGUN_RELOAD_FINISH] and self.SequenceLengthOverride[ACT_SHOTGUN_RELOAD_FINISH] or  self.OwnerViewModel:SequenceDuration( self.OwnerViewModel:SelectWeightedSequence(ACT_SHOTGUN_RELOAD_FINISH) ) )  )
 						else
-							self:SetReloadingEnd(CurTime()+self.ShellTime)
-							self:SetNextPrimaryFire( CurTime()+ self.ShellTime )
+							self:SetReloadingEnd(ct+self.ShellTime)
+							self:SetNextPrimaryFire( ct+ self.ShellTime )
 						end
 					else
-						self:SetReloadingEnd(CurTime()+self.ShellTime)
-						self:SetNextPrimaryFire( CurTime()+ self.ShellTime )
+						self:SetReloadingEnd(ct+self.ShellTime)
+						self:SetNextPrimaryFire( ct+ self.ShellTime )
 					end
 					self:SetReloading(true)
 					self:SetShotgunPumping(true)
@@ -3077,19 +3106,19 @@ function SWEP:ProcessTimers()
 						self:SetShotgunInsertingShell(true)
 						if IsValid(self.Owner) then
 							if !self.ShellTime and IsValid(self.OwnerViewModel) then
-								self:SetReloadingEnd(CurTime()+self.OwnerViewModel:SequenceDuration( self.OwnerViewModel:SelectWeightedSequence(ACT_VM_RELOAD) ) )
-								self:SetNextPrimaryFire( CurTime()+ ( self.SequenceLengthOverride[ACT_VM_RELOAD] and self.SequenceLengthOverride[ACT_VM_RELOAD] or  self.OwnerViewModel:SequenceDuration( self.OwnerViewModel:SelectWeightedSequence(ACT_VM_RELOAD) ) )  )
+								self:SetReloadingEnd(ct+self.OwnerViewModel:SequenceDuration( self.OwnerViewModel:SelectWeightedSequence(ACT_VM_RELOAD) ) )
+								self:SetNextPrimaryFire( ct+ ( self.SequenceLengthOverride[ACT_VM_RELOAD] and self.SequenceLengthOverride[ACT_VM_RELOAD] or  self.OwnerViewModel:SequenceDuration( self.OwnerViewModel:SelectWeightedSequence(ACT_VM_RELOAD) ) )  )
 							else
-								self:SetReloadingEnd(CurTime()+self.ShellTime)
-								self:SetNextPrimaryFire( CurTime()+ self.ShellTime )
+								self:SetReloadingEnd(ct+self.ShellTime)
+								self:SetNextPrimaryFire( ct+ self.ShellTime )
 							end
 						else
-							self:SetReloadingEnd(CurTime()+self.ShellTime)
-							self:SetNextPrimaryFire( CurTime()+ self.ShellTime )
+							self:SetReloadingEnd(ct+self.ShellTime)
+							self:SetNextPrimaryFire( ct+ self.ShellTime )
 						end
 					else
-						self:SetReloadingEnd(CurTime()-1)
-						self:SetNextPrimaryFire( CurTime() + 0.01 )
+						self:SetReloadingEnd(ct-1)
+						self:SetNextPrimaryFire( ct + 0.01 )
 						self:SetReloading(true)
 						self:SetShotgunInsertingShell(true)
 					end
@@ -3097,14 +3126,14 @@ function SWEP:ProcessTimers()
 						self:SetShotgunCancel( false )
 						self:SetReloading(true)
 						self:SetShotgunNeedsPump( true )
-						self:SetReloadingEnd(CurTime()-1)
-						self:SetNextPrimaryFire( CurTime() + 0.01 )
+						self:SetReloadingEnd(ct-1)
+						self:SetNextPrimaryFire( ct + 0.01 )
 					end
 				end
 			end
 		end
 	end
-	if isholstering and CurTime()>self:GetHolsteringEnd() then
+	if isholstering and ct>self:GetHolsteringEnd() then
 		self:SetCanHolster(true)
 		self:SetHolstering(false)
 		if IsFirstTimePredicted() and ( CLIENT or sp ) then
@@ -3119,7 +3148,7 @@ function SWEP:ProcessTimers()
 		end
 	end
 	if isbursting then
-		if CurTime()>self:GetNextBurst() then
+		if ct>self:GetNextBurst() then
 			local maxbursts = 1
 			local firemode = self.FireModes[self:GetFireMode()]
 			local bpos = string.find(firemode,"Burst")
@@ -3134,29 +3163,29 @@ function SWEP:ProcessTimers()
 			end
 		end
 	end
-	if isshooting and CurTime()>self:GetShootingEnd() then
+	if isshooting and ct>self:GetShootingEnd() then
 		self:SetShooting(false)
 		isshooting=false
 	end
-	if isfiremodechanging and CurTime() > self:GetFireModeChangeEnd() then
+	if isfiremodechanging and ct > self:GetFireModeChangeEnd() then
 		self:SetFireModeChanging(false)
-		self:SetFireModeChangeEnd(CurTime() - 1)
+		self:SetFireModeChangeEnd(ct - 1)
 		self:SetHUDThreshold(true)
-		self:SetHUDThresholdEnd(CurTime() + hudhangtime)
+		self:SetHUDThresholdEnd(ct + hudhangtime)
 	end
-	if ischangingsilence and CurTime()>self:GetNextSilenceChange() then
+	if ischangingsilence and ct>self:GetNextSilenceChange() then
 		self:SetSilenced(!self:GetSilenced())
 		self:SetChangingSilence(false)
-		self:SetNextSilenceChange(CurTime() - 1)
+		self:SetNextSilenceChange(ct - 1)
 	end
-	if htv and CurTime()>self:GetHUDThresholdEnd() then
+	if htv and ct>self:GetHUDThresholdEnd() then
 		self:SetHUDThreshold(false)
-		self:SetHUDThresholdEnd(CurTime() - 1)
+		self:SetHUDThresholdEnd(ct - 1)
 	end
 	if ( isreloading or isshooting or isdrawing or isholstering or ischangingsilence or isfiremodechanging ) then
 		--donothing
 	else
-		if self:GetNextIdleAnim()<CurTime() then
+		if self:GetNextIdleAnim()<ct then
 			if self.lastact == ACT_VM_FIDGET or self.lastact == ACT_VM_FIDGET_EMPTY then
 				self:SetFidgeting(false)
 				isfidgeting = false
@@ -3172,12 +3201,13 @@ function SWEP:ProcessTimers()
 			end
 			local animtime = self.SequenceLength[tanim]
 			if animtime then
-				self:SetNextIdleAnim( CurTime() + animtime)
+				self:SetNextIdleAnim( ct + animtime)
 			else
-				self:SetNextIdleAnim( CurTime() +1 )
+				self:SetNextIdleAnim( ct +1 )
 			end
 		end
 	end
+	
 end
 
 function SWEP:ToggleInspect()
@@ -3208,7 +3238,7 @@ function SWEP:ToggleInspect()
 			net.WriteBool(!oldinsp)
 			net.SendToServer()
 		end
-		self:SetNextIdleAnim( CurTime() - 1)
+		self:SetNextIdleAnim( l_CT() - 1)
 		
 	end
 end
