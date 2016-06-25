@@ -754,6 +754,9 @@ function SWEP:Deploy()
 	self:ResetSightsProgress()
 	
 	self:DetectValidAnimations()
+	if SERVER then
+		self:CallOnClient("DetectValidAnimations","")
+	end
 	
 	local success, anim = self:ChooseDrawAnim()
 	
