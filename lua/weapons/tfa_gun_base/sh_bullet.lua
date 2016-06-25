@@ -276,7 +276,7 @@ function bullet:Penetrate( ply , traceres, dmginfo, weapon )
 	
 	if self.PenetrationCount > weapon.MaxPenetrationCounter then return end
 	
-	local mult = weapon:GetPenetrationMultiplier( weapon:GetMaterialConcise( traceres.MatType ) )
+	local mult = weapon:GetPenetrationMultiplier( traceres.MatType )
 	
 	penetrationoffset = traceres.Normal * math.Clamp( self.Force * mult, 0, 32 )
 		
@@ -296,8 +296,8 @@ function bullet:Penetrate( ply , traceres, dmginfo, weapon )
 	self.Tracer 	= weapon.TracerName and 1 or 0
 	self.TracerName = weapon.TracerName
 	
-	rngfac = pentraceres.HitPos:Distance(traceres.HitPos)/penetrationoffset:Length()
-	mfac = math.sqrt(mult/10)
+	rngfac = math.pow( pentraceres.HitPos:Distance(traceres.HitPos)/penetrationoffset:Length(), 2 )
+	mfac = math.pow(mult/10,0.35)
 	
 	self.Force		= Lerp( rngfac , self.Force, self.Force * mfac )
 	self.Damage		= Lerp( rngfac, self.Damage, self.Damage * mfac )

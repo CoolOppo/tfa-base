@@ -604,7 +604,6 @@ Purpose:  Utility
 ]]--
 
 function SWEP:GetFPMuzzleAttachment( )
-	if !IsValid(self) then return nil end
 	if !IsValid(self.Owner) then return nil end
 
 	if self.Callback.GetFPMuzzleAttachment then
@@ -750,13 +749,13 @@ function SWEP:GetAmmoForceMultiplier()
 			return 0.6--.308
 		end
 	elseif (am=="buckshot") then
-		return 0.6
+		return 0.5
 	elseif (am=="slam") then
-		return 0.6
+		return 0.5
 	elseif (am=="airboatgun") then 
-		return 0.8
+		return 0.7
 	elseif (am=="sniperpenetratedround") then
-		return 0.7 --Gotta compensate for 
+		return 1 --Gotta compensate for 
 	else
 		return 1
 	end
@@ -824,6 +823,33 @@ Notes:    Always lowercase.
 Purpose:  Utility
 ]]--
 
+local matnamec =  {
+	[MAT_GLASS] = "glass",
+	[MAT_GRATE] = "metal",
+	[MAT_METAL] = "metal",
+	[MAT_VENT] = "metal",
+	[MAT_COMPUTER] = "metal",
+	[MAT_CLIP] = "metal",
+	[MAT_FLESH] = "flesh",
+	[MAT_ALIENFLESH] = "flesh",
+	[MAT_ANTLION] = "flesh",
+	[MAT_FOLIAGE] = "foliage",
+	[MAT_DIRT] = "dirt",
+	[MAT_GRASS or MAT_DIRT] = "dirt",
+	[MAT_EGGSHELL] = "plastic",
+	[MAT_PLASTIC] = "plastic",
+	[MAT_TILE] = "ceramic",
+	[MAT_CONCRETE] = "ceramic",
+	[MAT_WOOD] = "wood",
+	[MAT_SAND] = "sand",
+	[MAT_SNOW or 0] = "snow",
+	[MAT_SLOSH] = "slime",
+	[MAT_WARPSHIELD] = "energy",
+	[89] = "glass",
+	[-1] = "default"
+
+}
+
 function SWEP:GetMaterialConcise( mat ) 
 
 	if self.Callback.GetMaterialConcise then
@@ -831,37 +857,7 @@ function SWEP:GetMaterialConcise( mat )
 		if val then return val end
 	end
 	
-	local matname
-	if (mat==MAT_GLASS) then
-		matname = "glass"
-	elseif mat==MAT_GRATE or mat==MAT_METAL or mat==MAT_VENT or mat==MAT_COMPUTER or mat==MAT_CLIP then
-		matname = "metal"
-	elseif mat==MAT_FLESH or mat==MAT_ALIENFLESH or mat==MAT_ANTLION then
-		matname = "flesh"
-	elseif mat==MAT_FOLIAGE then
-		matname = "foliage"
-	elseif mat==MAT_DIRT or mat==MAT_GRASS then
-		matname = "dirt"
-	elseif mat==MAT_EGGSHELL or mat==MAT_PLASTIC then
-		matname = "plastic"
-	elseif mat==MAT_TILE or mat==MAT_CONCRETE then
-		matname = "ceramic"
-	elseif mat==MAT_WOOD then
-		matname = "wood"
-	elseif mat==MAT_SAND then
-		matname = "sand"
-	elseif mat==MAT_SNOW then
-		matname = "snow"
-	elseif mat==MAT_SLOSH then
-		matname = "slime"
-	elseif mat==MAT_WARPSHIELD then
-		matname = "energy"
-	elseif mat==89 then 
-		matname = "glass"
-	else
-		matname = "default"
-	end
-	return matname
+	return matnamec[mat] or matnamec[-1]
 end
 
 --[[ 
@@ -872,6 +868,24 @@ Notes:    Should be used with GetMaterialConcise.
 Purpose:  Utility
 ]]--
 
+local matfacs = {
+	["metal"] =2.5, --Since most is aluminum and stuff
+	["wood"] =8,
+	["plastic"] =5,
+	["flesh"] =8,
+	["ceramic"] =1.5,
+	["glass"] =10,
+	["energy"] =0.05,
+	["sand"] =0.7,
+	["slime"] =0.7,
+	["dirt"] =4, --This is plaster, not dirt, in most cases.
+	["foliage"] =6.5,
+	["default"] = 4
+}
+	
+local mat
+local fac
+
 function SWEP:GetPenetrationMultiplier( matt )
 
 	if self.Callback.GetPenetrationMultiplier then
@@ -879,29 +893,8 @@ function SWEP:GetPenetrationMultiplier( matt )
 		if val then return val end
 	end
 	
-	local mat = self:GetMaterialConcise( matt )
-	local fac = 1
-	if mat=="metal" then 
-		fac = 1.8 --Since most is aluminum and stuff
-	elseif mat=="wood" then
-		fac=8
-	elseif mat=="plastic" then
-		fac=5
-	elseif mat=="flesh" then
-		fac=8
-	elseif mat=="ceramic" then
-		fac=1.5
-	elseif mat=="glass" then
-		fac=10
-	elseif mat=="energy" then
-		fac=0.05
-	elseif mat=="slime" or mat=="sand" then
-		fac=0.7
-	elseif mat=="dirt" then
-		fac=5 --This is plaster, not dirt, in most cases.
-	elseif mat=="foliage" then
-		fac=6.5
-	end
+	mat = isstring(matt) and matt or self:GetMaterialConcise( matt )
+	fac = matfacs[ matt or "default" ] or 4
 	
 	return fac * (self.Primary.PenetrationMultiplier and self.Primary.PenetrationMultiplier or 1)
 	
