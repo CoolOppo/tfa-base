@@ -1022,6 +1022,10 @@ Returns:  True/False to allow holster.  Useful for animations.
 Purpose:  Standard SWEP Function
 ]]--
 
+local seq
+local seqtime 
+local dt
+
 function SWEP:Holster( switchtowep )
 	
 	if !IsValid(switchtowep) then
@@ -1072,13 +1076,19 @@ function SWEP:Holster( switchtowep )
 			self:SetHolstering( true )
 			local success, anim = self:ChooseHolsterAnim()
 			
-			local seq = self.OwnerViewModel:SelectWeightedSequence( anim or 0 )
-			local seqtime = self.OwnerViewModel:SequenceDuration( seq )
-			if anim == ACT_VM_IDLE then
-				seqtime = self.ProceduralHolsterTime
+			if IsValid(self.OwnerViewModel) then
+				seq = self.OwnerViewModel:SelectWeightedSequence( anim or 0 )
+				seqtime = self.OwnerViewModel:SequenceDuration( seq )
+				if anim == ACT_VM_IDLE then
+					seqtime = self.ProceduralHolsterTime
+					anim = -1
+				end
+			else
 				anim = -1
+				seqtime = self.ProceduralHolsterTime
 			end
-			local dt = l_CT()+ ( self.SequenceLengthOverride[anim] or seqtime ) 
+			
+			dt = l_CT()+ ( self.SequenceLengthOverride[anim] or seqtime ) 
 			if self.ShootWhileDraw==false then
 				self:SetNextPrimaryFire(dt)
 			end

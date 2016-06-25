@@ -76,9 +76,8 @@ Purpose:  FX
 ]]--
 
 function SWEP:EjectionSmoke()
-	if !IsValid(self) then return end
-	if !self:OwnerIsValid() then return end
-	if !GetTFAMZSmokeEnabled or GetTFAMZSmokeEnabled() then
+	if GetTFAEJSmokeEnabled() then
+		self:UpdateViewModel()
 		local vm = self.OwnerViewModel
 		if IsValid(vm) then
 			local att = vm:LookupAttachment(self.ShellAttachment)

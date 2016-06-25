@@ -669,10 +669,11 @@ function SWEP:GetFPMuzzleAttachment( )
 		if val then return val end
 	end
 	
+	self:UpdateViewModel()
+	
 	vm = self.OwnerViewModel
 	
 	if IsValid(vm) then
-	
 		
 		if self:GetSilenced() then
 			if self.MuzzleAttachmentSilenced then
@@ -687,10 +688,10 @@ function SWEP:GetFPMuzzleAttachment( )
 		if self.MuzzleAttachmentRaw then
 			obj=self.MuzzleAttachmentRaw
 		end
-	
+		
 	end
 	
-	obj = math.Clamp(obj or 1,1,128)	
+	obj = math.Clamp(obj or 1,1,128)
 	
 	return obj 
 end

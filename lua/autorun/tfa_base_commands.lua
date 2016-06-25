@@ -17,6 +17,7 @@ if CLIENT then
 								sv_tfa_range_modifier = "0.5",
 								sv_tfa_fx_impact_override = "-1",
 								sv_tfa_fx_muzzlesmoke_override = "-1",
+								sv_tfa_fx_ejectionsmoke_override = "-1",
 								sv_tfa_fx_gas_override = "-1",
 								sv_tfa_fx_ricochet_override = "-1",
 								sv_tfa_bullet_penetration = "1",
@@ -121,6 +122,14 @@ if CLIENT then
 	panel:AddControl("Slider", {
 		Label 	= "Muzzle Smoke Effect Override (-1 to leave clientside)",
 		Command 	= "sv_tfa_fx_muzzlesmoke_override",
+		Type 		= "Integer",
+		Min 		= "-1",
+		Max 		= "1",
+	})
+	
+	panel:AddControl("Slider", {
+		Label 	= "Ejection Smoke Effect Override (-1 to leave clientside)",
+		Command 	= "sv_tfa_fx_ejectionsmoke_override",
 		Type 		= "Integer",
 		Min 		= "-1",
 		Max 		= "1",
@@ -300,6 +309,11 @@ if CLIENT then
 		panel:AddControl("CheckBox", {
 		Label = "Use Muzzle Smoke Trails",
 		Command = "cl_tfa_fx_muzzlesmoke",
+	})	
+	
+		panel:AddControl("CheckBox", {
+		Label = "Use Ejection Smoke",
+		Command = "cl_tfa_fx_ejectionsmoke",
 	})	
 	
 		panel:AddControl("CheckBox", {
@@ -931,6 +945,10 @@ if GetConVar("sv_tfa_arrow_lifetime") == nil then
 	CreateConVar("sv_tfa_arrow_lifetime", "30", { FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE }, "Arrow lifetime.")
 end
 
+if GetConVar("sv_tfa_fx_ejectionsmoke_override") == nil then
+	CreateConVar("sv_tfa_fx_ejectionsmoke_override", "-1", { FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE }, "-1 to let clients pick.  0 to force off.  1 to force on.")
+end
+
 if GetConVar("sv_tfa_fx_muzzlesmoke_override") == nil then
 	CreateConVar("sv_tfa_fx_muzzlesmoke_override", "-1", { FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE }, "-1 to let clients pick.  0 to force off.  1 to force on.")
 end
@@ -1133,6 +1151,10 @@ if CLIENT then
 		CreateClientConVar("cl_tfa_fx_muzzlesmoke", 1, true, true)
 	end
 		
+	if GetConVar("cl_tfa_fx_ejectionsmoke") == nil then
+		CreateClientConVar("cl_tfa_fx_ejectionsmoke", 1, true, true)
+	end
+		
 	if GetConVar("cl_tfa_fx_impact_enabled") == nil then
 		CreateClientConVar("cl_tfa_fx_impact_enabled", 1, true, true)
 	end
@@ -1191,10 +1213,15 @@ end
 
 --Helpers
 
+local tmpsp = game.SinglePlayer()
 local gas_cl_enabled = GetConVar("cl_tfa_fx_gasblur")
 local gas_sv_enabled = GetConVar("sv_tfa_fx_gas_override")
 
 function GetTFAGasEnabled()
+	
+	if tmpsp then
+		return math.Round(Entity(1):GetInfoNum("cl_tfa_fx_gasblur",0))!=0
+	end
 	
 	local enabled
 	if gas_cl_enabled then
@@ -1203,16 +1230,23 @@ function GetTFAGasEnabled()
 		enabled = false
 	end
 	
-	if gas_sv_enabled and gas_sv_enabled:GetInt()>=0 then enabled=gas_sv_enabled:GetBool() end
+	if gas_sv_enabled and gas_sv_enabled:GetInt()!=-1 then enabled=gas_sv_enabled:GetBool() end
 	
 	return enabled
 	
 end
 
+local ejectionsmoke_cl_enabled = GetConVar("cl_tfa_fx_ejectionsmoke")
+local ejectionsmoke_sv_enabled = GetConVar("sv_tfa_fx_ejectionsmoke_override")
+
 local muzzlesmoke_cl_enabled = GetConVar("cl_tfa_fx_muzzlesmoke")
 local muzzlesmoke_sv_enabled = GetConVar("sv_tfa_fx_muzzlesmoke_override")
 
 function GetTFAMZSmokeEnabled()
+	
+	if tmpsp then
+		return math.Round(Entity(1):GetInfoNum("cl_tfa_fx_muzzlesmoke",0))!=0
+	end
 	
 	local enabled
 	if muzzlesmoke_cl_enabled then
@@ -1221,7 +1255,26 @@ function GetTFAMZSmokeEnabled()
 		enabled = false
 	end
 	
-	if muzzlesmoke_sv_enabled and muzzlesmoke_sv_enabled:GetInt()>=0 then enabled=muzzlesmoke_sv_enabled:GetBool() end
+	if muzzlesmoke_sv_enabled and muzzlesmoke_sv_enabled:GetInt()!=-1 then enabled=muzzlesmoke_sv_enabled:GetBool() end
+	
+	return enabled
+	
+end
+
+function GetTFAEJSmokeEnabled()
+	
+	if tmpsp then
+		return math.Round(Entity(1):GetInfoNum("cl_tfa_fx_ejectionsmoke",0))!=0
+	end
+	
+	local enabled
+	if ejectionsmoke_cl_enabled then
+		enabled = ejectionsmoke_cl_enabled:GetBool()
+	else
+		enabled = false
+	end
+	
+	if ejectionsmoke_sv_enabled and ejectionsmoke_sv_enabled:GetInt()==0 then enabled=ejectionsmoke_sv_enabled:GetBool() end
 	
 	return enabled
 	
@@ -1232,6 +1285,10 @@ local ricofx_sv_enabled = GetConVar("sv_tfa_fx_ricochet_override")
 
 function GetTFARicochetEnabled()
 	
+	if tmpsp then
+		return math.Round(Entity(1):GetInfoNum("cl_tfa_fx_impact_ricochet_enabled",0))!=0
+	end
+	
 	local enabled
 	if ricofx_cl_enabled then
 		enabled = ricofx_cl_enabled:GetBool()
@@ -1239,7 +1296,7 @@ function GetTFARicochetEnabled()
 		enabled = false
 	end
 	
-	if ricofx_sv_enabled and ricofx_sv_enabled:GetInt()>=0 then enabled=ricofx_sv_enabled:GetBool() end
+	if ricofx_sv_enabled and ricofx_sv_enabled:GetInt()!=-1 then enabled=ricofx_sv_enabled:GetBool() end
 	
 	return enabled
 	

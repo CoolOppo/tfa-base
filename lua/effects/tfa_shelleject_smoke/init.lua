@@ -1,9 +1,16 @@
+local bvec = Vector(0,0,0)
+local uAng = Angle(90,0,0)
+
 function EFFECT:Init( data )
 	
-	self.Position = data:GetOrigin()
+	if !GetTFAEJSmokeEnabled() then return end
+	
+	self.Position = bvec
 	self.WeaponEnt = data:GetEntity()
 	if !IsValid(self.WeaponEnt) then return end
+	self.WeaponEntOG = self.WeaponEnt
 	self.Attachment = data:GetAttachment()
+	local dir = data:GetNormal()
 	
 	local owent = self.WeaponEnt.Owner or self.WeaponEnt:GetOwner()
 	if !IsValid(owent) then owent = self.WeaponEnt:GetParent() end
@@ -13,13 +20,40 @@ function EFFECT:Init( data )
 			if !IsValid(self.WeaponEnt) then return end
 		else
 			self.WeaponEnt = owent:GetViewModel()
+			local theirweapon = owent:GetActiveWeapon()
+			if IsValid(theirweapon) then
+				if theirweapon.ViewModelFlip or theirweapon.ViewModelFlipped then
+					self.Flipped = true
+				end
+			end
 			if !IsValid(self.WeaponEnt) then return end		
 		end
 	end
-		
-	-- Keep the start and end pos - we're going to interpolate between them
-	self.StartPos = self:GetTracerShootPos( self.Position, self.WeaponEnt, self.Attachment )
-	self.vOffset = self.StartPos
+	
+	if IsValid(self.WeaponEntOG) and self.WeaponEntOG.ShellAttachment then
+		self.Attachment = self.WeaponEnt:LookupAttachment(self.WeaponEntOG.ShellAttachment)
+		if !self.Attachment or self.Attachment<=0 then
+			self.Attachment = 2
+		end
+	end
+	
+	local angpos = self.WeaponEnt:GetAttachment(self.Attachment)
+	
+	if !angpos or !angpos.Pos then angpos = {Pos = bvec,Ang=uAng} end
+	
+	if self.Flipped then
+		local tmpang = (dir or angpos.Ang:Forward()):Angle()
+		local localang = self.WeaponEnt:WorldToLocalAngles(tmpang)
+		localang.y = localang.y + 180
+		localang = self.WeaponEnt:LocalToWorldAngles(localang)
+		--localang:RotateAroundAxis(localang:Up(),180)
+		--tmpang:RotateAroundAxis(tmpang:Up(),180)
+		dir = localang:Forward()
+	end
+	
+	-- Keep the start and end Pos - we're going to interpolate between them
+	self.vOffset = self:GetTracerShootPos( angpos.Pos, self.WeaponEnt, self.Attachment )
+	dir = dir or angpos.Ang:Forward()--angpos.Ang:Forward()
 	
 	local emitter = ParticleEmitter( self.vOffset )
 	
