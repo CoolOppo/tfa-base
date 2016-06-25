@@ -856,6 +856,8 @@ function SWEP:Deploy()
 	
 	self:DoBodyGroups()
 	
+	self:StopClientHolstering()
+	
 	self:SetFidgeting(false)
 	
 	self.IsHolding = false
@@ -1011,7 +1013,9 @@ Purpose:  Standard SWEP Function
 
 function SWEP:Holster( switchtowep )
 	
-	if !IsValid(switchtowep) then return end
+	if !IsValid(switchtowep) then
+		switchtowep = self.Owner
+	end
 	
 	if self.Callback.Holster then
 		local val = self.Callback.Holster(self, switchtowep)
@@ -1425,7 +1429,16 @@ function SWEP:MainUpdate()
 		if SERVER then
 			local stwep = self:GetNWEntity("SwitchToWep",self)
 			if IsValid(stwep) then
-				self.Owner:SelectWeapon( stwep:GetClass() )
+				if stwep == owent then
+					owent:ConCommand("+use")
+					timer.Simple(0,function()
+						if IsValid(owent) then
+							owent:ConCommand("-use")							
+						end
+					end)
+				else
+					self.Owner:SelectWeapon( stwep:GetClass() )
+				end
 			end
 		end
 	end
@@ -1506,6 +1519,7 @@ function SWEP:MainUpdate()
 					issighting=self:GetIronSightsRaw()
 					if owent:KeyPressed(IN_ATTACK2) then
 						issighting=!issighting
+						self:SetIronSightsRaw(issighting)
 					end			
 				end
 			else
@@ -1517,6 +1531,7 @@ function SWEP:MainUpdate()
 					issighting=self:GetIronSightsRaw()
 					if owent:KeyPressed(IN_ATTACK2) then
 						issighting=!issighting
+						self:SetIronSightsRaw(issighting)
 					end			
 				end
 			end
@@ -1627,6 +1642,7 @@ function SWEP:MainUpdate()
 	end
 		
 	if (isholstering) then
+		issighting = false
 		if isinspecting then
 			self:SetInspecting(false)
 			self:SetInspectingRatio(0)
@@ -2388,13 +2404,10 @@ function SWEP:PlayerThinkClientFrame( ply )
 		nhf = 1
 	end
 	
-	if nhf == 0 then self:SetUnpredictedHolstering(false) end
-	
 	self.ProceduralHolsterFactor = l_mathApproach(self.ProceduralHolsterFactor,nhf,(nhf-self.ProceduralHolsterFactor)*ftv*self.ProceduralHolsterTime*10)
 	
 	if self:GetDrawing() and !self:GetProceduralReloading() and nfh!=1 then
 		self.ProceduralHolsterFactor = 0
-		self:SetUnpredictedHolstering(false)
 	end
 end
 

@@ -12,6 +12,15 @@ function SWEP:GetUnpredictedHolstering( )
 	return ( self.IsHolsteringCL == nil ) and false or self.IsHolsteringCL
 end
 
+function SWEP:StopClientHolstering()
+	if SERVER and IsValid(self.Owner) then
+		self:CallOnClient("StopClientHolstering","")
+	else
+		self:SetHolstering(false)
+		self:SetUnpredictedHolstering(false)
+	end
+end
+
 --[[ 
 Function Name:  CanChamber
 Syntax: self:CanChamber().

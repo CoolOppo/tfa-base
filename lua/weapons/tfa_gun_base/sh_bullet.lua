@@ -157,6 +157,7 @@ function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet,
 		bullet.AmmoType = self:GetPrimaryAmmoType()
 		bullet.Force	= damage/3 * math.sqrt((self.Primary.KickUp+self.Primary.KickDown+self.Primary.KickHorizontal )) * GetConVarNumber("sv_tfa_force_multiplier",1) * self:GetAmmoForceMultiplier()				-- Amount of force to give to phys objects
 		bullet.Damage	= damage
+		bullet.HasAppliedRange = false
 		
 		if self.CustomBulletCallback then
 			bullet.Callback = self.CustomBulletCallback
@@ -202,20 +203,25 @@ local decalbul = {
 
 local penetration_cvar = GetConVar("sv_tfa_bullet_penetration")
 local ricochet_cvar = GetConVar("sv_tfa_bullet_ricochet")
-
+local rngfac
+local mfac
+	
 function bullet:Penetrate( ply , traceres, dmginfo, weapon )
 	
 	if !IsValid(weapon) then return end
 	
 	local hitent = traceres.Entity
 	
-	local bulletdistance =  ( ( traceres.HitPos - traceres.StartPos ):Length( ) )
-	local damagescale = bulletdistance / weapon.Primary.Range
-	damagescale = math.Clamp(damagescale - weapon.Primary.RangeFalloff,0,1)
-	damagescale = math.Clamp(damagescale / math.max(1-weapon.Primary.RangeFalloff,0.01),0,1)
-	damagescale = ( 1-GetConVarNumber("sv_tfa_range_modifier",0.5) ) + ( math.Clamp(1-damagescale,0,1) * GetConVarNumber("sv_tfa_range_modifier",0.5) )
-	
-	dmginfo:ScaleDamage(damagescale)
+	if !self.HasAppliedRange then
+		local bulletdistance =  ( ( traceres.HitPos - traceres.StartPos ):Length( ) )
+		local damagescale = bulletdistance / weapon.Primary.Range
+		damagescale = math.Clamp(damagescale - weapon.Primary.RangeFalloff,0,1)
+		damagescale = math.Clamp(damagescale / math.max(1-weapon.Primary.RangeFalloff,0.01),0,1)
+		damagescale = ( 1-GetConVarNumber("sv_tfa_range_modifier",0.5) ) + ( math.Clamp(1-damagescale,0,1) * GetConVarNumber("sv_tfa_range_modifier",0.5) )
+		
+		dmginfo:ScaleDamage(damagescale)
+		self.HasAppliedRange = true
+	end
 	dmginfo:SetDamageType( weapon.DamageType or weapon.Primary.DamageType or DMG_BULLET )
 	
 	if SERVER and IsValid(ply) and ply:IsPlayer() and IsValid(hitent) and ( hitent:IsPlayer() or hitent:IsNPC() ) then
@@ -289,12 +295,16 @@ function bullet:Penetrate( ply , traceres, dmginfo, weapon )
 	if ( self.Num or 0 )<=1 then self.Spread = Vector(0,0,0) end
 	self.Tracer 	= weapon.TracerName and 1 or 0
 	self.TracerName = weapon.TracerName
-	self.Force		= Lerp( pentraceres.HitPos:Distance(traceres.HitPos)/penetrationoffset:Length(), self.Force, self.Force * mult/10 )
-	self.Damage		= Lerp( pentraceres.HitPos:Distance(traceres.HitPos)/penetrationoffset:Length(), self.Damage, self.Damage * mult/10 )
+	
+	rngfac = pentraceres.HitPos:Distance(traceres.HitPos)/penetrationoffset:Length()
+	mfac = math.sqrt(mult/10)
+	
+	self.Force		= Lerp( rngfac , self.Force, self.Force * mfac )
+	self.Damage		= Lerp( rngfac, self.Damage, self.Damage * mfac )
 	self.PenetrationCount = self.PenetrationCount + 1
 	
 	decalbul.Src = pentraceres.HitPos + pentraceres.HitNormal
-	decalbul.Dir = -pentraceres.HitNormal * 64
+	decalbul.Dir = traceres.HitNormal * 64
 	
 	local fx = EffectData()
 	fx:SetOrigin(self.Src)
