@@ -36,6 +36,8 @@ SWEP.Primary.NumShots	= 1 --The number of shots the weapon fires.  SWEP.Shotgun 
 SWEP.Primary.Automatic			= true					-- Automatic/Semi Auto
 SWEP.Primary.RPM				= 600					-- This is in Rounds Per Minute / RPM
 SWEP.Primary.RPM_Semi				= nil					-- RPM for semi-automatic or burst fire.  This is in Rounds Per Minute / RPM
+SWEP.Primary.RPM_Burst				= nil					-- RPM for burst fire, overrides semi.  This is in Rounds Per Minute / RPM
+SWEP.Primary.BurstDelay				= nil					-- Delay between bursts, leave nil to autocalculate
 SWEP.FiresUnderwater = false
 
 SWEP.CanBeSilenced = false --Can we silence?  Requires animations.

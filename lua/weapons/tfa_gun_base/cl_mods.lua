@@ -60,8 +60,11 @@ SWEP.CameraAngCache = nil
 local tmpvec = Vector(0,0,-2000)
 
 function SWEP:ViewModelDrawn()
-	if !IsValid(self) or !self:OwnerIsValid() then return end
-	local vm = self.Owner:GetViewModel()
+	
+	if self.DrawHands then self:DrawHands() end
+	
+	local vm = self.OwnerViewModel
+	if !IsValid(vm) then return end
 	
 	if self.UseHands then
 		local hands = self.Owner:GetHands()

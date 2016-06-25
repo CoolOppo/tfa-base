@@ -515,7 +515,9 @@ function SWEP:GetRPM()
 	end
 	
 	if !self.Primary.Automatic then
-		if self.Primary.RPM_Semi then
+		if self.Primary.RPM_Burst and string.find( string.lower( self.FireModes[self:GetFireMode()] or "" ), "burst" ) then
+			return self.Primary.RPM_Burst
+		elseif self.Primary.RPM_Semi then
 			return self.Primary.RPM_Semi 
 		end
 	end
@@ -525,6 +527,61 @@ function SWEP:GetRPM()
 	end
 	
 	return 600
+end
+
+--[[ 
+Function Name:  GetBurstDelay
+Syntax: self:GetBurstDelay( ). 
+Returns:   How long we wait between bursts.
+Notes:    Returns a delay equivalent to  RPM / 3.
+Purpose:  Utility
+]]--
+
+function SWEP:GetBurstDelay( bur )
+
+	if self.Callback.GetRPM then
+		local val = self.Callback.GetRPM(self)
+		if val then return val end
+	end
+	
+	if !bur then bur = self:GetMaxBurst() end
+	
+	if bur<=1 then return 0 end
+	
+	if self.Primary.BurstDelay then return self.Primary.BurstDelay end
+	 
+	if self.Primary.RPM_Burst then
+		return 60 / ( self.Primary.RPM_Burst * 3 )
+	elseif self.Primary.RPM_Semi then
+		return 60 / ( self.Primary.RPM_Semi  * 3 )
+	elseif self.Primary.RPM then
+		return 60 / ( self.Primary.RPM / 3 )
+	end
+	
+	return 0.3
+end
+
+--[[ 
+Function Name:  GetMaxBurst
+Syntax: self:GetMaxBurst( ). 
+Returns:   How many shots per burst
+Notes:    
+Purpose:  Utility
+]]--
+
+local bpos
+SWEP.BurstCountCache = {}
+
+function SWEP:GetMaxBurst()
+
+	local fm = self.FireModes[self:GetFireMode()] or "3Burst"
+	
+	if !self.BurstCountCache[fm] then
+		bpos = string.find(string.lower(fm),"Burst") or 2
+		self.BurstCountCache[fm] = tonumber( string.sub(fm,1,bpos-1) ) or 1
+	end
+	
+	return self.BurstCountCache[fm] or 1
 end
 
 --[[ 
@@ -602,34 +659,38 @@ Returns:   The firstperson/viewmodel muzzle attachment id.
 Notes:    Defaults to the first attachment.
 Purpose:  Utility
 ]]--
+	
+local muzzlepos,ply,fp,obj,vm
 
 function SWEP:GetFPMuzzleAttachment( )
-	if !IsValid(self.Owner) then return nil end
 
 	if self.Callback.GetFPMuzzleAttachment then
 		local val = self.Callback.GetFPMuzzleAttachment(self)
 		if val then return val end
 	end
 	
-	local ply=self.Owner
-	local vm = self.OwnerViewModel
-	if !IsValid(vm) then return 1 end
-	local obj = vm:LookupAttachment( self.MuzzleAttachment and self.MuzzleAttachment or "1")
+	vm = self.OwnerViewModel
 	
-	if self:GetSilenced() then
-		if self.MuzzleAttachmentSilenced then
-			obj = vm:LookupAttachment( self.MuzzleAttachmentSilenced and self.MuzzleAttachmentSilenced or "1")
+	if IsValid(vm) then
+	
+		
+		if self:GetSilenced() then
+			if self.MuzzleAttachmentSilenced then
+				obj = vm:LookupAttachment( self.MuzzleAttachmentSilenced )
+			else
+				obj = vm:LookupAttachment( "muzzle_silenced" )
+			end
 		else
-			obj = vm:LookupAttachment( "muzzle_silenced")
+			obj = vm:LookupAttachment( self.MuzzleAttachment or "1")
 		end
-		if obj==0 then
-			obj = 1
+		
+		if self.MuzzleAttachmentRaw then
+			obj=self.MuzzleAttachmentRaw
 		end
+	
 	end
 	
-	if self.MuzzleAttachmentRaw then
-		obj=self.MuzzleAttachmentRaw
-	end
+	obj = math.Clamp(obj or 1,1,128)	
 	
 	return obj 
 end
@@ -643,61 +704,27 @@ Purpose:  Utility
 ]]--
 
 function SWEP:GetMuzzlePos( ignorepos )
-	
-	if !IsValid(self.Owner) then return nil end
 
 	if self.Callback.GetMuzzlePos then
 		local val = self.Callback.GetMuzzlePos(self, ignorepos)
 		if val then return val end
 	end
 	
-	local ply=self.Owner
-	local fp = self:IsFirstPerson()
-	local vm = self.OwnerViewModel
-	local obj = 0--vm:LookupAttachment( self.MuzzleAttachment and self.MuzzleAttachment or "1")
+	fp = self:IsFirstPerson()
+	vm = self.OwnerViewModel
 	
 	if fp then
-		obj=self:GetFPMuzzleAttachment()
+		obj = self:GetFPMuzzleAttachment()
 	else
 		obj = self:LookupAttachment( self.MuzzleAttachment and self.MuzzleAttachment or "1")
-		if !obj or obj==0 then
-			obj = 1
-		end
 	end
 	
-	local muzzlepos
+	obj = math.Clamp(obj or 1,1,128)
 	
 	if fp then
-		local pos = vm:GetPos()
-		local ang = vm:GetAngles()
-		local rpos
-		local rang
-		
-		if vm.GetRenderOrigin then
-			rpos = vm:GetRenderOrigin()
-			rang = vm:GetRenderAngles()
-		else
-			rpos = pos
-			rang = ang
-		end
-		
-		if ignorepos then
-			vm:SetPos(ply:GetShootPos())
-			vm:SetAngles(ply:EyeAngles())
-			vm:SetRenderOrigin(ply:GetShootPos())
-			vm:SetRenderAngles(ply:EyeAngles())
-		end
-		
 		muzzlepos = vm:GetAttachment( obj )
-		vm:SetPos(pos)
-		vm:SetAngles(ang)
-		
-		if vm.SetRenderOrigin then
-			vm:SetRenderOrigin(rpos)
-			vm:SetRenderAngles(rang)
-		end
 	else
-		muzzlepos = self:GetAttachment(obj)
+		muzzlepos = self:GetAttachment( obj )
 	end
 	
 	return muzzlepos 

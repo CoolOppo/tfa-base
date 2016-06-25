@@ -422,6 +422,7 @@ local l_mathClamp = math.Clamp
 
 local l_CT = CurTime
 local l_FT = FrameTime
+local l_RT = RealTime
 
 --[[  Quadratic Interpolation Functions  ]]--
 
@@ -536,6 +537,12 @@ local host_timescale_cv,sv_cheats_cv,cl_vm_flip_cv,legacy_reloads_cv
 local is,isr,rs,rsr,insp,inspr,tsv,crouchr,jumpr,ftv,ftvc,newratio,jv,rel_proc
 local compensatedft,compensatedft_cr,compensatedft_sp
 local heldentindex,heldent
+
+legacy_reloads_cv = GetConVar("sv_tfa_reloads_legacy")
+local host_timescale_cv = GetConVar("host_timescale")
+local sv_cheats_cv = GetConVar("sv_cheats")
+local fps_max_cvar = GetConVar("fps_max")
+local dryfire_cvar = GetConVar("sv_tfa_allow_dryfire")
 
 --[[ 
 Function Name:  ResetEvents
@@ -652,6 +659,7 @@ Purpose:  Standard SWEP Function
 ]]--
 
 local seq,act,sp
+sp = game.SinglePlayer()
 
 function SWEP:Initialize()
 
@@ -1228,10 +1236,6 @@ Purpose:  Don't remove this, seriously.
 ]]--
 
 local rtime,RealFrameTime
-local host_timescale_cv = GetConVar("host_timescale")
-local sv_cheats_cv = GetConVar("sv_cheats")
-local fps_max_cvar = GetConVar("fps_max")
-local dryfire_cvar = GetConVar("sv_tfa_allow_dryfire")
 local owent
 local ammo_fadein_cvar
 local is,rs,oldissighting,oldrs,isnumber
@@ -1250,7 +1254,7 @@ if CLIENT then
 	ironsights_resight_cvar = GetConVar("cl_tfa_ironsights_resight")
 end
 
-local isreloading,isshooting,isdrawing,isholstering, issighting, issprinting, htv, hudhangtime, isbolttimer, isinspecting, isfidgeting, ct, owent, is_old, spr_old, ft, isnumber, rsnumber, isr, rsr, inspr,bash, bts, bte
+local isreloading,isshooting,isdrawing,isholstering, issighting, issprinting, htv, hudhangtime, isbolttimer, isinspecting, isfidgeting, ct, owent, is_old, spr_old, ft, isnumber, rsnumber, isr, rsr, inspr,bash, bts, bte, del, mb
 
 local tonetwork_thresh = 0.001
 
@@ -1277,6 +1281,7 @@ function SWEP:MainUpdate()
 	isinspecting = self:GetInspecting()
 	htv = self:GetHUDThreshold()
 	isfidgeting = self:GetFidgeting()
+	isbolttimer = self:GetBoltTimer()
 	bash = self.GetBashing and self:GetBashing()
 	
 	if isbolttimer then
@@ -1306,9 +1311,9 @@ function SWEP:MainUpdate()
 	if isfidgeting and !htv and hudhangtime then
 		self:SetHUDThreshold(true)
 		self:SetHUDThresholdEnd( self:GetNextIdleAnim() + hudhangtime)
+		htv = true
 	end
 	
-	isbolttimer = self:GetBoltTimer()
 	if isdrawing and ct>self:GetDrawingEnd() then
 		if IsValid(self.OwnerViewModel) then
 			self.DefaultAtt = self.OwnerViewModel:GetAttachment(self:GetFPMuzzleAttachment())
@@ -1366,6 +1371,7 @@ function SWEP:MainUpdate()
 					self:SetNextPrimaryFire( ct + 0.01 )
 					isreloading=false
 					self:SetHUDThreshold(true)
+					htv = true
 					self:SetHUDThresholdEnd(ct + hudhangtime)
 				end
 			else
@@ -1460,15 +1466,12 @@ function SWEP:MainUpdate()
 	end
 	if isbursting then
 		if ct>self:GetNextBurst() then
-			local maxbursts = 1
-			local firemode = self.FireModes[self:GetFireMode()]
-			local bpos = string.find(firemode,"Burst")
-			if bpos then
-				maxbursts = tonumber(string.sub(firemode,1,bpos-1)) or 3
-			end
-			if self:GetBurstCount() >= maxbursts then
+			mb = self:GetMaxBurst()
+			if self:GetBurstCount() >= mb then
 				self:SetBursting(false)
 				self:SetBurstCount(0)
+				del = self:GetBurstDelay( mb )
+				self:SetNextPrimaryFire( math.max( ct + del, self:GetNextPrimaryFire() ) )
 			else
 				self:PrimaryAttack()
 			end
@@ -1483,6 +1486,7 @@ function SWEP:MainUpdate()
 		self:SetFireModeChangeEnd(ct - 1)
 		self:SetHUDThreshold(true)
 		self:SetHUDThresholdEnd(ct + hudhangtime)
+		htv = true
 	end
 	if ischangingsilence and ct>self:GetNextSilenceChange() then
 		self:SetSilenced(!self:GetSilenced())
@@ -1492,6 +1496,7 @@ function SWEP:MainUpdate()
 	if htv and ct>self:GetHUDThresholdEnd() then
 		self:SetHUDThreshold(false)
 		self:SetHUDThresholdEnd(ct - 1)
+		htv = false
 	end
 	if ( isreloading or isshooting or isdrawing or isholstering or ischangingsilence or isfiremodechanging ) then
 		--donothing
@@ -1783,6 +1788,16 @@ function SWEP:MainUpdate()
 			end
 		end
 	end
+	
+	--[[Clientside Caching]]--
+	
+	if CLIENT then
+		self.cl_cache_isreloading = isreloading
+		self.cl_cache_isbolting = isbolttimer
+		self.cl_cache_isfmc = isfiremodechanging
+		self.cl_cache_ishud = htv
+	end
+	
 end
 
 --[[ 
@@ -2082,14 +2097,9 @@ Notes: Critical to processing the ironsights progress and stuff.
 Purpose:  Main SWEP function
 ]]--
 
-function SWEP:PlayerThink( ply )	
+local heldentindex, heldent
 
-	if !legacy_reloads_cv then legacy_reloads_cv = GetConVar("sv_tfa_reloads_legacy") end
-	
-	if !self.OwnerViewModel then self.OwnerViewModel = self.Owner:GetViewModel() end
-	
-	if !host_timescale_cv then host_timescale_cv = GetConVar("host_timescale") end
-	if !sv_cheats_cv then sv_cheats_cv = GetConVar("sv_cheats") end
+function SWEP:PlayerThink( ply )
 	
 	if self.Callback.PlayerThink then
 		local val = self.Callback.PlayerThink(self, ply)
@@ -2137,75 +2147,6 @@ function SWEP:PlayerThinkServer( ply )
 		local val = self.Callback.PlayerThinkServer(self, ply)
 		if val then return val end
 	end
-	
-	--[[
-	
-	ownent = self.Owner
-	
-	self:CalculateNearWallSH()
-	
-	is = self:GetIronSights() and 1 or 0
-	insp = self:GetIronSights() and 1 or 0
-	
-	rel_proc = ( self:GetReloading() ) and !legacy_reloads_cv:GetBool()
-	
-	if ownent.TFACasting or ( ownent.tfacastoffset and ownent.tfacastoffset>0.1) then rel_proc = true end
-	
-	rs = ( ( self:GetSprinting() or self:IsSafety() ) and !rel_proc) and 1 or 0 
-	
-	
-	isr=self:GetIronSightsRatio()
-	rsr=self:GetRunSightsRatio()
-	tsv = 1
-	if sv_cheats_cv:GetBool() then tsv = tsv * host_timescale_cv:GetFloat() end
-	tsv = tsv * game.GetTimeScale()
-	inspr = self:GetInspectingRatio()
-	
-	if self:GetInspecting() then
-		insp = 1
-	end
-	
-	ftv = l_FT()
-	compensatedft = ftv / ( self.IronSightTime * 0.4 )
-	compensatedft_sp = ftv / ( ( self.RunSightTime and self.RunSightTime or self.IronSightTime*2 ) * 0.4 )
-	compensatedft_cr = ftv / self.ToCrouchTime
-	
-	newratio=l_mathApproach( isr, is, (is-isr)*compensatedft)
-	if math.abs(newratio-isr)>tonetwork_thresh then
-		self:SetIronSightsRatio( newratio )
-	end
-	
-	newratio=l_mathApproach( rsr, rs, (rs-rsr)*compensatedft_sp)
-	if math.abs(newratio-rsr)>tonetwork_thresh then
-		self:SetRunSightsRatio( newratio )
-	end
-	
-	if inspr>tonetwork_thresh then
-		self:SetInspectingRatio( l_mathApproach( inspr, insp, ftv / self.IronSightTime) )
-	end
-	
-	self.CrouchingRatioV = l_mathApproach( self.CrouchingRatioV or 0, (ownent:Crouching() and 0 or 1), ftv / self.ToCrouchTime)
-	
-	self.JumpingRatioV = l_mathApproach( self.JumpingRatioV or 0, (ownent:IsOnGround() and 0 or 1), ftv / self.ToCrouchTime)
-	
-	if self.CrouchingRatioV>tonetwork_thresh then
-		self:SetCrouchingRatio( self.CrouchingRatioV )
-	end
-	
-	if self.JumpingRatioV>tonetwork_thresh  then
-		self:SetJumpingRatio( self.JumpingRatioV )
-	end
-	
-	if self.Primary.SpreadRecovery then
-	
-		self.SpreadRatioV = l_mathClamp( self:GetSpreadRatio() - self.Primary.SpreadRecovery*ftv, 1, self.Primary.SpreadMultiplierMax)
-		
-		if self.SpreadRatioV>tonetwork_thresh then
-			self:SetSpreadRatio( self.SpreadRatioV )
-		end
-	end
-	
-	]]--
 	
 end
 
@@ -2334,6 +2275,8 @@ Notes: Critical for the clientside/predicted ironsights.
 Purpose:  Main SWEP function
 ]]--
 
+local ct
+
 function SWEP:PlayerThinkClientFrame( ply )
 	
 	self:UpdateViewModel()
@@ -2341,21 +2284,21 @@ function SWEP:PlayerThinkClientFrame( ply )
 	tsv = 1
 	if sv_cheats_cv:GetBool() then tsv = tsv * host_timescale_cv:GetFloat() end
 	tsv = tsv * game.GetTimeScale()
-	rtime=RealTime()
+	rtime=l_RT()
 	RealFrameTime = rtime-(self.lastrealtime or rtime)
 	self.lastrealtime = rtime
-	
-	
-	if !legacy_reloads_cv then legacy_reloads_cv = GetConVar("sv_tfa_reloads_legacy") end
-	
-	if ply != self:GetOwner() then return end	
 	
 	if self.Callback.PlayerThinkClientFrame then
 		local val = self.Callback.PlayerThinkClientFrame(self, ply)
 		if val then return val end
 	end
 	
-	self.ShouldDrawAmmoHUD=( ply:KeyDown(IN_USE) and ply:KeyDown(IN_RELOAD) ) or self:GetReloading() or self:GetFireModeChanging() or self:GetHUDThreshold() or (self:GetBoltTimer() and l_CT()>self:GetBoltTimerStart() and l_CT()<self:GetBoltTimerEnd() )
+	if !sp then
+		self.ShouldDrawAmmoHUD = ( self.cl_cache_isreloading or self.cl_cache_isfmc or self.cl_cache_ishud or self.cl_cache_isbolting )
+	else
+		ct = l_CT()
+		self.ShouldDrawAmmoHUD = ( ply:KeyDown(IN_USE) and ply:KeyDown(IN_RELOAD) ) or self:GetReloading() or self:GetFireModeChanging() or self:GetHUDThreshold() or (self:GetBoltTimer() and ct>self:GetBoltTimerStart() and ct<self:GetBoltTimerEnd() )
+	end
 	
 	self:CalculateNearWallCLF( RealFrameTime )
 	
@@ -2522,8 +2465,6 @@ Purpose:  Main SWEP function
 
 function SWEP:Reload()
 
-	if !legacy_reloads_cv then legacy_reloads_cv = GetConVar("sv_tfa_reloads_legacy") end
-
 	if self.Callback.Reload then
 		local val = self.Callback.Reload(self)
 		if val then return val end
@@ -2680,16 +2621,13 @@ function SWEP:Sway(pos,ang)
 	
 	ang:Normalize()
 	
-	if !self.timescale_cv then self.timescale_cv = GetConVar("host_timescale") end
-	if !self.cheat_cv then self.cheat_cv = GetConVar("sv_cheats") end
-	
 	local ft = ( SysTime() - ( self.LastSys or SysTime() ) )*game.GetTimeScale()
 	
 	if ft>l_FT() then ft = l_FT() end
 	
 	ft = l_mathClamp(ft,0,1/30)
 	
-	if self.cheat_cv and self.timescale_cv and self.cheat_cv:GetBool() then ft = ft * self.timescale_cv:GetFloat() end
+	if sv_cheats_cv:GetBool() and host_timescale_cv:GetFloat()<1 then ft = ft * host_timescale_cv:GetFloat() end
 	
 	self.LastSys = SysTime()
 	--angrange = our availalbe ranges
@@ -2764,6 +2702,16 @@ local hidevec = Vector(0,0,-10000)
 local targpos,targang,ft, mvfac
 
 local qerp_threshold = 0.01
+	
+local isp
+local rsp
+local nwp
+local inspectrat
+local tmp_ispos
+local tmp_isa
+local tmp_rspos
+local tmp_rsa
+local vmfov
 
 function SWEP:GetViewModelPosition(pos, ang)
 
@@ -2775,7 +2723,7 @@ function SWEP:GetViewModelPosition(pos, ang)
 	if !self.ogviewmodelfov then self.ogviewmodelfov = self.ViewModelFOV end
 	
 	
-	local vmfov = self.ogviewmodelfov * fovmod_mult:GetFloat()
+	vmfov = self.ogviewmodelfov * fovmod_mult:GetFloat()
 	vmfov = vmfov + fovmod_add:GetFloat()
 	self.ViewModelFOV = vmfov
 	
@@ -2784,14 +2732,14 @@ function SWEP:GetViewModelPosition(pos, ang)
 	
 	if self:IsHidden() then return (pos + hidevec), ang end
 	
-	local isp=l_mathClamp(self.CLIronSightsProgress,0,1)--self:GetIronSightsRatio()
-	local rsp=l_mathClamp(self.CLRunSightsProgress,0,1)--self:GetRunSightsRatio()
-	local nwp=l_mathClamp(self.CLNearWallProgress,0,1)--self:GetNearWallRatio()
-	local inspectrat=l_mathClamp(self.CLInspectingProgress,0,1)--self:GetInspectingRatio()
-	local tmp_ispos = self.SightsPos and self.SightsPos or self.IronSightsPos
-	local tmp_isa = self.SightsAng and self.SightsAng or self.IronSightsAng
-	local tmp_rspos = self.RunSightsPos and self.RunSightsPos or tmp_ispos
-	local tmp_rsa  = self.RunSightsAng and self.RunSightsAng or tmp_isa
+	isp=l_mathClamp(self.CLIronSightsProgress,0,1)--self:GetIronSightsRatio()
+	rsp=l_mathClamp(self.CLRunSightsProgress,0,1)--self:GetRunSightsRatio()
+	nwp=l_mathClamp(self.CLNearWallProgress,0,1)--self:GetNearWallRatio()
+	inspectrat=l_mathClamp(self.CLInspectingProgress,0,1)--self:GetInspectingRatio()
+	tmp_ispos = self.SightsPos and self.SightsPos or self.IronSightsPos
+	tmp_isa = self.SightsAng and self.SightsAng or self.IronSightsAng
+	tmp_rspos = self.RunSightsPos and self.RunSightsPos or tmp_ispos
+	tmp_rsa  = self.RunSightsAng and self.RunSightsAng or tmp_isa
 	
 	if !self.InspectPos then
 		self.InspectPos = self.InspectPosDef * 1

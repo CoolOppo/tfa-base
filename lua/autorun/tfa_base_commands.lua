@@ -1396,12 +1396,14 @@ end)
 --Client think per-frame
 
 if CLIENT then
+	local ply
+	local wep
 	if GetConVarNumber("sv_tfa_compatibility_clientframe",0)!=1 then
 		hook.Add("PreRender", "prerender_tfabase", function()
 			
-			local ply = LocalPlayer()
+			ply = LocalPlayer()
 			if !IsValid(ply) then return end
-			local wep = ply:GetActiveWeapon()
+			wep = ply:GetActiveWeapon()
 			if IsValid(wep) and wep.IsTFAWeapon and wep.PlayerThinkClientFrame then
 				wep:PlayerThinkClientFrame(ply)
 			end
@@ -1410,9 +1412,9 @@ if CLIENT then
 	else
 		hook.Add("Think", "prerender_tfabase", function()
 		
-			local ply = LocalPlayer()
+			ply = LocalPlayer()
 			if !IsValid(ply) then return end
-			local wep = ply:GetActiveWeapon()
+			wep = ply:GetActiveWeapon()
 			if IsValid(wep) and wep.IsTFAWeapon and wep.PlayerThinkClientFrame then
 				wep:PlayerThinkClientFrame(pl)
 			end
