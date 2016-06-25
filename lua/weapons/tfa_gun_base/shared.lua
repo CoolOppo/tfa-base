@@ -421,6 +421,7 @@ local l_mathApproach = math.Approach
 local l_mathClamp = math.Clamp
 
 local l_CT = CurTime
+local l_FT = FrameTime
 
 --[[  Quadratic Interpolation Functions  ]]--
 
@@ -1207,15 +1208,525 @@ function SWEP:Think2()
 		if val then return val end
 	end
 	
+	self:UpdateViewModel()
 	self:ProcessEvents()
 	self:ProcessFireMode()
-	self:ProcessTimers()
-	self:UserInput()
-	self:IronsSprint()
+	self:MainUpdate()
 	self:ProcessHoldType()
 	self:ViewModelFlipFunc()
-	if self.Owner:GetVelocity():Length()>self.Owner:GetWalkSpeed()*0.4 then
-		--self:CleanParticles()
+end
+
+--[[ 
+Function Name:  MainUpdate
+Syntax: self:MainUpdate().  This is called per-think.
+Returns:  Nothing.  However, calculates OMG so much stuff what is this horrible hacky code that allows you to use bolt action snipers, shotguns, and normal guns all in the same base?!!!111oneoneone
+Notes:  This is essential.
+Purpose:  Don't remove this, seriously.
+]]--
+
+local rtime,RealFrameTime
+local host_timescale_cv = GetConVar("host_timescale")
+local sv_cheats_cv = GetConVar("sv_cheats")
+local fps_max_cvar = GetConVar("fps_max")
+local dryfire_cvar = GetConVar("sv_tfa_allow_dryfire")
+local owent
+local ammo_fadein_cvar
+local is,rs,oldissighting,oldrs,isnumber
+
+if CLIENT then
+	ammo_fadein_cvar = GetConVar("cl_tfa_hud_ammodata_fadein")
+end
+
+local ironsights_toggle_cvar
+if CLIENT then
+	ironsights_toggle_cvar = GetConVar("cl_tfa_ironsights_toggle")
+end
+
+local ironsights_resight_cvar 
+if CLIENT then
+	ironsights_resight_cvar = GetConVar("cl_tfa_ironsights_resight")
+end
+
+local isreloading,isshooting,isdrawing,isholstering, issighting, issprinting, htv, hudhangtime, isbolttimer, isinspecting, isfidgeting, ct, owent, is_old, spr_old, ft, isnumber, rsnumber, isr, rsr, inspr
+
+local tonetwork_thresh = 0.001
+
+function SWEP:MainUpdate()
+
+	if self.Callback.ProcessTimers then
+		local val = self.Callback.ProcessTimers(self)
+		if val then return val end
+	end
+	
+	ct = l_CT()
+	ft = l_FT()
+	owent = self.Owner
+	
+	isreloading=self:GetReloading()
+	isshooting=self:GetShooting()
+	isdrawing=self:GetDrawing()
+	isholstering=self:GetHolstering()
+	issighting=self:GetIronSights()
+	issprinting=self:GetSprinting()
+	isbursting = self:GetBursting()
+	ischangingsilence = self:GetChangingSilence()
+	isfiremodechanging = self:GetFireModeChanging()
+	isinspecting = self:GetInspecting()
+	htv = self:GetHUDThreshold()
+	isfidgeting = self:GetFidgeting()
+	
+	if SERVER then
+		isr = self:GetIronSightsRatio()
+		rsr = self:GetRunSightsRatio()
+		inspr = self:GetInspectingRatio()
+	end
+	
+	spr_old = issprinting
+	is_old=issighting
+	
+	if SERVER then
+		hudhangtime = owent:GetInfoNum("cl_tfa_hud_hangtime",1)
+	else
+		hudhangtime = hudhangtime_cvar:GetFloat()
+	end
+	
+	if isfidgeting and !htv and hudhangtime then
+		self:SetHUDThreshold(true)
+		self:SetHUDThresholdEnd( self:GetNextIdleAnim() + hudhangtime)
+	end
+	
+	isbolttimer = self:GetBoltTimer()
+	if isdrawing and ct>self:GetDrawingEnd() then
+		if IsValid(self.OwnerViewModel) then
+			self.DefaultAtt = self.OwnerViewModel:GetAttachment(self:GetFPMuzzleAttachment())
+		end
+		self:SetDrawing(false)
+		isdrawing=false
+	end
+	if isbolttimer and ct>self:GetBoltTimerEnd() then
+		self:SetBoltTimer(false)
+		self:SetBoltTimerStart(ct-1)
+		self:SetBoltTimerEnd(ct-1)
+	end
+	if isreloading and ct>self:GetReloadingEnd() then
+		if !self.Shotgun then
+			self:CompleteReload()
+			isreloading = false
+		else
+			if (self:GetShotgunInsertingShell() == false) then
+				if !self:GetShotgunPumping() then
+					if self.StartAnimInsertShell then
+						local maxclip=self.Primary.ClipSize
+						local curclip = self:Clip1()
+						local ammopool = self:GetAmmoReserve()
+						local amounttoreplace=1
+						self:SetClip1(curclip+amounttoreplace)
+						self.Owner:RemoveAmmo(amounttoreplace, self.Primary.Ammo)
+						self.StartAnimInsertShell = false
+						self:SetReloading(true)
+						self:SetReloadingEnd(ct+0)
+						self:SetNextPrimaryFire( ct + 0.01 )
+					else
+						self:SetShotgunInsertingShell(true)
+						self.Weapon:SendWeaponAnim(ACT_VM_RELOAD)
+						self:ResetEvents()
+						if IsValid(self.Owner) then
+							if !self.ShellTime and IsValid(self.OwnerViewModel) then
+								self:SetReloadingEnd(ct+self.OwnerViewModel:SequenceDuration( self.OwnerViewModel:SelectWeightedSequence(ACT_VM_RELOAD) ) )
+								self:SetNextPrimaryFire( ct+ ( self.SequenceLengthOverride[ACT_VM_RELOAD] and self.SequenceLengthOverride[ACT_VM_RELOAD] or  self.OwnerViewModel:SequenceDuration( self.OwnerViewModel:SelectWeightedSequence(ACT_VM_RELOAD) ) )  )
+							else
+								self:SetReloadingEnd(ct+self.ShellTime)
+								self:SetNextPrimaryFire( ct+ self.ShellTime )
+							end
+						else
+							self:SetReloadingEnd(ct+self.ShellTime)
+							self:SetNextPrimaryFire( ct+ self.ShellTime )
+						end
+						self:SetReloading(true)
+						isreloading=true
+					end
+				else
+					self:SetReloading(false)
+					self:SetShotgunPumping(false)
+					self:SetReloadingEnd(ct-1)
+					self:SetNextPrimaryFire( ct + 0.01 )
+					isreloading=false
+					self:SetHUDThreshold(true)
+					self:SetHUDThresholdEnd(ct + hudhangtime)
+				end
+			else
+				local maxclip=self.Primary.ClipSize
+				local curclip = self:Clip1()
+				local ammopool = self:GetAmmoReserve()
+				if curclip>=maxclip or ammopool<=0 or self:GetShotgunNeedsPump() then
+					self:SetShotgunInsertingShell(false)
+					self:SendWeaponAnim(ACT_SHOTGUN_RELOAD_FINISH)
+					if IsValid(self.Owner) then
+						if IsValid(self.OwnerViewModel) then
+							self:SetReloadingEnd(ct+self.OwnerViewModel:SequenceDuration( self.OwnerViewModel:SelectWeightedSequence(ACT_SHOTGUN_RELOAD_FINISH) ) )
+							self:SetNextPrimaryFire( ct+ ( self.SequenceLengthOverride[ACT_SHOTGUN_RELOAD_FINISH] and self.SequenceLengthOverride[ACT_SHOTGUN_RELOAD_FINISH] or  self.OwnerViewModel:SequenceDuration( self.OwnerViewModel:SelectWeightedSequence(ACT_SHOTGUN_RELOAD_FINISH) ) )  )
+						else
+							self:SetReloadingEnd(ct+self.ShellTime)
+							self:SetNextPrimaryFire( ct+ self.ShellTime )
+						end
+					else
+						self:SetReloadingEnd(ct+self.ShellTime)
+						self:SetNextPrimaryFire( ct+ self.ShellTime )
+					end
+					self:SetReloading(true)
+					self:SetShotgunPumping(true)
+					self:SetShotgunNeedsPump(false)
+				else
+					local amounttoreplace=1
+					self:SetClip1(curclip+amounttoreplace)
+					self.Owner:RemoveAmmo(amounttoreplace, self.Primary.Ammo)
+					curclip = self:Clip1()
+					if (curclip<maxclip) then
+						self.Weapon:SendWeaponAnim(ACT_VM_RELOAD)
+						self:ResetEvents()
+						self:SetReloading(true)
+						self:SetShotgunInsertingShell(true)
+						if IsValid(self.Owner) then
+							if !self.ShellTime and IsValid(self.OwnerViewModel) then
+								self:SetReloadingEnd(ct+self.OwnerViewModel:SequenceDuration( self.OwnerViewModel:SelectWeightedSequence(ACT_VM_RELOAD) ) )
+								self:SetNextPrimaryFire( ct+ ( self.SequenceLengthOverride[ACT_VM_RELOAD] and self.SequenceLengthOverride[ACT_VM_RELOAD] or  self.OwnerViewModel:SequenceDuration( self.OwnerViewModel:SelectWeightedSequence(ACT_VM_RELOAD) ) )  )
+							else
+								self:SetReloadingEnd(ct+self.ShellTime)
+								self:SetNextPrimaryFire( ct+ self.ShellTime )
+							end
+						else
+							self:SetReloadingEnd(ct+self.ShellTime)
+							self:SetNextPrimaryFire( ct+ self.ShellTime )
+						end
+					else
+						self:SetReloadingEnd(ct-1)
+						self:SetNextPrimaryFire( ct + 0.01 )
+						self:SetReloading(true)
+						self:SetShotgunInsertingShell(true)
+					end
+					if self:GetShotgunCancel() then
+						self:SetShotgunCancel( false )
+						self:SetReloading(true)
+						self:SetShotgunNeedsPump( true )
+						self:SetReloadingEnd(ct-1)
+						self:SetNextPrimaryFire( ct + 0.01 )
+					end
+				end
+			end
+		end
+	end
+	if isholstering and ct>self:GetHolsteringEnd() then
+		self:SetCanHolster(true)
+		self:SetHolstering(false)
+		if IsFirstTimePredicted() and ( CLIENT or sp ) then
+			self:CleanModels(self.VElements)
+			self:CleanModels(self.WElements)
+		end
+		if SERVER then
+			local stwep = self:GetNWEntity("SwitchToWep",self)
+			if IsValid(stwep) then
+				self.Owner:SelectWeapon( stwep:GetClass() )
+			end
+		end
+	end
+	if isbursting then
+		if ct>self:GetNextBurst() then
+			local maxbursts = 1
+			local firemode = self.FireModes[self:GetFireMode()]
+			local bpos = string.find(firemode,"Burst")
+			if bpos then
+				maxbursts = tonumber(string.sub(firemode,1,bpos-1)) or 3
+			end
+			if self:GetBurstCount() >= maxbursts then
+				self:SetBursting(false)
+				self:SetBurstCount(0)
+			else
+				self:PrimaryAttack()
+			end
+		end
+	end
+	if isshooting and ct>self:GetShootingEnd() then
+		self:SetShooting(false)
+		isshooting=false
+	end
+	if isfiremodechanging and ct > self:GetFireModeChangeEnd() then
+		self:SetFireModeChanging(false)
+		self:SetFireModeChangeEnd(ct - 1)
+		self:SetHUDThreshold(true)
+		self:SetHUDThresholdEnd(ct + hudhangtime)
+	end
+	if ischangingsilence and ct>self:GetNextSilenceChange() then
+		self:SetSilenced(!self:GetSilenced())
+		self:SetChangingSilence(false)
+		self:SetNextSilenceChange(ct - 1)
+	end
+	if htv and ct>self:GetHUDThresholdEnd() then
+		self:SetHUDThreshold(false)
+		self:SetHUDThresholdEnd(ct - 1)
+	end
+	if ( isreloading or isshooting or isdrawing or isholstering or ischangingsilence or isfiremodechanging ) then
+		--donothing
+	else
+		if self:GetNextIdleAnim()<ct then
+			if self.lastact == ACT_VM_FIDGET or self.lastact == ACT_VM_FIDGET_EMPTY then
+				self:SetFidgeting(false)
+				isfidgeting = false
+				self.lastact = 0
+				self:ChooseIdleAnim()
+				return
+			end
+			local success, tanim 
+			if isfidgeting then
+				success, tanim = self:ChooseInspectAnim()
+			elseif !self.DisableIdleAnimations then
+				success, tanim = self:ChooseIdleAnim()
+			end
+			local animtime = self.SequenceLength[tanim]
+			if animtime then
+				self:SetNextIdleAnim( ct + animtime)
+			else
+				self:SetNextIdleAnim( ct +1 )
+			end
+		end
+	end
+	
+	--[[UserInput]]
+	
+	issighting=false
+	issprinting=false
+	
+	if IsValid(owent) then
+		if !(self.data and self.data.ironsights == 0) then
+			if CLIENT then
+				if !ironsights_toggle_cvar:GetBool() then
+					if owent:KeyDown(IN_ATTACK2) then
+						issighting=true
+					end			
+				else
+					issighting=self:GetIronSightsRaw()
+					if owent:KeyPressed(IN_ATTACK2) then
+						issighting=!issighting
+					end			
+				end
+			else
+				if owent:GetInfoNum("cl_tfa_ironsights_toggle",0)==0 then
+					if owent:KeyDown(IN_ATTACK2) then
+						issighting=true
+					end			
+				else
+					issighting=self:GetIronSightsRaw()
+					if owent:KeyPressed(IN_ATTACK2) then
+						issighting=!issighting
+					end			
+				end
+			end
+		end
+		
+		isnumber = (issighting and 0 or 1)
+		rsnumber = (issprinting and 1 or 0)
+		if owent:KeyDown(IN_SPEED) and owent:GetVelocity():Length()>owent:GetWalkSpeed()*(self.MoveSpeed*(1-isnumber)+self.IronSightsMoveSpeed*(isnumber)) then
+			issprinting=true
+		end	
+	end
+	
+	--[[IronsSprint]]
+	
+	nw = false
+	
+	if self:GetUnpredictedHolstering() or self.IsHolding then isholstering = true end
+	
+	if owent.TFACasting or ( owent.tfacastoffset and owent.tfacastoffset>0.1) then issprinting = false end
+	
+	if self:Clip1() ==  0 and ( !dryfire_cvar:GetBool() ) then
+		if self:GetBursting() then
+			self:SetBursting(false)
+			self:SetNextBurst(ct - 1)
+			self:SetBurstCount(0)
+		end
+	elseif self:Clip1() < 0 and IsValid(owent) and self:GetAmmoReserve()<=0 and ( !dryfire_cvar:GetBool() ) then
+		if self:GetBursting() then
+			self:SetBursting(false)
+			self:SetNextBurst(ct - 1)
+			self:SetBurstCount(0)
+		end
+	end
+		
+	if self:GetNearWallRatio()>0.01 then
+		nw = true
+	end
+	
+	if (self.IsHolding) or ( (isbolttimer) and (ct>self:GetBoltTimerStart()) and (ct<self:GetBoltTimerEnd()) ) then
+		issighting=false	
+	end
+	
+	if ( issprinting or self:IsSafety() ) then
+		issighting=false
+		if isinspecting then
+			self:SetInspecting(false)
+			isinspecting = false
+		end
+		if isbursting then
+			self:SetBursting(false)
+			self:SetNextBurst(ct - 1)
+			self:SetBurstCount(0)
+			isbursting = false
+		end
+	end	
+	
+	if (issighting) then
+		if isfidgeting then
+			self:ChooseIdleAnim()
+			self:SetFidgeting(false)
+			isfidgeting = false
+		end
+	elseif (isshooting) then
+		if isfidgeting then
+			self:SetFidgeting(false)
+			isfidgeting = false
+		end
+	end
+	
+	if (isinspecting) then
+		issighting = false
+	end
+	
+	if (ischangingsilence) then
+		issighting=false
+		if isbursting then
+			self:SetBursting(false)
+			self:SetNextBurst(ct - 1)
+			self:SetBurstCount(0)
+			isbursting = false
+		end
+	end
+	
+	if self.UnSightOnReload then
+		if (isreloading) then
+			issighting=false
+			if isinspecting then
+				self:SetInspecting(false)
+				self:SetInspectingRatio(0)
+				isinspecting = false
+			end
+		end
+	end
+		
+	if (isdrawing) then
+		if !self.SightWhileDraw then
+			if isinspecting then
+				self:SetInspecting(false)
+				self:SetInspectingRatio(0)
+				isinspecting = false
+			end
+			issighting=false
+			if isfidgeting then
+				self:SetFidgeting(false)
+				isfidgeting = false
+			end
+		end
+	end
+		
+	if (isholstering) then
+		if isinspecting then
+			self:SetInspecting(false)
+			self:SetInspectingRatio(0)
+			isinspecting = false
+		end
+		self:SetBursting(false)
+		if !self.SightWhileHolster then
+			issighting=false
+		end
+		if isfidgeting then
+			self:SetFidgeting(false)
+			isfidgeting = false
+		end
+	end
+	
+	if (nw) then
+		issighting=false
+		if isinspecting then
+			self:SetInspecting(false)
+			isinspecting = false
+		end
+		if isbursting then
+			self:SetBursting(false)
+			self:SetNextBurst(ct - 1)
+			self:SetBurstCount(0)
+			isbursting = false
+		end
+		if isfidgeting then
+			self:ChooseIdleAnim()
+			self:SetFidgeting(false)
+			isfidgeting = false
+		end
+	end
+	
+	if (is_old!=issighting) then
+		if ( ( CLIENT and IsFirstTimePredicted() ) or ( SERVER and sp ) ) then
+			if (issighting==false) then
+				self:EmitSound("TFA.IronOut")
+			else
+				self:EmitSound("TFA.IronIn")
+			end
+		end
+		self:SetIronSights(issighting)
+		if ( (CLIENT and !ironsights_resight_cvar:GetBool() ) or ( SERVER and owent:GetInfoNum("cl_tfa_ironsights_resight",0)==0) ) then
+			self:SetIronSightsRaw(issighting)
+		end
+	end
+	
+	if spr_old != issprinting then
+		self:SetSprinting(issprinting)
+	end
+	
+	--[[Serverside Update Functions]]--
+	
+	isnumber = (issighting and 1 or 0)
+	rsnumber = (issprinting and 1 or 0)
+	
+	if SERVER then
+		if !sp then
+			self:CalculateNearWallSH()
+		end
+		
+		compensatedft = ft / ( self.IronSightTime * 0.4 )
+		compensatedft_sp = ft / ( ( self.RunSightTime and self.RunSightTime or self.IronSightTime*2 ) * 0.4 )
+		compensatedft_cr = ft / self.ToCrouchTime
+		
+		newratio=l_mathApproach( isr, isnumber, (isnumber-isr)*compensatedft)
+		if math.abs(newratio-isr)>tonetwork_thresh then
+			self:SetIronSightsRatio( newratio )
+		end
+		
+		newratio=l_mathApproach( rsr, rsnumber, (rsnumber-rsr)*compensatedft_sp)
+		if math.abs(newratio-rsr)>tonetwork_thresh then
+			self:SetRunSightsRatio( newratio )
+		end
+		
+		if inspr>tonetwork_thresh then
+			self:SetInspectingRatio( l_mathApproach( inspr, isinspecting and 1 or 0, ft / self.IronSightTime) )
+		end
+		
+		self.CrouchingRatioV = l_mathApproach( self.CrouchingRatioV or 0, (owent:Crouching() and 1 or 0), ft / self.ToCrouchTime)
+		
+		self.JumpingRatioV = l_mathApproach( self.JumpingRatioV or 0, (owent:IsOnGround() and 0 or 1), ft / self.ToCrouchTime)
+		
+		if self.CrouchingRatioV>tonetwork_thresh then
+			self:SetCrouchingRatio( self.CrouchingRatioV )
+		end
+		
+		if self.JumpingRatioV>tonetwork_thresh  then
+			self:SetJumpingRatio( self.JumpingRatioV )
+		end
+		
+		if self.Primary.SpreadRecovery then
+		
+			self.SpreadRatioV = l_mathClamp( self:GetSpreadRatio() - self.Primary.SpreadRecovery*ft, 1, self.Primary.SpreadMultiplierMax)
+			
+			if self.SpreadRatioV>tonetwork_thresh then
+				self:SetSpreadRatio( self.SpreadRatioV )
+			end
+		end
 	end
 end
 
@@ -1507,68 +2018,6 @@ function SWEP:PrimaryAttack()
 end
 
 --[[ 
-Function Name:  UserInput
-Syntax: self:UserInput().  Call each think on client/server.
-Returns:  Nothing.
-Notes: Processes raw ironsights, sprinting, etc. before they're corrected in SWEP:IronsSprint()
-Purpose:  Main SWEP function
-]]--
-
-
-local rtime,RealFrameTime
-local host_timescale_cv = GetConVar("host_timescale")
-local sv_cheats_cv = GetConVar("sv_cheats")
-local fps_max_cvar = GetConVar("fps_max")
-local ammo_fadein_cvar
-if CLIENT then
-	ammo_fadein_cvar = GetConVar("cl_tfa_hud_ammodata_fadein")
-end
-local ironsights_toggle_cvar
-if CLIENT then
-	ironsights_toggle_cvar = GetConVar("cl_tfa_ironsights_toggle")
-end
-
-function SWEP:UserInput()
-
-	if self.Callback.UserInput then
-		local val = self.Callback.UserInput(self)
-		if val then return val end
-	end
-	
-	self.OldIronsights=(self:GetIronSights())
-	local is=false
-	if IsValid(self.Owner) then
-		if ( (CLIENT and !ironsights_toggle_cvar:GetBool() ) or ( SERVER and self.Owner:GetInfoNum("cl_tfa_ironsights_toggle",0)==0) ) then
-			if self.Owner:KeyDown(IN_ATTACK2) then
-				is=true
-			end
-		else
-			is=self:GetIronSightsRaw()
-			if self.Owner:KeyPressed(IN_ATTACK2) then
-				is=!is
-			end
-		end
-	end
-	
-	if self.data and self.data.ironsights == 0 then
-		is=false
-	end
-	
-	self:SetIronSightsRaw(is)
-	self:SetIronSights(is)
-	self.OldSprinting=(self:GetSprinting())
-	local spr=false
-	if IsValid(self.Owner) then
-		local isnumber = (is and 1 or 0)
-		if self.Owner:KeyDown(IN_SPEED) and self.Owner:GetVelocity():Length()>self.Owner:GetWalkSpeed()*(self.MoveSpeed*(1-isnumber)+self.IronSightsMoveSpeed*(isnumber)) then
-			spr=true
-		end
-	end
-	
-	self:SetSprinting(spr)
-end
-
---[[ 
 Function Name:  PlayerThink
 Syntax: self:PlayerThink( player ).  Shouldn't be called manually usually, just on each think tick.
 Returns:  Nothing.
@@ -1623,7 +2072,7 @@ Notes: Unused ATM.
 Purpose:  Main SWEP function
 ]]--
 
-local tonetwork_thresh = 0.0025
+
 
 function SWEP:PlayerThinkServer( ply )
 
@@ -1632,7 +2081,9 @@ function SWEP:PlayerThinkServer( ply )
 		if val then return val end
 	end
 	
-	local ownent = self.Owner
+	--[[
+	
+	ownent = self.Owner
 	
 	self:CalculateNearWallSH()
 	
@@ -1657,18 +2108,18 @@ function SWEP:PlayerThinkServer( ply )
 		insp = 1
 	end
 	
-	ftv = FrameTime()
+	ftv = l_FT()
 	compensatedft = ftv / ( self.IronSightTime * 0.4 )
 	compensatedft_sp = ftv / ( ( self.RunSightTime and self.RunSightTime or self.IronSightTime*2 ) * 0.4 )
 	compensatedft_cr = ftv / self.ToCrouchTime
 	
-	if isr>tonetwork_thresh then
-		newratio=l_mathApproach( isr, is, (is-isr)*compensatedft)
+	newratio=l_mathApproach( isr, is, (is-isr)*compensatedft)
+	if math.abs(newratio-isr)>tonetwork_thresh then
 		self:SetIronSightsRatio( newratio )
 	end
 	
-	if rsr>tonetwork_thresh then
-		newratio=l_mathApproach( rsr, rs, (rs-rsr)*compensatedft_sp)
+	newratio=l_mathApproach( rsr, rs, (rs-rsr)*compensatedft_sp)
+	if math.abs(newratio-rsr)>tonetwork_thresh then
 		self:SetRunSightsRatio( newratio )
 	end
 	
@@ -1697,7 +2148,7 @@ function SWEP:PlayerThinkServer( ply )
 		end
 	end
 	
-	self:UpdateViewModel()
+	]]--
 	
 end
 
@@ -1891,7 +2342,7 @@ function SWEP:PlayerThinkClientFrame( ply )
 	newratio=l_mathApproach( jumpr, 1 - (self.Owner:IsOnGround() and 1 or 0 ), compensatedft_cr)
 	self.CLJumpProgress = newratio
 	self.CLSpreadRatio = l_mathClamp(self.CLSpreadRatio - self.Primary.SpreadRecovery * ftv, 1, self.Primary.SpreadMultiplierMax)
-	self.CLAmmoHUDProgress = l_mathApproach( self.CLAmmoHUDProgress, (self.ShouldDrawAmmoHUD  or self:GetInspecting()) and 1 or 0, FrameTime() / ammo_fadein_cvar:GetFloat() )
+	self.CLAmmoHUDProgress = l_mathApproach( self.CLAmmoHUDProgress, (self.ShouldDrawAmmoHUD  or self:GetInspecting()) and 1 or 0, l_FT() / ammo_fadein_cvar:GetFloat() )
 	self:DoBobFrame()
 	
 	if !self.Blowback_PistolMode or self:Clip1()==-1 or self:Clip1()>0.1 or ( self.Blowback_PistolMode_Disabled[act] and act!=-1 and self.lastact!=-2) then
@@ -2015,8 +2466,6 @@ Returns:  Not sure that it returns anything.
 Notes:  This reloads the gun, and the way it does so is slightly hacky and depends on holdtype.  Revolvers should be the only guns using revolver holdtype for this to properly function.
 Purpose:  Main SWEP function
 ]]--
-
-local dryfire_cvar = GetConVar("sv_tfa_allow_dryfire")
 
 function SWEP:Reload()
 
@@ -2183,7 +2632,7 @@ function SWEP:Sway(pos,ang)
 	
 	local ft = ( SysTime() - ( self.LastSys or SysTime() ) )*game.GetTimeScale()
 	
-	if ft>FrameTime() then ft = FrameTime() end
+	if ft>l_FT() then ft = l_FT() end
 	
 	ft = l_mathClamp(ft,0,1/30)
 	
@@ -2680,7 +3129,7 @@ function SWEP:CalculateNearWallSH()
 	
 	if self.Owner.GetBashing and self.Owner:GetBashing() then vnearwall=false end
 	
-	self:SetNearWallRatio( l_mathApproach( self:GetNearWallRatio(), vnearwall and l_mathClamp(1-traceres.Fraction,0,1) or 0 , FrameTime() / self.NearWallTime ) )
+	self:SetNearWallRatio( l_mathApproach( self:GetNearWallRatio(), vnearwall and l_mathClamp(1-traceres.Fraction,0,1) or 0 , l_FT() / self.NearWallTime ) )
 	
 end
 
@@ -2694,7 +3143,7 @@ Purpose:  Feature
 
 function SWEP:CalculateNearWallCLF( ft )
 	
-	ft = ft or FrameTime()
+	ft = ft or l_FT()
 	
 	if !( CLIENT or sp ) then return end
 	if !IsValid(self.Owner) then return end
@@ -2747,147 +3196,8 @@ Notes:  This corrects ironsights so that you can't sight and sprint at the same 
 Purpose:  Feature.
 ]]--
 
-local ironsights_resight_cvar = GetConVar("cl_tfa_ironsights_resight")
 
-function SWEP:IronsSprint()
-
-	if self.Callback.IronsSprint then
-		local val = self.Callback.IronsSprint(self)
-		if val then return val end
-	end
-	
-	if !self:OwnerIsValid() then return end
-	
-	local is,oldis,spr, rld, dr, hl, nw, isbolttimer, insp, fidg, shooting
-	spr=self:GetSprinting()
-	is=self:GetIronSights()
-	oldis=self.OldIronsights
-	rld=self:GetReloading()
-	dr=self:GetDrawing()
-	hl=self:GetHolstering()
-	insp = self:GetInspecting()
-	ischangingsilence = self:GetChangingSilence()
-	isbolttimer = self:GetBoltTimer()
-	shooting = self:GetShooting()
-	nw = false
-	fidg = self:GetFidgeting()
-	seq = self.OwnerViewModel:GetSequence()
-	act = self.OwnerViewModel:GetSequenceActivity(seq or 0)
-	
-	if act==ACT_VM_HOLSTER or act==ACT_VM_HOLSTER_EMPTY or ( self.ProceduralHolsterFactor>0.5 and !self:GetProceduralReloading() ) or self.IsHolding then hl = true end
-	
-	if self.Owner.TFACasting or ( self.Owner.tfacastoffset and self.Owner.tfacastoffset>0.1) then spr = false end
-	
-	if self:Clip1() ==  0 and ( !dryfire_cvar:GetBool() ) then
-		if self:GetBursting() then
-			self:SetBursting(false)
-			self:SetNextBurst(l_CT() - 1)
-			self:SetBurstCount(0)
-		end
-	elseif self:Clip1() < 0 and IsValid(self.Owner) and self:GetAmmoReserve()<=0 and ( !dryfire_cvar:GetBool() ) then
-		if self:GetBursting() then
-			self:SetBursting(false)
-			self:SetNextBurst(l_CT() - 1)
-			self:SetBurstCount(0)
-		end
-	end
-		
-	if self:GetNearWallRatio()>0.01 then
-		nw = true
-	end
-	
-	if (self.IsHolding) then
-		is=false
-	end
-	
-	if (isbolttimer) and (l_CT()>self:GetBoltTimerStart()) and (l_CT()<self:GetBoltTimerEnd()) then
-		is=false	
-	end
-	
-	if (spr) then
-		is=false
-		insp = false
-		self:SetInspecting(false)
-		self:SetBursting(false)
-		self:SetNextBurst(l_CT() - 1)
-		self:SetBurstCount(0)
-	end
-	
-	if (is) then
-		if fidg then self:ChooseIdleAnim() self:SetFidgeting(false) end
-	end
-	
-	if (shooting) then
-		if fidg then self:SetFidgeting(false) end
-	end
-	
-	if (insp) then
-		is = false
-	end
-	
-	if ( self:IsSafety() ) then
-		is=false
-		self:SetInspecting(false)
-		self:SetBursting(false)
-		self:SetNextBurst(l_CT() - 1)
-		self:SetBurstCount(0)
-	end
-	
-	if (ischangingsilence) then
-		is=false
-		self:SetBursting(false)
-		self:SetNextBurst(l_CT() - 1)
-		self:SetBurstCount(0)
-	end
-	
-	if self.UnSightOnReload then
-		if (rld) then
-			is=false
-			self:SetInspecting(false)
-			self:SetInspectingRatio(0)
-		end
-	end
-		
-	if (dr) then
-		if !self.SightWhileDraw then
-			self:SetInspecting(false)
-			self:SetInspectingRatio(0)
-			is=false
-			if fidg then self:SetFidgeting(false) end
-		end
-	end
-		
-	if (hl) then
-		self:SetInspecting(false)
-		self:SetInspectingRatio(0)
-		self:SetBursting(false)
-		if !self.SightWhileHolster then
-			is=false
-		end
-		if fidg then self:SetFidgeting(false) end
-	end
-	
-	if (nw) then
-		is=false
-		self:SetInspecting(false)
-		self:SetBursting(false)
-		if fidg then self:ChooseIdleAnim() self:SetFidgeting(false) end
-	end
-	
-	if (oldis!=is) and ( ( CLIENT and IsFirstTimePredicted() ) or ( SERVER and sp ) ) then
-		if (is==false) then
-			self:EmitSound("TFA.IronOut")
-		else
-			self:EmitSound("TFA.IronIn")
-		end
-	end
-	
-	self:SetIronSights(is)
-	self:SetSprinting(spr)
-	if ( (CLIENT and !ironsights_resight_cvar:GetBool() ) or ( SERVER and self.Owner:GetInfoNum("cl_tfa_ironsights_resight",0)==0) ) then
-		self:SetIronSightsRaw(is)
-	end
-end
+local is,is_old,spr,oldspr, rld, dr, hl, nw, isbolttimer, insp, fidg, shooting, ct, owent, bs
 
 --[[ 
 Function Name:  ProcessHoldType
@@ -2968,246 +3278,6 @@ function SWEP:CompleteReload()
 		self:SetHUDThreshold(true)
 		self:SetHUDThresholdEnd(l_CT() + hudhangtime)
 	end
-end
-
---[[ 
-Function Name:  ProcessTimers
-Syntax: self:ProcessTimers().  This is called per-think.
-Returns:  Nothing.  However, calculates OMG so much stuff what is this horrible hacky code that allows you to use bolt action snipers, shotguns, and normal guns all in the same base?!!!111oneoneone
-Notes:  This is essential.
-Purpose:  Don't remove this, seriously.
-]]--
-
-local isreloading,isshooting,isdrawing,isholstering, issighting, issprinting, htv, hudhangtime, isbolttimer, isinspecting, isfidgeting, ct
-	
-function SWEP:ProcessTimers()
-
-	if self.Callback.ProcessTimers then
-		local val = self.Callback.ProcessTimers(self)
-		if val then return val end
-	end
-	
-	ct = l_CT()
-	
-	isreloading=self:GetReloading()
-	isshooting=self:GetShooting()
-	isdrawing=self:GetDrawing()
-	isholstering=self:GetHolstering()
-	issighting=self:GetIronSights()
-	issprinting=self:GetSprinting()
-	isbursting = self:GetBursting()
-	ischangingsilence = self:GetChangingSilence()
-	isfiremodechanging = self:GetFireModeChanging()
-	isinspecting = self:GetInspecting()
-	htv = self:GetHUDThreshold()
-	isfidgeting = self:GetFidgeting()
-	
-	if SERVER then
-		hudhangtime = self.Owner:GetInfoNum("cl_tfa_hud_hangtime",1)
-	else
-		hudhangtime = hudhangtime_cvar:GetFloat()
-	end
-	
-	if isfidgeting and !htv and hudhangtime then
-		self:SetHUDThreshold(true)
-		self:SetHUDThresholdEnd( self:GetNextIdleAnim() + hudhangtime)
-	end
-	
-	isbolttimer = self:GetBoltTimer()
-	if isdrawing and ct>self:GetDrawingEnd() then
-		if IsValid(self.OwnerViewModel) then
-			self.DefaultAtt = self.OwnerViewModel:GetAttachment(self:GetFPMuzzleAttachment())
-		end
-		self:SetDrawing(false)
-		isdrawing=false
-	end
-	if isbolttimer and ct>self:GetBoltTimerEnd() then
-		self:SetBoltTimer(false)
-		self:SetBoltTimerStart(ct-1)
-		self:SetBoltTimerEnd(ct-1)
-	end
-	if isreloading and ct>self:GetReloadingEnd() then
-		if !self.Shotgun then
-			self:CompleteReload()
-			isreloading = false
-		else
-			if (self:GetShotgunInsertingShell() == false) then
-				if !self:GetShotgunPumping() then
-					if self.StartAnimInsertShell then
-						local maxclip=self.Primary.ClipSize
-						local curclip = self:Clip1()
-						local ammopool = self:GetAmmoReserve()
-						local amounttoreplace=1
-						self:SetClip1(curclip+amounttoreplace)
-						self.Owner:RemoveAmmo(amounttoreplace, self.Primary.Ammo)
-						self.StartAnimInsertShell = false
-						self:SetReloading(true)
-						self:SetReloadingEnd(ct+0)
-						self:SetNextPrimaryFire( ct + 0.01 )
-					else
-						self:SetShotgunInsertingShell(true)
-						self.Weapon:SendWeaponAnim(ACT_VM_RELOAD)
-						self:ResetEvents()
-						if IsValid(self.Owner) then
-							if !self.ShellTime and IsValid(self.OwnerViewModel) then
-								self:SetReloadingEnd(ct+self.OwnerViewModel:SequenceDuration( self.OwnerViewModel:SelectWeightedSequence(ACT_VM_RELOAD) ) )
-								self:SetNextPrimaryFire( ct+ ( self.SequenceLengthOverride[ACT_VM_RELOAD] and self.SequenceLengthOverride[ACT_VM_RELOAD] or  self.OwnerViewModel:SequenceDuration( self.OwnerViewModel:SelectWeightedSequence(ACT_VM_RELOAD) ) )  )
-							else
-								self:SetReloadingEnd(ct+self.ShellTime)
-								self:SetNextPrimaryFire( ct+ self.ShellTime )
-							end
-						else
-							self:SetReloadingEnd(ct+self.ShellTime)
-							self:SetNextPrimaryFire( ct+ self.ShellTime )
-						end
-						self:SetReloading(true)
-						isreloading=true
-					end
-				else
-					self:SetReloading(false)
-					self:SetShotgunPumping(false)
-					self:SetReloadingEnd(ct-1)
-					self:SetNextPrimaryFire( ct + 0.01 )
-					isreloading=false
-					self:SetHUDThreshold(true)
-					self:SetHUDThresholdEnd(ct + hudhangtime)
-				end
-			else
-				local maxclip=self.Primary.ClipSize
-				local curclip = self:Clip1()
-				local ammopool = self:GetAmmoReserve()
-				if curclip>=maxclip or ammopool<=0 or self:GetShotgunNeedsPump() then
-					self:SetShotgunInsertingShell(false)
-					self:SendWeaponAnim(ACT_SHOTGUN_RELOAD_FINISH)
-					if IsValid(self.Owner) then
-						if IsValid(self.OwnerViewModel) then
-							self:SetReloadingEnd(ct+self.OwnerViewModel:SequenceDuration( self.OwnerViewModel:SelectWeightedSequence(ACT_SHOTGUN_RELOAD_FINISH) ) )
-							self:SetNextPrimaryFire( ct+ ( self.SequenceLengthOverride[ACT_SHOTGUN_RELOAD_FINISH] and self.SequenceLengthOverride[ACT_SHOTGUN_RELOAD_FINISH] or  self.OwnerViewModel:SequenceDuration( self.OwnerViewModel:SelectWeightedSequence(ACT_SHOTGUN_RELOAD_FINISH) ) )  )
-						else
-							self:SetReloadingEnd(ct+self.ShellTime)
-							self:SetNextPrimaryFire( ct+ self.ShellTime )
-						end
-					else
-						self:SetReloadingEnd(ct+self.ShellTime)
-						self:SetNextPrimaryFire( ct+ self.ShellTime )
-					end
-					self:SetReloading(true)
-					self:SetShotgunPumping(true)
-					self:SetShotgunNeedsPump(false)
-				else
-					local amounttoreplace=1
-					self:SetClip1(curclip+amounttoreplace)
-					self.Owner:RemoveAmmo(amounttoreplace, self.Primary.Ammo)
-					curclip = self:Clip1()
-					if (curclip<maxclip) then
-						self.Weapon:SendWeaponAnim(ACT_VM_RELOAD)
-						self:ResetEvents()
-						self:SetReloading(true)
-						self:SetShotgunInsertingShell(true)
-						if IsValid(self.Owner) then
-							if !self.ShellTime and IsValid(self.OwnerViewModel) then
-								self:SetReloadingEnd(ct+self.OwnerViewModel:SequenceDuration( self.OwnerViewModel:SelectWeightedSequence(ACT_VM_RELOAD) ) )
-								self:SetNextPrimaryFire( ct+ ( self.SequenceLengthOverride[ACT_VM_RELOAD] and self.SequenceLengthOverride[ACT_VM_RELOAD] or  self.OwnerViewModel:SequenceDuration( self.OwnerViewModel:SelectWeightedSequence(ACT_VM_RELOAD) ) )  )
-							else
-								self:SetReloadingEnd(ct+self.ShellTime)
-								self:SetNextPrimaryFire( ct+ self.ShellTime )
-							end
-						else
-							self:SetReloadingEnd(ct+self.ShellTime)
-							self:SetNextPrimaryFire( ct+ self.ShellTime )
-						end
-					else
-						self:SetReloadingEnd(ct-1)
-						self:SetNextPrimaryFire( ct + 0.01 )
-						self:SetReloading(true)
-						self:SetShotgunInsertingShell(true)
-					end
-					if self:GetShotgunCancel() then
-						self:SetShotgunCancel( false )
-						self:SetReloading(true)
-						self:SetShotgunNeedsPump( true )
-						self:SetReloadingEnd(ct-1)
-						self:SetNextPrimaryFire( ct + 0.01 )
-					end
-				end
-			end
-		end
-	end
-	if isholstering and ct>self:GetHolsteringEnd() then
-		self:SetCanHolster(true)
-		self:SetHolstering(false)
-		if IsFirstTimePredicted() and ( CLIENT or sp ) then
-			self:CleanModels(self.VElements)
-			self:CleanModels(self.WElements)
-		end
-		if SERVER then
-			local stwep = self:GetNWEntity("SwitchToWep",self)
-			if IsValid(stwep) then
-				self.Owner:SelectWeapon( stwep:GetClass() )
-			end
-		end
-	end
-	if isbursting then
-		if ct>self:GetNextBurst() then
-			local maxbursts = 1
-			local firemode = self.FireModes[self:GetFireMode()]
-			local bpos = string.find(firemode,"Burst")
-			if bpos then
-				maxbursts = tonumber(string.sub(firemode,1,bpos-1)) or 3
-			end
-			if self:GetBurstCount() >= maxbursts then
-				self:SetBursting(false)
-				self:SetBurstCount(0)
-			else
-				self:PrimaryAttack()
-			end
-		end
-	end
-	if isshooting and ct>self:GetShootingEnd() then
-		self:SetShooting(false)
-		isshooting=false
-	end
-	if isfiremodechanging and ct > self:GetFireModeChangeEnd() then
-		self:SetFireModeChanging(false)
-		self:SetFireModeChangeEnd(ct - 1)
-		self:SetHUDThreshold(true)
-		self:SetHUDThresholdEnd(ct + hudhangtime)
-	end
-	if ischangingsilence and ct>self:GetNextSilenceChange() then
-		self:SetSilenced(!self:GetSilenced())
-		self:SetChangingSilence(false)
-		self:SetNextSilenceChange(ct - 1)
-	end
-	if htv and ct>self:GetHUDThresholdEnd() then
-		self:SetHUDThreshold(false)
-		self:SetHUDThresholdEnd(ct - 1)
-	end
-	if ( isreloading or isshooting or isdrawing or isholstering or ischangingsilence or isfiremodechanging ) then
-		--donothing
-	else
-		if self:GetNextIdleAnim()<ct then
-			if self.lastact == ACT_VM_FIDGET or self.lastact == ACT_VM_FIDGET_EMPTY then
-				self:SetFidgeting(false)
-				isfidgeting = false
-				self.lastact = 0
-				self:ChooseIdleAnim()
-				return
-			end
-			local success, tanim 
-			if isfidgeting then
-				success, tanim = self:ChooseInspectAnim()
-			elseif !self.DisableIdleAnimations then
-				success, tanim = self:ChooseIdleAnim()
-			end
-			local animtime = self.SequenceLength[tanim]
-			if animtime then
-				self:SetNextIdleAnim( ct + animtime)
-			else
-				self:SetNextIdleAnim( ct +1 )
-			end
-		end
-	end
-	
 end
 
 function SWEP:ToggleInspect()
