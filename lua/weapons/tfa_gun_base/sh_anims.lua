@@ -301,14 +301,16 @@ Purpose:  Animation / Utility
 function SWEP:ChooseShootAnim( ifp )
 	if !self:OwnerIsValid() then return end
 	
-	self:MakeShellBridge( ifp )
+	
 	
 	if !self.BlowbackEnabled or ( !self:GetIronSights() and self.Blowback_Only_Iron) then
 	
 		local tanim
 		local success = true
 		
-		
+		if self.LuaShellEject then
+			self:MakeShellBridge( ifp )
+		end		
 		
 		if self.SequenceEnabled[ACT_VM_PRIMARYATTACK_SILENCED]  and self:GetSilenced() then
 			tanim = ACT_VM_PRIMARYATTACK_SILENCED
@@ -344,6 +346,8 @@ function SWEP:ChooseShootAnim( ifp )
 		if ifp then
 			self:BlowbackFull( ifp )
 		end
+		
+		self:MakeShellBridge( ifp )
 		
 		self.lastact = -2
 		self:CallOnClient("UpdateLastAct",tostring(self.lastact))

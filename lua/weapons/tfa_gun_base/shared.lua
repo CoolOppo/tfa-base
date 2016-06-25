@@ -1212,7 +1212,6 @@ function SWEP:Think2()
 		if val then return val end
 	end
 	
-	self:UpdateViewModel()
 	self:ProcessEvents()
 	self:ProcessFireMode()
 	self:MainUpdate()
@@ -1251,7 +1250,7 @@ if CLIENT then
 	ironsights_resight_cvar = GetConVar("cl_tfa_ironsights_resight")
 end
 
-local isreloading,isshooting,isdrawing,isholstering, issighting, issprinting, htv, hudhangtime, isbolttimer, isinspecting, isfidgeting, ct, owent, is_old, spr_old, ft, isnumber, rsnumber, isr, rsr, inspr,bash
+local isreloading,isshooting,isdrawing,isholstering, issighting, issprinting, htv, hudhangtime, isbolttimer, isinspecting, isfidgeting, ct, owent, is_old, spr_old, ft, isnumber, rsnumber, isr, rsr, inspr,bash, bts, bte
 
 local tonetwork_thresh = 0.001
 
@@ -1280,10 +1279,19 @@ function SWEP:MainUpdate()
 	isfidgeting = self:GetFidgeting()
 	bash = self.GetBashing and self:GetBashing()
 	
+	if isbolttimer then
+		bts = self:GetBoltTimerStart()
+		bte = self:GetBoltTimerEnd()
+	else
+		bts = 0
+		bte = 0
+	end
+	
 	if SERVER then
 		isr = self:GetIronSightsRatio()
 		rsr = self:GetRunSightsRatio()
 		inspr = self:GetInspectingRatio()
+		self:UpdateViewModel()
 	end
 	
 	spr_old = issprinting
@@ -1308,7 +1316,8 @@ function SWEP:MainUpdate()
 		self:SetDrawing(false)
 		isdrawing=false
 	end
-	if isbolttimer and ct>self:GetBoltTimerEnd() then
+	if isbolttimer and ct>bte then
+		isbolttimer = false
 		self:SetBoltTimer(false)
 		self:SetBoltTimerStart(ct-1)
 		self:SetBoltTimerEnd(ct-1)
@@ -1437,6 +1446,12 @@ function SWEP:MainUpdate()
 							owent:ConCommand("-use")							
 						end
 					end)
+					timer.Simple(0.1,function()
+						if IsValid(self) and !IsValid( self:GetNWEntity("LastHeldEntityIndex") ) then
+							self:Deploy()						
+						end
+					end)
+					
 				else
 					self.Owner:SelectWeapon( stwep:GetClass() )
 				end
@@ -1571,7 +1586,7 @@ function SWEP:MainUpdate()
 		nw = true
 	end
 	
-	if (self.IsHolding) or ( (isbolttimer) and (ct>self:GetBoltTimerStart()) and (ct<self:GetBoltTimerEnd()) ) then
+	if (self.IsHolding) or ( (isbolttimer) and ( ct> bts ) and (ct< bte) ) then
 		issighting=false	
 	end
 	
@@ -2321,6 +2336,7 @@ Purpose:  Main SWEP function
 
 function SWEP:PlayerThinkClientFrame( ply )
 	
+	self:UpdateViewModel()
 	
 	tsv = 1
 	if sv_cheats_cv:GetBool() then tsv = tsv * host_timescale_cv:GetFloat() end
@@ -2519,7 +2535,7 @@ function SWEP:Reload()
 	
 	if self:GetReloading() then return end
 	
-	if (isbolttimer) and (l_CT()>self:GetBoltTimerStart()) and (l_CT()<self:GetBoldTimerEnd()) then
+	if (isbolttimer) and (l_CT()>self:GetBoltTimerStart()) and (l_CT()<self:GetBoltTimerEnd()) then
 		return
 	end
 	
