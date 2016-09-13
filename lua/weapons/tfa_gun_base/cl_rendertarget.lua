@@ -105,7 +105,7 @@ if CLIENT then
 		
 			RBP(vm)
 			
-			local matcount = #vm:GetMaterials()
+			local matcount = #( vm:GetMaterials() or {} )
 			local i=0
 			while i<=matcount do
 				vm:SetSubMaterial(i,"")
@@ -141,16 +141,18 @@ if CLIENT then
 		if self.MaterialTable then
 			
 			local vm = self.Owner:GetViewModel()
-			
 			if !self.MaterialCached then
 				self.MaterialCached = {}
 				
-				if #self.MaterialTable>=1 then
+				if #self.MaterialTable>=1 and #self:GetMaterials()<=1 then
 					self:SetMaterial(self.MaterialTable[1])
 				else
 					self:SetMaterial("")
 				end
-			
+				
+				self:SetSubMaterial(nil,nil)
+				vm:SetSubMaterial(nil,nil)
+				
 			end
 			
 			for k,v in ipairs(self.MaterialTable) do

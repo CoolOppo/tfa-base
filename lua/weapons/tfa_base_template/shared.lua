@@ -1,9 +1,9 @@
-SWEP.Gun					= ("tfa_base_template") --Make sure this is unique.  Specically, your folder name.  
+SWEP.Gun					= ("tfa_base_template") --Make sure this is unique.  Specically, your folder name.
 if (GetConVar(SWEP.Gun.."_allowed")) != nil then
 	if not (GetConVar(SWEP.Gun.."_allowed"):GetBool()) then SWEP.Base = "tfa_blacklisted" SWEP.PrintName = SWEP.Gun return end
 end
 SWEP.Base				= "tfa_gun_base"
-SWEP.Category				= "TFA Template" --The category.  Please, just choose something generic or something I've already done if you plan on only doing like one swep..  
+SWEP.Category				= "TFA Template" --The category.  Please, just choose something generic or something I've already done if you plan on only doing like one swep..
 SWEP.Manufacturer = nil --Gun Manufactrer (e.g. Hoeckler and Koch )
 SWEP.Author				= "" --Author Tooltip
 SWEP.Contact				= "" --Contact Info Tooltip
@@ -13,7 +13,7 @@ SWEP.Spawnable				= false --Can you, as a normal user, spawn this?
 SWEP.AdminSpawnable			= false --Can an adminstrator spawn this?  Does not tie into your admin mod necessarily, unless its coded to allow for GMod's default ranks somewhere in its code.  Evolve and ULX should work, but try to use weapon restriction rather than these.
 SWEP.DrawCrosshair			= true		-- Draw the crosshair?
 SWEP.DrawCrosshairIS = false --Draw the crosshair in ironsights?
-SWEP.PrintName				= "TFA Base Template"		-- Weapon name (Shown on HUD)	
+SWEP.PrintName				= "TFA Base Template"		-- Weapon name (Shown on HUD)
 SWEP.Slot				= 2				-- Slot in the weapon selection menu.  Subtract 1, as this starts at 0.
 SWEP.SlotPos				= 73			-- Position in the slot
 SWEP.DrawAmmo				= true		-- Should draw the default HL2 ammo counter if enabled in the GUI.
@@ -40,6 +40,9 @@ SWEP.Primary.RPM_Burst				= nil					-- RPM for burst fire, overrides semi.  This
 SWEP.Primary.BurstDelay				= nil					-- Delay between bursts, leave nil to autocalculate
 SWEP.FiresUnderwater = false
 
+SWEP.IronInSound = nil --Sound to play when ironsighting in?  nil for default
+SWEP.IronOutSound = nil --Sound to play when ironsighting out?  nil for default
+
 SWEP.CanBeSilenced = false --Can we silence?  Requires animations.
 SWEP.Silenced = false --Silenced by default?
 
@@ -55,7 +58,8 @@ SWEP.FireModeName = nil --Change to a text value to override it
 
 SWEP.Primary.ClipSize			= 0					-- This is the size of a clip
 SWEP.Primary.DefaultClip			= 0					-- This is the number of bullets the gun gives you, counting a clip as defined directly above.
-SWEP.Primary.Ammo			= "none"					-- What kind of ammo.  Options, besides custom, include pistol, 357, smg1, ar2, buckshot, slam, SniperPenetratedRound, and AirboatGun.  
+SWEP.Primary.Ammo			= "none"					-- What kind of ammo.  Options, besides custom, include pistol, 357, smg1, ar2, buckshot, slam, SniperPenetratedRound, and AirboatGun.
+SWEP.Primary.AmmoConsumption = 1 --Ammo consumed per shot
 --Pistol, buckshot, and slam like to ricochet. Use AirboatGun for a light metal peircing shotgun pellets
 
 SWEP.DisableChambering = false --Disable round-in-the-chamber
@@ -116,8 +120,8 @@ SWEP.ViewModelFOV			= 65		-- This controls how big the viewmodel looks.  Less is
 SWEP.ViewModelFlip			= false		-- Set this to true for CSS models, or false for everything else (with a righthanded viewmodel.)
 SWEP.MaterialTable = nil --Make sure the viewmodel and the worldmodel have the same material ids.  Next, fill this in with your desired submaterials.
 SWEP.UseHands = false --Use gmod c_arms system.
-SWEP.VMPos = Vector(0,0,0) --The viewmodel positional offset, constantly.  Subtract this from any other modifications to viewmodel position. 
-SWEP.VMAng = Vector(0,0,0) --The viewmodel angular offset, constantly.   Subtract this from any other modifications to viewmodel angle. 
+SWEP.VMPos = Vector(0,0,0) --The viewmodel positional offset, constantly.  Subtract this from any other modifications to viewmodel position.
+SWEP.VMAng = Vector(0,0,0) --The viewmodel angular offset, constantly.   Subtract this from any other modifications to viewmodel angle.
 
 SWEP.VMBodyGroups = nil --{
 	--[0] = 1,
@@ -243,7 +247,7 @@ SWEP.Blowback_Shell_Effect = "ShellEject"
 
 --[[VIEWMODEL PROCEDURAL ANIMATION]]--
 
-SWEP.DoProceduralReload = true--Animate first person reload using lua?
+SWEP.DoProceduralReload = false--Animate first person reload using lua?
 SWEP.ProceduralReloadTime = 1 --Procedural reload time?
 
 --[[HOLDTYPES]]--
@@ -261,7 +265,7 @@ SWEP.ForceEmptyFireOff = true --Disables empty fire animations.  Set to false to
 
 SWEP.SequenceEnabled = {} --Self explanitory.  This can forcefully enable or disable a certain ACT_VM
 SWEP.SequenceLength = {}  --This controls the length of a certain ACT_VM
-SWEP.SequenceLengthOverride={} --Override this if you want to change the length of a sequence but not the next idle 
+SWEP.SequenceLengthOverride={} --Override this if you want to change the length of a sequence but not the next idle
 
 --[[EFFECTS]]--
 
@@ -340,16 +344,16 @@ SWEP.RTMaterialOverride = nil -- Take the material you want out of print(LocalPl
 SWEP.RTOpaque = false -- Do you want your render target to be opaque?
 
 SWEP.RTCode = function( self ) --This is the function to draw onto your rendertarget
-	
+
 	return
-	
+
 end
 
 --[[AKIMBO]]--
 
 SWEP.Akimbo = false --Akimbo gun?  Alternates between primary and secondary attacks.
 SWEP.AnimCycle = 0 -- Start on the right
- 
+
 --[[TTT]]--
 
 local gm = engine.ActiveGamemode()

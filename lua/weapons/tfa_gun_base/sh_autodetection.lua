@@ -1,5 +1,63 @@
+--[[
+Function Name:  DetectMuzzleForward
+Syntax: self:DetectMuzzleForward().
+Returns:  Nothing.
+Notes: Only runs when not in draw animation!  This prevents serious glitches
+Purpose:  Sets the forward muzzle direction.
+]]--
 
---[[ 
+function SWEP:DetectMuzzleForward()
+	if !self:OwnerIsValid() then return end
+	local vm = self.Owner:GetViewModel()
+	if self.MZFwDir == nil and !self:GetDrawing() then
+		local refvec = self.Owner:GetAimVector()
+		local att = self.MuzzleAttachmentRaw or vm:LookupAttachment( self.MuzzleAttachment )
+		if !att then att = 1 end
+		local angpos = vm:GetAttachment( att )
+		if !angpos then
+			self.MZFwDir = "nil"
+		else
+			--ready comparison vectors
+			local nfwvec
+			local fwvec = angpos.Ang:Forward()
+			local upvec = angpos.Ang:Up()
+			local rivec = angpos.Ang:Right()
+			local curdist = -2
+			local refval = fwvec:Dot(refvec)
+			--compare player view angle to muzzle angle using vector dot product
+			--find which is closes out of forward, right,and up
+			if refval > curdist then
+				nfwvec = fwvec
+				curdist = refval
+				self.MZFwDir = "fw"
+			end
+			local refval = upvec:Dot(refvec)
+			if refval > curdist then
+				nfwvec = upvec
+				curdist = refval
+				self.MZFwDir = "up"
+			end
+			local refval = rivec:Dot(refvec)
+			if refval > curdist then
+				nfwvec = rivec
+				curdist = refval
+				self.MZFwDir = "ri"
+			end
+
+			--Now we've got it, but we need something to compare to
+			--Set reference angle
+
+			self.MZReferenceAngle = vm:WorldToLocalAngles( nfwvec:Angle() )--nfwvec:Angle() - refvec:Angle()
+			self.MZReferenceAngle:Normalize()
+
+		end
+		if game.SinglePlayer() and SERVER then
+			self:SetNWString("MZFwDir",self.MZFwDir)
+		end
+	end
+end
+
+--[[
 Function Name:  AutoDetectMuzzle
 Syntax: self:AutoDetectMuzzle().  Call only once, or it's redundant.
 Returns:  Nothing.
@@ -9,30 +67,30 @@ Purpose:  Autodetection
 
 function SWEP:AutoDetectMuzzle()
 	if !self.MuzzleFlashEffect then
-		
+
 		local a=string.lower(self.Primary.Ammo)
 		local cat = string.lower(self.Category and self.Category or "")
-		
+
 		if self.Silenced or self:GetSilenced() then
 			self.MuzzleFlashEffect = "tfa_muzzleflash_silenced"
 		elseif string.find(a,"357") or self.Revolver or string.find(cat,"revolver") then
-			self.MuzzleFlashEffect = "tfa_muzzleflash_revolver"		
+			self.MuzzleFlashEffect = "tfa_muzzleflash_revolver"
 		elseif self.Shotgun or a=="buckshot" or a=="slam" or a=="airboatgun" or string.find(cat,"shotgun")  then
-			self.MuzzleFlashEffect = "tfa_muzzleflash_shotgun"			
+			self.MuzzleFlashEffect = "tfa_muzzleflash_shotgun"
 		elseif string.find(a,"smg") or string.find(cat,"smg") or string.find(cat,"submachine") or string.find(cat,"sub-machine")  then
-			self.MuzzleFlashEffect = "tfa_muzzleflash_smg"		
+			self.MuzzleFlashEffect = "tfa_muzzleflash_smg"
 		elseif string.find(a,"sniper") or string.find(cat,"sniper")  then
-			self.MuzzleFlashEffect = "tfa_muzzleflash_sniper"		
+			self.MuzzleFlashEffect = "tfa_muzzleflash_sniper"
 		elseif string.find(a,"pistol") or string.find(cat,"pistol")  then
 			self.MuzzleFlashEffect = "tfa_muzzleflash_pistol"
 		elseif string.find(a,"ar2") or string.find(a,"rifle") or ( string.find(cat,"revolver") and !string.find(cat,"rifle") ) then
 			self.MuzzleFlashEffect = "tfa_muzzleflash_rifle"
 		else
-			self.MuzzleFlashEffect = "tfa_muzzleflash_generic"		
+			self.MuzzleFlashEffect = "tfa_muzzleflash_generic"
 		end
 	end
 end
---[[ 
+--[[
 Function Name:  AutoDetectDamage
 Syntax: self:AutoDetectDamage().  Call only once.  Hopefully you call this only once on like SWEP:Initialize() or something.
 Returns:  Nothing.
@@ -64,7 +122,7 @@ function SWEP:AutoDetectDamage()
 			self.Primary.Damage = 22
 		elseif string.find(rnd,"9x18") then
 			self.Primary.Damage = 20
-		end	
+		end
 		if string.find(rnd,"ap") then
 			self.Primary.Damage = self.Primary.Damage*1.2
 		end
@@ -79,7 +137,7 @@ function SWEP:AutoDetectDamage()
 	end
 end
 
---[[ 
+--[[
 Function Name:  IconFix
 Syntax: self:IconFix().  Call only once.  Hopefully you call this only once on like SWEP:Initialize() or something.
 Returns:  Nothing.
@@ -96,7 +154,7 @@ function SWEP:IconFix()
 	else
 		tselicon = nil
 	end
-	
+
 	if self.WepSelectIcon then
 		if tselicon == "string" then
 			self.WepSelectIcon = surface.GetTextureID(self.WepSelectIcon)
@@ -108,10 +166,10 @@ function SWEP:IconFix()
 			print(self.WepSelectIcon)
 			print("int")]]--
 		else
-		
+
 		end
 	end
-	
+
 	if proceed then
 		if file.Exists("materials/vgui/hud/"..self.ClassName..".vmt","GAME") then
 			self.WepSelectIcon = surface.GetTextureID("vgui/hud/"..self.ClassName)
@@ -143,7 +201,7 @@ function SWEP:IconFix()
 	]]--
 end
 
---[[ 
+--[[
 Function Name:  CorrectScopeFOV
 Syntax: self:CorrectScopeFOV( fov ).  Call only once.  Hopefully you call this only once on like SWEP:Initialize() or something.
 Returns:  Nothing.
@@ -161,7 +219,7 @@ function SWEP:CorrectScopeFOV( fov )
 	end
 end
 
---[[ 
+--[[
 Function Name:  DetectValidAnimations
 Syntax: self:DetectValidAnimations( ).  Call as much as you like.
 Returns:  Nothing.
@@ -173,22 +231,22 @@ function SWEP:DetectValidAnimations()
 	if !IsValid(self) then
 		return
 	end
-	
+
 	if self.CanBeSilenced then
 		if self.SequenceEnabled[ACT_VM_IDLE_SILENCED] == nil then
 			self.SequenceEnabled[ACT_VM_IDLE_SILENCED] = true
 		end
 	end
-	
+
 	if !self:OwnerIsValid() then return end
-	
+
 	local vm=self.Owner:GetViewModel()
 	if IsValid(vm) then
 		local seq
-		
+
 		for k,v in pairs(self.actlist) do
 			seq=vm:SelectWeightedSequence(v)
-			
+
 			if seq!=-1 then
 				self.SequenceEnabled[v]=true
 				self.SequenceLength[v] = vm:SequenceDuration( seq )
@@ -196,7 +254,7 @@ function SWEP:DetectValidAnimations()
 				self.SequenceEnabled[v]=false
 				self.SequenceLength[v] = 0.3
 			end
-			
+
 			if (v == ACT_VM_IDLE_SILENCED or v == ACT_VM_RELOAD_SILENCED or v == ACT_VM_PRIMARYATTACK_SILENCED) and self.CanBeSilenced then
 				self.SequenceEnabled[v]=true
 				self.SequenceLength[v] = vm:SequenceDuration( seq )
@@ -204,37 +262,37 @@ function SWEP:DetectValidAnimations()
 					self.SequenceLength[v]=0.3
 				end
 			end
-				
-			
+
+
 		end
-		
+
 		seq=vm:SelectWeightedSequence(ACT_VM_DRYFIRE)
-		
+
 		if seq!=-1 and seq != vm:SelectWeightedSequence(ACT_VM_PRIMARYATTACK) then
 			self.SequenceEnabled[ACT_VM_DRYFIRE]=true
 		end
-		
+
 		seq=vm:SelectWeightedSequence(ACT_VM_DRYFIRE_SILENCED)
-		
+
 		if seq!=-1 and seq != vm:SelectWeightedSequence(ACT_VM_PRIMARYATTACK_SILENCED) then
 			self.SequenceEnabled[ACT_VM_DRYFIRE_SILENCED]=true
 		end
-		
+
 	else
 		return false
 	end
-	
+
 	if self.CanBeSilenced then
 		if self.SequenceEnabled[ACT_VM_IDLE_SILENCED] == nil then
 			self.SequenceEnabled[ACT_VM_IDLE_SILENCED] = true
 		end
 	end
-	
+
 	return true
-	
+
 end
 
---[[ 
+--[[
 Function Name:  CreateFireModes
 Syntax: self:CreateFireModes( is first draw).  Call as much as you like.  isfirstdraw controls whether the default fire mode is set.
 Returns:  Nothing.
@@ -282,7 +340,7 @@ function SWEP:CreateFireModes( isfirstdraw )
 		end
 		thasbeencreated = true
 	end
-	
+
 	if isfirstdraw or thasbeencreated then
 		if self.DefaultFireMode then
 			for k,v in ipairs(self.FireModes) do
@@ -292,7 +350,7 @@ function SWEP:CreateFireModes( isfirstdraw )
 			end
 		end
 	end
-	
+
 	if !self:GetFireMode() or self:GetFireMode() == 0 then
 		if self.Primary.Automatic then
 			self:SetFireMode(1)
@@ -300,14 +358,14 @@ function SWEP:CreateFireModes( isfirstdraw )
 			self:SetFireMode(#self.FireModes)
 		end
 	end
-	
+
 	if !table.HasValue(self.FireModes,"Safe") then
 		table.insert(self.FireModes,#self.FireModes+1,"Safe")
 	end
-	
+
 end
 
---[[ 
+--[[
 Function Name:  AutoDetectRange
 Syntax: self:AutoDetectRange().  Really only necessary to call once, but w/e.
 Returns:  Nothing.
@@ -342,7 +400,7 @@ function SWEP:AutoDetectRange()
 	end
 end
 
---[[ 
+--[[
 Function Name:  SetUpSpread
 Syntax: self:SetUpSpread().  Really only necessary to call once, but w/e.
 Returns:  Nothing.
@@ -352,7 +410,7 @@ Purpose:  Autodetection
 
 function SWEP:SetUpSpread()
 	local ht = self.DefaultHoldType and self.DefaultHoldType or self.HoldType
-	
+
 	if !self.Primary.SpreadMultiplierMax or self.AutoDetectSpreadMultiplierMax then
 		self.Primary.SpreadMultiplierMax = 2.5 * math.max(self.Primary.RPM,400)/600 * math.sqrt(self.Primary.Damage/30*self.Primary.NumShots)--How far the spread can expand when you shoot.
 		if ht =="smg" then
@@ -366,27 +424,27 @@ function SWEP:SetUpSpread()
 		end
 		self.AutoDetectSpreadMultiplierMax = true
 	end
-	
+
 	if !self.Primary.SpreadIncrement or self.AutoDetectSpreadIncrement then
 		self.AutoDetectSpreadIncrement = true
 		self.Primary.SpreadIncrement = 1*(math.Clamp(math.sqrt(self.Primary.RPM)/24.5,0.7,3)) * math.sqrt(self.Primary.Damage/30*self.Primary.NumShots)--What percentage of the modifier is added on, per shot.
 		if (ht) == "revolver" then
 			self.Primary.SpreadIncrement = self.Primary.SpreadIncrement*2
 		end
-		
+
 		if ht =="pistol" then
 			self.Primary.SpreadIncrement = self.Primary.SpreadIncrement*1.35
 		end
-		
+
 		if ht =="ar2" or ht=="rpg" then
 			self.Primary.SpreadIncrement = self.Primary.SpreadIncrement*0.65
 		end
-		
+
 		if ht =="smg" then
 			self.Primary.SpreadIncrement = self.Primary.SpreadIncrement*1.75
 			self.Primary.SpreadIncrement = self.Primary.SpreadIncrement*( math.Clamp( (self.Primary.RPM-650)/150,0,1) + 1)
 		end
-		
+
 		if ht =="pistol" and self.Primary.Automatic == true then
 			self.Primary.SpreadIncrement = self.Primary.SpreadIncrement*1.5
 		end
@@ -395,12 +453,12 @@ function SWEP:SetUpSpread()
 		end
 		self.Primary.SpreadIncrement = self.Primary.SpreadIncrement * math.sqrt(self.Primary.Recoil * (self.Primary.KickUp + self.Primary.KickDown + self.Primary.KickHorizontal))*0.8
 	end
-	
+
 	if !self.Primary.SpreadRecovery or self.AutoDetectSpreadRecovery then
 		self.AutoDetectSpreadRecovery = true
 		self.Primary.SpreadRecovery = math.sqrt(math.max(self.Primary.RPM,300))/29*4 --How much the spread recovers, per second.
 		if ht=="smg" then
-			self.Primary.SpreadRecovery = self.Primary.SpreadRecovery*( 1- math.Clamp( (self.Primary.RPM-600)/200,0,1)*0.33 )		
+			self.Primary.SpreadRecovery = self.Primary.SpreadRecovery*( 1- math.Clamp( (self.Primary.RPM-600)/200,0,1)*0.33 )
 		end
 	end
 end

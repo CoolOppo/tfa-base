@@ -4,13 +4,14 @@ local dif = Vector(0,0,0)
 local ang
 
 function EFFECT:Init( data )
-	
+
 	self.WeaponEnt = data:GetEntity()
+	self.OGWeaponEnt = self.WeaponEnt
 	if !IsValid(self.WeaponEnt) then return end
 	self.Attachment = data:GetAttachment()
-	
+
 	self.Position = self:GetTracerShootPos( data:GetOrigin(), self.WeaponEnt, self.Attachment )
-	
+
 	if IsValid(self.WeaponEnt.Owner) then
 		if self.WeaponEnt.Owner == LocalPlayer() then
 			if self.WeaponEnt.Owner:ShouldDrawLocalPlayer() then
@@ -25,31 +26,31 @@ function EFFECT:Init( data )
 			ang = self.WeaponEnt.Owner:EyeAngles()
 			ang:Normalize()
 			--ang.p = math.max(math.min(ang.p,55),-55)
-			self.Forward = ang:Forward()			
+			self.Forward = ang:Forward()
 		end
 	end
-	
+
 	self.Forward = self.Forward or data:GetNormal()
 	self.Angle = self.Forward:Angle()
 	self.Right = self.Angle:Right()
-	
+
 	self.vOffset = self.Position
 	dir = self.Forward
-	
+
 	if IsValid(LocalPlayer()) then
 		AddVel = LocalPlayer():GetVelocity()
 	end
-	
+
 	self.vOffset = self.Position
 	dir = self.Forward
 	AddVel = AddVel * 0.05
-	
+
 	local dot = dir:GetNormalized():Dot( EyeAngles():Forward() )
-	local dotang = math.deg( math.acos( math.abs(dot) ) )	
+	local dotang = math.deg( math.acos( math.abs(dot) ) )
 	local halofac =  math.Clamp( 1 - (dotang/90), 0, 1)
-	
+
 	if CLIENT and !IsValid(ownerent) then ownerent = LocalPlayer() end
-	
+
 	local dlight = DynamicLight( ownerent:EntIndex() )
 	if ( dlight ) then
 		dlight.pos = self.vOffset - ownerent:EyeAngles():Right()*5 + 1.05 * ownerent:GetVelocity() * FrameTime()
@@ -61,12 +62,13 @@ function EFFECT:Init( data )
 		dlight.Size = 96
 		dlight.DieTime = CurTime() + 0.3
 	end
-	
+
 	local emitter = ParticleEmitter( self.vOffset )
-		
-		if math.random(1,2)!=1 then
+		if self.OGWeaponEnt.XTick==nil then self.OGWeaponEnt.XTick = 0 end
+		self.OGWeaponEnt.XTick = 1 - ( self.OGWeaponEnt.XTick )
+		if self.OGWeaponEnt.XTick == 1 then
 			local particle = emitter:Add( "effects/muzzleflashX_nemole", self.vOffset )
-			
+
 			if (particle) then
 				particle:SetVelocity( dir*4 + 1.05 * AddVel )
 				particle:SetLifeTime( 0 )
@@ -89,7 +91,7 @@ function EFFECT:Init( data )
 			end
 		else
 			local particle = emitter:Add( "effects/muzzleflashX_nemole", self.vOffset )
-			
+
 			if (particle) then
 				particle:SetVelocity( dir*4 + 1.05 * AddVel )
 				particle:SetLifeTime( 0 )
@@ -109,11 +111,11 @@ function EFFECT:Init( data )
 				particle.Att = self.Attachment
 				TFARegPartThink(particle,TFAMuzzlePartFunc)
 					particle:SetPos(vector_origin)
-			end		
+			end
 		end
-		
+
 		particle = emitter:Add( "effects/scotchmuzzleflash"..math.random(1,4), self.vOffset )
-			
+
 			if (particle) then
 				particle:SetVelocity( dir*4 + 1.05 * AddVel )
 				particle:SetLifeTime( 0 )
@@ -132,7 +134,7 @@ function EFFECT:Init( data )
 				particle.Att = self.Attachment
 				TFARegPartThink(particle,TFAMuzzlePartFunc)
 			end
-			
+
 		for i=0, 5 do
 			local particle = emitter:Add( "particles/flamelet"..math.random(1,5), self.vOffset + (dir * 0.6 * i))
 			if (particle) then
@@ -155,9 +157,9 @@ function EFFECT:Init( data )
 				particle:SetPos(vector_origin)
 			end
 		end
-		
+
 		for i=0, 6 do
-		
+
 			local particle = emitter:Add( "particles/smokey", self.vOffset + dir * math.Rand(6, 10 ))
 			if (particle) then
 				particle:SetVelocity(VectorRand() * 10 + dir * math.Rand(15,20) + 1.05 * AddVel )
@@ -170,21 +172,21 @@ function EFFECT:Init( data )
 				particle:SetRoll( math.rad(math.Rand(0, 360)) )
 				particle:SetRollDelta( math.Rand(-0.8, 0.8) )
 				particle:SetLighting(true)
-				
-				particle:SetAirResistance( 10 ) 
- 				 
- 				particle:SetGravity( Vector( 0, 0, 60 ) ) 
-				
-				particle:SetColor( 255 , 255 , 255 ) 
+
+				particle:SetAirResistance( 10 )
+
+ 				particle:SetGravity( Vector( 0, 0, 60 ) )
+
+				particle:SetColor( 255 , 255 , 255 )
 			end
-			
+
 		end
-		
-		local sparkcount = math.random(2,3)		
+
+		local sparkcount = math.random(2,3)
 		for i=0, sparkcount do
 			local particle = emitter:Add("effects/yellowflare", self.Position)
 			if (particle) then
-			
+
 				particle:SetVelocity( ( VectorRand() + Vector(0,0,0.3) ) * 20 * Vector(0.8,0.8,0.6) + dir * math.Rand(50,60) + 1.15 * AddVel )
 				particle:SetLifeTime( 0 )
 				particle:SetDieTime( math.Rand( 0.25, 0.4 ) )
@@ -197,7 +199,7 @@ function EFFECT:Init( data )
 				particle:SetAirResistance(40)
 				particle:SetStartLength(0.2)
 				particle:SetEndLength(0.05)
-				particle:SetColor( 255 , 200 , 158 ) 
+				particle:SetColor( 255 , 200 , 158 )
 				particle:SetVelocityScale(true)
 				particle:SetThinkFunction( function( pa )
 					pa.ranvel = pa.ranvel or VectorRand()*4
@@ -208,10 +210,10 @@ function EFFECT:Init( data )
 					pa:SetNextThink( CurTime() + 0.01 )
 				end )
 				particle:SetNextThink( CurTime() + 0.01 )
-				
+
 			end
 		end
-		
+
 		if GetTFAGasEnabled() then
 			for i=0, 2 do
 				local particle = emitter:Add( "sprites/heatwave", self.vOffset + (dir * (i+2) ) )
@@ -225,18 +227,18 @@ function EFFECT:Init( data )
 					particle:SetEndSize( math.Rand(8,10) )
 					particle:SetRoll( math.Rand(0, 360) )
 					particle:SetRollDelta( math.Rand(-2, 2) )
-					
+
 					particle:SetAirResistance( 5 )
-					 
-					particle:SetGravity( Vector( 0, 0, 40 ) ) 
-					
-					particle:SetColor( 255 , 255 , 255 ) 
+
+					particle:SetGravity( Vector( 0, 0, 40 ) )
+
+					particle:SetColor( 255 , 255 , 255 )
 				end
 			end
 		end
-		
-	emitter:Finish() 
-end 
+
+	emitter:Finish()
+end
 
 function EFFECT:Think( )
 	return false
@@ -244,5 +246,3 @@ end
 
 function EFFECT:Render()
 end
-
- 

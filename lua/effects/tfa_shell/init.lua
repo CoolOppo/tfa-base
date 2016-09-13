@@ -31,6 +31,10 @@ function EFFECT:Init( data )
 		if !self.Attachment or self.Attachment<=0 then
 			self.Attachment = 2
 		end
+	
+		if self.WeaponEntOG.Akimbo then
+			self.Attachment = 4-self.WeaponEntOG.AnimCycle
+		end	
 	end
 	
 	local angpos = self.WeaponEnt:GetAttachment(self.Attachment)

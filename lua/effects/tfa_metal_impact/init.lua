@@ -1,3 +1,13 @@
+local gravity_cv = GetConVar("sv_gravity")
+
+EFFECT.VelocityRandom = 0.25
+EFFECT.VelocityMin = 95
+EFFECT.VelocityMax = 125
+
+EFFECT.ParticleCountMin = 4
+EFFECT.ParticleCountMax = 7
+EFFECT.ParticleLife = 1.3
+
 function EFFECT:Init( data )
 	
 	self.StartPos = data:GetOrigin()
@@ -10,18 +20,19 @@ function EFFECT:Init( data )
 	
 	self.PartMult = 0.2
 	
-	self.Grav 	= Vector(0, 0, -GetConVarNumber("sv_gravity",800))
+	self.Grav 	= Vector(0, 0, -gravity_cv:GetFloat() )
 	
-	self.SparkLife = GetConVarNumber("cl_tfa_fx_impact_ricochet_sparklife",2)
+	self.SparkLife = 1
 	
 	local emitter = ParticleEmitter(self.StartPos)
+	local partcount = math.random(self.ParticleCountMin,self.ParticleCountMax)
 	
 	--Sparks
-	for i = 1, GetConVarNumber("cl_tfa_fx_impact_ricochet_sparks",20)*self.PartMult do
+	for i = 1, partcount do
 	
 		local part = emitter:Add("effects/yellowflare", self.StartPos)
 		
-		part:SetVelocity((self.Dir + VectorRand() * 0.5) * math.Rand(50, 85))
+		part:SetVelocity( Lerp( self.VelocityRandom,self.Dir,VectorRand() ) * math.Rand( self.VelocityMin, self.VelocityMax ) )
 		part:SetDieTime(math.Rand(0.25, 1)*self.SparkLife)
 		part:SetStartAlpha(255)
 		part:SetStartSize(math.Rand(2, 4))

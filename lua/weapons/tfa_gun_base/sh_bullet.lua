@@ -1,9 +1,9 @@
 local bullet = {}
 bullet.Spread = Vector()
 
---[[ 
+--[[
 Function Name:  ToggleAkimbo
-Syntax: self:ToggleAkimbo( ). 
+Syntax: self:ToggleAkimbo( ).
 Returns:   Nothing.
 Notes:    Used to toggle the akimbo value.
 Purpose:  Bullet
@@ -15,16 +15,16 @@ function SWEP:ToggleAkimbo()
 		local val = self.Callback.ToggleAkimbo(self)
 		if val then return val end
 	end
-	
+
 	if self.Akimbo then
 		self.AnimCycle = 1-self.AnimCycle
 	end
 
 end
 
---[[ 
+--[[
 Function Name:  ShootBulletInformation
-Syntax: self:ShootBulletInformation( ). 
+Syntax: self:ShootBulletInformation( ).
 Returns:   Nothing.
 Notes:    Used to generate a bullet table which is then sent to self:ShootBullet, and also to call shooteffects.
 Purpose:  Bullet
@@ -36,41 +36,45 @@ function SWEP:ShootBulletInformation( ifp )
 		local val = self.Callback.ShootBulletInformation(self, ifp)
 		if val then return val end
 	end
-	
+
 	self.lastbul = nil
 	self.lastbulnoric = false
-	
+
 	self.ConDamageMultiplier = GetConVar("sv_tfa_damage_multiplier"):GetFloat()
 	if (CLIENT and !game.SinglePlayer()) and !ifp then return end
-	
+
 	if SERVER and game.SinglePlayer() and self.Akimbo then self:CallOnClient("ToggleAkimbo","") end
-	
+
 	self:ToggleAkimbo()
 
 	local CurrentDamage
 	local CurrentCone, CurrentRecoil = self:CalculateConeRecoil()
-	
+
 	local tmpranddamage = math.Rand(GetConVarNumber("sv_tfa_damage_mult_min",0.95),GetConVarNumber("sv_tfa_damage_mult_max",1.05))
-	
+
 	basedamage = self.ConDamageMultiplier * self.Primary.Damage
 	CurrentDamage = basedamage * tmpranddamage
-	
+
 	--[[
 	if self.DoMuzzleFlash and ( (SERVER) or ( CLIENT and !self.AutoDetectMuzzleAttachment ) or (CLIENT and !self:IsFirstPerson() ) ) then
 		self:ShootEffects()
 	end
 	]]--
-	
+
 	if !self.AutoDetectMuzzleAttachment then
 		self:ShootEffectsCustom( ifp )
 	end
-	
-	self:ShootBullet(CurrentDamage, CurrentRecoil, self.Primary.NumShots, CurrentCone)
+
+	local ns = self.Primary.NumShots
+	local clip = ( self.Primary.ClipSize == -1 ) and self:Ammo1() or self:Clip1()
+	ns = math.Round( ns, math.min( clip / self.Primary.NumShots, 1 ) )
+
+	self:ShootBullet(CurrentDamage, CurrentRecoil, ns, CurrentCone)
 end
 
---[[ 
+--[[
 Function Name:  ShootBullet
-Syntax: self:ShootBullet(damage, recoil, number of bullets, spray cone, disable ricochet, override the generated bullet table with this value if you send it). 
+Syntax: self:ShootBullet(damage, recoil, number of bullets, spray cone, disable ricochet, override the generated bullet table with this value if you send it).
 Returns:   Nothing.
 Notes:    Used to shoot a bullet.
 Purpose:  Bullet
@@ -88,15 +92,15 @@ function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet,
 	end
 
 	if (CLIENT and !game.SinglePlayer()) and !IsFirstTimePredicted() then return end
-	
+
 	num_bullets 		= num_bullets or 1
 	aimcone 			= aimcone or 0
-	
+
 	if self.ProjectileEntity then
 		if SERVER then
 			local i=0
 			local shots = {}
-			
+
 			for i=1,num_bullets do
 				local ent = ents.Create(self.ProjectileEntity)
 				local dir
@@ -115,23 +119,23 @@ function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet,
 				ent:Spawn()
 				ent:SetVelocity(dir * self.ProjectileVelocity )
 				local phys = ent:GetPhysicsObject()
-				
+
 				if IsValid(phys) then
 					phys:SetVelocity(dir*self.ProjectileVelocity)
 				end
-				
+
 				if self.ProjectileModel then
 					ent:SetModel(self.ProjectileModel)
 				end
-				
+
 				ent:SetOwner(self.Owner)
-				
+
 				ent.Owner = self.Owner
 			end
-			
-		end		
+
+		end
 	else
-		
+
 		if self.Tracer == 1 then
 			TracerName = "Ar2Tracer"
 		elseif self.Tracer == 2 then
@@ -142,7 +146,7 @@ function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet,
 		if self.TracerName and self.TracerName != "" then
 			TracerName = self.TracerName
 		end
-		
+
 		bullet.Attacker 		= self.Owner
 		bullet.Inflictor 		= self
 		bullet.Num 		= num_bullets
@@ -155,42 +159,43 @@ function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet,
 		bullet.TracerName = TracerName
 		bullet.PenetrationCount = 0
 		bullet.AmmoType = self:GetPrimaryAmmoType()
-		bullet.Force	= damage/3 * math.sqrt((self.Primary.KickUp+self.Primary.KickDown+self.Primary.KickHorizontal )) * GetConVarNumber("sv_tfa_force_multiplier",1) * self:GetAmmoForceMultiplier()				-- Amount of force to give to phys objects
+		bullet.Force	= damage/6 * math.sqrt((self.Primary.KickUp+self.Primary.KickDown+self.Primary.KickHorizontal )) * GetConVarNumber("sv_tfa_force_multiplier",1) * self:GetAmmoForceMultiplier()				-- Amount of force to give to phys objects
 		bullet.Damage	= damage
 		bullet.HasAppliedRange = false
-		
+
 		if self.CustomBulletCallback then
-			bullet.Callback = self.CustomBulletCallback
-		else
-			bullet.Callback = function(a,b,c)
-				if IsValid(self) then
-					bullet:Penetrate(a,b,c,self)
-				end
+			bullet.Callback2 = self.CustomBulletCallback
+		end
+
+		bullet.Callback = function(a,b,c)
+			if IsValid(self) then
+				if bullet.Callback2 then bullet.Callback2(a,b,c) end
+				bullet:Penetrate(a,b,c,self)
 			end
 		end
-		
+
 		self.Owner:FireBullets(bullet)
-	
+
 	end
 end
 
 function SWEP:Recoil( recoil, ifp )
-	
+
 	math.randomseed( CurTime() + 1 )
-	
+
 	local tmprecoilang = Angle(math.Rand(self.Primary.KickDown,self.Primary.KickUp) * recoil * -1, math.Rand(-self.Primary.KickHorizontal,self.Primary.KickHorizontal) * recoil, 0)
-	
+
 	local maxdist =   math.min(math.max(0,  89 + self.Owner:EyeAngles().p - math.abs(self.Owner:GetViewPunchAngles().p * 2)),88.5)
 	local tmprecoilangclamped = Angle(math.Clamp(tmprecoilang.p,-maxdist,maxdist),tmprecoilang.y,0)
 	self.Owner:ViewPunch(tmprecoilangclamped * (1 - self.Primary.StaticRecoilFactor))
-	
-	
+
+
 	if (game.SinglePlayer() and SERVER) or ( CLIENT and ifp ) then
 		local neweyeang = self.Owner:EyeAngles() + tmprecoilang*self.Primary.StaticRecoilFactor
 		neweyeang.p = math.Clamp(neweyeang.p,-90+math.abs(self.Owner:GetViewPunchAngles().p),90-math.abs(self.Owner:GetViewPunchAngles().p))
 		self.Owner:SetEyeAngles( neweyeang )
 	end
-	
+
 end
 
 local decalbul = {
@@ -201,34 +206,36 @@ local decalbul = {
 	Damage	= 0.1
 }
 
+local maxpen
+local penetration_max_cvar = GetConVar("sv_tfa_penetration_limit")
 local penetration_cvar = GetConVar("sv_tfa_bullet_penetration")
 local ricochet_cvar = GetConVar("sv_tfa_bullet_ricochet")
 local rngfac
 local mfac
-	
+
 function bullet:Penetrate( ply , traceres, dmginfo, weapon )
-	
+
 	if !IsValid(weapon) then return end
-	
+
 	local hitent = traceres.Entity
-	
+
 	if !self.HasAppliedRange then
 		local bulletdistance =  ( ( traceres.HitPos - traceres.StartPos ):Length( ) )
 		local damagescale = bulletdistance / weapon.Primary.Range
 		damagescale = math.Clamp(damagescale - weapon.Primary.RangeFalloff,0,1)
 		damagescale = math.Clamp(damagescale / math.max(1-weapon.Primary.RangeFalloff,0.01),0,1)
 		damagescale = ( 1-GetConVarNumber("sv_tfa_range_modifier",0.5) ) + ( math.Clamp(1-damagescale,0,1) * GetConVarNumber("sv_tfa_range_modifier",0.5) )
-		
+
 		dmginfo:ScaleDamage(damagescale)
 		self.HasAppliedRange = true
 	end
 	dmginfo:SetDamageType( weapon.DamageType or weapon.Primary.DamageType or DMG_BULLET )
-	
+
 	if SERVER and IsValid(ply) and ply:IsPlayer() and IsValid(hitent) and ( hitent:IsPlayer() or hitent:IsNPC() ) then
 		net.Start("tfaHitmarker")
 		net.Send(ply)
 	end
-	
+
 	if weapon.DamageType then
 		if dmginfo:IsDamageType(DMG_SHOCK) or dmginfo:IsDamageType(DMG_BLAST) then
 			if traceres.Hit and IsValid(hitent) then
@@ -261,7 +268,7 @@ function bullet:Penetrate( ply , traceres, dmginfo, weapon )
 				if tmpdmg>90 then
 					util.Effect("Explosion",fx)
 				elseif tmpdmg>45 then
-					util.Effect("cball_explode",fx)				
+					util.Effect("cball_explode",fx)
 				else
 					util.Effect("ManhackSparks",fx)
 				end
@@ -269,68 +276,82 @@ function bullet:Penetrate( ply , traceres, dmginfo, weapon )
 			end
 		end
 	end
-	
+
 	if penetration_cvar and !penetration_cvar:GetBool() then return end
-	
+
 	if self:Ricochet(ply,traceres,dmginfo,weapon) then return end
-	
-	if self.PenetrationCount > weapon.MaxPenetrationCounter then return end
-	
+
+	maxpen = math.min(penetration_max_cvar and penetration_max_cvar:GetInt()-1 or 1, weapon.MaxPenetrationCounter )
+
+	if self.PenetrationCount > maxpen then return end
+
 	local mult = weapon:GetPenetrationMultiplier( traceres.MatType )
-	
+
 	penetrationoffset = traceres.Normal * math.Clamp( self.Force * mult, 0, 32 )
-		
+
 	local pentrace 	= {}
 	pentrace.endpos 	= traceres.HitPos
 	pentrace.start 	= traceres.HitPos + penetrationoffset
 	pentrace.mask 		= MASK_SHOT
 	pentrace.filter 	= {}
-	   
+
 	pentraceres 	= util.TraceLine(pentrace)
 
 	if (pentraceres.StartSolid or pentraceres.Fraction >= 1.0 or pentraceres.Fraction <= 0.0) then return end
-	
+
 	self.Src 		= pentraceres.HitPos
-	self.Dir 		= traceres.Normal
 	if ( self.Num or 0 )<=1 then self.Spread = Vector(0,0,0) end
-	self.Tracer 	= weapon.TracerName and 1 or 0
-	self.TracerName = weapon.TracerName
-	
+	self.Tracer 	= 0--weapon.TracerName and 0 or 1
+	self.TracerName = ""
+
 	rngfac = math.pow( pentraceres.HitPos:Distance(traceres.HitPos)/penetrationoffset:Length(), 2 )
 	mfac = math.pow(mult/10,0.35)
-	
+
 	self.Force		= Lerp( rngfac , self.Force, self.Force * mfac )
 	self.Damage		= Lerp( rngfac, self.Damage, self.Damage * mfac )
+	self.Spread = self.Spread / math.sqrt(mfac)
 	self.PenetrationCount = self.PenetrationCount + 1
-	
-	decalbul.Src = pentraceres.HitPos + pentraceres.HitNormal
-	decalbul.Dir = traceres.HitNormal * 64
-	
+	self.HullSize = 0
+
+	decalbul.Dir = -traceres.Normal * 64
+	if IsValid(ply) and ply:IsPlayer() then decalbul.Dir 		= self.Attacker:EyeAngles():Forward() * (-64) end
+	decalbul.Src = pentraceres.HitPos - decalbul.Dir*4
+	decalbul.Damage = 0.1
+	decalbul.Force = 0.1
+	decalbul.Tracer = 0
+	decalbul.TracerName = ""
+	decalbul.Callback = function() return true end
+
 	local fx = EffectData()
 	fx:SetOrigin(self.Src)
-	fx:SetNormal(self.Dir)
+	fx:SetNormal(self.Dir + VectorRand() * self.Spread )
 	fx:SetMagnitude(1)
 	fx:SetEntity(weapon)
 	util.Effect("tfa_penetrate",fx)
-	
+
 	if IsValid(ply) then
-		ply:FireBullets( self )
-		ply:FireBullets( decalbul )
+		if ply:IsPlayer() then self.Dir 		= self.Attacker:EyeAngles():Forward() end
+		timer.Simple(0,function()
+			if IsValid(ply) then
+				ply:FireBullets( decalbul )
+				ply:FireBullets( self )
+			end
+		end)
 	end
-	
+
 end
 
 function bullet:Ricochet( ply, traceres, dmginfo, weapon)
-	
+
 	if ricochet_cvar and !ricochet_cvar:GetBool() then return end
-	
-	if self.PenetrationCount > weapon.MaxPenetrationCounter then
-		return
-	end
-		
+
+	maxpen = math.min(penetration_max_cvar and penetration_max_cvar:GetInt()-1 or 1, weapon.MaxPenetrationCounter )
+
+	if self.PenetrationCount > maxpen then return end
+
 	--[[
 	]]--
-	
+
 	local matname = weapon:GetMaterialConcise( traceres.MatType )
 	local ricochetchance = 1
 	local dir = (traceres.HitPos-traceres.StartPos)
@@ -355,22 +376,23 @@ function bullet:Ricochet( ply, traceres, dmginfo, weapon)
 	else
 		ricochetchance = 0
 	end
-	
+
 	ricochetchance = ricochetchance * 0.5 * weapon:GetAmmoRicochetMultiplier()
-	
+
 	local riccbak = ricochetchance / 0.7
 	local ricothreshold = 0.6
 	ricochetchance = math.Clamp(ricochetchance + ricochetchance * math.Clamp(1-(dp+ricothreshold),0,1) * 0.5,0,1)
 	if dp<=ricothreshold then
 		if math.Rand(0,1)<ricochetchance then
-			
+
 			self.Damage = self.Damage * 0.5
 			self.Force = self.Force * 0.5
 			self.Num = 1
 			self.Spread = vector_origin
 			self.Src=traceres.HitPos
 			self.Dir=((2 * traceres.HitNormal * dp) + traceres.Normal) + (VectorRand() * 0.02)
-			
+			self.Tracer = 0
+
 			if GetTFARicochetEnabled() then
 				local fx = EffectData()
 				fx:SetOrigin(self.Src)
@@ -378,17 +400,17 @@ function bullet:Ricochet( ply, traceres, dmginfo, weapon)
 				fx:SetMagnitude(riccbak)
 				util.Effect("tfa_ricochet",fx)
 			end
-			
+
 			timer.Simple(0,function()
 				if IsValid(ply) then
 					ply:FireBullets( self )
 				end
 			end)
-			
+
 			self.PenetrationCount = self.PenetrationCount + 1
-			
+
 			return true
 		end
 	end
-	
+
 end

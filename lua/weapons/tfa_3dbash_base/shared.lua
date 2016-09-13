@@ -69,12 +69,12 @@ function SWEP:UpdateScopeType()
 		end
 		if self.BoltAction then 
 			self.BoltAction_3D = true
-			self.BoltAction = false
+			self.BoltAction = self.BoltAction_Forced or false
 			self.DisableChambering = true
 		end
 		if self.Secondary.ScopeZoom and self.Secondary.ScopeZoom>0 then
 			self.RTScopeFOV = 70/self.Secondary.ScopeZoom
-			self.IronSightsSensitivity = 1/self.Secondary.ScopeZoom
+			self.IronSightsSensitivity = math.sqrt(1/self.Secondary.ScopeZoom)
 			self.Secondary.ScopeZoom = nil
 			self.Secondary.IronFOV_Backup = self.Secondary.IronFOV
 			self.Secondary.IronFOV = 70
