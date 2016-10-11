@@ -3,7 +3,7 @@ ACT_VM_FIDGET_EMPTY = ACT_VM_FIDGET_EMPTY or ACT_CROSSBOW_FIDGET_UNLOADED
 --[[Define Modules]]--
 SWEP.SV_MODULES = {}
 SWEP.SH_MODULES = {"sh_bobcode.lua", "sh_anims.lua", "sh_bullet.lua", "sh_autodetection.lua", "sh_utilities.lua", "sh_effects.lua", "sh_attachments.lua", "sh_akimbo.lua"}
-SWEP.ClSIDE_MODULES = {"cl_viewbob.lua", "cl_effects.lua", "cl_hud.lua", "cl_mods.lua", "cl_rendertarget.lua"}
+SWEP.ClSIDE_MODULES = {"cl_viewbob.lua", "cl_effects.lua", "cl_hud.lua", "cl_mods.lua"}
 SWEP.CSMuzzleFlashes = false
 SWEP.CSMuzzleX = false
 SWEP.Category = "" --The category.  Please, just choose something generic or something I've already done if you plan on only doing like one swep.

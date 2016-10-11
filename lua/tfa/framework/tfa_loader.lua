@@ -1,11 +1,12 @@
 if SERVER then AddCSLuaFile() end
 
 local do_load = true
-local version = 3.0
-local version_string = "3.0.0.0"
+local version = 3.001
+local version_string = "3.0.0.1"
 local changelog = [[
-	* Entire TFA Base linted and micro-optimized
-	* Performance holding a TFA Base gun is better compared to a HL2 gun 
+	* Shock damage no longer removes props
+	* Fixed rendertargets
+	* Further improved performance
 ]]
 
 if TFA_BASE_VERSION then

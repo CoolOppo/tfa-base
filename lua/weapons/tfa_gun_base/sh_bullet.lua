@@ -230,7 +230,7 @@ function bullet:Penetrate(ply, traceres, dmginfo, weapon)
 	end
 
 	if weapon.DamageType then
-		if dmginfo:IsDamageType(DMG_SHOCK) or dmginfo:IsDamageType(DMG_BLAST) and traceres.Hit and IsValid(hitent) and hitent:GetClass() == "npc_strider" then
+		if ( dmginfo:IsDamageType(DMG_SHOCK) or dmginfo:IsDamageType(DMG_BLAST) ) and traceres.Hit and IsValid(hitent) and hitent:GetClass() == "npc_strider" then
 			hitent:SetHealth(math.max(hitent:Health() - dmginfo:GetDamage(), 2))
 
 			if hitent:Health() <= 3 then
