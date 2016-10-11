@@ -16,14 +16,9 @@ TFA_PocketBlock["tfa_ammo_stickynades"] = true
 TFA_PocketBlock["tfa_ammo_winchester"] = true
 
 local function TFAPocketFix(ply, wep)
-
 	if not IsValid(wep) then return end
 	class = wep:GetClass()
-
-	if tfanpw[class] then
-		return false
-	end
-
+	if tfanpw[class] then return false end
 end
 
-hook.Add("canPocket", "TFA_Pocket_Fix", TFAPocketFix  )
+hook.Add("canPocket", "TFA_Pocket_Fix", TFAPocketFix)

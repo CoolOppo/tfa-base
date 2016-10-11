@@ -1,4 +1,4 @@
-timer.Create("tfa_base_vecorfix",5,0,function()
+timer.Create("tfa_base_vecorfix", 5, 0, function()
 	vector_origin.x = 0
 	vector_origin.y = 0
 	vector_origin.z = 0

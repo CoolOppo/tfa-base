@@ -14,13 +14,13 @@ game.AddAmmoType( {
 game.AddAmmoType( {
 	name = "TFMSwordHitGeneric",
 	dmgtype = DMG_GENERIC,
-	tracer = TRACER_NONE	
+	tracer = TRACER_NONE
 } )
 
 game.AddAmmoType( {
 	name = "TFMSwordHitGenericSlash",
 	dmgtype = DMG_SLASH,
-	tracer = TRACER_NONE	
+	tracer = TRACER_NONE
 } )
 
 game.AddAmmoType( {
@@ -63,7 +63,7 @@ hook.Add("EntityTakeDamage","TFM_Block",function(ent, dmginfo)
 						--print(fac)
 						dmginfo:ScaleDamage(dmgscale)
 						dmginfo:SetDamagePosition(vector_origin)
-						wep:EmitSound(wep.Primary.Sound_Impact_Metal)	
+						wep:EmitSound(wep.Primary.Sound_Impact_Metal)
 						if wep.BlockAnim then
 							wep:BlockAnim()
 						end
@@ -89,7 +89,7 @@ if SERVER then
 				ply:SetNWVector("TFM_SwordPosition",pos)
 				ply:SetNWVector("TFM_SwordNormal",norm)
 			end
-		end			
+		end
 	end)
 end
 ]]--

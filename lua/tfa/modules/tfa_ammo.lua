@@ -1,5 +1,5 @@
---[[Bow Ammo]]--
-
+--[[Bow Ammo]]
+--
 game.AddAmmoType({
 	name = "tfbow_arrow",
 	dmgtype = DMG_CLUB,
@@ -9,5 +9,5 @@ game.AddAmmoType({
 })
 
 if CLIENT then
-	language.Add("tfbow_arrow_ammo","Arrows")
+	language.Add("tfbow_arrow_ammo", "Arrows")
 end
