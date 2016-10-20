@@ -7,10 +7,10 @@ Used For: Main weapon "think" logic
 ]]--
 
 hook.Add("PlayerTick", "PlayerTickTFA", function(plyv)
-	wep = plyv:GetActiveWeapon()
+	wep = plyv:GetActiveWeapon() or wep
 
 	if IsValid(wep) and wep.PlayerThink and wep.IsTFAWeapon then
-		wep:PlayerThink(ply)
+		wep:PlayerThink(plyv)
 	end
 end)
 
@@ -21,9 +21,8 @@ Used For: Per-frame weapon "think" logic
 ]]
 --
 hook.Add("PreRender", "prerender_tfabase", function()
-	if not IsValid(ply) then ply = LocalPlayer() end
-	if not IsValid(ply) then return end
-	wep = ply:GetActiveWeapon()
+	if not IsValid(ply) then ply = LocalPlayer() return end
+	wep = ply:GetActiveWeapon() or wep
 
 	if IsValid(wep) and wep.IsTFAWeapon and wep.PlayerThinkClientFrame then
 		wep:PlayerThinkClientFrame(ply)
@@ -37,8 +36,8 @@ Used For: Records last held object
 ]]
 --
 hook.Add("AllowPlayerPickup", "TFAPickupDisable", function(plyv, ent)
-	ply:SetNWEntity("LastHeldEntity", ent)
-	ply:SetNWInt("LastHeldEntityIndex", ent.EntIndex and ent:EntIndex() or -1)
+	plyv:SetNWEntity("LastHeldEntity", ent)
+	plyv:SetNWInt("LastHeldEntityIndex", ent.EntIndex and ent:EntIndex() or -1)
 end)
 
 --[[
@@ -50,8 +49,8 @@ Used For:  Alternate attack, inspection, shotgun interrupts, and more
 local cv_cm = GetConVar("sv_tfa_cmenu")
 
 function TFAPlayerBindPress(plyv, b, p)
-	if p and IsValid(ply) then
-		wep = plyv:GetActiveWeapon()
+	if p and IsValid(plyv) then
+		wep = plyv:GetActiveWeapon() or wep
 
 		if IsValid(wep) then
 			if wep.AltAttack and b == "+zoom" then
@@ -101,6 +100,8 @@ Used For:  Weapon slowdown, ironsights slowdown
 ]]--
 
 local cv_cmove = GetConVar("sv_tfa_compatibility_movement")
+local sumwep
+local speedmult
 
 if not Clockwork and ( not cv_cmove or ( not cv_cmove:GetBool() ) ) then
 	hook.Add("SetupMove", "tfa_setupmove", function(plyv, movedata, commanddata)
@@ -111,10 +112,9 @@ if not Clockwork and ( not cv_cmove or ( not cv_cmove:GetBool() ) ) then
 			if not cv_cmove:GetBool() then return end
 		end
 		]]--
-		local iscarryingtfaweapon = PlayerCarryingTFAWeapon(plyv)
-
-		if iscarryingtfaweapon and wep.GetIronSightsRatio then
-			local speedmult = Lerp(wep:GetIronSightsRatio(), wep.MoveSpeed or 1, wep.IronSightsMoveSpeed or 1)
+		sumwep = plyv:GetActiveWeapon() or wep
+		if IsValid(sumwep) and sumwep.GetIronSightsRatio then
+			speedmult = Lerp(sumwep:GetIronSightsRatio(), sumwep.MoveSpeed or 1, sumwep.IronSightsMoveSpeed or 1)
 			movedata:SetMaxClientSpeed(movedata:GetMaxClientSpeed() * speedmult)
 			commanddata:SetForwardMove(commanddata:GetForwardMove() * speedmult)
 			commanddata:SetSideMove(commanddata:GetSideMove() * speedmult)
@@ -129,7 +129,7 @@ Used For:  Weapon viewbob, gunbob per-step
 ]]
 --
 hook.Add("PlayerFootstep", "tfa_playerfootstep", function(plyv)
-	local isc = PlayerCarryingTFAWeapon(ply)
+	local isc = PlayerCarryingTFAWeapon(plyv)
 
 	if isc and wep.Footstep and CLIENT then
 		wep:Footstep()

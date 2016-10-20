@@ -153,15 +153,16 @@ Returns:  Nothing.
 Notes:  Fixes the icon.  Call this if you give it a texture path, or just nothing.
 Purpose:  Autodetection
 ]]--
-local selicon_final
+local selicon_final = {}
 
 function SWEP:IconFix()
 	self.Gun = self.ClassName
 	local tselicon
 	local proceed = true
 
-	if selicon_final then
-		self.WepSelectIcon =  selicon_final
+	if selicon_final[self.Gun] then
+		self.WepSelectIcon =  selicon_final[self.Gun]
+		return
 	end
 
 	if self.WepSelectIcon then
@@ -177,7 +178,7 @@ function SWEP:IconFix()
 		self.WepSelectIcon = surface.GetTextureID("vgui/hud/" .. self.ClassName)
 	end
 
-	selicon_final = self.WepSelectIcon
+	selicon_final[self.Gun] = self.WepSelectIcon
 end
 
 --[[

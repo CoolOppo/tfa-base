@@ -1247,15 +1247,15 @@ Notes:  This is essential.
 Purpose:  Don't remove this, seriously.
 ]]--
 
-function SWEP:Use()
-	owent:ConCommand("+use")
+function SWEP:WeaponUse( plyv )
+	plyv:ConCommand("+use")
 
 	if sp then
-		owent:ConCommand("+use")
+		plyv:ConCommand("+use")
 
 		timer.Simple(0, function()
-			if IsValid(owent) then
-				owent:ConCommand("-use")
+			if IsValid(plyv) then
+				plyv:ConCommand("-use")
 			end
 		end)
 
@@ -1270,14 +1270,14 @@ function SWEP:Use()
 		end)
 	else
 		timer.Simple(0.09, function()
-			if IsValid(owent) then
-				owent:ConCommand("-use")
+			if IsValid(plyv) then
+				plyv:ConCommand("-use")
 			end
 		end)
 
 		timer.Simple(0.1, function()
-			if IsValid(owent) then
-				owent:ConCommand("-use")
+			if IsValid(plyv) then
+				plyv:ConCommand("-use")
 			end
 			if IsValid(self) and not IsValid(self:GetNWEntity("LastHeldEntityIndex")) then
 				self:Deploy()
@@ -1500,7 +1500,7 @@ function SWEP:MainUpdate()
 
 			if IsValid(stwep) then
 				if stwep == owent then
-					self:Use()
+					self:WeaponUse( owent )
 				else
 					self.Owner:SelectWeapon(stwep:GetClass())
 				end

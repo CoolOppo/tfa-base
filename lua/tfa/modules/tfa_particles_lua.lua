@@ -7,7 +7,7 @@ if CLIENT then
 	hook.Add("PreDrawEffects", "TFAMuzzleUpdate", function()
 		if not IsValid(ply) then ply = LocalPlayer() end
 		if IsValid(ply) then
-			if not IsValid(vm) then vm = LocalPlayer():GetViewModel() end
+			if not IsValid(vm) then vm = LocalPlayer():GetViewModel() return end
 			local tbl = vm:GetAttachments()
 
 			if tbl then
