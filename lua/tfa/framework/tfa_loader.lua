@@ -1,15 +1,13 @@
 if SERVER then AddCSLuaFile() end
 
 local do_load = true
-local version = 3.011
-local version_string = "3.01.1.0"
+local version = 3.0120
+local version_string = "3.01.2.0"
 local changelog = [[
-	* Added new cvars of mp_tfa_precach.  Enable these to increase loading times but reduce lag and weapon spawn time.
-	* Use console autocomplete instead of bothering me for the exact names!
-	* Bugfix in setupmove fixed
-	* Conflict message improved, displaying exact filepath for a conflicting tfa_loader
-	* Lua particle handling fixed on invalid viewmodels
-	* Other misc. bugfixes
+	* New group prompt added
+	* Introduced bare-basics multilanguage support
+	* Migrated global functions to a table
+	* Miscelaneous quality of life improvements
 ]]
 
 local function testFunc()
@@ -45,6 +43,7 @@ if do_load then
 	TFA_BASE_VERSION_CHANGES = changelog
 	TFA_ATTACHMENTS_ENABLED = false
 	TFA_FILE_PATH = my_path
+	TFA = {}
 
 	local flist = file.Find("tfa/modules/*.lua","LUA")
 

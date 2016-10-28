@@ -1117,6 +1117,8 @@ Returns:  SWEP sensitivity multiplier.
 Purpose:  Standard SWEP Function
 ]]--
 
+local fovv
+
 function SWEP:AdjustMouseSensitivity()
 	if self.Callback.AdjustMouseSensitivity then
 		local val = self.Callback.AdjustMouseSensitivity(self)
@@ -1129,8 +1131,13 @@ function SWEP:AdjustMouseSensitivity()
 		sensval = sensval * sensitivity_cvar:GetFloat() / 100
 
 		if sensitivity_fov_cvar:GetFloat() then
-			local fov = self.Owner:GetFOV()
-			sensval = sensval * math.atan(resrat * math.tan(math.rad(fov / 2))) / math.atan(resrat * math.tan(math.rad(self.DefaultFOV / 2)))
+			if self.Scoped_3D then
+				fovv = self.RTScopeFOV * 4
+			else
+				fovv = self.Owner:GetFOV()
+			end
+			fovv = fovv / ( self.Scoped_3D and self.Secondary.ScopeZoom or 1 )
+			sensval = sensval * math.atan(resrat * math.tan(math.rad(fovv / 2))) / math.atan(resrat * math.tan(math.rad(self.DefaultFOV / 2)))
 		else
 			sensval = sensval
 		end

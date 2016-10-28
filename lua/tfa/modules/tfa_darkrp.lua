@@ -15,10 +15,10 @@ TFA_PocketBlock["tfa_ammo_sniper_rounds"] = true
 TFA_PocketBlock["tfa_ammo_stickynades"] = true
 TFA_PocketBlock["tfa_ammo_winchester"] = true
 
-local function TFAPocketFix(ply, wep)
+local function TFA_PockBlock(ply, wep) --Get it, because cockblock, hehe.....  so mature.
 	if not IsValid(wep) then return end
 	class = wep:GetClass()
 	if tfanpw[class] then return false end
 end
 
-hook.Add("canPocket", "TFA_Pocket_Fix", TFAPocketFix)
+hook.Add("canPocket", "TFA_PockBlock", TFA_PockBlock)

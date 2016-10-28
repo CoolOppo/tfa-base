@@ -44,7 +44,7 @@ function SWEP:MakeMuzzleSmoke(entity, attachment)
 	self:CleanParticles()
 	local ht = self.DefaultHoldType and self.DefaultHoldType or self.HoldType
 
-	if (CLIENT and GetTFAMZSmokeEnabled() and IsValid(entity) and attachment and attachment ~= 0) then
+	if (CLIENT and TFA.GetMZSmokeEnabled() and IsValid(entity) and attachment and attachment ~= 0) then
 		ParticleEffectAttach(self.SmokeParticles[ht], PATTACH_POINT_FOLLOW, entity, attachment)
 	end
 end

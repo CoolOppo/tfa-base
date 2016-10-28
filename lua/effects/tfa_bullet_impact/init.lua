@@ -2,7 +2,7 @@ function EFFECT:Init(data)
 	local posoffset = data:GetOrigin()
 	local emitter = ParticleEmitter(posoffset)
 
-	if GetTFAGasEnabled() then
+	if TFA.GetGasEnabled() then
 		local p = emitter:Add("sprites/heatwave", posoffset)
 		p:SetVelocity(50 * data:GetNormal() + 0.5 * VectorRand())
 		p:SetAirResistance(200)

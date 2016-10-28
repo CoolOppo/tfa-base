@@ -168,7 +168,7 @@ function SWEP:MakeDoor(ent, dmginfo)
 end
 
 function SWEP:BurstDoor(ent, dmginfo)
-	if dmginfo:GetDamage() > 60 and (dmginfo:IsDamageType(DMG_CRUSH) or dmginfo:IsDamageType(DMG_CLUB)) and ent:GetClass() == "func_door_rotating" or ent:GetClass() == "prop_door_rotating" then
+	if dmginfo:GetDamage() > 60 and ( dmginfo:IsDamageType(DMG_CRUSH) or dmginfo:IsDamageType(DMG_CLUB) ) and ( ent:GetClass() == "func_door_rotating" or ent:GetClass() == "prop_door_rotating" ) then
 		if dmginfo:GetDamage() > 150 then
 			local ply = self.Owner
 			self:MakeDoor(ent, dmginfo)

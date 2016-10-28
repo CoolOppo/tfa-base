@@ -217,7 +217,9 @@ function SWEP:AltAttack(sec)
 					dmg:SetDamageForce(self.Owner:GetAimVector() * pain)
 					dmg:SetDamage(pain)
 					dmg:SetDamageType(self.Secondary.BashDamageType)
-					slashtrace.Entity:TakeDamageInfo(dmg)
+					if IsValid(slashtrace.Entity) and slashtrace.Entity.TakeDamageInfo then
+						slashtrace.Entity:TakeDamageInfo(dmg)
+					end
 				end
 
 				local ent = slashtrace.Entity
@@ -252,11 +254,11 @@ function SWEP:SecondaryAttack()
 	BaseClass.SecondaryAttack(self)
 end
 
+local bash, vm, seq, actid
+
 function SWEP:GetBashing()
 	if not self:OwnerIsValid() then return false end
-	local bash, vm, seq, actid
-	vm = self.Owner:GetViewModel()
-	if not IsValid(vm) then return end
+	if not IsValid(vm) or not vm.GetSequence then vm = self.OwnerViewModel return false end
 	seq = vm:GetSequence()
 	actid = vm:GetSequenceActivity(seq)
 	bash = ((actid == ACT_VM_HITCENTER) and vm:GetCycle() > 0 and vm:GetCycle() < 0.65) or self.unpredbash

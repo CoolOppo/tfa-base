@@ -3,7 +3,7 @@ local uAng = Angle(90, 0, 0)
 local dir
 
 function EFFECT:Init(data)
-	if not GetTFAEJSmokeEnabled() then return end
+	if not TFA.GetEJSmokeEnabled() then return end
 	self.Position = bvec
 	self.WeaponEnt = data:GetEntity()
 	if not IsValid(self.WeaponEnt) then return end
@@ -89,7 +89,7 @@ function EFFECT:Init(data)
 		end
 	end
 
-	if GetTFAGasEnabled() then
+	if TFA.GetGasEnabled() then
 		for i = 0, 1 do
 			local particle = emitter:Add("sprites/heatwave", self.vOffset + (dir * i))
 

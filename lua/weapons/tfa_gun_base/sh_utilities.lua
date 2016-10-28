@@ -627,6 +627,7 @@ function SWEP:IsFirstPerson()
 	end
 
 	if not IsValid(self) or not self:OwnerIsValid() then return false end
+	if self.Owner.ShouldDrawLocalPlayer and self.Owner:ShouldDrawLocalPlayer() then return false end
 	local gmsdlp
 
 	if LocalPlayer then
@@ -636,13 +637,6 @@ function SWEP:IsFirstPerson()
 	end
 
 	if gmsdlp then return false end
-	vm = self.OwnerViewModel
-
-	if IsValid(vm) and vm:GetNoDraw() or vm:IsEffectActive(EF_NODRAW) then return false end
-
-	if not self:IsWeaponVisible() then return false end
-	if self.Owner.ShouldDrawLocalPlayer and self.Owner:ShouldDrawLocalPlayer() then return false end
-
 	return true
 end
 
@@ -698,7 +692,13 @@ function SWEP:GetMuzzlePos(ignorepos)
 	end
 
 	fp = self:IsFirstPerson()
-	vm = self.OwnerViewModel
+	if not IsValid(vm) then
+		vm = self.OwnerViewModel
+	end
+	if not IsValid(vm) then
+		vm = self
+	end
+
 	obj = self.MuzzleAttachmentRaw or vm:LookupAttachment(self.MuzzleAttachment)
 	obj = math.Clamp(obj or 1, 1, 128)
 

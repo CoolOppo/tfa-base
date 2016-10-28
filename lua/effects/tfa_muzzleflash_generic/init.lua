@@ -190,7 +190,7 @@ function EFFECT:Init(data)
 		end
 	end
 
-	if GetTFAGasEnabled() then
+	if TFA.GetGasEnabled() then
 		for i = 0, 2 do
 			local particle = emitter:Add("sprites/heatwave", self.vOffset + (dir * i))
 

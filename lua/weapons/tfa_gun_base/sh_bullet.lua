@@ -371,7 +371,7 @@ function bullet:Ricochet(ply, traceres, dmginfo, weapon)
 		self.Dir = ((2 * traceres.HitNormal * dp) + traceres.Normal) + (VectorRand() * 0.02)
 		self.Tracer = 0
 
-		if GetTFARicochetEnabled() then
+		if TFA.GetRicochetEnabled() then
 			local fx = EffectData()
 			fx:SetOrigin(self.Src)
 			fx:SetNormal(self.Dir)

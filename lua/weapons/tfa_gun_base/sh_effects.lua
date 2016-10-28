@@ -84,7 +84,7 @@ Notes:    Puff of smoke on shell attachment.
 Purpose:  FX
 ]]--
 function SWEP:EjectionSmoke()
-	if GetTFAEJSmokeEnabled() then
+	if TFA.GetEJSmokeEnabled() then
 		self:UpdateViewModel()
 		local vm = self.OwnerViewModel
 

@@ -2,7 +2,7 @@ local tmpsp = game.SinglePlayer()
 local gas_cl_enabled = GetConVar("cl_tfa_fx_gasblur")
 local gas_sv_enabled = GetConVar("sv_tfa_fx_gas_override")
 
-function GetTFAGasEnabled()
+function TFA.GetGasEnabled()
 	if tmpsp then return math.Round(Entity(1):GetInfoNum("cl_tfa_fx_gasblur", 0)) ~= 0 end
 	local enabled
 
@@ -24,7 +24,7 @@ local ejectionsmoke_sv_enabled = GetConVar("sv_tfa_fx_ejectionsmoke_override")
 local muzzlesmoke_cl_enabled = GetConVar("cl_tfa_fx_muzzlesmoke")
 local muzzlesmoke_sv_enabled = GetConVar("sv_tfa_fx_muzzlesmoke_override")
 
-function GetTFAMZSmokeEnabled()
+function TFA.GetMZSmokeEnabled()
 	if tmpsp then return math.Round(Entity(1):GetInfoNum("cl_tfa_fx_muzzlesmoke", 0)) ~= 0 end
 	local enabled
 
@@ -41,7 +41,7 @@ function GetTFAMZSmokeEnabled()
 	return enabled
 end
 
-function GetTFAEJSmokeEnabled()
+function TFA.GetEJSmokeEnabled()
 	if tmpsp then return math.Round(Entity(1):GetInfoNum("cl_tfa_fx_ejectionsmoke", 0)) ~= 0 end
 	local enabled
 
@@ -61,7 +61,7 @@ end
 local ricofx_cl_enabled = GetConVar("cl_tfa_fx_impact_ricochet_enabled")
 local ricofx_sv_enabled = GetConVar("sv_tfa_fx_ricochet_override")
 
-function GetTFARicochetEnabled()
+function TFA.GetRicochetEnabled()
 	if tmpsp then return math.Round(Entity(1):GetInfoNum("cl_tfa_fx_impact_ricochet_enabled", 0)) ~= 0 end
 	local enabled
 
@@ -79,7 +79,7 @@ function GetTFARicochetEnabled()
 end
 
 --Local function for detecting TFA Base weapons.
-function PlayerCarryingTFAWeapon(ply)
+function TFA.PlayerCarryingTFAWeapon(ply)
 	if not ply then
 		if CLIENT then
 			if IsValid(LocalPlayer()) then

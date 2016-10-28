@@ -9,28 +9,49 @@ if SERVER then
 	end)
 end
 
-if CLIENT then
-	TFA_SHOULD_NAG = false
+local function comma_value(amount) --Credit to the lua-user.org wiki
+	local formatted = amount
 
-	if not file.Exists("tfa_hasnagged.txt", "DATA") then
-		local f = file.Open("tfa_hasnagged.txt", "w", "DATA")
-		f:Write("yes")
-		f:Flush()
-		f:Close()
-		TFA_SHOULD_NAG = true
+	while true do
+		formatted, k = string.gsub(formatted, "^(-?%d+)(%d%d%d)", "%1,%2")
+		if (k == 0) then break end
 	end
 
-	hook.Add("HUDPaint", "TFA_NAG", function()
-		if IsValid(LocalPlayer()) then
-			if TFA_SHOULD_NAG then
-				chat.AddText("Dear ", LocalPlayer(), ", please take a moment to join TFA Mod News.  It's the best way to stay updated about what I change and why.  You'll only receive this message once, but please consider it. Every member helps! To join, please type \"!jointfa\" in chat without quotes.")
-			end
+	return formatted
+end
 
-			hook.Remove("HUDPaint", "TFA_NAG")
-		end
+if CLIENT then
+
+	local TFA_NAGCOUNT = 0
+
+	hook.Add("TFA_ClientLoad", "TFA_NAG", function()
+		TFA.GetGroupMembers("tfa-mods", function(members)
+			if not table.HasValue(members,LocalPlayer():SteamID64()) then --They're not a member
+
+				if file.Exists("tfa_nag_v3.txt", "DATA") then
+					TFA_NAGCOUNT = tonumber( file.Read("tfa_nag_v3.txt","DATA") )
+				end
+
+				local f = file.Open("tfa_nag_v3.txt", "w", "DATA")
+				f:Write( tostring( TFA_NAGCOUNT + 1 ) )
+				f:Flush()
+				f:Close()
+
+				if TFA_NAGCOUNT < 5 then
+					chat.AddText(TFA.GetLangString("nag_1"), LocalPlayer():Nick(), TFA.GetLangString("nag_2") .. comma_value( #members + 1 ) .. TFA.GetLangString("nag_3") .. tostring( TFA_NAGCOUNT + 1 ) .. ".")
+				end
+			else
+				if file.Exists("tfa_nag_v3.txt","DATA") then
+					file.Delete("tfa_nag_v3.txt")
+					chat.AddText(TFA.GetLangString("thank_1"), LocalPlayer():Nick(), TFA.GetLangString("thank_2") .. comma_value( #members ) .. "." )
+				end
+			end
+		end)
 	end)
 
 	net.Receive("TFAJoinGroupPopup", function()
 		gui.OpenURL("http://steamcommunity.com/groups/tfa-mods")
 	end)
+
+
 end

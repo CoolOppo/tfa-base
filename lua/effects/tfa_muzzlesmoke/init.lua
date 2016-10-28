@@ -49,7 +49,7 @@ function EFFECT:Init(data)
 	dir = self.Forward
 	AddVel = AddVel * 0.05
 
-	if GetTFAMZSmokeEnabled == nil or GetTFAMZSmokeEnabled() then
+	if TFA.GetMZSmokeEnabled == nil or TFA.GetMZSmokeEnabled() then
 		ParticleEffectAttach(smokepart, PATTACH_POINT_FOLLOW, self.WeaponEnt, self.Attachment)
 	end
 end

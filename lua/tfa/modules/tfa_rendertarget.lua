@@ -26,7 +26,8 @@ if CLIENT then
 	local ply, vm, wep
 
 	local function TFARenderScreen()
-		if not IsValid(ply) then
+		ply = GetViewEntity()
+		if not IsValid(ply) or not ply:IsPlayer() then
 			ply = LocalPlayer()
 			return
 		end

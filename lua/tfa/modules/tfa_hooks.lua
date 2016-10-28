@@ -129,7 +129,7 @@ Used For:  Weapon viewbob, gunbob per-step
 ]]
 --
 hook.Add("PlayerFootstep", "tfa_playerfootstep", function(plyv)
-	local isc = PlayerCarryingTFAWeapon(plyv)
+	local isc = TFA.PlayerCarryingTFAWeapon(plyv)
 
 	if isc and wep.Footstep and CLIENT then
 		wep:Footstep()
@@ -154,7 +154,7 @@ if CLIENT then
 
 	hook.Add("HUDShouldDraw", "tfa_hidehud", function(name)
 		if TFAHudHide[name] and cv_he:GetBool() then
-			local ictfa = PlayerCarryingTFAWeapon()
+			local ictfa = TFA.PlayerCarryingTFAWeapon()
 			if ictfa then return false end
 		end
 	end)
