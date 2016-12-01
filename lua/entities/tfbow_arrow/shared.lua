@@ -99,7 +99,7 @@ function ENT:Initialize()
         end
     end
 
-    self:SetNWVector("lastpos", self:GetPos())
+    self:SetNW2Vector("lastpos", self:GetPos())
 
     if not self.mydamage then
         self.mydamage = 60
@@ -130,7 +130,7 @@ local wl,tracedata,tr
 
 local cv_fm = GetConVar("sv_tfa_force_multiplier")
 
-function ENT:HitCV(a,b,c)
+function ENT:HitCB(a,b,c)
     c:SetDamageType(bit.bor(DMG_NEVERGIB, DMG_CLUB))
 
     if IsValid(self) and IsValid(self.Owner) then
@@ -196,7 +196,7 @@ function ENT:Think()
     end
 
     tracedata = {}
-    tracedata.start = self:GetNWVector("lastpos", self:GetPos())
+    tracedata.start = self:GetNW2Vector("lastpos", self:GetPos())
     tracedata.endpos = self:GetPos()
     tracedata.mask = MASK_SOLID
     tracedata.filter = {self.myowner, self.Owner, self}
@@ -242,5 +242,5 @@ function ENT:Think()
         return
     end
 
-    self:SetNWVector("lastpos", self:GetPos())
+    self:SetNW2Vector("lastpos", self:GetPos())
 end

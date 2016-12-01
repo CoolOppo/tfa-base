@@ -1,4 +1,6 @@
 DEFINE_BASECLASS("tfa_gun_base")
+SWEP.Primary.Automatic = true
+SWEP.Secondary.Automatic = true
 SWEP.Primary.RPM = 120 --Primary Slashs per minute
 SWEP.Secondary.RPM = 60 --Secondary stabs per minute
 SWEP.SlashDelay = 0.15 --Delay for hull (primary)
@@ -10,7 +12,7 @@ SWEP.KnifeShink = "Weapon_Knife.HitWall" --Sounds
 SWEP.KnifeSlash = "Weapon_Knife.Hit" --Sounds
 SWEP.KnifeStab = "Weapon_Knife.hull" --Sounds
 SWEP.SlashTable = {"midslash1", "midslash2"} --Table of possible hull sequences
-SWEP.StabTable = {"hull"} --Table of possible hull sequences
+SWEP.StabTable = {"stab"} --Table of possible hull sequences
 SWEP.StabMissTable = {"stab_miss"} --Table of possible hull sequences
 SWEP.DisableIdleAnimations = false --Enable idles
 --[[ Don't Edit Below ]]--
@@ -26,11 +28,11 @@ SWEP.data.ironsights = 0 --No ironsights
 SWEP.Callback = {}
 
 SWEP.Callback.Deploy = function(self)
-	self.Stab = math.random(1, #self.SlashTable)
 	self.StabIndex = math.random(1, #self.SlashTable)
 	self.StabMiss = math.random(1, #self.SlashTable)
 end
 
+SWEP.hull = 1
 local hull = {}
 
 function SWEP:PrimaryAttack()
@@ -175,7 +177,7 @@ function SWEP:SecondaryAttack()
 			timer.Create("cssstab" .. self:EntIndex(), self.StabDelay, 1, function()
 				if not IsValid(self) then return end
 
-				if self.Owner and self then
+				if self.Owner then
 					self:Stab()
 				end
 			end)
@@ -267,7 +269,7 @@ function SWEP:ThrowKnife()
 			knife:SetPhysicsAttacker(self.Owner)
 			knife:Spawn()
 			knife:Activate()
-			knife:SetNWString("Wep", self.Gun)
+			knife:SetNW2String("ClassName", self.ClassName)
 			self.Owner:SetAnimation(PLAYER_ATTACK1)
 			local phys = knife:GetPhysicsObject()
 			phys:SetVelocity(self.Owner:GetAimVector() * 1500)

@@ -49,7 +49,7 @@ if SERVER then
 		self:SetCollisionGroup(COLLISION_GROUP_WEAPON)
 		self:SetUseType(SIMPLE_USE)
 		self:SetHealth(self.DamageThreshold)
-		self:SetNWBool("ShouldRemove", false)
+		self:SetNW2Bool("ShouldRemove", false)
 		local phys = self:GetPhysicsObject()
 
 		if (phys:IsValid()) then
@@ -66,7 +66,7 @@ if SERVER then
 	function ENT:Use(activator, caller)
 		if IsValid(activator) and activator:IsPlayer() then
 			activator:GiveAmmo(self.AmmoCount, self.AmmoType)
-			self:SetNWBool("ShouldRemove", true)
+			self:SetNW2Bool("ShouldRemove", true)
 		end
 	end
 
@@ -116,7 +116,7 @@ if SERVER then
 	end
 
 	function ENT:Think()
-		if self:GetNWBool("ShouldRemove", false) then
+		if self:GetNW2Bool("ShouldRemove", false) then
 			self:Remove()
 
 			return false
@@ -179,7 +179,7 @@ if SERVER then
 				util.Effect("cball_explode", effectdata)
 			end
 
-			self:SetNWBool("ShouldRemove", true)
+			self:SetNW2Bool("ShouldRemove", true)
 		end
 	end
 end

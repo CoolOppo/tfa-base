@@ -14,7 +14,7 @@ function ENT:Draw()
     --AddWorldTip( self:EntIndex(), "BATHTUB TIME!", 0.5, self:GetPos(), self  ) -- Add an example tip.
 end
 
-hook.Add("PostRender", "ClientArrowsUpdate", function()
+hook.Add("PostDrawTranslucentRenderables", "ClientArrowsUpdate", function()
     for k, v in pairs(TFArrowEnts) do
         v:UpdatePosition()
     end

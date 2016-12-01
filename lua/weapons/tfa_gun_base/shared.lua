@@ -38,7 +38,7 @@ SWEP.Primary.Round = "" -- What kind of bullet does it shoot?
 SWEP.Primary.Cone = 0.2 -- This is the accuracy of NPCs.  Not necessary in almost all cases, since I don't even think this base is compatible with NPCs.
 SWEP.Primary.Recoil = 1 -- This is the recoil multiplier.  Really, you should keep this at 1 and change the KickUp, KickDown, and KickHorizontal variables.  However, you can change this as a multiplier too.
 SWEP.Primary.Damage = 0.01 -- Damage, in standard damage points.
-SWEP.DamageType = nil --See DMG enum.  This might be DMG_SHOCK, DMG_BURN, etc.
+SWEP.Primary.DamageType = nil --See DMG enum.  This might be DMG_SHOCK, DMG_BURN, etc.
 SWEP.Primary.Spread = .01 --This is hip-fire acuracy.  Less is more (1 is horribly awful, .0001 is close to perfect)
 SWEP.FiresUnderwater = false
 --Attachments
@@ -107,7 +107,6 @@ SWEP.CLJumpProgress = 0 --BASE DEPENDENT VALUE.  DO NOT CHANGE OR THINGS MAY BRE
 SWEP.ProceduralHolsterFactor = 0 --BASE DEPENDENT VALUE.  DO NOT CHANGE OR THINGS MAY BREAK.  NO USE TO YOU.
 SWEP.CLInspectingProgress = 0
 SWEP.CLSpreadRatio = 1 --BASE DEPENDENT VALUE.  DO NOT CHANGE OR THINGS MAY BREAK.  NO USE TO YOU.
-SWEP.CLAmmoHUDProgress = 0 --BASE DEPENDENT VALUE.  DO NOT CHANGE OR THINGS MAY BREAK.  NO USE TO YOU.
 SWEP.ShouldDrawAmmoHUD = false --THIS IS PROCEDURALLY CHANGED AND SHOULD NOT BE TWEAKED.  BASE DEPENDENT VALUE.  DO NOT CHANGE OR THINGS MAY BREAK.  NO USE TO YOU.
 SWEP.IronRecoilMultiplier = 0.5 --Multiply recoil by this factor when we're in ironsights.  This is proportional, not inversely.
 SWEP.CrouchRecoilMultiplier = 0.65 --Multiply recoil by this factor when we're crouching.  This is proportional, not inversely.
@@ -124,10 +123,11 @@ SWEP.NearWallTime = 0.3 --The time to pull up  your weapon or put it back down
 SWEP.NearWallAnimationTime = 0.4 --The time to pull up  your weapon or put it back down
 SWEP.ToCrouchTime = 0.05 --The time it takes to enter crouching state
 SWEP.WeaponLength = 40 --Almost 3 feet Feet.  This should be how far the weapon sticks out from the player.  This is used for calculating the nearwall trace.
-SWEP.DefaultFOV = 90 --BASE DEPENDENT VALUE.  DO NOT CHANGE OR THINGS MAY BREAK.  NO USE TO YOU.
+SWEP.DefaultFOV = 1 --BASE DEPENDENT VALUE.  DO NOT CHANGE OR THINGS MAY BREAK.  NO USE TO YOU.
 SWEP.MoveSpeed = 1 --Multiply the player's movespeed by this.
 SWEP.IronSightsMoveSpeed = 0.8 --Multiply the player's movespeed by this when sighting.
 --VAnimation Support
+SWEP.DoProceduralHolster = true
 SWEP.DoProceduralReload = false --Do we reload using lua instead of a .mdl animation
 SWEP.ProceduralReloadTime = 1 --Time to take when procedurally reloading, including transition in (but not out)
 SWEP.ShootWhileDraw = false --Can you shoot while draw anim plays?
@@ -243,7 +243,7 @@ SWEP.CanDryFireAnimate = false
 SWEP.CanDryFireAnimateSilenced = false
 SWEP.CanSilencerAttachAnimate = false
 SWEP.CanSilencerDetachAnimate = false
-SWEP.actlist = {ACT_VM_DRAW, ACT_VM_DRAW_EMPTY, ACT_VM_DRAW_SILENCED, ACT_VM_HOLSTER, ACT_VM_HOLSTER_EMPTY, ACT_VM_IDLE, ACT_VM_IDLE_EMPTY, ACT_VM_IDLE_SILENCED, ACT_VM_PRIMARYATTACK, ACT_VM_PRIMARYATTACK_1, ACT_VM_PRIMARYATTACK_EMPTY, ACT_VM_PRIMARYATTACK_SILENCED, ACT_VM_SECONDARYATTACK, ACT_VM_RELOAD, ACT_VM_RELOAD_EMPTY, ACT_VM_RELOAD_SILENCED, ACT_VM_ATTACH_SILENCER, ACT_VM_DETACH_SILENCER, ACT_VM_FIDGET, ACT_VM_FIDGET_EMPTY, ACT_SHOTGUN_RELOAD_START}
+SWEP.actlist = {ACT_VM_DRAW, ACT_VM_DRAW_EMPTY, ACT_VM_DRAW_SILENCED, ACT_VM_IDLE, ACT_VM_IDLE_EMPTY, ACT_VM_IDLE_SILENCED, ACT_VM_PRIMARYATTACK, ACT_VM_PRIMARYATTACK_1, ACT_VM_PRIMARYATTACK_EMPTY, ACT_VM_PRIMARYATTACK_SILENCED, ACT_VM_SECONDARYATTACK, ACT_VM_RELOAD, ACT_VM_RELOAD_EMPTY, ACT_VM_RELOAD_SILENCED, ACT_VM_HOLSTER, ACT_VM_HOLSTER_EMPTY, ACT_VM_ATTACH_SILENCER, ACT_VM_DETACH_SILENCER, ACT_VM_FIDGET, ACT_VM_FIDGET_EMPTY, ACT_SHOTGUN_RELOAD_START, ACT_VM_RELEASE}
 --If you really want, you can remove things from SWEP.actlist and manually enable animations and set their lengths.
 SWEP.SequenceEnabled = {}
 SWEP.SequenceLength = {}
@@ -310,13 +310,17 @@ SWEP.BlowbackBoneMods = nil --Viewmodel bone mods via SWEP Creation Kit
 SWEP.Blowback_Only_Iron = true --Only do blowback on ironsights
 SWEP.Blowback_PistolMode = false --Do we recover from blowback when empty?
 
+ACT_VM_FIDGET_EMPTY = ACT_VM_FIDGET_EMPTY or ACT_CROSSBOW_FIDGET_UNLOADED
+
 SWEP.Blowback_PistolMode_Disabled = {
 	[ACT_VM_RELOAD] = true,
 	[ACT_VM_RELOAD_EMPTY] = true,
 	[ACT_VM_DRAW_EMPTY] = true,
 	[ACT_VM_IDLE_EMPTY] = true,
 	[ACT_VM_HOLSTER_EMPTY] = true,
-	[ACT_VM_DRYFIRE] = true
+	[ACT_VM_DRYFIRE] = true,
+	[ACT_VM_FIDGET] = true,
+	[ACT_VM_FIDGET_EMPTY] = true
 }
 
 SWEP.Blowback_Shell_Enabled = true
@@ -494,7 +498,7 @@ local seq
 local seqtime
 local dt
 local stwep
-local isreloading, isshooting, isdrawing, isholstering, issighting, issprinting, htv, hudhangtime, isbolttimer, isinspecting, isfidgeting, ct, is_old, spr_old, ft, rsnumber, bash, bts, bte, del, mb, fe
+local isreloading, isshooting, isdrawing, isholstering, issighting, issprinting, isbolttimer, isinspecting, isfidgeting, ct, is_old, spr_old, ft, rsnumber, bash, bts, bte, del, mb, fe
 local tonetwork_thresh = 0.001
 local ckeyvar
 local CurrentRecoil
@@ -559,7 +563,7 @@ function SWEP:ResetEvents()
 
 	if not self:OwnerIsValid() then return end
 
-	if sp and not CLIENT then
+	if sp and not CLIENT and IsValid(self.Owner) then
 		self:CallOnClient("ResetEvents", "")
 	end
 
@@ -596,7 +600,6 @@ function SWEP:SetupDataTables()
 	self:NetworkVar("Bool", 9, "Bursting")
 	self:NetworkVar("Bool", 10, "ChangingSilence")
 	self:NetworkVar("Bool", 11, "FireModeChanging")
-	self:NetworkVar("Bool", 12, "HUDThreshold")
 	self:NetworkVar("Bool", 13, "ShotgunInsertingShell")
 	self:NetworkVar("Bool", 14, "ShotgunPumping")
 	self:NetworkVar("Bool", 15, "ShotgunNeedsPump")
@@ -613,7 +616,6 @@ function SWEP:SetupDataTables()
 	self:NetworkVar("Float", 5, "NextBurst")
 	self:NetworkVar("Float", 6, "NextSilenceChange")
 	self:NetworkVar("Float", 7, "FireModeChangeEnd")
-	self:NetworkVar("Float", 8, "HUDThresholdEnd")
 	self:NetworkVar("Float", 9, "BoltTimerStart")
 	self:NetworkVar("Float", 10, "BoltTimerEnd")
 	self:NetworkVar("Float", 11, "FidgetingEnd")
@@ -626,6 +628,8 @@ function SWEP:SetupDataTables()
 	self:NetworkVar("Float", 18, "InspectingRatio")
 	self:NetworkVar("Int", 0, "FireMode")
 	self:NetworkVar("Int", 1, "BurstCount")
+	self:NetworkVar("Int", 2, "LastActivity")
+	self:NetworkVar("Entity", 0, "SwapTarget")
 end
 
 --[[
@@ -658,29 +662,8 @@ Purpose:  Standard SWEP Function
 sp = game.SinglePlayer()
 
 function SWEP:Initialize()
-	timer.Simple(0, function()
-		if not IsValid(self) then return end
-		local ply = self:GetOwner()
 
-		if (not IsValid(ply) or not ply:IsPlayer()) and self.ShowWorldModel == false and self.WElements then
-			local keys = table.GetKeys(self.WElements)
-
-			if #keys >= 1 then
-				local tbl = self.WElements[keys[1]]
-
-				if tbl then
-					local mdl = tbl.model
-
-					if self:GetModel() ~= mdl then
-						self:SetModel(mdl)
-					end
-
-					self.WorldModelOG = self.WorldModel
-					self.WorldModel = mdl
-				end
-			end
-		end
-	end)
+	self.HasRunInitialize = true
 
 	if self.Callback.Initialize then
 		local val = self.Callback.Initialize(self)
@@ -702,11 +685,13 @@ function SWEP:Initialize()
 	self:CreateFireModes()
 	self:AutoDetectMuzzle()
 	self:AutoDetectRange()
+	self:AutoDetectDamageType()
+	self:AutoDetectForce()
+	self:AutoDetectKnockback()
 	self.DefaultHoldType = self.HoldType
 	self.ViewModelFOVDefault = self.ViewModelFOV
 	self.DrawCrosshairDefault = self.DrawCrosshair
 	self:SetUpSpread()
-	self:CorrectScopeFOV(self.DefaultFOV and self.DefaultFOV or self.Owner:GetFOV())
 
 	if CLIENT then
 		self:InitMods()
@@ -716,7 +701,6 @@ function SWEP:Initialize()
 	self.drawcount = 0
 	self.drawcount2 = 0
 	self.canholster = false
-	self:DetectValidAnimations()
 	self:SetDeploySpeed(10)
 	self:ResetEvents()
 	self:DoBodyGroups()
@@ -741,37 +725,34 @@ Purpose:  Standard SWEP Function
 ]]--
 
 function SWEP:Deploy()
+
+	if not IsValid(self.OwnerViewModel) then
+		self.OwnerViewModel = self.Owner:GetViewModel()
+	end
 	if self.Callback.Deploy then
 		local val = self.Callback.Deploy(self)
 		if val then return val end
 	end
 
-	self.ViewModelFOVDefault = self.ViewModelFOV
-	self.DefaultFOV = IsValid(self.Owner) and self.Owner:GetFOV() or 90
-	self:ResetSightsProgress()
-	self:DetectValidAnimations()
+	if not self.HasRunInitialize then
+		self:Initialize()
+	end
 
-	if SERVER then
-		self:CallOnClient("DetectValidAnimations", "")
+	self.ViewModelFOVDefault = self.ViewModelFOV
+	self.DefaultFOV = TFADUSKFOV or ( IsValid(self.Owner) and self.Owner:GetFOV() or 90 )
+	self:CorrectScopeFOV(self.DefaultFOV)
+	self:ResetSightsProgress()
+
+	if not self.HasDetectedValidAnimations then
+		self:DetectValidAnimations()
+		timer.Simple(0,function()
+			if IsValid(self) then
+				self:DetectValidAnimations()
+			end
+		end)
 	end
 
 	success, anim = self:ChooseDrawAnim()
-
-	if not IsValid(self.OwnerViewModel) then
-		self.OwnerViewModel = self.Owner:GetViewModel()
-	end
-
-	if IsValid(self.Owner) then
-		self:CallOnClient("UpdateViewModel", "")
-	end
-
-	if self.Owner:KeyDown(IN_ATTACK2) and self.SightWhileDraw then
-		self:SetIronSights(true)
-	end
-
-	if self.Owner:KeyDown(IN_SPEED) and self.Owner:GetVelocity():Length() > self.Owner:GetWalkSpeed() then
-		self:SetSprinting(true)
-	end
 
 	self:SetHoldType(self.DefaultHoldType or self.HoldType)
 	self.OldIronsights = false
@@ -790,50 +771,31 @@ function SWEP:Deploy()
 	self:SetShotgunNeedsPump(false)
 	self:SetFireModeChanging(false)
 	self:SetBoltTimer(false)
-	self:SetReloadingEnd(l_CT() - 1)
-	self:SetShootingEnd(l_CT() - 1)
-	self:SetDrawingEnd(l_CT() - 1)
-	self:SetHolsteringEnd(l_CT() - 1)
-	self:SetNextSilenceChange(l_CT() - 1)
-	self:SetFireModeChangeEnd(l_CT() - 1)
-	self:SetHUDThreshold(true)
-	self:SetHUDThresholdEnd(l_CT() + 0.2)
-	self:SetBoltTimerStart(l_CT() - 1)
-	self:SetBoltTimerEnd(l_CT() - 1)
 	self:SetDrawing(true)
 	self:SetHolstering(false)
 	self:SetUnpredictedHolstering(false)
 	self:SetInspecting(false)
 
 	if self:GetSilenced() == nil then
-		self:SetSilenced(self.Silenced and self.Silenced or 0)
+		if self.Silenced == nil then
+			self.Silenced = false
+		end
+		self:SetSilenced( self.Silenced )
 	end
 
-	self:SetIronSightsRatio(0)
-	self:SetRunSightsRatio(0)
-	self:SetCrouchingRatio(0)
-	self:SetJumpingRatio(0)
 	self:SetSpreadRatio(0)
 	self:SetBurstCount(0)
-	self:SetInspectingRatio(0)
 	self:SetBursting(false)
-	self:SetHolstering(false)
-	self:SetUnpredictedHolstering(false)
-	self:SetUpSpread()
-	self:AutoDetectMuzzle()
 	self.PenetrationCounter = 0
 
-	if CLIENT or sp then
-		self.CLSpreadRatio = 1
-		self.CLIronSightsProgress = 0
-		self.CLRunSightsProgress = 0
-		self.CLCrouchProgress = 0
-		self.CLInspectingProgress = 0
-		self.CLNearWallProgressProgress = 0
-	end
+	self.CLSpreadRatio = 1
+	self.CLIronSightsProgress = 0
+	self.CLRunSightsProgress = 0
+	self.CLCrouchProgress = 0
+	self.CLInspectingProgress = 0
+	self.CLNearWallProgressProgress = 0
 
-	seq = self.OwnerViewModel:SelectWeightedSequence(anim or 0)
-	seqtime = self.OwnerViewModel:SequenceDuration(seq)
+	seqtime = self.OwnerViewModel:SequenceDuration()
 	dt = l_CT() + (self.SequenceLengthOverride[anim] or seqtime)
 
 	if self.ShootWhileDraw == false then
@@ -842,36 +804,23 @@ function SWEP:Deploy()
 
 	self:SetDrawingEnd(dt)
 	self:SetNextIdleAnim(l_CT() + seqtime)
-	local myhangtimev = 1
 
-	if self:OwnerIsValid() then
-		if SERVER then
-			myhangtimev = self.Owner:GetInfoNum("cl_tfa_hud_hangtime", 1)
-		else
-			myhangtimev = hudhangtime_cvar:GetFloat()
-		end
-	end
-
-	self:SetHUDThresholdEnd(l_CT() + seqtime + myhangtimev)
-	self:CorrectScopeFOV(self.DefaultFOV and self.DefaultFOV or self.Owner:GetFOV())
-	self.customboboffset = Vector(0, 0, 0)
+	self.customboboffset.x = 0
+	self.customboboffset.y = 0
+	self.customboboffset.z = 0
 	self:ResetEvents()
 
-	if SERVER and IsValid(self.Owner) then
+	if SERVER and self:OwnerIsValid() then
 		self:CallOnClient("ResetEvents", "")
+		self:CallOnClient("SelfSetHolding", "")
 	end
 
 	self:UpdateConDamage()
 	self.LastSys = SysTime()
 	self.ProceduralHolsterFactor = 0
-	self:DoBodyGroups()
 	self:StopClientHolstering()
 	self:SetFidgeting(false)
 	self.IsHolding = false
-
-	if SERVER and IsValid(self.Owner) then
-		self:CallOnClient("SelfSetHolding", "")
-	end
 
 	if self.Akimbo then
 		self:DeployAkimbo()
@@ -1062,7 +1011,7 @@ function SWEP:Holster(switchtowep)
 	self:SetReloadingEnd(l_CT() - 1)
 
 	if IsFirstTimePredicted() then
-		self:SetNWEntity("SwitchToWep", switchtowep)
+		self:SetSwapTarget(switchtowep)
 	end
 
 	if self == switchtowep then return end
@@ -1072,19 +1021,14 @@ function SWEP:Holster(switchtowep)
 			self:SetHolstering(true)
 			success, anim = self:ChooseHolsterAnim()
 
-			if IsValid(self.OwnerViewModel) then
-				seq = self.OwnerViewModel:SelectWeightedSequence(anim or 0)
-				seqtime = self.OwnerViewModel:SequenceDuration(seq)
-
-				if anim == ACT_VM_IDLE then
-					seqtime = self.ProceduralHolsterTime
-					anim = -1
-				end
-			else
+			if not success then
 				anim = -1
 				seqtime = self.ProceduralHolsterTime
+			elseif IsValid(self.OwnerViewModel) then
+				seqtime = self.OwnerViewModel:SequenceDuration()
+			else
+				seqtime = 0
 			end
-
 			dt = l_CT() + (self.SequenceLengthOverride[anim] or seqtime)
 
 			if self.ShootWhileDraw == false then
@@ -1132,7 +1076,7 @@ function SWEP:AdjustMouseSensitivity()
 
 		if sensitivity_fov_cvar:GetFloat() then
 			if self.Scoped_3D then
-				fovv = self.RTScopeFOV * 4
+				fovv = math.Clamp( math.pow(self.RTScopeFOV,3),1,self.Owner:GetFOV())
 			else
 				fovv = self.Owner:GetFOV()
 			end
@@ -1267,7 +1211,7 @@ function SWEP:WeaponUse( plyv )
 		end)
 
 		timer.Simple(0.1, function()
-			if IsValid(self) and not IsValid(self:GetNWEntity("LastHeldEntityIndex")) then
+			if IsValid(self) then
 				self:Deploy()
 
 				if IsValid(self.Owner) then
@@ -1286,7 +1230,7 @@ function SWEP:WeaponUse( plyv )
 			if IsValid(plyv) then
 				plyv:ConCommand("-use")
 			end
-			if IsValid(self) and not IsValid(self:GetNWEntity("LastHeldEntityIndex")) then
+			if IsValid(self) then
 				self:Deploy()
 
 				if IsValid(self.Owner) then
@@ -1312,7 +1256,7 @@ function SWEP:ShotgunReload( ctv )
 				self:SetNextPrimaryFire(ct + 0.01)
 			else
 				self:SetShotgunInsertingShell(true)
-				self:SendWeaponAnim(ACT_VM_RELOAD)
+				self:SendViewModelAnim(ACT_VM_RELOAD, self.ShellTime, true)
 				self:ResetEvents()
 
 				if IsValid(self.Owner) then
@@ -1337,9 +1281,6 @@ function SWEP:ShotgunReload( ctv )
 			self:SetReloadingEnd(ct - 1)
 			self:SetNextPrimaryFire(ct + 0.01)
 			isreloading = false
-			self:SetHUDThreshold(true)
-			htv = true
-			self:SetHUDThresholdEnd(ct + hudhangtime)
 		end
 	else
 		local maxclip = self.Primary.ClipSize
@@ -1348,7 +1289,7 @@ function SWEP:ShotgunReload( ctv )
 
 		if curclip >= maxclip or ammopool <= 0 or self:GetShotgunNeedsPump() then
 			self:SetShotgunInsertingShell(false)
-			self:SendWeaponAnim(ACT_SHOTGUN_RELOAD_FINISH)
+			self:SendViewModelAnim(ACT_SHOTGUN_RELOAD_FINISH)
 
 			if IsValid(self.Owner) then
 				if IsValid(self.OwnerViewModel) then
@@ -1373,7 +1314,7 @@ function SWEP:ShotgunReload( ctv )
 			curclip = self:Clip1()
 
 			if (curclip < maxclip) then
-				self:SendWeaponAnim(ACT_VM_RELOAD)
+				self:SendViewModelAnim(ACT_VM_RELOAD, self.ShellTime, true)
 				self:ResetEvents()
 				self:SetReloading(true)
 				self:SetShotgunInsertingShell(true)
@@ -1409,6 +1350,10 @@ function SWEP:MainUpdate()
 		if val then return val end
 	end
 
+	if not self.HasDetectedValidAnimations then
+		self:DetectValidAnimations()
+	end
+
 	ct = l_CT()
 	ft = l_FT()
 	owent = self.Owner
@@ -1422,7 +1367,6 @@ function SWEP:MainUpdate()
 	ischangingsilence = self:GetChangingSilence()
 	isfiremodechanging = self:GetFireModeChanging()
 	isinspecting = self:GetInspecting()
-	htv = self:GetHUDThreshold()
 	isfidgeting = self:GetFidgeting()
 	fe = self:GetFidgetingEnd()
 	isbolttimer = self:GetBoltTimer()
@@ -1450,12 +1394,6 @@ function SWEP:MainUpdate()
 		hudhangtime = owent:GetInfoNum("cl_tfa_hud_hangtime", 1)
 	else
 		hudhangtime = hudhangtime_cvar:GetFloat()
-	end
-
-	if isfidgeting and not htv and hudhangtime then
-		self:SetHUDThreshold(true)
-		self:SetHUDThresholdEnd(self:GetNextIdleAnim() + hudhangtime)
-		htv = true
 	end
 
 	if isfidgeting and ct > fe then
@@ -1503,7 +1441,7 @@ function SWEP:MainUpdate()
 		end
 
 		if SERVER then
-			stwep = self:GetNWEntity("SwitchToWep", self)
+			stwep = self:GetSwapTarget()
 
 			if IsValid(stwep) then
 				if stwep == owent then
@@ -1536,9 +1474,6 @@ function SWEP:MainUpdate()
 	if isfiremodechanging and ct > self:GetFireModeChangeEnd() then
 		self:SetFireModeChanging(false)
 		self:SetFireModeChangeEnd(ct - 1)
-		self:SetHUDThreshold(true)
-		self:SetHUDThresholdEnd(ct + hudhangtime)
-		htv = true
 	end
 
 	if ischangingsilence and ct > self:GetNextSilenceChange() then
@@ -1546,12 +1481,6 @@ function SWEP:MainUpdate()
 		self:SetChangingSilence(false)
 		self:SetNextSilenceChange(ct - 1)
 		self:UpdateMuzzleAttachment()
-	end
-
-	if htv and ct > self:GetHUDThresholdEnd() then
-		self:SetHUDThreshold(false)
-		self:SetHUDThresholdEnd(ct - 1)
-		htv = false
 	end
 
 	if not (isreloading or isshooting or isdrawing or isholstering or ischangingsilence or isfiremodechanging) and self:GetNextIdleAnim() < ct then
@@ -1566,7 +1495,7 @@ function SWEP:MainUpdate()
 		if IsValid(vm) then
 			animtime = vm:SequenceDuration()
 		else
-			animtime = self.SequenceLength[tanim]
+			animtime = self.SequenceLength[tanim] or 1
 		end
 
 		if self.SequenceLengthOverride[tanim] then
@@ -1866,7 +1795,6 @@ function SWEP:MainUpdate()
 		self.cl_cache_isreloading = isreloading
 		self.cl_cache_isbolting = isbolttimer
 		self.cl_cache_isfmc = isfiremodechanging
-		self.cl_cache_ishud = htv
 	end
 end
 
@@ -1900,7 +1828,9 @@ function SWEP:CycleFireMode()
 	end
 
 	self:SetFireMode(fm)
-	self:EmitSound("Weapon_AR2.Empty")
+	if IsFirstTimePredicted() then
+		self:EmitSound("Weapon_AR2.Empty")
+	end
 	self:SetNextBurst(l_CT() + math.max(1 / (self:GetRPM() / 60), 0.25))
 	self:SetNextPrimaryFire(l_CT() + math.max(1 / (self:GetRPM() / 60), 0.25))
 	self:SetFireModeChanging(true)
@@ -1947,14 +1877,6 @@ function SWEP:ProcessFireMode()
 		if val then return val end
 	end
 
-	if self.Owner:KeyPressed(IN_RELOAD) and self.Owner:KeyDown(IN_USE) and not (CLIENT and not IsFirstTimePredicted()) and not self:GetReloading() then
-		if self.SelectiveFire and not self.Owner:KeyDown(IN_SPEED) then
-			self:CycleFireMode()
-		elseif self.Owner:KeyDown(IN_SPEED) then
-			self:CycleSafety()
-		end
-	end
-
 	fm = self.FireModes[self:GetFireMode()]
 
 	if fm == "Automatic" or fm == "Auto" then
@@ -1980,7 +1902,10 @@ function SWEP:CanPrimaryAttack()
 			end
 
 			self:SetNextPrimaryFire(l_CT() + 1 / (self:GetRPM() / 60))
-			self:Reload()
+
+			if not dryfire_cvar:GetBool() then
+				self:Reload( true )
+			end
 
 			return false
 		elseif (self.Primary.ClipSize == -1 and self:Ammo1() < 1) then
@@ -1994,7 +1919,10 @@ function SWEP:CanPrimaryAttack()
 			end
 
 			self:SetNextPrimaryFire(l_CT() + 1 / (self:GetRPM() / 60))
-			self:Reload()
+
+			if not dryfire_cvar:GetBool() then
+				self:Reload( true )
+			end
 
 			return false
 		elseif (self.Primary.ClipSize == -1 and self:Ammo1() < self.Primary.AmmoConsumption) then
@@ -2006,7 +1934,6 @@ function SWEP:CanPrimaryAttack()
 
 	return true
 end
-
 --[[
 Function Name:  PrimaryAttack
 Syntax: self:PrimaryAttack().  However, to shoot a bullet, ShootBulletInformation or ShootBullet should be called.  This is really only for when the player or the burst fire mechanism willingly fires.
@@ -2101,7 +2028,7 @@ function SWEP:PrimaryAttack()
 		self:SetInspecting(false)
 		self:SetInspectingRatio(0)
 		self:SetInspectingRatio(0)
-		--self:SendWeaponAnim(0)
+		--self:SendViewModelAnim(0)
 		self:ToggleAkimbo(false)
 		self:ShootBulletInformation(SERVER or (CLIENT and IsFirstTimePredicted()))
 		success, tanim = self:ChooseShootAnim(SERVER or (CLIENT and IsFirstTimePredicted())) -- View model animation
@@ -2119,7 +2046,7 @@ function SWEP:PrimaryAttack()
 			self:SetBoltTimer(true)
 			local t1, t2
 			t1 = l_CT() + self.BoltTimerOffset
-			t2 = l_CT() + (self.SequenceLengthOverride[tanim] or self.OwnerViewModel:SequenceDuration(seq))
+			t2 = l_CT() + (self.SequenceLengthOverride[tanim] or self.OwnerViewModel:SequenceDuration())
 
 			if t1 < t2 then
 				self:SetBoltTimerStart(t1)
@@ -2181,11 +2108,11 @@ function SWEP:PlayerThink(ply)
 		if val then return val end
 	end
 
-	heldentindex = self.Owner:GetNWInt("LastHeldEntityIndex", -1)
+	heldentindex = self.Owner:GetNW2Int("LastHeldEntityIndex", -1)
 	heldent = Entity(heldentindex)
 
 	if heldentindex ~= -1 and IsValid(heldent) and heldent.IsPlayerHolding and not heldent:IsPlayerHolding() then
-		self.Owner:SetNWInt("LastHeldEntityIndex", -1)
+		self.Owner:SetNW2Int("LastHeldEntityIndex", -1)
 		heldent = nil
 	end
 
@@ -2195,6 +2122,7 @@ function SWEP:PlayerThink(ply)
 
 	if SERVER and self.PlayerThinkServer then
 		self:PlayerThinkServer(ply)
+		self:ProcessEffects()
 	end
 
 	if CLIENT and ply == self.Owner then
@@ -2247,7 +2175,8 @@ function SWEP:ProcessEvents()
 
 	--if sp and !CLIENT then self:CallOnClient("ProcessEvents","") end
 	if not IsValid(self.OwnerViewModel) then return end
-	local actv = self.lastact
+	local actv = self:GetLastActivity()
+	self.lastact = actv
 
 	local evtbl = self.EventTable[actv]
 
@@ -2255,11 +2184,11 @@ function SWEP:ProcessEvents()
 		self.lastlastact = 0
 	end
 
-	if self.lastlastact ~= self.lastact then
+	if self.lastlastact ~= actv then
 		self:ResetEvents()
 	end
 
-	self.lastlastact = self.lastact
+	self.lastlastact = actv
 
 	if not evtbl then return end
 	for k, v in pairs(evtbl) do
@@ -2313,6 +2242,9 @@ Purpose:  Main SWEP function
 ]]--
 
 function SWEP:PlayerThinkClientFrame(ply)
+	self.DefaultFOV = TFADUSKFOV or ply:GetFOV()
+	self:CorrectScopeFOV(self.DefaultFOV)
+
 	self:UpdateViewModel()
 	tsv = 1
 
@@ -2323,6 +2255,7 @@ function SWEP:PlayerThinkClientFrame(ply)
 	tsv = tsv * game.GetTimeScale()
 	rtime = l_RT()
 	RealFrameTime = rtime - (self.lastrealtime or rtime)
+	self.rft = RealFrameTime
 	self.lastrealtime = rtime
 
 	if self.Callback.PlayerThinkClientFrame then
@@ -2330,13 +2263,7 @@ function SWEP:PlayerThinkClientFrame(ply)
 		if val then return val end
 	end
 
-	if not sp then
-		self.ShouldDrawAmmoHUD = self.cl_cache_isreloading or self.cl_cache_isfmc or self.cl_cache_ishud or self.cl_cache_isbolting
-	else
-		ct = l_CT()
-		self.ShouldDrawAmmoHUD = (ply:KeyDown(IN_USE) and ply:KeyDown(IN_RELOAD)) or self:GetReloading() or self:GetFireModeChanging() or self:GetHUDThreshold() or (self:GetBoltTimer() and ct > self:GetBoltTimerStart() and ct < self:GetBoltTimerEnd())
-	end
-
+	self:ProcessEffects()
 	self:CalculateNearWallCLF(RealFrameTime)
 	self:ViewModelFlipFunc()
 	is = self:GetIronSights() and 1 or 0
@@ -2377,19 +2304,18 @@ function SWEP:PlayerThinkClientFrame(ply)
 	newratio = l_mathApproach(jumpr, 1 - (self.Owner:IsOnGround() and 1 or 0), compensatedft_cr)
 	self.CLJumpProgress = newratio
 	self.CLSpreadRatio = l_mathClamp(self.CLSpreadRatio - self.Primary.SpreadRecovery * ftv, 1, self.Primary.SpreadMultiplierMax)
-	self.CLAmmoHUDProgress = l_mathApproach(self.CLAmmoHUDProgress, (self.ShouldDrawAmmoHUD or self:GetInspecting()) and 1 or 0, l_FT() / ammo_fadein_cvar:GetFloat())
 	self:DoBobFrame()
 
-	if not self.Blowback_PistolMode or self:Clip1() == -1 or self:Clip1() > 0.1 or (self.Blowback_PistolMode_Disabled[act] and act ~= -1 and self.lastact ~= -2) then
+	if not self.Blowback_PistolMode or self:Clip1() == -1 or self:Clip1() > 0.1 or self.Blowback_PistolMode_Disabled[ self:GetLastActivity() ] then
 		self.BlowbackCurrent = l_mathApproach(self.BlowbackCurrent, 0, self.BlowbackCurrent * ftv * 15)
 	end
 
 	self.BlowbackCurrentRoot = l_mathApproach(self.BlowbackCurrentRoot, 0, self.BlowbackCurrentRoot * ftv * 15)
-	heldentindex = self.Owner:GetNWInt("LastHeldEntityIndex", -1)
+	heldentindex = self.Owner:GetNW2Int("LastHeldEntityIndex", -1)
 	heldent = Entity(heldentindex)
 
 	if heldentindex ~= -1 and IsValid(heldent) and heldent.IsPlayerHolding and not heldent:IsPlayerHolding() then
-		self.Owner:SetNWInt("LastHeldEntityIndex", -1)
+		self.Owner:SetNW2Int("LastHeldEntityIndex", -1)
 		heldent = nil
 	end
 
@@ -2415,7 +2341,7 @@ function SWEP:PlayerThinkClientFrame(ply)
 		self:SetUnpredictedHolstering(false)
 	end
 
-	if act == ACT_VM_HOLSTER or act == ACT_VM_HOLSTER_EMPTY then
+	if not self.DoProceduralHolster then
 		nhf = 0
 	elseif self:GetHolstering() or self:GetUnpredictedHolstering() then
 		nhf = 1
@@ -2430,8 +2356,6 @@ function SWEP:PlayerThinkClientFrame(ply)
 	if self:GetDrawing() and not self:GetProceduralReloading() and nfh ~= 1 then
 		self.ProceduralHolsterFactor = 0
 	end
-
-	self:DetectMuzzleForward()
 end
 
 --[[
@@ -2477,24 +2401,37 @@ Returns:  Not sure that it returns anything.
 Notes:  This reloads the gun, and the way it does so is slightly hacky and depends on holdtype.  Revolvers should be the only guns using revolver holdtype for this to properly function.
 Purpose:  Main SWEP function
 ]]--
-function SWEP:Reload()
+function SWEP:Reload( released )
 	if self.Callback.Reload then
 		local val = self.Callback.Reload(self)
 		if val then return val end
 	end
 
+	if self.Owner:KeyPressed(IN_RELOAD) and self.Owner:KeyDown(IN_USE) and not self:GetReloading() then
+		if self.SelectiveFire and not self.Owner:KeyDown(IN_SPEED) then
+			self:CycleFireMode()
+		elseif self.Owner:KeyDown(IN_SPEED) then
+			self:CycleSafety()
+		end
+		return
+	end
+
+	if ( not released ) and ( not legacy_reloads_cv:GetBool() ) then return end
+
 	self:SetBurstCount(0)
 	self:SetBursting(false)
 	self:SetNextBurst(l_CT() - 1)
 	if self:GetReloading() then return end
+	if self.GetBashing and self:GetBashing() then return end
+	isbolttimer = self:GetBoltTimer()
 	if isbolttimer and (l_CT() > self:GetBoltTimerStart()) and (l_CT() < self:GetBoltTimerEnd()) then return end
 
-	if dryfire_cvar:GetBool() and not self.Owner:KeyDown(IN_RELOAD) then
+	if legacy_reloads_cv:GetBool() and not  dryfire_cvar:GetBool() and not self.Owner:KeyDown(IN_RELOAD) then
 		self:ChooseDryFireAnim()
 		return
 	end
 
-	if not (self.Owner:KeyDown(IN_RELOAD) or self.Owner:KeyPressed(IN_ATTACK)) then return end
+	if legacy_reloads_cv:GetBool() and not ( self.Owner:KeyDown(IN_RELOAD) or self.Owner:KeyPressed(IN_ATTACK) ) then return end
 	if (self:GetBursting()) then return end
 	--if self.SelectiveFire then
 	if IsValid(self.Owner) and self.Owner:KeyDown(IN_USE) then return end
@@ -2566,6 +2503,9 @@ function SWEP:Reload()
 		end
 
 		local AnimationTime = self.Owner:GetViewModel():SequenceDuration()
+		if not success then
+			AnimationTime = 0
+		end
 
 		if self.DoProceduralReload then
 			AnimationTime = self.ProceduralReloadTime
@@ -2578,19 +2518,23 @@ function SWEP:Reload()
 		self:SetNextPrimaryFire(dt)
 		self:SetNextSecondaryFire(dt)
 		self:SetNextIdleAnim(l_CT() + AnimationTime)
-	elseif not self:CanCKeyInspect() and (self.SequenceEnabled[ACT_VM_FIDGET] or self.InspectionActions) and not self:GetIronSights() and not self:GetSprinting() and not self:GetFidgeting() and not self:GetInspecting() then
-		if self:Clip1() >= 1 then
-			self:SetFidgeting(true)
-			local succ = self:ChooseInspectAnim()
+	else
+		self:CheckAmmo()
+	end
+end
 
-			if succ then
-				self:SetNextIdleAnim(CurTime() + self.OwnerViewModel:SequenceDuration())
-			else
-				self:SetNextIdleAnim(CurTime() + math.max(1, self.OwnerViewModel:SequenceDuration()))
-			end
+function SWEP:CheckAmmo()
+	if (self.SequenceEnabled[ACT_VM_FIDGET] or self.InspectionActions) and not self:GetIronSights() and not self:GetSprinting() and not self:GetFidgeting() and not self:GetInspecting() and not self:GetReloading() then
+		self:SetFidgeting(true)
+		local succ = self:ChooseInspectAnim()
 
-			self:SetFidgetingEnd(self:GetNextIdleAnim())
+		if succ then
+			self:SetNextIdleAnim(CurTime() + self.OwnerViewModel:SequenceDuration())
+		else
+			self:SetNextIdleAnim(CurTime() + math.max(1, self.OwnerViewModel:SequenceDuration()))
 		end
+
+		self:SetFidgetingEnd(self:GetNextIdleAnim())
 	end
 end
 
@@ -2672,6 +2616,9 @@ Notes:  This is used for calculating the swep viewmodel position.  However, don'
 Purpose:  Main SWEP function
 ]]--
 
+dusk_fov = GetConVar("cl_tfa_dusk_view_fov")
+fov_desired = GetConVar("fov_desired")
+
 function SWEP:GetViewModelPosition(pos, ang)
 	if self.Callback.GetViewModelPosition then
 		local val, val2 = self.Callback.GetViewModelPosition(self, pos, ang)
@@ -2684,6 +2631,9 @@ function SWEP:GetViewModelPosition(pos, ang)
 
 	vmfov = self.ogviewmodelfov * fovmod_mult:GetFloat()
 	vmfov = vmfov + fovmod_add:GetFloat()
+	if dusk_fov then
+		vmfov = vmfov / math.pow( dusk_fov:GetFloat() / ( fov_desired and fov_desired:GetFloat() or 90 ), 2 )
+	end
 	self.ViewModelFOV = vmfov
 	pos, ang = self:Sway(pos, ang)
 	if self:IsHidden() then return pos + hidevec, ang end
@@ -3208,8 +3158,6 @@ function SWEP:CompleteReload()
 		self:SetReloading(false)
 		self:SetBurstCount(0)
 		self:SetBursting(false)
-		self:SetHUDThreshold(true)
-		self:SetHUDThresholdEnd(l_CT() + hudhangtime)
 	end
 end
 

@@ -88,11 +88,11 @@ end
 
 function ENT:UpdatePosition()
     local posoffnw, angoffnw, targentnw, targbonenw, enthasbonesnw
-    posoffnw = self:GetNWVector("posoffnw", vector_origin)
-    angoffnw = self:GetNWAngle("angoffnw", Angle(0, 0, 0))
-    targentnw = self:GetNWEntity("targentnw")
-    targbonenw = self:GetNWInt("targbonenw", 0)
-    enthasbonesnw = self:GetNWBool("enthasbonesnw", true)
+    posoffnw = self:GetNW2Vector("posoffnw", vector_origin)
+    angoffnw = self:GetNW2Angle("angoffnw", Angle(0, 0, 0))
+    targentnw = self:GetNW2Entity("targentnw")
+    targbonenw = self:GetNW2Int("targbonenw", 0)
+    enthasbonesnw = self:GetNW2Bool("enthasbonesnw", true)
 
     if IsValid(targentnw) then
         if (targentnw:IsNPC() or targentnw:IsPlayer()) and targentnw:Health() <= 0 then
@@ -234,13 +234,17 @@ function ENT:Initialize()
         end
 
         self.posoff, self.angoff = WorldToLocal(self:GetPos(), self:GetAngles(), bonepos, bonerot)
-        self:SetNWVector("posoffnw", self.posoff)
-        self:SetNWAngle("angoffnw", self.angoff)
-        self:SetNWEntity("targentnw", self.targent)
-        self:SetNWInt("targbonenw", self.targbone)
-        self:SetNWBool("enthasbonesnw", self.enthasbones)
+        self:SetNW2Vector("posoffnw", self.posoff)
+        self:SetNW2Angle("angoffnw", self.angoff)
+        self:SetNW2Entity("targentnw", self.targent)
+        self:SetNW2Int("targbonenw", self.targbone)
+        self:SetNW2Bool("enthasbonesnw", self.enthasbones)
     end
 
+    if CLIENT then
+        self:SetPredictable(false)
+    end
+    
     self:UpdatePosition()
     --end)
 end
@@ -259,7 +263,7 @@ function ENT:Think()
 
                 if IsValid(tmpragent) and tmpragent ~= self.targent then
                     self.targent = tmpragent
-                    self:SetNWEntity("targentnw", self.targent)
+                    self:SetNW2Entity("targentnw", self.targent)
                 else
                     self:Remove()
                 end

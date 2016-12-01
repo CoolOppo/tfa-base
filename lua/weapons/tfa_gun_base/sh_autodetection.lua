@@ -1,73 +1,4 @@
 --[[
-Function Name:  DetectMuzzleForward
-Syntax: self:DetectMuzzleForward().
-Returns:  Nothing.
-Notes: Only runs when not in draw animation!  This prevents serious glitches
-Purpose:  Sets the forward muzzle direction.
-]]--
-function SWEP:DetectMuzzleForward()
-	if not self:OwnerIsValid() then return end
-	local vm = self.Owner:GetViewModel()
-
-	if self.MZFwDir == nil and not self:GetDrawing() then
-		local refvec = self.Owner:GetAimVector()
-		local att = self.MuzzleAttachmentRaw or vm:LookupAttachment(self.MuzzleAttachment)
-
-		if not att then
-			att = 1
-		end
-
-		local angpos = vm:GetAttachment(att)
-
-		if not angpos then
-			self.MZFwDir = "nil"
-			--ready comparison vectors
-			--compare player view angle to muzzle angle using vector dot product
-			--find which is closes out of forward, right,and up
-			--Now we've got it, but we need something to compare to
-			--Set reference angle
-			--nfwvec:Angle() - refvec:Angle()
-		else
-			local nfwvec
-			local fwvec = angpos.Ang:Forward()
-			local upvec = angpos.Ang:Up()
-			local rivec = angpos.Ang:Right()
-			local curdist = -2
-			local refval = fwvec:Dot(refvec)
-
-			if refval > curdist then
-				nfwvec = fwvec
-				curdist = refval
-				self.MZFwDir = "fw"
-			end
-
-			refval = upvec:Dot(refvec)
-
-			if refval > curdist then
-				nfwvec = upvec
-				curdist = refval
-				self.MZFwDir = "up"
-			end
-
-			refval = rivec:Dot(refvec)
-
-			if refval > curdist then
-				nfwvec = rivec
-				curdist = refval
-				self.MZFwDir = "ri"
-			end
-
-			self.MZReferenceAngle = vm:WorldToLocalAngles(nfwvec:Angle())
-			self.MZReferenceAngle:Normalize()
-		end
-
-		if game.SinglePlayer() and SERVER then
-			self:SetNWString("MZFwDir", self.MZFwDir)
-		end
-	end
-end
-
---[[
 Function Name:  AutoDetectMuzzle
 Syntax: self:AutoDetectMuzzle().  Call only once, or it's redundant.
 Returns:  Nothing.
@@ -147,6 +78,53 @@ function SWEP:AutoDetectDamage()
 end
 
 --[[
+Function Name:  AutoDetectDamageType
+Syntax: self:AutoDetectDamageType().  Call only once.  Hopefully you call this only once on like SWEP:Initialize() or something.
+Returns:  Nothing.
+Notes:  Sets a damagetype
+Purpose:  Autodetection
+]]--
+
+function SWEP:AutoDetectDamageType()
+	if self.Primary.DamageType == nil then
+		if self.DamageType and not self.Primary.DamageType then
+			self.Primary.DamageType = self.DamageType
+		else
+			self.Primary.DamageType = DMG_BULLET
+		end
+		if  (self.Primary.NumShots * self.Primary.Damage) >= 26 then
+			self.Primary.DamageType = bit.bor(self.Primary.DamageType, DMG_AIRBOAT)
+		elseif self.Primary.Damage >= 150 then
+			self.Primary.DamageType = bit.bor(self.Primary.DamageType, DMG_AIRBOAT)
+		end
+	end
+end
+
+--[[
+Function Name:  AutoDetectForce
+Syntax: self:AutoDetectForce().  Call only once.  Hopefully you call this only once on like SWEP:Initialize() or something.
+Returns:  Nothing.
+Notes:  Detects force from damage
+Purpose:  Autodetection
+]]--
+
+function SWEP:AutoDetectForce()
+	self.Primary.Force = self.Primary.Force or self.Force or ( math.sqrt( self.Primary.Damage / 16 ) * 3 / math.sqrt( self.Primary.NumShots ) )
+end
+
+--[[
+Function Name:  AutoDetectKnockback
+Syntax: self:AutoDetectKnockback().  Call only once.  Hopefully you call this only once on like SWEP:Initialize() or something.
+Returns:  Nothing.
+Notes:  Detects knockback from force
+Purpose:  Autodetection
+]]--
+
+function SWEP:AutoDetectKnockback()
+	self.Primary.Knockback = self.Primary.Knockback or self.Knockback or math.max(math.pow(self.Primary.Force - 3.25, 2), 0) * math.pow(self.Primary.NumShots, 1 / 3) * 3
+end
+
+--[[
 Function Name:  IconFix
 Syntax: self:IconFix().  Call only once.  Hopefully you call this only once on like SWEP:Initialize() or something.
 Returns:  Nothing.
@@ -205,8 +183,13 @@ Returns:  Nothing.
 Notes:  This is what autodetects animations for the SWEP.SequenceEnabled and SWEP.SequenceLength tables.
 Purpose:  Autodetection
 ]]--
+
+SWEP.ActCache = {}
+
 function SWEP:DetectValidAnimations()
 	if not IsValid(self) then return end
+
+	table.Empty(self.ActCache)
 
 	if self.CanBeSilenced and self.SequenceEnabled[ACT_VM_IDLE_SILENCED] == nil then
 		self.SequenceEnabled[ACT_VM_IDLE_SILENCED] = true
@@ -218,45 +201,27 @@ function SWEP:DetectValidAnimations()
 	if IsValid(vm) then
 		local seq
 
-		for k, v in pairs(self.actlist) do
+		for k, v in ipairs(self.actlist) do
 			seq = vm:SelectWeightedSequence(v)
 
-			if seq ~= -1 then
+			if seq ~= -1 and vm:GetSequenceActivity(seq) == v and not self.ActCache[seq] then
 				self.SequenceEnabled[v] = true
 				self.SequenceLength[v] = vm:SequenceDuration(seq)
+				self.ActCache[seq] = v
 			else
 				self.SequenceEnabled[v] = false
-				self.SequenceLength[v] = 0.3
+				self.SequenceLength[v] = 0.0
 			end
-
-			if (v == ACT_VM_IDLE_SILENCED or v == ACT_VM_RELOAD_SILENCED or v == ACT_VM_PRIMARYATTACK_SILENCED) and self.CanBeSilenced then
-				self.SequenceEnabled[v] = true
-				self.SequenceLength[v] = vm:SequenceDuration(seq)
-
-				if not self.SequenceLength[v] or self.SequenceLength[v] <= 0.01 then
-					self.SequenceLength[v] = 0.3
-				end
-			end
-		end
-
-		seq = vm:SelectWeightedSequence(ACT_VM_DRYFIRE)
-
-		if seq ~= -1 and seq ~= vm:SelectWeightedSequence(ACT_VM_PRIMARYATTACK) then
-			self.SequenceEnabled[ACT_VM_DRYFIRE] = true
-		end
-
-		seq = vm:SelectWeightedSequence(ACT_VM_DRYFIRE_SILENCED)
-
-		if seq ~= -1 and seq ~= vm:SelectWeightedSequence(ACT_VM_PRIMARYATTACK_SILENCED) then
-			self.SequenceEnabled[ACT_VM_DRYFIRE_SILENCED] = true
 		end
 	else
 		return false
 	end
 
-	if self.CanBeSilenced and self.SequenceEnabled[ACT_VM_IDLE_SILENCED] == nil then
-		self.SequenceEnabled[ACT_VM_IDLE_SILENCED] = true
+	if self.SequenceEnabled[ACT_VM_HOLSTER] then
+		self.DoProceduralHolster = false
 	end
+
+	self.HasDetectedValidAnimations = true
 
 	return true
 end

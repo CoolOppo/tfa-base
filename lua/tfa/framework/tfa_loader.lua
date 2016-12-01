@@ -1,13 +1,12 @@
 if SERVER then AddCSLuaFile() end
 
 local do_load = true
-local version = 3.0120
-local version_string = "3.01.2.0"
+local version = 3.050
+local version_string = "3.05.0.0"
 local changelog = [[
-	* New group prompt added
-	* Introduced bare-basics multilanguage support
-	* Migrated global functions to a table
-	* Miscelaneous quality of life improvements
+	* Basic GMDUSK integration
+	* Shotgun door-bust tweaked, improved, and fixed for DarkRP (hopefully)
+	* Scopes fixed for DarkRP ( hopefully )
 ]]
 
 local function testFunc()

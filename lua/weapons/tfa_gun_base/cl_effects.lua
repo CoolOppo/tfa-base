@@ -59,6 +59,7 @@ Purpose:  FX
 
 function SWEP:DoImpactEffect(tr, dmgtype)
 	if tr.HitSky then return true end
+	if dmgtype == DMG_DIRECT then return true end
 	local ib = self.BashBase and IsValid(self) and self:GetBashing()
 	local dmginfo = DamageInfo()
 	dmginfo:SetDamageType(dmgtype)
@@ -115,8 +116,9 @@ function SWEP:ImpactEffectFunc(pos, normal, mattype)
 		fx:SetEntity(self.Owner)
 		fx:SetMagnitude(mattype or 0)
 		fx:SetScale(math.sqrt(self.Primary.Damage / 30))
-		util.Effect("tfa_bullet_impact", fx)
-
+		if mattype ~= MAT_FLESH then
+			util.Effect("tfa_bullet_impact", fx)
+		end
 		if self.ImpactEffect then
 			util.Effect(self.ImpactEffect, fx)
 		end

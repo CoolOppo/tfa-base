@@ -1,31 +1,58 @@
 ACT_VM_FIDGET_EMPTY = ACT_VM_FIDGET_EMPTY or ACT_CROSSBOW_FIDGET_UNLOADED
+ACT_VM_BLOWBACK = ACT_VM_BLOWBACK or -2
 
-local success,tanim
+local ServersideLooped = {
+	[ACT_VM_FIDGET] = true,
+	[ACT_VM_FIDGET_EMPTY] = true,
+	--[ACT_VM_IDLE] = true,
+	--[ACT_VM_IDLE_EMPTY] = true,
+	--[ACT_VM_IDLE_SILENCED] = true
+}
 
-function SWEP:UpdateLastAct(arg1)
-	self.lastact = tonumber(arg1)
-end
+function SWEP:SendViewModelAnim(act, rate, targ )
+	local vm = self.OwnerViewModel
+	self:SetLastActivity( act )
 
---[[
-Function Name:  AnimForce
-Syntax: self:AnimForce(tostring(ACT_VM_IDLE)).
-Returns:  Nil
-Notes:  Fixes client/server disparity in singleplayer.
-Purpose:  Animation / Utility
-]]--
-function SWEP:AnimForce(str)
-	if not str then return end
-	local ply = LocalPlayer and LocalPlayer() or self.Owner
-	local vm = ply:GetViewModel()
-	if IsValid(vm) then
-		local strnum = tonumber(str)
-		if not strnum then return end
-		local nm = vm:SelectWeightedSequence(strnum)
-		if not nm then return end
-		vm:SendViewModelMatchingSequence(nm)
+	if act < 0 then return end
+
+	if not IsValid(vm) then
+		self.OwnerViewModel = IsValid(self.Owner) and self.Owner:GetViewModel()
+		return
 	end
-	--self:ResetEvents()
+
+	local seq = vm:SelectWeightedSequenceSeeded(act,CurTime())
+	if seq < 0 then
+		return
+	end
+
+	if self:GetLastActivity() == act and ServersideLooped[act] then
+		vm:SendViewModelMatchingSequence( act == 0 and 1 or 0 )
+		vm:SetPlaybackRate(0)
+		vm:SetCycle(0)
+
+		if IsFirstTimePredicted() then
+			timer.Simple(0, function()
+				vm:SendViewModelMatchingSequence(seq)
+				if targ then
+					local d = vm:SequenceDuration()
+					vm:SetPlaybackRate( d / rate )
+				else
+					vm:SetPlaybackRate(rate or 1)
+				end
+			end)
+		end
+	else
+		vm:SendViewModelMatchingSequence(seq)
+		if targ then
+			local d = vm:SequenceDuration()
+			vm:SetPlaybackRate( d / rate )
+		else
+			vm:SetPlaybackRate(rate or 1)
+		end
+	end
 end
+
+local success, tanim
 
 --[[
 Function Name:  ChooseDrawAnim
@@ -33,7 +60,8 @@ Syntax: self:ChooseDrawAnim().
 Returns:  Could we successfully find an animation?  Which action?
 Notes:  Requires autodetection or otherwise the list of valid anims.
 Purpose:  Animation / Utility
-]]--
+]]
+--
 function SWEP:ChooseDrawAnim()
 	if not self:OwnerIsValid() then return end
 	--self:ResetEvents()
@@ -48,14 +76,7 @@ function SWEP:ChooseDrawAnim()
 		tanim = ACT_VM_DRAW
 	end
 
-	self:SendWeaponAnim(tanim)
-
-	if game.SinglePlayer() then
-		self:CallOnClient("AnimForce", tanim)
-	end
-
-	self.lastact = tanim
-	self:CallOnClient("UpdateLastAct", tostring(self.lastact))
+	self:SendViewModelAnim(tanim)
 
 	return success, tanim
 end
@@ -66,7 +87,8 @@ Syntax: self:ChooseInspectAnim().
 Returns:  Could we successfully find an animation?  Which action?
 Notes:  Requires autodetection or otherwise the list of valid anims.
 Purpose:  Animation / Utility
-]]--
+]]
+--
 function SWEP:ChooseInspectAnim()
 	if not self:OwnerIsValid() then return end
 	--self:ResetEvents()
@@ -74,38 +96,21 @@ function SWEP:ChooseInspectAnim()
 	success = true
 
 	if self.SequenceEnabled[ACT_VM_FIDGET_EMPTY] and self.Primary.ClipSize > 0 and math.Round(self:Clip1()) == 0 then
-		self:SendWeaponAnim(ACT_VM_FIDGET_EMPTY)
 		tanim = ACT_VM_FIDGET_EMPTY
-		--[[
-		local vm = self.Owner:GetViewModel()
-		if IsValid(vm) then
-		vm:SetSequence(vm:SelectWeightedSequence(ACT_VM_FIDGET))
-		print(vm:SelectWeightedSequence(ACT_VM_FIDGET))
+	elseif self.InspectionActions then
+		math.randomseed(CurTime() + 1)
+		tanim = self.InspectionActions[math.random(1, #self.InspectionActions)]
+	elseif self.SequenceEnabled[ACT_VM_FIDGET] then
+		tanim = ACT_VM_FIDGET
+	else
+		tanim = ACT_VM_IDLE
+		success = false
 	end
-	]]
-	--
-elseif self.InspectionActions then
-	math.randomseed(CurTime() + 1)
-	tanim = self.InspectionActions[math.random(1, #self.InspectionActions)]
-	self:SendWeaponAnim(tanim)
-elseif self.SequenceEnabled[ACT_VM_FIDGET] then
-	self:SendWeaponAnim(ACT_VM_FIDGET)
-	tanim = ACT_VM_FIDGET
-else
-	local _, tanim2 = self:ChooseIdleAnim()
-	tanim = tanim2
-	success = false
-end
 
-if game.SinglePlayer() then
-	self:CallOnClient("AnimForce", tanim)
-end
+	self:SendViewModelAnim(tanim)
+	self.lastidlefidget = true
 
-self.lastact = tanim
-self:CallOnClient("UpdateLastAct", tostring(self.lastact))
-self.lastidlefidget = true
-
-return success, tanim
+	return success, tanim
 end
 
 --[[
@@ -114,13 +119,15 @@ Syntax: self:ChooseHolsterAnim().
 Returns:  Could we successfully find an animation?  Which action?
 Notes:  Requires autodetection or otherwise the list of valid anims.
 Purpose:  Animation / Utility
-]]--
+]]
+--
 ACT_VM_HOLSTER_SILENCED = ACT_VM_HOLSTER_SILENCED or ACT_CROSSBOW_HOLSTER_UNLOADED
 
 function SWEP:ChooseHolsterAnim()
 	if not self:OwnerIsValid() then return end
 	--self:ResetEvents()
-	tanim = ACT_VM_IDLE
+	tanim = ACT_VM_HOLSTER
+	success = true
 
 	if self:GetSilenced() and self.SequenceEnabled[ACT_VM_HOLSTER_SILENCED] then
 		tanim = ACT_VM_HOLSTER_SILENCED
@@ -128,20 +135,14 @@ function SWEP:ChooseHolsterAnim()
 		tanim = ACT_VM_HOLSTER_EMPTY
 	elseif self.SequenceEnabled[ACT_VM_HOLSTER] then
 		tanim = ACT_VM_HOLSTER
+	else
+		tanim = ACT_VM_IDLE
+		success = false
 	end
 
-	if tanim ~= ACT_VM_IDLE then
-		self:SendWeaponAnim(tanim)
+	self:SendViewModelAnim(tanim)
 
-		if game.SinglePlayer() then
-			self:CallOnClient("AnimForce", tanim)
-		end
-	end
-
-	self.lastact = tanim
-	self:CallOnClient("UpdateLastAct", tostring(self.lastact))
-
-	return true, tanim
+	return success, tanim
 end
 
 --[[
@@ -150,7 +151,8 @@ Syntax: self:ChooseProceduralReloadAnim().
 Returns:  Could we successfully find an animation?  Which action?
 Notes:  Uses some holster code
 Purpose:  Animation / Utility
-]]--
+]]
+--
 function SWEP:ChooseProceduralReloadAnim()
 	if not self:OwnerIsValid() then return end
 
@@ -160,7 +162,7 @@ function SWEP:ChooseProceduralReloadAnim()
 	end
 
 	if not self.DisableIdleAnimations then
-		self:SendWeaponAnim(ACT_VM_IDLE)
+		self:SendViewModelAnim(ACT_VM_IDLE)
 	end
 
 	return true, ACT_VM_IDLE
@@ -172,7 +174,8 @@ Syntax: self:ChooseReloadAnim().
 Returns:  Could we successfully find an animation?  Which action?
 Notes:  Requires autodetection or otherwise the list of valid anims.
 Purpose:  Animation / Utility
-]]--
+]]
+--
 function SWEP:ChooseReloadAnim()
 	if not self:OwnerIsValid() then return end
 
@@ -192,14 +195,7 @@ function SWEP:ChooseReloadAnim()
 		tanim = ACT_VM_RELOAD
 	end
 
-	self:SendWeaponAnim(tanim)
-
-	if game.SinglePlayer() then
-		self:CallOnClient("AnimForce", tanim)
-	end
-
-	self.lastact = tanim
-	self:CallOnClient("UpdateLastAct", tostring(self.lastact))
+	self:SendViewModelAnim(tanim)
 
 	return success, tanim
 end
@@ -210,7 +206,8 @@ Syntax: self:ChooseReloadAnim().
 Returns:  Could we successfully find an animation?  Which action?
 Notes:  Requires autodetection or otherwise the list of valid anims.
 Purpose:  Animation / Utility
-]]--
+]]
+--
 function SWEP:ChooseShotgunReloadAnim()
 	if not self:OwnerIsValid() then return end
 	--self:ResetEvents()
@@ -218,40 +215,20 @@ function SWEP:ChooseShotgunReloadAnim()
 	success = true
 
 	if self.SequenceEnabled[ACT_VM_RELOAD_SILENCED] and self:GetSilenced() then
-		self:SendWeaponAnim(ACT_VM_RELOAD_SILENCED)
+		self:SendViewModelAnim(ACT_VM_RELOAD_SILENCED)
 		tanim = ACT_VM_RELOAD_SILENCED
 	else
-		if self.SequenceEnabled[ACT_VM_RELOAD_EMPTY] and self.KF2StyleShotgun then
-			if (self:Clip1() == 0) then
-				self:SendWeaponAnim(ACT_VM_RELOAD_EMPTY)
-				tanim = ACT_VM_RELOAD_EMPTY
-				self.StartAnimInsertShell = true
-			else
-				if self.SequenceEnabled[ACT_SHOTGUN_RELOAD_START] then
-					self:SendWeaponAnim(ACT_SHOTGUN_RELOAD_START)
-				else
-					local _, tanim2 = self:ChooseIdleAnim()
-					tanim = tanim2
-					success = false
-				end
-			end
-		else
-			if self.SequenceEnabled[ACT_SHOTGUN_RELOAD_START] then
-				self:SendWeaponAnim(ACT_SHOTGUN_RELOAD_START)
-			else
-				local _, tanim2 = self:ChooseIdleAnim()
-				tanim = tanim2
-				success = false
-			end
+		if self.SequenceEnabled[ACT_VM_RELOAD_EMPTY] and self.KF2StyleShotgun and self:Clip1() == 0 then
+			tanim = ACT_VM_RELOAD_EMPTY
+			self.StartAnimInsertShell = true
 		end
 	end
 
-	if game.SinglePlayer() then
-		self:CallOnClient("AnimForce", tanim)
+	if not self.SequenceEnabled[tanim] then
+		success = false
+	else
+		self:SendViewModelAnim(tanim)
 	end
-
-	self.lastact = tanim
-	self:CallOnClient("UpdateLastAct", tostring(self.lastact))
 
 	return success, tanim
 end
@@ -262,34 +239,28 @@ Syntax: self:ChooseIdleAnim().
 Returns:  True,  Which action?
 Notes:  Requires autodetection for full features.
 Purpose:  Animation / Utility
-]]--
+]]
+--
 function SWEP:ChooseIdleAnim()
 	if not self:OwnerIsValid() then return end
 	--self:ResetEvents()
 	tanim = ACT_VM_IDLE
 
 	if self.SequenceEnabled[ACT_VM_IDLE_SILENCED] and self:GetSilenced() then
-		self:SendWeaponAnim(ACT_VM_IDLE_SILENCED)
+		self:SendViewModelAnim(ACT_VM_IDLE_SILENCED)
 		tanim = ACT_VM_IDLE_SILENCED
 	else
 		if self.SequenceEnabled[ACT_VM_IDLE_EMPTY] then
 			if (self:Clip1() == 0) then
-				self:SendWeaponAnim(ACT_VM_IDLE_EMPTY)
+				self:SendViewModelAnim(ACT_VM_IDLE_EMPTY)
 				tanim = ACT_VM_IDLE_EMPTY
 			else
-				self:SendWeaponAnim(ACT_VM_IDLE)
+				self:SendViewModelAnim(ACT_VM_IDLE)
 			end
 		else
-			self:SendWeaponAnim(ACT_VM_IDLE)
+			self:SendViewModelAnim(ACT_VM_IDLE)
 		end
 	end
-
-	if game.SinglePlayer() then
-		self:CallOnClient("AnimForce", tanim)
-	end
-
-	self.lastact = tanim
-	self:CallOnClient("UpdateLastAct", tostring(self.lastact))
 
 	return true, tanim
 end
@@ -300,7 +271,8 @@ Syntax: self:ChooseShootAnim().
 Returns:  Could we successfully find an animation?  Which action?
 Notes:  Requires autodetection or otherwise the list of valid anims.
 Purpose:  Animation / Utility
-]]--
+]]
+--
 function SWEP:ChooseShootAnim(ifp)
 	if not self:OwnerIsValid() then return end
 
@@ -325,14 +297,7 @@ function SWEP:ChooseShootAnim(ifp)
 			tanim = ACT_VM_PRIMARYATTACK
 		end
 
-		self:SendWeaponAnim(tanim)
-
-		if game.SinglePlayer() then
-			self:CallOnClient("AnimForce", tanim)
-		end
-
-		self.lastact = tanim
-		--self:SendWeaponAnim(-1)
+		self:SendViewModelAnim(tanim)
 
 		return success, tanim
 	else
@@ -345,8 +310,7 @@ function SWEP:ChooseShootAnim(ifp)
 		end
 
 		self:MakeShellBridge(ifp)
-		self.lastact = -2
-		self:CallOnClient("UpdateLastAct", tostring(self.lastact))
+		self:SendViewModelAnim(ACT_VM_BLOWBACK)
 
 		return true, ACT_VM_IDLE
 	end
@@ -354,7 +318,6 @@ end
 
 function SWEP:BlowbackFull()
 	if IsValid(self) then
-		self.lastact = -2
 		self.BlowbackCurrent = 1
 		self.BlowbackCurrentRoot = 1
 	end
@@ -366,7 +329,8 @@ Syntax: self:ChooseSilenceAnim( true if we're silencing, false for detaching the
 Returns:  Could we successfully find an animation?  Which action?
 Notes:  Requires autodetection or otherwise the list of valid anims.  This is played when you silence or unsilence a gun.
 Purpose:  Animation / Utility
-]]--
+]]
+--
 function SWEP:ChooseSilenceAnim(val)
 	if not self:OwnerIsValid() then return end
 	--self:ResetEvents()
@@ -375,13 +339,13 @@ function SWEP:ChooseSilenceAnim(val)
 
 	if val then
 		if self.SequenceEnabled[ACT_VM_ATTACH_SILENCER] then
-			self:SendWeaponAnim(ACT_VM_ATTACH_SILENCER)
+			self:SendViewModelAnim(ACT_VM_ATTACH_SILENCER)
 			tanim = ACT_VM_ATTACH_SILENCER
 			success = true
 		end
 	else
 		if self.SequenceEnabled[ACT_VM_DETACH_SILENCER] then
-			self:SendWeaponAnim(ACT_VM_DETACH_SILENCER)
+			self:SendViewModelAnim(ACT_VM_DETACH_SILENCER)
 			tanim = ACT_VM_DETACH_SILENCER
 			success = true
 		end
@@ -392,13 +356,6 @@ function SWEP:ChooseSilenceAnim(val)
 		_, tanim = self:ChooseIdleAnim()
 	end
 
-	if game.SinglePlayer() then
-		self:CallOnClient("AnimForce", tanim)
-	end
-
-	self.lastact = tanim
-	self:CallOnClient("UpdateLastAct", tostring(self.lastact))
-
 	return success, tanim
 end
 
@@ -408,7 +365,8 @@ Syntax: self:ChooseDryFireAnim().
 Returns:  Could we successfully find an animation?  Which action?
 Notes:  Requires autodetection or otherwise the list of valid anims.  set SWEP.ForceDryFireOff to false to properly use.
 Purpose:  Animation / Utility
-]]--
+]]
+--
 function SWEP:ChooseDryFireAnim()
 	if not self:OwnerIsValid() then return end
 	--self:ResetEvents()
@@ -416,12 +374,12 @@ function SWEP:ChooseDryFireAnim()
 	success = true
 
 	if self.SequenceEnabled[ACT_VM_DRYFIRE_SILENCED] and self:GetSilenced() and not self.ForceDryFireOff then
-		self:SendWeaponAnim(ACT_VM_DRYFIRE_SILENCED)
+		self:SendViewModelAnim(ACT_VM_DRYFIRE_SILENCED)
 		tanim = ACT_VM_DRYFIRE_SILENCED
 		--self:ChooseIdleAnim()
 	else
 		if self.SequenceEnabled[ACT_VM_DRYFIRE] and not self.ForceDryFireOff then
-			self:SendWeaponAnim(ACT_VM_DRYFIRE)
+			self:SendViewModelAnim(ACT_VM_DRYFIRE)
 			tanim = ACT_VM_DRYFIRE
 		else
 			success = false
@@ -429,16 +387,6 @@ function SWEP:ChooseDryFireAnim()
 			_, tanim = nil, nil
 		end
 	end
-
-	if game.SinglePlayer() then
-		self:CallOnClient("AnimForce", tanim)
-	end
-
-	if success then
-		self.lastact = tanim
-	end
-
-	self:CallOnClient("UpdateLastAct", tostring(self.lastact))
 
 	return success, tanim
 end

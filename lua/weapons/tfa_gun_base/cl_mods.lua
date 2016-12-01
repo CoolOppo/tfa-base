@@ -1,4 +1,4 @@
---[[Thanks to Clavus.  I'm proud to have your code in my base, and even though you didn't include a liscense anywhere I could find, it's only fit to credit you.]]--
+--[[Thanks to Clavus.  Like seriously, SCK was brilliant. Even though you didn't include a license anywhere I could find, it's only fit to credit you.]]--
 SWEP.vRenderOrder = nil
 
 --[[
@@ -39,10 +39,12 @@ Returns:  Nothing.
 Notes:  This draws the mods.
 Purpose:  SWEP Construction Kit Compatibility / Basic Attachments.
 ]]--
+
 SWEP.CameraAttachmentOffsets = {{"p", 0}, {"y", 0}, {"r", 0}}
 SWEP.CameraAttachment = nil
 SWEP.CameraAttachments = {"camera", "attach_camera", "view", "cam", "look"}
 SWEP.CameraAngCache = nil
+
 local tmpvec = Vector(0, 0, -2000)
 
 function SWEP:ViewModelDrawn()
@@ -127,88 +129,88 @@ function SWEP:ViewModelDrawn()
 		self.CameraAngCache.r = math.ApproachAngle(self.CameraAngCache.r, off.r, (self.CameraAngCache.r - off.r) * FrameTime() * spd)
 	end
 
-	if (not self.VElements) then return end
-	self:CreateModels(self.VElements)
+	if self.VElements then
+		self:CreateModels(self.VElements)
 
-	if (not self.vRenderOrder) then
-		-- // we build a render order because sprites need to be drawn after models
-		self.vRenderOrder = {}
+		if (not self.vRenderOrder) then
+			-- // we build a render order because sprites need to be drawn after models
+			self.vRenderOrder = {}
 
-		for k, v in pairs(self.VElements) do
-			if (v.type == "Model") then
-				table.insert(self.vRenderOrder, 1, k)
-			elseif (v.type == "Sprite" or v.type == "Quad") then
-				table.insert(self.vRenderOrder, k)
-			end
-		end
-	end
-
-	for k, name in ipairs(self.vRenderOrder) do
-		local v = self.VElements[name]
-
-		if (not v) then
-			self.vRenderOrder = nil
-			break
-		end
-
-		if (v.hide) then continue end
-		local model = v.curmodel
-		local sprite = v.spritemat
-		if (not v.bone) then continue end
-		local pos, ang = self:GetBoneOrientation(self.VElements, v, vm)
-		if (not pos) then continue end
-
-		if (v.type == "Model" and IsValid(model)) then
-			model:SetPos(pos + ang:Forward() * v.pos.x + ang:Right() * v.pos.y + ang:Up() * v.pos.z)
-			ang:RotateAroundAxis(ang:Up(), v.angle.y)
-			ang:RotateAroundAxis(ang:Right(), v.angle.p)
-			ang:RotateAroundAxis(ang:Forward(), v.angle.r)
-			model:SetAngles(ang)
-
-			if (not v.material) or (v.material == "") then
-				model:SetMaterial("")
-			elseif (model:GetMaterial() ~= v.material) then
-				model:SetMaterial(v.material)
-			end
-
-			if (v.skin and v.skin ~= model:GetSkin()) then
-				model:SetSkin(v.skin)
-			end
-
-			if (v.bodygroup) then
-				for l, b in pairs(v.bodygroup) do
-					if (type(l) == "number") and (model:GetBodygroup(l) ~= b) then
-						model:SetBodygroup(l, b)
-					end
+			for k, v in pairs(self.VElements) do
+				if (v.type == "Model") then
+					table.insert(self.vRenderOrder, 1, k)
+				elseif (v.type == "Sprite" or v.type == "Quad") then
+					table.insert(self.vRenderOrder, k)
 				end
 			end
+		end
 
-			if (v.surpresslightning) then
-				render.SuppressEngineLighting(true)
+		for k, name in ipairs(self.vRenderOrder) do
+			local v = self.VElements[name]
+
+			if (not v) then
+				self.vRenderOrder = nil
+				break
 			end
 
-			render.SetColorModulation(v.color.r / 255, v.color.g / 255, v.color.b / 255)
-			render.SetBlend(v.color.a / 255)
-			model:DrawModel()
-			render.SetBlend(1)
-			render.SetColorModulation(1, 1, 1)
-			render.SuppressEngineLighting(false)
-		elseif (v.type == "Sprite" and sprite) then
-			local drawpos = pos + ang:Forward() * v.pos.x + ang:Right() * v.pos.y + ang:Up() * v.pos.z
-			render.SetMaterial(sprite)
-			render.DrawSprite(drawpos, v.size.x, v.size.y, v.color)
-		elseif (v.type == "Quad" and v.draw_func) then
-			local drawpos = pos + ang:Forward() * v.pos.x + ang:Right() * v.pos.y + ang:Up() * v.pos.z
-			ang:RotateAroundAxis(ang:Up(), v.angle.y)
-			ang:RotateAroundAxis(ang:Right(), v.angle.p)
-			ang:RotateAroundAxis(ang:Forward(), v.angle.r)
-			cam.Start3D2D(drawpos, ang, v.size)
-			v.draw_func(self)
-			cam.End3D2D()
+			if (v.hide) then continue end
+			local model = v.curmodel
+			local sprite = v.spritemat
+			if (not v.bone) then continue end
+			local pos, ang = self:GetBoneOrientation(self.VElements, v, vm)
+			if (not pos) then continue end
+
+			if (v.type == "Model" and IsValid(model)) then
+				model:SetPos(pos + ang:Forward() * v.pos.x + ang:Right() * v.pos.y + ang:Up() * v.pos.z)
+				ang:RotateAroundAxis(ang:Up(), v.angle.y)
+				ang:RotateAroundAxis(ang:Right(), v.angle.p)
+				ang:RotateAroundAxis(ang:Forward(), v.angle.r)
+				model:SetAngles(ang)
+
+				if (not v.material) or (v.material == "") then
+					model:SetMaterial("")
+				elseif (model:GetMaterial() ~= v.material) then
+					model:SetMaterial(v.material)
+				end
+
+				if (v.skin and v.skin ~= model:GetSkin()) then
+					model:SetSkin(v.skin)
+				end
+
+				if (v.bodygroup) then
+					for l, b in pairs(v.bodygroup) do
+						if (type(l) == "number") and (model:GetBodygroup(l) ~= b) then
+							model:SetBodygroup(l, b)
+						end
+					end
+				end
+
+				if (v.surpresslightning) then
+					render.SuppressEngineLighting(true)
+				end
+
+				render.SetColorModulation(v.color.r / 255, v.color.g / 255, v.color.b / 255)
+				render.SetBlend(v.color.a / 255)
+				model:DrawModel()
+				render.SetBlend(1)
+				render.SetColorModulation(1, 1, 1)
+				render.SuppressEngineLighting(false)
+			elseif (v.type == "Sprite" and sprite) then
+				local drawpos = pos + ang:Forward() * v.pos.x + ang:Right() * v.pos.y + ang:Up() * v.pos.z
+				render.SetMaterial(sprite)
+				render.DrawSprite(drawpos, v.size.x, v.size.y, v.color)
+			elseif (v.type == "Quad" and v.draw_func) then
+				local drawpos = pos + ang:Forward() * v.pos.x + ang:Right() * v.pos.y + ang:Up() * v.pos.z
+				ang:RotateAroundAxis(ang:Up(), v.angle.y)
+				ang:RotateAroundAxis(ang:Right(), v.angle.p)
+				ang:RotateAroundAxis(ang:Forward(), v.angle.r)
+				cam.Start3D2D(drawpos, ang, v.size)
+				v.draw_func(self)
+				cam.End3D2D()
+			end
 		end
 	end
 end
-
 SWEP.wRenderOrder = nil
 --[[
 Function Name:  DrawWorldModel
@@ -226,7 +228,7 @@ function SWEP:DrawWorldModel()
 		ply:SetupBones()
 	end
 
-	if (self.ShowWorldModel == nil or self.ShowWorldModel) then
+	if ( self.ShowWorldModel == nil or self.ShowWorldModel or not self:OwnerIsValid() ) then
 		if game.SinglePlayer() or CLIENT then
 
 			if IsValid(ply) and self.Offset and self.Offset.Pos and self.Offset.Ang then
@@ -259,28 +261,6 @@ function SWEP:DrawWorldModel()
 		if not (culldistancecvar:GetFloat() >= 0 and self:GetPos():Distance(EyePos and EyePos() or LocalPlayer():GetShootPos()) > culldistancecvar:GetFloat()) then
 			self:DrawModel()
 		end
-	elseif not IsValid(ply) or not ply:IsPlayer() then
-		if self.WElements then
-			local keys = table.GetKeys(self.WElements)
-
-			if #keys >= 1 then
-				local tbl = self.WElements[keys[1]]
-
-				if tbl then
-					local mdl = tbl.model
-
-					if self:GetModel() ~= mdl then
-						self:SetModel(mdl)
-					end
-
-					self:DrawModel()
-					self.WorldModelOG = self.WorldModel
-					self.WorldModel = mdl
-				end
-			end
-		end
-	else
-		self.WorldModel = self.WorldModelOG or self.WorldModel
 	end
 
 	if (not self.WElements) then return end
@@ -386,6 +366,7 @@ Returns:  Position, Angle.
 Notes:  This is a very specific function for a specific purpose, and shouldn't be used generally to get a bone's orientation.
 Purpose:  SWEP Construction Kit Compatibility / Basic Attachments.
 ]]--
+
 function SWEP:GetBoneOrientation(basetabl, tabl, ent, bone_override)
 	local bone, pos, ang
 	if not IsValid(ent) then return Vector(0, 0, 0), Angle(0, 0, 0) end

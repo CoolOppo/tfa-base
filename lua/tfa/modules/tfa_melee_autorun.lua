@@ -35,12 +35,12 @@ game.AddAmmoType( {
 } )
 
 function TFMPlayerSpawn(ply)
-	ply:SetNWVector("TFM_SwordPosition",Vector(1,1,1))
-	ply:SetNWVector("TFM_SwordNormal",Vector(1,1,1))
-	ply:SetNWBool("TFM_IsSprinting",false)
-	ply:SetNWBool("TFM_IsBlocking",false)
-	ply:SetNWBool("TFM_IsSwinging",false)
-	ply:SetNWFloat("TFM_SwingStart",CurTime())
+	ply:SetNW2Vector("TFM_SwordPosition",Vector(1,1,1))
+	ply:SetNW2Vector("TFM_SwordNormal",Vector(1,1,1))
+	ply:SetNW2Bool("TFM_IsSprinting",false)
+	ply:SetNW2Bool("TFM_IsBlocking",false)
+	ply:SetNW2Bool("TFM_IsSwinging",false)
+	ply:SetNW2Float("TFM_SwingStart",CurTime())
 end
 hook.Add("PlayerSpawn","TFM_PlayerSpawn",TFMPlayerSpawn)
 
@@ -86,8 +86,8 @@ if SERVER then
 		norm = net.ReadNormal()
 		if IsValid(ply) then
 			if pos and norm then
-				ply:SetNWVector("TFM_SwordPosition",pos)
-				ply:SetNWVector("TFM_SwordNormal",norm)
+				ply:SetNW2Vector("TFM_SwordPosition",pos)
+				ply:SetNW2Vector("TFM_SwordNormal",norm)
 			end
 		end
 	end)

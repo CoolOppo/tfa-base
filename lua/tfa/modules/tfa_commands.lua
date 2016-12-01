@@ -336,6 +336,7 @@ if CLIENT then
 		}
 
 		tfaOptionPerf.Options["#Default"] = {
+			sv_tfa_fx_penetration_decal = "1",
 			cl_tfa_fx_impact_enabled = "1",
 			cl_tfa_fx_impact_ricochet_enabled = "1",
 			cl_tfa_fx_impact_ricochet_sparks = "20",
@@ -346,6 +347,11 @@ if CLIENT then
 		}
 
 		panel:AddControl("ComboBox", tfaOptionPerf)
+
+		panel:AddControl("CheckBox", {
+			Label = "Use Penetration Decal (SV)",
+			Command = "sv_tfa_fx_penetration_decal"
+		})
 
 		panel:AddControl("CheckBox", {
 			Label = "Use Gas Blur",
@@ -966,6 +972,10 @@ end
 
 if GetConVar("sv_tfa_reloads_legacy") == nil then
 	CreateConVar("sv_tfa_reloads_legacy", "0", {FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE}, "-1 to leave unculled.  Anything else is feet*16.")
+end
+
+if GetConVar("sv_tfa_fx_penetration_decal") == nil then
+	CreateConVar("sv_tfa_fx_penetration_decal", "1", {FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE}, "Enable decals on the other side of a penetrated object?")
 end
 
 --Clientside Convars

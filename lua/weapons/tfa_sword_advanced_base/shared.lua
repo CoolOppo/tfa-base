@@ -202,7 +202,7 @@ end
 SWEP.Callback = {}
 
 SWEP.Callback.Deploy = function(self)
-	self:SetNWFloat("SharedRandomVal", CurTime())
+	self:SetNW2Float("SharedRandomVal", CurTime())
 	self:SetBlockStart(-1)
 	self.PrevBlockRat = 0
 end
@@ -243,7 +243,7 @@ end
 
 function SWEP:DoImpactEffect(tr, dmg)
 	local impactpos, impactnormal, seq
-	seq = self.Sequences[self:GetNWInt("Slash", 1)]
+	seq = self.Sequences[self:GetNW2Int("Slash", 1)]
 	impactpos = tr.HitPos
 	impactnormal = tr.HitNormal
 	self.sounds = self.sounds and self.sounds or 0
@@ -330,7 +330,7 @@ function SWEP:HitThing(ent, posv, normalv, damage, tr)
 end
 
 function SWEP:PrimaryAttack()
-	local sharedrandomval = self:GetNWFloat("SharedRandomVal", 0)
+	local sharedrandomval = self:GetNW2Float("SharedRandomVal", 0)
 	math.randomseed(sharedrandomval)
 	if CLIENT and not IsFirstTimePredicted() then return end
 	if not self:OwnerIsValid() then return end
@@ -358,16 +358,16 @@ function SWEP:PrimaryAttack()
 	if SERVER then
 		timer.Simple(0, function()
 			if IsValid(self) then
-				self:SetNWFloat("SharedRandomVal", math.Rand(-1024, 1024))
+				self:SetNW2Float("SharedRandomVal", math.Rand(-1024, 1024))
 			end
 		end)
 	end
 
 	local vm = self.Owner:GetViewModel()
 	self.Owner:SetAnimation(PLAYER_ATTACK1)
-	self.Owner:SetNWFloat("TFM_SwingStart", CurTime())
-	self:SetShootingEnd(CurTime() + vm:SequenceDuration(vm:LookupSequence(self.Sequences[self:GetNWInt("Slash", 1)].name)))
-	self.LastTraceTime = CurTime() + self.Sequences[self:GetNWInt("Slash", 1)].startt
+	self.Owner:SetNW2Float("TFM_SwingStart", CurTime())
+	self:SetShootingEnd(CurTime() + vm:SequenceDuration(vm:LookupSequence(self.Sequences[self:GetNW2Int("Slash", 1)].name)))
+	self.LastTraceTime = CurTime() + self.Sequences[self:GetNW2Int("Slash", 1)].startt
 	self:SetSpreadRatio(math.Clamp(self:GetSpreadRatio() + self.Primary.SpreadIncrement, 1, self.Primary.SpreadMultiplierMax))
 
 	if (CLIENT or game.SinglePlayer()) and IsFirstTimePredicted() then
@@ -380,7 +380,7 @@ function SWEP:PrimaryAttack()
 	self:SetNextPrimaryFire(CurTime() + 1 / (self.Primary.RPM / 60))
 
 	if SERVER then
-		timer.Simple(self.Sequences[self:GetNWInt("Slash", 1)].startt, function()
+		timer.Simple(self.Sequences[self:GetNW2Int("Slash", 1)].startt, function()
 			if IsValid(self) and self.Primary.Sound then
 				self:EmitSound(self.Primary.Sound)
 			end
@@ -397,8 +397,8 @@ local vm
 
 SWEP.Callback.IronsSprint = function(self)
 	ply = self.Owner
-	seq = self.Sequences[self:GetNWInt("Slash", 1)]
-	swe = ply:GetNWFloat("TFM_SwingStart", CurTime()) + seq.endt
+	seq = self.Sequences[self:GetNW2Int("Slash", 1)]
+	swe = ply:GetNW2Float("TFM_SwingStart", CurTime()) + seq.endt
 
 	if CurTime() < swe then
 		self:SetIronSights(false)
@@ -424,14 +424,14 @@ SWEP.Callback.Think2 = function(self)
 	self.PrevBlockRat = isr
 
 	if self:GetShooting() then
-		seq = self.Sequences[self:GetNWInt("Slash", 1)]
+		seq = self.Sequences[self:GetNW2Int("Slash", 1)]
 		ts = cv_ts:GetFloat()
 		ct = CurTime()
 		ft = CurTime() - self.LastTraceTime
 		len = seq.endt - seq.startt
 		strikepercent = ft / len
-		sws = ply:GetNWFloat("TFM_SwingStart", CurTime()) + seq.startt
-		swe = ply:GetNWFloat("TFM_SwingStart", CurTime()) + seq.endt
+		sws = ply:GetNW2Float("TFM_SwingStart", CurTime()) + seq.startt
+		swe = ply:GetNW2Float("TFM_SwingStart", CurTime()) + seq.endt
 		swingprogress = (CurTime() - sws) / len
 
 		if CurTime() < swe then
@@ -453,7 +453,7 @@ SWEP.Callback.Think2 = function(self)
 end
 
 function SWEP:ChooseShootAnim(mynewvar)
-	local sharedrandomval = self:GetNWFloat("SharedRandomVal", 0)
+	local sharedrandomval = self:GetNW2Float("SharedRandomVal", 0)
 	if not self:OwnerIsValid() then return end
 	if not IsValid(self) or not self:OwnerIsValid() then return end
 	ply = self.Owner
@@ -511,27 +511,27 @@ function SWEP:ChooseShootAnim(mynewvar)
 
 		if math.random(0, 1) == 0 then
 			math.randomseed(sharedrandomval)
-			self:SetNWInt("Slash", math.random(1, #self.Sequences))
+			self:SetNW2Int("Slash", math.random(1, #self.Sequences))
 		else
-			self:SetNWInt("Slash", self:GetNWInt("Slash", 1) + 1)
+			self:SetNW2Int("Slash", self:GetNW2Int("Slash", 1) + 1)
 
-			if self:GetNWInt("Slash", 1) > #self.Sequences then
-				self:SetNWInt("Slash", 1)
+			if self:GetNW2Int("Slash", 1) > #self.Sequences then
+				self:SetNW2Int("Slash", 1)
 			end
 		end
 		--print("selection sequence")
 		--print(math.Round( util.SharedRandom( "TFAMelee", 1, #selection, sharedrandomval ) ))
 	else
 		math.randomseed(sharedrandomval)
-		self:SetNWInt("Slash", selection[math.random(1, #selection)])
+		self:SetNW2Int("Slash", selection[math.random(1, #selection)])
 	end
 
 	--print("Shared Random Value:")
 	--print(sharedrandomval)
 	--print("Slash Number")
-	--print(self:GetNWInt("Slash",0))
+	--print(self:GetNW2Int("Slash",0))
 	local n = tonumber(mynewvar and mynewvar or "")
-	local seqn = n and n or self:GetNWInt("Slash", 1)
+	local seqn = n and n or self:GetNW2Int("Slash", 1)
 	--self.Weapon:SendWeaponAnim( ACT_VM_IDLE )
 	seq = self.Sequences[seqn]
 	--vm:ResetSequence(vm:LookupSequence(seq.name))
@@ -557,7 +557,7 @@ function SWEP:ChooseShootAnim(mynewvar)
 end
 
 function SWEP:BlockAnim()
-	local sharedrandomval = self:GetNWFloat("SharedRandomVal", 0)
+	local sharedrandomval = self:GetNW2Float("SharedRandomVal", 0)
 
 	if self.BlockSequences and #self.BlockSequences > 0 then
 		math.randomseed(sharedrandomval)

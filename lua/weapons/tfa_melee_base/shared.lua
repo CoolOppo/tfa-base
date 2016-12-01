@@ -61,6 +61,8 @@ SWEP.ImpactDecal = "ManhackCut"
 SWEP.Secondary.CanBash = false
 SWEP.DefaultComboTime = 0.2
 --[[ START OF BASE CODE ]]--
+SWEP.Primary.ClipSize = -1
+SWEP.Primary.Ammo = ""
 SWEP.Seed = 0
 
 function SWEP:SetupDataTables()
@@ -71,6 +73,7 @@ function SWEP:SetupDataTables()
 	self:NetworkVar("Float", 29, "VPYaw")
 	self:NetworkVar("Float", 30, "VPRoll")
 	self:NetworkVar("Float", 31, "MelAttackTime")
+	self:NetworkVar("Int", 30, "Seed")
 	self:NetworkVar("Int", 31, "MelAttackID")
 	self:SetMelAttacking(false)
 	self:SetMelAttackTime(-1)
@@ -82,7 +85,7 @@ function SWEP:SetupDataTables()
 	self:SetVPTime(-1)
 
 	if SERVER then
-		self:SetNWInt("Seed", self.Seed)
+		self:SetSeed(self.Seed)
 	end
 
 	return BaseClass.SetupDataTables(self)
@@ -100,7 +103,7 @@ function SWEP:Deploy()
 	self.up_hat = false
 
 	if SERVER then
-		self:SetNWInt("Seed", self.Seed)
+		self:SetSeed(self.Seed)
 	end
 
 	return BaseClass.Deploy(self)
@@ -133,7 +136,7 @@ function SWEP:ApplyForce(ent, force, posv, now)
 
 		if IsValid(phys) then
 			if ent:IsPlayer() or ent:IsNPC() then
-				ent:SetVelocity(ent:GetVelocity() + force * 0.1)
+				ent:SetVelocity( force * 0.1 )
 				phys:SetVelocity(phys:GetVelocity() + force * 0.1)
 			else
 				phys:ApplyForceOffset(force, posv)
@@ -200,8 +203,10 @@ function SWEP:BurstDoor(ent, dmginfo)
 end
 
 function SWEP:Think()
+	BaseClass.Think(self)
 	if self:IsSafety() then return end
 	if not self:OwnerIsValid() then return end
+
 
 	if self:GetVP() and CurTime() > self:GetVPTime() then
 		self:SetVP(false)
@@ -212,11 +217,11 @@ function SWEP:Think()
 	if not IsFirstTimePredicted() then return end
 	if not self:GetMelAttacking() then return end
 	if self.up_hat then return end
-	ind = self:GetMelAttackID() or 1
-	srctbl = (ind < 0) and self.Secondary.Attacks or self.Primary.Attacks
-	attack = srctbl[math.abs(ind)]
 
 	if CurTime() > self:GetMelAttackTime() then
+		ind = self:GetMelAttackID() or 1
+		srctbl = (ind < 0) and self.Secondary.Attacks or self.Primary.Attacks
+		attack = srctbl[math.abs(ind)]
 		self.DamageType = attack.dmgtype
 		--Just attacked, so don't do it again
 		self.up_hat = true
@@ -240,65 +245,83 @@ function SWEP:Think()
 			tr.mins = Vector(-attack.hull, -attack.hull, -attack.hull) / 2
 			tr.maxs = Vector(attack.hull, attack.hull, attack.hull) / 2
 			traceres = util.TraceHull(tr)
-			--[[
-			if IsValid(traceres.Entity) and !traceres.HitWorld and !traceres.HitSky then
-			tr.start = traceres.HitPos
-			tr.endpos = traceres.Entity.GetShootPos and traceres.Entity:GetShootPos() or traceres.Entity:GetPos()
-			tr.mask = MASK_SHOT
-			tr.mins = nil
-			tr.maxs = nil
+		else
 			traceres = util.TraceLine(tr)
-			--debugoverlay.Line( tr.start ,tr.endpos,5,Color(255,0,0,255),false)
-			--print("hullhit")
-		end
-		]]
-		--
-	else
-		traceres = util.TraceLine(tr)
-	end
-
-	self.Owner:LagCompensation(false)
-	local dirvec = Vector(0, 0, 0)
-	dirvec:Add(attack.dir.x * eang:Right())
-	dirvec:Add(attack.dir.y * eang:Forward())
-	dirvec:Add(attack.dir.z * eang:Up())
-	bul.Attacker = self.Owner or self
-	bul.Inflictor = self
-	bul.Damage = attack.dmg
-	bul.Force = 1 --attack.force or attack.dmg/4
-	bul.Dir = dirvec
-	bul.Src = traceres.HitPos + eang:Forward() * 16 - dirvec / 2
-	bul.Distance = dirvec:Length() + attack.len / 4
-	bul.Range = bul.Distance
-	bul.Tracer = 0
-	bul.Num = 1
-	bul.Spread = vector_origin
-	bul.HullSize = 16 --attack.hull
-	local hpw, hpf, hitent = nil, nil, nil
-	local forcevec = dirvec:GetNormalized() * (attack.force or attack.dmg / 4) * 128
-
-	bul.Callback = function(a, b, c)
-		if b.Fraction >= 1 then
-			c:ScaleDamage(0)
-
-			return
 		end
 
-		if b.HitPos:Distance(b.StartPos) >= bul.Distance then
-			c:ScaleDamage(0)
+		self.Owner:LagCompensation(false)
+		local dirvec = Vector(0, 0, 0)
+		dirvec:Add(attack.dir.x * eang:Right())
+		dirvec:Add(attack.dir.y * eang:Forward())
+		dirvec:Add(attack.dir.z * eang:Up())
+		bul.Attacker = self.Owner or self
+		bul.Inflictor = self
+		bul.Damage = attack.dmg
+		bul.Force = 1 --attack.force or attack.dmg/4
+		bul.Dir = dirvec
+		bul.Src = traceres.HitPos + eang:Forward() * 16 - dirvec / 2
+		bul.Distance = dirvec:Length() + attack.len / 4
+		bul.Range = bul.Distance
+		bul.Tracer = 0
+		bul.Num = 1
+		bul.Spread = vector_origin
+		bul.HullSize = 16 --attack.hull
+		local hpw, hpf, hitent = nil, nil, nil
+		local forcevec = dirvec:GetNormalized() * (attack.force or attack.dmg / 4) * 128
 
-			return
+		bul.Callback = function(a, b, c)
+			if b.Fraction >= 1 then
+				c:ScaleDamage(0)
+
+				return
+			end
+
+			if b.HitPos:Distance(b.StartPos) >= bul.Distance then
+				c:ScaleDamage(0)
+
+				return
+			end
+
+			c:SetDamageType(attack.dmgtype or DMG_SLASH)
+			hitent = b.Entity
+
+			if c:IsDamageType(DMG_BURN) and hitent.Ignite then
+				hitent:Ignite(bul.Damage / 10, 1)
+			end
+
+			if IsValid(self) then
+				if IsValid(hitent) and (b.MatType == MAT_FLESH or hitent:IsPlayer() or hitent:IsRagdoll() or hitent:IsNPC()) and attack.hitflesh then
+					if not hpf then
+						self:EmitSound(attack.hitflesh)
+						hpf = true
+					end
+				elseif attack.hitworld then
+					if not hpw then
+						self:EmitSound(attack.hitworld)
+						hpw = true
+					end
+
+					hpw = true
+				end
+
+				self:DoImpactEffect(b, attack.dmgtype)
+				self:ApplyForce(hitent, forcevec, traceres.HitPos)
+				self:BurstDoor(hitent, c)
+			end
 		end
 
-		c:SetDamageType(attack.dmgtype or DMG_SLASH)
-		hitent = b.Entity
+		local tr2 = {}
+		tr2.start = bul.Src
+		tr2.endpos = bul.Src + bul.Dir
+		tr2.mask = MASK_SHOT
+		tr2.filter = tr.filter
+		local traceres2 = util.TraceLine(tr2)
 
-		if c:IsDamageType(DMG_BURN) and hitent.Ignite then
-			hitent:Ignite(bul.Damage / 10, 1)
-		end
+		if IsValid(traceres.Entity) then
+			local ent = traceres.Entity
+			local phys = traceres.Entity.GetPhysicsObjectNum and ent:GetPhysicsObjectNum(0)
 
-		if IsValid(self) then
-			if IsValid(hitent) and (b.MatType == MAT_FLESH or hitent:IsPlayer() or hitent:IsRagdoll() or hitent:IsNPC()) and attack.hitflesh then
+			if ((IsValid(phys) and phys:GetMaterial() == "flesh") or ent:IsNPC() or ent:IsPlayer() or ent:IsRagdoll()) then
 				if not hpf then
 					self:EmitSound(attack.hitflesh)
 					hpf = true
@@ -308,196 +331,65 @@ function SWEP:Think()
 					self:EmitSound(attack.hitworld)
 					hpw = true
 				end
-
-				hpw = true
-			end
-
-			self:DoImpactEffect(b, attack.dmgtype)
-			self:ApplyForce(hitent, forcevec, traceres.HitPos)
-			self:BurstDoor(hitent, c)
-		end
-	end
-
-	local tr2 = {}
-	tr2.start = bul.Src
-	tr2.endpos = bul.Src + bul.Dir
-	tr2.mask = MASK_SHOT
-	tr2.filter = tr.filter
-	local traceres2 = util.TraceLine(tr2)
-
-	if IsValid(traceres.Entity) then
-		local ent = traceres.Entity
-		local phys = traceres.Entity.GetPhysicsObjectNum and ent:GetPhysicsObjectNum(0)
-
-		if ((IsValid(phys) and phys:GetMaterial() == "flesh") or ent:IsNPC() or ent:IsPlayer() or ent:IsRagdoll()) then
-			if not hpf then
-				self:EmitSound(attack.hitflesh)
-				hpf = true
-			end
-		elseif attack.hitworld then
-			if not hpw then
-				self:EmitSound(attack.hitworld)
-				hpw = true
 			end
 		end
-	end
 
-	if traceres2.Hit and traceres2.Fraction < 1 then
-		self.Owner:FireBullets(bul)
-	end
-
-	if IsValid(traceres.Entity) and traceres.Entity ~= hitent and not traceres.HitWorld then
-		local dmginfo = DamageInfo()
-		dmginfo:SetAttacker(bul.Attacker)
-		dmginfo:SetInflictor(bul.Inflictor)
-		dmginfo:SetDamage(bul.Damage)
-		dmginfo:SetDamageType(attack.dmgtype or DMG_SLASH)
-		dmginfo:SetDamagePosition(traceres.HitPos)
-		dmginfo:SetDamageForce(bul.Dir:GetNormalized() * bul.Force)
-		local ent = traceres.Entity
-
-		if IsValid(ent) and ent.TakeDamageInfo then
-			ent:TakeDamageInfo(dmginfo)
+		if traceres2.Hit and traceres2.Fraction < 1 then
+			self.Owner:FireBullets(bul)
 		end
 
-		if traceres.MatType == MAT_FLESH or traceres.MatType == MAT_ALIENFLESH then
-			local fx = EffectData()
-			fx:SetOrigin(traceres.HitPos)
-			fx:SetNormal(traceres.HitNormal)
-			fx:SetEntity(traceres.Entity)
-			fx:SetColor(BLOOD_COLOR_RED or 0)
-			util.Effect("BloodImpact", fx)
+		if IsValid(traceres.Entity) and traceres.Entity ~= hitent and not traceres.HitWorld then
+			local dmginfo = DamageInfo()
+			dmginfo:SetAttacker(bul.Attacker)
+			dmginfo:SetInflictor(bul.Inflictor)
+			dmginfo:SetDamage(bul.Damage)
+			dmginfo:SetDamageType(attack.dmgtype or DMG_SLASH)
+			dmginfo:SetDamagePosition(traceres.HitPos)
+			dmginfo:SetDamageForce(bul.Dir:GetNormalized() * bul.Force)
+			local ent = traceres.Entity
+
+			if IsValid(ent) and ent.TakeDamageInfo then
+				ent:TakeDamageInfo(dmginfo)
+			end
+
+			if traceres.MatType == MAT_FLESH or traceres.MatType == MAT_ALIENFLESH then
+				local fx = EffectData()
+				fx:SetOrigin(traceres.HitPos)
+				fx:SetNormal(traceres.HitNormal)
+				fx:SetEntity(traceres.Entity)
+				fx:SetColor(BLOOD_COLOR_RED or 0)
+				util.Effect("BloodImpact", fx)
+			end
+
+			self:DoImpactEffect(traceres, attack.dmgtype)
+			self:ApplyForce(traceres.Entity, forcevec, traceres.HitPos)
+			self:BurstDoor(traceres.Entity, dmginfo)
+
+			if dmginfo:IsDamageType(DMG_BURN) and traceres.Entity.Ignite then
+				traceres.Entity:Ignite(bul.Damage / 10, 1)
+			end
 		end
 
-		self:DoImpactEffect(traceres, attack.dmgtype)
-		self:ApplyForce(traceres.Entity, forcevec, traceres.HitPos)
-		self:BurstDoor(traceres.Entity, dmginfo)
-
-		if dmginfo:IsDamageType(DMG_BURN) and traceres.Entity.Ignite then
-			traceres.Entity:Ignite(bul.Damage / 10, 1)
+		if traceres.HitWorld then
+			bul.Src = self.Owner:GetShootPos()
+			bul.Dir = self.Owner:GetAimVector()
+			bul.Distance = attack.len
+			bul.Range = bul.Distance
+			bul.Force = 1
+			bul.Damage = 1
+			self.Owner:FireBullets(bul)
 		end
 	end
-
-	if traceres.HitWorld then
-		bul.Src = self.Owner:GetShootPos()
-		bul.Dir = self.Owner:GetAimVector()
-		bul.Distance = attack.len
-		bul.Range = bul.Distance
-		bul.Force = 1
-		bul.Damage = 1
-		self.Owner:FireBullets(bul)
-	end
-	--[[
-
-	ang = self.Owner:EyeAngles()
-
-	src = self.Owner:GetShootPos()
-
-	src:Add( ang:Right() * attack.src.x )
-	src:Add( ang:Forward() * attack.src.y )
-	src:Add( ang:Forward() * attack.src.z )
-
-	dst = src * 1
-	dst:Add( ang:Right() * attack.dir.x )
-	dst:Add( ang:Forward() * attack.dir.y )
-	dst:Add( ang:Forward() * attack.dir.z )
-
-	--Range check
-
-	tr.start = src
-	tr.endpos = dst
-	tr.mask = MASK_SOLID
-	tr.filter = function( ent ) if ent == self.Owner or ent == self then return false end return true end
-	if attack.hull and attack.hull>0 then
-	tr.mask = MASK_SHOT_HULL
-	tr.mins = Vector( -attack.hull, -attack.hull, -attack.hull ) / 2
-	tr.maxs = Vector( attack.hull, attack.hull, attack.hull ) / 2
-	traceres = util.TraceHull(tr)
-	if traceres.Hit and !traceres.HitWorld and !traceres.HitSky then
-	tr.start = traceres.HitPos
-	tr.endpos = traceres.Entity.GetShootPos and traceres.Entity:GetShootPos() or traceres.Entity:GetPos()
-	tr.mask = MASK_SOLID
-	tr.mins = nil
-	tr.maxs = nil
-	traceres = util.TraceLine(tr)
-	--debugoverlay.Line( tr.start ,tr.endpos,5,Color(255,0,0,255),false)
-	--print("hullhit")
-end
-else
-traceres = util.TraceLine(tr)
-end
-
---debugoverlay.Line(src,dst,5,Color(255,255,0,255),false)
---debugoverlay.Cross(dst,5,5,color_white,true)
-
-if traceres.Hit and traceres.Fraction<1 and traceres.Fraction>=0 then
---Within range
-bul.Attacker = self.Owner or self
-bul.Inflictor = self
-bul.Damage = attack.dmg
-bul.Force = attack.force or attack.dmg/4
-bul.Dir = -traceres.HitNormal--( dst - src ):GetNormalized()
-bul.Src = traceres.HitPos - bul.Dir * 8
-bul.Distance = 32
-bul.Tracer = 0
-bul.Num = 1
-bul.Spread = vector_origin
-bul.HullSize = 0 --attack.hull
-
-if IsValid(traceres.Entity) and traceres.Entity:IsNPC() or traceres.Entity:IsPlayer() then
-local dmginfo = DamageInfo()
-dmginfo:SetAttacker( bul.Attacker )
-dmginfo:SetInflictor( bul.Inflictor )
-dmginfo:SetDamage( bul.Damage )
-dmginfo:SetDamageType( attack.dmgtype or DMG_SLASH )
-dmginfo:SetDamagePosition( traceres.HitPos )
-dmginfo:SetDamageForce( bul.Dir:GetNormalized() * bul.Force )
-
-hook.Call("ScalePlayerDamage", ( GM or GAMEMODE ), traceres.Entity, HITGROUP_GENERIC, dmginfo )
-
-local ent = traceres.Entity
-if IsValid(ent) and ent.TakeDamageInfo then
-ent:TakeDamageInfo(dmginfo)
-end
-if traceres.MatType == MAT_FLESH or traceres.MatType == MAT_ALIENFLESH then
-local fx = EffectData()
-fx:SetOrigin(traceres.HitPos)
-fx:SetNormal(traceres.HitNormal)
-fx:SetEntity(traceres.Entity)
-fx:SetColor( BLOOD_COLOR_RED or 0 )
-util.Effect("BloodImpact",fx)
-end
-else
-bul.Callback = function(a,b,c)
-c:SetDamageType( attack.dmgtype or DMG_SLASH )
-end
-self.Owner:FireBullets(bul)
-end
-
-
-
-end
-
-]]
---
-end
 end
 
 function SWEP:PlaySwing(act)
-	if not self:OwnerIsValid() then return end
-	self.up_hat = false
-	self:SendWeaponAnim(act)
-
-	if game.SinglePlayer() then
-		self:CallOnClient("AnimForce", act)
-	end
-
-	self.lastact = act
-
-	return success, act
+	self:SendViewModelAnim(act)
+	return true, act
 end
 
 local lvec, ply, targ
+
+lvec = Vector()
 
 function SWEP:PrimaryAttack()
 	if self:IsSafety() then return end
@@ -509,9 +401,15 @@ function SWEP:PrimaryAttack()
 
 	if self.Primary.Directional then
 		ply = self.Owner
-		lvec = WorldToLocal(ply:GetVelocity(), Angle(0, 0, 0), vector_origin, ply:EyeAngles()):GetNormalized()
+		--lvec = WorldToLocal(ply:GetVelocity(), Angle(0, 0, 0), vector_origin, ply:EyeAngles()):GetNormalized()
+		lvec.x = 0
+		lvec.y = 0
+		if ply:KeyDown(IN_MOVERIGHT) then lvec.y = lvec.y - 1 end
+		if ply:KeyDown(IN_MOVELEFT) then lvec.y = lvec.y + 1 end
+		if ply:KeyDown(IN_FORWARD) or ply:KeyDown(IN_JUMP) then lvec.x = lvec.x + 1 end
+		if ply:KeyDown(IN_BACK) or ply:KeyDown(IN_DUCK) then lvec.x = lvec.x - 1 end
 		lvec.z = 0
-		lvec:Normalize()
+		--lvec:Normalize()
 
 		if lvec.y > 0.3 then
 			targ = "L"
@@ -550,11 +448,11 @@ function SWEP:PrimaryAttack()
 		timer.Simple(0, function()
 			if IsValid(self) then
 				self.Seed = math.random(-99999, 99999)
-				self:SetNWInt("Seed", self.Seed)
+				self:SetSeed(self.Seed)
 			end
 		end)
 	elseif IsFirstTimePredicted() then
-		self.Seed = self:GetNWInt("Seed")
+		self.Seed = self:GetSeed()
 	end
 
 	math.randomseed(CurTime() + self.Seed)
@@ -593,6 +491,7 @@ function SWEP:PrimaryAttack()
 		self.Owner:ViewPunch(-Angle(attack.viewpunch.p / 2, attack.viewpunch.y / 2, attack.viewpunch.r / 2))
 	end
 
+	self.up_hat = false
 	self:SetShooting(true)
 	self:SetShootingEnd(CurTime() + vm:SequenceDuration())
 	self:SetNextIdleAnim(CurTime() + vm:SequenceDuration())
@@ -617,9 +516,15 @@ function SWEP:SecondaryAttack()
 
 	if self.Secondary.Directional then
 		ply = self.Owner
-		lvec = WorldToLocal(ply:GetVelocity(), Angle(0, 0, 0), vector_origin, ply:EyeAngles()):GetNormalized()
+		--lvec = WorldToLocal(ply:GetVelocity(), Angle(0, 0, 0), vector_origin, ply:EyeAngles()):GetNormalized()
+		lvec.x = 0
+		lvec.y = 0
+		if ply:KeyDown(IN_MOVERIGHT) then lvec.y = lvec.y - 1 end
+		if ply:KeyDown(IN_MOVELEFT) then lvec.y = lvec.y + 1 end
+		if ply:KeyDown(IN_FORWARD) or ply:KeyDown(IN_JUMP) then lvec.x = lvec.x + 1 end
+		if ply:KeyDown(IN_BACK) or ply:KeyDown(IN_DUCK) then lvec.x = lvec.x - 1 end
 		lvec.z = 0
-		lvec:Normalize()
+		--lvec:Normalize()
 
 		if lvec.y > 0.3 then
 			targ = "L"
@@ -656,9 +561,9 @@ function SWEP:SecondaryAttack()
 
 	if SERVER then
 		self.Seed = math.random(-99999, 99999)
-		self:SetNWInt("Seed", self.Seed)
+		self:SetSeed(self.Seed)
 	elseif IsFirstTimePredicted() then
-		self.Seed = self:GetNWInt("Seed")
+		self.Seed = self:GetSeed()
 	end
 
 	math.randomseed(CurTime() + self.Seed)
@@ -697,6 +602,7 @@ function SWEP:SecondaryAttack()
 		self.Owner:ViewPunch(-Angle(attack.viewpunch.p / 2, attack.viewpunch.y / 2, attack.viewpunch.r / 2))
 	end
 
+	self.up_hat = false
 	self:SetShooting(true)
 	self:SetShootingEnd(CurTime() + vm:SequenceDuration())
 	self:SetNextIdleAnim(CurTime() + vm:SequenceDuration())
@@ -708,6 +614,7 @@ function SWEP:SecondaryAttack()
 end
 
 function SWEP:AltAttack()
+	if self:GetMelAttacking() then return end
 	if not self.Secondary.CanBash then return end
 	if self:IsSafety() then return end
 

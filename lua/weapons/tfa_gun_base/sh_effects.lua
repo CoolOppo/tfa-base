@@ -1,16 +1,18 @@
 local fx, sp
 
+function SWEP:ProcessEffects()
+	if self.LShell and CurTime() > self.LShellTime then
+		self:MakeShell()
+		self:EjectionSmoke()
+		self.LShell = false
+	end
+end
+
 function SWEP:MakeShellBridge(ifp)
 	if ifp then
 		if self.LuaShellEjectDelay > 0 then
-			if not game.SinglePlayer() and CLIENT then return end
-
-			timer.Simple(self.LuaShellEjectDelay, function()
-				if IsValid(self) and self:OwnerIsValid() then
-					self:MakeShell()
-					self:EjectionSmoke()
-				end
-			end)
+			self.LShell = true
+			self.LShellTime = CurTime() + self.LuaShellEjectDelay
 		else
 			self:MakeShell()
 		end
@@ -19,7 +21,7 @@ end
 
 function SWEP:MakeShell()
 	if IsValid(self) and self:OwnerIsValid() then
-		local vm = (not self.Owner.ShouldDrawLocalPlayer or self.Owner:ShouldDrawLocalPlayer()) and self.OwnerViewModel or self
+		local vm = ( self.Owner.ShouldDrawLocalPlayer and self.Owner:ShouldDrawLocalPlayer() ) and self or self.OwnerViewModel
 
 		if IsValid(vm) then
 			fx = EffectData()

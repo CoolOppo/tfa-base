@@ -5,7 +5,7 @@ if SERVER then
 	util.AddNetworkString("tfa_base_muzzle_mp")
 	util.AddNetworkString("tfaInspect")
 	util.AddNetworkString("tfaShotgunInterrupt")
-	util.AddNetworkString("tfaAltAttack")
+	--util.AddNetworkString("tfaAltAttack")
 
 	--Enable inspection
 	net.Receive("tfaInspect", function(length, client)
@@ -35,6 +35,7 @@ if SERVER then
 	end)
 
 	--Enable alternate attacks
+	--[[
 	net.Receive("tfaAltAttack", function(length, client)
 		if IsValid(client) and client:IsPlayer() and client:Alive() then
 			ply = client
@@ -45,7 +46,7 @@ if SERVER then
 			end
 		end
 	end)
-
+	]]--
 	--Distribute muzzles from server to clients
 	net.Receive("tfa_base_muzzle_mp", function(length, plyv)
 		wep = plyv:GetActiveWeapon()

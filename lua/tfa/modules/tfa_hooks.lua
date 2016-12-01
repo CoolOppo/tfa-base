@@ -36,8 +36,8 @@ Used For: Records last held object
 ]]
 --
 hook.Add("AllowPlayerPickup", "TFAPickupDisable", function(plyv, ent)
-	plyv:SetNWEntity("LastHeldEntity", ent)
-	plyv:SetNWInt("LastHeldEntityIndex", ent.EntIndex and ent:EntIndex() or -1)
+	plyv:SetNW2Entity("LastHeldEntity", ent)
+	plyv:SetNW2Int("LastHeldEntityIndex", ent.EntIndex and ent:EntIndex() or -1)
 end)
 
 --[[
@@ -53,6 +53,7 @@ function TFAPlayerBindPress(plyv, b, p)
 		wep = plyv:GetActiveWeapon() or wep
 
 		if IsValid(wep) then
+			--[[
 			if wep.AltAttack and b == "+zoom" then
 				wep:AltAttack()
 
@@ -63,6 +64,7 @@ function TFAPlayerBindPress(plyv, b, p)
 
 				return true
 			end
+			]]--
 
 			if wep.ToggleInspect and b == "+menu_context" and cv_cm:GetBool() then
 				wep:ToggleInspect()
@@ -82,14 +84,88 @@ end
 hook.Add("PlayerBindPress", "TFAInspectionMenu", TFAPlayerBindPress)
 
 --[[
+Hook: KeyPress
+Function: Allows player to bash
+Used For:  Predicted bashing
+]]--
+
+local function KP_Bash(plyv, key)
+	if (key == IN_ZOOM) then
+		wep = plyv:GetActiveWeapon()
+
+		if IsValid(wep) and wep.AltAttack then
+			wep:AltAttack()
+		end
+	end
+	if (key == IN_RELOAD ) then
+		plyv.HasTFAAmmoChek = false
+		plyv.LastReloadPressed = CurTime()
+	end
+end
+
+local reload_threshold = 0.3
+
+hook.Add("KeyPress","TFABase_KP",KP_Bash)
+
+local function KR_Reload(plyv, key)
+	if key == IN_RELOAD and CurTime() < ( plyv.LastReloadPressed or -1 ) + reload_threshold then
+		plyv.HasTFAAmmoChek = false
+		wep = plyv:GetActiveWeapon()
+
+		if IsValid(wep) and wep.IsTFAWeapon then
+			plyv:GetActiveWeapon():Reload( true )
+		end
+	end
+end
+
+hook.Add("KeyRelease","TFABase_KR",KR_Reload)
+
+local function KD_AmmoCheck(plyv)
+	if plyv.HasTFAAmmoChek then return end
+	if plyv:KeyDown(IN_RELOAD) and CurTime() > ( plyv.LastReloadPressed or -1 ) + reload_threshold then
+		wep = plyv:GetActiveWeapon()
+
+		if IsValid(wep) and wep.IsTFAWeapon then
+			plyv.HasTFAAmmoChek = true
+			plyv:GetActiveWeapon():CheckAmmo()
+		end
+	end
+end
+
+hook.Add("PlayerTick","TFABase_KD",KD_AmmoCheck)
+
+function TFA.ProcessBashZoom( plyv, wepv )
+	if not IsValid(wepv) then
+		plyv:SetCanZoom(true)
+		return
+	end
+	if wepv.AltAttack then
+		plyv:SetCanZoom(false)
+	else
+		plyv:SetCanZoom(true)
+	end
+end
+
+local function PSW_PBZ(plyv,owv,nwv)
+	timer.Simple(0,function()
+		if IsValid(plyv) then
+			TFA.ProcessBashZoom( plyv, plyv:GetActiveWeapon() )
+		end
+	end)
+end
+
+hook.Add("PlayerSwitchWeapon","TFABashFixZoom",PSW_PBZ)
+
+--[[
 Hook: PlayerSpawn
-Function: Extinguishes players
+Function: Extinguishes players, zoom cleanup
 Used For:  Fixes incendiary bullets post-respawn
-]]
---
+]]--
+
 hook.Add("PlayerSpawn", "TFAExtinguishQOL", function(plyv)
 	if IsValid(plyv) and plyv:IsOnFire() then
 		plyv:Extinguish()
+		TFA.ProcessBashZoom( plyv, plyv:GetActiveWeapon() )
 	end
 end)
 

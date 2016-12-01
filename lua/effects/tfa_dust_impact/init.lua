@@ -6,7 +6,7 @@ function EFFECT:Init(data)
 		ent = ply:GetActiveWeapon()
 	end
 
-	local sfac = (IsValid(ent) and ent.Primary and ent.Primary.Damage) and math.sqrt(ent.Primary.Damage / 30) or data:GetScale()
+	local sfac = (IsValid(ent) and ent.Primary and ent.Primary.Damage) and math.sqrt(ent.Primary.Damage / 30) or 1
 	local sfac_sqrt = math.sqrt(sfac)
 	local posoffset = data:GetOrigin()
 	local forward = data:GetNormal()

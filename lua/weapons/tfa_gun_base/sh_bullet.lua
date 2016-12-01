@@ -1,6 +1,18 @@
 local bullet = {}
 bullet.Spread = Vector()
 
+local function DisableOwnerDamage(a,b,c)
+	if b.Entity == a and c then
+		c:ScaleDamage(0)
+	end
+end
+
+local function DirectDamage(a,b,c)
+	if c then
+		c:SetDamageType(DMG_DIRECT)
+	end
+end
+
 --[[
 Function Name:  ToggleAkimbo
 Syntax: self:ToggleAkimbo( ).
@@ -156,7 +168,7 @@ function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet,
 		bullet.TracerName = TracerName
 		bullet.PenetrationCount = 0
 		bullet.AmmoType = self:GetPrimaryAmmoType()
-		bullet.Force = damage / 6 * math.sqrt(self.Primary.KickUp + self.Primary.KickDown + self.Primary.KickHorizontal) * cv_forcemult:GetFloat() * self:GetAmmoForceMultiplier()
+		bullet.Force = self.Primary.Force * cv_forcemult:GetFloat()
 		bullet.Damage = damage
 		bullet.HasAppliedRange = false
 
@@ -166,6 +178,9 @@ function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet,
 
 		bullet.Callback = function(a, b, c)
 			if IsValid(self) then
+
+				DisableOwnerDamage(a,b,c)
+
 				if bullet.Callback2 then
 					bullet.Callback2(a, b, c)
 				end
@@ -180,6 +195,9 @@ end
 
 function SWEP:Recoil(recoil, ifp)
 	math.randomseed(CurTime() + 1)
+
+	self.Owner:SetVelocity( -self.Owner:GetAimVector() * self.Primary.Knockback * cv_forcemult:GetFloat() * recoil / 5  )
+
 	local tmprecoilang = Angle(math.Rand(self.Primary.KickDown, self.Primary.KickUp) * recoil * -1, math.Rand(-self.Primary.KickHorizontal, self.Primary.KickHorizontal) * recoil, 0)
 	local maxdist = math.min(math.max(0, 89 + self.Owner:EyeAngles().p - math.abs(self.Owner:GetViewPunchAngles().p * 2)), 88.5)
 	local tmprecoilangclamped = Angle(math.Clamp(tmprecoilang.p, -maxdist, maxdist), tmprecoilang.y, 0)
@@ -187,7 +205,7 @@ function SWEP:Recoil(recoil, ifp)
 
 	if (game.SinglePlayer() and SERVER) or (CLIENT and ifp) then
 		local neweyeang = self.Owner:EyeAngles() + tmprecoilang * self.Primary.StaticRecoilFactor
-		neweyeang.p = math.Clamp(neweyeang.p, -90 + math.abs(self.Owner:GetViewPunchAngles().p), 90 - math.abs(self.Owner:GetViewPunchAngles().p))
+		--neweyeang.p = math.Clamp(neweyeang.p, -90 + math.abs(self.Owner:GetViewPunchAngles().p), 90 - math.abs(self.Owner:GetViewPunchAngles().p))
 		self.Owner:SetEyeAngles(neweyeang)
 	end
 end
@@ -205,12 +223,14 @@ local penetration_max_cvar = GetConVar("sv_tfa_penetration_limit")
 local penetration_cvar = GetConVar("sv_tfa_bullet_penetration")
 local ricochet_cvar = GetConVar("sv_tfa_bullet_ricochet")
 local cv_rangemod = GetConVar("sv_tfa_range_modifier")
+local cv_decalbul = GetConVar("sv_tfa_fx_penetration_decal")
 local rngfac
 local mfac
 
 function bullet:Penetrate(ply, traceres, dmginfo, weapon)
 	if not IsValid(weapon) then return end
 	local hitent = traceres.Entity
+	self:HandleDoor(ply, traceres, dmginfo, weapon)
 
 	if not self.HasAppliedRange then
 		local bulletdistance = (traceres.HitPos - traceres.StartPos):Length()
@@ -222,14 +242,14 @@ function bullet:Penetrate(ply, traceres, dmginfo, weapon)
 		self.HasAppliedRange = true
 	end
 
-	dmginfo:SetDamageType(weapon.DamageType or weapon.Primary.DamageType or DMG_BULLET)
+	dmginfo:SetDamageType(weapon.Primary.DamageType)
 
 	if SERVER and IsValid(ply) and ply:IsPlayer() and IsValid(hitent) and (hitent:IsPlayer() or hitent:IsNPC()) then
 		net.Start("tfaHitmarker")
 		net.Send(ply)
 	end
 
-	if weapon.DamageType then
+	if weapon.Primary.DamageType ~= DMG_BULLET then
 		if ( dmginfo:IsDamageType(DMG_SHOCK) or dmginfo:IsDamageType(DMG_BLAST) ) and traceres.Hit and IsValid(hitent) and hitent:GetClass() == "npc_strider" then
 			hitent:SetHealth(math.max(hitent:Health() - dmginfo:GetDamage(), 2))
 
@@ -302,7 +322,7 @@ function bullet:Penetrate(ply, traceres, dmginfo, weapon)
 	decalbul.Force = 0.1
 	decalbul.Tracer = 0
 	decalbul.TracerName = ""
-	decalbul.Callback = function() return true end
+	decalbul.Callback = DirectDamage
 	local fx = EffectData()
 	fx:SetOrigin(self.Src)
 	fx:SetNormal(self.Dir + VectorRand() * self.Spread)
@@ -317,7 +337,9 @@ function bullet:Penetrate(ply, traceres, dmginfo, weapon)
 
 		timer.Simple(0, function()
 			if IsValid(ply) then
-				ply:FireBullets(decalbul)
+				if cv_decalbul:GetBool() then
+					ply:FireBullets(decalbul)
+				end
 				ply:FireBullets(self)
 			end
 		end)
@@ -388,5 +410,67 @@ function bullet:Ricochet(ply, traceres, dmginfo, weapon)
 		self.PenetrationCount = self.PenetrationCount + 1
 
 		return true
+	end
+end
+
+function bullet:MakeDoor(ent, dmginfo)
+	pos = ent:GetPos()
+	ang = ent:GetAngles()
+	mdl = ent:GetModel()
+	ski = ent:GetSkin()
+	ent:SetNotSolid(true)
+	ent:SetNoDraw(true)
+	prop = ents.Create("prop_physics")
+	prop:SetPos(pos)
+	prop:SetAngles(ang)
+	prop:SetModel(mdl)
+	prop:SetSkin(ski or 0)
+	prop:Spawn()
+	prop:SetVelocity(dmginfo:GetDamageForce())
+	prop:GetPhysicsObject():ApplyForceOffset(dmginfo:GetDamageForce(), dmginfo:GetDamagePosition())
+	prop:SetPhysicsAttacker(dmginfo:GetAttacker())
+	prop:EmitSound("physics/wood/wood_furniture_break" .. tostring(math.random(1, 2)) .. ".wav", 110, math.random(90, 110))
+end
+
+local defaultdoorhealth = 250
+local ohp = 250
+
+function bullet:HandleDoor(ply, traceres, dmginfo, wep)
+	local ent = traceres.Entity
+	if not IsValid(ent) then return end
+	ent.TFADoorHealth = ent.TFADoorHealth or defaultdoorhealth
+	if bit.band(wep.Primary.DamageType or 0, DMG_AIRBOAT) == DMG_AIRBOAT and (ent:GetClass() == "func_door_rotating" or ent:GetClass() == "prop_door_rotating") then
+		ohp = ent.TFADoorHealth
+		ent.TFADoorHealth = ent.TFADoorHealth - dmginfo:GetDamage()
+
+		if ent.TFADoorHealth <= 0 then
+			if ( (self.Damage * self.Num > 150) or ent.TFADoorHealth < -defaultdoorhealth * 0.66 or not IsValid(ply) or not ply.SetName ) then
+				self:MakeDoor(ent, dmginfo)
+				ply:EmitSound("ambient/materials/door_hit1.wav", 100, math.random(90, 110))
+			elseif math.random( math.max(1, 3 - wep.Primary.NumShots ) ) == 1 then
+				if ohp > 0 then
+					ply:EmitSound("ambient/materials/door_hit1.wav", 100, math.random(90, 110))
+				end
+				ply.oldname = ply:GetName()
+				ply:SetName("bashingpl" .. ply:EntIndex())
+				ent:SetKeyValue("Speed", "500")
+				ent:SetKeyValue("Open Direction", "Both directions")
+				ent:SetKeyValue("opendir", "0")
+				ent:Fire("unlock", "", .01)
+				ent:Fire("openawayfrom", "bashingpl" .. ply:EntIndex(), .01)
+
+				timer.Simple(0.02, function()
+					if IsValid(ply) then
+						ply:SetName(ply.oldname)
+					end
+				end)
+
+				timer.Simple(0.3, function()
+					if IsValid(ent) then
+						ent:SetKeyValue("Speed", "100")
+					end
+				end)
+			end
+		end
 	end
 end

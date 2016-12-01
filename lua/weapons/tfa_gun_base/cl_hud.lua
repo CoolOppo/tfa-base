@@ -62,7 +62,7 @@ local function GetTeamColor(ent)
 	end
 
 	if ent:IsNPC() then
-		local disp = ent:GetNWInt("tfa_disposition", -1)
+		local disp = ent:GetNW2Int("tfa_disposition", -1)
 
 		if disp > 0 then
 			if disp == (D_FR or 2) or disp == (D_HT or 1) then
@@ -934,7 +934,7 @@ function SWEP:DrawHUD()
 
 				-- If we're drawing the local player, draw the crosshair where they're aiming
 				-- instead of in the center of the screen.
-				if (self.Owner:ShouldDrawLocalPlayer() and not ply:GetNWBool("ThirtOTS", false)) then
+				if (self.Owner:ShouldDrawLocalPlayer() and not ply:GetNW2Bool("ThirtOTS", false)) then
 					local tr = util.GetPlayerTrace(self.Owner)
 					tr.mask = CONTENTS_SOLID + CONTENTS_MOVEABLE + CONTENTS_MONSTER + CONTENTS_WINDOW + CONTENTS_DEBRIS + CONTENTS_GRATE + CONTENTS_AUX -- This controls what the crosshair will be projected onto.
 					local trace = util.TraceLine(tr)
@@ -1017,158 +1017,9 @@ function SWEP:DrawHUD()
 		end
 	end
 
-	--HUD
-	if self.Akimbo then
-		self.MuzzleAttachmentRaw2 = self.MuzzleAttachmentRaw or 1
-		self.MuzzleAttachmentRaw = 2 - (self.Akimbo_Inverted and 1 or 0)
-	end
+	--Ammo
 
-	local mzpos = self:GetMuzzlePos()
-
-	if self.Akimbo then
-		self.MuzzleAttachmentRaw = self.MuzzleAttachmentRaw2 or 1
-	end
-
-	if mzpos and mzpos.Pos and not self:IsHidden() and hudenabled_cvar:GetBool() then
-		local pos = mzpos.Pos
-		local textsize = self.textsize and self.textsize or 1
-		local pl = LocalPlayer() and LocalPlayer() or self.Owner
-		local ang = pl:EyeAngles() --(angpos.Ang):Up():Angle()
-		local myalpha = 225 * self.CLAmmoHUDProgress
-		ang:RotateAroundAxis(ang:Right(), 90)
-		ang:RotateAroundAxis(ang:Up(), -90)
-		ang:RotateAroundAxis(ang:Forward(), 0)
-		pos = pos + ang:Right() * (self.textupoffset and self.textupoffset or -2 * (textsize / 1))
-		pos = pos + ang:Up() * (self.textfwdoffset and self.textfwdoffset or 0 * (textsize / 1))
-		pos = pos + ang:Forward() * (self.textrightoffset and self.textrightoffset or -1 * (textsize / 1))
-		local postoscreen = pos:ToScreen()
-		xx = postoscreen.x
-		yy = postoscreen.y
-
-		if self.CLInspectingProgress < 0.01 and self.Primary.Ammo ~= "" and self.Primary.Ammo ~= 0 then
-			local str
-
-			if self.Primary.ClipSize and self.Primary.ClipSize ~= -1 then
-				str = string.upper("MAG: " .. self:Clip1())
-
-				if (self:Clip1() > self.Primary.ClipSize) then
-					str = string.upper("MAG: " .. self.Primary.ClipSize .. " + " .. (self:Clip1() - self.Primary.ClipSize))
-				end
-
-				draw.DrawText(str, "TFASleek", xx + 1, yy + 1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
-				draw.DrawText(str, "TFASleek", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT)
-				str = string.upper("RESERVE: " .. self:GetAmmoReserve())
-				yy = yy + TFASleekFontHeight
-				xx = xx - TFASleekFontHeight / 3
-				draw.DrawText(str, "TFASleekMedium", xx + 1, yy + 1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
-				draw.DrawText(str, "TFASleekMedium", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT)
-				yy = yy + TFASleekFontHeightMedium
-				xx = xx - TFASleekFontHeightMedium / 3
-			else
-				str = string.upper("AMMO: " .. self:Ammo1())
-				draw.DrawText(str, "TFASleek", xx + 1, yy + 1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
-				draw.DrawText(str, "TFASleek", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT)
-				yy = yy + TFASleekFontHeightMedium
-				xx = xx - TFASleekFontHeightMedium / 3
-			end
-
-			str = string.upper(self:GetFireModeName())
-			draw.DrawText(str, "TFASleekSmall", xx + 1, yy + 1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
-			draw.DrawText(str, "TFASleekSmall", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT)
-			yy = yy + TFASleekFontHeightSmall
-			xx = xx - TFASleekFontHeightSmall / 3
-
-			if self.Secondary.Ammo and self.Secondary.Ammo ~= "" and self.Secondary.Ammo ~= "none" and self.Secondary.Ammo ~= 0 then
-				local angpos2
-
-				if self.Akimbo then
-					angpos2 = self.Owner:ShouldDrawLocalPlayer() and self:GetAttachment(self.Akimbo_Inverted and 2 or 1) or self.Owner:GetViewModel():GetAttachment(self.Akimbo_Inverted and 2 or 1)
-				else
-					angpos2 = self.Owner:ShouldDrawLocalPlayer() and self:GetAttachment(self.MuzzleAttachmentRaw or self:LookupAttachment(self.MuzzleAttachment)) or self.Owner:GetViewModel():GetAttachment(self.MuzzleAttachmentRaw or self.Owner:GetViewModel():LookupAttachment(self.MuzzleAttachment))
-				end
-
-				local pos2 = angpos2.Pos
-				local ts2 = pos2:ToScreen()
-
-				if self.Akimbo then
-					xx, yy = ts2.x, ts2.y
-
-					if self.Secondary.ClipSize and self.Secondary.ClipSize ~= -1 then
-						str = (self:Clip2() > self.Secondary.ClipSize) and string.upper("MAG: " .. self.Secondary.ClipSize .. " + " .. (self:Clip2() - self.Primary.ClipSize)) or string.upper("MAG: " .. self:Clip2())
-
-						draw.DrawText(str, "TFASleek", xx + 1, yy + 1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
-						draw.DrawText(str, "TFASleek", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT)
-						str = string.upper("RESERVE: " .. self:Ammo2())
-						yy = yy + TFASleekFontHeight
-						xx = xx - TFASleekFontHeight / 3
-						draw.DrawText(str, "TFASleekMedium", xx + 1, yy + 1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
-						draw.DrawText(str, "TFASleekMedium", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT)
-						yy = yy + TFASleekFontHeightMedium
-						xx = xx - TFASleekFontHeightMedium / 3
-					else
-						str = string.upper("AMMO: " .. self:Ammo2())
-						draw.DrawText(str, "TFASleek", xx + 1, yy + 1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
-						draw.DrawText(str, "TFASleek", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT)
-						yy = yy + TFASleekFontHeightMedium
-						xx = xx - TFASleekFontHeightMedium / 3
-					end
-
-					str = string.upper(self:GetFireModeName())
-					draw.DrawText(str, "TFASleekSmall", xx + 1, yy + 1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
-					draw.DrawText(str, "TFASleekSmall", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT)
-				else
-					if self.Secondary.ClipSize and self.Secondary.ClipSize ~= -1 then
-						str = (self:Clip2() > self.Secondary.ClipSize) and string.upper("ALT-MAG: " .. self.Secondary.ClipSize .. " + " .. (self:Clip2() - self.Primary.ClipSize)) or string.upper("ALT-MAG: " .. self:Clip2())
-
-						draw.DrawText(str, "TFASleekSmall", xx + 1, yy + 1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
-						draw.DrawText(str, "TFASleekSmall", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT)
-						str = string.upper("ALT-RESERVE: " .. self:Ammo2())
-						yy = yy + TFASleekFontHeight
-						xx = xx - TFASleekFontHeight / 3
-						draw.DrawText(str, "TFASleekSmall", xx + 1, yy + 1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
-						draw.DrawText(str, "TFASleekSmall", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT)
-						yy = yy + TFASleekFontHeightMedium
-						xx = xx - TFASleekFontHeightMedium / 3
-					else
-						str = string.upper("ALT-AMMO: " .. self:Ammo2())
-						draw.DrawText(str, "TFASleekSmall", xx + 1, yy + 1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
-						draw.DrawText(str, "TFASleekSmall", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT)
-						yy = yy + TFASleekFontHeightMedium
-						xx = xx - TFASleekFontHeightMedium / 3
-					end
-				end
-			end
-		elseif cvar_tfa_inspection_old:GetBool() then
-			local str = string.upper("DAMAGE: " .. RoundDecimals(self.Primary.Damage, 1))
-
-			if self.Primary.NumShots and self.Primary.NumShots > 1 then
-				str = str .. "x" .. math.Round(self.Primary.NumShots)
-			end
-
-			yy = yy - 100
-			yy = math.Clamp(yy, 0, ScrH())
-			xx = math.Clamp(xx, 250, ScrW())
-			draw.DrawText(str, "TFASleek", xx + 1, yy + 1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
-			draw.DrawText(str, "TFASleek", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT)
-			yy = yy + TFASleekFontHeight
-			str = string.upper("RPM: " .. RoundDecimals(self.Primary.RPM, 1))
-			draw.DrawText(str, "TFASleek", xx + 1, yy + 1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
-			draw.DrawText(str, "TFASleek", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT)
-			yy = yy + TFASleekFontHeight
-			str = string.upper("Range: " .. RoundDecimals(self.Primary.Range / 16000 * 0.305, 3) .. "KM")
-			draw.DrawText(str, "TFASleek", xx + 1, yy + 1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
-			draw.DrawText(str, "TFASleek", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT)
-			yy = yy + TFASleekFontHeight
-			str = string.upper("Spread: " .. RoundDecimals(self.Primary.Spread and self.Primary.Spread or self.Primary.Accuracy, 2))
-			draw.DrawText(str, "TFASleek", xx + 1, yy + 1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
-			draw.DrawText(str, "TFASleek", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT)
-			yy = yy + TFASleekFontHeight
-			str = string.upper("Spread Max: " .. RoundDecimals(self.Primary.SpreadMultiplierMax, 2))
-			draw.DrawText(str, "TFASleek", xx + 1, yy + 1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
-			draw.DrawText(str, "TFASleek", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT)
-			yy = yy + TFASleekFontHeight
-		end
-	end
+	self:DrawHUDAmmo() --so it's swappable easily
 
 	--Scope Overlay
 	if self.CLIronSightsProgress > self.ScopeOverlayThreshold and self.Scoped then
@@ -1237,6 +1088,187 @@ function SWEP:DrawHUD()
 			}
 
 			draw.TexturedQuad(quad)
+		end
+	end
+end
+
+function SWEP:DrawHUD3D2D()
+end
+
+SWEP.CLAmmoProgress = 0
+local targ, lactive = 0, -1
+local hudhangtime_cvar = GetConVar("cl_tfa_hud_hangtime")
+local hudfade_cvar = GetConVar("cl_tfa_hud_ammodata_fadein")
+
+function SWEP:DrawHUDAmmo()
+
+	if self.Primary.Ammo == "none" or self.Primary.Ammo == "" then return end
+
+	targ = ( self:GetReloading() or self:GetDrawing() or self:GetFireModeChanging() or self:GetBoltTimer() or self:GetFidgeting() ) and 1 or 0
+
+	if targ == 1 then
+		lactive = CurTime()
+	end
+
+	if CurTime() < lactive + hudhangtime_cvar:GetFloat() then
+		targ = 1
+	end
+
+	if self.Owner:KeyDown(IN_RELOAD) then
+		targ = 1
+	end
+
+	self.CLAmmoProgress = math.Approach( self.CLAmmoProgress, targ, (targ - self.CLAmmoProgress ) * ( self.rft or FrameTime() ) * 2 / hudfade_cvar:GetFloat() )
+
+	if self.Akimbo then
+		self.MuzzleAttachmentRaw2 = self.MuzzleAttachmentRaw or 1
+		self.MuzzleAttachmentRaw = 2 - (self.Akimbo_Inverted and 1 or 0)
+	end
+
+	local mzpos = self:GetMuzzlePos()
+
+	if self.Akimbo then
+		self.MuzzleAttachmentRaw = self.MuzzleAttachmentRaw2 or 1
+	end
+
+	if mzpos and mzpos.Pos and not self:IsHidden() and hudenabled_cvar:GetBool() then
+		local pos = mzpos.Pos
+		local textsize = self.textsize and self.textsize or 1
+		local pl = LocalPlayer() and LocalPlayer() or self.Owner
+		local ang = pl:EyeAngles() --(angpos.Ang):Up():Angle()
+		local myalpha = 225 * self.CLAmmoProgress
+		ang:RotateAroundAxis(ang:Right(), 90)
+		ang:RotateAroundAxis(ang:Up(), -90)
+		ang:RotateAroundAxis(ang:Forward(), 0)
+		pos = pos + ang:Right() * (self.textupoffset and self.textupoffset or -2 * (textsize / 1))
+		pos = pos + ang:Up() * (self.textfwdoffset and self.textfwdoffset or 0 * (textsize / 1))
+		pos = pos + ang:Forward() * (self.textrightoffset and self.textrightoffset or -1 * (textsize / 1))
+		local postoscreen = pos:ToScreen()
+		xx = postoscreen.x
+		yy = postoscreen.y
+
+		if self.CLInspectingProgress < 0.01 and self.Primary.Ammo ~= "" and self.Primary.Ammo ~= 0 then
+			local str
+
+			if self.Primary.ClipSize and self.Primary.ClipSize ~= -1 then
+				str = string.upper("MAG: " .. self:Clip1())
+
+				if (self:Clip1() > self.Primary.ClipSize) then
+					str = string.upper("MAG: " .. self.Primary.ClipSize .. " + " .. (self:Clip1() - self.Primary.ClipSize))
+				end
+
+				draw.DrawText(str, "TFASleek", xx + 1, yy + 1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
+				draw.DrawText(str, "TFASleek", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT)
+				str = string.upper("RESERVE: " .. self:GetAmmoReserve())
+				yy = yy + TFASleekFontHeight
+				xx = xx - TFASleekFontHeight / 3
+				draw.DrawText(str, "TFASleekMedium", xx + 1, yy + 1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
+				draw.DrawText(str, "TFASleekMedium", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT)
+				yy = yy + TFASleekFontHeightMedium
+				xx = xx - TFASleekFontHeightMedium / 3
+			else
+				str = string.upper("AMMO: " .. self:Ammo1())
+				draw.DrawText(str, "TFASleek", xx + 1, yy + 1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
+				draw.DrawText(str, "TFASleek", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT)
+				yy = yy + TFASleekFontHeightMedium
+				xx = xx - TFASleekFontHeightMedium / 3
+			end
+
+			str = string.upper( self:GetFireModeName() .. ( #self.FireModes > 2 and " | +" or "" ) )
+			draw.DrawText(str, "TFASleekSmall", xx + 1, yy + 1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
+			draw.DrawText(str, "TFASleekSmall", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT)
+			yy = yy + TFASleekFontHeightSmall
+			xx = xx - TFASleekFontHeightSmall / 3
+
+			if self.Secondary.Ammo and self.Secondary.Ammo ~= "" and self.Secondary.Ammo ~= "none" and self.Secondary.Ammo ~= 0 then
+				local angpos2
+
+				if self.Akimbo then
+					angpos2 = self.Owner:ShouldDrawLocalPlayer() and self:GetAttachment(self.Akimbo_Inverted and 2 or 1) or self.Owner:GetViewModel():GetAttachment(self.Akimbo_Inverted and 2 or 1)
+				else
+					angpos2 = self.Owner:ShouldDrawLocalPlayer() and self:GetAttachment(self.MuzzleAttachmentRaw or self:LookupAttachment(self.MuzzleAttachment)) or self.Owner:GetViewModel():GetAttachment(self.MuzzleAttachmentRaw or self.Owner:GetViewModel():LookupAttachment(self.MuzzleAttachment))
+				end
+
+				local pos2 = angpos2.Pos
+				local ts2 = pos2:ToScreen()
+
+				if self.Akimbo then
+					xx, yy = ts2.x, ts2.y
+
+					if self.Secondary.ClipSize and self.Secondary.ClipSize ~= -1 then
+						str = (self:Clip2() > self.Secondary.ClipSize) and string.upper("MAG: " .. self.Secondary.ClipSize .. " + " .. (self:Clip2() - self.Primary.ClipSize)) or string.upper("MAG: " .. self:Clip2())
+
+						draw.DrawText(str, "TFASleek", xx + 1, yy + 1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
+						draw.DrawText(str, "TFASleek", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT)
+						str = string.upper("RESERVE: " .. self:Ammo2())
+						yy = yy + TFASleekFontHeight
+						xx = xx - TFASleekFontHeight / 3
+						draw.DrawText(str, "TFASleekMedium", xx + 1, yy + 1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
+						draw.DrawText(str, "TFASleekMedium", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT)
+						yy = yy + TFASleekFontHeightMedium
+						xx = xx - TFASleekFontHeightMedium / 3
+					else
+						str = string.upper("AMMO: " .. self:Ammo2())
+						draw.DrawText(str, "TFASleek", xx + 1, yy + 1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
+						draw.DrawText(str, "TFASleek", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT)
+						yy = yy + TFASleekFontHeightMedium
+						xx = xx - TFASleekFontHeightMedium / 3
+					end
+
+					str = string.upper( self:GetFireModeName() .. ( #self.FireModes > 2 and " | +" or "" ) )
+					draw.DrawText(str, "TFASleekSmall", xx + 1, yy + 1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
+					draw.DrawText(str, "TFASleekSmall", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT)
+				else
+					if self.Secondary.ClipSize and self.Secondary.ClipSize ~= -1 then
+						str = (self:Clip2() > self.Secondary.ClipSize) and string.upper("ALT-MAG: " .. self.Secondary.ClipSize .. " + " .. (self:Clip2() - self.Primary.ClipSize)) or string.upper("ALT-MAG: " .. self:Clip2())
+
+						draw.DrawText(str, "TFASleekSmall", xx + 1, yy + 1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
+						draw.DrawText(str, "TFASleekSmall", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT)
+						str = string.upper("ALT-RESERVE: " .. self:Ammo2())
+						yy = yy + TFASleekFontHeight
+						xx = xx - TFASleekFontHeight / 3
+						draw.DrawText(str, "TFASleekSmall", xx + 1, yy + 1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
+						draw.DrawText(str, "TFASleekSmall", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT)
+						yy = yy + TFASleekFontHeightMedium
+						xx = xx - TFASleekFontHeightMedium / 3
+					else
+						str = string.upper("ALT-AMMO: " .. self:Ammo2())
+						draw.DrawText(str, "TFASleekSmall", xx + 1, yy + 1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
+						draw.DrawText(str, "TFASleekSmall", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT)
+						yy = yy + TFASleekFontHeightMedium
+						xx = xx - TFASleekFontHeightMedium / 3
+					end
+				end
+			end
+		elseif cvar_tfa_inspection_old:GetBool() then
+			local str = string.upper("DAMAGE: " .. RoundDecimals(self.Primary.Damage, 1))
+
+			if self.Primary.NumShots and self.Primary.NumShots > 1 then
+				str = str .. "x" .. math.Round(self.Primary.NumShots)
+			end
+
+			yy = yy - 100
+			yy = math.Clamp(yy, 0, ScrH())
+			xx = math.Clamp(xx, 250, ScrW())
+			draw.DrawText(str, "TFASleek", xx + 1, yy + 1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
+			draw.DrawText(str, "TFASleek", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT)
+			yy = yy + TFASleekFontHeight
+			str = string.upper("RPM: " .. RoundDecimals(self.Primary.RPM, 1))
+			draw.DrawText(str, "TFASleek", xx + 1, yy + 1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
+			draw.DrawText(str, "TFASleek", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT)
+			yy = yy + TFASleekFontHeight
+			str = string.upper("Range: " .. RoundDecimals(self.Primary.Range / 16000 * 0.305, 3) .. "KM")
+			draw.DrawText(str, "TFASleek", xx + 1, yy + 1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
+			draw.DrawText(str, "TFASleek", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT)
+			yy = yy + TFASleekFontHeight
+			str = string.upper("Spread: " .. RoundDecimals(self.Primary.Spread and self.Primary.Spread or self.Primary.Accuracy, 2))
+			draw.DrawText(str, "TFASleek", xx + 1, yy + 1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
+			draw.DrawText(str, "TFASleek", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT)
+			yy = yy + TFASleekFontHeight
+			str = string.upper("Spread Max: " .. RoundDecimals(self.Primary.SpreadMultiplierMax, 2))
+			draw.DrawText(str, "TFASleek", xx + 1, yy + 1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
+			draw.DrawText(str, "TFASleek", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT)
+			yy = yy + TFASleekFontHeight
 		end
 	end
 end

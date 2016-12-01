@@ -25,6 +25,7 @@ SWEP.ScopeReticule_Scale = {1, 1}
 --[[End of Tweakable Parameters]]--
 SWEP.Scoped_3D = true
 SWEP.BoltAction_3D = false
+
 local scopecvar = GetConVar("cl_tfa_3dscope")
 local scopeshadowcvar = GetConVar("cl_tfa_3dscope_overlay")
 
@@ -61,6 +62,7 @@ function SWEP:UpdateScopeType()
 			self.BoltAction_3D = true
 			self.BoltAction = self.BoltAction_Forced or false
 			self.DisableChambering = true
+			self.FireModeName = "BOLT-ACTION"
 		end
 
 		if self.Secondary.ScopeZoom and self.Secondary.ScopeZoom > 0 then
@@ -89,18 +91,18 @@ function SWEP:UpdateScopeType()
 		self.IronSightsSensitivity = 1
 	end
 
-	self.DefaultFOV = GetConVarNumber("fov_desired", 90)
+	if cv_fov then
+		self.DefaultFOV = cv_fov:GetFloat()
+	elseif self.Owner and self:OwnerIsValid() then
+		self.DefaultFOV = self.Owner.GetInfoNum and self.Owner:GetInfoNum("fov_desired", 90) or 90
+	end
 end
 
-if not SWEP.Callback then
-	SWEP.Callback = {}
-end
-
-SWEP.Callback.Initialize = function(self)
+function SWEP:Initialize()
 	self:UpdateScopeType()
 
 	timer.Simple(0, function()
-		if IsValid(self) then
+		if IsValid(self) and self:OwnerIsValid() then
 			self:UpdateScopeType()
 
 			if SERVER then
@@ -108,17 +110,20 @@ SWEP.Callback.Initialize = function(self)
 			end
 		end
 	end)
+
+	BaseClass.Initialize(self)
+
 end
 
-SWEP.Callback.Deploy = function(self)
-	if SERVER then
+function SWEP:Deploy(...)
+	if SERVER and self:OwnerIsValid() then
 		self:CallOnClient("UpdateScopeType", "")
 	end
 
 	self:UpdateScopeType()
 
 	timer.Simple(0, function()
-		if IsValid(self) then
+		if IsValid(self) and self:OwnerIsValid() then
 			self:UpdateScopeType()
 
 			if SERVER then
@@ -126,6 +131,8 @@ SWEP.Callback.Deploy = function(self)
 			end
 		end
 	end)
+
+	BaseClass.Deploy(self,...)
 end
 
 local flipcv

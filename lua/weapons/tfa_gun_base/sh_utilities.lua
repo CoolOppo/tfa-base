@@ -60,10 +60,9 @@ end
 function SWEP:StopClientHolstering()
 	if SERVER and IsValid(self.Owner) then
 		self:CallOnClient("StopClientHolstering", "")
-	else
-		self:SetHolstering(false)
-		self:SetUnpredictedHolstering(false)
 	end
+	self:SetHolstering(false)
+	self:SetUnpredictedHolstering(false)
 end
 
 --[[
@@ -212,10 +211,10 @@ Function Name:  DoBodyGroups
 Syntax: self:DoBodyGroups().  Should be called only once for best performance.
 Returns:  Nothing.
 Notes:  Sets the proper viewmodel bodygroups.
-Purpose:  You ain't no muslim, bruv
+Purpose:  Well, it sets the viewmodel and worldmodel's bodygroups
 ]]--
 function SWEP:DoBodyGroups()
-	if SERVER then
+	if SERVER and self:OwnerIsValid() then
 		self:CallOnClient("DoBodyGroups", "")
 	end
 
@@ -288,11 +287,11 @@ function SWEP:IsHidden()
 	cyc = vm:GetCycle()
 	seq = vm:GetSequence()
 	act = vm:GetSequenceActivity(seq or 0)
-	local heldentindex = self.Owner:GetNWInt("LastHeldEntityIndex", -1)
+	local heldentindex = self.Owner:GetNW2Int("LastHeldEntityIndex", -1)
 	local heldent = Entity(heldentindex)
 
 	if heldentindex ~= -1 and IsValid(heldent) and heldent.IsPlayerHolding and not heldent:IsPlayerHolding() then
-		self.Owner:SetNWInt("LastHeldEntityIndex", -1)
+		self.Owner:SetNW2Int("LastHeldEntityIndex", -1)
 		heldent = nil
 	end
 

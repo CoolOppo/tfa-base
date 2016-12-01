@@ -6,10 +6,9 @@ ENT.Purpose = ""
 ENT.Instructions = ""
 ENT.DoNotDuplicate = true
 ENT.DColDuplicator = true
-MAT_DEF = 1
 
 ENT.HitSounds = {
-	[MAT_DEF] = {Sound("physics/metal/metal_grenade_impact_hard1.wav"), Sound("physics/metal/metal_grenade_impact_hard2.wav"), Sound("physics/metal/metal_grenade_impact_hard3.wav")},
+	[MAT_DIRT] = {Sound("physics/metal/metal_grenade_impact_hard1.wav"), Sound("physics/metal/metal_grenade_impact_hard2.wav"), Sound("physics/metal/metal_grenade_impact_hard3.wav")},
 	[MAT_FLESH] = {Sound("physics/flesh/flesh_impact_bullet1.wav"), Sound("physics/flesh/flesh_impact_bullet2.wav"), Sound("physics/flesh/flesh_impact_bullet3.wav")}
 }
 
@@ -55,6 +54,8 @@ if SERVER then
 
 		self:SetUseType(SIMPLE_USE)
 		self:SetOwner(nil)
+
+		self.mydamage = self.mydamage or 40
 	end
 
 	function ENT:Think()
@@ -65,10 +66,14 @@ if SERVER then
 		end
 	end
 
-	function ENT:DCol()
+	function ENT:Stick()
 		self.dietime = CurTime() + 60
-		self:GetPhysicsObject():EnableMotion(false)
-		self:SetCollisionGroup(COLLISION_GROUP_WEAPON)
+		timer.Simple(0,function()
+			if IsValid(self) then
+				self:SetCollisionGroup(COLLISION_GROUP_WEAPON)
+				self:GetPhysicsObject():EnableMotion(false)
+			end
+		end)
 	end
 
 	function ENT:PhysicsCollide(data, phys)
@@ -85,7 +90,7 @@ if SERVER then
 
 		local ent = data.HitEntity
 		if not IsValid(ent) and not (ent and ent:IsWorld()) then return end
-		local dmg = self:GetNWInt("Damage", 40) * math.sqrt(data.Speed / 1500)
+		local dmg = self.mydamage * math.sqrt(data.Speed / 1500)
 
 		if dmg > 5 and ent and not ent:IsWorld() then
 			local dmginfo = DamageInfo()
@@ -117,7 +122,7 @@ if SERVER then
 			if self.HitSounds[traceres.MatType] then
 				soundtbl = self.HitSounds[traceres.MatType]
 			else
-				soundtbl = self.HitSounds[MAT_DEF]
+				soundtbl = self.HitSounds[MAT_DIRT]
 			end
 
 			local snd = soundtbl[math.random(1, #soundtbl)]
@@ -148,7 +153,7 @@ if SERVER then
 			fx:SetMagnitude(2)
 			fx:SetScale(0.1)
 			util.Effect("Sparks", fx)
-			self:DCol()
+			self:Stick()
 		elseif IsValid(ent) then
 			if not (ent:IsPlayer() or ent:IsNPC() or ent:GetClass() == "prop_ragdoll") then
 				if canstick then
@@ -156,15 +161,17 @@ if SERVER then
 				end
 
 				self:SetCollisionGroup(COLLISION_GROUP_WEAPON)
-			end
-
-			if (ent:IsPlayer() or ent:IsNPC() or ent:GetClass() == "prop_ragdoll") then
+			else
 				local fx = EffectData()
 				fx:SetOrigin(data.HitPos)
 				util.Effect("BloodImpact", fx)
-				self:SetCollisionGroup(COLLISION_GROUP_WEAPON)
 				self:GetPhysicsObject():SetVelocity(-(data.OurOldVelocity / 8))
 			end
+			timer.Simple(0,function()
+				if IsValid(self) then
+					self:SetCollisionGroup(COLLISION_GROUP_WEAPON)
+				end
+			end)
 		end
 
 		if canstick then
@@ -183,7 +190,7 @@ if SERVER then
 
 		if not IsValid(ow) then return end
 		if ow ~= ply then return end
-		local classname = self:GetNWString("Wep")
+		local classname = self:GetNW2String("ClassName")
 		if not classname or classname == "" then return end
 
 		if ply:IsPlayer() and ply:GetWeapon(classname) == NULL then
