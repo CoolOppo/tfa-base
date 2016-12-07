@@ -1086,7 +1086,7 @@ function SWEP:AdjustMouseSensitivity()
 			sensval = sensval
 		end
 
-		if sensitivity_speed_cvar:GetFloat() then
+		if sensitivity_speed_cvar:GetBool() then
 			sensval = sensval * self.IronSightsMoveSpeed
 		end
 	end
@@ -2524,17 +2524,10 @@ function SWEP:Reload( released )
 end
 
 function SWEP:CheckAmmo()
-	if (self.SequenceEnabled[ACT_VM_FIDGET] or self.InspectionActions) and not self:GetIronSights() and not self:GetSprinting() and not self:GetFidgeting() and not self:GetInspecting() and not self:GetReloading() then
+	if (self.SequenceEnabled[ACT_VM_FIDGET] or self.InspectionActions) and not self:GetFidgeting() and not self:GetIronSights() and not self:GetSprinting() and not self:GetFidgeting() and not self:GetInspecting() and not self:GetReloading() and not self:GetDrawing() and not self:GetChangingSilence() then
 		self:SetFidgeting(true)
-		local succ = self:ChooseInspectAnim()
-
-		if succ then
-			self:SetNextIdleAnim(CurTime() + self.OwnerViewModel:SequenceDuration())
-		else
-			self:SetNextIdleAnim(CurTime() + math.max(1, self.OwnerViewModel:SequenceDuration()))
-		end
-
-		self:SetFidgetingEnd(self:GetNextIdleAnim())
+		succ,tanim = self:ChooseInspectAnim()
+		self:SetFidgetingEnd( CurTime() + self.SequenceLength[tanim] or self.SequenceLength[tanim] or 1 )
 	end
 end
 

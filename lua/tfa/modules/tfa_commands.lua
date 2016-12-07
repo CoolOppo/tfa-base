@@ -21,16 +21,12 @@ if CLIENT then
 			sv_tfa_near_wall = "1",
 			sv_tfa_range_modifier = "0.5",
 			sv_tfa_spread_multiplier = "1",
-			sv_tfa_fx_impact_override = "-1",
-			sv_tfa_fx_muzzlesmoke_override = "-1",
-			sv_tfa_fx_ejectionsmoke_override = "-1",
-			sv_tfa_fx_gas_override = "-1",
-			sv_tfa_fx_ricochet_override = "-1",
 			sv_tfa_bullet_penetration = "1",
 			sv_tfa_bullet_ricochet = "0",
 			sv_tfa_reloads_legacy = "0",
 			sv_tfa_cmenu = "1",
-			sv_tfa_penetration_limit = "2"
+			sv_tfa_penetration_limit = "2",
+			sv_tfa_door_respawn = "-1"
 		}
 
 		panel:AddControl("ComboBox", tfaOptionSV)
@@ -85,6 +81,14 @@ if CLIENT then
 		})
 
 		panel:AddControl("Slider", {
+			Label = "Door Respawn Time",
+			Command = "sv_tfa_door_respawn",
+			Type = "Integer",
+			Min = "-1",
+			Max = "120"
+		})
+
+		panel:AddControl("Slider", {
 			Label = "Impact Force Multiplier",
 			Command = "sv_tfa_force_multiplier",
 			Type = "Float",
@@ -124,57 +128,6 @@ if CLIENT then
 			Max = "1"
 		})
 
-		panel:AddControl("Label", {
-			Text = "Performance Overrides (Good for RP Servers)"
-		})
-
-		panel:AddControl("Slider", {
-			Label = "Gas Blur Effect Override (-1 to leave clientside)",
-			Command = "sv_tfa_fx_gas_override",
-			Type = "Integer",
-			Min = "-1",
-			Max = "1"
-		})
-
-		panel:AddControl("Slider", {
-			Label = "Impact Effect Override (-1 to leave clientside)",
-			Command = "sv_tfa_fx_impact_override",
-			Type = "Integer",
-			Min = "-1",
-			Max = "1"
-		})
-
-		panel:AddControl("Slider", {
-			Label = "Muzzle Smoke Effect Override (-1 to leave clientside)",
-			Command = "sv_tfa_fx_muzzlesmoke_override",
-			Type = "Integer",
-			Min = "-1",
-			Max = "1"
-		})
-
-		panel:AddControl("Slider", {
-			Label = "Ejection Smoke Effect Override (-1 to leave clientside)",
-			Command = "sv_tfa_fx_ejectionsmoke_override",
-			Type = "Integer",
-			Min = "-1",
-			Max = "1"
-		})
-
-		panel:AddControl("Slider", {
-			Label = "Ricochet Effect Override (-1 to leave clientside)",
-			Command = "sv_tfa_fx_ricochet_override",
-			Type = "Integer",
-			Min = "-1",
-			Max = "1"
-		})
-
-		panel:AddControl("Slider", {
-			Label = "World Model Cull Distance (-1 to disable)",
-			Command = "sv_tfa_worldmodel_culldistance",
-			Type = "Integer",
-			Min = "-1",
-			Max = "4096"
-		})
 
 		panel:AddControl("Label", {
 			Text = "By TheForgottenArchitect"
@@ -337,6 +290,12 @@ if CLIENT then
 
 		tfaOptionPerf.Options["#Default"] = {
 			sv_tfa_fx_penetration_decal = "1",
+			sv_tfa_fx_impact_override = "-1",
+			sv_tfa_fx_muzzlesmoke_override = "-1",
+			sv_tfa_fx_ejectionsmoke_override = "-1",
+			sv_tfa_fx_gas_override = "-1",
+			sv_tfa_fx_ricochet_override = "-1",
+			sv_tfa_worldmodel_culldistance = "-1",
 			cl_tfa_fx_impact_enabled = "1",
 			cl_tfa_fx_impact_ricochet_enabled = "1",
 			cl_tfa_fx_impact_ricochet_sparks = "20",
@@ -347,11 +306,6 @@ if CLIENT then
 		}
 
 		panel:AddControl("ComboBox", tfaOptionPerf)
-
-		panel:AddControl("CheckBox", {
-			Label = "Use Penetration Decal (SV)",
-			Command = "sv_tfa_fx_penetration_decal"
-		})
 
 		panel:AddControl("CheckBox", {
 			Label = "Use Gas Blur",
@@ -397,6 +351,63 @@ if CLIENT then
 			Type = "Float",
 			Min = "0",
 			Max = "5"
+		})
+
+		panel:AddControl("Label", {
+			Text = "Performance Overrides (Serverside)"
+		})
+
+		panel:AddControl("CheckBox", {
+			Label = "Use Penetration Decal (SV)",
+			Command = "sv_tfa_fx_penetration_decal"
+		})
+
+		panel:AddControl("Slider", {
+			Label = "Gas Blur Effect Override (-1 to leave clientside)",
+			Command = "sv_tfa_fx_gas_override",
+			Type = "Integer",
+			Min = "-1",
+			Max = "1"
+		})
+
+		panel:AddControl("Slider", {
+			Label = "Impact Effect Override (-1 to leave clientside)",
+			Command = "sv_tfa_fx_impact_override",
+			Type = "Integer",
+			Min = "-1",
+			Max = "1"
+		})
+
+		panel:AddControl("Slider", {
+			Label = "Muzzle Smoke Effect Override (-1 to leave clientside)",
+			Command = "sv_tfa_fx_muzzlesmoke_override",
+			Type = "Integer",
+			Min = "-1",
+			Max = "1"
+		})
+
+		panel:AddControl("Slider", {
+			Label = "Ejection Smoke Effect Override (-1 to leave clientside)",
+			Command = "sv_tfa_fx_ejectionsmoke_override",
+			Type = "Integer",
+			Min = "-1",
+			Max = "1"
+		})
+
+		panel:AddControl("Slider", {
+			Label = "Ricochet Effect Override (-1 to leave clientside)",
+			Command = "sv_tfa_fx_ricochet_override",
+			Type = "Integer",
+			Min = "-1",
+			Max = "1"
+		})
+
+		panel:AddControl("Slider", {
+			Label = "World Model Cull Distance (-1 to disable)",
+			Command = "sv_tfa_worldmodel_culldistance",
+			Type = "Integer",
+			Min = "-1",
+			Max = "4096"
 		})
 
 		panel:AddControl("Label", {
@@ -832,6 +843,11 @@ end
 
 if GetConVar("sv_tfa_damage_mult_max") == nil then
 	CreateConVar("sv_tfa_damage_mult_max", "1.05", {FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE}, "This is the lower range of a random damage factor.")
+	--print("Damage Multiplier con var created")
+end
+
+if GetConVar("sv_tfa_door_respawn") == nil then
+	CreateConVar("sv_tfa_door_respawn", "-1", {FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE}, "Time for doors to respawn; -1 for never.")
 	--print("Damage Multiplier con var created")
 end
 

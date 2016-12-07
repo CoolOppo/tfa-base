@@ -413,6 +413,10 @@ function bullet:Ricochet(ply, traceres, dmginfo, weapon)
 	end
 end
 
+local defaultdoorhealth = 250
+local ohp = 250
+
+local cv_doorres = GetConVar("sv_tfa_door_respawn")
 function bullet:MakeDoor(ent, dmginfo)
 	pos = ent:GetPos()
 	ang = ent:GetAngles()
@@ -430,14 +434,26 @@ function bullet:MakeDoor(ent, dmginfo)
 	prop:GetPhysicsObject():ApplyForceOffset(dmginfo:GetDamageForce(), dmginfo:GetDamagePosition())
 	prop:SetPhysicsAttacker(dmginfo:GetAttacker())
 	prop:EmitSound("physics/wood/wood_furniture_break" .. tostring(math.random(1, 2)) .. ".wav", 110, math.random(90, 110))
-end
 
-local defaultdoorhealth = 250
-local ohp = 250
+	if cv_doorres:GetInt() ~= -1 then
+		timer.Simple(cv_doorres:GetFloat(), function()
+			if IsValid(prop) then
+				prop:Remove()
+			end
+
+			if IsValid(ent) then
+				ent.TFADoorHealth = defaultdoorhealth
+				ent:SetNotSolid(false)
+				ent:SetNoDraw(false)
+			end
+		end)
+	end
+end
 
 function bullet:HandleDoor(ply, traceres, dmginfo, wep)
 	local ent = traceres.Entity
 	if not IsValid(ent) then return end
+	if not ents.Create then return end
 	ent.TFADoorHealth = ent.TFADoorHealth or defaultdoorhealth
 	if bit.band(wep.Primary.DamageType or 0, DMG_AIRBOAT) == DMG_AIRBOAT and (ent:GetClass() == "func_door_rotating" or ent:GetClass() == "prop_door_rotating") then
 		ohp = ent.TFADoorHealth

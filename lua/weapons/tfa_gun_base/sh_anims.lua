@@ -9,6 +9,8 @@ local ServersideLooped = {
 	--[ACT_VM_IDLE_SILENCED] = true
 }
 
+local d,pbr
+
 function SWEP:SendViewModelAnim(act, rate, targ )
 	local vm = self.OwnerViewModel
 	self:SetLastActivity( act )
@@ -29,25 +31,26 @@ function SWEP:SendViewModelAnim(act, rate, targ )
 		vm:SendViewModelMatchingSequence( act == 0 and 1 or 0 )
 		vm:SetPlaybackRate(0)
 		vm:SetCycle(0)
+		self:SetNextIdleAnim( CurTime() + 0.03 )
 
 		if IsFirstTimePredicted() then
 			timer.Simple(0, function()
 				vm:SendViewModelMatchingSequence(seq)
-				if targ then
-					local d = vm:SequenceDuration()
-					vm:SetPlaybackRate( d / rate )
-				else
-					vm:SetPlaybackRate(rate or 1)
+				d = vm:SequenceDuration()
+				pbr = targ and ( d / ( rate or 1 ) ) or ( rate or 1 )
+				vm:SetPlaybackRate( pbr )
+				if IsValid(self) then
+					self:SetNextIdleAnim( CurTime() + d * pbr )
 				end
 			end)
 		end
 	else
 		vm:SendViewModelMatchingSequence(seq)
-		if targ then
-			local d = vm:SequenceDuration()
-			vm:SetPlaybackRate( d / rate )
-		else
-			vm:SetPlaybackRate(rate or 1)
+		d = vm:SequenceDuration()
+		pbr = targ and ( d / ( rate or 1 ) ) or ( rate or 1 )
+		vm:SetPlaybackRate( pbr )
+		if IsValid(self) then
+			self:SetNextIdleAnim( CurTime() + d * pbr )
 		end
 	end
 end

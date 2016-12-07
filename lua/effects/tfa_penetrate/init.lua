@@ -4,7 +4,7 @@ local PenetMat2 = Material("effects/yellowflare")
 
 local cv_gv = GetConVar("sv_gravity")
 local cv_sl = GetConVar("cl_tfa_fx_impact_ricochet_sparklife")
-local cv_sc = GetConVar("cl_tfa_fx_impact_ricochet_sparks")
+--local cv_sc = GetConVar("cl_tfa_fx_impact_ricochet_sparks")
 
 function EFFECT:Init(data)
 	self.StartPos = data:GetOrigin()
@@ -32,7 +32,7 @@ function EFFECT:Init(data)
 		--Impact
 	else
 		local emitter = ParticleEmitter(self.StartPos)
-
+		--[[
 		for i = 1, cv_sc:GetFloat() * self.PartMult * 0.1 do
 			local part = emitter:Add("effects/yellowflare", self.StartPos)
 			part:SetVelocity((self.Dir + VectorRand() * 0.5) * math.Rand(75, 185))
@@ -50,6 +50,7 @@ function EFFECT:Init(data)
 			part:SetVelocityScale(true)
 			part:SetCollide(true)
 		end
+		]]--
 
 		local part = emitter:Add("effects/select_ring", self.StartPos)
 		part:SetStartAlpha(225)

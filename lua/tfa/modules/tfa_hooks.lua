@@ -47,6 +47,10 @@ Used For:  Alternate attack, inspection, shotgun interrupts, and more
 ]]--
 
 local cv_cm = GetConVar("sv_tfa_cmenu")
+local cv_cci
+if CLIENT then
+	cv_cci = GetConVar("cl_tfa_inspection_ckey")
+end
 
 function TFAPlayerBindPress(plyv, b, p)
 	if p and IsValid(plyv) then
@@ -67,8 +71,12 @@ function TFAPlayerBindPress(plyv, b, p)
 			]]--
 
 			if wep.ToggleInspect and b == "+menu_context" and cv_cm:GetBool() then
-				wep:ToggleInspect()
-
+				if not cv_cci:GetBool() then
+					wep:ToggleInspect()
+				elseif wep.CheckAmmo then
+					net.Start("tfaRequestFidget")
+					net.SendToServer()
+				end
 				return true
 			end
 
@@ -89,6 +97,8 @@ Function: Allows player to bash
 Used For:  Predicted bashing
 ]]--
 
+local cv_lr = GetConVar("sv_tfa_reloads_legacy")
+
 local function KP_Bash(plyv, key)
 	if (key == IN_ZOOM) then
 		wep = plyv:GetActiveWeapon()
@@ -108,7 +118,7 @@ local reload_threshold = 0.3
 hook.Add("KeyPress","TFABase_KP",KP_Bash)
 
 local function KR_Reload(plyv, key)
-	if key == IN_RELOAD and CurTime() < ( plyv.LastReloadPressed or -1 ) + reload_threshold then
+	if key == IN_RELOAD and cv_lr and ( not cv_lr:GetBool() ) and CurTime() < ( plyv.LastReloadPressed or -1 ) + reload_threshold then
 		plyv.HasTFAAmmoChek = false
 		wep = plyv:GetActiveWeapon()
 

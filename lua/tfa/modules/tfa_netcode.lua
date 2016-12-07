@@ -5,6 +5,7 @@ if SERVER then
 	util.AddNetworkString("tfa_base_muzzle_mp")
 	util.AddNetworkString("tfaInspect")
 	util.AddNetworkString("tfaShotgunInterrupt")
+	util.AddNetworkString("tfaRequestFidget")
 	--util.AddNetworkString("tfaAltAttack")
 
 	--Enable inspection
@@ -20,6 +21,12 @@ if SERVER then
 				wep:ToggleInspect()
 			end
 		end
+	end)
+	--Enable CKey Inspection
+
+	net.Receive("tfaRequestFidget",function(length,client)
+		wep = client:GetActiveWeapon()
+		if IsValid(wep) and wep.CheckAmmo then wep:CheckAmmo() end
 	end)
 
 	--Enable shotgun interruption

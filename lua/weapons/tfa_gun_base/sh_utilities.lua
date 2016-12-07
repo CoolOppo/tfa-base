@@ -363,10 +363,11 @@ function SWEP:DoAmmoCheck()
 			if val then return val end
 		end
 
-		if SERVER and cv_strip:GetBool() and self:Clip1() == 0 and self.Owner:GetAmmoCount(self:GetPrimaryAmmoType()) == 0 then
+		if SERVER and cv_strip:GetBool() and self:Clip1() == 0 and self:Ammo1() == 0 then
+			print("strip")
 			timer.Simple(.1, function()
-				if SERVER and IsValid(self) and IsValid(self.Owner) then
-					self.Owner:StripWeapon(self.Gun)
+				if SERVER and IsValid(self) and self:OwnerIsValid() then
+					self.Owner:StripWeapon(self.ClassName)
 				end
 			end)
 		end
@@ -404,42 +405,55 @@ Returns:   Firemode name.
 Notes:    Returns either the custom name you force or the autodetected one.
 Purpose:  Utility
 ]]--
-function SWEP:GetFireModeName()
+
+function SWEP:GetFireModeName(str)
 	if self.Callback.GetFireModeName then
-		local val = self.Callback.GetFireModeName(self)
+		local val = self.Callback.GetFireModeName(self, str)
 		if val then return val end
 	end
 
-	local fm = self:GetFireMode()
-	local fmn = string.lower(self.FireModes[fm])
-	if string.find(fmn, "safe") or string.find(fmn, "holster") then return "Safety" end
-	if self.FireModeName then return self.FireModeName end
-	if string.find(fmn, "auto") then return "Full-Auto" end
+	if str then
+		local fmn = string.lower( str )
+		if fmn == "safe" then return "Safety" end
+		if self.FireModeName then return self.FireModeName end
+		if fmn == "auto" or fmn == "automatic" then return "Full-Auto" end
 
-	if string.find(fmn, "single") then
-		if (self.Revolver or ((self.DefaultHoldType and self.DefaultHoldType or self.HoldType) == "revolver")) then
-			if (self.BoltAction) then
-				return "Single-Action"
-			else
-				return "Double-Action"
-			end
-		else
-			if (self.BoltAction) then
-				return "Bolt-Action"
-			else
-				if (self.Shotgun and self.Primary.RPM < 250) then
-					return "Pump-Action"
+		if string.find(fmn, "single") or string.find(fmn,"semi") then
+			if (self.Revolver or ((self.DefaultHoldType and self.DefaultHoldType or self.HoldType) == "revolver")) then
+				if (self.BoltAction) then
+					return "Single-Action"
 				else
-					return "Semi-Auto"
+					return "Double-Action"
+				end
+			else
+				if (self.BoltAction) then
+					return "Bolt-Action"
+				else
+					if (self.Shotgun and self.Primary.RPM < 250) then
+						return "Pump-Action"
+					else
+						return "Semi-Auto"
+					end
 				end
 			end
 		end
+
+		local bpos = string.find(fmn, "burst")
+		if bpos then return string.sub(fmn, 1, bpos - 1) .. " Round Burst" end
+
+		return "NilFM"
 	end
 
-	local bpos = string.find(fmn, "burst")
-	if bpos then return string.sub(fmn, 1, bpos - 1) .. " Round Burst" end
-end
+	if not self.FireModeNameCache or #self.FireModeNameCache ~= #self.FireModes then
+		self.FireModeNameCache = {}
 
+		for k, v in pairs(self.FireModes) do
+			self.FireModeNameCache[k] = self:GetFireModeName(v)
+		end
+	end
+
+	return self.FireModeNameCache[self:GetFireMode() or 1] or "NilFM"
+end
 --[[
 Function Name:  IsSafety
 Syntax: self:IsSafety( ).

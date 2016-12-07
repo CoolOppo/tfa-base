@@ -1,12 +1,15 @@
 if SERVER then AddCSLuaFile() end
 
 local do_load = true
-local version = 3.050
-local version_string = "3.05.0.0"
+local version = 3.0520
+local version_string = "3.05.2.0"
 local changelog = [[
-	* Basic GMDUSK integration
-	* Shotgun door-bust tweaked, improved, and fixed for DarkRP (hopefully)
-	* Scopes fixed for DarkRP ( hopefully )
+	* Doors fixed for DarkRP ( probably )
+	* Silenced weapon inspection fixed
+	* Idle animation timing improved
+	* C-Key inspection fixed
+	* Weapon stripping fixed
+	* CVAR sv_tfa_door_respawn added
 ]]
 
 local function testFunc()
