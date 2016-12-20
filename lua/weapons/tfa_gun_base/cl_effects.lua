@@ -6,7 +6,7 @@ Notes:    Used to capture and disable viewmodel animation events, unless you dis
 Purpose:  FX
 ]]--
 function SWEP:FireAnimationEvent(pos, ang, event, options)
-	if self.CustomMuzzleFlash or not self.DoMuzzleFlash then
+	if self.CustomMuzzleFlash or not self.MuzzleFlashEnabled then
 		-- Disables animation based muzzle event
 		if (event == 21) then return true end
 		-- Disable thirdperson muzzle flash
@@ -59,7 +59,6 @@ Purpose:  FX
 
 function SWEP:DoImpactEffect(tr, dmgtype)
 	if tr.HitSky then return true end
-	if dmgtype == DMG_DIRECT then return true end
 	local ib = self.BashBase and IsValid(self) and self:GetBashing()
 	local dmginfo = DamageInfo()
 	dmginfo:SetDamageType(dmgtype)
@@ -116,9 +115,8 @@ function SWEP:ImpactEffectFunc(pos, normal, mattype)
 		fx:SetEntity(self.Owner)
 		fx:SetMagnitude(mattype or 0)
 		fx:SetScale(math.sqrt(self.Primary.Damage / 30))
-		if mattype ~= MAT_FLESH then
-			util.Effect("tfa_bullet_impact", fx)
-		end
+		util.Effect("tfa_bullet_impact", fx)
+
 		if self.ImpactEffect then
 			util.Effect(self.ImpactEffect, fx)
 		end

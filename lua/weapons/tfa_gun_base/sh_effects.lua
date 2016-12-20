@@ -1,18 +1,9 @@
 local fx, sp
 
-function SWEP:ProcessEffects()
-	if self.LShell and CurTime() > self.LShellTime then
-		self:MakeShell()
-		self:EjectionSmoke()
-		self.LShell = false
-	end
-end
-
 function SWEP:MakeShellBridge(ifp)
 	if ifp then
 		if self.LuaShellEjectDelay > 0 then
-			self.LShell = true
-			self.LShellTime = CurTime() + self.LuaShellEjectDelay
+			self.LuaShellRequestTime = CurTime() + self.LuaShellEjectDelay
 		else
 			self:MakeShell()
 		end
@@ -20,16 +11,16 @@ function SWEP:MakeShellBridge(ifp)
 end
 
 function SWEP:MakeShell()
-	if IsValid(self) and self:OwnerIsValid() then
-		local vm = ( self.Owner.ShouldDrawLocalPlayer and self.Owner:ShouldDrawLocalPlayer() ) and self or self.OwnerViewModel
+	if IsValid(self) and self:VMIV() then
+		local vm = (not self.Owner.ShouldDrawLocalPlayer or self.Owner:ShouldDrawLocalPlayer()) and self.OwnerViewModel or self
 
 		if IsValid(vm) then
 			fx = EffectData()
 			fx:SetEntity(vm)
 			local attid = vm:LookupAttachment(self.ShellAttachment)
-			--if self.Akimbo then
-			--	attid = 4-self.AnimCycle
-			--end
+			if self.Akimbo then
+				attid = 3 + self.AnimCycle
+			end
 			attid = math.Clamp(attid and attid or 2, 1, 127)
 			local angpos = vm:GetAttachment(attid)
 
@@ -87,7 +78,6 @@ Purpose:  FX
 ]]--
 function SWEP:EjectionSmoke()
 	if TFA.GetEJSmokeEnabled() then
-		self:UpdateViewModel()
 		local vm = self.OwnerViewModel
 
 		if IsValid(vm) then
@@ -129,7 +119,9 @@ Returns:  Nothing.
 Notes:    Calls the proper muzzleflash, muzzle smoke, muzzle light code.
 Purpose:  FX
 ]]--
-function SWEP:ShootEffectsCustom(ifp, tp)
+function SWEP:ShootEffectsCustom( ifp )
+	ifp = ifp or IsFirstTimePredicted()
+
 	if sp == nil then
 		sp = game.SinglePlayer()
 	end
@@ -151,9 +143,9 @@ function SWEP:ShootEffectsCustom(ifp, tp)
 		local vm = self.Owner:GetViewModel()
 		self:UpdateMuzzleAttachment()
 		local att = math.max(1, self.MuzzleAttachmentRaw or (sp and vm or self):LookupAttachment(self.MuzzleAttachment))
-		--if self.Akimbo then
-		--	att = 2-self.AnimCycle
-		--end
+		if self.Akimbo then
+			att = 1 + self.AnimCycle
+		end
 		self:CleanParticles()
 		fx = EffectData()
 		fx:SetOrigin(self.Owner:GetShootPos())
@@ -168,4 +160,34 @@ function SWEP:ShootEffectsCustom(ifp, tp)
 			util.Effect(self.MuzzleFlashEffect or "", fx)
 		end
 	end
+end
+
+--[[
+Function Name:  CanDustEffect
+Syntax: self:CanDustEffect( concise material name ).
+Returns:  True/False
+Notes:    Used for the impact effect.  Should be used with GetMaterialConcise.
+Purpose:  Utility
+]]--
+
+function SWEP:CanDustEffect( matv )
+	local n = self:GetMaterialConcise(matv )
+	if n == "energy" or n == "dirt" or n == "ceramic" or n == "plastic" or n == "wood" then return true end
+
+	return false
+end
+
+--[[
+Function Name:  CanSparkEffect
+Syntax: self:CanSparkEffect( concise material name ).
+Returns:  True/False
+Notes:    Used for the impact effect.  Should be used with GetMaterialConcise.
+Purpose:  Utility
+]]--
+
+function SWEP:CanSparkEffect(matv)
+	local n = self:GetMaterialConcise(matv)
+	if n == "default" or n == "metal" then return true end
+
+	return false
 end

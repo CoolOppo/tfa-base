@@ -1,3 +1,53 @@
+function SWEP:FixProceduralReload()
+	if self.DoProceduralReload then
+		self.ProceduralReloadEnabled = true
+	end
+end
+
+function SWEP:FixRPM()
+	if not self.Primary.RPM then
+		if self.Primary.Delay then
+			self.Primary.RPM = 60 / self.Primary.Delay
+		else
+			self.Primary.RPM = 120
+		end
+	end
+end
+
+function SWEP:FixCone()
+	if self.Primary.Cone then
+		if ( not self.Primary.Spread ) or self.Primary.Spread <= 0  then
+			self.Primary.Spread = self.Primary.Cone
+		end
+		self.Primary.Cone = nil
+	end
+end
+
+function SWEP:FixIdles() --legacy compatibility
+	if self.DisableIdleAnimations ~= nil and self.DisableIdleAnimations == true then
+		self.Idle_Mode = TFA.Enum.IDLE_LUA
+	end
+end
+
+function SWEP:FixIS()
+	if self.SightsPos and ( not self.IronSightsPos or ( self.IronSightsPos.x ~= self.SightsPos.x and self.SightsPos.x ~= 0 ) ) then
+		self.IronSightsPos = self.SightsPos or Vector()
+		self.IronSightsAng = self.SightsAng or Vector()
+	end
+end
+
+function SWEP:AutoDetectSpread()
+	if self.Primary.SpreadMultiplierMax == -1 or not self.Primary.SpreadMultiplierMax then
+		self.Primary.SpreadMultiplierMax = math.Clamp(math.sqrt(math.sqrt(self.Primary.Damage / 35) * 10 / 5) * 5, 0.01 / self.Primary.Spread, 0.1 / self.Primary.Spread)
+	end
+	if self.Primary.SpreadIncrement == -1 or not self.Primary.SpreadIncrement then
+		self.Primary.SpreadIncrement = self.Primary.SpreadMultiplierMax * 60 / self.Primary.RPM * 0.85 * 1.5
+	end
+	if self.Primary.SpreadRecovery == -1 or not self.Primary.SpreadRecovery then
+		self.Primary.SpreadRecovery = math.max(self.Primary.SpreadMultiplierMax * math.pow(self.Primary.RPM / 600, 1 / 3) * 0.75,self.Primary.SpreadMultiplierMax / 1.5)
+	end
+end
+
 --[[
 Function Name:  AutoDetectMuzzle
 Syntax: self:AutoDetectMuzzle().  Call only once, or it's redundant.
@@ -38,6 +88,7 @@ Notes:  Fixes the damage for GDCW.
 Purpose:  Autodetection
 ]]--
 function SWEP:AutoDetectDamage()
+	if self.Primary.Damage and self.Primary.Damage ~= -1 then return end
 	if self.Primary.Round then
 		local rnd = string.lower(self.Primary.Round)
 
@@ -86,7 +137,7 @@ Purpose:  Autodetection
 ]]--
 
 function SWEP:AutoDetectDamageType()
-	if self.Primary.DamageType == nil then
+	if self.Primary.DamageType == -1 or not self.Primary.DamageType then
 		if self.DamageType and not self.Primary.DamageType then
 			self.Primary.DamageType = self.DamageType
 		else
@@ -109,7 +160,9 @@ Purpose:  Autodetection
 ]]--
 
 function SWEP:AutoDetectForce()
-	self.Primary.Force = self.Primary.Force or self.Force or ( math.sqrt( self.Primary.Damage / 16 ) * 3 / math.sqrt( self.Primary.NumShots ) )
+	if self.Primary.Force == -1 or not self.Primary.Force then
+		self.Primary.Force = self.Force or ( math.sqrt( self.Primary.Damage / 16 ) * 3 / math.sqrt( self.Primary.NumShots ) )
+	end
 end
 
 --[[
@@ -121,7 +174,9 @@ Purpose:  Autodetection
 ]]--
 
 function SWEP:AutoDetectKnockback()
-	self.Primary.Knockback = self.Primary.Knockback or self.Knockback or math.max(math.pow(self.Primary.Force - 3.25, 2), 0) * math.pow(self.Primary.NumShots, 1 / 3) * 3
+	if self.Primary.Knockback == -1 or not self.Primary.Knockback then
+		self.Primary.Knockback = self.Knockback or math.max(math.pow(self.Primary.Force - 3.25, 2), 0) * math.pow(self.Primary.NumShots, 1 / 3)
+	end
 end
 
 --[[
@@ -134,7 +189,8 @@ Purpose:  Autodetection
 local selicon_final = {}
 
 function SWEP:IconFix()
-	self.Gun = self.ClassName
+	if not surface then return end
+	self.Gun = self.ClassName or self.Folder
 	local tselicon
 	local proceed = true
 
@@ -167,7 +223,8 @@ Notes:  If you're using scopezoom instead of FOV, this translates it.
 Purpose:  Autodetection
 ]]--
 function SWEP:CorrectScopeFOV(fov)
-	if not self.Secondary.IronFOV or self.Secondary.IronFOV == 0 then
+	fov = fov or self.DefaultFOV
+	if not self.Secondary.IronFOV or self.Secondary.IronFOV <= 0 then
 		if self.Scoped then
 			self.Secondary.IronFOV = fov / (self.Secondary.ScopeZoom and self.Secondary.ScopeZoom or 2)
 		else
@@ -175,57 +232,6 @@ function SWEP:CorrectScopeFOV(fov)
 		end
 	end
 end
-
---[[
-Function Name:  DetectValidAnimations
-Syntax: self:DetectValidAnimations( ).  Call as much as you like.
-Returns:  Nothing.
-Notes:  This is what autodetects animations for the SWEP.SequenceEnabled and SWEP.SequenceLength tables.
-Purpose:  Autodetection
-]]--
-
-SWEP.ActCache = {}
-
-function SWEP:DetectValidAnimations()
-	if not IsValid(self) then return end
-
-	table.Empty(self.ActCache)
-
-	if self.CanBeSilenced and self.SequenceEnabled[ACT_VM_IDLE_SILENCED] == nil then
-		self.SequenceEnabled[ACT_VM_IDLE_SILENCED] = true
-	end
-
-	if not self:OwnerIsValid() then return end
-	local vm = self.Owner:GetViewModel()
-
-	if IsValid(vm) then
-		local seq
-
-		for k, v in ipairs(self.actlist) do
-			seq = vm:SelectWeightedSequence(v)
-
-			if seq ~= -1 and vm:GetSequenceActivity(seq) == v and not self.ActCache[seq] then
-				self.SequenceEnabled[v] = true
-				self.SequenceLength[v] = vm:SequenceDuration(seq)
-				self.ActCache[seq] = v
-			else
-				self.SequenceEnabled[v] = false
-				self.SequenceLength[v] = 0.0
-			end
-		end
-	else
-		return false
-	end
-
-	if self.SequenceEnabled[ACT_VM_HOLSTER] then
-		self.DoProceduralHolster = false
-	end
-
-	self.HasDetectedValidAnimations = true
-
-	return true
-end
-
 --[[
 Function Name:  CreateFireModes
 Syntax: self:CreateFireModes( is first draw).  Call as much as you like.  isfirstdraw controls whether the default fire mode is set.
@@ -233,9 +239,10 @@ Returns:  Nothing.
 Notes:  Autodetects fire modes depending on what params you set up.
 Purpose:  Autodetection
 ]]--
-function SWEP:CreateFireModes(isfirstdraw)
-	local thasbeencreated = false
 
+SWEP.FireModeCache = {}
+
+function SWEP:CreateFireModes(isfirstdraw)
 	if not self.FireModes then
 		self.FireModes = {}
 		local burstcnt = self:FindEvenBurstNumber()
@@ -274,137 +281,183 @@ function SWEP:CreateFireModes(isfirstdraw)
 			end
 		end
 
-		thasbeencreated = true
 	end
 
-	if isfirstdraw or thasbeencreated and self.DefaultFireMode then
-		for k, v in ipairs(self.FireModes) do
-			if v == self.DefaultFireMode then
-				self:SetFireMode(k)
+	if self.FireModes[#self.FireModes] ~= "Safe" then
+		self.FireModes[#self.FireModes + 1] = "Safe"
+	end
+
+	if not self.FireModeCache or #self.FireModeCache <= 0 then
+		for k,v in ipairs(self.FireModes) do
+			self.FireModeCache[v] = k
+		end
+
+		if type(self.DefaultFireMode) == "number" then
+			self:SetFireMode(self.DefaultFireMode or (self.Primary.Automatic and 1 or #self.FireModes - 1) )
+		else
+			self:SetFireMode( self.FireModeCache[self.DefaultFireMode] or (self.Primary.Automatic and 1 or #self.FireModes - 1) )
+		end
+	end
+end
+
+--[[
+Function Name:  CacheAnimations
+Syntax: self:CacheAnimations( ).  Call as much as you like.
+Returns:  Nothing.
+Notes:  This is what autodetects animations for the SWEP.SequenceEnabled and SWEP.SequenceLength tables.
+Purpose:  Autodetection
+]]--
+
+SWEP.actlist = {ACT_VM_DRAW, ACT_VM_DRAW_EMPTY, ACT_VM_DRAW_SILENCED, ACT_VM_HOLSTER, ACT_VM_HOLSTER_EMPTY, ACT_VM_IDLE, ACT_VM_IDLE_EMPTY, ACT_VM_IDLE_SILENCED, ACT_VM_PRIMARYATTACK, ACT_VM_PRIMARYATTACK_1, ACT_VM_PRIMARYATTACK_EMPTY, ACT_VM_PRIMARYATTACK_SILENCED, ACT_VM_SECONDARYATTACK, ACT_VM_RELOAD, ACT_VM_RELOAD_EMPTY, ACT_VM_RELOAD_SILENCED, ACT_VM_ATTACH_SILENCER, ACT_VM_RELEASE, ACT_VM_DETACH_SILENCER, ACT_VM_FIDGET, ACT_VM_FIDGET_EMPTY, ACT_SHOTGUN_RELOAD_START}
+--If you really want, you can remove things from SWEP.actlist and manually enable animations and set their lengths.
+SWEP.SequenceEnabled = {}
+SWEP.SequenceLength = {}
+SWEP.SequenceLengthOverride = {} --Override this if you want to change the length of a sequence but not the next idle
+
+SWEP.ActCache = {}
+
+local vm,seq
+
+function SWEP:CacheAnimations()
+
+	table.Empty(self.ActCache)
+
+	if self.CanBeSilenced and self.SequenceEnabled[ACT_VM_IDLE_SILENCED] == nil then
+		self.SequenceEnabled[ACT_VM_IDLE_SILENCED] = true
+	end
+
+	if not self:VMIV() then return end
+	vm = self.OwnerViewModel
+
+	if IsValid(vm) then
+
+		for k, v in ipairs(self.actlist) do
+			seq = vm:SelectWeightedSequence(v)
+
+			if seq ~= -1 and vm:GetSequenceActivity(seq) == v and not self.ActCache[seq] then
+				self.SequenceEnabled[v] = true
+				self.SequenceLength[v] = vm:SequenceDuration(seq)
+				self.ActCache[seq] = v
+			else
+				self.SequenceEnabled[v] = false
+				self.SequenceLength[v] = 0.0
 			end
 		end
+	else
+		return false
 	end
 
-	if not self:GetFireMode() or self:GetFireMode() == 0 then
-		if self.Primary.Automatic then
-			self:SetFireMode(1)
+	if self.ProceduralHolsterEnabled == nil then
+		if self.SequenceEnabled[ACT_VM_HOLSTER] then
+			self.ProceduralHolsterEnabled = false
 		else
-			self:SetFireMode(#self.FireModes)
+			self.ProceduralHolsterEnabled = true
 		end
 	end
 
-	if not table.HasValue(self.FireModes, "Safe") then
-		table.insert(self.FireModes, #self.FireModes + 1, "Safe")
-	end
+	self.HasDetectedValidAnimations = true
+
+	return true
 end
 
---[[
-Function Name:  AutoDetectRange
-Syntax: self:AutoDetectRange().  Really only necessary to call once, but w/e.
-Returns:  Nothing.
-Notes:  Autodetects weapon range.  This is further affect in the shoot code by a convar.  See sh_bullet.lua.
-Purpose:  Autodetection
-]]--
-function SWEP:AutoDetectRange()
-	if self.Primary.Range == -1 then
-		self.Primary.Range = 18240 * self.Primary.Damage / 30 * (math.abs(self.Primary.KickUp) + math.abs(self.Primary.KickDown) + math.abs(self.Primary.KickHorizontal)) * 0.888
-		self.Primary.Range = (self.Primary.Range * 3 + self.Primary.Range / (self.Primary.RPM / 400)) / 4
-		local ht = self.DefaultHoldType and self.DefaultHoldType or self.HoldType
+function SWEP:GetType()
+	if self.Type then return self.Type end
+	local at = string.lower(self.Primary.Ammo or "")
+	local ht = string.lower((self.DefaultHoldType or self.HoldType) or "")
+	local rpm = self.Primary.RPM or 600
 
-		if ht == "pistol" then
-			self.Primary.Range = self.Primary.Range * 0.3
-		end
+	if self.Shotgun or at == "buckshot" then
+		self.Type = "Shotgun"
 
-		if ht == "revolver" or ht == "357" then
-			self.Primary.Range = self.Primary.Range * 0.35
-		end
-
-		if ht == "smg" or ht == "smg" then
-			self.Primary.Range = self.Primary.Range * 0.9
-		end
-
-		if self.Shotgun or ht == "shotgun" or ht == "crossbow" or string.find(string.lower(self.ViewModel), "shotgun") or string.find(string.lower(self.Base), "shotgun") or string.find(string.lower(self.Category), "shotgun") then
-			self.Primary.Range = self.Primary.Range * 1.2
-		end
-
-		if self.Scoped then
-			self.Primary.Range = self.Primary.Range * 1.5
-		end
-
-		self.Primary.Range = self.Primary.Range / self.Primary.NumShots
+		return self:GetType()
 	end
 
-	if self.Primary.RangeFalloff == -1 then
-		self.Primary.RangeFalloff = math.Clamp(math.pow(math.abs(self.Primary.KickUp) + math.abs(self.Primary.KickDown) + math.abs(self.Primary.KickHorizontal), 2) / 3, 0.3, 0.9)
-	end
-end
+	if self.Pistol or (at == "pistol" and ht == "pistol") then
+		self.Type = "Pistol"
 
---[[
-Function Name:  SetUpSpread
-Syntax: self:SetUpSpread().  Really only necessary to call once, but w/e.
-Returns:  Nothing.
-Notes:  Autodetects weapon spraycone.  Does nothing after you set them, either in SWEP code or by calling this function once.
-Purpose:  Autodetection
-]]--
-function SWEP:SetUpSpread()
-	local ht = self.DefaultHoldType and self.DefaultHoldType or self.HoldType
-
-	if not self.Primary.SpreadMultiplierMax or self.AutoDetectSpreadMultiplierMax then
-		self.Primary.SpreadMultiplierMax = 2.5 * math.max(self.Primary.RPM, 400) / 600 * math.sqrt(self.Primary.Damage / 30 * self.Primary.NumShots) --How far the spread can expand when you shoot.
-
-		if ht == "smg" then
-			self.Primary.SpreadMultiplierMax = self.Primary.SpreadMultiplierMax * 0.8
-		end
-
-		if ht == "revolver" then
-			self.Primary.SpreadMultiplierMax = self.Primary.SpreadMultiplierMax * 2
-		end
-
-		if self.Scoped then
-			self.Primary.SpreadMultiplierMax = self.Primary.SpreadMultiplierMax * 1.5
-		end
-
-		self.AutoDetectSpreadMultiplierMax = true
+		return self:GetType()
 	end
 
-	if not self.Primary.SpreadIncrement or self.AutoDetectSpreadIncrement then
-		self.AutoDetectSpreadIncrement = true
-		self.Primary.SpreadIncrement = 1 * math.Clamp(math.sqrt(self.Primary.RPM) / 24.5, 0.7, 3) * math.sqrt(self.Primary.Damage / 30 * self.Primary.NumShots) --What percentage of the modifier is added on, per shot.
+	if self.SMG or (at == "smg1" and (ht == "smg" or ht == "pistol")) then
+		self.Type = "Sub-Machine Gun"
 
-		if ht == "revolver" then
-			self.Primary.SpreadIncrement = self.Primary.SpreadIncrement * 2
-		end
-
-		if ht == "pistol" then
-			self.Primary.SpreadIncrement = self.Primary.SpreadIncrement * 1.35
-		end
-
-		if ht == "ar2" or ht == "rpg" then
-			self.Primary.SpreadIncrement = self.Primary.SpreadIncrement * 0.65
-		end
-
-		if ht == "smg" then
-			self.Primary.SpreadIncrement = self.Primary.SpreadIncrement * 1.75
-			self.Primary.SpreadIncrement = self.Primary.SpreadIncrement * (math.Clamp((self.Primary.RPM - 650) / 150, 0, 1) + 1)
-		end
-
-		if ht == "pistol" and self.Primary.Automatic == true then
-			self.Primary.SpreadIncrement = self.Primary.SpreadIncrement * 1.5
-		end
-
-		if self.Scoped then
-			self.Primary.SpreadIncrement = self.Primary.SpreadIncrement * 1.25
-		end
-
-		self.Primary.SpreadIncrement = self.Primary.SpreadIncrement * math.sqrt(self.Primary.Recoil * (self.Primary.KickUp + self.Primary.KickDown + self.Primary.KickHorizontal)) * 0.8
+		return self:GetType()
 	end
 
-	if not self.Primary.SpreadRecovery or self.AutoDetectSpreadRecovery then
-		self.AutoDetectSpreadRecovery = true
-		self.Primary.SpreadRecovery = math.sqrt(math.max(self.Primary.RPM, 300)) / 29 * 4 --How much the spread recovers, per second.
+	if self.Revolver or (at == "357" and ht == "revolver") then
+		self.Type = "Revolver"
 
-		if ht == "smg" then
-			self.Primary.SpreadRecovery = self.Primary.SpreadRecovery * (1 - math.Clamp((self.Primary.RPM - 600) / 200, 0, 1) * 0.33)
+		return self:GetType()
+	end
+
+	--Detect Sniper Type
+	if (self.Scoped or self.Scoped_3D) and rpm < 600 then
+		if rpm > 180 then
+			self.Type = "Designated Marksman Rifle"
+
+			return self:GetType()
+		else
+			self.Type = "Sniper Rifle"
+
+			return self:GetType()
 		end
 	end
+
+	--Detect based on holdtype
+	if ht == "pistol" then
+		self.Type = "Pistol"
+
+		return self:GetType()
+	end
+
+	if ht == "revolver" then
+		self.Type = "Revolver"
+
+		return self:GetType()
+	end
+
+	if ht == "duel" then
+		if at == "pistol" then
+			self.Type = "Dual Pistols"
+
+			return self:GetType()
+		elseif at == "357" then
+			self.Type = "Dual Revolvers"
+
+			return self:GetType()
+		elseif at == "smg1" then
+			self.Type = "Dual Sub-Machine Guns"
+
+			return self:GetType()
+		else
+			self.Type = "Dual Guns"
+
+			return self:GetType()
+		end
+	end
+
+	--If it's using rifle ammo, it's a rifle or a carbine
+	if at == "ar2" then
+		if ht == "ar2" or ht == "shotgun" then
+			self.Type = "Rifle"
+
+			return self:GetType()
+		else
+			self.Type = "Carbine"
+
+			return self:GetType()
+		end
+	end
+
+	--Check SMG one last time
+	if ht == "smg" or at == "smg1" then
+		self.Type = "Sub-Machine Gun"
+
+		return self:GetType()
+	end
+
+	--Fallback to generic
+	self.Type = "Weapon"
+
+	return self:GetType()
 end

@@ -67,7 +67,7 @@ function EFFECT:Init(data)
 
 	-- Keep the start and end Pos - we're going to interpolate between them
 	self.Pos = self:GetTracerShootPos(angpos.Pos, self.WeaponEnt, self.Attachment)
-	self.Norm = self.Dir or angpos.Ang:Forward() --angpos.Ang:Forward()
+	self.Norm =  angpos.Ang:Forward() --angpos.Ang:Forward()
 	--print(self.Norm)
 	self.Magnitude = data:GetMagnitude()
 	self.Scale = data:GetScale()

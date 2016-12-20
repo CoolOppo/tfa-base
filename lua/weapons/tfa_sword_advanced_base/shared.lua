@@ -1,5 +1,4 @@
---[[Legacy Variables]]
---
+DEFINE_BASECLASS("tfa_gun_base")
 SWEP.Primary.Ammo = "" -- Required for GMod legacy purposes.  Don't remove unless you want to see your sword's ammo.  Wat?
 SWEP.data = {} --Ignore this.
 --[[SWEP Info]]
@@ -199,46 +198,16 @@ util.PrecacheModel(self.WorldModel)
 end
 ]]--
 
-SWEP.Callback = {}
-
-SWEP.Callback.Deploy = function(self)
+function SWEP:Deploy()
 	self:SetNW2Float("SharedRandomVal", CurTime())
 	self:SetBlockStart(-1)
 	self.PrevBlockRat = 0
+	BaseClass.Deploy(self)
 end
 
-SWEP.Callback.SetupDataTables = function(self)
+function SWEP:SetupDataTables()
 	self:NetworkVar("Float", 20, "BlockStart")
-end
-
-SWEP.Callback.UserInput = function(self)
-	self.OldIronsights = self:GetIronSights()
-	local is = false
-
-	if IsValid(self.Owner) and self.Owner:KeyDown(IN_ATTACK2) then
-		is = true
-	end
-
-	if self.data and self.data.ironsights == 0 then
-		is = false
-	end
-
-	self:SetIronSightsRaw(is)
-	self:SetIronSights(is)
-	self.OldSprinting = self:GetSprinting()
-	local spr = false
-
-	if IsValid(self.Owner) then
-		local isnumber = is and 1 or 0
-
-		if self.Owner:KeyDown(IN_SPEED) and self.Owner:GetVelocity():Length() > self.Owner:GetWalkSpeed() * (self.MoveSpeed * (1 - isnumber) + self.IronSightsMoveSpeed * isnumber) then
-			spr = true
-		end
-	end
-
-	self:SetSprinting(spr)
-
-	return true
+	BaseClass.SetupDataTables(self)
 end
 
 function SWEP:DoImpactEffect(tr, dmg)
@@ -335,23 +304,10 @@ function SWEP:PrimaryAttack()
 	if CLIENT and not IsFirstTimePredicted() then return end
 	if not self:OwnerIsValid() then return end
 	if CurTime() < self:GetNextPrimaryFire() then return end
-
-	if (self:GetHolstering()) then
-		if (self.ShootWhileHolster == false) then
-			return
-		else
-			self:SetHolsteringEnd(CurTime() - 0.1)
-			self:SetHolstering(false)
-		end
-	end
+	if not TFA.Enum.ReadyStatus[self:GetStatus()] then return end
 
 	if self:IsSafety() then return end
-	if self:GetIronSightsRatio() > 0.7 then return end
-	if self:GetRunSightsRatio() > 0.7 then return end
-	if (self:GetChangingSilence()) then return end
-	if (self:GetNearWallRatio() > 0.05) then return end
-	--if self:GetShooting() then return end
-	self:SetShooting(true)
+	self:SetStatus(TFA.Enum.STATUS_SHOOTING)
 	self.sounds = 0
 	self:ChooseShootAnim() -- View model animation
 
@@ -366,17 +322,9 @@ function SWEP:PrimaryAttack()
 	local vm = self.Owner:GetViewModel()
 	self.Owner:SetAnimation(PLAYER_ATTACK1)
 	self.Owner:SetNW2Float("TFM_SwingStart", CurTime())
-	self:SetShootingEnd(CurTime() + vm:SequenceDuration(vm:LookupSequence(self.Sequences[self:GetNW2Int("Slash", 1)].name)))
+	self:SetStatusEnd(CurTime() + vm:SequenceDuration(vm:LookupSequence(self.Sequences[self:GetNW2Int("Slash", 1)].name)))
 	self.LastTraceTime = CurTime() + self.Sequences[self:GetNW2Int("Slash", 1)].startt
-	self:SetSpreadRatio(math.Clamp(self:GetSpreadRatio() + self.Primary.SpreadIncrement, 1, self.Primary.SpreadMultiplierMax))
 
-	if (CLIENT or game.SinglePlayer()) and IsFirstTimePredicted() then
-		self.CLSpreadRatio = math.Clamp(self.CLSpreadRatio + self.Primary.SpreadIncrement, 1, self.Primary.SpreadMultiplierMax)
-	end
-
-	self:SetBursting(true)
-	self:SetNextBurst(CurTime() + 1 / (self.Primary.RPM / 60))
-	self:SetBurstCount(self:GetBurstCount() + 1)
 	self:SetNextPrimaryFire(CurTime() + 1 / (self.Primary.RPM / 60))
 
 	if SERVER then
@@ -395,20 +343,21 @@ local aimoff, jitfac
 local blockseqn, ply
 local vm
 
-SWEP.Callback.IronsSprint = function(self)
+function SWEP:IronSights()
+	BaseClass.IronSights(self)
 	ply = self.Owner
 	seq = self.Sequences[self:GetNW2Int("Slash", 1)]
 	swe = ply:GetNW2Float("TFM_SwingStart", CurTime()) + seq.endt
 
 	if CurTime() < swe then
-		self:SetIronSights(false)
+		self:SetIronSightsRaw(false)
 	end
 end
 
 
-SWEP.Callback.Think2 = function(self)
-	if not self:OwnerIsValid() then return end
-	local isr = self:GetIronSightsRatio()
+function SWEP:Think2()
+	BaseClass.Think2(self)
+	local isr = self.IronSightsProgress
 	ply = self.Owner
 
 	if self.PrevBlockRat and isr and self.PrevBlockRat <= 0.3 and isr > 0.3 then
@@ -422,8 +371,8 @@ SWEP.Callback.Think2 = function(self)
 	end
 
 	self.PrevBlockRat = isr
-
-	if self:GetShooting() then
+	local stat = self:GetStatus()
+	if stat == TFA.Enum.STATUS_SHOOTING then
 		seq = self.Sequences[self:GetNW2Int("Slash", 1)]
 		ts = cv_ts:GetFloat()
 		ct = CurTime()
@@ -435,7 +384,7 @@ SWEP.Callback.Think2 = function(self)
 		swingprogress = (CurTime() - sws) / len
 
 		if CurTime() < swe then
-			self:SetIronSights(false)
+			self:SetIronSightsRaw(false)
 		end
 
 		if (CurTime() > sws) and CurTime() < swe and ft > len / self.SlashPrecision and (strikepercent > 0) then
@@ -541,13 +490,11 @@ function SWEP:ChooseShootAnim(mynewvar)
 	local actid = vm:GetSequenceActivity(seqid)
 
 	if actid and actid >= 0 and self.Action then
-		self:SendWeaponAnim(actid)
+		self:SendViewModelAnim(actid)
 		--vm:SendViewModelMatchingSequence(seqid)
 	else
-		vm:SetSequence(seqid)
+		self:SendViewModelSeq(seqid)
 	end
-
-	self:SetNextIdleAnim(vm:SequenceDuration())
 
 	if SERVER and game.SinglePlayer() then
 		self:CallOnClient("ChooseShootAnim", tostring(seqn))
@@ -577,13 +524,13 @@ function SWEP:BlockAnim()
 					if seq.recoverytime then
 						self.NextPrimaryFire = CurTime() + vm:SequenceDuration() + seq.recoverytime
 						self:SetNextPrimaryFire(CurTime() + vm:SequenceDuration() + seq.recoverytime)
-						self:SetFireModeChanging(true)
-						self:SetFireModeChangeEnd(self.NextPrimaryFire)
+						self:SetStatus(TFA.Enum.STATUS_FIDGET)
+						self:SetStatusEnd(self.NextPrimaryFire)
 					else
 						self.NextPrimaryFire = CurTime() + vm:SequenceDuration()
 						self:SetNextPrimaryFire(CurTime() + vm:SequenceDuration())
-						self:SetFireModeChanging(true)
-						self:SetFireModeChangeEnd(self.NextPrimaryFire)
+						self:SetStatus(TFA.Enum.STATUS_FIDGET)
+						self:SetStatusEnd(self.NextPrimaryFire)
 					end
 				else
 					self.NextPrimaryFire = CurTime() + seq.recoverytime

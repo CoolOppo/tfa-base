@@ -27,9 +27,10 @@ SWEP.data = {} --No ironsights
 SWEP.data.ironsights = 0 --No ironsights
 SWEP.Callback = {}
 
-SWEP.Callback.Deploy = function(self)
+function SWEP:Deploy()
 	self.StabIndex = math.random(1, #self.SlashTable)
 	self.StabMiss = math.random(1, #self.SlashTable)
+	return BaseClass.Deploy(self)
 end
 
 SWEP.hull = 1
@@ -37,34 +38,25 @@ local hull = {}
 
 function SWEP:PrimaryAttack()
 	vm = self.Owner:GetViewModel()
-	if SERVER and self:GetNextPrimaryFire() < CurTime() and self.Owner:IsPlayer() then
-		self:SendWeaponAnim(ACT_VM_IDLE)
+	if not TFA.Enum.ReadyStatus[self:GetStatus()] then return end
+	if self:GetNextPrimaryFire() < CurTime() and self.Owner:IsPlayer() and not self.Owner:KeyDown(IN_RELOAD) then
+		self.hull = self.hull + 1
 
-		if not self.Owner:KeyDown(IN_SPEED) and not self.Owner:KeyDown(IN_RELOAD) then
-			self.hull = self.hull + 1
-
-			if self.hull > #self.SlashTable then
-				self.hull = 1
-			end
-
-			vm:SendViewModelMatchingSequence(vm:LookupSequence(self.SlashTable[self.hull]))
-
-			if game.SinglePlayer() then
-				self:CallOnClient("AnimForce", self.SlashTable[self.hull])
-			end
-
-			self:EmitSound(self.Primary.Sound) --hull in the wind sound here
-
-			timer.Create("cssslash" .. self:EntIndex(), self.SlashDelay, 1, function()
-				if self then self:PrimarySlash() end
-			end)
-
-			self.Owner:SetAnimation(PLAYER_ATTACK1)
-			self:SetNextPrimaryFire(CurTime() + 1 / (self.Primary.RPM / 60))
-			self:SetNextSecondaryFire(CurTime() + 1 / (self.Primary.RPM / 60))
-			self:SetShooting(true)
-			self:SetShootingEnd(CurTime() + 1 / (self.Primary.RPM / 60) * 3)
+		if self.hull > #self.SlashTable then
+			self.hull = 1
 		end
+
+		self:SendViewModelSeq(self.SlashTable[self.hull])
+
+		if IsFirstTimePredicted() then
+			self:EmitSound(self.Primary.Sound) --hull in the wind sound here
+		end
+
+		self.Owner:SetAnimation(PLAYER_ATTACK1)
+		self:SetNextPrimaryFire(CurTime() + 1 / (self.Primary.RPM / 60))
+		self:SetNextSecondaryFire(CurTime() + 1 / (self.Primary.RPM / 60))
+		self:SetStatus(TFA.Enum.STATUS_RELOADING)
+		self:SetStatusEnd(CurTime() + self.SlashDelay)
 	end
 end
 
@@ -135,59 +127,41 @@ function SWEP:SecondaryAttack()
 	pos = self.Owner:GetShootPos()
 	ang = self.Owner:GetAimVector()
 	vm = self.Owner:GetViewModel()
+	if not TFA.Enum.ReadyStatus[self:GetStatus()] then return end
 
-	if self:GetNextSecondaryFire() < CurTime() and self.Owner:IsPlayer() then
-		self:SendWeaponAnim(ACT_VM_IDLE)
+	if self:GetNextSecondaryFire() < CurTime() and self.Owner:IsPlayer() and not self.Owner:KeyDown(IN_RELOAD) then
+		self:EmitSound(self.Primary.Sound)
+		hull.start = pos
+		hull.endpos = pos + (ang * self.StabLength)
+		hull.filter = self.Owner
+		hull.mins = Vector(-10, -5, 0)
+		hull.maxs = Vector(10, 5, 5)
+		local stabtrace = util.TraceHull(hull)
+		if stabtrace.Hit then
+			self.StabIndex = self.StabIndex or 0
+			self.StabIndex = self.StabIndex + 1
 
-		if not self.Owner:KeyDown(IN_SPEED) and not self.Owner:KeyDown(IN_RELOAD) then
-			self:EmitSound(self.Primary.Sound)
-			hull.start = pos
-			hull.endpos = pos + (ang * self.StabLength)
-			hull.filter = self.Owner
-			hull.mins = Vector(-10, -5, 0)
-			hull.maxs = Vector(10, 5, 5)
-			local stabtrace = util.TraceHull(hull)
-
-			if stabtrace.Hit then
-				self.StabIndex = self.StabIndex + 1
-
-				if self.StabIndex > #self.StabTable then
-					self.StabIndex = 1
-				end
-
-				vm:SendViewModelMatchingSequence(vm:LookupSequence(self.StabTable[self.StabIndex]))
-
-				if game.SinglePlayer() then
-					self:CallOnClient("AnimForce", self.StabTable[self.StabIndex])
-				end
-			else
-				self.StabMiss = self.StabMiss + 1
-
-				if self.StabMiss > #self.StabMissTable then
-					self.StabMiss = 1
-				end
-
-				vm:SendViewModelMatchingSequence(vm:LookupSequence(self.StabMissTable[self.StabMiss]))
-
-				if game.SinglePlayer() then
-					self:CallOnClient("AnimForce", self.StabMissTable[self.StabMiss])
-				end
+			if self.StabIndex > #self.StabTable then
+				self.StabIndex = 1
 			end
 
-			timer.Create("cssstab" .. self:EntIndex(), self.StabDelay, 1, function()
-				if not IsValid(self) then return end
+			self:SendViewModelSeq(self.StabTable[self.StabIndex])
+		else
+			self.StabMiss = self.StabMiss or 0
+			self.StabMiss = self.StabMiss + 1
 
-				if self.Owner then
-					self:Stab()
-				end
-			end)
+			if self.StabMiss > #self.StabMissTable then
+				self.StabMiss = 1
+			end
 
-			self.Owner:SetAnimation(PLAYER_ATTACK1)
-			self:SetNextPrimaryFire(CurTime() + 1 / (self.Secondary.RPM / 60))
-			self:SetNextSecondaryFire(CurTime() + 1 / (self.Secondary.RPM / 60))
-			self:SetShooting(true)
-			self:SetShootingEnd(CurTime() + 1.24)
+			self:SendViewModelSeq(self.StabMissTable[self.StabMiss])
 		end
+
+		self.Owner:SetAnimation(PLAYER_ATTACK1)
+		self:SetNextPrimaryFire(CurTime() + 1 / (self.Secondary.RPM / 60))
+		self:SetNextSecondaryFire(CurTime() + 1 / (self.Secondary.RPM / 60))
+		self:SetStatus(TFA.Enum.STATUS_SILENCER_TOGGLE)
+		self:SetStatusEnd(CurTime() + self.StabDelay)
 	end
 end
 
@@ -282,6 +256,15 @@ end
 function SWEP:Reload()
 	if not self:OwnerIsValid() and self.Owner:KeyDown(IN_RELOAD) then return end
 	self:ThrowKnife()
+end
+
+function SWEP:Think2()
+	if self:GetStatus() == TFA.Enum.STATUS_RELOADING and CurTime() > self:GetStatusEnd() then
+		self:Stab()
+	elseif self:GetStatus() == TFA.Enum.STATUS_SILENCER_TOGGLE and CurTime() > self:GetStatusEnd() then
+		self:PrimarySlash()
+	end
+	BaseClass.Think2(self)
 end
 
 SWEP.IsKnife = true

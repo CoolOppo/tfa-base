@@ -7,12 +7,19 @@ SWEP.customboboffset = Vector(0, 0, 0)
 local ftv, ws, rs
 local owvel, meetswalkgate, meetssprintgate, walkfactorv, runfactorv, sprintfactorv
 local customboboffsetx, customboboffsety, customboboffsetz, mypi, curtimecompensated, runspeed, timehasbeensprinting, tironsightscale
+local cl_tfa_viewmodel_centered
+if CLIENT then
+	cl_tfa_viewmodel_centered = GetConVar("cl_tfa_viewmodel_centered")
+end
 
 walkfactorv = 10.25
 runfactorv = 18
 sprintfactorv = 24
 
+local VecOr = Vector()
+
 function SWEP:DoBobFrame()
+	VecOr:Zero()
 	ftv = FrameTime()
 	ws = self.Owner:GetWalkSpeed()
 	rs = self.Owner:GetRunSpeed()
@@ -33,6 +40,10 @@ function SWEP:DoBobFrame()
 	if owvel > rs * 0.8 then
 		meetssprintgate = true
 	end
+	if self.Sprint_Mode == TFA.Enum.LOCOMOTION_ANI and meetssprintgate then
+		meetssprintgate = false
+		owvel = math.min(owvel,100)
+	end
 
 	if not self.bobtimehasbeensprinting then
 		self.bobtimehasbeensprinting = 0
@@ -51,6 +62,8 @@ function SWEP:DoBobFrame()
 	if not self.Owner:IsOnGround() then
 		self.bobtimehasbeensprinting = math.Approach(self.bobtimehasbeensprinting, 0, ftv / (5 / 60))
 	end
+
+	if cl_tfa_viewmodel_centered:GetBool() then ftv = ftv * 0.5 end
 
 	if owvel > 1 and owvel <= ws * 0.1 and owvel > self.tprevvel then
 		if self.Owner:IsOnGround() then
@@ -90,7 +103,7 @@ function SWEP:CalculateBob(pos, ang, ci, igvmf)
 	end
 
 	ci = ci * 0.66
-	tironsightscale = 1 - 0.6 * self:GetIronSightsRatio()
+	tironsightscale = 1 - 0.6 * self.IronSightsProgress
 	owvel = self.Owner:GetVelocity():Length()
 	runspeed = self.Owner:GetWalkSpeed()
 	curtimecompensated = self.bobtimevar or 0
@@ -121,6 +134,7 @@ function SWEP:CalculateBob(pos, ang, ci, igvmf)
 	self.customboboffset = self.customboboffset * (1 + sprintbobfac / 3)
 	pos:Add(self.Owner:EyeAngles():Right() * cboboff2)
 	self.customboboffset = self.customboboffset * ci
+	if cl_tfa_viewmodel_centered:GetBool() then self.customboboffset.x = 0 end
 	pos:Add(ang:Right() * self.customboboffset.x * -1.33)
 	pos:Add(ang:Forward() * self.customboboffset.y * -1)
 	pos:Add(ang:Up() * self.customboboffset.z)
@@ -128,7 +142,7 @@ function SWEP:CalculateBob(pos, ang, ci, igvmf)
 	ang:RotateAroundAxis(ang:Up(), self.customboboffset.y)
 	ang:RotateAroundAxis(ang:Forward(), self.customboboffset.z)
 	tironsightscale = math.pow(tironsightscale, 2)
-	local localisedmove = WorldToLocal(self.Owner:GetVelocity(), self.Owner:GetVelocity():Angle(), vector_origin, self.Owner:EyeAngles())
+	local localisedmove = WorldToLocal(self.Owner:GetVelocity(), self.Owner:GetVelocity():Angle(), VecOr, self.Owner:EyeAngles())
 
 	if igvmf then
 		ang:RotateAroundAxis(ang:Forward(), (math.Approach(localisedmove.y, 0, 1) / (runspeed / 8) * tironsightscale) * (ci or 1))

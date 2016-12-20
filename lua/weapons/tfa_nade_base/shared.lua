@@ -8,6 +8,8 @@ SWEP.Primary.Round = "" -- Nade Entity
 SWEP.Velocity = 550 -- Entity Velocity
 SWEP.Underhanded = false
 SWEP.DisableIdleAnimations = true
+SWEP.IronSightsPos = Vector(5,0,0)
+SWEP.IronSightsAng = Vector(0,0,0)
 SWEP.Callback = {}
 
 function SWEP:Initialize()
@@ -30,7 +32,7 @@ function SWEP:Deploy()
 				end
 			end)
 		else
-			self:TakePrimaryAmmo(1)
+			self:TakePrimaryAmmo(1,true)
 			self:SetClip1(1)
 		end
 	end
@@ -57,7 +59,7 @@ function SWEP:ChoosePullAnim()
 	--self:ResetEvents()
 	local tanim = ACT_VM_PULLPIN
 	local success = true
-	self:SendWeaponAnim(ACT_VM_PULLPIN)
+	self:SendViewModelAnim(ACT_VM_PULLPIN)
 
 	if game.SinglePlayer() then
 		self:CallOnClient("AnimForce", tanim)
@@ -83,7 +85,7 @@ function SWEP:ChooseShootAnim()
 		tanim = ACT_VM_THROW
 	end
 	local success = true
-	self:SendWeaponAnim(tanim)
+	self:SendViewModelAnim(tanim)
 
 	if game.SinglePlayer() then
 		self:CallOnClient("AnimForce", tanim)
@@ -154,7 +156,7 @@ function SWEP:DoAmmoCheck()
 	end
 end
 
-function SWEP:Think()
+function SWEP:Think2()
 	if self:GetNW2Bool("Charging", false) and not self:GetNW2Bool("Ready", false) then
 		if self:OwnerIsValid() and self.Owner:KeyDown(IN_ATTACK2) then
 			self:SetNW2Bool("Underhanded", true)
@@ -164,11 +166,14 @@ function SWEP:Think()
 			self:ThrowStart()
 		end
 	end
+	BaseClass.Think2(self)
 end
 
 function SWEP:PrimaryAttack()
 	if self:Clip1() > 0 and self:OwnerIsValid() and self:CanFire() then
 		self:ChoosePullAnim()
+		self:SetStatus(TFA.Enum.STATUS_SHOOTING)
+		self:SetStatusEnd( CurTime() + (self.SequenceLengthOverride[tanim] or self.OwnerViewModel:SequenceDuration()) )
 		self:SetNW2Bool("Charging", true)
 		self:SetNW2Bool("Underhanded", false)
 
@@ -209,11 +214,12 @@ end
 
 function SWEP:CanFire()
 	if not self:OwnerIsValid() then return false end
-	local vm = self.Owner:GetViewModel()
-	local seq = vm:GetSequence()
-	local act = vm:GetSequenceActivity(seq)
-	if not (act == ACT_VM_DRAW or act == ACT_VM_IDLE) then return false end
-	if act == ACT_VM_DRAW and vm:GetCycle() < 0.99 then return false end
+	if not self:CanPrimaryAttack() then return false end
 
 	return not (self:GetNW2Bool("Charging") or self:GetNW2Bool("Ready"))
+end
+
+function SWEP:ChooseIdleAnim( ... )
+	if self:GetNW2Bool("Charging") or self:GetNW2Bool("Ready") then return end
+	BaseClass.ChooseIdleAnim(self,...)
 end

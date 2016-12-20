@@ -90,40 +90,9 @@ local l_CT = CurTime
 function SWEP:AltAttack()
 	if self.Secondary.CanBash == false then return end
 	if not self:OwnerIsValid() then return end
-	isbolttimer = self:GetBoltTimer()
-	if isbolttimer and (l_CT() > self:GetBoltTimerStart()) and (l_CT() < self:GetBoltTimerEnd()) then return end
-	if self:GetDrawing() then return end
-
-
-	if (self:GetHolstering()) then
-		if (self.ShootWhileHolster == false) then
-			return
-		else
-			self:SetHolsteringEnd(CurTime() - 0.1)
-			self:SetHolstering(false)
-		end
-	end
-
-	if (self:GetReloading() and self.Shotgun and not self:GetShotgunPumping() and not self:GetShotgunNeedsPump()) then
-		self:SetShotgunCancel(true)
-		--[[
-		self:SetShotgunInsertingShell(true)
-		self:SetShotgunPumping(false)
-		self:SetShotgunNeedsPump(true)
-		self:SetReloadingEnd(CurTime()-1)
-		]]
-		--
-
-		return
-	end
-
+	local stat = self:GetStatus()
+	if not TFA.Enum.ReadyStatus[stat] then return end
 	if self:IsSafety() then return end
-	if (self:GetChangingSilence()) then return end
-	if self:GetNextSecondaryFire() > CurTime() then return end
-
-	if self:GetReloading() then
-		self:CompleteReload()
-	end
 
 	local vm = self.Owner:GetViewModel()
 	--if SERVER then
@@ -161,13 +130,15 @@ function SWEP:AltAttack()
 	if IsFirstTimePredicted() then
 		self:EmitSound(self.Secondary.BashSound)
 	end
+	self:SetStatus(TFA.Enum.STATUS_BASHING)
+	self:SetStatusEnd(self:GetNextPrimaryFire())
 
 	self:SetNW2Float("BashTTime", CurTime() + self.Secondary.BashDelay)
 end
 
 local ttime = -1
 
-function SWEP:Think()
+function SWEP:Think2()
 	ttime = self:GetNW2Float("BashTTime", -1)
 
 	if ttime ~= -1 and CurTime() > ttime then
@@ -238,10 +209,12 @@ function SWEP:Think()
 			end
 		end
 	end
+
+	BaseClass.Think2(self)
 end
 
 function SWEP:SecondaryAttack()
-	if self.data and self.data.ironsights == 0 and not self.Akimbo then
+	if self.data and self.data.ironsights == 0 then
 		self:AltAttack()
 		return
 	end

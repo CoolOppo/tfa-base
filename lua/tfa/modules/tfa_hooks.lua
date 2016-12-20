@@ -9,7 +9,7 @@ Used For: Main weapon "think" logic
 hook.Add("PlayerTick", "PlayerTickTFA", function(plyv)
 	wep = plyv:GetActiveWeapon() or wep
 
-	if IsValid(wep) and wep.PlayerThink and wep.IsTFAWeapon then
+	if IsValid(wep) and wep.PlayerThink  and wep.IsTFAWeapon then
 		wep:PlayerThink(plyv)
 	end
 end)
@@ -24,8 +24,8 @@ hook.Add("PreRender", "prerender_tfabase", function()
 	if not IsValid(ply) then ply = LocalPlayer() return end
 	wep = ply:GetActiveWeapon() or wep
 
-	if IsValid(wep) and wep.IsTFAWeapon and wep.PlayerThinkClientFrame then
-		wep:PlayerThinkClientFrame(ply)
+	if IsValid(wep) and wep.IsTFAWeapon and wep.PlayerThinkCL then
+		wep:PlayerThinkCL(ply)
 	end
 end)
 
@@ -37,7 +37,6 @@ Used For: Records last held object
 --
 hook.Add("AllowPlayerPickup", "TFAPickupDisable", function(plyv, ent)
 	plyv:SetNW2Entity("LastHeldEntity", ent)
-	plyv:SetNW2Int("LastHeldEntityIndex", ent.EntIndex and ent:EntIndex() or -1)
 end)
 
 --[[
@@ -70,6 +69,14 @@ function TFAPlayerBindPress(plyv, b, p)
 			end
 			]]--
 
+			--[[
+
+			if wep.ShotgunInterrupt and b == "+attack" and (wep:GetReloading() and wep.Shotgun and not wep:GetShotgunPumping() and not wep:GetShotgunNeedsPump()) then
+				wep:ShotgunInterrupt()
+
+				return true
+			end
+			]]--
 			if wep.ToggleInspect and b == "+menu_context" and cv_cm:GetBool() then
 				if not cv_cci:GetBool() then
 					wep:ToggleInspect()
@@ -77,12 +84,6 @@ function TFAPlayerBindPress(plyv, b, p)
 					net.Start("tfaRequestFidget")
 					net.SendToServer()
 				end
-				return true
-			end
-
-			if wep.ShotgunInterrupt and b == "+attack" and (wep:GetReloading() and wep.Shotgun and not wep:GetShotgunPumping() and not wep:GetShotgunNeedsPump()) then
-				wep:ShotgunInterrupt()
-
 				return true
 			end
 		end
@@ -118,7 +119,8 @@ local reload_threshold = 0.3
 hook.Add("KeyPress","TFABase_KP",KP_Bash)
 
 local function KR_Reload(plyv, key)
-	if key == IN_RELOAD and cv_lr and ( not cv_lr:GetBool() ) and CurTime() < ( plyv.LastReloadPressed or -1 ) + reload_threshold then
+	if key == IN_RELOAD and cv_lr and ( not cv_lr:GetBool() ) and CurTime() <= ( plyv.LastReloadPressed or CurTime() ) + reload_threshold then
+		plyv.LastReloadPressed = nil
 		plyv.HasTFAAmmoChek = false
 		wep = plyv:GetActiveWeapon()
 
@@ -132,7 +134,7 @@ hook.Add("KeyRelease","TFABase_KR",KR_Reload)
 
 local function KD_AmmoCheck(plyv)
 	if plyv.HasTFAAmmoChek then return end
-	if plyv:KeyDown(IN_RELOAD) and CurTime() > ( plyv.LastReloadPressed or -1 ) + reload_threshold then
+	if plyv:KeyDown(IN_RELOAD) and CurTime() > ( plyv.LastReloadPressed or CurTime() ) + reload_threshold then
 		wep = plyv:GetActiveWeapon()
 
 		if IsValid(wep) and wep.IsTFAWeapon then
@@ -185,22 +187,22 @@ Function: Modify movement speed
 Used For:  Weapon slowdown, ironsights slowdown
 ]]--
 
-local cv_cmove = GetConVar("sv_tfa_compatibility_movement")
+local cv_cmove = GetConVar("sv_tfa_compat_movement")
 local sumwep
 local speedmult
 
-if not Clockwork and ( not cv_cmove or ( not cv_cmove:GetBool() ) ) then
+if not Clockwork then
 	hook.Add("SetupMove", "tfa_setupmove", function(plyv, movedata, commanddata)
-		--[[
 		if not cv_cmove then
-			cv_cmove = GetConVar("sv_tfa_compatibility_movement")
+			cv_cmove = GetConVar("sv_tfa_compat_movement")
 		else
-			if not cv_cmove:GetBool() then return end
+			if cv_cmove:GetBool() then return end
 		end
-		]]--
+
 		sumwep = plyv:GetActiveWeapon() or wep
-		if IsValid(sumwep) and sumwep.GetIronSightsRatio then
-			speedmult = Lerp(sumwep:GetIronSightsRatio(), sumwep.MoveSpeed or 1, sumwep.IronSightsMoveSpeed or 1)
+		if IsValid(sumwep) and sumwep.IsTFAWeapon then
+			sumwep.IronSightsProgress = sumwep.IronSightsProgress or 0
+			speedmult = Lerp(sumwep.IronSightsProgress, sumwep.MoveSpeed or 1, sumwep.IronSightsMoveSpeed or 1)
 			movedata:SetMaxClientSpeed(movedata:GetMaxClientSpeed() * speedmult)
 			commanddata:SetForwardMove(commanddata:GetForwardMove() * speedmult)
 			commanddata:SetSideMove(commanddata:GetSideMove() * speedmult)

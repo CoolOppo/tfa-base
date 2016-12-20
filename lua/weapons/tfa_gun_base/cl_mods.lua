@@ -40,6 +40,12 @@ Notes:  This draws the mods.
 Purpose:  SWEP Construction Kit Compatibility / Basic Attachments.
 ]]--
 
+function SWEP:PreDrawViewModel( vm, wep, ply )
+	if self:GetHidden() then
+		render.SetBlend(0)
+	end
+end
+
 SWEP.CameraAttachmentOffsets = {{"p", 0}, {"y", 0}, {"r", 0}}
 SWEP.CameraAttachment = nil
 SWEP.CameraAttachments = {"camera", "attach_camera", "view", "cam", "look"}
@@ -48,6 +54,7 @@ SWEP.CameraAngCache = nil
 local tmpvec = Vector(0, 0, -2000)
 
 function SWEP:ViewModelDrawn()
+	render.SetBlend(1)
 	if self.DrawHands then
 		self:DrawHands()
 	end
@@ -60,7 +67,7 @@ function SWEP:ViewModelDrawn()
 		local hands = self.Owner:GetHands()
 
 		if IsValid(hands) then
-			if not self:IsHidden() then
+			if not self:GetHidden() then
 				hands:SetParent(vm)
 			else
 				hands:SetParent(nil)
@@ -167,7 +174,11 @@ function SWEP:ViewModelDrawn()
 				ang:RotateAroundAxis(ang:Forward(), v.angle.r)
 				model:SetAngles(ang)
 
-				if (not v.material) or (v.material == "") then
+				if (v.surpresslightning) then
+					render.SuppressEngineLighting(true)
+				end
+
+				if (v.material == "") then
 					model:SetMaterial("")
 				elseif (model:GetMaterial() ~= v.material) then
 					model:SetMaterial(v.material)
@@ -177,24 +188,15 @@ function SWEP:ViewModelDrawn()
 					model:SetSkin(v.skin)
 				end
 
-				if (v.bodygroup) then
-					for l, b in pairs(v.bodygroup) do
-						if (type(l) == "number") and (model:GetBodygroup(l) ~= b) then
-							model:SetBodygroup(l, b)
-						end
-					end
-				end
-
-				if (v.surpresslightning) then
-					render.SuppressEngineLighting(true)
-				end
-
 				render.SetColorModulation(v.color.r / 255, v.color.g / 255, v.color.b / 255)
 				render.SetBlend(v.color.a / 255)
 				model:DrawModel()
 				render.SetBlend(1)
 				render.SetColorModulation(1, 1, 1)
-				render.SuppressEngineLighting(false)
+
+				if (v.surpresslightning) then
+					render.SuppressEngineLighting(false)
+				end
 			elseif (v.type == "Sprite" and sprite) then
 				local drawpos = pos + ang:Forward() * v.pos.x + ang:Right() * v.pos.y + ang:Up() * v.pos.z
 				render.SetMaterial(sprite)
@@ -441,7 +443,7 @@ function SWEP:CreateModels(tabl)
 	if (not tabl) then return end
 
 	for k, v in pairs(tabl) do
-		if (v.type == "Model" and v.model and (not IsValid(v.curmodel) or v.curmodelname ~= v.model) and v.model ~= "" and string.find(v.model, ".mdl") and file.Exists(v.model, "GAME")) then
+		if (v.type == "Model" and v.model and (not IsValid(v.curmodel) or v.curmodelname ~= v.model) and v.model ~= "" ) then
 			v.curmodel = ClientsideModel(v.model, RENDERGROUP_VIEWMODEL)
 
 			if (IsValid(v.curmodel)) then
@@ -449,6 +451,22 @@ function SWEP:CreateModels(tabl)
 				v.curmodel:SetAngles(self:GetAngles())
 				v.curmodel:SetParent(self)
 				v.curmodel:SetNoDraw(true)
+
+				if v.material then
+					v.curmodel:SetMaterial(v.material or "")
+				end
+				if v.skin then
+					v.curmodel:SetSkin(v.skin)
+				end
+
+				if (v.bodygroup) then
+					for l, b in pairs(v.bodygroup) do
+						if (type(l) == "number") and (v.curmodel:GetBodygroup(l) ~= b) then
+							v.curmodel:SetBodygroup(l, b)
+						end
+					end
+				end
+
 				local matrix = Matrix()
 				matrix:Scale(v.size)
 				v.curmodel:EnableMatrix("RenderMultiply", matrix)
@@ -493,6 +511,7 @@ local onevec = Vector(1, 1, 1)
 
 function SWEP:UpdateBonePositions(vm)
 	if self.ViewModelBoneMods then
+		local stat = self:GetStatus()
 		if not self.ViewModelBoneMods then
 			self.ViewModelBoneMods = {}
 		end
@@ -519,7 +538,7 @@ function SWEP:UpdateBonePositions(vm)
 			end
 
 			if self.BlowbackBoneMods[bonename] then
-				if not (self.SequenceEnabled[ACT_VM_RELOAD_EMPTY] and self:GetReloading()) or not (self.Blowback_PistolMode and self:GetReloading()) then
+				if not (self.SequenceEnabled[ACT_VM_RELOAD_EMPTY] and TFA.Enum.ReloadStatus[stat]) or not (self.Blowback_PistolMode and TFA.Enum.ReloadStatus[stat]) then
 					vbones[bonename].pos = vbones[bonename].pos + self.BlowbackBoneMods[bonename].pos * self.BlowbackCurrent
 					vbones[bonename].angle = vbones[bonename].angle + self.BlowbackBoneMods[bonename].angle * self.BlowbackCurrent
 					vbones[bonename].scale = Lerp(self.BlowbackCurrent, vbones[bonename].scale, vbones[bonename].scale * self.BlowbackBoneMods[bonename].scale)
@@ -532,7 +551,6 @@ function SWEP:UpdateBonePositions(vm)
 		loopthrough = vbones
 
 		for k, v in pairs(loopthrough) do
-			--print(v)
 			local bone = vm:LookupBone(k)
 			if (not bone) or (bone == -1) then continue end
 			local s = Vector(v.scale.x, v.scale.y, v.scale.z)

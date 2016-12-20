@@ -1,0 +1,3 @@
+[6:45:59 PM] Global: small tfa base bug: when sprinting you can't throw grenades
+[6:50:46 PM] Global: minor tfa base bug: spam clicking grenades cause some funky animations
+[6:56:52 PM] Global: major tfa base bug: ironsight the deagle and fire, you'll see

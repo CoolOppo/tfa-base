@@ -68,7 +68,7 @@ function SWEP:UpdateScopeType()
 		end
 
 		if self.Secondary.ScopeZoom and self.Secondary.ScopeZoom > 0 then
-			self.RTScopeFOV = 70 / self.Secondary.ScopeZoom
+			self.RTScopeFOV = 90 / self.Secondary.ScopeZoom
 			self.IronSightsSensitivity = math.sqrt(1 / self.Secondary.ScopeZoom)
 			self.Secondary.ScopeZoom = nil
 			self.Secondary.IronFOV_Backup = self.Secondary.IronFOV
@@ -89,7 +89,7 @@ function SWEP:UpdateScopeType()
 			self.BoltAction_3D = nil
 		end
 
-		self.Secondary.IronFOV = 70 / self.Secondary.ScopeZoom
+		self.Secondary.IronFOV = 90 / self.Secondary.ScopeZoom
 		self.IronSightsSensitivity = 1
 	end
 
@@ -134,7 +134,7 @@ function SWEP:Deploy(...)
 		end
 	end)
 
-	BaseClass.Deploy(self,...)
+	return BaseClass.Deploy(self,...)
 end
 
 local flipcv
@@ -148,6 +148,7 @@ local cv_cc_b = GetConVar("cl_tfa_hud_crosshair_color_b")
 local cv_cc_a = GetConVar("cl_tfa_hud_crosshair_color_a")
 
 SWEP.RTCode = function(self, rt, scrw, scrh)
+	if not self:VMIV() then return end
 	if not self.myshadowmask then
 		self.myshadowmask = surface.GetTextureID(self.ScopeShadow or "vgui/scope_shadowmask_test")
 	end
@@ -164,7 +165,7 @@ SWEP.RTCode = function(self, rt, scrw, scrh)
 		flipcv = GetConVar("cl_tfa_viewmodel_flip")
 	end
 
-	local vm = self.Owner:GetViewModel()
+	local vm = self.OwnerViewModel
 
 	if not self.LastOwnerPos then
 		self.LastOwnerPos = self.Owner:GetShootPos()
@@ -180,8 +181,8 @@ SWEP.RTCode = function(self, rt, scrw, scrh)
 	scrpos.y = scrpos.y - scrh / 2 + self.ScopeOverlayTransforms[2]
 	scrpos.x = math.Clamp(scrpos.x, -1024, 1024)
 	scrpos.y = math.Clamp(scrpos.y, -1024, 1024)
-	--scrpos.x = scrpos.x * ( 2 - self.CLIronSightsProgress*1 )
-	--scrpos.y = scrpos.y * ( 2 - self.CLIronSightsProgress*1 )
+	--scrpos.x = scrpos.x * ( 2 - self.IronSightsProgress*1 )
+	--scrpos.y = scrpos.y * ( 2 - self.IronSightsProgress*1 )
 	scrpos.x = scrpos.x * self.ScopeOverlayTransformMultiplier
 	scrpos.y = scrpos.y * self.ScopeOverlayTransformMultiplier
 
@@ -197,7 +198,7 @@ SWEP.RTCode = function(self, rt, scrw, scrh)
 	surface.DrawRect(-512, -512, 1024, 1024)
 	render.OverrideAlphaWriteEnable(true, true)
 	local ang = EyeAngles()
-	local AngPos = self.Owner:GetViewModel():GetAttachment(3)
+	local AngPos = vm:GetAttachment(3)
 
 	if AngPos then
 		ang = AngPos.Ang
@@ -240,7 +241,7 @@ SWEP.RTCode = function(self, rt, scrw, scrh)
 	render.Clear(0, 0, 0, 255, true, true)
 	render.SetScissorRect(0 + rtow, 0 + rtoh, rtw + rtow, rth + rtoh, true)
 
-	if self.CLIronSightsProgress > 0.01 and self.Scoped_3D then
+	if self.IronSightsProgress > 0.01 and self.Scoped_3D then
 		render.RenderView(cd)
 	end
 
@@ -277,7 +278,7 @@ SWEP.RTCode = function(self, rt, scrw, scrh)
 		surface.DrawRect(-1024 + rtow, scrpos.y + rth + rtoh, 2048, 2048)
 	end
 
-	surface.SetDrawColor(ColorAlpha(color_black, 255 - 255 * (math.Clamp(self.CLIronSightsProgress - 0.75, 0, 0.25) * 4)))
+	surface.SetDrawColor(ColorAlpha(color_black, 255 - 255 * (math.Clamp(self.IronSightsProgress - 0.75, 0, 0.25) * 4)))
 	surface.DrawRect(-1024 + rtow, -1024 + rtoh, 2048, 2048)
 	surface.SetMaterial(self.mydirt)
 	surface.SetDrawColor(ColorAlpha(color_white, 128))

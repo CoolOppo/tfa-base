@@ -1,10 +1,32 @@
+SWEP.SprintBobMult = 1.5 -- More is more bobbing, proportionally.  This is multiplication, not addition.  You want to make this > 1 probably for sprinting.
+SWEP.IronBobMult = 0.0 -- More is more bobbing, proportionally.  This is multiplication, not addition.  You want to make this < 1 for sighting, 0 to outright disable.
+SWEP.IronBobMultWalk = 0.2 -- More is more bobbing, proportionally.  This is multiplication, not addition.  You want to make this < 1 for sighting, 0 to outright disable.
+
 --[[
 Function Name:  CalcView
 Syntax: Don't ever call this manually.
 Returns:  Nothing.
 Notes:  Used to calculate view angles.
 Purpose:  Feature
-]]--
+]]--'
+
+local ta = Angle()
+local v = Vector()
+
+local m_AD = math.AngleDifference
+local m_NA = math.NormalizeAngle
+
+local l_LA = function(t,a1,a2)
+	ta.p = m_NA( a1.p + m_AD(a2.p,a1.p)  * t )
+	ta.y = m_NA( a1.y + m_AD(a2.y,a1.y)  * t )
+	ta.r = m_NA( a1.r + m_AD(a2.r,a1.r)  * t )
+	return ta
+end
+
+local l_LV = function(t,v1,v2)
+	v = v1  + ( v2 - v1 ) * t
+	return v * 1
+end
 
 SWEP.ViewHolProg = 0
 SWEP.AttachmentViewOffset = Angle(0, 0, 0)
@@ -23,6 +45,7 @@ local mzang_fixed
 local mzang_fixed_last
 local mzang_velocity = Angle()
 local progress = 0
+local targint,targbool
 
 function SWEP:CalcView(ply, pos, ang, fov)
 	if not ang then return end
@@ -32,21 +55,16 @@ function SWEP:CalcView(ply, pos, ang, fov)
 	if not CLIENT then return end
 	local ftv = math.max(FrameTime(), 0.001)
 	local viewbobintensity = 0.2 * viewbob_intensity_cvar:GetFloat()
-	local holprog = self.ProceduralHolsterFactor
 
-	if self.lastact == ACT_VM_HOLSTER or self.lastact == ACT_VM_HOLSTER_EMPTY then
-		holprog = math.max(holprog, vm:GetCycle())
-	end
+	holprog = TFA.Enum.HolsterStatus[self:GetStatus()] and 1 or 0
+	self.ViewHolProg = math.Approach(self.ViewHolProg, holprog, ftv / 5)
 
-	if self.lastact == ACT_VM_DRAW or self.lastact == ACT_VM_DRAW_EMPTY or self.lastact == ACT_VM_DRAW_SILENCED then
-		holprog = math.max(holprog, math.Clamp(0.2 - vm:GetCycle(), 0, 1) * 5)
-	end
-
-	self.ViewHolProg = math.Approach(self.ViewHolProg, holprog, ftv * 15)
 	oldpostmp = pos * 1
 	oldangtmp = ang * 1
-	pos, ang = self:CalculateBob(pos, ang, -viewbobintensity * (1 - self.ViewHolProg), true)
-	if not ang or not pos then return oldangtmp, oldpostmp end
+	if self.Idle_Mode == TFA.Enum.IDLE_LUA or self.Idle_Mode == TFA.Enum.IDLE_BOTH then
+		pos, ang = self:CalculateBob(pos, ang, -viewbobintensity, true)
+		if not ang or not pos then return oldangtmp, oldpostmp end
+	end
 
 	if self.CameraAngCache then
 		self.CameraAttachmentScale = self.CameraAttachmentScale or 1
@@ -59,29 +77,21 @@ function SWEP:CalcView(ply, pos, ang, fov)
 		--self.ProceduralViewOffset.y = l_mathApproach(self.ProceduralViewOffset.y, 0 , l_mathClamp( procedural_pitchrestorefac - math.min( math.abs( self.ProceduralViewOffset.y ), procedural_pitchrestorefac ) ,1,procedural_pitchrestorefac)*ftv/5 )
 		--self.ProceduralViewOffset.r = l_mathApproach(self.ProceduralViewOffset.r, 0 , l_mathClamp( procedural_pitchrestorefac - math.min( math.abs( self.ProceduralViewOffset.r ), procedural_pitchrestorefac ) ,1,procedural_pitchrestorefac)*ftv/5 )
 	else
-		local vb_d, vb_r, idraw, ireload, ihols
-		idraw = self:GetDrawing()
-		ihols = self:GetHolstering()
-		ireload = self:GetReloading()
+		local vb_d, vb_r, idraw, ireload, ihols, stat
+		stat = self:GetStatus()
+		idraw = stat == TFA.Enum.STATUS_DRAWING
+		ihols = TFA.Enum.HolsterStatus[stat]
+		ireload = TFA.Enum.ReloadStatus[stat]
 		vb_d = viewbob_drawing_cvar:GetBool()
 		vb_r = viewbob_reloading_cvar:GetBool()
 
-		if vb_d and idraw then
-			progress = l_Lerp(ftv * 15, progress, l_mathClamp((self:GetDrawingEnd() - CurTime()) / procedural_fadeout, 0, 1))
-		elseif vb_d and ihols then
-			progress = l_Lerp(ftv * 15, progress, l_mathClamp((self:GetHolsteringEnd() - CurTime()) / procedural_fadeout, 0, 1))
-		elseif vb_r and ireload then
-			progress = l_Lerp(ftv * 15, progress, l_mathClamp((self:GetReloadingEnd() - CurTime()) / procedural_fadeout, 0, 1))
-		elseif self.GetBashing then
-			if self:GetBashing() then
-				local ceil = 0.65
-				progress = l_Lerp(ftv * 15, progress, l_mathClamp(ceil - vm:GetCycle(), 0, ceil) / (1 - ceil))
-			else
-				progress = l_Lerp(ftv * 10, progress, 0)
-			end
-		elseif self:GetShooting() and self.ViewBob_Shoot then
-			progress = l_Lerp(ftv * 15, progress, l_mathClamp((self:GetShootingEnd() - CurTime()) / procedural_fadeout, 0, 1))
+		targbool = ( vb_d and idraw ) or ( vb_r and ireload ) or ( self.GetBashing and self:GetBashing() ) or ( stat == TFA.Enum.STATUS_SHOOTING and self.ViewBob_Shoot )
+		targbool = targbool and not ( ihols and self.ProceduralHolsterEnabled )
+		targint = targbool and 1 or 0
+		if stat == TFA.Enum.STATUS_RELOADING_SHOTGUN_END or stat == TFA.Enum.STATUS_RELOADING or stat == TFA.Enum.STATUS_SHOOTING then
+			targint = math.min(targint, 1-vm:GetCycle() )
 		end
+		progress = l_Lerp(ftv * 15, progress, targint)
 
 		local att = self.MuzzleAttachmentRaw or vm:LookupAttachment(self.MuzzleAttachment)
 

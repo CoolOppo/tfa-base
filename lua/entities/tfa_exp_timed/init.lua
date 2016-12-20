@@ -54,12 +54,12 @@ function ENT:Explode()
 	util.Effect("HelicopterMegaBomb", effectdata)
 	util.Effect("Explode", effectdata)
 	self.Damage = self.mydamage or self.Damage
-	util.BlastDamage(self, self.Owner, self:GetPos(), math.pow( self.Damage / 100,1.5) * 200, self.Damage )
+	util.BlastDamage(self, self.Owner, self:GetPos(), math.pow( self.Damage / 100,0.75) * 200, self.Damage )
 	shake = ents.Create("env_shake")
 	shake:SetOwner(self.Owner)
 	shake:SetPos(self:GetPos())
 	shake:SetKeyValue("amplitude", tostring(self.Damage * 20)) -- Power of the shake
-	shake:SetKeyValue("radius", tostring( math.pow( self.Damage / 100,1.5) * 400) ) -- Radius of the shake
+	shake:SetKeyValue("radius", tostring( math.pow( self.Damage / 100,0.75) * 400) ) -- Radius of the shake
 	shake:SetKeyValue("duration", tostring( self.Damage / 200 )) -- Time of shake
 	shake:SetKeyValue("frequency", "255") -- How har should the screenshake be
 	shake:SetKeyValue("spawnflags", "4") -- Spawnflags(In Air)

@@ -2,6 +2,33 @@ local tmpsp = game.SinglePlayer()
 local gas_cl_enabled = GetConVar("cl_tfa_fx_gasblur")
 local gas_sv_enabled = GetConVar("sv_tfa_fx_gas_override")
 
+local l_FT = FrameTime
+local l_mathClamp = math.Clamp
+local sv_cheats_cv = GetConVar("sv_cheats")
+local host_timescale_cv = GetConVar("host_timescale")
+local ft = 0.01
+local LastSys
+
+hook.Add("Think","TFAFrameTimeThink",function()
+	ft = (SysTime() - (LastSys or SysTime())) * game.GetTimeScale()
+
+	if ft > l_FT() then
+		ft = l_FT()
+	end
+
+	ft = l_mathClamp(ft, 0, 1 / 30)
+
+	if sv_cheats_cv:GetBool() and host_timescale_cv:GetFloat() < 1 then
+		ft = ft * host_timescale_cv:GetFloat()
+	end
+
+	LastSys = SysTime()
+end)
+
+function TFA.FrameTime()
+	return ft
+end
+
 function TFA.GetGasEnabled()
 	if tmpsp then return math.Round(Entity(1):GetInfoNum("cl_tfa_fx_gasblur", 0)) ~= 0 end
 	local enabled

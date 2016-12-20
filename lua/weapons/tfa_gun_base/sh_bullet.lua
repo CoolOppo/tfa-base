@@ -1,3 +1,4 @@
+local l_mathClamp = math.Clamp
 local bullet = {}
 bullet.Spread = Vector()
 
@@ -14,26 +15,6 @@ local function DirectDamage(a,b,c)
 end
 
 --[[
-Function Name:  ToggleAkimbo
-Syntax: self:ToggleAkimbo( ).
-Returns:   Nothing.
-Notes:    Used to toggle the akimbo value.
-Purpose:  Bullet
-]]--
-function SWEP:ToggleAkimbo()
-	if self.Callback.ToggleAkimbo then
-		local val = self.Callback.ToggleAkimbo(self)
-		if val then return val end
-	end
-
-	if self.Akimbo then
-		self.AnimCycle = 1 - self.AnimCycle
-	end
-
-	self.MuzzleAttachmentRaw = 2 - self.AnimCycle
-end
-
---[[
 Function Name:  ShootBulletInformation
 Syntax: self:ShootBulletInformation( ).
 Returns:   Nothing.
@@ -43,42 +24,25 @@ Purpose:  Bullet
 local cv_dmg_mult = GetConVar("sv_tfa_damage_multiplier")
 local cv_dmg_mult_min = GetConVar("sv_tfa_damage_mult_min")
 local cv_dmg_mult_max = GetConVar("sv_tfa_damage_mult_max")
+local dmg,con,rec
 
-function SWEP:ShootBulletInformation(ifp)
-	if self.Callback.ShootBulletInformation then
-		local val = self.Callback.ShootBulletInformation(self, ifp)
-		if val then return val end
-	end
-
+function SWEP:ShootBulletInformation()
+	local ifp = IsFirstTimePredicted()
+	self:UpdateConDamage()
 	self.lastbul = nil
 	self.lastbulnoric = false
 	self.ConDamageMultiplier = cv_dmg_mult:GetFloat()
-	if (CLIENT and not game.SinglePlayer()) and not ifp then return end
+	if not IsFirstTimePredicted() then return end
 
-	if SERVER and game.SinglePlayer() and self.Akimbo then
-		self:CallOnClient("ToggleAkimbo", "")
-	end
-
-	self:ToggleAkimbo()
-	local CurrentDamage
-	local CurrentCone, CurrentRecoil = self:CalculateConeRecoil()
+	con, rec = self:CalculateConeRecoil()
 	local tmpranddamage = math.Rand( cv_dmg_mult_min:GetFloat(), cv_dmg_mult_max:GetFloat())
 	basedamage = self.ConDamageMultiplier * self.Primary.Damage
-	CurrentDamage = basedamage * tmpranddamage
+	dmg = basedamage * tmpranddamage
 
-	--[[
-	if self.DoMuzzleFlash and ( (SERVER) or ( CLIENT and !self.AutoDetectMuzzleAttachment ) or (CLIENT and !self:IsFirstPerson() ) ) then
-	self:ShootEffects()
-end
-]]--
-if not self.AutoDetectMuzzleAttachment then
-	self:ShootEffectsCustom(ifp)
-end
-
-local ns = self.Primary.NumShots
-local clip = (self.Primary.ClipSize == -1) and self:Ammo1() or self:Clip1()
-ns = math.Round(ns, math.min(clip / self.Primary.NumShots, 1))
-self:ShootBullet(CurrentDamage, CurrentRecoil, ns, CurrentCone)
+	local ns = self.Primary.NumShots
+	local clip = (self.Primary.ClipSize == -1) and self:Ammo1() or self:Clip1()
+	ns = math.Round(ns, math.min(clip / self.Primary.NumShots, 1))
+	self:ShootBullet(dmg, rec, ns, con)
 end
 
 --[[
@@ -92,12 +56,8 @@ local TracerName
 local cv_forcemult = GetConVar("sv_tfa_force_multiplier")
 
 function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet, bulletoverride)
-	if self.Callback.ShootBullet then
-		local val = self.Callback.ShootBullet(self, damage, recoil, num_bullets, aimcone, disablericochet, bulletoverride)
-		if val then return val end
-	end
 
-	if (CLIENT and not game.SinglePlayer()) and not IsFirstTimePredicted() then return end
+	if not IsFirstTimePredicted() and not game.SinglePlayer() then return end
 	num_bullets = num_bullets or 1
 	aimcone = aimcone or 0
 
@@ -168,7 +128,7 @@ function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet,
 		bullet.TracerName = TracerName
 		bullet.PenetrationCount = 0
 		bullet.AmmoType = self:GetPrimaryAmmoType()
-		bullet.Force = self.Primary.Force * cv_forcemult:GetFloat()
+		bullet.Force = damage / 6 * math.sqrt(self.Primary.KickUp + self.Primary.KickDown + self.Primary.KickHorizontal) * cv_forcemult:GetFloat() * self:GetAmmoForceMultiplier()
 		bullet.Damage = damage
 		bullet.HasAppliedRange = false
 
@@ -178,9 +138,6 @@ function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet,
 
 		bullet.Callback = function(a, b, c)
 			if IsValid(self) then
-
-				DisableOwnerDamage(a,b,c)
-
 				if bullet.Callback2 then
 					bullet.Callback2(a, b, c)
 				end
@@ -193,7 +150,17 @@ function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet,
 	end
 end
 
+sp = game.SinglePlayer()
+
 function SWEP:Recoil(recoil, ifp)
+	if sp and type(recoil) == "string" then
+		local _, CurrentRecoil = self:CalculateConeRecoil()
+		self:Recoil(CurrentRecoil,true)
+		return
+	end
+	if ifp then
+		self.SpreadRatio = l_mathClamp(self.SpreadRatio + self.Primary.SpreadIncrement, 1, self.Primary.SpreadMultiplierMax)
+	end
 	math.randomseed(CurTime() + 1)
 
 	self.Owner:SetVelocity( -self.Owner:GetAimVector() * self.Primary.Knockback * cv_forcemult:GetFloat() * recoil / 5  )
@@ -208,6 +175,175 @@ function SWEP:Recoil(recoil, ifp)
 		--neweyeang.p = math.Clamp(neweyeang.p, -90 + math.abs(self.Owner:GetViewPunchAngles().p), 90 - math.abs(self.Owner:GetViewPunchAngles().p))
 		self.Owner:SetEyeAngles(neweyeang)
 	end
+
+end
+
+--[[
+Function Name:  GetAmmoRicochetMultiplier
+Syntax: self:GetAmmoRicochetMultiplier( ).
+Returns:  The ricochet multiplier for our ammotype.  More is more chance to ricochet.
+Notes:    Only compatible with default ammo types, unless you/I mod that.  BMG ammotype is detected based on name and category.
+Purpose:  Utility
+]]--
+function SWEP:GetAmmoRicochetMultiplier()
+	local am = string.lower(self.Primary.Ammo)
+
+	if (am == "pistol") then
+		return 1.25
+	elseif (am == "357") then
+		return 0.75
+	elseif (am == "smg1") then
+		return 1.1
+	elseif (am == "ar2") then
+		return 0.9
+	elseif (am == "buckshot") then
+		return 2
+	elseif (am == "slam") then
+		return 1.5
+	elseif (am == "airboatgun") then
+		return 0.8
+	elseif (am == "sniperpenetratedround") then
+		return 0.5
+	else
+		return 1
+	end
+end
+
+--[[
+Function Name:  GetMaterialConcise
+Syntax: self:GetMaterialConcise( ).
+Returns:  The string material name.
+Notes:    Always lowercase.
+Purpose:  Utility
+]]--
+local matnamec = {
+	[MAT_GLASS] = "glass",
+	[MAT_GRATE] = "metal",
+	[MAT_METAL] = "metal",
+	[MAT_VENT] = "metal",
+	[MAT_COMPUTER] = "metal",
+	[MAT_CLIP] = "metal",
+	[MAT_FLESH] = "flesh",
+	[MAT_ALIENFLESH] = "flesh",
+	[MAT_ANTLION] = "flesh",
+	[MAT_FOLIAGE] = "foliage",
+	[MAT_DIRT] = "dirt",
+	[MAT_GRASS or MAT_DIRT] = "dirt",
+	[MAT_EGGSHELL] = "plastic",
+	[MAT_PLASTIC] = "plastic",
+	[MAT_TILE] = "ceramic",
+	[MAT_CONCRETE] = "ceramic",
+	[MAT_WOOD] = "wood",
+	[MAT_SAND] = "sand",
+	[MAT_SNOW or 0] = "snow",
+	[MAT_SLOSH] = "slime",
+	[MAT_WARPSHIELD] = "energy",
+	[89] = "glass",
+	[-1] = "default"
+}
+
+
+function SWEP:GetAmmoForceMultiplier()
+
+	-- pistol, 357, smg1, ar2, buckshot, slam, SniperPenetratedRound, AirboatGun
+	--AR2=Rifle ~= Caliber>.308
+	--SMG1=SMG ~= Small/Medium Calber ~= 5.56 or 9mm
+	--357=Revolver ~= .357 through .50 magnum
+	--Pistol = Small or Pistol Bullets ~= 9mm, sometimes .45ACP but rarely.  Generally light.
+	--Buckshot = Buckshot = Light, barely-penetrating sniper bullets.
+	--Slam = Medium Shotgun Round
+	--AirboatGun = Heavy, Penetrating Shotgun Round
+	--SniperPenetratedRound = Heavy Large Rifle Caliber ~= .50 Cal blow-yer-head-off
+	local am = string.lower(self.Primary.Ammo)
+
+	if (am == "pistol") then
+		return 0.4
+	elseif (am == "357") then
+		return 0.6
+	elseif (am == "smg1") then
+		return 0.475
+	elseif (am == "ar2") then
+		return 0.6
+	elseif (am == "buckshot") then
+		return 0.5
+	elseif (am == "slam") then
+		return 0.5
+	elseif (am == "airboatgun") then
+		return 0.7
+	elseif (am == "sniperpenetratedround") then
+		return 1
+	else
+		return 1
+	end
+end
+
+--[[
+Function Name:  GetMaterialConcise
+Syntax: self:GetMaterialConcise( ).
+Returns:  The string material name.
+Notes:    Always lowercase.
+Purpose:  Utility
+]]--
+local matnamec = {
+	[MAT_GLASS] = "glass",
+	[MAT_GRATE] = "metal",
+	[MAT_METAL] = "metal",
+	[MAT_VENT] = "metal",
+	[MAT_COMPUTER] = "metal",
+	[MAT_CLIP] = "metal",
+	[MAT_FLESH] = "flesh",
+	[MAT_ALIENFLESH] = "flesh",
+	[MAT_ANTLION] = "flesh",
+	[MAT_FOLIAGE] = "foliage",
+	[MAT_DIRT] = "dirt",
+	[MAT_GRASS or MAT_DIRT] = "dirt",
+	[MAT_EGGSHELL] = "plastic",
+	[MAT_PLASTIC] = "plastic",
+	[MAT_TILE] = "ceramic",
+	[MAT_CONCRETE] = "ceramic",
+	[MAT_WOOD] = "wood",
+	[MAT_SAND] = "sand",
+	[MAT_SNOW or 0] = "snow",
+	[MAT_SLOSH] = "slime",
+	[MAT_WARPSHIELD] = "energy",
+	[89] = "glass",
+	[-1] = "default"
+}
+
+function SWEP:GetMaterialConcise(mat)
+	return matnamec[mat] or matnamec[-1]
+end
+
+--[[
+Function Name:  GetPenetrationMultiplier
+Syntax: self:GetPenetrationMultiplier( concise material name).
+Returns:  The multilier for how much you can penetrate through a material.
+Notes:    Should be used with GetMaterialConcise.
+Purpose:  Utility
+]]--
+local matfacs = {
+	["metal"] = 2.5, --Since most is aluminum and stuff
+	["wood"] = 8,
+	["plastic"] = 5,
+	["flesh"] = 8,
+	["ceramic"] = 1.0,
+	["glass"] = 10,
+	["energy"] = 0.05,
+	["sand"] = 0.7,
+	["slime"] = 0.7,
+	["dirt"] = 2.0, --This is plaster, not dirt, in most cases.
+	["foliage"] = 6.5,
+	["default"] = 4
+}
+
+local mat
+local fac
+
+function SWEP:GetPenetrationMultiplier(matt)
+	mat = isstring(matt) and matt or self:GetMaterialConcise(matt)
+	fac = matfacs[mat or "default"] or 4
+
+	return fac * (self.Primary.PenetrationMultiplier and self.Primary.PenetrationMultiplier or 1)
 end
 
 local decalbul = {
@@ -285,7 +421,7 @@ function bullet:Penetrate(ply, traceres, dmginfo, weapon)
 
 	if penetration_cvar and not penetration_cvar:GetBool() then return end
 	if self:Ricochet(ply, traceres, dmginfo, weapon) then return end
-	maxpen = math.min(penetration_max_cvar and penetration_max_cvar:GetInt() - 1 or 1, weapon.MaxPenetrationCounter)
+	maxpen = math.min(penetration_max_cvar and ( penetration_max_cvar:GetInt() - 1 ) or 1, weapon.Primary.MaxPenetration)
 	if self.PenetrationCount > maxpen then return end
 	local mult = weapon:GetPenetrationMultiplier(traceres.MatType)
 	penetrationoffset = traceres.Normal * math.Clamp(self.Force * mult, 0, 32)
@@ -348,7 +484,7 @@ end
 
 function bullet:Ricochet(ply, traceres, dmginfo, weapon)
 	if ricochet_cvar and not ricochet_cvar:GetBool() then return end
-	maxpen = math.min(penetration_max_cvar and penetration_max_cvar:GetInt() - 1 or 1, weapon.MaxPenetrationCounter)
+	maxpen = math.min(penetration_max_cvar and penetration_max_cvar:GetInt() - 1 or 1, weapon.Primary.MaxPenetration)
 	if self.PenetrationCount > maxpen then return end
 	--[[
 	]]

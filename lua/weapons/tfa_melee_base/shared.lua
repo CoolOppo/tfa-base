@@ -7,6 +7,9 @@ SWEP.data = {}
 SWEP.data.ironsights = 0
 SWEP.Primary.Directional = false
 SWEP.Primary.Attacks = {}
+
+local l_CT = CurTime
+
 --[[{
 {
 ['act'] = ACT_VM_HITLEFT, -- Animation; ACT_VM_THINGY, ideally something unique per-sequence
@@ -67,16 +70,12 @@ SWEP.Seed = 0
 
 function SWEP:SetupDataTables()
 	self:NetworkVar("Bool", 30, "VP")
-	self:NetworkVar("Bool", 31, "MelAttacking")
 	self:NetworkVar("Float", 27, "VPTime")
 	self:NetworkVar("Float", 28, "VPPitch")
 	self:NetworkVar("Float", 29, "VPYaw")
 	self:NetworkVar("Float", 30, "VPRoll")
-	self:NetworkVar("Float", 31, "MelAttackTime")
 	self:NetworkVar("Int", 30, "Seed")
 	self:NetworkVar("Int", 31, "MelAttackID")
-	self:SetMelAttacking(false)
-	self:SetMelAttackTime(-1)
 	self:SetMelAttackID(1)
 	self:SetVP(false)
 	self:SetVPPitch(0)
@@ -92,8 +91,6 @@ function SWEP:SetupDataTables()
 end
 
 function SWEP:Deploy()
-	self:SetMelAttacking(false)
-	self:SetMelAttackTime(-1)
 	self:SetMelAttackID(1)
 	self:SetVP(false)
 	self:SetVPPitch(0)
@@ -202,30 +199,32 @@ function SWEP:BurstDoor(ent, dmginfo)
 	end
 end
 
-function SWEP:Think()
-	BaseClass.Think(self)
-	if self:IsSafety() then return end
-	if not self:OwnerIsValid() then return end
-
-
+function SWEP:Think2()
+	if not self:VMIV() then return end
 	if self:GetVP() and CurTime() > self:GetVPTime() then
 		self:SetVP(false)
 		self:SetVPTime(-1)
 		self.Owner:ViewPunch(Angle(self:GetVPPitch(), self:GetVPYaw(), self:GetVPRoll()))
 	end
+	self:StrikeThink()
+	BaseClass.Think2(self)
+end
+
+function SWEP:StrikeThink()
+	if self:IsSafety() then return end
 
 	if not IsFirstTimePredicted() then return end
-	if not self:GetMelAttacking() then return end
+	if self:GetStatus() ~= TFA.Enum.STATUS_SHOOTING then return end
 	if self.up_hat then return end
 
-	if CurTime() > self:GetMelAttackTime() then
+	if CurTime() > self:GetStatusEnd() then
 		ind = self:GetMelAttackID() or 1
 		srctbl = (ind < 0) and self.Secondary.Attacks or self.Primary.Attacks
 		attack = srctbl[math.abs(ind)]
 		self.DamageType = attack.dmgtype
 		--Just attacked, so don't do it again
 		self.up_hat = true
-		self:SetMelAttacking(false)
+		self:SetStatus(TFA.Enum.STATUS_IDLE)
 		--Prepare Data
 		local eang = self.Owner:EyeAngles()
 		tr.start = self.Owner:GetShootPos()
@@ -393,9 +392,9 @@ lvec = Vector()
 
 function SWEP:PrimaryAttack()
 	if self:IsSafety() then return end
-	if not self:OwnerIsValid() then return end
+	if not self:VMIV() then return end
 	if CurTime() <= self:GetNextPrimaryFire() then return end
-	if self:GetDrawing() then return end
+	if not TFA.Enum.ReadyStatus[self:GetStatus()] then return end
 	table.Empty(att)
 	local founddir = false
 
@@ -492,21 +491,18 @@ function SWEP:PrimaryAttack()
 	end
 
 	self.up_hat = false
-	self:SetShooting(true)
-	self:SetShootingEnd(CurTime() + vm:SequenceDuration())
-	self:SetNextIdleAnim(CurTime() + vm:SequenceDuration())
-	self:SetMelAttacking(true)
+	self:SetStatus(TFA.Enum.STATUS_SHOOTING)
 	self:SetMelAttackID(ind)
-	self:SetMelAttackTime(CurTime() + attack.delay)
+	self:SetStatusEnd(CurTime() + attack.delay)
 	self:SetNextPrimaryFire(CurTime() + attack["end"])
 	self.Owner:SetAnimation(PLAYER_ATTACK1)
 end
 
 function SWEP:SecondaryAttack()
 	if self:IsSafety() then return end
-	if not self:OwnerIsValid() then return end
+	if not self:VMIV() then return end
 	if CurTime() <= self:GetNextPrimaryFire() then return end
-	if self:GetDrawing() then return end
+	if not TFA.Enum.ReadyStatus[self:GetStatus()] then return end
 	table.Empty(att)
 	local founddir = false
 
@@ -603,18 +599,16 @@ function SWEP:SecondaryAttack()
 	end
 
 	self.up_hat = false
-	self:SetShooting(true)
-	self:SetShootingEnd(CurTime() + vm:SequenceDuration())
-	self:SetNextIdleAnim(CurTime() + vm:SequenceDuration())
-	self:SetMelAttacking(true)
+	self:SetStatus(TFA.Enum.STATUS_SHOOTING)
 	self:SetMelAttackID(-ind)
-	self:SetMelAttackTime(CurTime() + attack.delay)
+	self:SetStatusEnd(CurTime() + attack.delay)
 	self:SetNextPrimaryFire(CurTime() + attack["end"])
 	self.Owner:SetAnimation(PLAYER_ATTACK1)
 end
 
 function SWEP:AltAttack()
-	if self:GetMelAttacking() then return end
+	if not self:VMIV() then return end
+	if not TFA.Enum.ReadyStatus[self:GetStatus()] then return end
 	if not self.Secondary.CanBash then return end
 	if self:IsSafety() then return end
 
@@ -622,21 +616,10 @@ function SWEP:AltAttack()
 end
 
 function SWEP:Reload()
-	if not self:OwnerIsValid() or self.Owner:KeyDown(IN_USE) then return end
-	if self:GetMelAttacking() or self:GetShooting() then return end
-	if self:GetDrawing() or self:GetHolstering() then return end
-	if CurTime() < self:GetFidgetingEnd() then return end
-
-	if not self:CanCKeyInspect() and (self.SequenceEnabled[ACT_VM_FIDGET] or self.InspectionActions) and not self:GetIronSights() and not self:GetSprinting() and not self:GetFidgeting() and not self:GetInspecting() then
-		self:SetFidgeting(true)
-		succ = self:ChooseInspectAnim()
-
-		if succ then
-			self:SetNextIdleAnim(CurTime() + self.OwnerViewModel:SequenceDuration())
-		else
-			self:SetNextIdleAnim(CurTime() + math.max(1, self.OwnerViewModel:SequenceDuration()))
-		end
-
-		self:SetFidgetingEnd(self:GetNextIdleAnim())
+	if not self:VMIV() then return end
+	if (self.SequenceEnabled[ACT_VM_FIDGET] or self.InspectionActions) and self:GetStatus() == TFA.Enum.STATUS_IDLE then
+		self:SetStatus(TFA.Enum.STATUS_FIDGET)
+		succ,tanim = self:ChooseInspectAnim()
+		self:SetStatusEnd( l_CT() + (self.SequenceLengthOverride[tanim] or self.OwnerViewModel:SequenceDuration()) )
 	end
 end
