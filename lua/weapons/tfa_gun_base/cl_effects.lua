@@ -37,11 +37,16 @@ end
 Function Name:  MakeMuzzleSmoke
 Syntax: self:MakeMuzzleSmoke( entity, attachment).
 Returns:  Nothing.
-Notes:    Used to make the muzzle smoke effect, clientside.
+Notes:    Deprecated. Used to make the muzzle smoke effect, clientside.
 Purpose:  FX
 ]]--
+
+local limit_particle_cv  = GetConVar("cl_tfa_fx_muzzlesmoke_limited")
+
 function SWEP:MakeMuzzleSmoke(entity, attachment)
-	self:CleanParticles()
+	if ( not limit_particle_cv ) or limit_particle_cv:GetBool() then
+		self:CleanParticles()
+	end
 	local ht = self.DefaultHoldType and self.DefaultHoldType or self.HoldType
 
 	if (CLIENT and TFA.GetMZSmokeEnabled() and IsValid(entity) and attachment and attachment ~= 0) then
@@ -114,7 +119,7 @@ function SWEP:ImpactEffectFunc(pos, normal, mattype)
 
 		fx:SetEntity(self.Owner)
 		fx:SetMagnitude(mattype or 0)
-		fx:SetScale(math.sqrt(self.Primary.Damage / 30))
+		fx:SetScale(math.sqrt(self:GetStat("Primary.Damage") / 30))
 		util.Effect("tfa_bullet_impact", fx)
 
 		if self.ImpactEffect then

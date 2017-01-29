@@ -7,6 +7,7 @@ function SWEP:FixAkimbo()
 		self.Primary.RPM = self.Primary.RPM * 2
 		self.Akimbo_Inverted = self.ViewModelFlip
 		self.AnimCycle = self.ViewModelFlip and 0 or 01
+		self:ClearStatCache()
 		timer.Simple(FrameTime(),function()
 				timer.Simple(0.01,function()
 				if IsValid(self) and self:OwnerIsValid() then

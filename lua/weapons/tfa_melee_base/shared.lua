@@ -7,6 +7,9 @@ SWEP.data = {}
 SWEP.data.ironsights = 0
 SWEP.Primary.Directional = false
 SWEP.Primary.Attacks = {}
+SWEP.IsMelee = true
+
+SWEP.Precision = 9 --Traces to use per attack
 
 local l_CT = CurTime
 
@@ -23,7 +26,8 @@ local l_CT = CurTime
 ["viewpunch"] = Angle(1,-10,0), --viewpunch angle
 ['end'] = 1, --time before next attack
 ['hull'] = 10, --Hullsize
-['direction'] = "L" --Swing direction
+['direction'] = "L", --Swing direction
+["combotime"] = 0.2 --If you hold attack down, attack this much earlier
 },
 {
 ['act'] = ACT_VM_HITRIGHT, -- Animation; ACT_VM_THINGY, ideally something unique per-sequence
@@ -37,7 +41,8 @@ local l_CT = CurTime
 ["viewpunch"] = Angle(1,10,0), --viewpunch angle
 ['end'] = 1, --time before next attack
 ['hull'] = 10, --Hullsize
-['direction'] = "R" --Swing direction
+['direction'] = "R", --Swing direction
+["combotime"] = 0.2 --If you hold attack down, attack this much earlier
 }
 }
 
@@ -53,20 +58,71 @@ SWEP.Secondary.Attacks = {
 ['snd'] = "Swing.Sound", -- Sound ID
 ["viewpunch"] = Angle(5,0,0), --viewpunch angle
 ['end'] = 1, --time before next attack
-['combotime'] = 0.2
+['callback'] = function(tbl,wep,tr) end,
+['kickback'] = nil--Recoil if u hit something with this activity
 }
 }
 ]]--
+
+SWEP.Primary.MaxCombo = 3 --Max amount of times you'll attack by simply holding down the mouse; -1 to unlimit
+SWEP.Secondary.MaxCombo = 3 --Max amount of times you'll attack by simply holding down the mouse; -1 to unlimit
+
+SWEP.CanBlock = false
+SWEP.BlockAnimation = {
+	["in"] = {
+		["type"] = TFA.Enum.ANIMATION_ACT, --Sequence or act
+		["value"] = ACT_VM_DEPLOY, --Number for act, String/Number for sequence
+		["transition"] = true
+	}, --Inward transition
+	["loop"] = {
+		["type"] = TFA.Enum.ANIMATION_ACT, --Sequence or act
+		["value"] = ACT_VM_IDLE_DEPLOYED, --Number for act, String/Number for sequence
+		["is_idle"] = true
+	},--looping animation
+	["hit"] = {
+		["type"] = TFA.Enum.ANIMATION_ACT, --Sequence or act
+		["value"] = ACT_VM_RELOAD_DEPLOYED, --Number for act, String/Number for sequence
+		["is_idle"] = true
+	},--when you get hit and block it
+	["out"] = {
+		["type"] = TFA.Enum.ANIMATION_ACT, --Sequence or act
+		["value"] = ACT_VM_UNDEPLOY, --Number for act, String/Number for sequence
+		["transition"] = true
+	} --Outward transition
+}
+SWEP.BlockDamageTypes = {
+	DMG_SLASH,DMG_CLUB
+}
+SWEP.BlockCone = 135 --Think of the player's view direction as being the middle of a sector, with the sector's angle being this
+SWEP.BlockDamageMaximum = 0.1 --Multiply damage by this for a maximumly effective block
+SWEP.BlockDamageMinimum = 0.4 --Multiply damage by this for a minimumly effective block
+SWEP.BlockTimeWindow = 0.5 --Time to absorb maximum damage
+SWEP.BlockTimeFade = 1 --Time for blocking to do minimum damage.  Does not include block window
+SWEP.BlockDamageCap = 100
+SWEP.BlockSound = ""
+SWEP.BlockFadeOut = nil --Override the length of the ["out"] block animation easily
+SWEP.BlockFadeOutEnd = 0.2 --In absense of BlockFadeOut, shave this length off of the animation time
+SWEP.BlockHoldType = "magic"
+SWEP.BlockCanDeflect = true  --Can "bounce" bullets off a perfect parry?
+
+
 SWEP.Secondary.Directional = true
 SWEP.Primary.Automatic = true
 SWEP.Secondary.Automatic = true
 SWEP.ImpactDecal = "ManhackCut"
 SWEP.Secondary.CanBash = false
 SWEP.DefaultComboTime = 0.2
+
+SWEP.AllowSprintAttack = true
+
 --[[ START OF BASE CODE ]]--
+
 SWEP.Primary.ClipSize = -1
 SWEP.Primary.Ammo = ""
 SWEP.Seed = 0
+
+SWEP.AttackSoundTime = -1
+SWEP.VoxSoundTime = -1
 
 function SWEP:SetupDataTables()
 	self:NetworkVar("Bool", 30, "VP")
@@ -74,7 +130,7 @@ function SWEP:SetupDataTables()
 	self:NetworkVar("Float", 28, "VPPitch")
 	self:NetworkVar("Float", 29, "VPYaw")
 	self:NetworkVar("Float", 30, "VPRoll")
-	self:NetworkVar("Int", 30, "Seed")
+	self:NetworkVar("Int", 30, "ComboCount")
 	self:NetworkVar("Int", 31, "MelAttackID")
 	self:SetMelAttackID(1)
 	self:SetVP(false)
@@ -82,10 +138,7 @@ function SWEP:SetupDataTables()
 	self:SetVPYaw(0)
 	self:SetVPRoll(0)
 	self:SetVPTime(-1)
-
-	if SERVER then
-		self:SetSeed(self.Seed)
-	end
+	self:SetComboCount( 0 )
 
 	return BaseClass.SetupDataTables(self)
 end
@@ -98,27 +151,31 @@ function SWEP:Deploy()
 	self:SetVPRoll(0)
 	self:SetVPTime(-1)
 	self.up_hat = false
-
-	if SERVER then
-		self:SetSeed(self.Seed)
-	end
+	self:SetComboCount(0)
 
 	return BaseClass.Deploy(self)
 end
 
+function SWEP:CanInterruptShooting()
+	return false
+end
+
 local att = {}
 local attack
-local vm
 local ind
-local tr, traceres
+local tr = {}
+local traceres = {}
 local pos, ang, mdl, ski, prop
-local succ
+local fwd,eang,scl,dirv
+local strikedir = Vector()
 
 tr = {}
 local bul = {}
 local srctbl
 SWEP.hpf = false
 SWEP.hpw = false
+
+local lim_up_vec = Vector(1,1,0.05)
 
 function SWEP:ApplyForce(ent, force, posv, now)
 	if not IsValid(ent) or not ent.GetPhysicsObjectNum then return end
@@ -133,8 +190,8 @@ function SWEP:ApplyForce(ent, force, posv, now)
 
 		if IsValid(phys) then
 			if ent:IsPlayer() or ent:IsNPC() then
-				ent:SetVelocity( force * 0.1 )
-				phys:SetVelocity(phys:GetVelocity() + force * 0.1)
+				ent:SetVelocity( force * 0.1 * lim_up_vec )
+				phys:SetVelocity(phys:GetVelocity() + force * 0.1 * lim_up_vec )
 			else
 				phys:ApplyForceOffset(force, posv)
 			end
@@ -168,6 +225,7 @@ function SWEP:MakeDoor(ent, dmginfo)
 end
 
 function SWEP:BurstDoor(ent, dmginfo)
+	if not ents.Create then return end
 	if dmginfo:GetDamage() > 60 and ( dmginfo:IsDamageType(DMG_CRUSH) or dmginfo:IsDamageType(DMG_CLUB) ) and ( ent:GetClass() == "func_door_rotating" or ent:GetClass() == "prop_door_rotating" ) then
 		if dmginfo:GetDamage() > 150 then
 			local ply = self.Owner
@@ -201,21 +259,103 @@ end
 
 function SWEP:Think2()
 	if not self:VMIV() then return end
+
+	if ( not self.Owner:KeyDown( IN_ATTACK ) ) and ( not  self.Owner:KeyDown(IN_ATTACK2) ) then
+		self:SetComboCount(0)
+	end
+
 	if self:GetVP() and CurTime() > self:GetVPTime() then
 		self:SetVP(false)
 		self:SetVPTime(-1)
 		self.Owner:ViewPunch(Angle(self:GetVPPitch(), self:GetVPYaw(), self:GetVPRoll()))
 	end
+	if self.CanBlock then
+		local stat = self:GetStatus()
+		if self.Owner:KeyDown(IN_ZOOM) and TFA.Enum.ReadyStatus[stat] and not self.Owner:KeyDown(IN_USE) then
+			self:SetStatus( TFA.GetStatus("blocking") )
+			if self.BlockAnimation["in"] then
+				self:PlayAnimation( self.BlockAnimation["in"] )
+			elseif self.BlockAnimation["loop"] then
+				self:PlayAnimation( self.BlockAnimation["loop"] )
+			end
+			self:SetStatusEnd( math.huge )
+			self.BlockStart = CurTime()
+		elseif stat == TFA.GetStatus("blocking") and not self.Owner:KeyDown(IN_ZOOM) then
+			local _, tanim
+			self:SetStatus( TFA.GetStatus("blocking_end") )
+			if self.BlockAnimation["out"] then
+				_,tanim = self:PlayAnimation( self.BlockAnimation["out"] )
+			else
+				_,tanim = self:ChooseIdleAnim()
+			end
+			self:SetStatusEnd( CurTime() + ( self.BlockFadeOut or ( self:GetActivityLength( tanim ) - self.BlockFadeOutEnd ) ) )
+		elseif stat == TFA.GetStatus("blocking") and CurTime() > self:GetNextIdleAnim() then
+			self:ChooseIdleAnim()
+		end
+	end
 	self:StrikeThink()
 	BaseClass.Think2(self)
 end
 
+function SWEP:ProcessHoldType( ... )
+	if self:GetStatus() == TFA.GetStatus("blocking") then
+		self:SetHoldType( self.BlockHoldType or "magic")
+		return self.BlockHoldType or "magic"
+	else
+		return BaseClass.ProcessHoldType(self,...)
+	end
+end
+function SWEP:GetBlockStart()
+	return self.BlockStart or -1
+end
+
+function SWEP:ChooseBlockAnimation()
+	if self.BlockAnimation["hit"] then
+		self:PlayAnimation( self.BlockAnimation["hit"] )
+	elseif self.BlockAnimation["in"] then
+		self:PlayAnimation( self.BlockAnimation["in"] )
+	end
+end
+
+function SWEP:ChooseIdleAnim( ... )
+	if self.CanBlock and self:GetStatus() == TFA.GetStatus("blocking") and self.BlockAnimation["loop"] then
+		return self:PlayAnimation( self.BlockAnimation["loop"] )
+	else
+		return BaseClass.ChooseIdleAnim(self, ...)
+	end
+end
+
 function SWEP:StrikeThink()
-	if self:IsSafety() then return end
+	if self:GetSprinting() and not self.AllowSprintAttack then
+		self:SetComboCount(0)
+		--return
+	end
+	if self:IsSafety() then
+		self:SetComboCount(0)
+		return
+	end
 
 	if not IsFirstTimePredicted() then return end
 	if self:GetStatus() ~= TFA.Enum.STATUS_SHOOTING then return end
 	if self.up_hat then return end
+
+	if self.AttackSoundTime ~= -1 and CurTime() > self.AttackSoundTime then
+		ind = self:GetMelAttackID() or 1
+		srctbl = (ind < 0) and self.Secondary.Attacks or self.Primary.Attacks
+		attack = srctbl[math.abs(ind)]
+		self:EmitSound( attack.snd )
+		if self.Owner.Vox then
+			self.Owner:Vox("bash", 4)
+		end
+		self.AttackSoundTime = -1
+	end
+
+	if self.Owner.Vox and self.VoxSoundTime ~= -1 and CurTime() > self.VoxSoundTime - self.Owner:Ping() * 0.001 then
+		if self.Owner.Vox then
+			self.Owner:Vox("bash", 4)
+		end
+		self.VoxSoundTime = -1
+	end
 
 	if CurTime() > self:GetStatusEnd() then
 		ind = self:GetMelAttackID() or 1
@@ -225,164 +365,173 @@ function SWEP:StrikeThink()
 		--Just attacked, so don't do it again
 		self.up_hat = true
 		self:SetStatus(TFA.Enum.STATUS_IDLE)
-		--Prepare Data
-		local eang = self.Owner:EyeAngles()
-		tr.start = self.Owner:GetShootPos()
-		tr.endpos = tr.start + eang:Forward() * attack.len
-		tr.mask = MASK_SHOT
-
-		tr.filter = function(ent)
-			if ent == self.Owner or ent == self then return false end
-
-			return true
+		self:SetStatusEnd( math.huge )
+		if self:GetComboCount() > 0 then
+			self:SetNextPrimaryFire( self:GetNextPrimaryFire() - ( attack.combotime or 0 ) )
+			self:SetNextSecondaryFire( self:GetNextSecondaryFire() - ( attack.combotime or 0 ) )
 		end
 
-		self.Owner:LagCompensation(true)
+		self:Strike( attack, self.Precision )
+	end
+end
 
-		if attack.hull and attack.hull > 0 then
-			tr.mask = MASK_SHOT_HULL
-			tr.mins = Vector(-attack.hull, -attack.hull, -attack.hull) / 2
-			tr.maxs = Vector(attack.hull, attack.hull, attack.hull) / 2
-			traceres = util.TraceHull(tr)
-		else
-			traceres = util.TraceLine(tr)
+local totalResults = {}
+
+local function TraceHitFlesh( b )
+	return b.MatType == MAT_FLESH or b.MatType == MAT_ALIENFLESH or ( IsValid(b.Entity) and b.Entity.IsNPC and ( b.Entity:IsNPC() or b.Entity:IsPlayer() or b.Entity:IsRagdoll() )  )
+end
+
+local red = Color(255,0,0,255)
+
+function SWEP:Strike( attk, precision )
+	local hitWorld,hitFlesh,needsCB
+	local distance, direction, maxhull
+	distance = attk.len
+	direction = attk.dir
+	maxhull = attk.hull
+	table.Empty( totalResults )
+	eang = self.Owner:EyeAngles()
+	fwd = self.Owner:EyeAngles():Forward()
+	tr.start = self.Owner:GetShootPos()
+	scl = direction:Length() / precision / 2
+	tr.maxs = Vector(scl,scl,scl)
+	tr.mins = -tr.maxs
+	tr.mask = MASK_SHOT
+	tr.filter = function(ent)
+		if ent == self.Owner or ent == self then return false end
+
+		return true
+	end
+	hitWorld = false
+	hitFlesh = false
+	if attk.callback then
+		needsCB = true
+	else
+		needsCB = false
+	end
+	if maxhull then
+		tr.maxs.x = math.min( tr.maxs.x, maxhull / 2 )
+		tr.maxs.y = math.min( tr.maxs.y, maxhull / 2 )
+		tr.maxs.z = math.min( tr.maxs.z, maxhull / 2 )
+		tr.mins = -tr.maxs
+	end
+	strikedir:Zero()
+	strikedir:Add(direction.x * eang:Right())
+	strikedir:Add(direction.y * eang:Forward())
+	strikedir:Add(direction.z * eang:Up())
+	local strikedirfull = strikedir * 1
+	debugoverlay.Line( tr.start + Vector(0,0,-1) + fwd * distance / 2 - strikedirfull / 2, tr.start + Vector(0,0,-1) + fwd * distance / 2 + strikedirfull / 2, 5, red )
+	if SERVER and not game.SinglePlayer() then
+		self.Owner:LagCompensation( true )
+	end
+	for i = 1, precision do
+		dirv = LerpVector( ( i - 0.5 ) / precision, -direction / 2, direction / 2 )
+		strikedir:Zero()
+		strikedir:Add(dirv.x * eang:Right())
+		strikedir:Add(dirv.y * eang:Forward())
+		strikedir:Add(dirv.z * eang:Up())
+		tr.endpos = tr.start + distance * fwd + strikedir
+		traceres = util.TraceLine( tr )
+		table.insert(totalResults, traceres)
+	end
+	if SERVER and not game.SinglePlayer() then
+		self.Owner:LagCompensation( false )
+	end
+
+	local forcevec = strikedirfull:GetNormalized() * (attack.force or attack.dmg / 4) * 128
+	bul.Damage = attk.dmg
+	bul.Force = 1
+	bul.Tracer = 0
+	bul.Num = 1
+	bul.HullSize = ( attk.hull / 2 ) or 4
+	bul.Distance = 16
+	bul.Callback = function(a, b, c)
+
+		if b.Fraction >= 1 then
+			c:ScaleDamage(0)
+
+			return
 		end
 
-		self.Owner:LagCompensation(false)
-		local dirvec = Vector(0, 0, 0)
-		dirvec:Add(attack.dir.x * eang:Right())
-		dirvec:Add(attack.dir.y * eang:Forward())
-		dirvec:Add(attack.dir.z * eang:Up())
-		bul.Attacker = self.Owner or self
-		bul.Inflictor = self
-		bul.Damage = attack.dmg
-		bul.Force = 1 --attack.force or attack.dmg/4
-		bul.Dir = dirvec
-		bul.Src = traceres.HitPos + eang:Forward() * 16 - dirvec / 2
-		bul.Distance = dirvec:Length() + attack.len / 4
-		bul.Range = bul.Distance
-		bul.Tracer = 0
-		bul.Num = 1
-		bul.Spread = vector_origin
-		bul.HullSize = 16 --attack.hull
-		local hpw, hpf, hitent = nil, nil, nil
-		local forcevec = dirvec:GetNormalized() * (attack.force or attack.dmg / 4) * 128
+		if b.HitPos:Distance(b.StartPos) >= bul.Distance then
+			c:ScaleDamage(0)
 
-		bul.Callback = function(a, b, c)
-			if b.Fraction >= 1 then
-				c:ScaleDamage(0)
-
-				return
-			end
-
-			if b.HitPos:Distance(b.StartPos) >= bul.Distance then
-				c:ScaleDamage(0)
-
-				return
-			end
-
-			c:SetDamageType(attack.dmgtype or DMG_SLASH)
-			hitent = b.Entity
-
-			if c:IsDamageType(DMG_BURN) and hitent.Ignite then
-				hitent:Ignite(bul.Damage / 10, 1)
-			end
-
-			if IsValid(self) then
-				if IsValid(hitent) and (b.MatType == MAT_FLESH or hitent:IsPlayer() or hitent:IsRagdoll() or hitent:IsNPC()) and attack.hitflesh then
-					if not hpf then
-						self:EmitSound(attack.hitflesh)
-						hpf = true
-					end
-				elseif attack.hitworld then
-					if not hpw then
-						self:EmitSound(attack.hitworld)
-						hpw = true
-					end
-
-					hpw = true
-				end
-
-				self:DoImpactEffect(b, attack.dmgtype)
-				self:ApplyForce(hitent, forcevec, traceres.HitPos)
-				self:BurstDoor(hitent, c)
-			end
+			return
 		end
 
-		local tr2 = {}
-		tr2.start = bul.Src
-		tr2.endpos = bul.Src + bul.Dir
-		tr2.mask = MASK_SHOT
-		tr2.filter = tr.filter
-		local traceres2 = util.TraceLine(tr2)
+		c:SetDamageType(attack.dmgtype or DMG_SLASH)
+		local hitent = b.Entity
 
-		if IsValid(traceres.Entity) then
-			local ent = traceres.Entity
-			local phys = traceres.Entity.GetPhysicsObjectNum and ent:GetPhysicsObjectNum(0)
+		if c:IsDamageType(DMG_BURN) and hitent.Ignite then
+			hitent:Ignite(bul.Damage / 10, 1)
+		end
 
-			if ((IsValid(phys) and phys:GetMaterial() == "flesh") or ent:IsNPC() or ent:IsPlayer() or ent:IsRagdoll()) then
-				if not hpf then
-					self:EmitSound(attack.hitflesh)
-					hpf = true
-				end
-			elseif attack.hitworld then
-				if not hpw then
+		if not IsValid(self) then return end
+
+		if TraceHitFlesh(b) and not hitFlesh then
+			if attk.callback and IsValid(self) and needsCB then
+				attk.callback(attack,self,b)
+				needsCB = false
+			end
+			if attk.hitflesh then
+				self:EmitSound(attk.hitflesh)
+			end
+			hitFlesh = true
+			self:DoImpactEffect(b, attack.dmgtype)
+		elseif ( not TraceHitFlesh( b ) ) and b.Hit then
+			if not hitWorld then
+				if attk.hitworld and not hitFlesh then
 					self:EmitSound(attack.hitworld)
-					hpw = true
 				end
+				hitWorld = true
+				self:DoImpactEffect(b, attack.dmgtype)
 			end
 		end
 
-		if traceres2.Hit and traceres2.Fraction < 1 then
+		self:ApplyForce(hitent, forcevec, traceres.HitPos)
+		self:BurstDoor(hitent, c)
+	end
+	local fleshHits = 0
+	for k,v in ipairs(totalResults) do --Handle flesh
+		if v.Hit and v.Fraction > 0 and v.Fraction < 1 and IsValid(v.Entity) and TraceHitFlesh( v ) and ( not v.Entity.HasMeleeHit ) then
+			bul.Src = v.HitPos - strikedir:GetNormalized() * 1
+			bul.Dir = strikedir:GetNormalized() * 2
+			self.Owner:FireBullets(bul)
+			v.Entity.HasMeleeHit = true
+			fleshHits = fleshHits + 1
+			if fleshHits >= ( attk.maxhits or 3 ) then
+				break
+			end
+		end
+		--debugoverlay.Sphere( v.HitPos, 5, 5, color_white )
+	end
+	for k,v in ipairs(totalResults) do --Handle world
+		if v.Hit and ( not TraceHitFlesh( v ) ) and not hitWorld then
+			if attk.callback and needsCB then
+				attk.callback(attack,self,v)
+				needsCB = false
+			end
+			bul.Src = v.HitPos + v.HitNormal
+			bul.Dir = -v.HitNormal * 2
 			self.Owner:FireBullets(bul)
 		end
-
-		if IsValid(traceres.Entity) and traceres.Entity ~= hitent and not traceres.HitWorld then
-			local dmginfo = DamageInfo()
-			dmginfo:SetAttacker(bul.Attacker)
-			dmginfo:SetInflictor(bul.Inflictor)
-			dmginfo:SetDamage(bul.Damage)
-			dmginfo:SetDamageType(attack.dmgtype or DMG_SLASH)
-			dmginfo:SetDamagePosition(traceres.HitPos)
-			dmginfo:SetDamageForce(bul.Dir:GetNormalized() * bul.Force)
-			local ent = traceres.Entity
-
-			if IsValid(ent) and ent.TakeDamageInfo then
-				ent:TakeDamageInfo(dmginfo)
-			end
-
-			if traceres.MatType == MAT_FLESH or traceres.MatType == MAT_ALIENFLESH then
-				local fx = EffectData()
-				fx:SetOrigin(traceres.HitPos)
-				fx:SetNormal(traceres.HitNormal)
-				fx:SetEntity(traceres.Entity)
-				fx:SetColor(BLOOD_COLOR_RED or 0)
-				util.Effect("BloodImpact", fx)
-			end
-
-			self:DoImpactEffect(traceres, attack.dmgtype)
-			self:ApplyForce(traceres.Entity, forcevec, traceres.HitPos)
-			self:BurstDoor(traceres.Entity, dmginfo)
-
-			if dmginfo:IsDamageType(DMG_BURN) and traceres.Entity.Ignite then
-				traceres.Entity:Ignite(bul.Damage / 10, 1)
-			end
+	end
+	for k,v in ipairs(totalResults) do --Handle empty + cleanup
+		if needsCB then
+			attk.callback(attack,self,v)
+			needsCB = false
 		end
-
-		if traceres.HitWorld then
-			bul.Src = self.Owner:GetShootPos()
-			bul.Dir = self.Owner:GetAimVector()
-			bul.Distance = attack.len
-			bul.Range = bul.Distance
-			bul.Force = 1
-			bul.Damage = 1
-			self.Owner:FireBullets(bul)
+		if IsValid(v.Entity) then
+			v.Entity.HasMeleeHit = false
 		end
+	end
+	if attack.kickback and ( hitFlesh or hitWorld ) then
+		self:SendViewModelAnim( attack.kickback, self:NZAnimationSpeed( ACT_VM_PRIMARYATTACK ) )
 	end
 end
 
 function SWEP:PlaySwing(act)
-	self:SendViewModelAnim(act)
+	self:SendViewModelAnim(act, self:NZAnimationSpeed( ACT_VM_PRIMARYATTACK ) )
 	return true, act
 end
 
@@ -391,13 +540,14 @@ local lvec, ply, targ
 lvec = Vector()
 
 function SWEP:PrimaryAttack()
+	if self:GetSprinting() and not self.AllowSprintAttack then return end
 	if self:IsSafety() then return end
 	if not self:VMIV() then return end
 	if CurTime() <= self:GetNextPrimaryFire() then return end
 	if not TFA.Enum.ReadyStatus[self:GetStatus()] then return end
+	if self:GetComboCount() >= self.Primary.MaxCombo and self.Primary.MaxCombo > 0 then return end
 	table.Empty(att)
 	local founddir = false
-
 	if self.Primary.Directional then
 		ply = self.Owner
 		--lvec = WorldToLocal(ply:GetVelocity(), Angle(0, 0, 0), vector_origin, ply:EyeAngles()):GetNormalized()
@@ -443,19 +593,8 @@ function SWEP:PrimaryAttack()
 
 	if #att <= 0 then return end
 
-	if SERVER then
-		timer.Simple(0, function()
-			if IsValid(self) then
-				self.Seed = math.random(-99999, 99999)
-				self:SetSeed(self.Seed)
-			end
-		end)
-	elseif IsFirstTimePredicted() then
-		self.Seed = self:GetSeed()
-	end
+	ind = att[ self:SharedRandom( 1, #att, "PrimaryAttack" ) ]
 
-	math.randomseed(CurTime() + self.Seed)
-	ind = att[math.random(1, #att)]
 	attack = self.Primary.Attacks[ind]
 	vm = self.Owner:GetViewModel()
 	--We have attack isolated, begin attack logic
@@ -472,6 +611,11 @@ function SWEP:PrimaryAttack()
 
 		self.Owner:ViewPunch(attack.viewpunch)
 	elseif attack.snd_delay then
+		if IsFirstTimePredicted() then
+			self.AttackSoundTime = CurTime() + attack.snd_delay * self:GetAnimationRate( ACT_VM_PRIMARYATTACK )
+			self.VoxSoundTime = CurTime() + attack.snd_delay * self:GetAnimationRate( ACT_VM_PRIMARYATTACK )
+		end
+		--[[
 		timer.Simple(attack.snd_delay, function()
 			if IsValid(self) and self:IsValid() and SERVER then
 				self:EmitSound(attack.snd)
@@ -481,12 +625,13 @@ function SWEP:PrimaryAttack()
 				end
 			end
 		end)
+		]]--
 
 		self:SetVP(true)
 		self:SetVPPitch(attack.viewpunch.p)
 		self:SetVPYaw(attack.viewpunch.y)
 		self:SetVPRoll(attack.viewpunch.r)
-		self:SetVPTime(CurTime() + attack.snd_delay)
+		self:SetVPTime(CurTime() + attack.snd_delay * self:GetAnimationRate( ACT_VM_PRIMARYATTACK ) )
 		self.Owner:ViewPunch(-Angle(attack.viewpunch.p / 2, attack.viewpunch.y / 2, attack.viewpunch.r / 2))
 	end
 
@@ -496,13 +641,16 @@ function SWEP:PrimaryAttack()
 	self:SetStatusEnd(CurTime() + attack.delay)
 	self:SetNextPrimaryFire(CurTime() + attack["end"])
 	self.Owner:SetAnimation(PLAYER_ATTACK1)
+	self:SetComboCount(self:GetComboCount() + 1)
 end
 
 function SWEP:SecondaryAttack()
+	if self:GetSprinting() and not self.AllowSprintAttack then return end
 	if self:IsSafety() then return end
 	if not self:VMIV() then return end
 	if CurTime() <= self:GetNextPrimaryFire() then return end
 	if not TFA.Enum.ReadyStatus[self:GetStatus()] then return end
+	if self:GetComboCount() >= self.Secondary.MaxCombo and self.Secondary.MaxCombo > 0 then return end
 	table.Empty(att)
 	local founddir = false
 
@@ -555,15 +703,7 @@ function SWEP:SecondaryAttack()
 
 	if #att <= 0 then return end
 
-	if SERVER then
-		self.Seed = math.random(-99999, 99999)
-		self:SetSeed(self.Seed)
-	elseif IsFirstTimePredicted() then
-		self.Seed = self:GetSeed()
-	end
-
-	math.randomseed(CurTime() + self.Seed)
-	ind = att[math.random(1, #att)]
+	ind = att[ self:SharedRandom( 1, #att, "SecondaryAttack" ) ]
 	attack = self.Secondary.Attacks[ind]
 	vm = self.Owner:GetViewModel()
 	--We have attack isolated, begin attack logic
@@ -580,6 +720,11 @@ function SWEP:SecondaryAttack()
 
 		self.Owner:ViewPunch(attack.viewpunch)
 	elseif attack.snd_delay then
+		if IsFirstTimePredicted() then
+			self.AttackSoundTime = CurTime() + attack.snd_delay * self:GetAnimationRate( ACT_VM_PRIMARYATTACK )
+			self.VoxSoundTime = CurTime() + attack.snd_delay * self:GetAnimationRate( ACT_VM_PRIMARYATTACK )
+		end
+		--[[
 		timer.Simple(attack.snd_delay, function()
 			if IsValid(self) and self:IsValid() and SERVER then
 				self:EmitSound(attack.snd)
@@ -589,12 +734,13 @@ function SWEP:SecondaryAttack()
 				end
 			end
 		end)
+		]]--
 
 		self:SetVP(true)
 		self:SetVPPitch(attack.viewpunch.p)
 		self:SetVPYaw(attack.viewpunch.y)
 		self:SetVPRoll(attack.viewpunch.r)
-		self:SetVPTime(CurTime() + attack.snd_delay)
+		self:SetVPTime(CurTime() + attack.snd_delay * self:GetAnimationRate( ACT_VM_PRIMARYATTACK ) )
 		self.Owner:ViewPunch(-Angle(attack.viewpunch.p / 2, attack.viewpunch.y / 2, attack.viewpunch.r / 2))
 	end
 
@@ -604,22 +750,36 @@ function SWEP:SecondaryAttack()
 	self:SetStatusEnd(CurTime() + attack.delay)
 	self:SetNextPrimaryFire(CurTime() + attack["end"])
 	self.Owner:SetAnimation(PLAYER_ATTACK1)
+	self:SetComboCount(self:GetComboCount() + 1)
 end
 
 function SWEP:AltAttack()
-	if not self:VMIV() then return end
-	if not TFA.Enum.ReadyStatus[self:GetStatus()] then return end
-	if not self.Secondary.CanBash then return end
-	if self:IsSafety() then return end
+	if self.CanBlock then
+		if self.Secondary.CanBash and self.CanBlock and self.Owner:KeyDown(IN_USE) then
+			BaseClass.AltAttack( self )
+			return
+		end
+	else
+		if not self:VMIV() then return end
+		if not TFA.Enum.ReadyStatus[self:GetStatus()] then return end
+		if not self.Secondary.CanBash then return end
+		if self:IsSafety() then return end
 
-	return BaseClass.AltAttack(self)
+		return BaseClass.AltAttack(self)
+	end
 end
 
-function SWEP:Reload()
+function SWEP:Reload( released, ovr, ... )
 	if not self:VMIV() then return end
+	if ovr then
+		return BaseClass.Reload(self,released,...)
+	end
 	if (self.SequenceEnabled[ACT_VM_FIDGET] or self.InspectionActions) and self:GetStatus() == TFA.Enum.STATUS_IDLE then
 		self:SetStatus(TFA.Enum.STATUS_FIDGET)
 		succ,tanim = self:ChooseInspectAnim()
 		self:SetStatusEnd( l_CT() + (self.SequenceLengthOverride[tanim] or self.OwnerViewModel:SequenceDuration()) )
 	end
+end
+
+function SWEP:CycleSafety()
 end

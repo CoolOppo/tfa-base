@@ -1,11 +1,6 @@
 include("shared.lua")
 local cv_ht = GetConVar("host_timescale")
 
---[[---------------------------------------------------------
-Name: Draw
-Purpose: Draw the model in-game.
-Remember, the things you render first will be underneath!
----------------------------------------------------------]]
 function ENT:Draw()
     local ang, tmpang
     tmpang = self:GetAngles()
@@ -25,5 +20,4 @@ function ENT:Draw()
     self:SetAngles(ang)
     self:DrawModel() -- Draw the model.
     self:SetAngles(tmpang)
-    --self:SetModel("models/props_junk/watermelon01
 end

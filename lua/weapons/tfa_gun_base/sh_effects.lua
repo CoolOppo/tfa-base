@@ -3,7 +3,7 @@ local fx, sp
 function SWEP:MakeShellBridge(ifp)
 	if ifp then
 		if self.LuaShellEjectDelay > 0 then
-			self.LuaShellRequestTime = CurTime() + self.LuaShellEjectDelay
+			self.LuaShellRequestTime = CurTime() + self.LuaShellEjectDelay / self:NZAnimationSpeed( ACT_VM_PRIMARYATTACK )
 		else
 			self:MakeShell()
 		end
@@ -77,7 +77,7 @@ Notes:    Puff of smoke on shell attachment.
 Purpose:  FX
 ]]--
 function SWEP:EjectionSmoke()
-	if TFA.GetEJSmokeEnabled() then
+	if TFA.GetEJSmokeEnabled() and self.EjectionSmokeEnabled then
 		local vm = self.OwnerViewModel
 
 		if IsValid(vm) then
@@ -119,7 +119,48 @@ Returns:  Nothing.
 Notes:    Calls the proper muzzleflash, muzzle smoke, muzzle light code.
 Purpose:  FX
 ]]--
+
+local limit_particle_cv  = GetConVar("cl_tfa_fx_muzzlesmoke_limited")
+SWEP.NextSmokeParticle = { }
+SWEP.SmokeParticleTable = {
+	[1] = { --[attachment] = 
+		--{ ["time"] = 0. ["end"] = 55 }
+	}
+}
+function SWEP:AddSmokeParticleTBL(att)
+	self:UpdateSmokeParticleTBL()
+	self.SmokeParticleTable[att] = self.SmokeParticleTable[att] or {}
+
+	if (not limit_particle_cv) or (not limit_particle_cv:GetBool()) then
+		self.NextSmokeParticle[ att ] = CurTime() + 0.1 + math.sqrt(math.Clamp(#self.SmokeParticleTable, 0, 15)) * 0.2
+	else
+		self.NextSmokeParticle[ att ] = CurTime() + 0.3 + math.Clamp(#self.SmokeParticleTable, 0, 5) * 0.2
+	end
+
+	table.insert(self.SmokeParticleTable[att], #self.SmokeParticleTable[att] + 1, {
+		["time"] = CurTime(),
+		["delay"] = 4
+	})
+end
+
+function SWEP:UpdateSmokeParticleTBL(att)
+	for k, v in ipairs(self.SmokeParticleTable) do
+		for l, b in ipairs(v) do
+			if CurTime() > b.time + b.delay then
+				table.remove(v, l)
+			end
+		end
+	end
+end
+
 function SWEP:ShootEffectsCustom( ifp )
+	if self.DoMuzzleFlash ~= nil then
+		self.MuzzleFlashEnabled = self.DoMuzzleFlash
+		self.DoMuzzleFlash = nil
+	end
+	if not self.MuzzleFlashEnabled then return end
+	if not self:VMIV() then return end
+	if not self.Owner.GetShootPos then return end
 	ifp = ifp or IsFirstTimePredicted()
 
 	if sp == nil then
@@ -140,24 +181,29 @@ function SWEP:ShootEffectsCustom( ifp )
 	end
 
 	if (CLIENT and ifp and not sp) or (sp and SERVER) then
-		local vm = self.Owner:GetViewModel()
+		if self.SmokeParticle == nil then
+			self.SmokeParticle = self.SmokeParticles[ self.DefaultHoldType or self.HoldType ]
+		end
+		local vm = self.OwnerViewModel
 		self:UpdateMuzzleAttachment()
 		local att = math.max(1, self.MuzzleAttachmentRaw or (sp and vm or self):LookupAttachment(self.MuzzleAttachment))
 		if self.Akimbo then
 			att = 1 + self.AnimCycle
 		end
-		self:CleanParticles()
 		fx = EffectData()
 		fx:SetOrigin(self.Owner:GetShootPos())
 		fx:SetNormal(self.Owner:EyeAngles():Forward())
 		fx:SetEntity(self)
 		fx:SetAttachment(att)
-		util.Effect("tfa_muzzlesmoke", fx)
+		if CurTime() > ( self.NextSmokeParticle[ att ] or -1 ) then
+			util.Effect("tfa_muzzlesmoke", fx)
+			self:AddSmokeParticleTBL(att)
+		end
 
 		if (self:GetSilenced()) then
 			util.Effect("tfa_muzzleflash_silenced", fx)
 		else
-			util.Effect(self.MuzzleFlashEffect or "", fx)
+			util.Effect( self:GetStat( "MuzzleFlashEffect", self.MuzzleFlashEffect or "" ), fx)
 		end
 	end
 end

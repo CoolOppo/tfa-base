@@ -3,14 +3,10 @@ if SERVER then AddCSLuaFile() end
 TFA = TFA or {}
 
 local do_load = true
-local version = 4.010
-local version_string = "4.0.1.0"
+local version = 4.17
+local version_string = "4.1.7"
 local changelog = [[
-	* TFA Base Rewrite
-	* Numerous hotfixes, including ADS, sprint anims, etc.
-	* DarkRP "fp" table no longer overwritten
-	* External status support added
-	* Reload sounds added
+	* Bind detection system added
 ]]
 
 local function testFunc()
@@ -47,7 +43,7 @@ if do_load then
 	TFA_BASE_VERSION = version
 	TFA_BASE_VERSION_STRING = version_string
 	TFA_BASE_VERSION_CHANGES = changelog
-	TFA_ATTACHMENTS_ENABLED = false
+	TFA_ATTACHMENTS_ENABLED = true
 	TFA_FILE_PATH = my_path
 
 	TFA.Enum = TFA.Enum or {}

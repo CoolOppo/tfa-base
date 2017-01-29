@@ -310,18 +310,13 @@ if CLIENT then
 
 		tfaOptionPerf.Options["#Default"] = {
 			sv_tfa_fx_penetration_decal = "1",
-			sv_tfa_fx_impact_override = "-1",
-			sv_tfa_fx_muzzlesmoke_override = "-1",
-			sv_tfa_fx_ejectionsmoke_override = "-1",
-			sv_tfa_fx_gas_override = "-1",
-			sv_tfa_fx_ricochet_override = "-1",
-			sv_tfa_worldmodel_culldistance = "-1",
 			cl_tfa_fx_impact_enabled = "1",
 			cl_tfa_fx_impact_ricochet_enabled = "1",
 			cl_tfa_fx_impact_ricochet_sparks = "20",
 			cl_tfa_fx_impact_ricochet_sparklife = "2",
 			cl_tfa_fx_gasblur = "1",
 			cl_tfa_fx_muzzlesmoke = "1",
+			cl_tfa_fx_muzzlesmoke_limited = "0",
 			cl_tfa_inspection_bokeh = "0"
 		}
 
@@ -335,6 +330,11 @@ if CLIENT then
 		panel:AddControl("CheckBox", {
 			Label = "Use Muzzle Smoke Trails",
 			Command = "cl_tfa_fx_muzzlesmoke"
+		})
+
+		panel:AddControl("CheckBox", {
+			Label = "Limit Muzzle Smoke Trails",
+			Command = "cl_tfa_fx_muzzlesmoke_limited"
 		})
 
 		panel:AddControl("CheckBox", {
@@ -373,61 +373,9 @@ if CLIENT then
 			Max = "5"
 		})
 
-		panel:AddControl("Label", {
-			Text = "Performance Overrides (Serverside)"
-		})
-
 		panel:AddControl("CheckBox", {
 			Label = "Use Penetration Decal (SV)",
 			Command = "sv_tfa_fx_penetration_decal"
-		})
-
-		panel:AddControl("Slider", {
-			Label = "Gas Blur Effect Override (-1 to leave clientside)",
-			Command = "sv_tfa_fx_gas_override",
-			Type = "Integer",
-			Min = "-1",
-			Max = "1"
-		})
-
-		panel:AddControl("Slider", {
-			Label = "Impact Effect Override (-1 to leave clientside)",
-			Command = "sv_tfa_fx_impact_override",
-			Type = "Integer",
-			Min = "-1",
-			Max = "1"
-		})
-
-		panel:AddControl("Slider", {
-			Label = "Muzzle Smoke Effect Override (-1 to leave clientside)",
-			Command = "sv_tfa_fx_muzzlesmoke_override",
-			Type = "Integer",
-			Min = "-1",
-			Max = "1"
-		})
-
-		panel:AddControl("Slider", {
-			Label = "Ejection Smoke Effect Override (-1 to leave clientside)",
-			Command = "sv_tfa_fx_ejectionsmoke_override",
-			Type = "Integer",
-			Min = "-1",
-			Max = "1"
-		})
-
-		panel:AddControl("Slider", {
-			Label = "Ricochet Effect Override (-1 to leave clientside)",
-			Command = "sv_tfa_fx_ricochet_override",
-			Type = "Integer",
-			Min = "-1",
-			Max = "1"
-		})
-
-		panel:AddControl("Slider", {
-			Label = "World Model Cull Distance (-1 to disable)",
-			Command = "sv_tfa_worldmodel_culldistance",
-			Type = "Integer",
-			Min = "-1",
-			Max = "4096"
 		})
 
 		panel:AddControl("Label", {

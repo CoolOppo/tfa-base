@@ -1,11 +1,26 @@
 --Serverside Convars
+
+if GetConVar("sv_tfa_soundscale") == nil then
+	CreateConVar("sv_tfa_soundscale","1",{FCVAR_ARCHIVE,FCVAR_SERVER_CAN_EXECUTE,FCVAR_REPLICATED},"Scale times in accordance to timescale?")
+	--print("Weapon strip/removal con var created")
+end
+
 if GetConVar("sv_tfa_weapon_strip") == nil then
 	CreateConVar("sv_tfa_weapon_strip", "0", {FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE}, "Allow the removal of empty weapons? 1 for true, 0 for false")
+	--print("Weapon strip/removal con var created")
+end
+if GetConVar("sv_tfa_spread_legacy") == nil then
+	CreateConVar("sv_tfa_spread_legacy", "0", {FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE}, "Use legacy spread algorithms?")
 	--print("Weapon strip/removal con var created")
 end
 
 if GetConVar("sv_tfa_cmenu") == nil then
 	CreateConVar("sv_tfa_cmenu", "1", {FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE}, "Allow custom context menu?")
+	--print("Weapon strip/removal con var created")
+end
+
+if GetConVar("sv_tfa_cmenu_key") == nil then
+	CreateConVar("sv_tfa_cmenu_key", "-1", {FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE}, "Override the inspection menu key?  Uses the KEY enum available on the gmod wiki. -1 to not.")
 	--print("Weapon strip/removal con var created")
 end
 
@@ -39,8 +54,43 @@ if GetConVar("sv_tfa_damage_mult_max") == nil then
 	--print("Damage Multiplier con var created")
 end
 
-if GetConVar("sv_tfa_door_respawn") == nil then
-	CreateConVar("sv_tfa_door_respawn", "-1", {FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE}, "Time for doors to respawn; -1 for never.")
+if GetConVar("sv_tfa_melee_damage_npc") == nil then
+	CreateConVar("sv_tfa_melee_damage_npc", "1", {FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE}, "Damage multiplier against NPCs using TFA Melees.")
+	--print("Damage Multiplier con var created")
+end
+
+if GetConVar("sv_tfa_melee_damage_ply") == nil then
+	CreateConVar("sv_tfa_melee_damage_ply", "0.65", {FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE}, "Damage multiplier against players using TFA Melees.")
+	--print("Damage Multiplier con var created")
+end
+
+if GetConVar("sv_tfa_melee_blocking_timed") == nil then
+	CreateConVar("sv_tfa_melee_blocking_timed", "1", {FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE}, "Enable timed blocking?")
+	--print("Damage Multiplier con var created")
+end
+
+if GetConVar("sv_tfa_melee_blocking_anglemult") == nil then
+	CreateConVar("sv_tfa_melee_blocking_anglemult", "1", {FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE}, "Players can block attacks in an angle around their view.  This multiplies that angle.")
+	--print("Damage Multiplier con var created")
+end
+
+if GetConVar("sv_tfa_melee_blocking_deflection") == nil then
+	CreateConVar("sv_tfa_melee_blocking_deflection", "1", {FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE}, "For weapons that can deflect bullets ( e.g. certain katans ), can you deflect bullets?  Set to 1 to enable for parries, or 2 for all blocks.")
+	--print("Damage Multiplier con var created")
+end
+
+if GetConVar("sv_tfa_melee_blocking_timed") == nil then
+	CreateConVar("sv_tfa_melee_blocking_timed", "1", {FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE}, "Enable timed blocking?")
+	--print("Damage Multiplier con var created")
+end
+
+if GetConVar("sv_tfa_melee_blocking_stun_enabled") == nil then
+	CreateConVar("sv_tfa_melee_blocking_stun_enabled", "1", {FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE}, "Stun NPCs on block?")
+	--print("Damage Multiplier con var created")
+end
+
+if GetConVar("sv_tfa_melee_blocking_stun_time") == nil then
+	CreateConVar("sv_tfa_melee_blocking_stun_time", "0.65", {FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE}, "How long to stun NPCs on block.")
 	--print("Damage Multiplier con var created")
 end
 
@@ -74,7 +124,7 @@ function TFAUpdateDefaultClip()
 				if wep.Primary.ClipSize and wep.Primary.ClipSize > 0 then
 					wep.Primary.DefaultClip = wep.Primary.ClipSize * dfc
 				else
-					wep.Primary.DefaultClip = wep.Primary.TrueDefaultClip * dfc
+					wep.Primary.DefaultClip = wep.Primary.TrueDefaultClip * 1
 				end
 			end
 		end
@@ -155,26 +205,6 @@ if GetConVar("sv_tfa_arrow_lifetime") == nil then
 	CreateConVar("sv_tfa_arrow_lifetime", "30", {FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE}, "Arrow lifetime.")
 end
 
-if GetConVar("sv_tfa_fx_ejectionsmoke_override") == nil then
-	CreateConVar("sv_tfa_fx_ejectionsmoke_override", "-1", {FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE}, "-1 to let clients pick.  0 to force off.  1 to force on.")
-end
-
-if GetConVar("sv_tfa_fx_muzzlesmoke_override") == nil then
-	CreateConVar("sv_tfa_fx_muzzlesmoke_override", "-1", {FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE}, "-1 to let clients pick.  0 to force off.  1 to force on.")
-end
-
-if GetConVar("sv_tfa_fx_gas_override") == nil then
-	CreateConVar("sv_tfa_fx_gas_override", "-1", {FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE}, "-1 to let clients pick.  0 to force off.  1 to force on.")
-end
-
-if GetConVar("sv_tfa_fx_impact_override") == nil then
-	CreateConVar("sv_tfa_fx_impact_override", "-1", {FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE}, "-1 to let clients pick.  0 to force off.  1 to force on.")
-end
-
-if GetConVar("sv_tfa_fx_ricochet_override") == nil then
-	CreateConVar("sv_tfa_fx_ricochet_override", "-1", {FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE}, "-1 to let clients pick.  0 to force off.  1 to force on.")
-end
-
 if GetConVar("sv_tfa_worldmodel_culldistance") == nil then
 	CreateConVar("sv_tfa_worldmodel_culldistance", "-1", {FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE}, "-1 to leave unculled.  Anything else is feet*16.")
 end
@@ -199,8 +229,12 @@ if GetConVar("sv_tfa_reloads_enabled") == nil then
 	CreateConVar("sv_tfa_reloads_enabled", "1", {FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE}, "Enable reloading? Disabling this allows shooting from ammo pool.")
 end
 
-if GetConVar("sv_tfa_compat_movement") == nil then
-	CreateConVar("sv_tfa_compat_movement", "0", {FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE}, "Enable compatibility mode for movement?")
+if GetConVar("sv_tfa_attachments_enabled") == nil then
+	CreateConVar("sv_tfa_attachments_enabled", "1", {FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE}, "Display attachment picker?")
+end
+
+if GetConVar("sv_tfa_attachments_alphabetical") == nil then
+	CreateConVar("sv_tfa_attachments_alphabetical", "0", {FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE}, "Override weapon attachment order to be alphabetical.")
 end
 
 --Clientside Convars
@@ -375,6 +409,10 @@ if CLIENT then
 
 	if GetConVar("cl_tfa_fx_muzzlesmoke") == nil then
 		CreateClientConVar("cl_tfa_fx_muzzlesmoke", 1, true, true)
+	end
+
+	if GetConVar("cl_tfa_fx_muzzlesmoke_limited") == nil then
+		CreateClientConVar("cl_tfa_fx_muzzlesmoke_limited", 0, true, true)
 	end
 
 	if GetConVar("cl_tfa_fx_ejectionsmoke") == nil then

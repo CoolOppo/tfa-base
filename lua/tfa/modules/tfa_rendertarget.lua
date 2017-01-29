@@ -12,7 +12,31 @@ local function RBP(vm)
 	end
 end
 
+hook.Add("PlayerSwitchWeapon","TFA_Bodygroups_PSW",function(ply,oldwep,wep)
+	if not IsValid(wep) then return end
+	timer.Simple(0,function()
+		if IsValid(ply) and ply:GetActiveWeapon() == wep then
+			local vm = ply:GetViewModel()
+			if not IsValid(vm) then
+				vm = ply:GetViewModel()
+				return
+			end
+
+			local bgcount = #(vm:GetBodyGroups() or {})
+			local bgt = wep.Bodygroups_V or wep.Bodygroups or {}
+			if wep.GetStat then
+				bgt = wep:GetStat("Bodygroups_V",bgt)
+			end
+			for i = 0,bgcount-1 do
+				vm:SetBodygroup(i, bgt[i] or 0)
+			end
+		end
+	end)
+end)
+
 if CLIENT then
+	TFA_RENDERTARGET = false
+
 	local props = {
 		["$translucent"] = 1
 	}
@@ -42,12 +66,21 @@ if CLIENT then
 			end
 			oldWep = wep
 			RBP(vm)
+			vm:SetSkin(0)
 			local matcount = #(vm:GetMaterials() or {})
-			local i = 0
 
-			while i <= matcount do
+			for i = 0,matcount do
 				vm:SetSubMaterial(i, "")
 				i = i + 1
+			end
+
+			local bgcount = #(vm:GetBodyGroups() or {})
+			local bgt = wep.Bodygroups_V or wep.Bodygroups or {}
+			if wep.GetStat then
+				bgt = wep:GetStat("Bodygroups_V",bgt)
+			end
+			for i = 0,bgcount-1 do
+				vm:SetBodygroup(i, bgt[i] or 0)
 			end
 
 			oldVmModel = vm:GetModel()
@@ -67,22 +100,27 @@ if CLIENT then
 		end
 
 
-		if not IsValid(wep) then
+		if not IsValid(wep) or not wep.IsTFAWeapon then
 			return
 		end
 
-		if wep.MaterialTable and not wep.MaterialCached then
+		if wep:GetStat("Skin") and isnumber(wep:GetStat("Skin")) then
+			vm:SetSkin(wep:GetStat("Skin"))
+			wep:SetSkin(wep:GetStat("Skin"))
+		end
+
+		if wep:GetStat("MaterialTable") and not wep.MaterialCached then
 			wep.MaterialCached = {}
 
-			if #wep.MaterialTable >= 1 and #wep:GetMaterials() <= 1 then
-				wep:SetMaterial(wep.MaterialTable[1])
+			if #wep:GetStat("MaterialTable") >= 1 and #wep:GetMaterials() <= 1 then
+				wep:SetMaterial(wep:GetStat("MaterialTable")[1])
 			else
 				wep:SetMaterial("")
 			end
 
 			wep:SetSubMaterial(nil, nil)
 			vm:SetSubMaterial(nil, nil)
-			for k, v in ipairs(wep.MaterialTable) do
+			for k, v in ipairs(wep:GetStat("MaterialTable")) do
 				if not wep.MaterialCached[k] then
 					wep:SetSubMaterial(k - 1, v)
 					vm:SetSubMaterial(k - 1, v)
@@ -91,31 +129,36 @@ if CLIENT then
 			end
 		end
 
-		if not wep.RTMaterialOverride or not wep.RTCode then return end
+		if not wep:GetStat("RTMaterialOverride") or not wep.RTCode then return end
 		oldVmModel = vm:GetModel()
 		local w, h = ScrW(), ScrH()
-		local oldrt = render.GetRenderTarget()
 
-		if not wep.RTOpaque then
-			render.SetRenderTarget(TFA_RTScreen)
+		if not wep:GetStat("RTOpaque") then
+			render.PushRenderTarget( TFA_RTScreen )
 		else
-			render.SetRenderTarget(TFA_RTScreenO)
+			render.PushRenderTarget( TFA_RTScreenO )
 		end
 
-		render.Clear(0, 0, 0, 0, true, true)
-		render.SetViewPort(0, 0, 512, 512)
-		wep:RTCode(TFA_RTMat, w, h)
-		render.SetRenderTarget(oldrt)
-		render.SetViewPort(0, 0, w, h)
 
-		if not wep.RTOpaque then
+		render.Clear(0, 0, 0, 0, true, true)
+		render.Clear(0, 0, 0, 255, true, true)
+		TFA_RENDERTARGET = true
+		wep:RTCode(TFA_RTMat, w, h)
+		TFA_RENDERTARGET = false
+		render.PopRenderTarget()
+		render.SetScissorRect(0, 0, ScrW(), ScrH(), false)
+
+		if not wep:GetStat("RTOpaque") then
 			TFA_RTMat:SetTexture("$basetexture", TFA_RTScreen)
 		else
 			TFA_RTMat:SetTexture("$basetexture", TFA_RTScreenO)
 		end
 
-		wep.Owner:GetViewModel():SetSubMaterial(wep.RTMaterialOverride, "!tfa_rtmaterial")
+		wep.Owner:GetViewModel():SetSubMaterial(wep:GetStat("RTMaterialOverride"), "!tfa_rtmaterial")
 	end
 
-	hook.Add("RenderScene", "TFASCREENS", TFARenderScreen)
+	hook.Add("PreRender", "TFASCREENS", function()
+		TFARenderScreen()
+	end)
+	--hook.Add("RenderScene", "TFASCREENS", TFARenderScreen)
 end

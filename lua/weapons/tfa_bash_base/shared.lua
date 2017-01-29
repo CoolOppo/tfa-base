@@ -41,7 +41,7 @@ local function bashcallback(a, b, c, wep)
 	if not IsValid(wep) then return end
 
 	if c then
-		c:SetDamageType(wep.Secondary.BashDamageType)
+		c:SetDamageType(wep:GetStat("Secondary.BashDamageType"))
 	end
 
 	if IsValid(b.Entity) and b.Entity.TakeDamageInfo then
@@ -51,7 +51,7 @@ local function bashcallback(a, b, c, wep)
 		dmg:SetDamagePosition(wep.Owner:GetShootPos())
 		dmg:SetDamageForce(wep.Owner:GetAimVector() * 1) --(pain))
 		dmg:SetDamage(pain)
-		dmg:SetDamageType(wep.Secondary.BashDamageType)
+		dmg:SetDamageType(wep:GetStat("Secondary.BashDamageType"))
 		b.Entity:TakeDamageInfo(dmg)
 		wep:BashForce(b.Entity, wep.Owner:GetAimVector() * math.sqrt(pain / 80) * 32 * 80, b.HitPos)
 	end
@@ -88,15 +88,16 @@ end
 local l_CT = CurTime
 
 function SWEP:AltAttack()
-	if self.Secondary.CanBash == false then return end
+	if self:GetStat("Secondary.CanBash") == false then return end
 	if not self:OwnerIsValid() then return end
 	local stat = self:GetStatus()
 	if not TFA.Enum.ReadyStatus[stat] then return end
 	if self:IsSafety() then return end
+	if self:GetHolding() then return end
 
 	local vm = self.Owner:GetViewModel()
 	--if SERVER then
-	self:SendWeaponAnim(ACT_VM_HITCENTER)
+	self:SendViewModelAnim(ACT_VM_HITCENTER)
 
 	--else
 	--	self:SendWeaponAnim(ACT_VM_HITCENTER)
@@ -112,7 +113,6 @@ function SWEP:AltAttack()
 	if ht == "ar2" or ht == "shotgun" or ht == "crossbow" or ht == "physgun" then
 		altanim = true
 	end
-	self.Owner:AnimRestartGesture(0, altanim and ACT_GMOD_GESTURE_MELEE_SHOVE_2HAND or ACT_HL2MP_GESTURE_RANGE_ATTACK_MELEE2, true)
 
 	self.unpredbash = true
 
@@ -121,19 +121,34 @@ function SWEP:AltAttack()
 			self.unpredbash = false
 		end
 	end)
+	self:BashAnim()
+	if game.SinglePlayer() and SERVER then self:CallOnClient("BashAnim","") end
 
 	self.tmptoggle = not self.tmptoggle
-	self:SetNextIdleAnim(CurTime() + vm:SequenceDuration())
-	self:SetNextPrimaryFire(CurTime() + (self.Secondary.BashEnd or self.SequenceLengthOverride[ACT_VM_HITCENTER] or vm:SequenceDuration()))
-	self:SetNextSecondaryFire(CurTime() + (self.Secondary.BashEnd or self.SequenceLengthOverride[ACT_VM_HITCENTER] or vm:SequenceDuration()))
+	self:SetNextIdleAnim(CurTime() + self:GetActivityLength( ACT_VM_HITCENTER ) )
+	self:SetNextPrimaryFire(CurTime() + (self:GetStat("Secondary.BashEnd") or self.SequenceLengthOverride[ACT_VM_HITCENTER] or vm:SequenceDuration()))
+	self:SetNextSecondaryFire(CurTime() + (self:GetStat("Secondary.BashEnd") or self.SequenceLengthOverride[ACT_VM_HITCENTER] or vm:SequenceDuration()))
 
 	if IsFirstTimePredicted() then
-		self:EmitSound(self.Secondary.BashSound)
+		self:EmitSound(self:GetStat("Secondary.BashSound"))
 	end
 	self:SetStatus(TFA.Enum.STATUS_BASHING)
 	self:SetStatusEnd(self:GetNextPrimaryFire())
 
-	self:SetNW2Float("BashTTime", CurTime() + self.Secondary.BashDelay)
+	self:SetNW2Float("BashTTime", CurTime() + self:GetStat("Secondary.BashDelay"))
+end
+
+function SWEP:BashAnim()
+
+	local altanim = false
+	--if IsValid(wep) and wep.GetHoldType then
+	local ht = self.DefaultHoldType or self.HoldType
+
+	if ht == "ar2" or ht == "shotgun" or ht == "crossbow" or ht == "physgun" then
+		altanim = true
+	end
+
+	self.Owner:AnimRestartGesture(0, altanim and ACT_GMOD_GESTURE_MELEE_SHOVE_2HAND or ACT_HL2MP_GESTURE_RANGE_ATTACK_MELEE2, true)
 end
 
 local ttime = -1
@@ -147,17 +162,17 @@ function SWEP:Think2()
 		local av = self.Owner:EyeAngles():Forward()
 		local slash = {}
 		slash.start = pos
-		slash.endpos = pos + (av * self.Secondary.BashLength)
+		slash.endpos = pos + (av * self:GetStat("Secondary.BashLength"))
 		slash.filter = self.Owner
 		slash.mins = Vector(-10, -5, 0)
 		slash.maxs = Vector(10, 5, 5)
 		local slashtrace = util.TraceHull(slash)
-		pain = self.Secondary.BashDamage
+		pain = self:GetStat("Secondary.BashDamage")
 
 		if slashtrace.Hit then
 			self:HandleDoor(slashtrace)
 			if not ( game.SinglePlayer() and CLIENT ) then
-				self:EmitSound((slashtrace.MatType == MAT_FLESH or slashtrace.MatType == MAT_ALIENFLESH) and self.Secondary.BashHitSound_Flesh or self.Secondary.BashHitSound)
+				self:EmitSound((slashtrace.MatType == MAT_FLESH or slashtrace.MatType == MAT_ALIENFLESH) and self:GetStat("Secondary.BashHitSound_Flesh") or self:GetStat("Secondary.BashHitSound"))
 			end
 			
 			if game.GetTimeScale() > 0.99 then
@@ -166,7 +181,7 @@ function SWEP:Think2()
 					Inflictor = self,
 					Damage = 1,
 					Force = 1, --pain,
-					Distance = self.Secondary.BashLength + 10,
+					Distance = self:GetStat("Secondary.BashLength") + 10,
 					HullSize = 10,
 					Tracer = 0,
 					Src = self.Owner:GetShootPos(),
@@ -182,7 +197,7 @@ function SWEP:Think2()
 				dmg:SetDamagePosition(self.Owner:GetShootPos())
 				dmg:SetDamageForce(self.Owner:GetAimVector() * pain)
 				dmg:SetDamage(pain)
-				dmg:SetDamageType(self.Secondary.BashDamageType)
+				dmg:SetDamageType(self:GetStat("Secondary.BashDamageType"))
 
 				if IsValid(slashtrace.Entity) and slashtrace.Entity.TakeDamageInfo then
 					slashtrace.Entity:TakeDamageInfo(dmg)
@@ -201,10 +216,10 @@ function SWEP:Think2()
 
 			if IsValid(phys) then
 				if ent:IsPlayer() or ent:IsNPC() then
-					ent:SetVelocity( self.Owner:GetAimVector() * self.Secondary.BashDamage * 0.5 )
-					phys:SetVelocity(phys:GetVelocity() + self.Owner:GetAimVector() * self.Secondary.BashDamage * 0.5 )
+					ent:SetVelocity( self.Owner:GetAimVector() * self:GetStat("Secondary.BashDamage") * 0.5 )
+					phys:SetVelocity(phys:GetVelocity() + self.Owner:GetAimVector() * self:GetStat("Secondary.BashDamage") * 0.5 )
 				else
-					phys:ApplyForceOffset(self.Owner:GetAimVector() * self.Secondary.BashDamage * 0.5, slashtrace.HitPos)
+					phys:ApplyForceOffset(self.Owner:GetAimVector() * self:GetStat("Secondary.BashDamage") * 0.5, slashtrace.HitPos)
 				end
 			end
 		end

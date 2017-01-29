@@ -55,3 +55,22 @@ sound.Add({
 	sound = {"weapons/tfa/ironout.wav"},
 	pitch = {97, 103}
 })
+
+sound.Add({
+	name = "Weapon_Pistol.Empty2",
+	channel = CHAN_USER_BASE + 11,
+	volume = 1.0,
+	level = 80,
+	sound = {"weapons/pistol/pistol_empty.wav"},
+	pitch = {97, 103}
+})
+
+sound.Add({
+	name = "Weapon_AR2.Empty2",
+	channel = CHAN_USER_BASE + 11,
+	volume = 1.0,
+	level = 80,
+	sound = {"weapons/ar2/ar2_empty.wav"},
+	pitch = {97, 103}
+})
+

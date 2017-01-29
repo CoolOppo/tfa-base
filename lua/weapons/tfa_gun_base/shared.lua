@@ -1,6 +1,6 @@
 --[[Define Modules]]
 SWEP.SV_MODULES = {}
-SWEP.SH_MODULES = {"sh_anims.lua", "sh_autodetection.lua", "sh_utils.lua", "sh_bullet.lua", "sh_effects.lua", "sh_bobcode.lua", "sh_calc.lua", "sh_akimbo.lua", "sh_events.lua" }
+SWEP.SH_MODULES = {"sh_anims.lua", "sh_autodetection.lua", "sh_utils.lua", "sh_attachments.lua", "sh_bullet.lua", "sh_effects.lua", "sh_bobcode.lua", "sh_calc.lua", "sh_akimbo.lua", "sh_events.lua", "sh_nzombies.lua", "sh_ttt.lua" }
 SWEP.ClSIDE_MODULES = { "cl_effects.lua", "cl_viewbob.lua", "cl_hud.lua", "cl_mods.lua" }
 SWEP.Category = "" --The category.  Please, just choose something generic or something I've already done if you plan on only doing like one swep.
 SWEP.Author = "TheForgottenArchitect"
@@ -10,6 +10,7 @@ SWEP.Instructions = ""
 SWEP.DrawCrosshair = true
 SWEP.ViewModelFOV = 65
 SWEP.ViewModelFlip = false
+SWEP.Skin = 0 --Viewmodel skin
 SWEP.Spawnable = false
 SWEP.IsTFAWeapon = true
 
@@ -59,11 +60,17 @@ SWEP.MuzzleFlashEnabled = true
 SWEP.MuzzleFlashEffect = nil
 SWEP.CustomMuzzleFlash = true
 
+SWEP.EjectionSmokeEnabled = true
+
 SWEP.LuaShellEject = false
 SWEP.LuaShellEjectDelay = 0
 SWEP.LuaShellEffect = nil --Defaults to blowback
 
-SWEP.SequenceLengthOverride = {}
+SWEP.SmokeParticle = nil --Smoke particle (ID within the PCF), defaults to something else based on holdtype
+
+SWEP.SequenceLengthOverride = {} --Changes the status delay of a given animation
+SWEP.SequenceRateOverride = {} --Like above but changes animation length
+SWEP.SequenceRateOverrideScaled = {} --Like above but scales animation length rather than being absolute
 
 SWEP.BlowbackEnabled = false --Enable Blowback?
 SWEP.BlowbackVector = Vector(0, -1, 0) --Vector to move bone <or root> relative to bone <or view> orientation.
@@ -101,8 +108,8 @@ SWEP.Secondary.Ammo = ""
 SWEP.Secondary.ClipSize = -1
 SWEP.Secondary.DefaultClip = 0
 
-SWEP.Sights_Mode = TFA.Enum.LOCOMOTION_LUA -- ANI = mdl, Hybrid = stop mdl animation, Lua = hybrid but continue idle
-SWEP.Sprint_Mode = TFA.Enum.LOCOMOTION_LUA -- ANI = mdl, Hybrid = ani + lua, Lua = lua only
+SWEP.Sights_Mode = TFA.Enum.LOCOMOTION_LUA -- ANI = mdl, HYBRID = lua but continue idle, Lua = stop mdl animation
+SWEP.Sprint_Mode = TFA.Enum.LOCOMOTION_LUA -- ANI = mdl, HYBRID = ani + lua, Lua = lua only
 SWEP.SprintFOVOffset = 5
 SWEP.Idle_Mode = TFA.Enum.IDLE_BOTH --TFA.Enum.IDLE_DISABLED = no idle, TFA.Enum.IDLE_LUA = lua idle, TFA.Enum.IDLE_ANI = mdl idle, TFA.Enum.IDLE_BOTH = TFA.Enum.IDLE_ANI + TFA.Enum.IDLE_LUA
 SWEP.Idle_Blend = 0.25 --Start an idle this far early into the end of a transition
@@ -116,6 +123,7 @@ SWEP.InspectAngDef = Vector(24.622, 42.915, 15.477)
 
 SWEP.RunSightsPos = Vector(0,0,0)
 SWEP.RunSightsAng = Vector(0,0,0)
+SWEP.AllowSprintAttack = false --Shoot while sprinting?
 
 SWEP.EventTable = {}
 
@@ -178,6 +186,10 @@ SWEP.SprintAnimation = {
 	} --Outward transition
 }
 
+SWEP.FirstDeployEnabled = nil--Force first deploy enabled
+
+--[[Dont edit under this unless you know what u r doing]]
+
 SWEP.IronSightsProgress = 0
 SWEP.SprintProgress = 0
 SWEP.SpreadRatio = 0
@@ -226,66 +238,6 @@ local l_mathApproach = math.Approach
 local l_mathClamp = math.Clamp
 local l_CT = CurTime
 local l_FT = FrameTime
-local l_RT = RealTime
---[[  Quadratic Interpolation Functions  ]]
-local qerppower = 2
-
---[[
-Function Name:  Power
-Syntax: pow(number you want to take the power of, it's power)
-Returns:  The number to the power you specify
-Purpose:  Utility function
-]]
-local function pow(num, power)
-	return math.pow(num, power)
-end
-
---[[
-Function Name:  Qerp Inwards
-Syntax: QerpIn(progress, your starting value, how much it should change, across what period)
-Returns:  A number that you get when you quadratically fade into a value.  Kind of like a more advanced LERP.
-Purpose:  Utility function / Animation
-]]
-local function QerpIn(progress, startval, change, totaltime)
-	if not totaltime then
-		totaltime = 1
-	end
-
-	return startval + change * pow(progress / totaltime, qerppower)
-end
-
---[[
-Function Name:  Qerp Outwards
-Syntax: QerpOut(progress, your starting value, how much it should change, across what period)
-Returns:  A number that you get when you quadratically fade out of a value.  Kind of like a more advanced LERP.
-Purpose:  Utility function / Animation
-]]
-local function QerpOut(progress, startval, change, totaltime)
-	if not totaltime then
-		totaltime = 1
-	end
-
-	return startval - change * pow(progress / totaltime, qerppower)
-end
-
---[[
-Function Name:  Qerp
-Syntax: Qerp(progress, starting value, ending value, period)
-Note:  This is different syntax from QerpIn and QerpOut.  This uses a start and end value instead of a start value and change amount.
-Returns:  A number that you get when you quadratically fade out of and into a value.  Kind of like a more advanced LERP.
-Purpose:  Utility function / Animation
-]]
-local function Qerp(progress, startval, endval, totaltime)
-	change = endval - startval
-
-	if not totaltime then
-		totaltime = 1
-	end
-
-	if progress < totaltime / 2 then return QerpIn(progress, startval, change / 2, totaltime / 2) end
-
-	return QerpOut(totaltime - progress, endval, change / 2, totaltime / 2)
-end
 
 --[[
 Function Name:  QerpAngle
@@ -304,42 +256,10 @@ local function util_NormalizeAngles(a)
 	return a
 end
 
-local function QerpAngle(progress, startang, endang, totaltime)
-	return util_NormalizeAngles(LerpAngle(Qerp(progress, 0, 1, totaltime), startang, endang))
-end
-
---[[
-Function Name:  QerpVector
-Syntax: QerpVector(progress, starting value, ending value, period)
-Returns:  The quadratically interpolated vector.
-Purpose:  Utility function / Animation
-]]
-local myqerpvec = Vector()
-
-local function QerpVector(progress, startang, endang, totaltime)
-	if not totaltime then
-		totaltime = 1
-	end
-
-	local startx, starty, startz, endx, endy, endz
-	startx = startang.x
-	starty = startang.y
-	startz = startang.z
-	endx = endang.x
-	endy = endang.y
-	endz = endang.z
-	myqerpvec.x = Qerp(progress, startx, endx, totaltime)
-	myqerpvec.y = Qerp(progress, starty, endy, totaltime)
-	myqerpvec.z = Qerp(progress, startz, endz, totaltime)
-
-	return myqerpvec
-end
-
 --[[Localize Functions]]
 local l_ct = CurTime
-local l_ft = FrameTime
 --[[Frequently Reused Local Vars]]
-local success, animation --Used for animations
+local success --Used for animations
 local stat, statend --Weapon status
 local ct, ft, rft --Curtime, frametime, real frametime
 ft = 0.01
@@ -347,15 +267,6 @@ local sp --Singleplayer
 
 local host_timescale_cv = GetConVar("host_timescale")
 local sv_cheats_cv = GetConVar("sv_cheats")
-
---[[
-Function Name:  ResetEvents
-Syntax: self:ResetEvents()
-Returns:  Nothing.
-Purpose:  Cleans up events table.
-]]
-function SWEP:ResetEvents()
-end
 
 --[[
 Function Name:  SetupDataTables
@@ -387,6 +298,8 @@ Purpose:  Standard SWEP Function
 ]]
 sp = game.SinglePlayer()
 
+local nzombies = string.lower( engine.ActiveGamemode() or "" ) == "nzombies"
+
 function SWEP:Initialize()
 	self.DrawCrosshairDefault = self.DrawCrosshair
 	self.HasInitialized = true
@@ -410,9 +323,21 @@ function SWEP:Initialize()
 	self:IconFix()
 	self:CreateFireModes()
 	self:FixAkimbo()
+	self:ClearStatCache()
 	if not self.IronSightsMoveSpeed then
 		self.IronSightsMoveSpeed = self.MoveSpeed * 0.8
 	end
+	if self:GetStat("Skin") and isnumber(self:GetStat("Skin")) then
+		self:SetSkin(self:GetStat("Skin"))
+	end
+	if nzombies then
+		self:NZDeploy()
+	end
+end
+
+function SWEP:Equip( ... )
+	self.OwnerViewModel = nil
+	self:EquipTTT(  ... )
 end
 
 --[[
@@ -422,7 +347,14 @@ Notes:  Called after self:Initialize().  Called each time you draw the gun.  Thi
 Returns:  True/False to allow quickswitch.  Why not?  You should really return true.
 Purpose:  Standard SWEP Function
 ]]
+
 function SWEP:Deploy()
+
+	if engine.ActiveGamemode() == "terrortown" and IsValid(self.Owner) and IsValid(self.Owner:GetViewModel()) then
+		self.OwnerViewModel = self.Owner:GetViewModel()
+		self.OwnerViewModel:SetModel(self.ViewModel)
+	end
+
 	ct = l_CT()
 	self:VMIV()
 	if not self:VMIV() then
@@ -442,7 +374,7 @@ function SWEP:Deploy()
 	end
 
 	self:SetStatus(TFA.Enum.STATUS_DRAW)
-	local len = self.SequenceLengthOverride[tanim] or self.OwnerViewModel:SequenceDuration()
+	local len = self:GetActivityLength( tanim )
 	self:SetStatusEnd(ct + len )
 	self:SetNextPrimaryFire( ct + len )
 	self:SetIronSightsRaw(false)
@@ -450,9 +382,25 @@ function SWEP:Deploy()
 	self:SetBurstCount(0)
 	self.IronSightsProgress = 0
 	self.SprintProgress = 0
+	self.InspectingProgress = 0
 	self.ProceduralHolsterEnabled = 0
-	self.Inspecting = false
+	if self.Inspecting then
+		--if gui then
+		--	gui.EnableScreenClicker(false)
+		--end
+		self.Inspecting = false
+	end
 	self.DefaultFOV = TFADUSKFOV or ( IsValid(self.Owner) and self.Owner:GetFOV() or 90 )
+	if self:GetStat("Skin") and isnumber(self:GetStat("Skin")) then
+		self.OwnerViewModel:SetSkin(self:GetStat("Skin"))
+		self:SetSkin(self:GetStat("Skin"))
+	end
+	if nzombies then
+		self:NZDeploy()
+	end
+
+	self:InitAttachments()
+
 	return true
 end
 
@@ -481,9 +429,9 @@ function SWEP:Holster(target)
 
 		self:SetStatus(TFA.Enum.STATUS_HOLSTER)
 		if success then
-			self:SetStatusEnd( ct + (self.SequenceLengthOverride[tanim] or self.OwnerViewModel:SequenceDuration()) )
+			self:SetStatusEnd( ct + self:GetActivityLength( tanim ) )
 		else
-			self:SetStatusEnd( ct + self.ProceduralHolsterTime )
+			self:SetStatusEnd( ct + self:GetStat("ProceduralHolsterTime") / self:NZAnimationSpeed( ACT_VM_HOLSTER ) )
 		end
 		return false
 	elseif stat == TFA.Enum.STATUS_HOLSTER_READY or stat == TFA.Enum.STATUS_HOLSTER_FINAL then
@@ -494,6 +442,7 @@ end
 function SWEP:FinishHolster()
 	if SERVER then
 		ent = self:GetSwapTarget()
+		self:CleanParticles()
 		self:Holster(ent)
 
 		if IsValid(ent) then
@@ -501,6 +450,7 @@ function SWEP:FinishHolster()
 				self:WeaponUse(self.Owner)
 			else
 				self.Owner:SelectWeapon(ent:GetClass())
+				self.OwnerViewModel = nil
 			end
 		end
 	end
@@ -508,10 +458,12 @@ end
 
 function SWEP:WeaponUse(plyv)
 	plyv:ConCommand("+use")
+	self:GetHolding()
 
 	timer.Simple(0.1, function()
 		if IsValid(plyv) then
 			plyv:ConCommand("-use")
+			self:GetHolding()
 
 			timer.Simple(0.2, function()
 				if IsValid(plyv) and IsValid(self) then
@@ -590,12 +542,13 @@ function SWEP:PlayerThinkCL()
 	self.BlowbackCurrentRoot = l_mathApproach(self.BlowbackCurrentRoot, 0, self.BlowbackCurrentRoot * ft * 15)
 end
 
-local nam, is, spr
+local is, spr
 
 function SWEP:Think2()
 	if self.LuaShellRequestTime > 0 and CurTime() > self.LuaShellRequestTime then
 		self.LuaShellRequestTime = -1
 		self:MakeShell()
+		self:EjectionSmoke()
 	end
 
 	if not self.HasInitialized then
@@ -606,15 +559,32 @@ function SWEP:Think2()
 		self:CacheAnimations()
 		self:ChooseDrawAnim()
 	end
+	self:InitAttachments()
+	self:ProcessBodygroups()
 	self:ProcessEvents()
 	self:ProcessFireMode()
 	self:ProcessHoldType()
 	self:ReloadCV()
 	is, spr = self:IronSights()
+	if stat == TFA.Enum.STATUS_FIDGET and is then
+		self:SetStatusEnd(0)
+		self.Idle_Mode_Old = self.Idle_Mode
+		self.Idle_Mode = TFA.Enum.IDLE_BOTH
+		self:ChooseIdleAnim()
+		if game.SinglePlayer() then
+			self:CallOnClient("ChooseIdleAnim","")
+		end
+		self.Idle_Mode = self.Idle_Mode_Old
+		self.Idle_Mode_Old = nil
+		statend = -1
+	end
 	is = self:GetIronSights()
 	ct = l_ct()
 	stat = self:GetStatus()
 	statend = self:GetStatusEnd()
+	if stat ~= TFA.Enum.STATUS_IDLE then
+		self.NextInspectAnim = -1
+	end
 
 	if stat ~= TFA.Enum.STATUS_IDLE and ct > statend then
 		finalstat = TFA.Enum.STATUS_IDLE
@@ -634,7 +604,7 @@ function SWEP:Think2()
 			if self:Ammo1() <= 0 or self:Clip1() >= self:GetPrimaryClipSize() or self:GetShotgunCancel() then
 				finalstat = TFA.Enum.STATUS_RELOADING_SHOTGUN_END
 				success,tanim = self:ChooseShotgunPumpAnim()
-				self:SetStatusEnd(ct + (self.SequenceLengthOverride[tanim] or self.OwnerViewModel:SequenceDuration()))
+				self:SetStatusEnd(ct + self:GetActivityLength( tanim ))
 				self:SetShotgunCancel( false )
 			else
 				finalstat = self:LoadShell()
@@ -647,6 +617,16 @@ function SWEP:Think2()
 		end
 
 		self:SetStatus(finalstat)
+
+		if finalstat == TFA.Enum.STATUS_IDLE and (self.Sprint_Mode == TFA.Enum.LOCOMOTION_ANI or self.Sights_Mode == TFA.Enum.LOCOMOTION_ANI or self.Sprint_Mode == TFA.Enum.LOCOMOTION_HYBRID or self.Sights_Mode == TFA.Enum.LOCOMOTION_HYBRID) then
+			is = self:GetIronSights( true )
+			succ,tanim = self:Locomote(is and (self.Sights_Mode == TFA.Enum.LOCOMOTION_ANI), is, spr and (self.Sprint_Mode == TFA.Enum.LOCOMOTION_ANI), spr)
+			if succ == false then
+				self:SetNextIdleAnim(-1)
+			else
+				self:SetNextIdleAnim(math.max(self:GetNextIdleAnim(),CurTime() + 0.1))
+			end
+		end
 		self.LastBoltShoot = nil
 		if self:GetBurstCount() > 0 then
 			if finalstat ~= TFA.Enum.STATUS_SHOOTING and finalstat ~= TFA.Enum.STATUS_IDLE then
@@ -660,20 +640,14 @@ function SWEP:Think2()
 		end
 	end
 
-	if stat == TFA.Enum.STATUS_IDLE then
-		nam = self:GetNextIdleAnim()
-
-		if is then
-			nam = -1
-		end
-
-		if ct > self:GetNextIdleAnim() then
-			self:ChooseIdleAnim()
-		end
+	if TFA.Enum.ReadyStatus[stat] and ct > self:GetNextIdleAnim() then
+		self:ChooseIdleAnim()
 	end
 end
 
-local issighting, issprinting, spr_old, is_old, is_final_old = false, false, false, false, false
+local issighting, issprinting = false, false
+SWEP.spr_old = false
+SWEP.is_old = false
 local issighting_tmp
 local ironsights_toggle_cvar, ironsights_resight_cvar
 local ironsights_cv = GetConVar("sv_tfa_ironsights_enabled")
@@ -684,7 +658,7 @@ if CLIENT then
 end
 
 function SWEP:IronSights()
-	if not self.Scoped and not self.Scoped_3D then
+	if not self:GetStat("Scoped") and not self:GetStat("Scoped_3D") then
 		if not ironsights_cv:GetBool() then
 			self.data.ironsights_default = self.data.ironsights_default or self.data.ironsights
 			self.data.ironsights = 0
@@ -698,9 +672,9 @@ function SWEP:IronSights()
 	local owent = self.Owner
 	issighting = false
 	issprinting = false
-	is_old = self:GetIronSightsRaw()
-	spr_old = self:GetSprinting()
-	if sprint_cv:GetBool() and not self.IsKnife and not self.IsMelee then
+	self.is_old = self:GetIronSightsRaw()
+	self.spr_old = self:GetSprinting()
+	if sprint_cv:GetBool() and not self.AllowSprintAttack then
 		issprinting = self.Owner:GetVelocity():Length2D() > self.Owner:GetRunSpeed() * 0.6 and self.Owner:KeyDown(IN_SPEED)
 	end
 	vm = self.OwnerViewModel
@@ -740,10 +714,10 @@ function SWEP:IronSights()
 			issighting = false
 		end
 
-		if stat ~= TFA.Enum.STATUS_IDLE and stat ~= TFA.Enum.STATUS_SHOOTING then
+		if not TFA.Enum.IronStatus[stat] then
 			issighting = false
 		end
-		if self.BoltAction or self.BoltAction_Forced then
+		if self:GetStat("BoltAction") or self:GetStat("BoltAction_Forced") then
 			if stat == TFA.Enum.STATUS_SHOOTING then
 				if not self.LastBoltShoot then
 					self.LastBoltShoot = CurTime()
@@ -763,9 +737,14 @@ function SWEP:IronSights()
 
 	self.is_cached = nil
 
-	if issighting or issprinting or stat ~= TFA.Enum.STATUS_IDLE then self.Inspecting = false end
+	if ( issighting or issprinting or stat ~= TFA.Enum.STATUS_IDLE ) and self.Inspecting then
+		--if gui then
+		--	gui.EnableScreenClicker(false)
+		--end
+		self.Inspecting = false
+	end
 
-	if (is_old ~= issighting) then
+	if (self.is_old ~= issighting) then
 		self:SetIronSightsRaw(issighting)
 	end
 
@@ -775,7 +754,7 @@ function SWEP:IronSights()
 		issighting = false
 	end
 
-	if stat ~= TFA.Enum.STATUS_IDLE and stat ~= TFA.Enum.STATUS_SHOOTING then
+	if not TFA.Enum.IronStatus[stat] then
 		issighting = false
 	end
 
@@ -797,28 +776,27 @@ function SWEP:IronSights()
 		end
 	end
 
-	if (is_old_final ~= issighting) then
+	if (self.is_old_final ~= issighting) and self.Sights_Mode == TFA.Enum.LOCOMOTION_LUA then--and stat == TFA.Enum.STATUS_IDLE then
+		self:SetNextIdleAnim(-1)
+	end
 
-		if (issighting == false) and ((CLIENT and IsFirstTimePredicted()) or (SERVER and sp)) then
-			self:EmitSound(self.IronOutSound or "TFA.IronOut")
-		elseif issighting == true and ((CLIENT and IsFirstTimePredicted()) or (SERVER and sp)) then
-			self:EmitSound(self.IronInSound or "TFA.IronIn")
+	if (self.Sprint_Mode == TFA.Enum.LOCOMOTION_ANI or self.Sights_Mode == TFA.Enum.LOCOMOTION_ANI or self.Sprint_Mode == TFA.Enum.LOCOMOTION_HYBRID or self.Sights_Mode == TFA.Enum.LOCOMOTION_HYBRID) and (self.spr_old ~= issprinting or self.is_old_final ~= issighting) then
+		--self:SetNextIdleAnim(-1)
+		local toggle_is = self.is_old ~= issighting
+		if issighting and self.spr_old ~= issprinting then
+			toggle_is = true
 		end
-
-		if self.Sights_Mode == TFA.Enum.LOCOMOTION_LUA then--and stat == TFA.Enum.STATUS_IDLE then
+		succ,tanim = self:Locomote(toggle_is and (self.Sights_Mode == TFA.Enum.LOCOMOTION_ANI or self.Sights_Mode == TFA.Enum.LOCOMOTION_HYBRID ), issighting, (self.spr_old ~= issprinting) and (self.Sprint_Mode == TFA.Enum.LOCOMOTION_ANI or self.Sprint_Mode == TFA.Enum.LOCOMOTION_HYBRID ), issprinting)
+		if succ == false then
 			self:SetNextIdleAnim(-1)
 		end
 	end
 
-	if (self.Sprint_Mode == TFA.Enum.LOCOMOTION_ANI or self.Sights_Mode == TFA.Enum.LOCOMOTION_ANI or self.Sprint_Mode == TFA.Enum.LOCOMOTION_HYBRID or self.Sights_Mode == TFA.Enum.LOCOMOTION_HYBRID) and (spr_old ~= issprinting or is_old_final ~= issighting) then
-		self:Locomote((is_old ~= issighting) and (self.Sights_Mode == TFA.Enum.LOCOMOTION_ANI), issighting, (spr_old ~= issprinting) and (self.Sprint_Mode == TFA.Enum.LOCOMOTION_ANI), issprinting)
-	end
-
-	if (spr_old ~= issprinting) then
+	if (self.spr_old ~= issprinting) then
 		self:SetSprinting(issprinting)
 	end
 
-	is_old_final = issighting
+	self.is_old_final = issighting
 
 	return issighting_tmp, issprinting
 end
@@ -826,7 +804,29 @@ end
 SWEP.is_cached = nil
 SWEP.is_cached_old = false
 
-function SWEP:GetIronSights()
+function SWEP:GetIronSights( ignorestatus )
+	if ignorestatus then
+		issighting = self:GetIronSightsRaw()
+		issprinting = self:GetSprinting()
+		if issprinting then
+			issighting = false
+		end
+
+		if self:GetStat("BoltAction") or self:GetStat("BoltAction_Forced") then
+			if stat == TFA.Enum.STATUS_SHOOTING then
+				if not self.LastBoltShoot then
+					self.LastBoltShoot = CurTime()
+				end
+				if CurTime() > self.LastBoltShoot + self.BoltTimerOffset then
+					issighting = false
+				end
+			else
+				self.LastBoltShoot = nil
+			end
+		end
+
+		return issighting
+	end
 	if self.is_cached == nil then
 		issighting = self:GetIronSightsRaw()
 		issprinting = self:GetSprinting()
@@ -835,7 +835,7 @@ function SWEP:GetIronSights()
 			issighting = false
 		end
 
-		if stat ~= TFA.Enum.STATUS_IDLE and stat ~= TFA.Enum.STATUS_SHOOTING then
+		if not TFA.Enum.IronStatus[stat] then
 			issighting = false
 		end
 
@@ -853,32 +853,18 @@ function SWEP:GetIronSights()
 		end
 
 		self.is_cached = issighting
-		--[[
-		if (self.is_cached_old ~= issighting) then
-			if (issighting == false) and ((CLIENT and IsFirstTimePredicted()) or (SERVER and sp)) then
+
+		if (self.is_cached_old ~= issighting) and not ( game.SinglePlayer() and CLIENT ) then
+			if (issighting == false) then--and ((CLIENT and IsFirstTimePredicted()) or (SERVER and sp)) then
 				self:EmitSound(self.IronOutSound or "TFA.IronOut")
-
-				if self.Sights_Mode == TFA.Enum.LOCOMOTION_LUA and stat == TFA.Enum.STATUS_IDLE then
-					self:SetNextIdleAnim(-1)
-				end
-			elseif issighting == true then
-				if ((CLIENT and IsFirstTimePredicted()) or (SERVER and sp)) then
-					self:EmitSound(self.IronInSound or "TFA.IronIn")
-				end
-
-				if self.Sights_Mode == TFA.Enum.LOCOMOTION_LUA and stat == TFA.Enum.STATUS_IDLE then
-					self:SetNextIdleAnim(-1)
-				end
-			end
-
-			if self.Sights_Mode == TFA.Enum.LOCOMOTION_ANI and self.is_cached_old ~= issighting then
-				self:Locomote((is_old ~= issighting) and (self.Sights_Mode == TFA.Enum.LOCOMOTION_ANI), issighting, false, false)
+			elseif issighting == true then--and ((CLIENT and IsFirstTimePredicted()) or (SERVER and sp)) then
+				self:EmitSound(self.IronInSound or "TFA.IronIn")
 			end
 		end
-		]]--
 
 		self.is_cached_old = self.is_cached
 	end
+
 	return self.is_cached
 end
 
@@ -894,7 +880,7 @@ function SWEP:CanPrimaryAttack()
 	end
 
 	if self:IsSafety() then
-		self:EmitSound("Weapon_AR2.Empty")
+		self:EmitSound("Weapon_AR2.Empty2")
 		self.LastSafetyShoot = self.LastSafetyShoot or 0
 
 		if l_CT() < self.LastSafetyShoot + 0.2 then
@@ -908,13 +894,15 @@ function SWEP:CanPrimaryAttack()
 	end
 
 	stat = self:GetStatus()
-	if self.Primary.ClipSize <= 0 and self:Ammo1() < self.Primary.AmmoConsumption then
+	if self:GetStat("Primary.ClipSize") <= 0 and self:Ammo1() < self:GetStat("Primary.AmmoConsumption") then
 		return false
 	end
-	if self:GetPrimaryClipSize(true) > 0 and self:Clip1() < self.Primary.AmmoConsumption then
-		self:ChooseDryFireAnim()
+	if self:GetPrimaryClipSize(true) > 0 and self:Clip1() < self:GetStat("Primary.AmmoConsumption") then
+		if self.Owner:KeyPressed(IN_ATTACK) then
+			self:ChooseDryFireAnim()
+		end
 		if not self.HasPlayedEmptyClick then
-			self:EmitSound("Weapon_Pistol.Empty")
+			self:EmitSound("Weapon_Pistol.Empty2")
 
 			if not dryfire_cvar:GetBool() then
 				self:Reload( true )
@@ -924,7 +912,7 @@ function SWEP:CanPrimaryAttack()
 		end
 		return false
 	end
-	if self:GetSprinting() then
+	if self:GetSprinting() and not self.AllowSprintAttack then
 		return false
 	end
 	if self.FiresUnderwater == false and self.Owner:WaterLevel() >= 3 then
@@ -945,7 +933,7 @@ function SWEP:PrimaryAttack()
 	if self.CanBeSilenced and self.Owner:KeyDown(IN_USE) and ( SERVER or not sp ) then
 		self:ChooseSilenceAnim( not self:GetSilenced() )
 		success, tanim = self:SetStatus(TFA.Enum.STATUS_SILENCER_TOGGLE)
-		self:SetStatusEnd( l_CT() + (self.SequenceLengthOverride[ tanim ] or self.OwnerViewModel:SequenceDuration()) )
+		self:SetStatusEnd( l_CT() + ( self:GetActivityLength( tanim ) ) )
 		return
 	end
 	self:SetNextPrimaryFire( CurTime() + self:GetFireDelay() )
@@ -956,15 +944,17 @@ function SWEP:PrimaryAttack()
 	self:SetStatusEnd(self:GetNextPrimaryFire())
 	self:ToggleAkimbo()
 	self:ChooseShootAnim()
-	self.Owner:SetAnimation(PLAYER_ATTACK1)
-	if self.Primary.Sound and IsFirstTimePredicted()  and not ( sp and CLIENT ) then
-		if self.Primary.SilencedSound and self:GetSilenced() then
-			self:EmitSound(self.Primary.SilencedSound	)
+	if ( not game.SinglePlayer() ) or ( not self:IsFirstPerson() ) then
+		self.Owner:SetAnimation(PLAYER_ATTACK1)
+	end
+	if self:GetStat("Primary.Sound") and IsFirstTimePredicted()  and not ( sp and CLIENT ) then
+		if self:GetStat("Primary.SilencedSound") and self:GetSilenced() then
+			self:EmitSound(self:GetStat("Primary.SilencedSound")	)
 		else
-			self:EmitSound(self.Primary.Sound)
+			self:EmitSound(self:GetStat("Primary.Sound"))
 		end
 	end
-	self:TakePrimaryAmmo( self.Primary.AmmoConsumption )
+	self:TakePrimaryAmmo( self:GetStat("Primary.AmmoConsumption") )
 	self:ShootBulletInformation()
 	local _, CurrentRecoil = self:CalculateConeRecoil()
 	self:Recoil(CurrentRecoil,IsFirstTimePredicted())
@@ -991,36 +981,43 @@ function SWEP:SecondaryAttack()
 	end
 end
 
+function SWEP:GetLegacyReloads()
+	return legacy_reloads_cv:GetBool() --nzombies or legacy_reloads_cv:GetBool()
+end
+
 function SWEP:Reload(released)
 	if not self:VMIV() then return end
 	if self:Ammo1() <= 0 then return end
-	if self.Primary.ClipSize < 0 then return end
-	if ( not released ) and ( not legacy_reloads_cv:GetBool() ) then return end
-	if legacy_reloads_cv:GetBool() and not  dryfire_cvar:GetBool() and not self.Owner:KeyDown(IN_RELOAD) then return end
+	if self:GetStat("Primary.ClipSize") < 0 then return end
+	if ( not released ) and ( not self:GetLegacyReloads() ) then return end
+	if self:GetLegacyReloads() and not  dryfire_cvar:GetBool() and not self.Owner:KeyDown(IN_RELOAD) then return end
 	if self.Owner:KeyDown(IN_USE) then return end
 
 	ct = l_CT()
+	stat = self:GetStatus()
 
-	if self:GetStatus() == TFA.Enum.STATUS_IDLE then
+	if TFA.Enum.ReadyStatus[stat] or ( stat == TFA.Enum.STATUS_SHOOTING and self:CanInterruptShooting() ) then
 		if self:Clip1() < self:GetPrimaryClipSize() then
 			if self.Shotgun then
 				success, tanim = self:ChooseShotgunReloadAnim()
 				self:SetStatus(TFA.Enum.STATUS_RELOADING_SHOTGUN_START)
-				self:SetStatusEnd(ct + (self.SequenceLengthOverride[tanim] or self.OwnerViewModel:SequenceDuration()))
+				self:SetStatusEnd(ct + self:GetActivityLength( tanim ))
 			else
 				success, tanim = self:ChooseReloadAnim()
 				self:SetStatus(TFA.Enum.STATUS_RELOADING)
-				if self.ProceduralReloadEnabled then
-					self:SetStatusEnd(ct + self.ProceduralReloadTime)
+				if self:GetStat("ProceduralReloadEnabled") then
+					self:SetStatusEnd(ct + self:GetStat("ProceduralReloadTime"))
 				else
-					self:SetStatusEnd(ct + (self.SequenceLengthOverride[tanim] or self.OwnerViewModel:SequenceDuration()))
+					self:SetStatusEnd(ct + self:GetActivityLength( ACT_VM_RELOAD ) )
 				end
 			end
-			self.Owner:SetAnimation(PLAYER_RELOAD)
-			if self.Primary.ReloadSound and IsFirstTimePredicted() then
-				self:EmitSound(self.Primary.ReloadSound)
+			if ( not game.SinglePlayer() ) or ( not self:IsFirstPerson() ) then
+				self.Owner:SetAnimation(PLAYER_RELOAD)
 			end
-		else
+			if self:GetStat("Primary.ReloadSound") and IsFirstTimePredicted() then
+				self:EmitSound(self:GetStat("Primary.ReloadSound"))
+			end
+		elseif released or self.Owner:KeyPressed(IN_RELOAD) then--if self.Owner:KeyPressed(IN_RELOAD) or not self:GetLegacyReloads() then
 			self:CheckAmmo()
 		end
 	end
@@ -1028,7 +1025,7 @@ end
 
 function SWEP:LoadShell()
 	success, tanim = self:ChooseReloadAnim()
-	self:SetStatusEnd(ct + (self.ShellTime or self.SequenceLengthOverride[tanim] or self.OwnerViewModel:SequenceDuration()))
+	self:SetStatusEnd(ct + ( self.ShellTime or self:GetActivityLength( tanim ) ) )
 	return TFA.Enum.STATUS_RELOADING_SHOTGUN_LOOP
 end
 
@@ -1043,10 +1040,23 @@ end
 
 function SWEP:CheckAmmo()
 	if self:GetIronSights() or self:GetSprinting() then return end
-	if (self.SequenceEnabled[ACT_VM_FIDGET] or self.InspectionActions) and self:GetStatus() == TFA.Enum.STATUS_IDLE then
-		self:SetStatus(TFA.Enum.STATUS_FIDGET)
+
+	--if self.NextInspectAnim == nil then
+	--	self.NextInspectAnim = -1
+	--end
+	tanim, success = self:SelectInspectAnim()
+
+	if (self.SequenceEnabled[ACT_VM_FIDGET] or self.InspectionActions) and self:GetStatus() == TFA.Enum.STATUS_IDLE and tanim ~= self:GetLastActivity() then--and CurTime() > self.NextInspectAnim then
+		--self:SetStatus(TFA.Enum.STATUS_FIDGET)
 		succ,tanim = self:ChooseInspectAnim()
-		self:SetStatusEnd( l_CT() + (self.SequenceLengthOverride[tanim] or self.OwnerViewModel:SequenceDuration()) )
+		--[[
+		if IsFirstTimePredicted() then
+			timer.Simple(0.05,function()
+				self.NextInspectAnim = l_CT() + self:GetActivityLength( tanim ) - 0.05
+			end)
+		end
+		]]--
+		--self:SetStatusEnd( l_CT() + self:GetActivityLength( tanim ) )
 	end
 end
 
@@ -1086,24 +1096,23 @@ function SWEP:AdjustMouseSensitivity()
 		sensval = sensval * sensitivity_cvar:GetFloat() / 100
 
 		if sensitivity_fov_cvar:GetFloat() then
-			if self.Scoped_3D then
-				fovv = self.RTScopeFOV * 4
+			if self:GetStat("Scoped_3D") then
+				fovv = self:GetStat("RTScopeFOV") * 4
 			else
 				fovv = self.Owner:GetFOV()
 			end
-			fovv = fovv / ( self.Scoped_3D and self.Secondary.ScopeZoom or 1 )
+			fovv = fovv / ( self:GetStat("Scoped_3D") and self:GetStat("Secondary.ScopeZoom") or 1 )
 			sensval = sensval * math.atan(resrat * math.tan(math.rad(fovv / 2))) / math.atan(resrat * math.tan(math.rad(self.DefaultFOV / 2)))
 		else
 			sensval = sensval
 		end
 
 		if sensitivity_speed_cvar:GetFloat() then
-			sensval = sensval * self.IronSightsMoveSpeed
+			sensval = sensval * self:GetStat("IronSightsMoveSpeed")
 		end
 	end
 
-	sensval = sensval * l_Lerp(self.IronSightsProgress, 1, self.IronSightsSensitivity)
-
+	sensval = sensval * l_Lerp(self.IronSightsProgress, 1, self:GetStat( "IronSightsSensitivity" ) )
 	return sensval
 end
 
@@ -1117,13 +1126,13 @@ Purpose:  Standard SWEP Function
 local nfov
 function SWEP:TranslateFOV(fov)
 	self:CorrectScopeFOV()
-	nfov = l_Lerp(self.IronSightsProgress, fov, fov * math.min(self.Secondary.IronFOV / 90,1))
+	nfov = l_Lerp(self.IronSightsProgress, fov, fov * math.min( self:GetStat("Secondary.IronFOV") / 90,1))
 
 	return l_Lerp(self.SprintProgress, nfov, nfov + self.SprintFOVOffset)
 end
 
 function SWEP:GetPrimaryAmmoType()
-	return self.Primary.Ammo or ""
+	return self:GetStat("Primary.Ammo") or ""
 end
 
 local target_pos,target_ang,adstransitionspeed, hls
@@ -1147,12 +1156,12 @@ local centered_sprintang = Vector(-15,0,0)
 
 function SWEP:CalculateViewModelOffset( )
 
-	if self.VMPos_Additive then
+	if self:GetStat("VMPos_Additive") then
 		target_pos:Zero()
 		target_ang:Zero()
 	else
-		target_pos = self.VMPos * 1
-		target_ang = self.VMAng * 1
+		target_pos = self:GetStat( "VMPos" ) * 1
+		target_ang = self:GetStat( "VMAng" ) * 1
 	end
 
 	adstransitionspeed = 10
@@ -1160,32 +1169,32 @@ function SWEP:CalculateViewModelOffset( )
 	is = self:GetIronSights()
 	spr = self:GetSprinting()
 	stat = self:GetStatus()
-	hls = ( ( TFA.Enum.HolsterStatus[ stat ] and self.ProceduralHolsterEnabled ) or ( TFA.Enum.ReloadStatus[ stat ] and self.ProceduralReloadEnabled ) )
+	hls = ( TFA.Enum.HolsterStatus[ stat ] and self.ProceduralHolsterEnabled ) or ( TFA.Enum.ReloadStatus[ stat ] and self.ProceduralReloadEnabled )
 	if hls then
-		target_pos = self.ProceduralHolsterPos * 1
-		target_ang = self.ProceduralHolsterAng * 1
+		target_pos = self:GetStat( "ProceduralHolsterPos" ) * 1
+		target_ang = self:GetStat("ProceduralHolsterAng") * 1
 		if self.ViewModelFlip then
 			target_pos = target_pos * flip_vec
 			target_ang = target_ang * flip_ang
 		end
-		adstransitionspeed = self.ProceduralHolsterTime * 15
+		adstransitionspeed = self:GetStat("ProceduralHolsterTime") * 15
 	elseif is and ( self.Sights_Mode == TFA.Enum.LOCOMOTION_LUA or self.Sights_Mode == TFA.Enum.LOCOMOTION_HYBRID ) then
-		target_pos = ( self.IronSightsPos or self.SightsPos ) * 1
-		target_ang = ( self.IronSightsAng or self.SightsAng ) * 1
-		adstransitionspeed = 15
+		target_pos = ( self:GetStat("IronSightsPos", self.SightsPos ) or self:GetStat("SightsPos") ) * 1
+		target_ang = ( self:GetStat("IronSightsAng", self.SightsAng ) or self:GetStat("SightsAng") ) * 1
+		adstransitionspeed = 15 / ( self:GetStat("IronSightTime") / 0.3 )
 	elseif ( spr or self:IsSafety() ) and ( self.Sprint_Mode == TFA.Enum.LOCOMOTION_LUA or self.Sprint_Mode == TFA.Enum.LOCOMOTION_HYBRID or ( self:IsSafety() and not spr ) ) and stat ~= TFA.Enum.STATUS_FIDGET and stat ~= TFA.Enum.STATUS_BASHING then
 		if cl_tfa_viewmodel_centered and cl_tfa_viewmodel_centered:GetBool() then
 			self.RunSightsPos = centered_sprintpos
 			self.RunSightsAng = centered_sprintang
 		end
-		target_pos = self.RunSightsPos * 1
-		target_ang = self.RunSightsAng * 1
+		target_pos = self:GetStat("RunSightsPos") * 1
+		target_ang = self:GetStat("RunSightsAng") * 1
 		adstransitionspeed = 7.5
 	end
 	if cl_tfa_viewmodel_offset_x and not is then
-		if cl_tfa_viewmodel_centered:GetBool() and self.IronSightsPos then
-			target_pos.x = target_pos.x + self.IronSightsPos.x
-			target_ang.y = target_ang.y + self.IronSightsAng.y
+		if cl_tfa_viewmodel_centered:GetBool() and self:GetStat("IronSightsPos") then
+			target_pos.x = target_pos.x + self:GetStat("IronSightsPos").x
+			target_ang.y = target_ang.y + self:GetStat("IronSightsAng").y
 			target_pos.z = target_pos.z - 3
 		end
 		target_pos.x = target_pos.x + cl_tfa_viewmodel_offset_x:GetFloat()
@@ -1212,8 +1221,8 @@ function SWEP:CalculateViewModelOffset( )
 			end
 		end
 
-		target_pos = self.InspectPos * 1
-		target_ang = self.InspectAng * 1
+		target_pos = self:GetStat("InspectPos") * 1
+		target_ang = self:GetStat("InspectAng") * 1
 		adstransitionspeed = 10
 	end
 
@@ -1309,11 +1318,12 @@ end
 
 local gunbob_intensity_cvar = GetConVar("cl_tfa_gunbob_intensity")
 local vmfov
+local bbvec
 
 function SWEP:GetViewModelPosition( pos, ang )
-	if not self:OwnerIsValid() then return end
+	if not IsValid(self.Owner) then return end
 	--Bobscale
-	self.BobScaleCustom = l_Lerp(self.IronSightsProgress, 1, l_Lerp( math.min( self.Owner:GetVelocity():Length() / self.Owner:GetWalkSpeed(), 1 ), self.IronBobMult, self.IronBobMultWalk))
+	self.BobScaleCustom = l_Lerp(self.IronSightsProgress, 1, l_Lerp( math.min( self.Owner:GetVelocity():Length() / self.Owner:GetWalkSpeed(), 1 ), self:GetStat("IronBobMult"), self:GetStat("IronBobMultWalk")))
 	self.BobScaleCustom = l_Lerp(self.SprintProgress, self.BobScaleCustom, self.SprintBobMult)
 	--Start viewbob code
 	local gunbobintensity = gunbob_intensity_cvar:GetFloat() * 0.65 * 0.66
@@ -1354,9 +1364,10 @@ function SWEP:GetViewModelPosition( pos, ang )
 
 	if self.BlowbackEnabled and self.BlowbackCurrentRoot > 0.01 then
 		--if !(  self.Blowback_PistolMode and !( self:Clip1()==-1 or self:Clip1()>0 ) ) then
-		pos:Add(ang:Right() * self.BlowbackVector.x * self.BlowbackCurrentRoot)
-		pos:Add(ang:Forward() * self.BlowbackVector.y * self.BlowbackCurrentRoot)
-		pos:Add(ang:Up() * self.BlowbackVector.z * self.BlowbackCurrentRoot)
+		bbvec = self:GetStat("BlowbackVector")
+		pos:Add(ang:Right() * bbvec.x * self.BlowbackCurrentRoot)
+		pos:Add(ang:Forward() * bbvec.y * self.BlowbackCurrentRoot)
+		pos:Add(ang:Up() * bbvec.z * self.BlowbackCurrentRoot)
 		--end
 	end
 
@@ -1370,4 +1381,9 @@ end
 function SWEP:ToggleInspect()
 	if self:GetSprinting() or self:GetIronSights() or self:GetStatus() ~= TFA.Enum.STATUS_IDLE then return end
 	self.Inspecting = not self.Inspecting
+	--if self.Inspecting then
+	--	gui.EnableScreenClicker(true)
+	--else
+	--	gui.EnableScreenClicker(false)
+	--end
 end

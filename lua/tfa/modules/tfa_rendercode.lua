@@ -14,8 +14,10 @@ if CLIENT then
 	tab["$pp_colour_mulb"] = 0
 
 	local function MyDrawBokehDOF()
-		if not doblur or not doblur:GetBool() then return end
+		if TFA_RENDERTARGET then return end
+		if not ( doblur and doblur:GetBool() ) then return end
 		render.UpdateScreenEffectTexture()
+		render.UpdateFullScreenDepthTexture()
 		blur_mat:SetTexture("$BASETEXTURE", render.GetScreenEffectTexture())
 		blur_mat:SetTexture("$DEPTHTEXTURE", render.GetResolvedFullFrameDepth())
 		blur_mat:SetFloat("$size", tfablurintensity * 6)
@@ -25,13 +27,13 @@ if CLIENT then
 		render.DrawScreenQuad()
 	end
 
-	hook.Add("PreDrawViewModel", "PreDrawViewModel_TFA_INSPECT", function()
+	local function Render()
 		tfablurintensity = 0
 		local ply = LocalPlayer()
 		if not IsValid(ply) then return end
 		local wep = ply:GetActiveWeapon()
 		if not IsValid(wep) then return end
-		tfablurintensity = wep.CLInspectingProgress or 0
+		tfablurintensity = wep.InspectingProgress or 0
 		local its = tfablurintensity * 10
 
 		if its > 0.01 then
@@ -41,20 +43,40 @@ if CLIENT then
 
 			tab["$pp_colour_brightness"] = -tfablurintensity * 0.02
 			tab["$pp_colour_contrast"] = 1 - tfablurintensity * 0.1
-			DrawColorModify(tab)
+			if not TFA_RENDERTARGET then
+				DrawColorModify(tab)
+			end
 			cam.IgnoreZ(true)
 		end
-	end)
+	end
 
-	hook.Add("NeedsDepthPass", "NeedsDepthPass_TFA_Inspect", function()
-		if not doblur or not doblur:GetBool() then return end
+	local function InitTFABlur()
+		local cv = GetConVar("cl_tfa_unreal_dof_enabled")
+		hook.Add("PreDrawViewModel", "PreDrawViewModel_TFA_INSPECT", function()
+			if cv and cv:GetBool() then return end
+			Render()
+		end)
+		hook.Add("PostDrawTranslucentRenderables", "PreDrawViewModel_TFA_INSPECT", function()
+			if not ( cv and cv:GetBool() ) then return end
+			Render()
+		end)
 
-		if tfablurintensity > 0.01 then
-			DOFModeHack(true)
+		local pp_bokeh = GetConVar( "pp_bokeh" )
+		hook.Remove("NeedsDepthPass","NeedsDepthPass_Bokeh")
+		hook.Add("NeedsDepthPass", "aaaaaaaaaaaaaaaaaaNeedsDepthPass_TFA_Inspect", function()
+			if not ( doblur and doblur:GetBool() ) then return end
 
-			return true
-		end
-	end)
+			if tfablurintensity > 0.01 or ( pp_bokeh and pp_bokeh:GetBool() ) then
+				DOFModeHack(true)
+
+				return true
+			end
+		end)
+	end
+
+	hook.Add("InitPostEntity","InitTFABlur",InitTFABlur)
+
+	InitTFABlur()
 end
 
 hook.Add("PreDrawOpaqueRenderables", "tfaweaponspredrawopaque", function()

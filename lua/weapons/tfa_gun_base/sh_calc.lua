@@ -29,12 +29,12 @@ function SWEP:CalculateRatios()
 	hlst = ( ( TFA.Enum.HolsterStatus[ stat ] and self.ProceduralHolsterEnabled ) or ( TFA.Enum.ReloadStatus[ stat ] and self.ProceduralReloadEnabled ) ) and 1 or 0
 	adstransitionspeed = 12.5
 	if is then
-		adstransitionspeed = 15
+		adstransitionspeed = 12.5 / ( self:GetStat("IronSightTime") / 0.3 )
 	elseif spr then
 		adstransitionspeed = 7.5
 	end
 	self.CrouchingRatio = l_mathApproach(self.CrouchingRatio or 0, self.Owner:Crouching() and 1 or 0, ft / self.ToCrouchTime)
-	self.SpreadRatio = l_mathClamp(self.SpreadRatio - self.Primary.SpreadRecovery * ft, 1, self.Primary.SpreadMultiplierMax)
+	self.SpreadRatio = l_mathClamp(self.SpreadRatio - self:GetStat("Primary.SpreadRecovery") * ft, 1, self:GetStat("Primary.SpreadMultiplierMax"))
 	self.IronSightsProgress = l_mathApproach(self.IronSightsProgress,ist, (ist - self.IronSightsProgress ) * ft * adstransitionspeed )
 	self.SprintProgress = l_mathApproach(self.SprintProgress,sprt, (sprt - self.SprintProgress ) * ft * adstransitionspeed )
 	self.ProceduralHolsterProgress = l_mathApproach(self.ProceduralHolsterProgress,sprt, (sprt - self.SprintProgress ) * ft * self.ProceduralHolsterTime * 15 )
@@ -66,43 +66,43 @@ function SWEP:CalculateConeRecoil()
 	local dynacc = false
 	isr = self.IronSightsProgress or 0
 
-	if dynacc_cvar:GetBool() and (self.Primary.NumShots <= 1) then
+	if dynacc_cvar:GetBool() and (self:GetStat("Primary.NumShots") <= 1) then
 		dynacc = true
 	end
 
 	local isr_1 = l_mathClamp(isr * 2, 0, 1)
 	local isr_2 = l_mathClamp((isr - 0.5) * 2, 0, 1)
-	local acv = self.Primary.Spread or self.Primary.Accuracy
-	local recv = self.Primary.Recoil * 5
+	local acv = self:GetStat("Primary.Spread") or self:GetStat("Primary.Accuracy")
+	local recv = self:GetStat("Primary.Recoil") * 5
 
 	if dynacc then
-		ccon = l_Lerp(isr_2, l_Lerp(isr_1, acv, acv * self.ChangeStateAccuracyMultiplier), self.Primary.IronAccuracy)
-		crec = l_Lerp(isr_2, l_Lerp(isr_1, recv, recv * self.ChangeStateRecoilMultiplier), recv * self.IronRecoilMultiplier)
+		ccon = l_Lerp(isr_2, l_Lerp(isr_1, acv, acv * self:GetStat("ChangeStateAccuracyMultiplier")), self:GetStat("Primary.IronAccuracy"))
+		crec = l_Lerp(isr_2, l_Lerp(isr_1, recv, recv * self:GetStat("ChangeStateRecoilMultiplier")), recv * self:GetStat("IronRecoilMultiplier"))
 	else
-		ccon = l_Lerp(isr, acv, self.Primary.IronAccuracy)
-		crec = l_Lerp(isr, recv, recv * self.IronRecoilMultiplier)
+		ccon = l_Lerp(isr, acv, self:GetStat("Primary.IronAccuracy"))
+		crec = l_Lerp(isr, recv, recv * self:GetStat("IronRecoilMultiplier"))
 	end
 
 	local crc_1 = l_mathClamp(self.CrouchingRatio * 2, 0, 1)
 	local crc_2 = l_mathClamp((self.CrouchingRatio - 0.5) * 2, 0, 1)
 
 	if dynacc then
-		ccon = l_Lerp(crc_2, l_Lerp(crc_1, ccon, ccon * self.ChangeStateAccuracyMultiplier), ccon * self.CrouchAccuracyMultiplier)
-		crec = l_Lerp(crc_2, l_Lerp(crc_1, crec, self.Primary.Recoil * self.ChangeStateRecoilMultiplier), crec * self.CrouchRecoilMultiplier)
+		ccon = l_Lerp(crc_2, l_Lerp(crc_1, ccon, ccon * self:GetStat("ChangeStateAccuracyMultiplier")), ccon * self:GetStat("CrouchAccuracyMultiplier"))
+		crec = l_Lerp(crc_2, l_Lerp(crc_1, crec, self:GetStat("Primary.Recoil") * self:GetStat("ChangeStateRecoilMultiplier")), crec * self:GetStat("CrouchRecoilMultiplier"))
 	end
 
 	local ovel = self.Owner:GetVelocity():Length2D()
 	local vfc_1 = l_mathClamp(ovel / self.Owner:GetWalkSpeed(), 0, 2)
 
 	if dynacc then
-		ccon = l_Lerp(vfc_1, ccon, ccon * self.WalkAccuracyMultiplier)
-		crec = l_Lerp(vfc_1, crec, crec * self.WallRecoilMultiplier)
+		ccon = l_Lerp(vfc_1, ccon, ccon * self:GetStat("WalkAccuracyMultiplier"))
+		crec = l_Lerp(vfc_1, crec, crec * self:GetStat("WallRecoilMultiplier"))
 	end
 
 	local jr = self.JumpRatio
 	if dynacc then
-		ccon = l_Lerp(jr, ccon, ccon * self.JumpAccuracyMultiplier)
-		crec = l_Lerp(jr, crec, crec * self.JumpRecoilMultiplier)
+		ccon = l_Lerp(jr, ccon, ccon * self:GetStat("JumpAccuracyMultiplier"))
+		crec = l_Lerp(jr, crec, crec * self:GetStat("JumpRecoilMultiplier"))
 	end
 
 	ccon = ccon * self.SpreadRatio

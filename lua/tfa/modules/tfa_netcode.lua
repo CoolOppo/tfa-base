@@ -6,6 +6,8 @@ if SERVER then
 	util.AddNetworkString("tfaInspect")
 	util.AddNetworkString("tfaShotgunInterrupt")
 	util.AddNetworkString("tfaRequestFidget")
+	util.AddNetworkString("tfaSDLP")
+	util.AddNetworkString("tfaArrowFollow")
 	--util.AddNetworkString("tfaAltAttack")
 
 	--Enable inspection
@@ -41,6 +43,11 @@ if SERVER then
 		end
 	end)
 
+	net.Receive("tfaSDLP",function(length,client)
+		local bool = net.ReadBool()
+		client.TFASDLP = bool
+	end)
+
 	--Enable alternate attacks
 	--[[
 	net.Receive("tfaAltAttack", function(length, client)
@@ -65,6 +72,16 @@ if SERVER then
 end
 
 if CLIENT then
+	--Arrow can follow entities clientside too
+	net.Receive("tfaArrowFollow",function()
+		local ent = net.ReadEntity()
+		ent.targent = net.ReadEntity()
+		ent.targbone = net.ReadInt( 8 )
+		ent.posoff = net.ReadVector(  )
+		ent.angoff = net.ReadAngle(  )
+		ent:TargetEnt( false )
+	end)
+
 	--Receive sound events on client
 	net.Receive("tfaSoundEvent", function(length, ply)
 		wep = net.ReadEntity()

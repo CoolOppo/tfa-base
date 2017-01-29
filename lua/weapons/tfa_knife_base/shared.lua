@@ -25,6 +25,7 @@ SWEP.Primary.ClipSize = 1 -- Size of a clip
 SWEP.Primary.DefaultClip = 1 -- Bullets you start with
 SWEP.data = {} --No ironsights
 SWEP.data.ironsights = 0 --No ironsights
+SWEP.IsMelee = true
 SWEP.Callback = {}
 
 function SWEP:Deploy()
@@ -35,6 +36,9 @@ end
 
 SWEP.hull = 1
 local hull = {}
+
+
+local vm,pos,ang
 
 function SWEP:PrimaryAttack()
 	vm = self.Owner:GetViewModel()
@@ -49,7 +53,7 @@ function SWEP:PrimaryAttack()
 		self:SendViewModelSeq(self.SlashTable[self.hull])
 
 		if IsFirstTimePredicted() then
-			self:EmitSound(self.Primary.Sound) --hull in the wind sound here
+			self:EmitSound(self.Primary.Sound)
 		end
 
 		self.Owner:SetAnimation(PLAYER_ATTACK1)
@@ -64,11 +68,11 @@ function SWEP:PrimarySlash()
 	if not self:OwnerIsValid() then return end
 	pos = self.Owner:GetShootPos()
 	ang = self.Owner:GetAimVector()
-	damagedice = math.Rand(.85, 1.25)
-	dmgval = self.Primary.Damage * damagedice
+	dmg_rand = math.Rand(.85, 1.25)
+	dmgval = self.Primary.Damage * dmg_rand
 
 	if not dmgval or dmgval <= 1 then
-		dmgval = 40 * damagedice
+		dmgval = 40 * dmg_rand
 	end
 
 	self.Owner:LagCompensation(true)
@@ -80,8 +84,10 @@ function SWEP:PrimarySlash()
 	hull.maxs = Vector(10, 5, 5)
 	local slashtrace = util.TraceHull(hull)
 
+	self.Owner:LagCompensation(false)
+
 	if slashtrace.Hit then
-		if slashtrace.Entity == nil then return end
+		if slashtrace.Entity == nil or not slashtrace.Entity.EntIndex then return end
 
 		if game.GetTimeScale() > 0.99 then
 			self.Owner:FireBullets({
@@ -119,8 +125,6 @@ function SWEP:PrimarySlash()
 			self:EmitSound(self.KnifeShink)
 		end
 	end
-
-	self.Owner:LagCompensation(false)
 end
 
 function SWEP:SecondaryAttack()
@@ -169,11 +173,11 @@ function SWEP:Stab()
 	if not self:OwnerIsValid() then return end
 	pos2 = self.Owner:GetShootPos()
 	ang2 = self.Owner:GetAimVector()
-	damagedice = math.Rand(.85, 1.25)
-	dmgval = self.Secondary.Damage * damagedice
+	dmg_rand = math.Rand(.85, 1.25)
+	dmgval = self.Secondary.Damage * dmg_rand
 
 	if not dmgval or dmgval <= 1 then
-		dmgval = 100 * damagedice
+		dmgval = 100 * dmg_rand
 	end
 
 	self.Owner:LagCompensation(true)
@@ -259,9 +263,9 @@ function SWEP:Reload()
 end
 
 function SWEP:Think2()
-	if self:GetStatus() == TFA.Enum.STATUS_RELOADING and CurTime() > self:GetStatusEnd() then
+	if self:GetStatus() == TFA.Enum.STATUS_SILENCER_TOGGLE and CurTime() > self:GetStatusEnd() then
 		self:Stab()
-	elseif self:GetStatus() == TFA.Enum.STATUS_SILENCER_TOGGLE and CurTime() > self:GetStatusEnd() then
+	elseif self:GetStatus() == TFA.Enum.STATUS_RELOADING and CurTime() > self:GetStatusEnd() then
 		self:PrimarySlash()
 	end
 	BaseClass.Think2(self)

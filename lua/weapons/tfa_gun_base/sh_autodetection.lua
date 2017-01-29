@@ -36,7 +36,14 @@ function SWEP:FixIS()
 	end
 end
 
+local legacy_spread_cv = GetConVar("sv_tfa_spread_legacy")
+
 function SWEP:AutoDetectSpread()
+	if legacy_spread_cv and legacy_spread_cv:GetBool() then
+		self:SetUpSpreadLegacy()
+		return
+	end
+
 	if self.Primary.SpreadMultiplierMax == -1 or not self.Primary.SpreadMultiplierMax then
 		self.Primary.SpreadMultiplierMax = math.Clamp(math.sqrt(math.sqrt(self.Primary.Damage / 35) * 10 / 5) * 5, 0.01 / self.Primary.Spread, 0.1 / self.Primary.Spread)
 	end
@@ -308,7 +315,7 @@ Notes:  This is what autodetects animations for the SWEP.SequenceEnabled and SWE
 Purpose:  Autodetection
 ]]--
 
-SWEP.actlist = {ACT_VM_DRAW, ACT_VM_DRAW_EMPTY, ACT_VM_DRAW_SILENCED, ACT_VM_HOLSTER, ACT_VM_HOLSTER_EMPTY, ACT_VM_IDLE, ACT_VM_IDLE_EMPTY, ACT_VM_IDLE_SILENCED, ACT_VM_PRIMARYATTACK, ACT_VM_PRIMARYATTACK_1, ACT_VM_PRIMARYATTACK_EMPTY, ACT_VM_PRIMARYATTACK_SILENCED, ACT_VM_SECONDARYATTACK, ACT_VM_RELOAD, ACT_VM_RELOAD_EMPTY, ACT_VM_RELOAD_SILENCED, ACT_VM_ATTACH_SILENCER, ACT_VM_RELEASE, ACT_VM_DETACH_SILENCER, ACT_VM_FIDGET, ACT_VM_FIDGET_EMPTY, ACT_SHOTGUN_RELOAD_START}
+SWEP.actlist = {ACT_VM_DRAW, ACT_VM_DRAW_EMPTY, ACT_VM_DRAW_SILENCED, ACT_VM_DRAW_DEPLOYED, ACT_VM_HOLSTER, ACT_VM_HOLSTER_EMPTY, ACT_VM_IDLE, ACT_VM_IDLE_EMPTY, ACT_VM_IDLE_SILENCED, ACT_VM_PRIMARYATTACK, ACT_VM_PRIMARYATTACK_1, ACT_VM_PRIMARYATTACK_EMPTY, ACT_VM_PRIMARYATTACK_SILENCED, ACT_VM_SECONDARYATTACK, ACT_VM_RELOAD, ACT_VM_RELOAD_EMPTY, ACT_VM_RELOAD_SILENCED, ACT_VM_ATTACH_SILENCER, ACT_VM_RELEASE, ACT_VM_DETACH_SILENCER, ACT_VM_FIDGET, ACT_VM_FIDGET_EMPTY, ACT_SHOTGUN_RELOAD_START, ACT_VM_DRYFIRE, ACT_VM_DRYFIRE_SILENCED }
 --If you really want, you can remove things from SWEP.actlist and manually enable animations and set their lengths.
 SWEP.SequenceEnabled = {}
 SWEP.SequenceLength = {}
@@ -460,4 +467,67 @@ function SWEP:GetType()
 	self.Type = "Weapon"
 
 	return self:GetType()
+end
+
+function SWEP:SetUpSpreadLegacy()
+	local ht = self.DefaultHoldType and self.DefaultHoldType or self.HoldType
+
+	if not self.Primary.SpreadMultiplierMax or self.Primary.SpreadMultiplierMax <= 0 or self.AutoDetectSpreadMultiplierMax then
+		self.Primary.SpreadMultiplierMax = 2.5 * math.max(self.Primary.RPM, 400) / 600 * math.sqrt(self.Primary.Damage / 30 * self.Primary.NumShots) --How far the spread can expand when you shoot.
+
+		if ht == "smg" then
+			self.Primary.SpreadMultiplierMax = self.Primary.SpreadMultiplierMax * 0.8
+		end
+
+		if ht == "revolver" then
+			self.Primary.SpreadMultiplierMax = self.Primary.SpreadMultiplierMax * 2
+		end
+
+		if self.Scoped then
+			self.Primary.SpreadMultiplierMax = self.Primary.SpreadMultiplierMax * 1.5
+		end
+
+		self.AutoDetectSpreadMultiplierMax = true
+	end
+
+	if not self.Primary.SpreadIncrement or self.Primary.SpreadIncrement <= 0 or self.AutoDetectSpreadIncrement then
+		self.AutoDetectSpreadIncrement = true
+		self.Primary.SpreadIncrement = 1 * math.Clamp(math.sqrt(self.Primary.RPM) / 24.5, 0.7, 3) * math.sqrt(self.Primary.Damage / 30 * self.Primary.NumShots) --What percentage of the modifier is added on, per shot.
+
+		if ht == "revolver" then
+			self.Primary.SpreadIncrement = self.Primary.SpreadIncrement * 2
+		end
+
+		if ht == "pistol" then
+			self.Primary.SpreadIncrement = self.Primary.SpreadIncrement * 1.35
+		end
+
+		if ht == "ar2" or ht == "rpg" then
+			self.Primary.SpreadIncrement = self.Primary.SpreadIncrement * 0.65
+		end
+
+		if ht == "smg" then
+			self.Primary.SpreadIncrement = self.Primary.SpreadIncrement * 1.75
+			self.Primary.SpreadIncrement = self.Primary.SpreadIncrement * (math.Clamp((self.Primary.RPM - 650) / 150, 0, 1) + 1)
+		end
+
+		if ht == "pistol" and self.Primary.Automatic == true then
+			self.Primary.SpreadIncrement = self.Primary.SpreadIncrement * 1.5
+		end
+
+		if self.Scoped then
+			self.Primary.SpreadIncrement = self.Primary.SpreadIncrement * 1.25
+		end
+
+		self.Primary.SpreadIncrement = self.Primary.SpreadIncrement * math.sqrt(self.Primary.Recoil * (self.Primary.KickUp + self.Primary.KickDown + self.Primary.KickHorizontal)) * 0.8
+	end
+
+	if not self.Primary.SpreadRecovery or self.Primary.SpreadRecovery <= 0 or self.AutoDetectSpreadRecovery then
+		self.AutoDetectSpreadRecovery = true
+		self.Primary.SpreadRecovery = math.sqrt(math.max(self.Primary.RPM, 300)) / 29 * 4 --How much the spread recovers, per second.
+
+		if ht == "smg" then
+			self.Primary.SpreadRecovery = self.Primary.SpreadRecovery * (1 - math.Clamp((self.Primary.RPM - 600) / 200, 0, 1) * 0.33)
+		end
+	end
 end

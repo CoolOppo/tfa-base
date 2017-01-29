@@ -35,6 +35,14 @@ TFA.AddStatus( "silencer_toggle" )
 TFA.AddStatus( "bashing" )
 TFA.AddStatus( "inspecting" )
 TFA.AddStatus( "fidget" )
+TFA.AddStatus( "firemode" )
+
+TFA.AddStatus( "grenade_pull" )
+TFA.AddStatus( "grenade_ready" )
+TFA.AddStatus( "grenade_throw" )
+
+TFA.AddStatus( "blocking" )
+TFA.AddStatus( "blocking_end" )
 
 TFA.Enum.HolsterStatus = {
 	[TFA.Enum.STATUS_HOLSTER] = true,
@@ -54,5 +62,21 @@ TFA.Enum.ReadyStatus = {
 }
 TFA.Enum.IronStatus = {
 	[TFA.Enum.STATUS_IDLE] = true,
-	[TFA.Enum.STATUS_SHOOTING] = true
+	[TFA.Enum.STATUS_SHOOTING] = true,
+	[TFA.Enum.STATUS_FIREMODE] = true--,
+	--[TFA.Enum.STATUS_FIDGET] = true
+}
+TFA.Enum.HUDDisabledStatus = {
+	[TFA.Enum.STATUS_IDLE] = true,
+	[TFA.Enum.STATUS_SHOOTING] = true,
+	[TFA.Enum.STATUS_FIREMODE] = true,
+	[TFA.Enum.STATUS_BASHING] = true,
+	[TFA.Enum.STATUS_HOLSTER] = true,
+	[TFA.Enum.STATUS_HOLSTER_FINAL] = true,
+	[TFA.Enum.STATUS_HOLSTER_READY] = true,
+	[TFA.Enum.STATUS_GRENADE_PULL] = true,
+	[TFA.Enum.STATUS_GRENADE_READY] = true,
+	[TFA.Enum.STATUS_GRENADE_THROW] = true,
+	[TFA.Enum.STATUS_BLOCKING] = true,
+	[TFA.Enum.STATUS_BLOCKING_END] = true
 }

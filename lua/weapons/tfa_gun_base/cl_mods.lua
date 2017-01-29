@@ -39,8 +39,8 @@ Returns:  Nothing.
 Notes:  This draws the mods.
 Purpose:  SWEP Construction Kit Compatibility / Basic Attachments.
 ]]--
-
 function SWEP:PreDrawViewModel( vm, wep, ply )
+	self:ProcessBodygroups()
 	if self:GetHidden() then
 		render.SetBlend(0)
 	end
@@ -93,50 +93,57 @@ function SWEP:ViewModelDrawn()
 
 	if self.CameraAttachment and self.CameraAttachment > 0 then
 		local angpos = vm:GetAttachment(self.CameraAttachment)
-		local angv = angpos.Ang
-		local off = vm:WorldToLocalAngles(angv)
-		local spd = 10
-		local cycl = vm:GetCycle()
-		local dissipatestart = 0
-		self.CameraAngCache = self.CameraAngCache or off
+		if angpos and angpos.Ang then
+			local angv = angpos.Ang
+			local off = vm:WorldToLocalAngles(angv)
+			local spd = 10
+			local cycl = vm:GetCycle()
+			local dissipatestart = 0
+			self.CameraAngCache = self.CameraAngCache or off
 
-		for k, v in pairs(self.CameraAttachmentOffsets) do
-			local offtype = v[1]
-			local offang = v[2]
+			for k, v in pairs(self.CameraAttachmentOffsets) do
+				local offtype = v[1]
+				local offang = v[2]
 
-			if offtype == "p" then
-				off:RotateAroundAxis(off:Right(), offang)
-			elseif offtype == "y" then
-				off:RotateAroundAxis(off:Up(), offang)
-			elseif offtype == "r" then
-				off:RotateAroundAxis(off:Forward(), offang)
+				if offtype == "p" then
+					off:RotateAroundAxis(off:Right(), offang)
+				elseif offtype == "y" then
+					off:RotateAroundAxis(off:Up(), offang)
+				elseif offtype == "r" then
+					off:RotateAroundAxis(off:Forward(), offang)
+				end
 			end
-		end
 
-		if self.ViewModelFlip then
-			off = Angle()
-		end
+			if self.ViewModelFlip then
+				off = Angle()
+			end
 
-		local actind = vm:GetSequenceActivity(vm:GetSequence())
+			local actind = vm:GetSequenceActivity(vm:GetSequence())
 
-		if (actind == ACT_VM_DRAW or actind == ACT_VM_HOLSTER_DRAW_EMPTY or actind == ACT_VM_DRAW_SILENCED) and vm:GetCycle() < 0.05 then
+			if (actind == ACT_VM_DRAW or actind == ACT_VM_HOLSTER_DRAW_EMPTY or actind == ACT_VM_DRAW_SILENCED) and vm:GetCycle() < 0.05 then
+				self.CameraAngCache.p = 0
+				self.CameraAngCache.y = 0
+				self.CameraAngCache.r = 0
+			end
+
+			if (actind == ACT_VM_HOLSTER or actind == ACT_VM_HOLSTER_EMPTY) and cycl > dissipatestart then
+				self.CameraAngCache.p = self.CameraAngCache.p * (1 - cycl) / (1 - dissipatestart)
+				self.CameraAngCache.y = self.CameraAngCache.y * (1 - cycl) / (1 - dissipatestart)
+				self.CameraAngCache.r = self.CameraAngCache.r * (1 - cycl) / (1 - dissipatestart)
+			end
+
+			self.CameraAngCache.p = math.ApproachAngle(self.CameraAngCache.p, off.p, (self.CameraAngCache.p - off.p) * FrameTime() * spd)
+			self.CameraAngCache.y = math.ApproachAngle(self.CameraAngCache.y, off.y, (self.CameraAngCache.y - off.y) * FrameTime() * spd)
+			self.CameraAngCache.r = math.ApproachAngle(self.CameraAngCache.r, off.r, (self.CameraAngCache.r - off.r) * FrameTime() * spd)
+		else
 			self.CameraAngCache.p = 0
 			self.CameraAngCache.y = 0
 			self.CameraAngCache.r = 0
 		end
-
-		if (actind == ACT_VM_HOLSTER or actind == ACT_VM_HOLSTER_EMPTY) and cycl > dissipatestart then
-			self.CameraAngCache.p = self.CameraAngCache.p * (1 - cycl) / (1 - dissipatestart)
-			self.CameraAngCache.y = self.CameraAngCache.y * (1 - cycl) / (1 - dissipatestart)
-			self.CameraAngCache.r = self.CameraAngCache.r * (1 - cycl) / (1 - dissipatestart)
-		end
-
-		self.CameraAngCache.p = math.ApproachAngle(self.CameraAngCache.p, off.p, (self.CameraAngCache.p - off.p) * FrameTime() * spd)
-		self.CameraAngCache.y = math.ApproachAngle(self.CameraAngCache.y, off.y, (self.CameraAngCache.y - off.y) * FrameTime() * spd)
-		self.CameraAngCache.r = math.ApproachAngle(self.CameraAngCache.r, off.r, (self.CameraAngCache.r - off.r) * FrameTime() * spd)
 	end
 
 	if self.VElements then
+		--self.VElements = self:GetStat("VElements")
 		self:CreateModels(self.VElements)
 
 		if (not self.vRenderOrder) then
@@ -166,6 +173,8 @@ function SWEP:ViewModelDrawn()
 			if (not v.bone) then continue end
 			local pos, ang = self:GetBoneOrientation(self.VElements, v, vm)
 			if (not pos) then continue end
+			local aktiv = self:GetStat("VElements." .. name .. ".active")
+			if aktiv ~= nil and aktiv == false then continue end
 
 			if (v.type == "Model" and IsValid(model)) then
 				model:SetPos(pos + ang:Forward() * v.pos.x + ang:Right() * v.pos.y + ang:Up() * v.pos.z)
@@ -221,19 +230,21 @@ Returns:  Nothing.
 Notes:  This draws the world model, plus its attachments.
 Purpose:  SWEP Construction Kit Compatibility / Basic Attachments.
 ]]--
-local culldistancecvar = GetConVar("sv_tfa_worldmodel_culldistance")
 
 function SWEP:DrawWorldModel()
 	local ply = self:GetOwner()
 
 	if IsValid(ply) and ply.SetupBones then
 		ply:SetupBones()
+		ply:InvalidateBoneCache()
+		self:InvalidateBoneCache()
 	end
 
 	if ( self.ShowWorldModel == nil or self.ShowWorldModel or not self:OwnerIsValid() ) then
 		if game.SinglePlayer() or CLIENT then
 
 			if IsValid(ply) and self.Offset and self.Offset.Pos and self.Offset.Ang then
+
 				local handBone = ply:LookupBone("ValveBiped.Bip01_R_Hand")
 
 				if handBone then
@@ -259,13 +270,16 @@ function SWEP:DrawWorldModel()
 				end
 			end
 		end
+		self:ProcessBodygroups()
+		self:DrawModel()
+	end
 
-		if not (culldistancecvar:GetFloat() >= 0 and self:GetPos():Distance(EyePos and EyePos() or LocalPlayer():GetShootPos()) > culldistancecvar:GetFloat()) then
-			self:DrawModel()
-		end
+	if self.SetupBones then
+		self:SetupBones()
 	end
 
 	if (not self.WElements) then return end
+	--self.WElements = self:GetStat("WElements")
 	self:CreateModels(self.WElements)
 
 	if (not self.wRenderOrder) then
@@ -291,6 +305,9 @@ function SWEP:DrawWorldModel()
 		end
 
 		if (v.hide) then continue end
+		local aktiv = self:GetStat("WElements." .. name .. ".active")
+		if aktiv ~= nil and aktiv == false then continue end
+
 		local pos, ang
 
 		if (v.bone) then
@@ -508,13 +525,13 @@ Purpose:  SWEP Construction Kit Compatibility / Basic Attachments.
 ]]--
 local bpos, bang
 local onevec = Vector(1, 1, 1)
-
 function SWEP:UpdateBonePositions(vm)
-	if self.ViewModelBoneMods then
+	if not self.ViewModelBoneMods then
+		self.ViewModelBoneMods = {}
+	end
+	local VM_BoneMods = self:GetStat("ViewModelBoneMods", self.ViewModelBoneMods)
+	if table.Count( VM_BoneMods ) > 0 then
 		local stat = self:GetStatus()
-		if not self.ViewModelBoneMods then
-			self.ViewModelBoneMods = {}
-		end
 
 		if not self.BlowbackBoneMods then
 			self.BlowbackBoneMods = {}
@@ -527,8 +544,8 @@ function SWEP:UpdateBonePositions(vm)
 		for i = 0, vm:GetBoneCount() do
 			local bonename = vm:GetBoneName(i)
 
-			if (self.ViewModelBoneMods[bonename]) then
-				vbones[bonename] = self.ViewModelBoneMods[bonename]
+			if (VM_BoneMods[bonename]) then
+				vbones[bonename] = VM_BoneMods[bonename]
 			else
 				vbones[bonename] = {
 					scale = onevec,

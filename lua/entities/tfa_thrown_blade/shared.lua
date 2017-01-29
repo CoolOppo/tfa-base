@@ -5,7 +5,6 @@ ENT.Contact = ""
 ENT.Purpose = ""
 ENT.Instructions = ""
 ENT.DoNotDuplicate = true
-ENT.DColDuplicator = true
 
 ENT.HitSounds = {
 	[MAT_DIRT] = {Sound("physics/metal/metal_grenade_impact_hard1.wav"), Sound("physics/metal/metal_grenade_impact_hard2.wav"), Sound("physics/metal/metal_grenade_impact_hard3.wav")},
@@ -17,9 +16,6 @@ ENT.Shink = Sound("weapons/blades/impact.mp3")
 if SERVER then
 	AddCSLuaFile()
 
-	--[[---------------------------------------------------------
-	Name: ENT:Initialize()
-	---------------------------------------------------------]]
 	function ENT:Initialize()
 		local mdl = self:GetModel()
 

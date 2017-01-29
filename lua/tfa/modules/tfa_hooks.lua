@@ -1,4 +1,6 @@
-local ply,wep
+local ply,wep,sp
+
+sp = game.SinglePlayer()
 
 --[[
 Hook: PlayerTick
@@ -15,6 +17,47 @@ hook.Add("PlayerTick", "PlayerTickTFA", function(plyv)
 end)
 
 --[[
+Hook: Tick
+Function: Inspection mouse support
+Used For: Enables and disables screen clicker
+]]--
+
+if CLIENT then
+	local tfablurintensity
+	local its_old = 0
+	local ScreenClicker = false
+	local att_enabled_cv
+
+	hook.Add("Tick","TFAInspectionScreenClicker",function( )
+		if not att_enabled_cv then
+			att_enabled_cv = GetConVar("sv_tfa_attachments_enabled")
+		end
+		if not att_enabled_cv then
+			return
+		end
+		tfablurintensity = 0
+		if IsValid( LocalPlayer() ) and IsValid( LocalPlayer():GetActiveWeapon() ) and att_enabled_cv:GetBool() then
+			local w = LocalPlayer():GetActiveWeapon()
+			if not w.Attachments then
+				tfablurintensity = 0
+			elseif #w.Attachments <= 0 then
+				tfablurintensity = 0
+			else
+				tfablurintensity = w.Inspecting and 1 or 0
+			end
+		end
+		if tfablurintensity > its_old and not ScreenClicker then
+			gui.EnableScreenClicker(true)
+			ScreenClicker = true
+		elseif tfablurintensity < its_old and ScreenClicker then
+			gui.EnableScreenClicker(false)
+			ScreenClicker = false
+		end
+		its_old = tfablurintensity * 1
+	end)
+end
+
+--[[
 Hook: PreRender
 Function: Weapon Logic
 Used For: Per-frame weapon "think" logic
@@ -26,6 +69,12 @@ hook.Add("PreRender", "prerender_tfabase", function()
 
 	if IsValid(wep) and wep.IsTFAWeapon and wep.PlayerThinkCL then
 		wep:PlayerThinkCL(ply)
+	end
+
+	if sp and CLIENT then
+		net.Start("tfaSDLP")
+		net.WriteBool(ply:ShouldDrawLocalPlayer())
+		net.SendToServer()
 	end
 end)
 
@@ -46,51 +95,61 @@ Used For:  Alternate attack, inspection, shotgun interrupts, and more
 ]]--
 
 local cv_cm = GetConVar("sv_tfa_cmenu")
+local cv_cm_key = GetConVar("sv_tfa_cmenu_key")
+local keyv
+
+local function GetInspectionKey()
+	if cv_cm_key and cv_cm_key:GetInt() >= 0 then
+		keyv = cv_cm_key:GetInt()
+	else
+		keyv = TFA.BindToKey( input.LookupBinding("+menu_context", true) or "c" , KEY_C )
+	end
+	return keyv
+end
+
 local cv_cci
 if CLIENT then
 	cv_cci = GetConVar("cl_tfa_inspection_ckey")
 end
 
-function TFAPlayerBindPress(plyv, b, p)
-	if p and IsValid(plyv) then
-		wep = plyv:GetActiveWeapon() or wep
-
-		if IsValid(wep) then
-			--[[
-			if wep.AltAttack and b == "+zoom" then
-				wep:AltAttack()
-
-				if CLIENT then
-					net.Start("tfaAltAttack")
-					net.SendToServer()
-				end
-
-				return true
-			end
-			]]--
-
-			--[[
-
-			if wep.ShotgunInterrupt and b == "+attack" and (wep:GetReloading() and wep.Shotgun and not wep:GetShotgunPumping() and not wep:GetShotgunNeedsPump()) then
-				wep:ShotgunInterrupt()
-
-				return true
-			end
-			]]--
-			if wep.ToggleInspect and b == "+menu_context" and cv_cm:GetBool() then
-				if not cv_cci:GetBool() then
-					wep:ToggleInspect()
-				elseif wep.CheckAmmo then
-					net.Start("tfaRequestFidget")
-					net.SendToServer()
-				end
-				return true
-			end
-		end
+local function TFAContextBlock()
+	local plyv = LocalPlayer()
+	if not IsValid(plyv) then return end
+	if GetViewEntity() ~= plyv then return end
+	local wepv = plyv:GetActiveWeapon()
+	if not IsValid(wepv) then return end
+	if GetInspectionKey() == TFA.BindToKey( input.LookupBinding("+menu_context", true) or "c" , KEY_C ) and wepv.ToggleInspect then
+		return false
 	end
 end
 
-hook.Add("PlayerBindPress", "TFAInspectionMenu", TFAPlayerBindPress)
+hook.Add("ContextMenuOpen", "TFAContextBlock", TFAContextBlock)
+
+if CLIENT then
+	local kd_old = false
+	function TFAKPThink()
+		local plyv = LocalPlayer()
+		if not IsValid(plyv) then return end
+		if GetViewEntity() ~= plyv then return end
+		local wepv = plyv:GetActiveWeapon()
+		if not IsValid(wepv) then return end
+		if not wepv.ToggleInspect then return end
+		local key = GetInspectionKey()
+		local kd = input.IsKeyDown( key )
+		if IsValid( vgui.GetKeyboardFocus() ) then kd = false end
+		if kd ~= kd_old and kd and cv_cm:GetBool() then
+			if not cv_cci:GetBool() then
+				wepv:ToggleInspect()
+			elseif wep.CheckAmmo then
+				net.Start("tfaRequestFidget")
+				net.SendToServer()
+			end
+		end
+		kd_old = kd
+	end
+	hook.Add("Think", "TFAInspectionMenu", TFAKPThink)
+end
+
 
 --[[
 Hook: KeyPress
@@ -119,7 +178,7 @@ local reload_threshold = 0.3
 hook.Add("KeyPress","TFABase_KP",KP_Bash)
 
 local function KR_Reload(plyv, key)
-	if key == IN_RELOAD and cv_lr and ( not cv_lr:GetBool() ) and CurTime() <= ( plyv.LastReloadPressed or CurTime() ) + reload_threshold then
+	if key == IN_RELOAD and cv_lr and ( not cv_lr:GetBool() ) and ( not plyv:KeyDown(IN_USE) ) and CurTime() <= ( plyv.LastReloadPressed or CurTime() ) + reload_threshold then
 		plyv.LastReloadPressed = nil
 		plyv.HasTFAAmmoChek = false
 		wep = plyv:GetActiveWeapon()
@@ -134,7 +193,7 @@ hook.Add("KeyRelease","TFABase_KR",KR_Reload)
 
 local function KD_AmmoCheck(plyv)
 	if plyv.HasTFAAmmoChek then return end
-	if plyv:KeyDown(IN_RELOAD) and CurTime() > ( plyv.LastReloadPressed or CurTime() ) + reload_threshold then
+	if plyv:KeyDown(IN_RELOAD) and ( not plyv:KeyDown(IN_USE) ) and CurTime() > ( plyv.LastReloadPressed or CurTime() ) + reload_threshold then
 		wep = plyv:GetActiveWeapon()
 
 		if IsValid(wep) and wep.IsTFAWeapon then
@@ -187,28 +246,20 @@ Function: Modify movement speed
 Used For:  Weapon slowdown, ironsights slowdown
 ]]--
 
-local cv_cmove = GetConVar("sv_tfa_compat_movement")
 local sumwep
 local speedmult
 
-if not Clockwork then
-	hook.Add("SetupMove", "tfa_setupmove", function(plyv, movedata, commanddata)
-		if not cv_cmove then
-			cv_cmove = GetConVar("sv_tfa_compat_movement")
-		else
-			if cv_cmove:GetBool() then return end
-		end
+hook.Add("SetupMove", "tfa_setupmove", function(plyv, movedata, commanddata)
 
-		sumwep = plyv:GetActiveWeapon() or wep
-		if IsValid(sumwep) and sumwep.IsTFAWeapon then
-			sumwep.IronSightsProgress = sumwep.IronSightsProgress or 0
-			speedmult = Lerp(sumwep.IronSightsProgress, sumwep.MoveSpeed or 1, sumwep.IronSightsMoveSpeed or 1)
-			movedata:SetMaxClientSpeed(movedata:GetMaxClientSpeed() * speedmult)
-			commanddata:SetForwardMove(commanddata:GetForwardMove() * speedmult)
-			commanddata:SetSideMove(commanddata:GetSideMove() * speedmult)
-		end
-	end)
-end
+	sumwep = plyv:GetActiveWeapon() or wep
+	if IsValid(sumwep) and sumwep.IsTFAWeapon then
+		sumwep.IronSightsProgress = sumwep.IronSightsProgress or 0
+		speedmult = Lerp(sumwep.IronSightsProgress, sumwep:GetStat("MoveSpeed"), sumwep:GetStat("IronSightsMoveSpeed"))
+		movedata:SetMaxClientSpeed(movedata:GetMaxClientSpeed() * speedmult)
+		commanddata:SetForwardMove(commanddata:GetForwardMove() * speedmult)
+		commanddata:SetSideMove(commanddata:GetSideMove() * speedmult)
+	end
+end)
 
 --[[
 Hook: PlayerFootstep

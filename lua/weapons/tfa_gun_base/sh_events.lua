@@ -1,5 +1,7 @@
 local sp = game.SinglePlayer()
 local l_CT = CurTime
+SWEP.EventTimer = -1
+
 --[[
 Function Name:  ResetEvents
 Syntax: self:ResetEvents()
@@ -13,11 +15,12 @@ function SWEP:ResetEvents()
 		self:CallOnClient("ResetEvents", "")
 	end
 
-	self.EventTimer = l_CT()
-
-	for k, v in pairs(self.EventTable) do
-		for l, b in pairs(v) do
-			b.called = false
+	if IsFirstTimePredicted() or game.SinglePlayer() then
+		self.EventTimer = l_CT()
+		for k, v in pairs(self.EventTable) do
+			for l, b in pairs(v) do
+				b.called = false
+			end
 		end
 	end
 end
@@ -29,14 +32,20 @@ Returns:  Nothing.
 Notes: Critical for the event table to function.
 Purpose:  Main SWEP function
 ]]--
+
 function SWEP:ProcessEvents()
 	if not self:VMIV() then return end
-
-	local evtbl = self.EventTable[ self:GetLastActivity() ]
+	if self.EventTimer < 0 then
+		self:ResetEvents()
+	end
+	if sp then
+		self.LastAct = self:GetLastActivity()
+	end
+	local evtbl = self.EventTable[ self.LastAct or self:GetLastActivity() ]
 
 	if not evtbl then return end
 	for k, v in pairs(evtbl) do
-		if v.called or l_CT() < self.EventTimer + v.time then continue end
+		if v.called or l_CT() < self.EventTimer + v.time * self:GetAnimationRate( self.LastAct or self:GetLastActivity() ) then continue end
 		v.called = true
 
 		if v.client == nil then
@@ -70,9 +79,19 @@ function SWEP:ProcessEvents()
 				elseif v.server and v.value and v.value ~= "" then
 					self:EmitSound(v.value)
 				end
-			elseif v.client and self.Owner == LocalPlayer() and not sp and v.value and v.value ~= "" then
-				self:EmitSound(v.value)
+			elseif v.client and self.Owner == LocalPlayer() and ( not sp ) and v.value and v.value ~= "" then
+				if v.time <= 0.01 then
+					self:EmitSoundSafe(v.value)
+				else
+					self:EmitSound(v.value)
+				end
 			end
 		end
 	end
+end
+
+function SWEP:EmitSoundSafe(snd)
+	timer.Simple(0,function()
+		if IsValid(self) and snd then self:EmitSound(snd) end
+	end)
 end
