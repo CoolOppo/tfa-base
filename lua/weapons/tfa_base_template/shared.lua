@@ -21,14 +21,17 @@ SWEP.Primary.Sound = Sound("") -- This is the sound of the weapon, when you shoo
 SWEP.Primary.SilencedSound = nil -- This is the sound of the weapon, when silenced.
 SWEP.Primary.PenetrationMultiplier = 1 --Change the amount of something this gun can penetrate through
 SWEP.Primary.Damage = 0.01 -- Damage, in standard damage points.
-SWEP.Primary.Force = nil --Force value, leave nil to autocalc
-SWEP.Primary.HullSize = 0 --Big bullets, increase this value.  They increase the hull size of the hitscan bullet.
+SWEP.Primary.DamageTypeHandled = true --true will handle damagetype in base
 SWEP.Primary.DamageType = nil --See DMG enum.  This might be DMG_SHOCK, DMG_BURN, DMG_BULLET, etc.  Leave nil to autodetect.  DMG_AIRBOAT opens doors.
+SWEP.Primary.Force = nil --Force value, leave nil to autocalc
+SWEP.Primary.Knockback = nil --Autodetected if nil; this is the velocity kickback
+SWEP.Primary.HullSize = 0 --Big bullets, increase this value.  They increase the hull size of the hitscan bullet.
 SWEP.Primary.NumShots = 1 --The number of shots the weapon fires.  SWEP.Shotgun is NOT required for this to be >1.
 SWEP.Primary.Automatic = true -- Automatic/Semi Auto
 SWEP.Primary.RPM = 600 -- This is in Rounds Per Minute / RPM
 SWEP.Primary.RPM_Semi = nil -- RPM for semi-automatic or burst fire.  This is in Rounds Per Minute / RPM
 SWEP.Primary.RPM_Burst = nil -- RPM for burst fire, overrides semi.  This is in Rounds Per Minute / RPM
+SWEP.Primary.DryFireDelay = nil --How long you have to wait after firing your last shot before a dryfire animation can play.  Leave nil for full empty attack length.  Can also use SWEP.StatusLength[ ACT_VM_BLABLA ]
 SWEP.Primary.BurstDelay = nil -- Delay between bursts, leave nil to autocalculate
 SWEP.FiresUnderwater = false
 --Miscelaneous Sounds
@@ -84,6 +87,9 @@ SWEP.ViewModelFlip			= false		-- Set this to true for CSS models, or false for e
 SWEP.UseHands = false --Use gmod c_arms system.
 SWEP.VMPos = Vector(0,0,0) --The viewmodel positional offset, constantly.  Subtract this from any other modifications to viewmodel position.
 SWEP.VMAng = Vector(0,0,0) --The viewmodel angular offset, constantly.   Subtract this from any other modifications to viewmodel angle.
+SWEP.VMPos_Additive = true --Set to false for an easier time using VMPos. If true, VMPos will act as a constant delta ON TOP OF ironsights, run, whateverelse
+SWEP.CenteredPos = nil --The viewmodel positional offset, used for centering.  Leave nil to autodetect using ironsights.
+SWEP.CenteredAng = nil --The viewmodel angular offset, used for centering.  Leave nil to autodetect using ironsights.
 SWEP.Bodygroups_V = nil --{
 	--[0] = 1,
 	--[1] = 4,
@@ -139,6 +145,8 @@ if surface then
 end
 --[[SHOTGUN CODE]]--
 SWEP.Shotgun = false --Enable shotgun style reloading.
+SWEP.ShotgunEmptyAnim = false --Enable emtpy reloads on shotguns?
+SWEP.ShotgunEmptyAnim_Shell = true --Enable insertion of a shell directly into the chamber on empty reload?
 SWEP.ShellTime = .35 -- For shotguns, how long it takes to insert a shell.
 --[[SPRINTING]]--
 SWEP.RunSightsPos = Vector(0, 0, 0) --Change this, using SWEP Creation Kit preferably
@@ -171,6 +179,17 @@ SWEP.ProceduralReloadTime = 1 --Procedural reload time?
 SWEP.IronSightHoldTypeOverride = "" --This variable overrides the ironsights holdtype, choosing it instead of something from the above tables.  Change it to "" to disable.
 SWEP.SprintHoldTypeOverride = "" --This variable overrides the sprint holdtype, choosing it instead of something from the above tables.  Change it to "" to disable.
 --[[ANIMATION]]--
+
+SWEP.StatusLengthOverride = {} --Changes the status delay of a given animation; only used on reloads.  Otherwise, use SequenceLengthOverride or one of the others
+SWEP.SequenceLengthOverride = {} --Changes both the status delay and the nextprimaryfire of a given animation
+SWEP.SequenceRateOverride = {} --Like above but changes animation length to a target
+SWEP.SequenceRateOverrideScaled = {} --Like above but scales animation length rather than being absolute
+
+SWEP.ProceduralHoslterEnabled = nil
+SWEP.ProceduralHolsterTime = 0.3
+SWEP.ProceduralHolsterPos = Vector(3, 0, -5)
+SWEP.ProceduralHolsterAng = Vector(-40, -30, 10)
+
 SWEP.Sights_Mode = TFA.Enum.LOCOMOTION_LUA -- ANI = mdl, HYBRID = lua but continue idle, Lua = stop mdl animation
 SWEP.Sprint_Mode = TFA.Enum.LOCOMOTION_LUA -- ANI = mdl, HYBRID = ani + lua, Lua = lua only
 SWEP.Idle_Mode = TFA.Enum.IDLE_BOTH --TFA.Enum.IDLE_DISABLED = no idle, TFA.Enum.IDLE_LUA = lua idle, TFA.Enum.IDLE_ANI = mdl idle, TFA.Enum.IDLE_BOTH = TFA.Enum.IDLE_ANI + TFA.Enum.IDLE_LUA
@@ -231,6 +250,8 @@ SWEP.MuzzleFlashEnabled = true --Enable muzzle flash
 SWEP.MuzzleAttachmentRaw = nil --This will override whatever string you gave.  This is the raw attachment number.  This is overridden or created when a gun makes a muzzle event.
 SWEP.AutoDetectMuzzleAttachment = false --For multi-barrel weapons, detect the proper attachment?
 SWEP.MuzzleFlashEffect = nil --Change to a string of your muzzle flash effect.  Copy/paste one of the existing from the base.
+SWEP.SmokeParticle = nil --Smoke particle (ID within the PCF), defaults to something else based on holdtype; "" to disable
+SWEP.EjectionSmokeEnabled = false --Disable automatic ejection smoke
 --Shell eject override
 SWEP.LuaShellEject = false --Enable shell ejection through lua?
 SWEP.LuaShellEjectDelay = 0 --The delay to actually eject things
@@ -298,3 +319,4 @@ ACT_VM_HOLSTER_SILENCED - Holster empty, overwritten by silenced
 ACT_VM_HOLSTER_SILENCED - Holster silenced
 
 ]]--
+DEFINE_BASECLASS( SWEP.Base )

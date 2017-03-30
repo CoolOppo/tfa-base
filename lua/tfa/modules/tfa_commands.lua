@@ -239,12 +239,8 @@ end
 
 --Clientside Convars
 if CLIENT then
-	if GetConVar("cl_tfa_inspection_old") == nil then
-		CreateClientConVar("cl_tfa_inspection_old", 0, true, true)
-	end
-
-	if GetConVar("cl_tfa_inspection_ckey") == nil then
-		CreateClientConVar("cl_tfa_inspection_ckey", 0, true, true)
+	if GetConVar("cl_tfa_inspection_style") == nil then
+		CreateClientConVar("cl_tfa_inspection_style", 0, true, false)
 	end
 
 	if GetConVar("cl_tfa_viewbob_intensity") == nil then
@@ -256,9 +252,41 @@ if CLIENT then
 		--print("Viewbob intensity con var created")
 	end
 
+	if GetConVar("cl_tfa_3dscope_quality") == nil then
+		CreateClientConVar("cl_tfa_3dscope_quality", -1, true, true)
+	end
+
 	if GetConVar("cl_tfa_3dscope") == nil then
 		CreateClientConVar("cl_tfa_3dscope", 1, true, true)
+	else
+		cvars.RemoveChangeCallback( "cl_tfa_3dscope", "3DScopeEnabledCB" )
 	end
+
+	cvars.AddChangeCallback("cl_tfa_3dscope",function(cv,old,new)
+		local lply = LocalPlayer()
+		if lply:IsValid() and IsValid(lply:GetActiveWeapon()) then
+			local wep = lply:GetActiveWeapon()
+			if wep.UpdateScopeType then
+				wep:UpdateScopeType( true )
+			end
+		end
+	end,"3DScopeEnabledCB")
+
+	if GetConVar("cl_tfa_scope_sensitivity_3d") == nil then
+		CreateClientConVar("cl_tfa_scope_sensitivity_3d", 1, true, true) --0 = no sensitivity mod, 1 = scaled to 2D sensitivity, 2 = compensated, 3 = RT FOV compensated
+	else
+		cvars.RemoveChangeCallback( "cl_tfa_scope_sensitivity_3d", "3DScopeModeCB" )
+	end
+
+	cvars.AddChangeCallback("cl_tfa_scope_sensitivity_3d",function(cv,old,new)
+		local lply = LocalPlayer()
+		if lply:IsValid() and IsValid(lply:GetActiveWeapon()) then
+			local wep = lply:GetActiveWeapon()
+			if wep.UpdateScopeType then
+				wep:UpdateScopeType( true )
+			end
+		end
+	end,"3DScopeModeCB")
 
 	if GetConVar("cl_tfa_3dscope_overlay") == nil then
 		CreateClientConVar("cl_tfa_3dscope_overlay", 0, true, true)
@@ -444,6 +472,10 @@ if CLIENT then
 		CreateClientConVar("cl_tfa_viewbob_reloading", 1, true, false)
 	end
 
+	if GetConVar("cl_tfa_viewbob_bolting") == nil then
+		CreateClientConVar("cl_tfa_viewbob_bolting", 0, true, false)
+	end
+
 	--Viewmodel Mods
 	if GetConVar("cl_tfa_viewmodel_offset_x") == nil then
 		CreateClientConVar("cl_tfa_viewmodel_offset_x", 0, true, false)
@@ -473,7 +505,15 @@ if CLIENT then
 		CreateClientConVar("cl_tfa_viewmodel_centered", 0, true, false)
 	end
 
-	if GetConVar("cl_tfa_debugcrosshair") == nil then
-		CreateClientConVar("cl_tfa_debugcrosshair", 0, true, false)
+	if GetConVar("cl_tfa_debug_crosshair") == nil then
+		CreateClientConVar("cl_tfa_debug_crosshair", 0, false, false)
+	end
+
+	if GetConVar("cl_tfa_debug_rt") == nil then
+		CreateClientConVar("cl_tfa_debug_rt", 0, false, false)
+	end
+
+	if GetConVar("cl_tfa_debug_cache") == nil then
+		CreateClientConVar("cl_tfa_debug_cache", 0, false, false)
 	end
 end

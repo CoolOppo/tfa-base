@@ -18,12 +18,7 @@ function SWEP:FireAnimationEvent(pos, ang, event, options)
 				self.MuzzleAttachmentRaw = math.Clamp(math.floor((event - 4991) / 10), 1, 4)
 				net.Start("tfa_base_muzzle_mp")
 				net.SendToServer()
-
-				timer.Simple(0, function()
-					if IsValid(self) then
-						self:ShootEffectsCustom(true)
-					end
-				end)
+				self:ShootEffectsCustom(true)
 			end
 
 			return true
@@ -117,9 +112,13 @@ function SWEP:ImpactEffectFunc(pos, normal, mattype)
 			util.Effect("tfa_metal_impact", fx)
 		end
 
-		fx:SetEntity(self.Owner)
+		local scal = math.sqrt(self:GetStat("Primary.Damage") / 30)
+		if mattype == MAT_FLESH then
+			scal = scal * 0.25
+		end
+		fx:SetEntity(self:GetOwner())
 		fx:SetMagnitude(mattype or 0)
-		fx:SetScale(math.sqrt(self:GetStat("Primary.Damage") / 30))
+		fx:SetScale( scal )
 		util.Effect("tfa_bullet_impact", fx)
 
 		if self.ImpactEffect then

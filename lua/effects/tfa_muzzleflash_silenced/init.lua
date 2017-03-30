@@ -7,19 +7,19 @@ function EFFECT:Init(data)
 	self.Attachment = data:GetAttachment()
 	self.Position = self:GetTracerShootPos(data:GetOrigin(), self.WeaponEnt, self.Attachment)
 
-	if IsValid(self.WeaponEnt.Owner) then
-		if self.WeaponEnt.Owner == LocalPlayer() then
-			if self.WeaponEnt.Owner:ShouldDrawLocalPlayer() then
-				ang = self.WeaponEnt.Owner:EyeAngles()
+	if IsValid(self.WeaponEnt:GetOwner()) then
+		if self.WeaponEnt:GetOwner() == LocalPlayer() then
+			if self.WeaponEnt:GetOwner():ShouldDrawLocalPlayer() then
+				ang = self.WeaponEnt:GetOwner():EyeAngles()
 				ang:Normalize()
 				--ang.p = math.max(math.min(ang.p,55),-55)
 				self.Forward = ang:Forward()
 			else
-				self.WeaponEnt = self.WeaponEnt.Owner:GetViewModel()
+				self.WeaponEnt = self.WeaponEnt:GetOwner():GetViewModel()
 			end
 			--ang.p = math.max(math.min(ang.p,55),-55)
 		else
-			ang = self.WeaponEnt.Owner:EyeAngles()
+			ang = self.WeaponEnt:GetOwner():EyeAngles()
 			ang:Normalize()
 			self.Forward = ang:Forward()
 		end
@@ -31,7 +31,7 @@ function EFFECT:Init(data)
 	self.vOffset = self.Position
 	dir = self.Forward
 
-	if IsValid(LocalPlayer()) then
+	if LocalPlayer():IsValid() then
 		AddVel = LocalPlayer():GetVelocity()
 	end
 
@@ -47,19 +47,6 @@ function EFFECT:Init(data)
 		ownerent = LocalPlayer()
 	end
 
-	local dlight = DynamicLight(ownerent:EntIndex())
-
-	if (dlight) then
-		dlight.pos = self.vOffset - ownerent:EyeAngles():Right() * 5 + 1.05 * ownerent:GetVelocity() * FrameTime()
-		dlight.r = 255
-		dlight.g = 192
-		dlight.b = 64
-		dlight.brightness = 4
-		dlight.Decay = 1750
-		dlight.Size = 45
-		dlight.DieTime = CurTime() + 0.3
-	end
-
 	local emitter = ParticleEmitter(self.vOffset)
 	local sparticle = emitter:Add("effects/scotchmuzzleflash" .. math.random(1, 4), self.vOffset)
 
@@ -67,7 +54,7 @@ function EFFECT:Init(data)
 		sparticle:SetVelocity(dir * 4 + 1.05 * AddVel)
 		sparticle:SetLifeTime(0)
 		sparticle:SetDieTime(0.15)
-		sparticle:SetStartAlpha(math.Rand(32, 48))
+		sparticle:SetStartAlpha(math.Rand(16, 32))
 		sparticle:SetEndAlpha(0)
 		--sparticle:SetStartSize( 7.5 * (halofac*0.8+0.2), 0, 1)
 		--sparticle:SetEndSize( 0 )

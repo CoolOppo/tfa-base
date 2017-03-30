@@ -1,3 +1,39 @@
+function SWEP:PatchAmmoTypeAccessors()
+	self.GetPrimaryAmmoTypeOld = self.GetPrimaryAmmoTypeOld or self.GetPrimaryAmmoType
+	self.GetPrimaryAmmoType = function(myself,...)
+		return myself.GetPrimaryAmmoTypeC(myself,...)
+	end
+
+	self.GetSecondaryAmmoTypeOld = self.GetSecondaryAmmoTypeOld or self.GetSecondaryAmmoType
+	self.GetSecondaryAmmoType = function(myself,...)
+		return myself.GetSecondaryAmmoTypeC(myself,...)
+	end
+end
+
+function SWEP:FixProjectile()
+	if self.ProjectileEntity and self.ProjectileEntity ~= "" then
+		self.Primary.Projectile = self.ProjectileEntity
+		self.ProjectileEntity = nil
+	end
+	if self.ProjectileModel and self.ProjectileModel ~= "" then
+		self.Primary.ProjectileModel = self.ProjectileModel
+		self.ProjectileModel = nil
+	end
+	if self.ProjectileVelocity and self.ProjectileVelocity ~= "" then
+		self.Primary.ProjectileVelocity = self.ProjectileVelocity
+		self.ProjectileVelocity = nil
+	end
+end
+
+function SWEP:AutoDetectRange()
+	if self.Primary.Range <= 0 then
+		self.Primary.Range = math.sqrt( self.Primary.Damage / 32 ) * self:MetersToUnits( 350 ) * self:AmmoRangeMultiplier()
+	end
+	if self.Primary.RangeFalloff <= 0 then
+		self.Primary.RangeFalloff = 0.5
+	end
+end
+
 function SWEP:FixProceduralReload()
 	if self.DoProceduralReload then
 		self.ProceduralReloadEnabled = true

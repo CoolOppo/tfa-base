@@ -8,7 +8,7 @@ function EFFECT:Init(data)
 	self.WeaponEntOG = self.WeaponEnt
 	self.Attachment = data:GetAttachment()
 	self.Dir = data:GetNormal()
-	local owent = self.WeaponEnt.Owner or self.WeaponEnt:GetOwner()
+	local owent = self.WeaponEnt:GetOwner()
 
 	if not IsValid(owent) then
 		owent = self.WeaponEnt:GetParent()

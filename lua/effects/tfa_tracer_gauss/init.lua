@@ -16,7 +16,7 @@ function EFFECT:Init(data)
 	local owent
 
 	if IsValid(self.WeaponEnt) then
-		owent = self.WeaponEnt.Owner or self.WeaponEnt:GetOwner()
+		owent = self.WeaponEnt:GetOwner()
 
 		if not IsValid(owent) then
 			owent = self.WeaponEnt:GetParent()
@@ -63,6 +63,7 @@ function EFFECT:Init(data)
 			Ang = uAng
 		}
 	end
+
 
 	if self.Flipped then
 		local tmpang = (self.Dir or angpos.Ang:Forward()):Angle()

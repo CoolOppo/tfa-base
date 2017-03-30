@@ -89,11 +89,11 @@ end
 function SWEP:PreDrop()
    if not IsValid(self) then return end
    if not self.Ammo1 then return end
-   if SERVER and IsValid(self.Owner) and self.Primary.Ammo ~= "none" then
+   if SERVER and IsValid(self:GetOwner()) and self.Primary.Ammo ~= "none" then
       local ammo = self:Ammo1()
 
       -- Do not drop ammo if we have another gun that uses this type
-      for _, w in pairs(self.Owner:GetWeapons()) do
+      for _, w in pairs(self:GetOwner():GetWeapons()) do
          if IsValid(w) and w ~= self and w:GetPrimaryAmmoType() == self:GetPrimaryAmmoType() then
             ammo = 0
          end
@@ -102,7 +102,7 @@ function SWEP:PreDrop()
       self.StoredAmmo = ammo
 
       if ammo > 0 then
-         self.Owner:RemoveAmmo(ammo, self.Primary.Ammo)
+         self:GetOwner():RemoveAmmo(ammo, self.Primary.Ammo)
       end
    end
 end
@@ -173,18 +173,18 @@ function SWEP:DyingShot()
       end
 
       -- Owner should still be alive here
-      if IsValid(self.Owner) then
+      if IsValid(self:GetOwner()) then
          local punch = self.Primary.Recoil or 5
 
          -- Punch view to disorient aim before firing dying shot
-         local eyeang = self.Owner:EyeAngles()
+         local eyeang = self:GetOwner():EyeAngles()
          eyeang.pitch = eyeang.pitch - math.Rand(-punch, punch)
          eyeang.yaw = eyeang.yaw - math.Rand(-punch, punch)
-         self.Owner:SetEyeAngles( eyeang )
+         self:GetOwner():SetEyeAngles( eyeang )
 
-         MsgN(self.Owner:Nick() .. " fired his DYING SHOT")
+         MsgN(self:GetOwner():Nick() .. " fired his DYING SHOT")
 
-         self.Owner.dying_wep = self
+         self:GetOwner().dying_wep = self
 
          self:PrimaryAttack()
 

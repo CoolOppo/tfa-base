@@ -137,7 +137,7 @@ if SERVER then
 end
 if CLIENT then
 	hook.Add("HUDPaint", "TFAPatchTTT", function()
-		if IsValid(LocalPlayer()) then
+		if LocalPlayer():IsValid() then
 			Patch()
 			hook.Remove("HUDPaint","TFAPatchTTT")
 		end

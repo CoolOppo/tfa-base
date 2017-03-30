@@ -16,7 +16,6 @@ function ENT:Initialize()
 	--self:PhysicsInitSphere((self:OBBMaxs() - self:OBBMins()):Length() / 4, "metal")
 	self:SetMoveType(MOVETYPE_VPHYSICS)
 	self:SetSolid(SOLID_VPHYSICS)
-	self:SetCollisionGroup(COLLISION_GROUP_WEAPON)
 	local phys = self:GetPhysicsObject()
 
 	if (phys:IsValid()) then
@@ -43,7 +42,7 @@ end
 local effectdata, shake
 
 function ENT:Explode()
-	if not IsValid(self.Owner) then
+	if not IsValid(self:GetOwner()) then
 		self:Remove()
 
 		return
@@ -54,9 +53,9 @@ function ENT:Explode()
 	util.Effect("HelicopterMegaBomb", effectdata)
 	util.Effect("Explode", effectdata)
 	self.Damage = self.mydamage or self.Damage
-	util.BlastDamage(self, self.Owner, self:GetPos(), math.pow( self.Damage / 100,0.75) * 200, self.Damage )
+	util.BlastDamage(self, self:GetOwner(), self:GetPos(), math.pow( self.Damage / 100,0.75) * 200, self.Damage )
 	shake = ents.Create("env_shake")
-	shake:SetOwner(self.Owner)
+	shake:SetOwner(self:GetOwner())
 	shake:SetPos(self:GetPos())
 	shake:SetKeyValue("amplitude", tostring(self.Damage * 20)) -- Power of the shake
 	shake:SetKeyValue("radius", tostring( math.pow( self.Damage / 100,0.75) * 400) ) -- Radius of the shake

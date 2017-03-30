@@ -1,6 +1,18 @@
 --Config GUI
 
 if CLIENT then
+	language.Add("tfa3dsm.label","3D Scope Sensitivity Mode")
+	language.Add("tfa3dsm.nc","0 - No Compensation")
+	language.Add("tfa3dsm.sc","1 - Standard Compensation")
+	language.Add("tfa3dsm.3d","2 - 3D Compensation")
+	language.Add("tfa3dsm.rt","3 - RT FOV Compensation")
+	language.Add("tfa3dsq.label","3D Scope Quality")
+	language.Add("tfa3dsq.at","-1 - Autodetected")
+	language.Add("tfa3dsq.ul","0 - Ultra (2048x)")
+	language.Add("tfa3dsq.hq","1 - High (1024x)")
+	language.Add("tfa3dsq.mq","2 - Medium (512x)")
+	language.Add("tfa3dsq.lq","3 - Low (256x)")
+
 	local function tfaOptionServer(panel)
 		--Here are whatever default categories you want.
 		local tfaOptionSV = {
@@ -148,7 +160,7 @@ if CLIENT then
 		})
 	end
 
-	local function tfaOptionClient(panel)
+	local function tfaOptionSights(panel)
 		--Here are whatever default categories you want.
 		local tfaOptionCL = {
 			Options = {},
@@ -160,57 +172,92 @@ if CLIENT then
 
 		tfaOptionCL.Options["#Default"] = {
 			cl_tfa_3dscope = "1",
-			cl_tfa_3dscope_overlay = "0",
+			cl_tfa_3dscope_overlay = "1",
+			cl_tfa_3dscope_quality = "-1",
+			cl_tfa_scope_sensitivity_3d = "2",
 			cl_tfa_scope_sensitivity_autoscale = "1",
 			cl_tfa_scope_sensitivity = "100",
-			cl_tfa_inspection_ckey = "0",
-			cl_tfa_inspection_old = "0",
-			cl_tfa_ironsights_toggle = "1",
+			cl_tfa_ironsights_toggle = "0",
 			cl_tfa_ironsights_resight = "1",
-			cl_tfa_viewbob_reloading = "1",
-			cl_tfa_viewbob_drawing = "0",
-			sv_tfa_gunbob_intensity = "1",
-			sv_tfa_viewbob_intensity = "1",
-			cl_tfa_viewmodel_offset_x = "0",
-			cl_tfa_viewmodel_offset_y = "0",
-			cl_tfa_viewmodel_offset_z = "0",
-			cl_tfa_viewmodel_offset_fov = "0",
-			cl_tfa_viewmodel_flip = "0",
-			cl_tfa_viewmodel_centered = "0"
 		}
 
 		panel:AddControl("ComboBox", tfaOptionCL)
 
 		--These are the panel controls.  Adding these means that you don't have to go into the console.
+
 		panel:AddControl("CheckBox", {
-			Label = "Enable 3D Scopes (Re-Draw Gun After Changing)",
+			Label = "Enable 3D Scopes",
 			Command = "cl_tfa_3dscope"
 		})
 
 		panel:AddControl("CheckBox", {
-			Label = "Enable 3D Scope Shadows (Re-Draw Gun After Changing)",
+			Label = "Enable 3D Scope Shadows",
 			Command = "cl_tfa_3dscope_overlay"
 		})
 
-		panel:AddControl("CheckBox", {
-			Label = "Use Viebob While Drawing",
-			Command = "cl_tfa_viewbob_drawing"
-		})
+		local tfaOption3DSM = {
+			Options = {},
+			CVars = {},
+			Label = "#tfa3dsm.label",
+			MenuButton = "0",
+			Folder = "TFA 3D Scope Sens."
+		}
 
-		panel:AddControl("CheckBox", {
-			Label = "Use Viebob While Reloading",
-			Command = "cl_tfa_viewbob_reloading"
-		})
+		tfaOption3DSM.Options["#tfa3dsm.nc"] = {
+			cl_tfa_scope_sensitivity_3d = "0"
+		}
 
-		panel:AddControl("CheckBox", {
-			Label = "Context Key Inspection",
-			Command = "cl_tfa_inspection_ckey"
-		})
+		tfaOption3DSM.Options["#tfa3dsm.nc"] = {
+			cl_tfa_scope_sensitivity_3d = "0"
+		}
 
-		panel:AddControl("CheckBox", {
-			Label = "Legacy Text Inspection",
-			Command = "cl_tfa_inspection_old"
-		})
+		tfaOption3DSM.Options["#tfa3dsm.sc"] = {
+			cl_tfa_scope_sensitivity_3d = "1"
+		}
+
+		tfaOption3DSM.Options["#tfa3dsm.3d"] = {
+			cl_tfa_scope_sensitivity_3d = "2"
+		}
+
+		tfaOption3DSM.Options["#tfa3dsm.rt"] = {
+			cl_tfa_scope_sensitivity_3d = "3"
+		}
+
+		tfaOption3DSM.CVars = table.GetKeys( tfaOption3DSM.Options["#tfa3dsm.3d"] )
+
+		panel:AddControl("ComboBox", tfaOption3DSM)
+
+		local tfaOption3DSQ = {
+			Options = {},
+			CVars = {},
+			Label = "#tfa3dsq.label",
+			MenuButton = "0",
+			Folder = "TFA 3D Scope Sens."
+		}
+
+		tfaOption3DSQ.Options["#tfa3dsq.at"] = {
+			cl_tfa_3dscope_quality = "-1"
+		}
+
+		tfaOption3DSQ.Options["#tfa3dsq.ul"] = {
+			cl_tfa_3dscope_quality = "0"
+		}
+
+		tfaOption3DSQ.Options["#tfa3dsq.hq"] = {
+			cl_tfa_3dscope_quality = "1"
+		}
+
+		tfaOption3DSQ.Options["#tfa3dsq.mq"] = {
+			cl_tfa_3dscope_quality = "2"
+		}
+
+		tfaOption3DSQ.Options["#tfa3dsq.lq"] = {
+			cl_tfa_3dscope_quality = "3"
+		}
+
+		tfaOption3DSQ.CVars = table.GetKeys( tfaOption3DSQ.Options["#tfa3dsq.ul"] )
+
+		panel:AddControl("ComboBox", tfaOption3DSQ)
 
 		panel:AddControl("CheckBox", {
 			Label = "Toggle Ironsights",
@@ -234,6 +281,56 @@ if CLIENT then
 			Min = "1",
 			Max = "100"
 		})
+
+		panel:AddControl("Label", {
+			Text = "By TheForgottenArchitect"
+		})
+	end
+
+
+	local function tfaOptionVM(panel)
+		--Here are whatever default categories you want.
+		local tfaOptionCL = {
+			Options = {},
+			CVars = {},
+			Label = "#Presets",
+			MenuButton = "1",
+			Folder = "TFA SWEP Settings Client"
+		}
+
+		tfaOptionCL.Options["#Default"] = {
+			cl_tfa_viewbob_bolting = "0",
+			cl_tfa_viewbob_reloading = "1",
+			cl_tfa_viewbob_drawing = "0",
+			sv_tfa_gunbob_intensity = "1",
+			sv_tfa_viewbob_intensity = "1",
+			cl_tfa_viewmodel_offset_x = "0",
+			cl_tfa_viewmodel_offset_y = "0",
+			cl_tfa_viewmodel_offset_z = "0",
+			cl_tfa_viewmodel_offset_fov = "0",
+			cl_tfa_viewmodel_flip = "0",
+			cl_tfa_viewmodel_centered = "0"
+		}
+
+		panel:AddControl("ComboBox", tfaOptionCL)
+
+		--These are the panel controls.  Adding these means that you don't have to go into the console.
+
+		panel:AddControl("CheckBox", {
+			Label = "Use Viebob While Drawing",
+			Command = "cl_tfa_viewbob_drawing"
+		})
+
+		panel:AddControl("CheckBox", {
+			Label = "Use Viebob While Reloading",
+			Command = "cl_tfa_viewbob_reloading"
+		})
+
+		panel:AddControl("CheckBox", {
+			Label = "Use Viebob While Bolting",
+			Command = "cl_tfa_viewbob_bolting"
+		})
+
 
 		panel:AddControl("Slider", {
 			Label = "Gun Bob Intensity",
@@ -746,7 +843,17 @@ if CLIENT then
 
 		panel:AddControl("CheckBox", {
 			Label = "Force Debug Crosshair",
-			Command = "cl_tfa_debugcrosshair"
+			Command = "cl_tfa_debug_crosshair"
+		})
+
+		panel:AddControl("CheckBox", {
+			Label = "Debug RT Overlay",
+			Command = "cl_tfa_debug_rt"
+		})
+
+		panel:AddControl("CheckBox", {
+			Label = "Disable Stat Caching",
+			Command = "cl_tfa_debug_cache"
 		})
 
 		panel:AddControl("Label", {
@@ -754,8 +861,9 @@ if CLIENT then
 		})
 	end
 
-	function tfaAddOption()
-		spawnmenu.AddToolMenuOption("Options", "TFA SWEP Base Settings", "tfaOptionWeapons", "Weapon Behavior, Clientside", "", "", tfaOptionClient)
+	local function tfaAddOption()
+		spawnmenu.AddToolMenuOption("Options", "TFA SWEP Base Settings", "tfaOptionVM", "Viewmodel", "", "", tfaOptionVM)
+		spawnmenu.AddToolMenuOption("Options", "TFA SWEP Base Settings", "tfaOptionSights", "Scopes / Sights", "", "", tfaOptionSights)
 		spawnmenu.AddToolMenuOption("Options", "TFA SWEP Base Settings", "tfaOptionPerformance", "Performance", "", "", tfaOptionPerformance)
 		spawnmenu.AddToolMenuOption("Options", "TFA SWEP Base Settings", "TFASwepBaseCrosshair", "HUD / Crosshair", "", "", tfaOptionHUD)
 		spawnmenu.AddToolMenuOption("Options", "TFA SWEP Base Settings", "TFASwepBaseDeveloper", "Developer", "", "", tfaOptionDeveloper)

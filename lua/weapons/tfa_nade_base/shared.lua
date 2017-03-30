@@ -36,7 +36,7 @@ function SWEP:Deploy()
 		if self:Ammo1() <= 0 then
 			timer.Simple(0, function()
 				if IsValid(self) and self:OwnerIsValid() and SERVER and not nzombies then
-					self.Owner:StripWeapon(self:GetClass())
+					self:GetOwner():StripWeapon(self:GetClass())
 				end
 			end)
 		else
@@ -47,7 +47,7 @@ function SWEP:Deploy()
 
 	self:SetNW2Bool("Ready", false)
 	self:SetNW2Bool("Underhanded", false)
-	self.oldang = self.Owner:EyeAngles()
+	self.oldang = self:GetOwner():EyeAngles()
 	self.anga = Angle()
 	self.angb = Angle()
 	self.angc = Angle()
@@ -62,7 +62,7 @@ function SWEP:ChoosePullAnim()
 		self.Callback.ChoosePullAnim(self)
 	end
 
-	self.Owner:SetAnimation(PLAYER_RELOAD)
+	self:GetOwner():SetAnimation(PLAYER_RELOAD)
 	--self:ResetEvents()
 	local tanim = ACT_VM_PULLPIN
 	local success = true
@@ -84,7 +84,7 @@ function SWEP:ChooseShootAnim()
 		self.Callback.ChooseShootAnim(self)
 	end
 
-	self.Owner:SetAnimation(PLAYER_ATTACK1)
+	self:GetOwner():SetAnimation(PLAYER_ATTACK1)
 	--self:ResetEvents()
 	local mybool = self:GetNW2Bool("Underhanded", false)
 	local tanim = mybool and ACT_VM_RELEASE or ACT_VM_THROW
@@ -149,7 +149,7 @@ end
 
 function SWEP:DoAmmoCheck()
 	if IsValid(self) and SERVER then
-		local vm = self.Owner:GetViewModel()
+		local vm = self:GetOwner():GetViewModel()
 		if not IsValid(vm) then return end
 		local delay = vm:SequenceDuration()
 		delay = delay * 1 - math.Clamp(vm:GetCycle(), 0, 1)
@@ -168,7 +168,7 @@ function SWEP:Think2()
 	if not self:OwnerIsValid() then return end
 	stat = self:GetStatus()
 	if stat == TFA.GetStatus("grenade_pull") then
-		if self.Owner:KeyDown(IN_ATTACK2) then
+		if self:GetOwner():KeyDown(IN_ATTACK2) then
 			self:SetNW2Bool("Underhanded", true)
 		end
 		if CurTime() > self:GetStatusEnd() then
@@ -178,10 +178,10 @@ function SWEP:Think2()
 		end
 	end
 	if stat == TFA.GetStatus("grenade_ready") then
-		if self.Owner:KeyDown(IN_ATTACK2) then
+		if self:GetOwner():KeyDown(IN_ATTACK2) then
 			self:SetNW2Bool("Underhanded", true)
 		end
-		if not self.Owner:KeyDown(IN_ATTACK2) and not self.Owner:KeyDown(IN_ATTACK) then
+		if not self:GetOwner():KeyDown(IN_ATTACK2) and not self:GetOwner():KeyDown(IN_ATTACK) then
 			self:ThrowStart()
 		end
 	end
@@ -197,7 +197,7 @@ function SWEP:PrimaryAttack()
 		self:SetNW2Bool("Underhanded", false)
 
 		if IsFirstTimePredicted() then
-			timer.Simple(self.Owner:GetViewModel():SequenceDuration(), function()
+			timer.Simple(self:GetOwner():GetViewModel():SequenceDuration(), function()
 				if IsValid(self) then
 					self:SetNW2Bool("Ready", true)
 				end

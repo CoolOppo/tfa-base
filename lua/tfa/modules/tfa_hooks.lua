@@ -36,11 +36,11 @@ if CLIENT then
 			return
 		end
 		tfablurintensity = 0
-		if IsValid( LocalPlayer() ) and IsValid( LocalPlayer():GetActiveWeapon() ) and att_enabled_cv:GetBool() then
+		if LocalPlayer():IsValid() and IsValid( LocalPlayer():GetActiveWeapon() ) and att_enabled_cv:GetBool() then
 			local w = LocalPlayer():GetActiveWeapon()
 			if not w.Attachments then
 				tfablurintensity = 0
-			elseif #w.Attachments <= 0 then
+			elseif table.Count( w.Attachments ) <= 0 then
 				tfablurintensity = 0
 			else
 				tfablurintensity = w.Inspecting and 1 or 0
@@ -107,14 +107,9 @@ local function GetInspectionKey()
 	return keyv
 end
 
-local cv_cci
-if CLIENT then
-	cv_cci = GetConVar("cl_tfa_inspection_ckey")
-end
-
 local function TFAContextBlock()
 	local plyv = LocalPlayer()
-	if not IsValid(plyv) then return end
+	if not plyv:IsValid() then return end
 	if GetViewEntity() ~= plyv then return end
 	local wepv = plyv:GetActiveWeapon()
 	if not IsValid(wepv) then return end
@@ -129,7 +124,7 @@ if CLIENT then
 	local kd_old = false
 	function TFAKPThink()
 		local plyv = LocalPlayer()
-		if not IsValid(plyv) then return end
+		if not plyv:IsValid() then return end
 		if GetViewEntity() ~= plyv then return end
 		local wepv = plyv:GetActiveWeapon()
 		if not IsValid(wepv) then return end
@@ -138,12 +133,7 @@ if CLIENT then
 		local kd = input.IsKeyDown( key )
 		if IsValid( vgui.GetKeyboardFocus() ) then kd = false end
 		if kd ~= kd_old and kd and cv_cm:GetBool() then
-			if not cv_cci:GetBool() then
-				wepv:ToggleInspect()
-			elseif wep.CheckAmmo then
-				net.Start("tfaRequestFidget")
-				net.SendToServer()
-			end
+			wepv:ToggleInspect()
 		end
 		kd_old = kd
 	end

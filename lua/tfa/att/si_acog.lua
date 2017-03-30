@@ -8,6 +8,8 @@ ATTACHMENT.Description = { TFA.AttachmentColors["="], "4x zoom", TFA.AttachmentC
 ATTACHMENT.Icon = "entities/tfa_si_acog.png" --Revers to label, please give it an icon though!  This should be the path to a png, like "entities/tfa_ammo_match.png"
 ATTACHMENT.ShortName = "ACOG"
 
+local fov = 90 / 4 / 2 -- Default FOV / Scope Zoom / screenscale
+
 ATTACHMENT.WeaponTable = {
 	["VElements"] = {
 		["acog"] = {
@@ -24,7 +26,7 @@ ATTACHMENT.WeaponTable = {
 	},
 	["IronSightsPos"] = function( wep, val ) return wep.IronSightsPos_ACOG or val, true end,
 	["IronSightsAng"] = function( wep, val ) return wep.IronSightsAng_ACOG or val, true end,
-	["IronSightsSensitivity"] = 0.25,
+	["IronSightsSensitivity"] = function(wep,val) return TFA.CalculateSensitivtyScale( fov, wep:GetStat("Secondary.IronFOV"), wep.ACOGScreenScale ) end ,
 	["Secondary"] = {
 		["IronFOV"] = function( wep, val ) return val * 0.7 end
 	},
@@ -45,7 +47,7 @@ function ATTACHMENT:Attach(wep)
 	if not IsValid(wep) then return end
 	wep.RTCodeOld = wep.RTCodeOld or wep.RTCode
 	wep.RTCode = function( myself , rt, scrw, scrh)
-		if not IsValid(myself.Owner) then return end
+		if not IsValid(myself:GetOwner()) then return end
 		if not myret then
 			myret = Material("scope/gdcw_scopesightonly")
 		end
@@ -57,15 +59,15 @@ function ATTACHMENT:Attach(wep)
 		surface.SetDrawColor(color_white)
 		surface.DrawRect(-512, -512, 1024, 1024)
 		render.OverrideAlphaWriteEnable(true, true)
-		local ang = myself.Owner:EyeAngles()
+		local ang = myself:GetOwner():EyeAngles()
 		cd.angles = ang
-		cd.origin = myself.Owner:GetShootPos()
+		cd.origin = myself:GetOwner():GetShootPos()
 		local rtw, rth = 512, 512
 		cd.x = 0
 		cd.y = 0
 		cd.w = rtw
 		cd.h = rth
-		cd.fov = 90/4/3
+		cd.fov = fov
 		cd.drawviewmodel = false
 		cd.drawhud = false
 		render.Clear(0, 0, 0, 255, true, true)

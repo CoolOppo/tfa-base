@@ -21,15 +21,15 @@ local VecOr = Vector()
 function SWEP:DoBobFrame()
 	VecOr:Zero()
 	ftv = FrameTime()
-	ws = self.Owner:GetWalkSpeed()
-	rs = self.Owner:GetRunSpeed()
+	ws = self:GetOwner():GetWalkSpeed()
+	rs = self:GetOwner():GetRunSpeed()
 	ftv = ftv * 200 / ws
 
 	if not self.bobtimevar then
 		self.bobtimevar = 0
 	end
 
-	owvel = self.Owner:GetVelocity():Length()
+	owvel = self:GetOwner():GetVelocity():Length()
 	meetssprintgate = false
 	meetswalkgate = false
 
@@ -59,14 +59,14 @@ function SWEP:DoBobFrame()
 		self.bobtimehasbeensprinting = math.Approach(self.bobtimehasbeensprinting, 3, ftv)
 	end
 
-	if not self.Owner:IsOnGround() then
+	if not self:GetOwner():IsOnGround() then
 		self.bobtimehasbeensprinting = math.Approach(self.bobtimehasbeensprinting, 0, ftv / (5 / 60))
 	end
 
 	if cl_tfa_viewmodel_centered:GetBool() then ftv = ftv * 0.5 end
 
 	if owvel > 1 and owvel <= ws * 0.1 and owvel > self.tprevvel then
-		if self.Owner:IsOnGround() then
+		if self:GetOwner():IsOnGround() then
 			local val1 = math.Round(self.bobtimevar / stepinterval) * stepinterval + stepintervaloffset
 			local val2 = math.Round(self.bobtimevar / stepinterval) * stepinterval - stepintervaloffset
 
@@ -77,7 +77,7 @@ function SWEP:DoBobFrame()
 			end
 		end
 	else
-		if self.Owner:IsOnGround() then
+		if self:GetOwner():IsOnGround() then
 			self.bobtimevar = self.bobtimevar + ftv * math.max(1, owvel / (runfactorv + (sprintfactorv - runfactorv) * (meetssprintgate and 1 or 0) - (runfactorv - walkfactorv) * (meetswalkgate and 1 or 0)))
 		else
 			self.bobtimevar = self.bobtimevar + ftv
@@ -104,8 +104,8 @@ function SWEP:CalculateBob(pos, ang, ci, igvmf)
 
 	ci = ci * 0.66
 	tironsightscale = 1 - 0.6 * self.IronSightsProgress
-	owvel = self.Owner:GetVelocity():Length()
-	runspeed = self.Owner:GetWalkSpeed()
+	owvel = self:GetOwner():GetVelocity():Length()
+	runspeed = self:GetOwner():GetWalkSpeed()
 	curtimecompensated = self.bobtimevar or 0
 	timehasbeensprinting = self.bobtimehasbeensprinting or 0
 
@@ -132,7 +132,7 @@ function SWEP:CalculateBob(pos, ang, ci, igvmf)
 	local sprintbobfac = math.sqrt(math.Clamp(self.BobScaleCustom - 1, 0, 1))
 	local cboboff2 = customboboffsetx * sprintbobfac * 1.5
 	self.customboboffset = self.customboboffset * (1 + sprintbobfac / 3)
-	pos:Add(self.Owner:EyeAngles():Right() * cboboff2)
+	pos:Add(self:GetOwner():EyeAngles():Right() * cboboff2)
 	self.customboboffset = self.customboboffset * ci
 	if cl_tfa_viewmodel_centered:GetBool() then self.customboboffset.x = 0 end
 	pos:Add(ang:Right() * self.customboboffset.x * -1.33)
@@ -142,7 +142,7 @@ function SWEP:CalculateBob(pos, ang, ci, igvmf)
 	ang:RotateAroundAxis(ang:Up(), self.customboboffset.y)
 	ang:RotateAroundAxis(ang:Forward(), self.customboboffset.z)
 	tironsightscale = math.pow(tironsightscale, 2)
-	local localisedmove = WorldToLocal(self.Owner:GetVelocity(), self.Owner:GetVelocity():Angle(), VecOr, self.Owner:EyeAngles())
+	local localisedmove = WorldToLocal(self:GetOwner():GetVelocity(), self:GetOwner():GetVelocity():Angle(), VecOr, self:GetOwner():EyeAngles())
 
 	if igvmf then
 		ang:RotateAroundAxis(ang:Forward(), (math.Approach(localisedmove.y, 0, 1) / (runspeed / 8) * tironsightscale) * (ci or 1))
@@ -173,9 +173,9 @@ function SWEP:Footstep()
 
 	val1 = math.Round(self.bobtimevar / stepinterval) * stepinterval + stepintervaloffset
 	val2 = math.Round(self.bobtimevar / stepinterval) * stepinterval - stepintervaloffset
-	owvel = self.Owner:GetVelocity():Length()
+	owvel = self:GetOwner():GetVelocity():Length()
 
-	if owvel > self.Owner:GetWalkSpeed() * 0.2 then
+	if owvel > self:GetOwner():GetWalkSpeed() * 0.2 then
 		if math.abs(self.bobtimevar - val1) < math.abs(self.bobtimevar - val2) then
 			self.bobtimevar = math.Approach(self.bobtimevar, val1, 0.15)
 		else

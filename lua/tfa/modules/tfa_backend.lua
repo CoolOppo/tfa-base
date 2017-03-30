@@ -1,7 +1,7 @@
 --[[Custom Hooks]]--
 --TFA_ClientLoad = After player is fully in-game
 hook.Add("HUDPaint", "TFA_TRIGGERCLIENTLOAD", function()
-	if IsValid(LocalPlayer()) then
+	if LocalPlayer():IsValid() then
 		hook.Call("TFA_ClientLoad")
 		hook.Remove("HUDPaint", "TFA_TRIGGERCLIENTLOAD")
 	end

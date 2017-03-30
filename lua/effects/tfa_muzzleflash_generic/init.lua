@@ -13,7 +13,7 @@ function EFFECT:Init(data)
 	self.Attachment = data:GetAttachment()
 	local AddVel = vector_origin
 
-	if LocalPlayer and IsValid(LocalPlayer()) then
+	if LocalPlayer and LocalPlayer():IsValid() then
 		AddVel = LocalPlayer():GetVelocity()
 	end
 
@@ -87,7 +87,7 @@ function EFFECT:Init(data)
 		dlight.b = 64
 		dlight.brightness = 4
 		dlight.Decay = 1750
-		dlight.Size = 96
+		dlight.Size = 128
 		dlight.DieTime = CurTime() + 0.3
 	end
 

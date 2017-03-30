@@ -3,27 +3,14 @@ if SERVER then
 	--Pool netstrings
 	util.AddNetworkString("tfaSoundEvent")
 	util.AddNetworkString("tfa_base_muzzle_mp")
-	util.AddNetworkString("tfaInspect")
 	util.AddNetworkString("tfaShotgunInterrupt")
 	util.AddNetworkString("tfaRequestFidget")
 	util.AddNetworkString("tfaSDLP")
 	util.AddNetworkString("tfaArrowFollow")
+	util.AddNetworkString("tfaTracerSP")
+	util.AddNetworkString("tfaBaseShellSV")
 	--util.AddNetworkString("tfaAltAttack")
-
-	--Enable inspection
-	net.Receive("tfaInspect", function(length, client)
-		local mybool = net.ReadBool()
-		mybool = mybool and 1 or 0
-
-		if IsValid(client) and client:IsPlayer() and client:Alive() then
-			ply = client
-			wep = ply:GetActiveWeapon()
-
-			if IsValid(wep) and wep.ToggleInspect then
-				wep:ToggleInspect()
-			end
-		end
-	end)
+	
 	--Enable CKey Inspection
 
 	net.Receive("tfaRequestFidget",function(length,client)
@@ -99,5 +86,29 @@ if CLIENT then
 		if IsValid(wep) and wep.ShootEffectsCustom then
 			wep:ShootEffectsCustom(true)
 		end
+	end)
+	net.Receive("tfaBaseShellSV", function(length, ply)
+		wep = net.ReadEntity()
+
+		if IsValid(wep) and wep.MakeShellBridge then
+			wep:MakeShellBridge(true)
+			wep:EjectionSmoke(true)
+		end
+	end)
+
+	net.Receive( "tfaTracerSP", function( length, ply )
+		local part = net.ReadString()
+		local startPos = net.ReadVector()
+		local endPos = net.ReadVector()
+		local woosh = net.ReadBool()
+		local vent = net.ReadEntity()
+		local att = net.ReadInt( 8 )
+		if IsValid( vent ) then
+			local aP = vent:GetAttachment( att or 1 )
+			if aP then
+				startPos = aP.Pos
+			end
+		end
+		TFA.ParticleTracer( part, startPos, endPos, woosh, vent, att )
 	end)
 end

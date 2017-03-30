@@ -229,7 +229,7 @@ local INSPECTION_BACKGROUND = TFA.AttachmentColors["background"]
 local INSPECTION_ACTIVECOLOR = TFA.AttachmentColors["active"]
 local INSPECTION_PRIMARYCOLOR = TFA.AttachmentColors["primary"]
 local INSPECTION_SECONDARYCOLOR = TFA.AttachmentColors["secondary"]
-local worstaccuracy = 0.06
+local worstaccuracy = 0.045
 local bestrpm = 1200
 local worstmove = 0.8
 local bestdamage = 100
@@ -246,6 +246,10 @@ SWEP.AmmoTypeStrings = {
 }
 
 local att_enabled_cv = GetConVar("sv_tfa_attachments_enabled")
+
+local padding = TFA.AttachmentUIPadding
+local spacing = 64
+local dimensions = 64
 
 function SWEP:GenerateInspectionDerma()
 	TFA_INSPECTIONPANEL = vgui.Create("DPanel")
@@ -310,8 +314,8 @@ function SWEP:GenerateInspectionDerma()
 		surface.SetDrawColor(mycol)
 		surface.SetTexture(TFA_INSPECTIONPANEL.SideBar or 1)
 		surface.DrawTexturedRect(0, 0, 32, h)
-		if IsValid(self) and not self:IsFirstPerson() and #self.Attachments > 1 then
-			surface.DrawTexturedRect(ScrW() - 64 - 32, 0, 32, h)
+		if IsValid(self) and self:IsTFAInspectionStyle() then
+			surface.DrawTexturedRectUV( ScrW() - 32 - 32 - 32, 0, 32, h, 1, 0, 0, 1)
 		end
 	end
 
@@ -355,8 +359,9 @@ function SWEP:GenerateInspectionDerma()
 	descriptiontext:Dock(TOP)
 	descriptiontext:SetSize(screenwidth - lbound, 24)
 	descriptiontext.Paint = TextShadowPaint
+	local tmp_rpmstat = self:GetStat("Primary.RPM_Displayed") or self:GetStat("Primary.RPM")
 	local rpmtext = contentpanel:Add("DPanel")
-	rpmtext.Text = infotextpad .. "Firerate: " .. math.floor(self:GetStat("Primary.RPM")) .. "RPM"
+	rpmtext.Text = infotextpad .. "Firerate: " .. math.floor( tmp_rpmstat ) .. "RPM"
 
 	rpmtext.Think = function(myself)
 		myself.TextColor = TFA_INSPECTIONPANEL.SecondaryColor
@@ -422,7 +427,19 @@ function SWEP:GenerateInspectionDerma()
 
 	accuracypanel.Think = function(myself)
 		if not IsValid(self) then return end
-		myself.Bars = math.Clamp(math.Round((1 - (self.Secondary.Ironsights ~= 0 and (self:GetStat("Primary.IronAccuracy") or self:GetStat("Primary.IronSpread")) or (self:GetStat("Primary.Spread") or self:GetStat("Primary.Accuracy"))) / worstaccuracy) * 10), 0, 10)
+		local accval
+		local waccval = worstaccuracy
+		local spread = self:GetStat("Primary.Spread")
+		if self:GetStat("data.ironsights") ~= 0 then
+			local iacc = self:GetStat("Primary.IronAccuracy", spread)
+			accval = ( iacc * 2 + spread ) / 3
+			if iacc < 0.005 then
+				accval = 0
+			end
+		else
+			accval = spread
+		end
+		myself.Bars = math.Clamp( 10 - math.Round( accval / waccval * 10 ), 0, 10)
 	end
 
 	accuracypanel.Paint = PanelPaintBars
@@ -431,10 +448,11 @@ function SWEP:GenerateInspectionDerma()
 
 	accuracytext.Think = function(myself)
 		if not IsValid(self) then return end
-		local accuracystr = "Accuracy: " .. math.Round((self:GetStat("Primary.Spread") or self:GetStat("Primary.Accuracy")) * 90) .. "°"
+		local spread = self:GetStat("Primary.Spread")
+		local accuracystr = "Accuracy: " .. math.Round( spread * 90) .. "°"
 
-		if self.Secondary.Ironsights ~= 0 then
-			accuracystr = accuracystr .. " || " .. math.Round( self:GetStat("Primary.IronAccuracy",0) * 90 ) .. "°"
+		if self:GetStat("data.ironsights") ~= 0 then
+			accuracystr = accuracystr .. " || " .. math.Round( self:GetStat("Primary.IronAccuracy", spread) * 90 ) .. "°"
 		end
 
 		myself.Text = accuracystr
@@ -451,7 +469,8 @@ function SWEP:GenerateInspectionDerma()
 
 	fireratepanel.Think = function(myself)
 		if not IsValid(self) then return end
-		myself.Bars = math.Clamp(math.Round(self:GetStat("Primary.RPM") / bestrpm * 10), 0, 10)
+		local rpmstat = self:GetStat("Primary.RPM_Displayed") or self:GetStat("Primary.RPM")
+		myself.Bars = math.Clamp(math.Round( rpmstat / bestrpm * 10), 0, 10)
 	end
 
 	fireratepanel.Paint = PanelPaintBars
@@ -460,7 +479,8 @@ function SWEP:GenerateInspectionDerma()
 
 	fireratetext.Think = function(myself)
 		if not IsValid(self) then return end
-		local fireratestr = "Firerate: " .. self:GetStat("Primary.RPM") .. "RPM"
+		local rpmstat = self:GetStat("Primary.RPM_Displayed") or self:GetStat("Primary.RPM")
+		local fireratestr = "Firerate: " .. rpmstat .. "RPM"
 		myself.Text = fireratestr
 		myself.TextColor = TFA_INSPECTIONPANEL.SecondaryColor
 	end
@@ -576,15 +596,77 @@ function SWEP:GenerateInspectionDerma()
 		att_enabled_cv = GetConVar("sv_tfa_attachments_enabled")
 	end
 
+	local scrollpanel
 	if ( not att_enabled_cv ) or att_enabled_cv:GetBool() then
+		if self.Attachments and self:IsTFAInspectionStyle() then
+			scrollpanel = contentpanel:Add("DScrollPanel")
+			scrollpanel:SetPos( 0, 0 )
+			scrollpanel:SetSize( ScrW() - 64 - 26, math.floor( contentpanel:GetTall() ) )
+			local vbar = scrollpanel:GetVBar()
+			scrollpanel:SetWide( scrollpanel:GetWide() + vbar:GetWide() )
+			vbar.Paint = function(myself,w,h)
+				if not TFA_INSPECTIONPANEL then return end
+				surface.SetDrawColor( TFA_INSPECTIONPANEL.BackgroundColor.r, TFA_INSPECTIONPANEL.BackgroundColor.g, TFA_INSPECTIONPANEL.BackgroundColor.b, TFA_INSPECTIONPANEL.BackgroundColor.a / 2 )
+				surface.DrawRect(0,0,5,h)
+			end
+			vbar.btnUp.Paint = function(myself,w,h)
+				if not TFA_INSPECTIONPANEL then return end
+				surface.SetDrawColor( TFA_INSPECTIONPANEL.PrimaryColor.r, TFA_INSPECTIONPANEL.PrimaryColor.g, TFA_INSPECTIONPANEL.PrimaryColor.b, TFA_INSPECTIONPANEL.PrimaryColor.a )
+				surface.DrawRect(0,0,5,h)
+			end
+			vbar.btnDown.Paint = function(myself,w,h)
+				if not TFA_INSPECTIONPANEL then return end
+				surface.SetDrawColor( TFA_INSPECTIONPANEL.PrimaryColor.r, TFA_INSPECTIONPANEL.PrimaryColor.g, TFA_INSPECTIONPANEL.PrimaryColor.b, TFA_INSPECTIONPANEL.PrimaryColor.a )
+				surface.DrawRect(0,0,5,h)
+			end
+			vbar.btnGrip.Paint = function(myself,w,h)
+				if not TFA_INSPECTIONPANEL then return end
+				surface.SetDrawColor( TFA_INSPECTIONPANEL.PrimaryColor.r, TFA_INSPECTIONPANEL.PrimaryColor.g, TFA_INSPECTIONPANEL.PrimaryColor.b, TFA_INSPECTIONPANEL.PrimaryColor.a )
+				surface.DrawRect(0,0,5,h)
+			end
+		end
+	--[[
+
+			myself.PrimaryColor = ColorAlpha(INSPECTION_PRIMARYCOLOR, TFA_INSPECTIONPANEL.Alpha)
+			myself.SecondaryColor = ColorAlpha(INSPECTION_SECONDARYCOLOR, TFA_INSPECTIONPANEL.Alpha)
+			myself.BackgroundColor = ColorAlpha(INSPECTION_BACKGROUND, TFA_INSPECTIONPANEL.Alpha)
+			myself.ActiveColor = ColorAlpha(INSPECTION_ACTIVECOLOR, TFA_INSPECTIONPANEL.Alpha)
+	]]--
+
+		local needs_spacer = false
+		local i = 0
 		for k,v in pairs(self.Attachments) do
 			if k ~= "BaseClass" then
 				local testpanel = TFA_INSPECTIONPANEL:Add("TFAAttachmentPanel")
+				if self:IsTFAInspectionStyle() then
+					testpanel:SetStyle(0)
+					testpanel:SetParent( scrollpanel )
+					testpanel:SetContentPanel( scrollpanel )
+					i = i + 1
+				else
+					testpanel:SetStyle(1)
+				end
 				testpanel:SetViewModel(self.OwnerViewModel)
 				testpanel:SetWeapon(self)
 				testpanel:SetAttachment(k)
 				testpanel:Initialize()
+				if i > 0 and not needs_spacer then
+					testpanel:Position()
+					local _,yyv = testpanel:GetPos()
+					yyv = yyv + dimensions
+					if yyv > scrollpanel:GetTall() then
+						needs_spacer = true
+					end
+				end
 			end
+		end
+
+		if needs_spacer and IsValid(scrollpanel) then
+			local testpanel = scrollpanel:Add("DPanel")
+			testpanel.VAtt = i + 1
+			testpanel:SetPos( math.floor( testpanel:GetParent():GetWide() - padding * 2 - testpanel:GetWide() ), math.max( testpanel.VAtt - 1, 0 ) * dimensions + math.max( testpanel.VAtt - 1, 0 ) * padding * 4 + math.max( testpanel.VAtt - 1, 0 ) * spacing )
+			testpanel:SetHeight(32,32)
+			testpanel.Paint = function() end
 		end
 	end
 
@@ -600,7 +682,9 @@ function SWEP:GenerateInspectionDerma()
 end
 
 function SWEP:DoInspectionDerma()
+
 	self.InspectingProgress = self.InspectingProgress or 0
+
 	if not IsValid(TFA_INSPECTIONPANEL) and self.InspectingProgress > 0.01 then
 		self:GenerateInspectionDerma()
 	end
@@ -636,7 +720,6 @@ local outg_cvar = GetConVar("cl_tfa_hud_crosshair_outline_color_g")
 local outb_cvar = GetConVar("cl_tfa_hud_crosshair_outline_color_b")
 local outlinewidth_cvar = GetConVar("cl_tfa_hud_crosshair_outline_width")
 local hudenabled_cvar = GetConVar("cl_tfa_hud_enabled")
-local cvar_tfa_inspection_old = GetConVar("cl_tfa_inspection_old")
 local cgapscale_cvar = GetConVar("cl_tfa_hud_crosshair_gap_scale")
 
 function SWEP:DrawHUD()
@@ -644,9 +727,7 @@ function SWEP:DrawHUD()
 	cam.Start3D() --Workaround for vec:ToScreen()
 	cam.End3D()
 
-	if not cvar_tfa_inspection_old:GetBool() then
-		self:DoInspectionDerma()
-	end
+	self:DoInspectionDerma()
 
 	--Crosshair
 	local drawcrossy
@@ -667,7 +748,7 @@ function SWEP:DrawHUD()
 
 	if drawcrossy then
 		if crosscustomenable_cvar:GetBool() then
-			if IsValid(LocalPlayer()) and self.Owner == LocalPlayer() then
+			if LocalPlayer():IsValid() and self:GetOwner() == LocalPlayer() then
 				ply = LocalPlayer()
 
 				if not ply.interpposx then
@@ -683,8 +764,8 @@ function SWEP:DrawHUD()
 
 				-- If we're drawing the local player, draw the crosshair where they're aiming
 				-- instead of in the center of the screen.
-				if (self.Owner:ShouldDrawLocalPlayer() and not ply:GetNW2Bool("ThirtOTS", false)) then
-					local tr = util.GetPlayerTrace(self.Owner)
+				if (self:GetOwner():ShouldDrawLocalPlayer() and not ply:GetNW2Bool("ThirtOTS", false)) then
+					local tr = util.GetPlayerTrace(self:GetOwner())
 					tr.mask = CONTENTS_SOLID + CONTENTS_MOVEABLE + CONTENTS_MONSTER + CONTENTS_WINDOW + CONTENTS_DEBRIS + CONTENTS_GRATE + CONTENTS_AUX -- This controls what the crosshair will be projected onto.
 					local trace = util.TraceLine(tr)
 					local coords = trace.HitPos:ToScreen()
@@ -720,7 +801,7 @@ function SWEP:DrawHUD()
 				crossa = crosscol.a
 				crosshairwidth = crosshairwidth_cvar:GetFloat()
 				drawdot = drawdot_cvar:GetBool()
-				local scale = (s_cone * 90) / self.Owner:GetFOV() * ScrH() / 1.44 * cgapscale_cvar:GetFloat()
+				local scale = (s_cone * 90) / self:GetOwner():GetFOV() * ScrH() / 1.44 * cgapscale_cvar:GetFloat()
 				local gap = scale
 				local length = 1
 
@@ -876,7 +957,7 @@ function SWEP:DrawHUDAmmo()
 
 	fm = self:GetFireMode()
 
-	targbool = ( not TFA.Enum.HUDDisabledStatus[stat] ) or fm ~= lfm or ( self.Inspecting and cvar_tfa_inspection_old:GetBool() )
+	targbool = ( not TFA.Enum.HUDDisabledStatus[stat] ) or fm ~= lfm
 	targbool = targbool or ( stat == TFA.Enum.STATUS_SHOOTING and self.LastBoltShoot and CurTime() > self.LastBoltShoot + self.BoltTimerOffset)
 
 	refact, succ = self:SelectInspectAnim()
@@ -895,7 +976,7 @@ function SWEP:DrawHUDAmmo()
 		targ = 1
 	end
 
-	if self.Owner:KeyDown(IN_RELOAD) then
+	if self:GetOwner():KeyDown(IN_RELOAD) then
 		targ = 1
 	end
 
@@ -910,7 +991,7 @@ function SWEP:DrawHUDAmmo()
 	if mzpos and mzpos.Pos and not self:GetHidden() and hudenabled_cvar:GetBool() then
 		local pos = mzpos.Pos
 		local textsize = self.textsize and self.textsize or 1
-		local pl = LocalPlayer() and LocalPlayer() or self.Owner
+		local pl = LocalPlayer() and LocalPlayer() or self:GetOwner()
 		local ang = pl:EyeAngles() --(angpos.Ang):Up():Angle()
 		local myalpha = 225 * self.CLAmmoProgress
 		ang:RotateAroundAxis(ang:Right(), 90)
@@ -967,9 +1048,9 @@ function SWEP:DrawHUDAmmo()
 			local angpos2
 
 			if self.Akimbo then
-				angpos2 = self.Owner:ShouldDrawLocalPlayer() and self:GetAttachment( 2 ) or self.OwnerViewModel:GetAttachment( 2 )
+				angpos2 = self:GetOwner():ShouldDrawLocalPlayer() and self:GetAttachment( 2 ) or self.OwnerViewModel:GetAttachment( 2 )
 			else
-				angpos2 = self.Owner:ShouldDrawLocalPlayer() and self:GetAttachment(self.MuzzleAttachmentRaw or self:LookupAttachment(self.MuzzleAttachment)) or self.Owner:GetViewModel():GetAttachment(self.MuzzleAttachmentRaw or self.Owner:GetViewModel():LookupAttachment(self.MuzzleAttachment))
+				angpos2 = self:GetOwner():ShouldDrawLocalPlayer() and self:GetAttachment(self.MuzzleAttachmentRaw or self:LookupAttachment(self.MuzzleAttachment)) or self:GetOwner():GetViewModel():GetAttachment(self.MuzzleAttachmentRaw or self:GetOwner():GetViewModel():LookupAttachment(self.MuzzleAttachment))
 			end
 
 			if angpos2 then
@@ -1010,9 +1091,9 @@ function SWEP:DrawHUDAmmo()
 				end
 			end
 
-			if self.Secondary.Ammo and self.Secondary.Ammo ~= "" and self.Secondary.Ammo ~= "none" and self.Secondary.Ammo ~= 0 and not self.Akimbo then
-				if self.Secondary.ClipSize and self.Secondary.ClipSize ~= -1 then
-					str = (self:Clip2() > self.Secondary.ClipSize) and string.upper("ALT-MAG: " .. self.Secondary.ClipSize .. " + " .. (self:Clip2() - self:GetStat("Primary.ClipSize"))) or string.upper("ALT-MAG: " .. self:Clip2())
+			if self:GetStat("Secondary.Ammo") and self:GetStat("Secondary.Ammo") ~= "" and self:GetStat("Secondary.Ammo") ~= "none" and self:GetStat("Secondary.Ammo") ~= 0 and not self.Akimbo then
+				if self:GetStat("Secondary.ClipSize") and self:GetStat("Secondary.ClipSize") ~= -1 then
+					str = (self:Clip2() > self:GetStat("Secondary.ClipSize")) and string.upper("ALT-MAG: " .. self:GetStat("Secondary.ClipSize") .. " + " .. (self:Clip2() - self:GetStat("Primary.ClipSize"))) or string.upper("ALT-MAG: " .. self:Clip2())
 
 					draw.DrawText(str, "TFASleekSmall", xx + 1, yy + 1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
 					draw.DrawText(str, "TFASleekSmall", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT)
@@ -1031,35 +1112,6 @@ function SWEP:DrawHUDAmmo()
 					xx = xx - TFASleekFontHeightMedium / 3
 				end
 			end
-		elseif cvar_tfa_inspection_old:GetBool() then
-			local str = string.upper("DAMAGE: " .. RoundDecimals(self:GetStat("Primary.Damage"), 1))
-
-			if self:GetStat("Primary.NumShots") and self:GetStat("Primary.NumShots") > 1 then
-				str = str .. "x" .. math.Round(self:GetStat("Primary.NumShots"))
-			end
-
-			yy = yy - 100
-			yy = math.Clamp(yy, 0, ScrH())
-			xx = math.Clamp(xx, 250, ScrW())
-			draw.DrawText(str, "TFASleek", xx + 1, yy + 1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
-			draw.DrawText(str, "TFASleek", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT)
-			yy = yy + TFASleekFontHeight
-			str = string.upper("RPM: " .. RoundDecimals(self:GetStat("Primary.RPM"), 1))
-			draw.DrawText(str, "TFASleek", xx + 1, yy + 1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
-			draw.DrawText(str, "TFASleek", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT)
-			yy = yy + TFASleekFontHeight
-			str = string.upper("Range: " .. RoundDecimals(self:GetStat("Primary.Range") / 16000 * 0.305, 3) .. "KM")
-			draw.DrawText(str, "TFASleek", xx + 1, yy + 1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
-			draw.DrawText(str, "TFASleek", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT)
-			yy = yy + TFASleekFontHeight
-			str = string.upper("Spread: " .. RoundDecimals(self:GetStat("Primary.Spread") and self:GetStat("Primary.Spread") or self:GetStat("Primary.Accuracy"), 2))
-			draw.DrawText(str, "TFASleek", xx + 1, yy + 1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
-			draw.DrawText(str, "TFASleek", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT)
-			yy = yy + TFASleekFontHeight
-			str = string.upper("Spread Max: " .. RoundDecimals(self:GetStat("Primary.SpreadMultiplierMax"), 2))
-			draw.DrawText(str, "TFASleek", xx + 1, yy + 1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
-			draw.DrawText(str, "TFASleek", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT)
-			yy = yy + TFASleekFontHeight
 		end
 	end
 end

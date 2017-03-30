@@ -3,19 +3,20 @@ SWEP.Primary.Automatic = true
 SWEP.Secondary.Automatic = true
 SWEP.Primary.RPM = 120 --Primary Slashs per minute
 SWEP.Secondary.RPM = 60 --Secondary stabs per minute
-SWEP.SlashDelay = 0.15 --Delay for hull (primary)
-SWEP.StabDelay = 0.33 --Delay for hull (secondary)
-SWEP.SlashLength = 32
-SWEP.StabLength = 24
-SWEP.Primary.Sound = Sound("Weapon_Knife.hull") --Sounds
+SWEP.Primary.Delay = 0.15 --Delay for hull (primary)
+SWEP.Secondary.Delay = 0.33 --Delay for hull (secondary)
+SWEP.Primary.Length = 32
+SWEP.Secondary.Length = 48
+SWEP.Primary.Sound = Sound("Weapon_Knife.Slash") --Sounds
 SWEP.KnifeShink = "Weapon_Knife.HitWall" --Sounds
 SWEP.KnifeSlash = "Weapon_Knife.Hit" --Sounds
-SWEP.KnifeStab = "Weapon_Knife.hull" --Sounds
+SWEP.KnifeStab = "Weapon_Knife.Slash" --Sounds
 SWEP.SlashTable = {"midslash1", "midslash2"} --Table of possible hull sequences
 SWEP.StabTable = {"stab"} --Table of possible hull sequences
 SWEP.StabMissTable = {"stab_miss"} --Table of possible hull sequences
 SWEP.DisableIdleAnimations = false --Enable idles
---[[ Don't Edit Below ]]--
+--[[ Don't Edit Below ]]
+--
 SWEP.DamageType = DMG_SLASH
 SWEP.MuzzleFlashEffect = "" --No muzzle
 SWEP.DoMuzzleFlash = false --No muzzle
@@ -26,210 +27,243 @@ SWEP.Primary.DefaultClip = 1 -- Bullets you start with
 SWEP.data = {} --No ironsights
 SWEP.data.ironsights = 0 --No ironsights
 SWEP.IsMelee = true
-SWEP.Callback = {}
+
+SWEP.HullData = {
+	hullMin = Vector(-16, -16, -16),
+	hullMax = Vector(16, 16, 16)
+}
+
+SWEP.SlashCounter = 1
+SWEP.StabCounter = 1
 
 function SWEP:Deploy()
-	self.StabIndex = math.random(1, #self.SlashTable)
-	self.StabMiss = math.random(1, #self.SlashTable)
 	return BaseClass.Deploy(self)
 end
 
-SWEP.hull = 1
-local hull = {}
+local lim_up_vec = Vector(1,1,0.1)
 
+function SWEP:ApplyForce(ent, force, posv, now)
+	if not IsValid(ent) or not ent.GetPhysicsObjectNum then return end
 
-local vm,pos,ang
-
-function SWEP:PrimaryAttack()
-	vm = self.Owner:GetViewModel()
-	if not TFA.Enum.ReadyStatus[self:GetStatus()] then return end
-	if self:GetNextPrimaryFire() < CurTime() and self.Owner:IsPlayer() and not self.Owner:KeyDown(IN_RELOAD) then
-		self.hull = self.hull + 1
-
-		if self.hull > #self.SlashTable then
-			self.hull = 1
+	if now then
+		if ent.GetRagdollEntity then
+			ent = ent:GetRagdollEntity() or ent
 		end
 
-		self:SendViewModelSeq(self.SlashTable[self.hull])
+		if not IsValid(ent) then return end
+		local phys = ent:GetPhysicsObjectNum(0)
 
-		if IsFirstTimePredicted() then
-			self:EmitSound(self.Primary.Sound)
+		if IsValid(phys) then
+			if ent:IsPlayer() or ent:IsNPC() then
+				ent:SetVelocity( force * 0.1 * lim_up_vec )
+				phys:SetVelocity(phys:GetVelocity() + force * 0.1 * lim_up_vec )
+			else
+				phys:ApplyForceOffset(force, posv)
+			end
 		end
-
-		self.Owner:SetAnimation(PLAYER_ATTACK1)
-		self:SetNextPrimaryFire(CurTime() + 1 / (self.Primary.RPM / 60))
-		self:SetNextSecondaryFire(CurTime() + 1 / (self.Primary.RPM / 60))
-		self:SetStatus(TFA.Enum.STATUS_RELOADING)
-		self:SetStatusEnd(CurTime() + self.SlashDelay)
+	else
+		timer.Simple(0, function()
+			if IsValid(self) and self:OwnerIsValid() and IsValid(ent) then
+				self:ApplyForce(ent, force, posv, true)
+			end
+		end)
 	end
 end
 
-function SWEP:PrimarySlash()
-	if not self:OwnerIsValid() then return end
-	pos = self.Owner:GetShootPos()
-	ang = self.Owner:GetAimVector()
-	dmg_rand = math.Rand(.85, 1.25)
-	dmgval = self.Primary.Damage * dmg_rand
+function SWEP:SlashSound(tr)
+	if IsFirstTimePredicted() then
+		if tr.Hit then
+			if tr.MatType == MAT_FLESH or tr.MatType == MAT_ALIENFLESH then
+				self:EmitSound(self.KnifeSlash)
+			else
+				self:EmitSound(self.KnifeShink)
+			end
+		else
+			self:EmitSound(self.Primary.Sound)
+		end
+	end
+end
 
-	if not dmgval or dmgval <= 1 then
-		dmgval = 40 * dmg_rand
+function SWEP:GetSlashTrace(tr, tbl, fwd)
+	local ow = self:GetOwner()
+	ow:LagCompensation(true)
+	tr = util.TraceLine(tbl)
+
+	if (not tr.Hit) then
+		if not self.HullData.Radius then
+			self.HullData.Radius = self.HullData.hullMin:Distance(self.HullData.hullMax) / 2
+		end
+
+		local hd = self.HullData
+		tbl.mins = -hd.hullMin
+		tbl.maxs = hd.hullMax
+		tbl.endpos = tbl.endpos - fwd * hd.Radius
+		tr = util.TraceHull(tbl)
+	end
+	ow:LagCompensation(false)
+
+	return tr
+end
+
+function SWEP:SmackDamage(tr, fwd, primary)
+	if not tr.Entity:IsValid() then return end
+	local dmg, force
+
+	if primary then
+		dmg = self:GetStat("Primary.Damage")
+	else
+		dmg = self:GetStat("Secondary.Damage")
 	end
 
-	self.Owner:LagCompensation(true)
+	force = dmg * 25
+	local dmginfo = DamageInfo()
+	dmginfo:SetAttacker(self:GetOwner())
+	dmginfo:SetInflictor(self)
+	dmginfo:SetDamage(dmg)
+	dmginfo:SetDamageType(self.DamageType)
+	dmginfo:SetDamagePosition(tr.HitPos)
+	dmginfo:SetReportedPosition(tr.StartPos)
+	dmginfo:SetDamageForce(fwd * force)
+	tr.Entity:DispatchTraceAttack(dmginfo, tr, fwd)
+	self:ApplyForce( tr.Entity, dmginfo:GetDamageForce(), tr.HitPos )
+end
 
-	hull.start = pos
-	hull.endpos = pos + (ang * self.SlashLength)
-	hull.filter = self.Owner
-	hull.mins = Vector(-10, -5, 0)
-	hull.maxs = Vector(10, 5, 5)
-	local slashtrace = util.TraceHull(hull)
+function SWEP:SmackEffect(tr, fwd)
+	local vSrc = tr.StartPos
+	local bFirstTimePredicted = IsFirstTimePredicted()
+	local bHitWater = bit.band(util.PointContents(vSrc), MASK_WATER) ~= 0
+	local bEndNotWater = bit.band(util.PointContents(tr.HitPos), MASK_WATER) == 0
 
-	self.Owner:LagCompensation(false)
+	local trSplash = bHitWater and bEndNotWater and util.TraceLine({
+		start = tr.HitPos,
+		endpos = vSrc,
+		mask = MASK_WATER
+	}) or not (bHitWater or bEndNotWater) and util.TraceLine({
+		start = vSrc,
+		endpos = tr.HitPos,
+		mask = MASK_WATER
+	})
 
-	if slashtrace.Hit then
-		if slashtrace.Entity == nil or not slashtrace.Entity.EntIndex then return end
+	if (trSplash and bFirstTimePredicted) then
+		local data = EffectData()
+		data:SetOrigin(trSplash.HitPos)
+		data:SetScale(1)
 
-		if game.GetTimeScale() > 0.99 then
-			self.Owner:FireBullets({
-				Attacker = self.Owner,
-				Inflictor = self,
-				Damage = dmgval,
-				Force = dmgval * 0.15,
-				Distance = self.SlashLength + 10,
-				HullSize = 12.5,
-				Tracer = 0,
-				Src = self.Owner:GetShootPos(),
-				Dir = slashtrace.Normal,
-				Callback = function(a, b, c)
-					if c then
-						c:SetDamageType(DMG_SLASH)
-					end
-				end
-			})
-		else
-			local dmg = DamageInfo()
-			dmg:SetAttacker(self.Owner)
-			dmg:SetInflictor(self)
-			dmg:SetDamagePosition(self.Owner:GetShootPos())
-			dmg:SetDamageForce(self.Owner:GetAimVector() * (dmgval * 0.25))
-			dmg:SetDamage(dmgval)
-			dmg:SetDamageType(DMG_SLASH)
-			slashtrace.Entity:TakeDamageInfo(dmg)
+		if (bit.band(util.PointContents(trSplash.HitPos), CONTENTS_SLIME) ~= 0) then
+			data:SetFlags(FX_WATER_IN_SLIME)
 		end
 
-		targ = slashtrace.Entity
+		util.Effect("watersplash", data)
+	end
 
-		if slashtrace.MatType == MAT_FLESH or slashtrace.MatType == MAT_ALIENFLESH then
-			self:EmitSound(self.KnifeSlash)
-		else
-			self:EmitSound(self.KnifeShink)
+	self:DoImpactEffect(tr, self.DamageType)
+
+	if (tr.Hit and bFirstTimePredicted and not trSplash) then
+		local data = EffectData()
+		data:SetOrigin(tr.HitPos)
+		data:SetStart(vSrc)
+		data:SetSurfaceProp(tr.SurfaceProps)
+		data:SetDamageType(self.DamageType)
+		data:SetHitBox(tr.HitBox)
+		data:SetEntity(tr.Entity)
+		util.Effect("Impact", data)
+	end
+end
+
+local tracedata = {}
+
+function SWEP:Slash(bPrimary)
+	local ow, gsp, ea, fw, tr, rpm, delay
+
+	if bPrimary == nil then
+		bPrimary = true
+	end
+
+	ow = self:GetOwner()
+	gsp = ow:GetShootPos()
+	ea = ow:EyeAngles()
+	fw = ea:Forward()
+	tracedata.start = gsp
+	tracedata.endpos = gsp + fw * (bPrimary and self.Primary.Length or self.Secondary.Length)
+	tracedata.filter = ow
+
+	tr = self:GetSlashTrace(tr, tracedata, fw)
+	rpm = self:GetStat("Primary.RPM")
+	delay = self:GetStat("Primary.Delay")
+	self:SlashSound(tr)
+	self:SmackDamage(tr, fw, bPrimary)
+	self:SmackEffect(tr, fw, bPrimary)
+	self:SetStatus(TFA.Enum.STATUS_SHOOTING)
+	self:SetStatusEnd(CurTime() + 60 / rpm - delay)
+end
+
+function SWEP:CanAttack()
+	if not TFA.Enum.ReadyStatus[self:GetStatus()] then return false end
+	if CurTime() < self:GetNextPrimaryFire() then return false end
+	return true
+end
+
+function SWEP:PrimaryAttack()
+	if not self:CanAttack() then return end
+
+	if self:GetNextPrimaryFire() < CurTime() and self:GetOwner():IsPlayer() and not self:GetOwner():KeyDown(IN_RELOAD) then
+		self.SlashCounter = self.SlashCounter + 1
+
+		if self.SlashCounter > #self.SlashTable then
+			self.SlashCounter = 1
 		end
+
+		self:SendViewModelSeq(self.SlashTable[self.SlashCounter])
+
+		self:GetOwner():SetAnimation(PLAYER_ATTACK1)
+		self:SetNextPrimaryFire(CurTime() + 1 / (self.Primary.RPM / 60))
+		self:SetNextSecondaryFire(CurTime() + 1 / (self.Primary.RPM / 60))
+		self:SetStatus(TFA.Enum.STATUS_RELOADING)
+		self:SetStatusEnd(CurTime() + self.Primary.Delay)
 	end
 end
 
 function SWEP:SecondaryAttack()
-	pos = self.Owner:GetShootPos()
-	ang = self.Owner:GetAimVector()
-	vm = self.Owner:GetViewModel()
-	if not TFA.Enum.ReadyStatus[self:GetStatus()] then return end
 
-	if self:GetNextSecondaryFire() < CurTime() and self.Owner:IsPlayer() and not self.Owner:KeyDown(IN_RELOAD) then
-		self:EmitSound(self.Primary.Sound)
-		hull.start = pos
-		hull.endpos = pos + (ang * self.StabLength)
-		hull.filter = self.Owner
-		hull.mins = Vector(-10, -5, 0)
-		hull.maxs = Vector(10, 5, 5)
-		local stabtrace = util.TraceHull(hull)
-		if stabtrace.Hit then
-			self.StabIndex = self.StabIndex or 0
-			self.StabIndex = self.StabIndex + 1
+	if not self:CanAttack() then return end
 
-			if self.StabIndex > #self.StabTable then
-				self.StabIndex = 1
-			end
+	local ow, gsp, ea, fw, tr
 
-			self:SendViewModelSeq(self.StabTable[self.StabIndex])
-		else
-			self.StabMiss = self.StabMiss or 0
-			self.StabMiss = self.StabMiss + 1
+	ow = self:GetOwner()
+	gsp = ow:GetShootPos()
+	ea = ow:EyeAngles()
+	fw = ea:Forward()
+	tracedata.start = gsp
+	tracedata.endpos = gsp + fw * self.Secondary.Length
+	tracedata.filter = ow
 
-			if self.StabMiss > #self.StabMissTable then
-				self.StabMiss = 1
-			end
+	tr = self:GetSlashTrace(tr, tracedata, fw)
 
-			self:SendViewModelSeq(self.StabMissTable[self.StabMiss])
+	if tr.Hit then
+		self.StabIndex = self.StabIndex or 0
+		self.StabIndex = self.StabIndex + 1
+
+		if self.StabIndex > #self.StabTable then
+			self.StabIndex = 1
 		end
 
-		self.Owner:SetAnimation(PLAYER_ATTACK1)
-		self:SetNextPrimaryFire(CurTime() + 1 / (self.Secondary.RPM / 60))
-		self:SetNextSecondaryFire(CurTime() + 1 / (self.Secondary.RPM / 60))
-		self:SetStatus(TFA.Enum.STATUS_SILENCER_TOGGLE)
-		self:SetStatusEnd(CurTime() + self.StabDelay)
-	end
-end
+		self:SendViewModelSeq(self.StabTable[self.StabIndex])
+	else
+		self.StabMiss = self.StabMiss or 0
+		self.StabMiss = self.StabMiss + 1
 
-function SWEP:Stab()
-	if not self:OwnerIsValid() then return end
-	pos2 = self.Owner:GetShootPos()
-	ang2 = self.Owner:GetAimVector()
-	dmg_rand = math.Rand(.85, 1.25)
-	dmgval = self.Secondary.Damage * dmg_rand
-
-	if not dmgval or dmgval <= 1 then
-		dmgval = 100 * dmg_rand
-	end
-
-	self.Owner:LagCompensation(true)
-	local stab2 = {}
-	stab2.start = pos2
-	stab2.endpos = pos2 + (ang2 * 24)
-	stab2.filter = self.Owner
-	stab2.mins = Vector(-10, -5, 0)
-	stab2.maxs = Vector(10, 5, 5)
-	local stabtrace2 = util.TraceHull(stab2)
-	if stabtrace2.Hit then
-		if stabtrace2.Entity == nil then return end
-
-		if game.GetTimeScale() > 0.99 then
-			self.Owner:FireBullets({
-				Attacker = self.Owner,
-				Inflictor = self,
-				Damage = dmgval,
-				Force = dmgval * 0.15,
-				Distance = self.StabLength + 10,
-				HullSize = 12.5,
-				Tracer = 0,
-				Src = self.Owner:GetShootPos(),
-				Dir = stabtrace2.Normal,
-				Callback = function(a, b, c)
-					if c then
-						c:SetDamageType(DMG_SLASH)
-					end
-				end
-			})
-		else
-			local dmg = DamageInfo()
-			dmg:SetAttacker(self.Owner)
-			dmg:SetInflictor(self)
-			dmg:SetDamagePosition(self.Owner:GetShootPos())
-			dmg:SetDamageForce(self.Owner:GetAimVector() * (dmgval * 0.25))
-			dmg:SetDamage(dmgval)
-			dmg:SetDamageType(DMG_SLASH)
-			stabtrace2.Entity:TakeDamageInfo(dmg)
+		if self.StabMiss > #self.StabMissTable then
+			self.StabMiss = 1
 		end
 
-		targ = stabtrace2.Entity
-
-		if stabtrace2.MatType == MAT_FLESH or stabtrace2.MatType == MAT_ALIENFLESH then
-			self:EmitSound(self.KnifeSlash)
-		else
-			self:EmitSound(self.KnifeShink)
-		end
+		self:SendViewModelSeq(self.StabMissTable[self.StabMiss])
 	end
 
-
-	self.Owner:LagCompensation(false)
+	self:GetOwner():SetAnimation(PLAYER_ATTACK1)
+	self:SetNextPrimaryFire(CurTime() + 60 / self.Secondary.RPM)
+	self:SetNextSecondaryFire(CurTime() + 60 / self.Secondary.RPM )
+	self:SetStatus(TFA.Enum.STATUS_SILENCER_TOGGLE)
+	self:SetStatusEnd(CurTime() + self.Secondary.Delay)
 end
 
 function SWEP:ThrowKnife()
@@ -237,37 +271,42 @@ function SWEP:ThrowKnife()
 	self:EmitSound(self.Primary.Sound)
 
 	if SERVER then
-		local knife = ents.Create("tfa_thrown_blade")
+		local ent = ents.Create("tfa_thrown_blade")
 
-		if IsValid(knife) then
-			knife:SetAngles(self.Owner:EyeAngles())
-			knife:SetPos(self.Owner:GetShootPos())
-			knife:SetOwner(self.Owner)
-			knife:SetModel(self.WorldModel)
-			knife:SetPhysicsAttacker(self.Owner)
-			knife:Spawn()
-			knife:Activate()
-			knife:SetNW2String("ClassName", self.ClassName)
-			self.Owner:SetAnimation(PLAYER_ATTACK1)
-			local phys = knife:GetPhysicsObject()
-			phys:SetVelocity(self.Owner:GetAimVector() * 1500)
-			phys:AddAngleVelocity(Vector(0, 500, 0))
-			self.Owner:StripWeapon(self.Gun)
+		if ent:IsValid() then
+			ent:SetPos(self:GetOwner():GetShootPos())
+			ent:SetAngles(self:GetOwner():EyeAngles())
+			ent:SetModel(self.Primary.ProjectileModel or self.WorldModel)
+			ent:SetOwner(self:GetOwner())
+			ent:SetPhysicsAttacker(self:GetOwner())
+			ent:Spawn()
+			ent:Activate()
+			ent:SetNW2String("ClassName", self:GetClass())
+			local phys = ent:GetPhysicsObject()
+
+			if IsValid(phys) then
+				phys:SetVelocity(self:GetOwner():GetAimVector() * 1250)
+				phys:AddAngleVelocity(Vector(0, 480, 0))
+			end
+
+			self:GetOwner():SetAnimation(PLAYER_ATTACK1)
+			self:GetOwner():StripWeapon(self:GetClass())
 		end
 	end
 end
 
 function SWEP:Reload()
-	if not self:OwnerIsValid() and self.Owner:KeyDown(IN_RELOAD) then return end
+	if not self:OwnerIsValid() and self:GetOwner():KeyDown(IN_RELOAD) then return end
 	self:ThrowKnife()
 end
 
 function SWEP:Think2()
 	if self:GetStatus() == TFA.Enum.STATUS_SILENCER_TOGGLE and CurTime() > self:GetStatusEnd() then
-		self:Stab()
+		self:Slash(false)
 	elseif self:GetStatus() == TFA.Enum.STATUS_RELOADING and CurTime() > self:GetStatusEnd() then
-		self:PrimarySlash()
+		self:Slash(true)
 	end
+
 	BaseClass.Think2(self)
 end
 

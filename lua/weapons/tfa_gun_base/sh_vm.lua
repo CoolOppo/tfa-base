@@ -44,7 +44,7 @@ function SWEP:CalculateViewModelFlip()
 
 	righthanded = true
 
-	if SERVER and self.Owner:GetInfoNum("cl_tfa_viewmodel_flip", 0) == 1 then
+	if SERVER and self:GetOwner():GetInfoNum("cl_tfa_viewmodel_flip", 0) == 1 then
 		righthanded = false
 	end
 
@@ -206,8 +206,8 @@ function SWEP:Sway(pos, ang)
 	local rate = l_Lerp(self.IronSightsProgress, 15, 30)
 	local fac = l_Lerp(self.IronSightsProgress, 0.6, 0.15)
 	--calculate angle differences
-	anga = self.Owner:EyeAngles() - oldang
-	oldang = self.Owner:EyeAngles()
+	anga = self:GetOwner():EyeAngles() - oldang
+	oldang = self:GetOwner():EyeAngles()
 	angb.y = angb.y + (0 - angb.y) * rft * 5
 	angb.p = angb.p + (0 - angb.p) * rft * 5
 
@@ -249,7 +249,7 @@ local vmfov
 
 function SWEP:GetViewModelPosition( pos, ang )
 	--Bobscale
-	self.BobScaleCustom = l_Lerp(self.IronSightsProgress, 1, l_Lerp( math.min( self.Owner:GetVelocity():Length() / self.Owner:GetWalkSpeed(), 1 ), self.IronBobMult, self.IronBobMultWalk))
+	self.BobScaleCustom = l_Lerp(self.IronSightsProgress, 1, l_Lerp( math.min( self:GetOwner():GetVelocity():Length() / self:GetOwner():GetWalkSpeed(), 1 ), self.IronBobMult, self.IronBobMultWalk))
 	self.BobScaleCustom = l_Lerp(self.SprintProgress, self.BobScaleCustom, self.SprintBobMult)
 	--Start viewbob code
 	local gunbobintensity = gunbob_intensity_cvar:GetFloat() * 0.65 * 0.66

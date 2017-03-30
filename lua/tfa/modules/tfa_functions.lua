@@ -8,14 +8,7 @@ local host_timescale_cv = GetConVar("host_timescale")
 local ft = 0.01
 local LastSys
 
-local SoundChannels = {
-	["shoot"] = CHAN_WEAPON,
-	["shootwrap"] = CHAN_STATIC,
-	["misc"] = CHAN_AUTO
-}
-
-
-local BindToKey = {
+local BindToKeyTBL = {
 	["ctrl"] = KEY_LCONTROL,
 	["rctrl"] = KEY_LCONTROL,
 	["alt"] = KEY_LALT,
@@ -42,38 +35,206 @@ local alphabet = "abcdefghijklmnopqrstuvwxyz"
 
 for i = 1, string.len(alphabet) do
 	local sstr = string.sub( alphabet, i, i )
-	BindToKey[ sstr ] =  string.byte( sstr ) - 86
+	BindToKeyTBL[ sstr ] =  string.byte( sstr ) - 86
 end
+
+
+local SoundChars = {
+	["*"] = "STREAM",--Streams from the disc and rapidly flushed; good on memory, useful for music or one-off sounds
+	["#"] = "DRYMIX",--Skip DSP, affected by music volume rather than sound volume
+	["@"] = "OMNI",--Play the sound audible everywhere, like a radio voiceover or surface.PlaySound
+	[">"] = "DOPPLER",--Left channel for heading towards the listener, Right channel for heading away
+	["<"] = "DIRECTIONAL",--Left channel = front facing, Right channel = read facing
+	["^"] = "DISTVARIANT",--Left channel = close, Right channel = far
+	["("] = "SPATIALSTEREO_LOOP",--Position a stereo sound in 3D space; broken
+	[")"] = "SPATIALSTEREO",--Same as above but actually useful
+	["}"] = "FASTPITCH",--Low quality pitch shift
+	["$"] = "CRITICAL",--Keep it around in memory
+	["!"] = "SENTENCE",--NPC dialogue
+	["?"] = "USERVOX"--Fake VOIP data; not that useful
+}
+local DefaultSoundChar = ")"
+
+local SoundChannels = {
+	["shoot"] = CHAN_WEAPON,
+	["shootwrap"] = CHAN_STATIC,
+	["misc"] = CHAN_AUTO
+}
+
+
+--Scope
+
+local cv_rt
+
+function TFA.RTQuality()
+	if not cv_rt then cv_rt = GetConVar("cl_tfa_3dscope_quality") end
+	if ( not cv_rt ) or ( cv_rt:GetInt() == -1 ) then
+		return math.max( 3 - math.floor( ScrH() / 540 ), 0 )
+	elseif cv_rt then
+		return math.Clamp( cv_rt:GetInt(), 0, 3 )
+	end
+end
+
+--Sensitivity
+
+local ss, fov_og, resrat
+
+function TFA.CalculateSensitivtyScale( fov_target, fov_src, screenscale )
+	if not LocalPlayer():IsValid() then return 1 end
+	resrat = ScrW() / ScrH()
+	fov_og = fov_src or TFADUSKFOV or LocalPlayer():GetFOV()
+	ss = screenscale or 1
+	return math.atan( resrat * math.tan(math.rad( fov_target / 2  ) ) ) / math.atan( resrat * math.tan( math.rad( fov_og / 2) ) ) / ss
+end
+
+--Ammo
+
+local AmmoTypes
+local proceed
+
+game.AddAmmoTypeOld = game.AddAmmoTypeOld or game.AddAmmoType
+
+function game.AddAmmoType( tbl )
+	if not tbl.name then return end
+	proceed = true
+	AmmoTypes = game.BuildAmmoTypes()
+	for k,v in pairs( AmmoTypes ) do
+		if v.name == tbl.name then
+			proceed = false
+			break
+		end
+	end
+	if proceed then
+		game.AddAmmoTypeOld( tbl )
+	end
+end
+
+function TFA.AddAmmo( id, name )
+	game.AddAmmoType( {
+		name  = id
+	})
+
+	if language then
+		language.Add( id .. "_ammo", name )
+	end
+
+	return id
+end
+
+--Particles
+
+function TFA.ParticleTracer( name,startPos,endPos,doWhiz,ent,att)
+	if type(ent) ~= "number" and IsValid(ent) and ent.EntIndex then
+		ent = ent:EntIndex()
+	end
+	if ent then
+		att = att or -1
+		return util.ParticleTracerEx(name,startPos,endPos,doWhiz,ent,att)
+	else
+		return util.ParticleTracerEx(name,startPos,endPos,doWhiz,0,-1)
+	end
+end
+
+--Binds
 
 function TFA.BindToKey( bind, default )
-	return BindToKey[ string.lower( bind ) ] or default or KEY_C
+	return BindToKeyTBL[ string.lower( bind ) ] or default or KEY_C
 end
 
-function TFA.AddFireSound(id,path,wrap)
-	sound.Add({
-		name = id,
-		channel = wrap and SoundChannels.shootwrap or SoundChannels.shoot,
-		volume = 1.0,
-		level = 120,
-		pitch = { 97, 103 },
-		sound = ")" .. path
-	})
+--Sounds
+
+function TFA.PatchSound( path, kind )
+	local pathv
+	local c = string.sub(path,1,1)
+
+	if SoundChars[c] then
+		pathv = string.sub( path, 2, string.len(path) )
+	else
+		pathv = path
+	end
+
+	local kindstr = kind
+	if not kindstr then
+		kindstr = DefaultSoundChar
+	end
+	if string.len(kindstr) > 1 then
+		local found = false
+		for k,v in pairs( SoundChars ) do
+			if v == kind then
+				kindstr = k
+				found = true
+				break
+			end
+		end
+		if not found then
+			kindstr = DefaultSoundChar
+		end
+	end
+
+	return kindstr .. pathv
 end
 
-function TFA.AddWeaponSound(id,path)
-	sound.Add({
-		name = id,
-		channel = SoundChannels.misc,
-		volume = 1.0,
-		level = 80,
-		pitch = { 97, 103 },
-		sound = ")" .. path
-	})
+function TFA.AddFireSound( id, path, wrap, kindv )
+	kindv = kindv or ")"
+	if isstring(path) then
+		sound.Add({
+			name = id,
+			channel = wrap and SoundChannels.shootwrap or SoundChannels.shoot,
+			volume = 1.0,
+			level = 120,
+			pitch = { 97, 103 },
+			sound = TFA.PatchSound( path, kindv )
+		})
+	elseif istable(path) then
+		local tb = table.Copy( path )
+		for k,v in pairs(tb) do
+			tb[k] = TFA.PatchSound( v, kindv )
+		end
+		sound.Add({
+			name = id,
+			channel = wrap and SoundChannels.shootwrap or SoundChannels.shoot,
+			volume = 1.0,
+			level = 120,
+			pitch = { 97, 103 },
+			sound = tb
+		})
+	end
 end
+
+function TFA.AddWeaponSound( id, path, kindv )
+	kindv = kindv or ")"
+	if isstring(path) then
+		sound.Add({
+			name = id,
+			channel = SoundChannels.misc,
+			volume = 1.0,
+			level = 80,
+			pitch = { 97, 103 },
+			sound = TFA.PatchSound( path, kindv )
+		})
+	elseif istable(path) then
+		local tb = table.Copy( path )
+		for k,v in pairs(tb) do
+			tb[k] = TFA.PatchSound( v, kindv )
+		end
+		sound.Add({
+			name = id,
+			channel = SoundChannels.misc,
+			volume = 1.0,
+			level = 80,
+			pitch = { 97, 103 },
+			sound = tb
+		})
+	end
+end
+
+--Frametime
 
 function TFA.FrameTime()
 	return ft
 end
+
+--CVar Mediators
 
 function TFA.GetGasEnabled()
 	if tmpsp then return math.Round(Entity(1):GetInfoNum("cl_tfa_fx_gasblur", 0)) ~= 0 end
@@ -136,7 +297,7 @@ end
 function TFA.PlayerCarryingTFAWeapon(ply)
 	if not ply then
 		if CLIENT then
-			if IsValid(LocalPlayer()) then
+			if LocalPlayer():IsValid() then
 				ply = LocalPlayer()
 			else
 				return false, nil, nil

@@ -1,7 +1,18 @@
 local tmpmat
-local fname
+local fname, fnxp, fext
 
-local function PrecacheDirectory(dir, typev)
+local MaterialFiles = {
+	["vmt"] = true,
+	["png"] = true
+}
+
+local SoundFiles = {
+	["wav"] = true,
+	["mp3"] = true,
+	["ogg"] = true
+}
+
+local function PrecacheDirectory(dir)
 	if not typev then
 		typev = ""
 
@@ -24,13 +35,15 @@ local function PrecacheDirectory(dir, typev)
 
 	for k, v in pairs(files) do
 		fname = string.lower(dir .. v)
+		fnxp = string.Explode(".",fname,false)
+		fext = fnxp[ #fnxp ]
 
-		if (string.find(v, ".vmt") or string.find(v, ".vtf") or string.find(v, ".png")) and (typev == "" or typev == "mat") then
-			tmpmat = Material(string.Replace(fname, ".vmt", ""))
+		if MaterialFiles[fext] then
+			tmpmat = Material(string.Replace(string.Replace(fname, ".vmt", ""),"materials/",""))
 			tmpmat:GetKeyValues()
-		elseif string.find(v, ".mdl") and (typev == "" or typev == "mdl") then
+		elseif fext == "mdl" then
 			util.PrecacheModel(fname)
-		elseif (string.find(v, ".wav") or string.find(v, ".mp3")) and (typev == "" or typev == "snd") then
+		elseif SoundFiles[v] then
 			util.PrecacheSound(fname)
 		end
 	end
@@ -48,7 +61,7 @@ end
 
 cv_mdl = GetConVar("mp_tfa_precache_models")
 if cv_mdl == nil then
-	cv_mdl = CreateConVar("mp_tfa_precache_models", "0",{ FCVAR_ARCHIVE, FCVAR_CLIENTCMD_CAN_EXECUTE, FCVAR_UNREGISTERED }, "Precache weapon models?")
+	cv_mdl = CreateConVar("mp_tfa_precache_models", "1",{ FCVAR_ARCHIVE, FCVAR_CLIENTCMD_CAN_EXECUTE, FCVAR_UNREGISTERED }, "Precache weapon models?")
 end
 
 cv_mat = GetConVar("mp_tfa_precache_materials")

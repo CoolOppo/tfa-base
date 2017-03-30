@@ -78,7 +78,7 @@ function EFFECT:Init(ef)
 	if not self.startpos then
 		self.startpos = vector_origin
 
-		if IsValid(LocalPlayer()) then
+		if LocalPlayer():IsValid() then
 			self.startpos = LocalPlayer():GetShootPos()
 		end
 	end

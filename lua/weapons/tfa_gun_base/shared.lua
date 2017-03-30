@@ -1,18 +1,24 @@
 --[[Define Modules]]
 SWEP.SV_MODULES = {}
 SWEP.SH_MODULES = {"sh_anims.lua", "sh_autodetection.lua", "sh_utils.lua", "sh_attachments.lua", "sh_bullet.lua", "sh_effects.lua", "sh_bobcode.lua", "sh_calc.lua", "sh_akimbo.lua", "sh_events.lua", "sh_nzombies.lua", "sh_ttt.lua" }
-SWEP.ClSIDE_MODULES = { "cl_effects.lua", "cl_viewbob.lua", "cl_hud.lua", "cl_mods.lua" }
+SWEP.ClSIDE_MODULES = { "cl_effects.lua", "cl_viewbob.lua", "cl_hud.lua", "cl_mods.lua", "cl_laser.lua" }
 SWEP.Category = "" --The category.  Please, just choose something generic or something I've already done if you plan on only doing like one swep.
 SWEP.Author = "TheForgottenArchitect"
 SWEP.Contact = "theforgottenarchitect"
 SWEP.Purpose = ""
 SWEP.Instructions = ""
 SWEP.DrawCrosshair = true
+SWEP.DrawCrosshairIS = false
 SWEP.ViewModelFOV = 65
 SWEP.ViewModelFlip = false
 SWEP.Skin = 0 --Viewmodel skin
 SWEP.Spawnable = false
 SWEP.IsTFAWeapon = true
+
+SWEP.Shotgun = false
+SWEP.ShotgunEmptyAnim = false
+SWEP.ShotgunEmptyAnim_Shell = true
+SWEP.ShellTime = nil
 
 SWEP.data = {}
 SWEP.data.ironsights = 1
@@ -21,9 +27,10 @@ SWEP.MoveSpeed = 1
 SWEP.IronSightsMoveSpeed = nil
 
 SWEP.Primary.Damage = -1
+SWEP.Primary.DamageTypeHandled = true --true will handle damagetype in base
 SWEP.Primary.NumShots = 1
 SWEP.Primary.Force = -1
-SWEP.Primary.KnockBack = -1
+SWEP.Primary.Knockback = -1
 SWEP.Primary.Recoil = 1
 SWEP.Primary.RPM = 600
 SWEP.Primary.RPM_Semi = -1
@@ -42,8 +49,10 @@ SWEP.Primary.SpreadIncrement = -1 --What percentage of the modifier is added on,
 SWEP.Primary.SpreadRecovery = -1 --How much the spread recovers, per second.
 SWEP.Primary.IronAccuracy = 0
 SWEP.Primary.MaxPenetration = 2
-SWEP.Primary.Range = 1200
-SWEP.Primary.RangeFalloff = 0.5
+SWEP.Primary.Range = -1--1200
+SWEP.Primary.RangeFalloff = -1--0.5
+SWEP.Primary.PenetrationMultiplier = 1
+SWEP.Primary.DryFireDelay = nil
 
 SWEP.BoltAction = false --Unscope/sight after you shoot?
 SWEP.BoltAction_Forced = false
@@ -68,8 +77,9 @@ SWEP.LuaShellEffect = nil --Defaults to blowback
 
 SWEP.SmokeParticle = nil --Smoke particle (ID within the PCF), defaults to something else based on holdtype
 
-SWEP.SequenceLengthOverride = {} --Changes the status delay of a given animation
-SWEP.SequenceRateOverride = {} --Like above but changes animation length
+SWEP.StatusLengthOverride = {} --Changes the status delay of a given animation; only used on reloads.  Otherwise, use SequenceLengthOverride or one of the others
+SWEP.SequenceLengthOverride = {} --Changes both the status delay and the nextprimaryfire of a given animation
+SWEP.SequenceRateOverride = {} --Like above but changes animation length to a target
 SWEP.SequenceRateOverrideScaled = {} --Like above but scales animation length rather than being absolute
 
 SWEP.BlowbackEnabled = false --Enable Blowback?
@@ -140,6 +150,7 @@ local vm_offset_pos = Vector()
 local vm_offset_ang = Angle()
 
 SWEP.IronAnimation = {
+	--[[
 	["in"] = {
 		["type"] = TFA.Enum.ANIMATION_SEQ, --Sequence or act
 		["value"] = "Idle_To_Iron", --Number for act, String/Number for sequence
@@ -163,9 +174,11 @@ SWEP.IronAnimation = {
 		["value_last"] = "Fire_Iron_Last",
 		["value_empty"] = "Fire_Iron_Dry"
 	} --What do you think
+	]]--
 }
 
 SWEP.SprintAnimation = {
+	--[[
 	["in"] = {
 		["type"] = TFA.Enum.ANIMATION_SEQ, --Sequence or act
 		["value"] = "Idle_to_Sprint", --Number for act, String/Number for sequence
@@ -184,6 +197,7 @@ SWEP.SprintAnimation = {
 		["value_empty"] = "Sprint_to_Idle_Empty",
 		["transition"] = true
 	} --Outward transition
+	]]--
 }
 
 SWEP.FirstDeployEnabled = nil--Force first deploy enabled
@@ -309,17 +323,20 @@ function SWEP:Initialize()
 	self.SwayScale = 0
 	self:SetSilenced( self.Silenced or self.DefaultSilenced )
 	self.Silenced = self.Silenced or self.DefaultSilenced
+	self:PatchAmmoTypeAccessors()
 	self:FixRPM()
 	self:FixIdles()
 	self:FixIS()
 	self:FixProceduralReload()
 	self:FixCone()
+	self:FixProjectile()
 	self:AutoDetectMuzzle()
 	self:AutoDetectDamage()
 	self:AutoDetectDamageType()
 	self:AutoDetectForce()
 	self:AutoDetectKnockback()
 	self:AutoDetectSpread()
+	self:AutoDetectRange()
 	self:IconFix()
 	self:CreateFireModes()
 	self:FixAkimbo()
@@ -350,8 +367,8 @@ Purpose:  Standard SWEP Function
 
 function SWEP:Deploy()
 
-	if engine.ActiveGamemode() == "terrortown" and IsValid(self.Owner) and IsValid(self.Owner:GetViewModel()) then
-		self.OwnerViewModel = self.Owner:GetViewModel()
+	if engine.ActiveGamemode() == "terrortown" and IsValid(self:GetOwner()) and IsValid(self:GetOwner():GetViewModel()) then
+		self.OwnerViewModel = self:GetOwner():GetViewModel()
 		self.OwnerViewModel:SetModel(self.ViewModel)
 	end
 
@@ -359,7 +376,7 @@ function SWEP:Deploy()
 	self:VMIV()
 	if not self:VMIV() then
 		print("Invalid VM on owner: ")
-		print(self.Owner)
+		print(self:GetOwner())
 
 		return
 	end
@@ -378,7 +395,9 @@ function SWEP:Deploy()
 	self:SetStatusEnd(ct + len )
 	self:SetNextPrimaryFire( ct + len )
 	self:SetIronSightsRaw(false)
-	self:SetShotgunCancel( false )
+	if not self.PumpAction then
+		self:SetShotgunCancel( false )
+	end
 	self:SetBurstCount(0)
 	self.IronSightsProgress = 0
 	self.SprintProgress = 0
@@ -390,7 +409,7 @@ function SWEP:Deploy()
 		--end
 		self.Inspecting = false
 	end
-	self.DefaultFOV = TFADUSKFOV or ( IsValid(self.Owner) and self.Owner:GetFOV() or 90 )
+	self.DefaultFOV = TFADUSKFOV or ( IsValid(self:GetOwner()) and self:GetOwner():GetFOV() or 90 )
 	if self:GetStat("Skin") and isnumber(self:GetStat("Skin")) then
 		self.OwnerViewModel:SetSkin(self:GetStat("Skin"))
 		self:SetSkin(self:GetStat("Skin"))
@@ -421,7 +440,7 @@ function SWEP:Holster(target)
 
 		if IsFirstTimePredicted() then
 			if not IsValid(target) then
-				target = self.Owner
+				target = self:GetOwner()
 			end
 
 			self:SetSwapTarget(target)
@@ -446,10 +465,10 @@ function SWEP:FinishHolster()
 		self:Holster(ent)
 
 		if IsValid(ent) then
-			if ent == self.Owner then
-				self:WeaponUse(self.Owner)
+			if ent == self:GetOwner() then
+				self:WeaponUse(self:GetOwner())
 			else
-				self.Owner:SelectWeapon(ent:GetClass())
+				self:GetOwner():SelectWeapon(ent:GetClass())
 				self.OwnerViewModel = nil
 			end
 		end
@@ -542,7 +561,7 @@ function SWEP:PlayerThinkCL()
 	self.BlowbackCurrentRoot = l_mathApproach(self.BlowbackCurrentRoot, 0, self.BlowbackCurrentRoot * ft * 15)
 end
 
-local is, spr
+local is, spr, waittime, sht, lact
 
 function SWEP:Think2()
 	if self.LuaShellRequestTime > 0 and CurTime() > self.LuaShellRequestTime then
@@ -565,6 +584,7 @@ function SWEP:Think2()
 	self:ProcessFireMode()
 	self:ProcessHoldType()
 	self:ReloadCV()
+	self:IronSightSounds()
 	is, spr = self:IronSights()
 	if stat == TFA.Enum.STATUS_FIDGET and is then
 		self:SetStatusEnd(0)
@@ -596,9 +616,7 @@ function SWEP:Think2()
 			self:FinishHolster()
 			finalstat = TFA.Enum.STATUS_HOLSTER_FINAL
 			self:SetStatusEnd(ct + 0.6)
-		elseif stat == TFA.Enum.STATUS_RELOADING_SHOTGUN_START then--Shotgun Reloading
-			finalstat = self:LoadShell()
-		elseif stat == TFA.Enum.STATUS_RELOADING_SHOTGUN_LOOP then
+		elseif stat == TFA.Enum.STATUS_RELOADING_SHOTGUN_START_SHELL then--Shotgun Reloading from empty
 			self:TakePrimaryAmmo(1,true)
 			self:TakePrimaryAmmo(-1)
 			if self:Ammo1() <= 0 or self:Clip1() >= self:GetPrimaryClipSize() or self:GetShotgunCancel() then
@@ -607,24 +625,91 @@ function SWEP:Think2()
 				self:SetStatusEnd(ct + self:GetActivityLength( tanim ))
 				self:SetShotgunCancel( false )
 			else
-				finalstat = self:LoadShell()
+				waittime = self:GetActivityLength( self:GetLastActivity(), false ) - self:GetActivityLength( self:GetLastActivity(), true )
+				if waittime > 0.01 then
+					finalstat = TFA.GetStatus("reloading_wait")
+					self:SetStatusEnd( CurTime() + waittime )
+				else
+					finalstat = self:LoadShell()
+				end
+				--finalstat = self:LoadShell()
+				--self:SetStatusEnd( self:GetNextPrimaryFire() )
+			end
+		elseif stat == TFA.Enum.STATUS_RELOADING_SHOTGUN_START then--Shotgun Reloading
+			finalstat = self:LoadShell()
+		elseif stat == TFA.Enum.STATUS_RELOADING_SHOTGUN_LOOP then
+			self:TakePrimaryAmmo(1,true)
+			self:TakePrimaryAmmo(-1)
+			lact = self:GetLastActivity()
+			if self.StatusLengthOverride[ lact ] then
+				sht = self:GetStat("ShellTime")
+				if sht then sht = sht / self:NZAnimationSpeed(ACT_VM_RELOAD) end
+				waittime = ( sht or self:GetActivityLength( lact , false ) ) -  self:GetActivityLength( lact , true )
+			else
+				waittime = 0
+			end
+			if waittime > 0.01 then
+				finalstat = TFA.GetStatus("reloading_wait")
+				self:SetStatusEnd( CurTime() + waittime )
+			else
+				if self:Ammo1() <= 0 or self:Clip1() >= self:GetPrimaryClipSize() or self:GetShotgunCancel() then
+					finalstat = TFA.Enum.STATUS_RELOADING_SHOTGUN_END
+					success,tanim = self:ChooseShotgunPumpAnim()
+					self:SetStatusEnd(ct + self:GetActivityLength( tanim ))
+					self:SetShotgunCancel( false )
+				else
+					finalstat = self:LoadShell()
+				end
 			end
 		elseif stat == TFA.Enum.STATUS_RELOADING then
 			self:CompleteReload()
+			waittime = self:GetActivityLength( self:GetLastActivity(), false ) - self:GetActivityLength( self:GetLastActivity(), true )
+			if waittime > 0.01 then
+				finalstat = TFA.GetStatus("reloading_wait")
+				self:SetStatusEnd( CurTime() + waittime )
+			end
+			--self:SetStatusEnd( self:GetNextPrimaryFire() )
 		elseif stat == TFA.Enum.STATUS_SILENCER_TOGGLE then
 			self:SetSilenced( not self:GetSilenced() )
 			self.Silenced = self:GetSilenced()
+		elseif stat == TFA.GetStatus("reloading_wait") and self.Shotgun then
+			if self:Ammo1() <= 0 or self:Clip1() >= self:GetPrimaryClipSize() or self:GetShotgunCancel() then
+				finalstat = TFA.Enum.STATUS_RELOADING_SHOTGUN_END
+				success,tanim = self:ChooseShotgunPumpAnim()
+				self:SetStatusEnd(ct + self:GetActivityLength( tanim ))
+				--self:SetShotgunCancel( false )
+			else
+				finalstat = self:LoadShell()
+			end
+		elseif stat == TFA.GetStatus("reloading_shotgun_end") and self.Shotgun then
+			self:SetShotgunCancel( false )
+		elseif self.PumpAction and stat == TFA.GetStatus("pump") then
+			self:SetShotgunCancel( false )
+		elseif stat == TFA.GetStatus("shooting") and self.PumpAction then
+			if self:Clip1() == 0 and self:GetStat("PumpAction").value_empty then
+				--finalstat = TFA.GetStatus("pump_ready")
+				self:SetShotgunCancel( true )
+			elseif ( self:GetStat("Primary.ClipSize") < 0 or self:Clip1() > 0 ) and self:GetStat("PumpAction").value then
+				--finalstat = TFA.GetStatus("pump_ready")
+				self:SetShotgunCancel( true )
+			end
+			--self:SetStatusEnd( math.huge )
 		end
 
 		self:SetStatus(finalstat)
 
-		if finalstat == TFA.Enum.STATUS_IDLE and (self.Sprint_Mode == TFA.Enum.LOCOMOTION_ANI or self.Sights_Mode == TFA.Enum.LOCOMOTION_ANI or self.Sprint_Mode == TFA.Enum.LOCOMOTION_HYBRID or self.Sights_Mode == TFA.Enum.LOCOMOTION_HYBRID) then
+		local smi = self.Sights_Mode == TFA.Enum.LOCOMOTION_ANI
+		local spi = self.Sprint_Mode == TFA.Enum.LOCOMOTION_HYBRID or self.Sprint_Mode == TFA.Enum.LOCOMOTION_ANI
+
+		if ( not TFA.Enum.ReadyStatus[stat] ) and stat ~= TFA.GetStatus("shooting") and stat ~= TFA.GetStatus("pump") and finalstat == TFA.Enum.STATUS_IDLE and ( smi or spi ) then
 			is = self:GetIronSights( true )
-			succ,tanim = self:Locomote(is and (self.Sights_Mode == TFA.Enum.LOCOMOTION_ANI), is, spr and (self.Sprint_Mode == TFA.Enum.LOCOMOTION_ANI), spr)
-			if succ == false then
-				self:SetNextIdleAnim(-1)
-			else
-				self:SetNextIdleAnim(math.max(self:GetNextIdleAnim(),CurTime() + 0.1))
+			if ( is and smi ) or ( spr and spi ) then
+				succ,tanim = self:Locomote(is and smi, is, spr and spi, spr)
+				if succ == false then
+					self:SetNextIdleAnim(-1)
+				else
+					self:SetNextIdleAnim(math.max(self:GetNextIdleAnim(),CurTime() + 0.1))
+				end
 			end
 		end
 		self.LastBoltShoot = nil
@@ -637,6 +722,16 @@ function SWEP:Think2()
 				self:SetBurstCount(0)
 				self:SetNextPrimaryFire( CurTime() + self:GetBurstDelay() )
 			end
+		end
+	end
+
+	if stat == TFA.Enum.STATUS_IDLE and self:GetShotgunCancel() then
+		if self.PumpAction then
+			if CurTime() > self:GetNextPrimaryFire() and not self:GetOwner():KeyDown(IN_ATTACK) then
+				self:DoPump()
+			end
+		else
+			self:SetShotgunCancel( false )
 		end
 	end
 
@@ -662,24 +757,24 @@ function SWEP:IronSights()
 		if not ironsights_cv:GetBool() then
 			self.data.ironsights_default = self.data.ironsights_default or self.data.ironsights
 			self.data.ironsights = 0
-		elseif self.data.ironsights_default == 1 and self.data.ironsights == 0 then
+		elseif self.data.ironsights_default == 1 and self:GetStat("data.ironsights") == 0 then
 			self.data.ironsights = 1
 			self.data.ironsights_default = 0
 		end
 	end
 	ct = l_CT()
 	stat = self:GetStatus()
-	local owent = self.Owner
+	local owent = self:GetOwner()
 	issighting = false
 	issprinting = false
 	self.is_old = self:GetIronSightsRaw()
 	self.spr_old = self:GetSprinting()
 	if sprint_cv:GetBool() and not self.AllowSprintAttack then
-		issprinting = self.Owner:GetVelocity():Length2D() > self.Owner:GetRunSpeed() * 0.6 and self.Owner:KeyDown(IN_SPEED)
+		issprinting = self:GetOwner():GetVelocity():Length2D() > self:GetOwner():GetRunSpeed() * 0.6 and self:GetOwner():KeyDown(IN_SPEED)
 	end
 	vm = self.OwnerViewModel
 
-	if not (self.data and self.data.ironsights == 0) then
+	if not (self.data and self:GetStat("data.ironsights") == 0 ) then
 		if CLIENT then
 			if not ironsights_toggle_cvar:GetBool() then
 				if owent:KeyDown(IN_ATTACK2) then
@@ -780,14 +875,18 @@ function SWEP:IronSights()
 		self:SetNextIdleAnim(-1)
 	end
 
-	if (self.Sprint_Mode == TFA.Enum.LOCOMOTION_ANI or self.Sights_Mode == TFA.Enum.LOCOMOTION_ANI or self.Sprint_Mode == TFA.Enum.LOCOMOTION_HYBRID or self.Sights_Mode == TFA.Enum.LOCOMOTION_HYBRID) and (self.spr_old ~= issprinting or self.is_old_final ~= issighting) then
+
+	local smi = ( self.Sights_Mode == TFA.Enum.LOCOMOTION_ANI ) and self.is_old_final ~= issighting
+	local spi = ( self.Sprint_Mode == TFA.Enum.LOCOMOTION_HYBRID or self.Sprint_Mode == TFA.Enum.LOCOMOTION_ANI ) and self.spr_old ~= issprinting
+
+	if ( smi or spi ) and ( self:GetStatus() == TFA.Enum.STATUS_IDLE or ( self:GetStatus() == TFA.Enum.STATUS_SHOOTING and self:CanInterruptShooting() ) ) and not self:GetShotgunCancel() then
 		--self:SetNextIdleAnim(-1)
 		local toggle_is = self.is_old ~= issighting
 		if issighting and self.spr_old ~= issprinting then
 			toggle_is = true
 		end
 		succ,tanim = self:Locomote(toggle_is and (self.Sights_Mode == TFA.Enum.LOCOMOTION_ANI or self.Sights_Mode == TFA.Enum.LOCOMOTION_HYBRID ), issighting, (self.spr_old ~= issprinting) and (self.Sprint_Mode == TFA.Enum.LOCOMOTION_ANI or self.Sprint_Mode == TFA.Enum.LOCOMOTION_HYBRID ), issprinting)
-		if succ == false then
+		if ( not succ ) and ( ( toggle_is and smi ) or ( (self.spr_old ~= issprinting) and spi ) ) then
 			self:SetNextIdleAnim(-1)
 		end
 	end
@@ -854,6 +953,7 @@ function SWEP:GetIronSights( ignorestatus )
 
 		self.is_cached = issighting
 
+		--[[
 		if (self.is_cached_old ~= issighting) and not ( game.SinglePlayer() and CLIENT ) then
 			if (issighting == false) then--and ((CLIENT and IsFirstTimePredicted()) or (SERVER and sp)) then
 				self:EmitSound(self.IronOutSound or "TFA.IronOut")
@@ -861,6 +961,7 @@ function SWEP:GetIronSights( ignorestatus )
 				self:EmitSound(self.IronInSound or "TFA.IronIn")
 			end
 		end
+		]]--
 
 		self.is_cached_old = self.is_cached
 	end
@@ -868,12 +969,29 @@ function SWEP:GetIronSights( ignorestatus )
 	return self.is_cached
 end
 
+SWEP.is_sndcache_old = false
+
+function SWEP:IronSightSounds()
+	is = self:GetIronSights()
+	if SERVER or ( CLIENT and IsFirstTimePredicted() ) then
+		if is ~= self.is_sndcache_old then
+			if is then
+				self:EmitSound(self.IronInSound or "TFA.IronIn")
+			else
+				self:EmitSound(self.IronOutSound or "TFA.IronOut")
+			end
+		end
+		self.is_sndcache_old = is
+	end
+end
+
 local legacy_reloads_cv = GetConVar("sv_tfa_reloads_legacy")
 local dryfire_cvar = GetConVar("sv_tfa_allow_dryfire")
 
-function SWEP:CanPrimaryAttack()
+function SWEP:CanPrimaryAttack( )
+	stat = self:GetStatus()
 	if not TFA.Enum.ReadyStatus[stat] and stat ~= TFA.Enum.STATUS_SHOOTING then
-		if stat == TFA.Enum.STATUS_RELOADING_SHOTGUN_START or stat == TFA.Enum.STATUS_RELOADING_SHOTGUN_LOOP then
+		if self.Shotgun and TFA.Enum.ReloadStatus[stat] then
 			self:SetShotgunCancel( true )
 		end
 		return false
@@ -893,12 +1011,14 @@ function SWEP:CanPrimaryAttack()
 		return
 	end
 
-	stat = self:GetStatus()
 	if self:GetStat("Primary.ClipSize") <= 0 and self:Ammo1() < self:GetStat("Primary.AmmoConsumption") then
 		return false
 	end
+	if self:GetSprinting() and not self.AllowSprintAttack then
+		return false
+	end
 	if self:GetPrimaryClipSize(true) > 0 and self:Clip1() < self:GetStat("Primary.AmmoConsumption") then
-		if self.Owner:KeyPressed(IN_ATTACK) then
+		if self:GetOwner():KeyPressed(IN_ATTACK) then
 			self:ChooseDryFireAnim()
 		end
 		if not self.HasPlayedEmptyClick then
@@ -912,16 +1032,15 @@ function SWEP:CanPrimaryAttack()
 		end
 		return false
 	end
-	if self:GetSprinting() and not self.AllowSprintAttack then
-		return false
-	end
-	if self.FiresUnderwater == false and self.Owner:WaterLevel() >= 3 then
+	if self.FiresUnderwater == false and self:GetOwner():WaterLevel() >= 3 then
 		self:SetNextPrimaryFire(l_CT() + 0.5)
 		self:EmitSound("Weapon_AR2.Empty")
 		return false
 	end
 
 	self.HasPlayedEmptyClick = false
+
+	if CurTime() < self:GetNextPrimaryFire() then return false end
 
 	return true
 end
@@ -930,22 +1049,23 @@ function SWEP:PrimaryAttack()
 	if not IsValid(self) then return end
 	if not self:VMIV() then return end
 	if not self:CanPrimaryAttack() then return end
-	if self.CanBeSilenced and self.Owner:KeyDown(IN_USE) and ( SERVER or not sp ) then
+	if self.CanBeSilenced and self:GetOwner():KeyDown(IN_USE) and ( SERVER or not sp ) then
 		self:ChooseSilenceAnim( not self:GetSilenced() )
 		success, tanim = self:SetStatus(TFA.Enum.STATUS_SILENCER_TOGGLE)
-		self:SetStatusEnd( l_CT() + ( self:GetActivityLength( tanim ) ) )
+		self:SetStatusEnd( l_CT() + self:GetActivityLength( tanim ) )
 		return
 	end
 	self:SetNextPrimaryFire( CurTime() + self:GetFireDelay() )
 	if self:GetMaxBurst() > 1 then
 		self:SetBurstCount( math.max(1,self:GetBurstCount() + 1) )
 	end
+	if self.PumpAction and self:GetShotgunCancel() then return end
 	self:SetStatus(TFA.Enum.STATUS_SHOOTING)
 	self:SetStatusEnd(self:GetNextPrimaryFire())
 	self:ToggleAkimbo()
-	self:ChooseShootAnim()
+	succ, tanim = self:ChooseShootAnim()
 	if ( not game.SinglePlayer() ) or ( not self:IsFirstPerson() ) then
-		self.Owner:SetAnimation(PLAYER_ATTACK1)
+		self:GetOwner():SetAnimation(PLAYER_ATTACK1)
 	end
 	if self:GetStat("Primary.Sound") and IsFirstTimePredicted()  and not ( sp and CLIENT ) then
 		if self:GetStat("Primary.SilencedSound") and self:GetSilenced() then
@@ -955,13 +1075,16 @@ function SWEP:PrimaryAttack()
 		end
 	end
 	self:TakePrimaryAmmo( self:GetStat("Primary.AmmoConsumption") )
+	if self:Clip1() == 0 and self:GetStat("Primary.ClipSize") > 0 then
+		self:SetNextPrimaryFire( math.max( self:GetNextPrimaryFire(), CurTime() + ( self.Primary.DryFireDelay or self:GetActivityLength(tanim, true) ) ) )
+	end
 	self:ShootBulletInformation()
 	local _, CurrentRecoil = self:CalculateConeRecoil()
 	self:Recoil(CurrentRecoil,IsFirstTimePredicted())
 	if sp and SERVER then
 		self:CallOnClient("Recoil","")
 	end
-	if self.MuzzleFlashEnabled and not self.AutoDetectMuzzleAttachment then
+	if self.MuzzleFlashEnabled and ( not self:IsFirstPerson() or not self.AutoDetectMuzzleAttachment ) then
 		self:ShootEffectsCustom()
 	end
 
@@ -969,13 +1092,22 @@ function SWEP:PrimaryAttack()
 		self:EjectionSmoke()
 	end
 	self:DoAmmoCheck()
+	if self:GetStatus() == TFA.GetStatus("shooting") and self.PumpAction then
+		if self:Clip1() == 0 and self:GetStat("PumpAction").value_empty then
+			--finalstat = TFA.GetStatus("pump_ready")
+			self:SetShotgunCancel( true )
+		elseif ( self:GetStat("Primary.ClipSize") < 0 or self:Clip1() > 0 ) and self:GetStat("PumpAction").value then
+			--finalstat = TFA.GetStatus("pump_ready")
+			self:SetShotgunCancel( true )
+		end
+	end
 end
 
 function SWEP:CanSecondaryAttack()
 end
 
 function SWEP:SecondaryAttack()
-	if self.data and self.data.ironsights == 0 and self.AltAttack then
+	if self.data and self:GetStat("data.ironsights") == 0 and self.AltAttack then
 		self:AltAttack()
 		return
 	end
@@ -990,42 +1122,126 @@ function SWEP:Reload(released)
 	if self:Ammo1() <= 0 then return end
 	if self:GetStat("Primary.ClipSize") < 0 then return end
 	if ( not released ) and ( not self:GetLegacyReloads() ) then return end
-	if self:GetLegacyReloads() and not  dryfire_cvar:GetBool() and not self.Owner:KeyDown(IN_RELOAD) then return end
-	if self.Owner:KeyDown(IN_USE) then return end
+	if self:GetLegacyReloads() and not  dryfire_cvar:GetBool() and not self:GetOwner():KeyDown(IN_RELOAD) then return end
+	if self:GetOwner():KeyDown(IN_USE) then return end
 
 	ct = l_CT()
 	stat = self:GetStatus()
 
-	if TFA.Enum.ReadyStatus[stat] or ( stat == TFA.Enum.STATUS_SHOOTING and self:CanInterruptShooting() ) then
+	if self.PumpAction and self:GetShotgunCancel() then
+		if stat == TFA.Enum.STATUS_IDLE then
+			self:DoPump()
+		end
+	elseif TFA.Enum.ReadyStatus[stat] or ( stat == TFA.Enum.STATUS_SHOOTING and self:CanInterruptShooting() ) then
 		if self:Clip1() < self:GetPrimaryClipSize() then
 			if self.Shotgun then
 				success, tanim = self:ChooseShotgunReloadAnim()
-				self:SetStatus(TFA.Enum.STATUS_RELOADING_SHOTGUN_START)
-				self:SetStatusEnd(ct + self:GetActivityLength( tanim ))
+				if self.ShotgunEmptyAnim  then
+					local _, tg = self:ChooseAnimation( "reload_empty" )
+					if tanim == tg and self.ShotgunEmptyAnim_Shell then
+						self:SetStatus(TFA.Enum.STATUS_RELOADING_SHOTGUN_START_SHELL)
+					else
+						self:SetStatus(TFA.Enum.STATUS_RELOADING_SHOTGUN_START)
+					end
+				else
+					self:SetStatus(TFA.Enum.STATUS_RELOADING_SHOTGUN_START)
+				end
+				self:SetStatusEnd(ct + self:GetActivityLength( tanim, true ))
+				--self:SetNextPrimaryFire(ct + self:GetActivityLength( tanim, false ) )
 			else
 				success, tanim = self:ChooseReloadAnim()
 				self:SetStatus(TFA.Enum.STATUS_RELOADING)
 				if self:GetStat("ProceduralReloadEnabled") then
 					self:SetStatusEnd(ct + self:GetStat("ProceduralReloadTime"))
 				else
-					self:SetStatusEnd(ct + self:GetActivityLength( ACT_VM_RELOAD ) )
+					self:SetStatusEnd(ct + self:GetActivityLength( tanim, true ) )
+					self:SetNextPrimaryFire(ct + self:GetActivityLength( tanim, false ) )
 				end
 			end
 			if ( not game.SinglePlayer() ) or ( not self:IsFirstPerson() ) then
-				self.Owner:SetAnimation(PLAYER_RELOAD)
+				self:GetOwner():SetAnimation(PLAYER_RELOAD)
 			end
 			if self:GetStat("Primary.ReloadSound") and IsFirstTimePredicted() then
 				self:EmitSound(self:GetStat("Primary.ReloadSound"))
 			end
-		elseif released or self.Owner:KeyPressed(IN_RELOAD) then--if self.Owner:KeyPressed(IN_RELOAD) or not self:GetLegacyReloads() then
+			self:SetNextPrimaryFire( -1 )
+		elseif released or self:GetOwner():KeyPressed(IN_RELOAD) then--if self:GetOwner():KeyPressed(IN_RELOAD) or not self:GetLegacyReloads() then
 			self:CheckAmmo()
 		end
 	end
 end
 
-function SWEP:LoadShell()
+function SWEP:Reload2(released)
+	if not self:VMIV() then return end
+	if self:Ammo2() <= 0 then return end
+	if self:GetStat("Secondary.ClipSize") < 0 then return end
+	if ( not released ) and ( not self:GetLegacyReloads() ) then return end
+	if self:GetLegacyReloads() and not  dryfire_cvar:GetBool() and not self:GetOwner():KeyDown(IN_RELOAD) then return end
+	if self:GetOwner():KeyDown(IN_USE) then return end
+
+	ct = l_CT()
+	stat = self:GetStatus()
+
+	if self.PumpAction and self:GetShotgunCancel() then
+		if stat == TFA.Enum.STATUS_IDLE then
+			self:DoPump()
+		end
+	elseif TFA.Enum.ReadyStatus[stat] or ( stat == TFA.Enum.STATUS_SHOOTING and self:CanInterruptShooting() ) then
+		if self:Clip2() < self:GetSecondaryClipSize() then
+			if self.Shotgun then
+				success, tanim = self:ChooseShotgunReloadAnim()
+				if self.ShotgunEmptyAnim  then
+					local _, tg = self:ChooseAnimation( "reload_empty" )
+					if tanim == tg and self.ShotgunEmptyAnim_Shell then
+						self:SetStatus(TFA.Enum.STATUS_RELOADING_SHOTGUN_START_SHELL)
+					else
+						self:SetStatus(TFA.Enum.STATUS_RELOADING_SHOTGUN_START)
+					end
+				else
+					self:SetStatus(TFA.Enum.STATUS_RELOADING_SHOTGUN_START)
+				end
+				self:SetStatusEnd(ct + self:GetActivityLength( tanim, true ))
+				--self:SetNextPrimaryFire(ct + self:GetActivityLength( tanim, false ) )
+			else
+				success, tanim = self:ChooseReloadAnim()
+				self:SetStatus(TFA.Enum.STATUS_RELOADING)
+				if self:GetStat("ProceduralReloadEnabled") then
+					self:SetStatusEnd(ct + self:GetStat("ProceduralReloadTime"))
+				else
+					self:SetStatusEnd(ct + self:GetActivityLength( tanim, true ) )
+					self:SetNextPrimaryFire(ct + self:GetActivityLength( tanim, false ) )
+				end
+			end
+			if ( not game.SinglePlayer() ) or ( not self:IsFirstPerson() ) then
+				self:GetOwner():SetAnimation(PLAYER_RELOAD)
+			end
+			if self:GetStat("Secondary.ReloadSound") and IsFirstTimePredicted() then
+				self:EmitSound(self:GetStat("Secondary.ReloadSound"))
+			end
+			self:SetNextPrimaryFire( -1 )
+		elseif released or self:GetOwner():KeyPressed(IN_RELOAD) then--if self:GetOwner():KeyPressed(IN_RELOAD) or not self:GetLegacyReloads() then
+			self:CheckAmmo()
+		end
+	end
+end
+
+function SWEP:DoPump()
+	succ,tanim = self:PlayAnimation( self:GetStat("PumpAction") )
+	self:SetStatus( TFA.GetStatus("pump") )
+	self:SetStatusEnd( CurTime() + self:GetActivityLength( tanim, true ) )
+	self:SetNextPrimaryFire( CurTime() + self:GetActivityLength( tanim, false ) )
+	self:SetNextIdleAnim(math.max( self:GetNextIdleAnim(), CurTime() + self:GetActivityLength( tanim, false ) ))
+end
+
+function SWEP:LoadShell( )
 	success, tanim = self:ChooseReloadAnim()
-	self:SetStatusEnd(ct + ( self.ShellTime or self:GetActivityLength( tanim ) ) )
+	if self.StatusLengthOverride[ tanim ] then
+		self:SetStatusEnd(ct + self:GetActivityLength( tanim, true ) )
+	else
+		sht = self:GetStat("ShellTime")
+		if sht then sht = sht / self:NZAnimationSpeed(ACT_VM_RELOAD) end
+		self:SetStatusEnd(ct + ( sht or self:GetActivityLength( tanim, true ) ) )
+	end
 	return TFA.Enum.STATUS_RELOADING_SHOTGUN_LOOP
 end
 
@@ -1065,7 +1281,7 @@ function SWEP:DoAmmoCheck()
 	if IsValid(self) and SERVER and cv_strip:GetBool() and self:Clip1() == 0 and self:Ammo1() == 0 then
 		timer.Simple(.1, function()
 			if SERVER and IsValid(self) and self:OwnerIsValid() then
-				self.Owner:StripWeapon(self.ClassName)
+				self:GetOwner():StripWeapon(self.ClassName)
 			end
 		end)
 	end
@@ -1081,9 +1297,7 @@ Purpose:  Standard SWEP Function
 local fovv
 local sensval
 local sensitivity_cvar, sensitivity_fov_cvar, sensitivity_speed_cvar
-local resrat
 if CLIENT then
-	resrat = ScrW() / ScrH()
 	sensitivity_cvar = GetConVar("cl_tfa_scope_sensitivity")
 	sensitivity_fov_cvar = GetConVar("cl_tfa_scope_sensitivity_autoscale")
 	sensitivity_speed_cvar = GetConVar("sv_tfa_scope_gun_speed_scale")
@@ -1096,13 +1310,8 @@ function SWEP:AdjustMouseSensitivity()
 		sensval = sensval * sensitivity_cvar:GetFloat() / 100
 
 		if sensitivity_fov_cvar:GetFloat() then
-			if self:GetStat("Scoped_3D") then
-				fovv = self:GetStat("RTScopeFOV") * 4
-			else
-				fovv = self.Owner:GetFOV()
-			end
-			fovv = fovv / ( self:GetStat("Scoped_3D") and self:GetStat("Secondary.ScopeZoom") or 1 )
-			sensval = sensval * math.atan(resrat * math.tan(math.rad(fovv / 2))) / math.atan(resrat * math.tan(math.rad(self.DefaultFOV / 2)))
+			fovv = self:GetStat("Secondary.IronFOV") or 70
+			sensval = sensval * TFA.CalculateSensitivtyScale( fovv )
 		else
 			sensval = sensval
 		end
@@ -1164,6 +1373,26 @@ function SWEP:CalculateViewModelOffset( )
 		target_ang = self:GetStat( "VMAng" ) * 1
 	end
 
+	if cl_tfa_viewmodel_centered:GetBool() then
+		if self:GetStat("CenteredPos") then
+			target_pos.x = self:GetStat("CenteredPos").x
+			target_pos.y = self:GetStat("CenteredPos").y
+			target_pos.z = self:GetStat("CenteredPos").z
+			if self:GetStat("CenteredAng") then
+				target_ang.x = self:GetStat("CenteredAng").x
+				target_ang.y = self:GetStat("CenteredAng").y
+				target_ang.z = self:GetStat("CenteredAng").z
+			end
+		elseif self:GetStat("IronSightsPos") then
+			target_pos.x = self:GetStat("IronSightsPos").x
+			target_pos.z = target_pos.z - 3
+			if self:GetStat("IronSightsAng") then
+				target_ang:Zero()
+				target_ang.y = self:GetStat("IronSightsAng").y
+			end
+		end
+	end
+
 	adstransitionspeed = 10
 
 	is = self:GetIronSights()
@@ -1184,19 +1413,15 @@ function SWEP:CalculateViewModelOffset( )
 		adstransitionspeed = 15 / ( self:GetStat("IronSightTime") / 0.3 )
 	elseif ( spr or self:IsSafety() ) and ( self.Sprint_Mode == TFA.Enum.LOCOMOTION_LUA or self.Sprint_Mode == TFA.Enum.LOCOMOTION_HYBRID or ( self:IsSafety() and not spr ) ) and stat ~= TFA.Enum.STATUS_FIDGET and stat ~= TFA.Enum.STATUS_BASHING then
 		if cl_tfa_viewmodel_centered and cl_tfa_viewmodel_centered:GetBool() then
-			self.RunSightsPos = centered_sprintpos
-			self.RunSightsAng = centered_sprintang
+			target_pos = target_pos + centered_sprintpos
+			target_ang = target_ang + centered_sprintang
+		else
+			target_pos = self:GetStat("RunSightsPos") * 1
+			target_ang = self:GetStat("RunSightsAng") * 1
 		end
-		target_pos = self:GetStat("RunSightsPos") * 1
-		target_ang = self:GetStat("RunSightsAng") * 1
 		adstransitionspeed = 7.5
 	end
 	if cl_tfa_viewmodel_offset_x and not is then
-		if cl_tfa_viewmodel_centered:GetBool() and self:GetStat("IronSightsPos") then
-			target_pos.x = target_pos.x + self:GetStat("IronSightsPos").x
-			target_ang.y = target_ang.y + self:GetStat("IronSightsAng").y
-			target_pos.z = target_pos.z - 3
-		end
 		target_pos.x = target_pos.x + cl_tfa_viewmodel_offset_x:GetFloat()
 		target_pos.y = target_pos.y + cl_tfa_viewmodel_offset_y:GetFloat()
 		target_pos.z = target_pos.z + cl_tfa_viewmodel_offset_z:GetFloat()
@@ -1278,8 +1503,8 @@ function SWEP:Sway(pos, ang)
 	local rate = l_Lerp(self.IronSightsProgress, 15, 30)
 	local fac = l_Lerp(self.IronSightsProgress, 0.6, 0.15)
 	--calculate angle differences
-	anga = self.Owner:EyeAngles() - oldang
-	oldang = self.Owner:EyeAngles()
+	anga = self:GetOwner():EyeAngles() - oldang
+	oldang = self:GetOwner():EyeAngles()
 	angb.y = angb.y + (0 - angb.y) * rft * 5
 	angb.p = angb.p + (0 - angb.p) * rft * 5
 
@@ -1321,9 +1546,12 @@ local vmfov
 local bbvec
 
 function SWEP:GetViewModelPosition( pos, ang )
-	if not IsValid(self.Owner) then return end
+	if not IsValid(self:GetOwner()) then return end
 	--Bobscale
-	self.BobScaleCustom = l_Lerp(self.IronSightsProgress, 1, l_Lerp( math.min( self.Owner:GetVelocity():Length() / self.Owner:GetWalkSpeed(), 1 ), self:GetStat("IronBobMult"), self:GetStat("IronBobMultWalk")))
+	if self.Sprint_Mode == TFA.Enum.LOCOMOTION_ANI then
+		self.SprintBobMult = 0
+	end
+	self.BobScaleCustom = l_Lerp(self.IronSightsProgress, 1, l_Lerp( math.min( self:GetOwner():GetVelocity():Length() / self:GetOwner():GetWalkSpeed(), 1 ), self:GetStat("IronBobMult"), self:GetStat("IronBobMultWalk")))
 	self.BobScaleCustom = l_Lerp(self.SprintProgress, self.BobScaleCustom, self.SprintBobMult)
 	--Start viewbob code
 	local gunbobintensity = gunbob_intensity_cvar:GetFloat() * 0.65 * 0.66
@@ -1339,16 +1567,18 @@ function SWEP:GetViewModelPosition( pos, ang )
 		self.ogviewmodelfov = self.ViewModelFOV
 	end
 
-	vmfov = self.ogviewmodelfov * fovmod_mult:GetFloat()
-	vmfov = vmfov + fovmod_add:GetFloat()
+	vmfov = l_Lerp( self.IronSightsProgress, self.ogviewmodelfov * fovmod_mult:GetFloat(), self.ogviewmodelfov )
+	vmfov = l_Lerp( self.IronSightsProgress, vmfov + fovmod_add:GetFloat(), vmfov )
 	self.ViewModelFOV = vmfov
 
-	pos:Add(ang:Right() * self.VMPos.x)
-	pos:Add(ang:Forward() * self.VMPos.y)
-	pos:Add(ang:Up() * self.VMPos.z)
-	ang:RotateAroundAxis(ang:Right(), self.VMAng.x)
-	ang:RotateAroundAxis(ang:Up(), self.VMAng.y)
-	ang:RotateAroundAxis(ang:Forward(), self.VMAng.z)
+	if self:GetStat("VMPos_Additive") then
+		pos:Add(ang:Right() * self.VMPos.x)
+		pos:Add(ang:Forward() * self.VMPos.y)
+		pos:Add(ang:Up() * self.VMPos.z)
+		ang:RotateAroundAxis(ang:Right(), self.VMAng.x)
+		ang:RotateAroundAxis(ang:Up(), self.VMAng.y)
+		ang:RotateAroundAxis(ang:Forward(), self.VMAng.z)
+	end
 
 	pos, ang = self:Sway(pos, ang)
 	ang:RotateAroundAxis(ang:Right(), vm_offset_ang.p)
@@ -1372,7 +1602,7 @@ function SWEP:GetViewModelPosition( pos, ang )
 	end
 
 	if self:GetHidden() then
-		pos.z = -10000
+		pos = pos - ang:Up() * 5
 	end
 
 	return pos, ang

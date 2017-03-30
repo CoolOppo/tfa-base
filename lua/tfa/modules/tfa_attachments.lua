@@ -21,7 +21,7 @@ if SERVER then
 			if type(k) == "string" then continue end
 			net.Start("TFA_Attachment_Set")
 			net.WriteEntity( wep )
-			net.WriteInt( k, 4 )
+			net.WriteInt( k, 8 )
 			net.WriteInt( v.sel or -1, 5 )
 			net.Send(ply)
 		end
@@ -39,8 +39,8 @@ if SERVER then
 
 	net.Receive("TFA_Attachment_Set", function( len, ply )
 		local wep = net.ReadEntity()
-		if IsValid(ply) and ply:GetActiveWeapon() == wep then
-			local cat = net.ReadInt(4)
+		if IsValid(ply) and IsValid(wep) and wep.SetTFAAttachment and ply:GetActiveWeapon() == wep then
+			local cat = net.ReadInt(8)
 			local ind = net.ReadInt(5)
 			wep:SetTFAAttachment( cat, ind, true )
 		end
@@ -51,7 +51,7 @@ if CLIENT then
 	net.Receive("TFA_Attachment_Set", function( len )
 		local wep = net.ReadEntity()
 		if IsValid(wep) and wep.SetTFAAttachment then
-			local cat = net.ReadInt(4)
+			local cat = net.ReadInt(8)
 			local ind = net.ReadInt(5)
 			wep:SetTFAAttachment( cat, ind, false )
 		end
@@ -60,7 +60,7 @@ if CLIENT then
 		TFAUpdateAttachments()
 	end)
 	hook.Add("HUDPaint","TFA_Attachment_RequestAll",function()
-		if IsValid(LocalPlayer()) then
+		if LocalPlayer():IsValid() then
 			hook.Remove("HUDPaint","TFA_Attachment_RequestAll")
 			net.Start("TFA_Attachment_RequestAll")
 			net.SendToServer()

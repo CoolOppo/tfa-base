@@ -16,19 +16,19 @@ function EFFECT:Init(data)
 
 	self.Position = self:GetTracerShootPos(data:GetOrigin(), self.WeaponEnt, self.Attachment)
 
-	if IsValid(self.WeaponEnt.Owner) then
-		if self.WeaponEnt.Owner == LocalPlayer() then
-			if self.WeaponEnt.Owner:ShouldDrawLocalPlayer() then
-				ang = self.WeaponEnt.Owner:EyeAngles()
+	if IsValid(self.WeaponEnt:GetOwner()) then
+		if self.WeaponEnt:GetOwner() == LocalPlayer() then
+			if not self.WeaponEnt:IsFirstPerson() then
+				ang = self.WeaponEnt:GetOwner():EyeAngles()
 				ang:Normalize()
 				--ang.p = math.max(math.min(ang.p,55),-55)
 				self.Forward = ang:Forward()
 			else
-				self.WeaponEnt = self.WeaponEnt.Owner:GetViewModel()
+				self.WeaponEnt = self.WeaponEnt:GetOwner():GetViewModel()
 			end
 			--ang.p = math.max(math.min(ang.p,55),-55)
 		else
-			ang = self.WeaponEnt.Owner:EyeAngles()
+			ang = self.WeaponEnt:GetOwner():EyeAngles()
 			ang:Normalize()
 			self.Forward = ang:Forward()
 		end
@@ -40,13 +40,14 @@ function EFFECT:Init(data)
 	self.vOffset = self.Position
 	dir = self.Forward
 
-	if IsValid(LocalPlayer()) then
+	if LocalPlayer():IsValid() then
 		AddVel = LocalPlayer():GetVelocity()
 	end
 
 	self.vOffset = self.Position
 	dir = self.Forward
 	AddVel = AddVel * 0.05
+
 
 	if TFA.GetMZSmokeEnabled == nil or TFA.GetMZSmokeEnabled() then
 		ParticleEffectAttach(smokepart, PATTACH_POINT_FOLLOW, self.WeaponEnt, self.Attachment)

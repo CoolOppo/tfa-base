@@ -1,5 +1,37 @@
 local fx, sp
 
+function SWEP:PCFTracer( bul, hitpos, ovrride )
+	if bul.PCFTracer then
+		self:UpdateMuzzleAttachment()
+		local mzp = self:GetMuzzlePos()
+		if bul.PenetrationCount > 0 and not ovrride then return end --Taken care of with the pen effect
+		if ( CLIENT or game.SinglePlayer() ) and self.Scoped and self:IsCurrentlyScoped() and self:IsFirstPerson() then
+			TFA.ParticleTracer( bul.PCFTracer, self:GetOwner():GetShootPos() - self:GetOwner():EyeAngles():Up() * 5 , hitpos, false, 0, -1 )
+		else
+			local vent = self
+			if ( CLIENT or game.SinglePlayer() ) and self:IsFirstPerson() then
+				vent = self.OwnerViewModel
+			end
+			if game.SinglePlayer() and not self:IsFirstPerson() then
+				TFA.ParticleTracer( bul.PCFTracer, self:GetOwner():GetShootPos() + self:GetOwner():GetAimVector() * 32, hitpos, false )
+			else
+				TFA.ParticleTracer( bul.PCFTracer, mzp.Pos, hitpos, false, vent, self.MuzzleAttachmentRaw or 1 )
+			end
+		end
+	end
+end
+
+function SWEP:EventShell()
+	if SERVER then
+		net.Start( "tfaBaseShellSV" )
+		net.WriteEntity(self)
+		net.SendOmit(self:GetOwner())
+	else
+		self:EjectionSmoke(true)
+		self:MakeShellBridge(true)
+	end
+end
+
 function SWEP:MakeShellBridge(ifp)
 	if ifp then
 		if self.LuaShellEjectDelay > 0 then
@@ -12,11 +44,10 @@ end
 
 function SWEP:MakeShell()
 	if IsValid(self) and self:VMIV() then
-		local vm = (not self.Owner.ShouldDrawLocalPlayer or self.Owner:ShouldDrawLocalPlayer()) and self.OwnerViewModel or self
+		local vm = (not self:GetOwner().ShouldDrawLocalPlayer or self:GetOwner():ShouldDrawLocalPlayer()) and self.OwnerViewModel or self
 
 		if IsValid(vm) then
 			fx = EffectData()
-			fx:SetEntity(vm)
 			local attid = vm:LookupAttachment(self.ShellAttachment)
 			if self.Akimbo then
 				attid = 3 + self.AnimCycle
@@ -55,7 +86,7 @@ function SWEP:CleanParticles()
 		self:StopParticleEmission()
 	end
 
-	if not self:OwnerIsValid() then return end
+	if not self:VMIV() then return end
 	local vm = self.OwnerViewModel
 
 	if IsValid(vm) then
@@ -76,8 +107,8 @@ Returns:  Nothing.
 Notes:    Puff of smoke on shell attachment.
 Purpose:  FX
 ]]--
-function SWEP:EjectionSmoke()
-	if TFA.GetEJSmokeEnabled() and self.EjectionSmokeEnabled then
+function SWEP:EjectionSmoke( ovrr )
+	if TFA.GetEJSmokeEnabled() and ( self.EjectionSmokeEnabled or ovrr ) then
 		local vm = self.OwnerViewModel
 
 		if IsValid(vm) then
@@ -100,9 +131,9 @@ function SWEP:EjectionSmoke()
 				angpos = vm:GetAttachment(att)
 			end
 
-			if angpos and angpos.Pos then
+			if angpos then
 				fx = EffectData()
-				fx:SetEntity(vm)
+				fx:SetEntity(self)
 				fx:SetOrigin(angpos.Pos)
 				fx:SetAttachment(att)
 				fx:SetNormal(angpos.Ang:Forward())
@@ -159,8 +190,8 @@ function SWEP:ShootEffectsCustom( ifp )
 		self.DoMuzzleFlash = nil
 	end
 	if not self.MuzzleFlashEnabled then return end
-	if not self:VMIV() then return end
-	if not self.Owner.GetShootPos then return end
+	if self:IsFirstPerson() and not self:VMIV() then return end
+	if not self:GetOwner().GetShootPos then return end
 	ifp = ifp or IsFirstTimePredicted()
 
 	if sp == nil then
@@ -174,7 +205,7 @@ function SWEP:ShootEffectsCustom( ifp )
 		if (sp) then
 			net.Broadcast()
 		else
-			net.SendOmit(self.Owner)
+			net.SendOmit(self:GetOwner())
 		end
 
 		return
@@ -191,11 +222,11 @@ function SWEP:ShootEffectsCustom( ifp )
 			att = 1 + self.AnimCycle
 		end
 		fx = EffectData()
-		fx:SetOrigin(self.Owner:GetShootPos())
-		fx:SetNormal(self.Owner:EyeAngles():Forward())
+		fx:SetOrigin(self:GetOwner():GetShootPos())
+		fx:SetNormal(self:GetOwner():EyeAngles():Forward())
 		fx:SetEntity(self)
 		fx:SetAttachment(att)
-		if CurTime() > ( self.NextSmokeParticle[ att ] or -1 ) then
+		if CurTime() > ( self.NextSmokeParticle[ att ] or -1 ) and self.SmokeParticle and self.SmokeParticle ~= "" then
 			util.Effect("tfa_muzzlesmoke", fx)
 			self:AddSmokeParticleTBL(att)
 		end

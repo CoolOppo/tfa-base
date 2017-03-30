@@ -1,0 +1,36 @@
+"UnlitGeneric"
+{
+	$basetexture "models/tfa/lbeam/lwhi"
+	$translucent "1"
+	$additive "1"
+
+	$color2 "[1 0 0]"
+	$c2base "[1 0 0]"
+	$c2mult "0.6"
+
+	Proxies // proxies are listed inside this block
+	{
+		TFALaserColor
+		{
+			resultVar $c2base
+		}
+		Sine // a proxy which produces a sine wave
+		{
+			resultVar	$c2mult // The shader parameter to be manipulated
+			sineperiod	2
+			sinemin		0.4
+			sinemax		0.6
+		}
+		Multiply {
+			srcVar1 $c2base
+			srcVar2 $c2mult
+			resultVar $color2
+		}
+		TextureScroll
+		{
+			textureScrollVar $basetexturetransform
+			textureScrollRate 10
+			textureScrollAngle 90
+		}
+	}
+}

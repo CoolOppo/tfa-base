@@ -26,7 +26,7 @@ if CLIENT then
 	end
 
 	hook.Add("HUDPaint", "TFA_DISPLAY_CHANGELOG", function()
-		if IsValid(LocalPlayer()) then
+		if LocalPlayer():IsValid() then
 			if TFA_DISPLAY_CHANGELOG then
 				chat.AddText("Updated to TFA Base Version: ")
 				chat.AddText(TFA_BASE_VERSION_STRING)

@@ -60,7 +60,7 @@ local cv_ht = GetConVar("host_timescale")
 function ENT:Initialize()
     if SERVER then
         if not IsValid(self.myowner) then
-            self.myowner = self.Owner
+            self.myowner = self:GetOwner()
 
             if not IsValid(myowner) then
                 self.myowner = self
@@ -106,11 +106,11 @@ function ENT:Initialize()
     end
 
     if not self.gun then
-        if IsValid(self.Owner) and self.Owner:IsPlayer() then
+        if IsValid(self:GetOwner()) and self:GetOwner():IsPlayer() then
             self:UpdateGun()
         else
             timer.Simple(0, function()
-                if IsValid(self) and IsValid(self.Owner) and self.Owner:IsPlayer() then
+                if IsValid(self) and IsValid(self:GetOwner()) and self:GetOwner():IsPlayer() then
                     self:UpdateGun()
                 end
             end)
@@ -119,7 +119,7 @@ function ENT:Initialize()
 end
 
 function ENT:UpdateGun()
-    local wep = self.Owner:GetActiveWeapon()
+    local wep = self:GetOwner():GetActiveWeapon()
 
     if IsValid(wep) then
         self.gun = wep:GetClass()
@@ -133,7 +133,7 @@ local cv_fm = GetConVar("sv_tfa_force_multiplier")
 function ENT:HitCB(a,b,c)
     c:SetDamageType(bit.bor(DMG_NEVERGIB, DMG_CLUB))
 
-    if IsValid(self) and IsValid(self.Owner) then
+    if IsValid(self) and IsValid(self:GetOwner()) then
         if b.HitWorld then
             local arrowstuck = ents.Create("tfbow_arrow_stuck")
             arrowstuck:SetModel(self:GetModel())
@@ -199,7 +199,7 @@ function ENT:Think()
     tracedata.start = self:GetNW2Vector("lastpos", self:GetPos())
     tracedata.endpos = self:GetPos()
     tracedata.mask = MASK_SOLID
-    tracedata.filter = {self.myowner, self.Owner, self}
+    tracedata.filter = {self.myowner, self:GetOwner(), self}
     tr = util.TraceLine(tracedata)
 
     --self:SetAngles((((tracedata.endpos-tracedata.start):GetNormalized()+self:GetAngles():Forward())/2):Angle())
@@ -210,7 +210,7 @@ function ENT:Think()
         if SERVER then
             --[[
             local bul ={}
-            bul.Attacker=self.Owner and self.Owner or self:GetOwner()
+            bul.Attacker=self:GetOwner() and self:GetOwner() or self:GetOwner()
             bul.Spread=vector_origin
             bul.Src=tracedata.start
             bul.Force=self.mydamage*0.25*GetConVarNumber("sv_tfbow_force_multiplier",1)
@@ -223,7 +223,7 @@ function ENT:Think()
             ]]
             --
             local bul = {}
-            bul.Attacker = self.Owner and self.Owner or self:GetOwner()
+            bul.Attacker = self:GetOwner() and self:GetOwner() or self:GetOwner()
             bul.Spread = vector_origin
             bul.Src = tracedata.start
             bul.Force = self.mydamage * 0.25 * cv_fm:GetFloat()

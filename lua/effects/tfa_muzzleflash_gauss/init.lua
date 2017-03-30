@@ -9,7 +9,7 @@ function EFFECT:Init(data)
 	local owent
 
 	if IsValid(self.WeaponEnt) then
-		owent = self.WeaponEnt.Owner or self.WeaponEnt:GetOwner()
+		owent = self.WeaponEnt:GetOwner()
 	end
 
 	if not IsValid(owent) then
@@ -84,7 +84,7 @@ function EFFECT:Init(data)
 		dlight.g = 200
 		dlight.b = 255
 		dlight.Brightness = 4.0
-		dlight.size = 110
+		dlight.size = 128
 		dlight.decay = 1000
 		dlight.DieTime = CurTime() + fadeouttime
 	end

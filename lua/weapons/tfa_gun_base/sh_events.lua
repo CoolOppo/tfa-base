@@ -57,7 +57,7 @@ function SWEP:ProcessEvents()
 				v.server = true
 			end
 
-			if (v.client and CLIENT and (not v.client_predictedonly or self.Owner == LocalPlayer())) or (v.server and SERVER) and v.value then
+			if (v.client and CLIENT and (not v.client_predictedonly or self:GetOwner() == LocalPlayer())) or (v.server and SERVER) and v.value then
 				v.value(self, self.OwnerViewModel)
 			end
 		elseif v.type == "snd" or v.type == "sound" then
@@ -74,12 +74,12 @@ function SWEP:ProcessEvents()
 					if sp then
 						net.Broadcast()
 					else
-						net.SendOmit(self.Owner)
+						net.SendOmit(self:GetOwner())
 					end
 				elseif v.server and v.value and v.value ~= "" then
 					self:EmitSound(v.value)
 				end
-			elseif v.client and self.Owner == LocalPlayer() and ( not sp ) and v.value and v.value ~= "" then
+			elseif v.client and self:GetOwner() == LocalPlayer() and ( not sp ) and v.value and v.value ~= "" then
 				if v.time <= 0.01 then
 					self:EmitSoundSafe(v.value)
 				else

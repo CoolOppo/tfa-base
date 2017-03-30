@@ -1,6 +1,3 @@
-game.AddParticles("particles/doktor_muzzleflash.pcf")
-PrecacheParticleSystem("VES_fire_1_FP")
-
 local function rvec(vec)
 	vec.x = math.Round(vec.x)
 	vec.y = math.Round(vec.y)
@@ -16,7 +13,7 @@ function EFFECT:Init(data)
 	self.Attachment = data:GetAttachment()
 	local AddVel = vector_origin
 
-	if LocalPlayer and IsValid(LocalPlayer()) then
+	if LocalPlayer and LocalPlayer():IsValid() then
 		AddVel = LocalPlayer():GetVelocity()
 	end
 

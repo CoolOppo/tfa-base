@@ -7,6 +7,7 @@ SWEP.Secondary.UseParabolic = false
 SWEP.Secondary.UseElcan = false
 SWEP.Secondary.UseGreenDuplex = false
 SWEP.RTScopeFOV = 6
+SWEP.RTScopeAttachment = 3 --Anchor the scope shadow to this
 SWEP.Scoped = false
 SWEP.BoltAction = false
 SWEP.ScopeAngleTransforms = {}
@@ -33,8 +34,8 @@ function SWEP:Do3DScope()
 	if scopecvar then
 		return scopecvar:GetBool()
 	else
-		if self:OwnerIsValid() and self.Owner.GetInfoNum then
-			return self.Owner:GetInfoNum("cl_tfa_3dscope", 1) == 1
+		if self:OwnerIsValid() and self:GetOwner().GetInfoNum then
+			return self:GetOwner():GetInfoNum("cl_tfa_3dscope", 1) == 1
 		else
 			return true
 		end
@@ -48,10 +49,25 @@ function SWEP:Do3DScopeOverlay()
 		return false
 	end
 end
+function SWEP:UpdateScopeType( force )
+	if self.Scoped_3D and force then
+		self.Scoped = true
+		self.Scoped_3D = false
 
-local cv_fov = GetConVar("fov_desired")
+		if self.Secondary.ScopeZoom_Backup then
+			self.Secondary.ScopeZoom = self.Secondary.ScopeZoom_Backup
+		else
+			self.Secondary.ScopeZoom = 90 / self:GetStat("Secondary.IronFOV")
+		end
 
-function SWEP:UpdateScopeType()
+		if self.BoltAction_3D then
+			self.BoltAction = true
+			self.BoltAction_3D = nil
+		end
+
+		self.Secondary.IronFOV = 90 / self:GetStat("Secondary.ScopeZoom")
+		self.IronSightsSensitivity = 1
+	end
 	if self:Do3DScope() then
 		self.Scoped = false
 		self.Scoped_3D = true
@@ -68,11 +84,15 @@ function SWEP:UpdateScopeType()
 		end
 
 		if self.Secondary.ScopeZoom and self.Secondary.ScopeZoom > 0 then
-			self.RTScopeFOV = 90 / self.Secondary.ScopeZoom
-			self.IronSightsSensitivity = math.sqrt(1 / self.Secondary.ScopeZoom)
-			self.Secondary.ScopeZoom = nil
+			if CLIENT then
+				self.RTScopeFOV = 90 / self.Secondary.ScopeZoom * ( self.Secondary.ScopeScreenScale or 0.392592592592592 )
+			end
 			self.Secondary.IronFOV_Backup = self.Secondary.IronFOV
 			self.Secondary.IronFOV = 70
+			if CLIENT then
+				self.IronSightsSensitivity = self:Get3DSensitivity( )
+			end
+			self.Secondary.ScopeZoom = nil
 		end
 	else
 		self.Scoped = true
@@ -91,12 +111,6 @@ function SWEP:UpdateScopeType()
 
 		self.Secondary.IronFOV = 90 / self.Secondary.ScopeZoom
 		self.IronSightsSensitivity = 1
-	end
-
-	if cv_fov then
-		self.DefaultFOV = cv_fov:GetFloat()
-	elseif self.Owner and self:OwnerIsValid() then
-		self.DefaultFOV = self.Owner.GetInfoNum and self.Owner:GetInfoNum("fov_desired", 90) or 90
 	end
 end
 
@@ -147,7 +161,11 @@ local cv_cc_g = GetConVar("cl_tfa_hud_crosshair_color_g")
 local cv_cc_b = GetConVar("cl_tfa_hud_crosshair_color_b")
 local cv_cc_a = GetConVar("cl_tfa_hud_crosshair_color_a")
 
+SWEP.defaultscrvec = Vector()
+
 SWEP.RTCode = function(self, rt, scrw, scrh)
+	local rttw = ScrW()
+	local rtth = ScrH()
 	if not self:VMIV() then return end
 	if not self.myshadowmask then
 		self.myshadowmask = surface.GetTextureID(self.ScopeShadow or "vgui/scope_shadowmask_test")
@@ -168,17 +186,27 @@ SWEP.RTCode = function(self, rt, scrw, scrh)
 	local vm = self.OwnerViewModel
 
 	if not self.LastOwnerPos then
-		self.LastOwnerPos = self.Owner:GetShootPos()
+		self.LastOwnerPos = self:GetOwner():GetShootPos()
 	end
 
-	local owoff = self.Owner:GetShootPos() - self.LastOwnerPos
-	self.LastOwnerPos = self.Owner:GetShootPos()
-	local att = vm:GetAttachment(3)
-	if not att then return end
-	local pos = att.Pos - owoff
-	local scrpos = pos:ToScreen()
+	local owoff = self:GetOwner():GetShootPos() - self.LastOwnerPos
+	self.LastOwnerPos = self:GetOwner():GetShootPos()
+	local scrpos
+	if self.RTScopeAttachment and self.RTScopeAttachment > 0 then
+		local att = vm:GetAttachment( self.RTScopeAttachment or 1 )
+		if not att then return end
+		local pos = att.Pos - owoff
+		scrpos = pos:ToScreen()
+	else
+		self.defaultscrvec.x = scrw / 2
+		self.defaultscrvec.y = scrh / 2
+		scrpos = self.defaultscrvec
+	end
+
 	scrpos.x = scrpos.x - scrw / 2 + self.ScopeOverlayTransforms[1]
 	scrpos.y = scrpos.y - scrh / 2 + self.ScopeOverlayTransforms[2]
+	scrpos.x = scrpos.x / scrw * 1920
+	scrpos.y = scrpos.y / scrw * 1920
 	scrpos.x = math.Clamp(scrpos.x, -1024, 1024)
 	scrpos.y = math.Clamp(scrpos.y, -1024, 1024)
 	--scrpos.x = scrpos.x * ( 2 - self.IronSightsProgress*1 )
@@ -198,28 +226,30 @@ SWEP.RTCode = function(self, rt, scrw, scrh)
 	surface.DrawRect(-512, -512, 1024, 1024)
 	render.OverrideAlphaWriteEnable(true, true)
 	local ang = EyeAngles()
-	local AngPos = vm:GetAttachment(3)
+	if self.RTScopeAttachment and self.RTScopeAttachment > 0 then
+		local AngPos = vm:GetAttachment( self.RTScopeAttachment )
 
-	if AngPos then
-		ang = AngPos.Ang
+		if AngPos then
+			ang = AngPos.Ang
 
-		if flipcv:GetBool() then
-			ang.y = -ang.y
-		end
+			if flipcv:GetBool() then
+				ang.y = -ang.y
+			end
 
-		for k, v in pairs(self.ScopeAngleTransforms) do
-			if v[1] == "P" then
-				ang:RotateAroundAxis(ang:Right(), v[2])
-			elseif v[1] == "Y" then
-				ang:RotateAroundAxis(ang:Up(), v[2])
-			elseif v[1] == "R" then
-				ang:RotateAroundAxis(ang:Forward(), v[2])
+			for k, v in pairs(self.ScopeAngleTransforms) do
+				if v[1] == "P" then
+					ang:RotateAroundAxis(ang:Right(), v[2])
+				elseif v[1] == "Y" then
+					ang:RotateAroundAxis(ang:Up(), v[2])
+				elseif v[1] == "R" then
+					ang:RotateAroundAxis(ang:Forward(), v[2])
+				end
 			end
 		end
 	end
 
 	cd.angles = ang
-	cd.origin = self.Owner:GetShootPos()
+	cd.origin = self:GetOwner():GetShootPos()
 
 	if not self.RTScopeOffset then
 		self.RTScopeOffset = {0, 0}
@@ -230,7 +260,7 @@ SWEP.RTCode = function(self, rt, scrw, scrh)
 	end
 
 	local rtow, rtoh = self.RTScopeOffset[1], self.RTScopeOffset[2]
-	local rtw, rth = 512 * self.RTScopeScale[1], 512 * self.RTScopeScale[2]
+	local rtw, rth = rttw * self.RTScopeScale[1], rtth * self.RTScopeScale[2]
 	cd.x = 0
 	cd.y = 0
 	cd.w = rtw

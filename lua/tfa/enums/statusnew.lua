@@ -27,7 +27,9 @@ TFA.AddStatus( "holster" )
 TFA.AddStatus( "holster_final" )
 TFA.AddStatus( "holster_ready" )
 TFA.AddStatus( "reloading" )
+TFA.AddStatus( "reloading_wait" )
 TFA.AddStatus( "reloading_shotgun_start" )
+TFA.AddStatus( "reloading_shotgun_start_shell" )
 TFA.AddStatus( "reloading_shotgun_loop" )
 TFA.AddStatus( "reloading_shotgun_end" )
 TFA.AddStatus( "shooting" )
@@ -36,6 +38,8 @@ TFA.AddStatus( "bashing" )
 TFA.AddStatus( "inspecting" )
 TFA.AddStatus( "fidget" )
 TFA.AddStatus( "firemode" )
+
+TFA.AddStatus( "pump" )
 
 TFA.AddStatus( "grenade_pull" )
 TFA.AddStatus( "grenade_ready" )
@@ -51,7 +55,9 @@ TFA.Enum.HolsterStatus = {
 }
 TFA.Enum.ReloadStatus = {
 	[TFA.Enum.STATUS_RELOADING] = true,
+	[TFA.Enum.STATUS_RELOADING_WAIT] = true,
 	[TFA.Enum.STATUS_RELOADING_SHOTGUN_START] = true,
+	[TFA.Enum.STATUS_RELOADING_SHOTGUN_START_SHELL] = true,
 	[TFA.Enum.STATUS_RELOADING_SHOTGUN_LOOP] = true,
 	[TFA.Enum.STATUS_RELOADING_SHOTGUN_END] = true
 }
@@ -63,6 +69,7 @@ TFA.Enum.ReadyStatus = {
 TFA.Enum.IronStatus = {
 	[TFA.Enum.STATUS_IDLE] = true,
 	[TFA.Enum.STATUS_SHOOTING] = true,
+	[TFA.Enum.STATUS_PUMP] = true,
 	[TFA.Enum.STATUS_FIREMODE] = true--,
 	--[TFA.Enum.STATUS_FIDGET] = true
 }
@@ -78,5 +85,6 @@ TFA.Enum.HUDDisabledStatus = {
 	[TFA.Enum.STATUS_GRENADE_READY] = true,
 	[TFA.Enum.STATUS_GRENADE_THROW] = true,
 	[TFA.Enum.STATUS_BLOCKING] = true,
-	[TFA.Enum.STATUS_BLOCKING_END] = true
+	[TFA.Enum.STATUS_BLOCKING_END] = true,
+	[TFA.Enum.STATUS_PUMP] = true
 }

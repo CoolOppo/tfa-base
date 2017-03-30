@@ -2,7 +2,7 @@ local w, h, cv_dbc, lply
 
 hook.Add("HUDPaint", "tfa_debugcrosshair", function()
 	if not cv_dbc then
-		cv_dbc = GetConVar("cl_tfa_debugcrosshair")
+		cv_dbc = GetConVar("cl_tfa_debug_crosshair")
 	end
 
 	if not cv_dbc or not cv_dbc:GetBool() then return end
@@ -19,7 +19,7 @@ hook.Add("HUDPaint", "tfa_debugcrosshair", function()
 		lply = LocalPlayer()
 	end
 
-	if not IsValid(lply) then return end
+	if not lply:IsValid() then return end
 	if not lply:IsAdmin() then return end
 	surface.SetDrawColor(color_white)
 	surface.DrawRect(w / 2 - 1, h / 2 - 1, 2, 2)

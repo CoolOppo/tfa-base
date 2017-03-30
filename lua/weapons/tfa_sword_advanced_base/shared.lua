@@ -236,7 +236,7 @@ end
 
 function SWEP:HitThing(ent, posv, normalv, damage, tr)
 	local ply
-	ply = self.Owner
+	ply = self:GetOwner()
 
 	if IsValid(ply) then
 		--[[
@@ -290,11 +290,11 @@ function SWEP:HitThing(ent, posv, normalv, damage, tr)
 		end
 
 		if CLIENT and SERVER then
-			if self.Owner ~= LocalPlayer() then
-				self.Owner:FireBullets(bullet)
+			if self:GetOwner() ~= LocalPlayer() then
+				self:GetOwner():FireBullets(bullet)
 			end
 		else
-			self.Owner:FireBullets(bullet)
+			self:GetOwner():FireBullets(bullet)
 		end
 		--end
 	end
@@ -321,9 +321,9 @@ function SWEP:PrimaryAttack()
 		end)
 	end
 
-	local vm = self.Owner:GetViewModel()
-	self.Owner:SetAnimation(PLAYER_ATTACK1)
-	self.Owner:SetNW2Float("TFM_SwingStart", CurTime())
+	local vm = self:GetOwner():GetViewModel()
+	self:GetOwner():SetAnimation(PLAYER_ATTACK1)
+	self:GetOwner():SetNW2Float("TFM_SwingStart", CurTime())
 	self:SetStatusEnd(CurTime() + vm:SequenceDuration(vm:LookupSequence(self.Sequences[self:GetNW2Int("Slash", 1)].name)))
 	self.LastTraceTime = CurTime() + self.Sequences[self:GetNW2Int("Slash", 1)].startt
 
@@ -347,7 +347,7 @@ local vm
 
 function SWEP:IronSights()
 	BaseClass.IronSights(self)
-	ply = self.Owner
+	ply = self:GetOwner()
 	seq = self.Sequences[self:GetNW2Int("Slash", 1)]
 	swe = ply:GetNW2Float("TFM_SwingStart", CurTime()) + seq.endt
 
@@ -360,7 +360,7 @@ end
 function SWEP:Think2()
 	BaseClass.Think2(self)
 	local isr = self.IronSightsProgress
-	ply = self.Owner
+	ply = self:GetOwner()
 
 	if self.PrevBlockRat and isr and self.PrevBlockRat <= 0.3 and isr > 0.3 then
 		self:SetBlockStart(CurTime())
@@ -407,7 +407,7 @@ function SWEP:ChooseShootAnim(mynewvar)
 	local sharedrandomval = self:GetNW2Float("SharedRandomVal", 0)
 	if not self:OwnerIsValid() then return end
 	if not IsValid(self) or not self:OwnerIsValid() then return end
-	ply = self.Owner
+	ply = self:GetOwner()
 	vm = ply:GetViewModel()
 	local selection = {}
 	local relativedir = WorldToLocal(ply:GetVelocity(), Angle(0, 0, 0), vector_origin, ply:EyeAngles())
@@ -512,7 +512,7 @@ function SWEP:BlockAnim()
 		math.randomseed(sharedrandomval)
 		blockseqn = math.random(1, #self.BlockSequences)
 		seq = self.BlockSequences[blockseqn]
-		ply = self.Owner
+		ply = self:GetOwner()
 
 		if IsValid(ply) then
 			vm = ply:GetViewModel()

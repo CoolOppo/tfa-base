@@ -13,12 +13,12 @@ function SWEP:InitMods()
 	self.VElements = self:CPTbl(self.VElements)
 	self.WElements = self:CPTbl(self.WElements)
 	self.ViewModelBoneMods = self:CPTbl(self.ViewModelBoneMods)
-	self:CreateModels(self.VElements) -- create viewmodels
+	self:CreateModels(self.VElements, true) -- create viewmodels
 	self:CreateModels(self.WElements) -- create worldmodels
 
 	--Build the bones and such.
 	if self:OwnerIsValid() then
-		local vm = self.Owner:GetViewModel()
+		local vm = self:GetOwner():GetViewModel()
 
 		if IsValid(vm) then
 			--self:ResetBonePositions(vm)
@@ -61,10 +61,10 @@ function SWEP:ViewModelDrawn()
 
 	local vm = self.OwnerViewModel
 	if not IsValid(vm) then return end
-	if not self.Owner.GetHands then return end
+	if not self:GetOwner().GetHands then return end
 
 	if self.UseHands then
-		local hands = self.Owner:GetHands()
+		local hands = self:GetOwner():GetHands()
 
 		if IsValid(hands) then
 			if not self:GetHidden() then
@@ -144,7 +144,7 @@ function SWEP:ViewModelDrawn()
 
 	if self.VElements then
 		--self.VElements = self:GetStat("VElements")
-		self:CreateModels(self.VElements)
+		self:CreateModels(self.VElements, true)
 
 		if (not self.vRenderOrder) then
 			-- // we build a render order because sprites need to be drawn after models
@@ -196,6 +196,15 @@ function SWEP:ViewModelDrawn()
 				if (v.skin and v.skin ~= model:GetSkin()) then
 					model:SetSkin(v.skin)
 				end
+				if v.bonemerge then
+					model:SetParent(self.OwnerViewModel or self)
+					if not model:IsEffectActive(EF_BONEMERGE) then
+						v.curmodel:AddEffects(EF_BONEMERGE)
+					end
+				elseif model:IsEffectActive(EF_BONEMERGE) then
+					model:RemoveEffects(EF_BONEMERGE)
+					model:SetParent(nil)
+				end
 
 				render.SetColorModulation(v.color.r / 255, v.color.g / 255, v.color.b / 255)
 				render.SetBlend(v.color.a / 255)
@@ -216,7 +225,11 @@ function SWEP:ViewModelDrawn()
 				ang:RotateAroundAxis(ang:Right(), v.angle.p)
 				ang:RotateAroundAxis(ang:Forward(), v.angle.r)
 				cam.Start3D2D(drawpos, ang, v.size)
+				render.PushFilterMin(TEXFILTER.ANISOTROPIC)
+				render.PushFilterMag(TEXFILTER.ANISOTROPIC)
 				v.draw_func(self)
+				render.PopFilterMin()
+				render.PopFilterMag()
 				cam.End3D2D()
 			end
 		end
@@ -248,7 +261,14 @@ function SWEP:DrawWorldModel()
 				local handBone = ply:LookupBone("ValveBiped.Bip01_R_Hand")
 
 				if handBone then
-					local pos, ang = ply:GetBonePosition(handBone)
+					--local pos, ang = ply:GetBonePosition(handBone)
+					local pos, ang
+					local mat = ply:GetBoneMatrix( handBone )
+					if mat then
+						pos, ang = mat:GetTranslation(), mat:GetAngles()
+					else
+						pos, ang = ply:GetBonePosition( handBone )
+					end
 					pos = pos + ang:Forward() * self.Offset.Pos.Forward + ang:Right() * self.Offset.Pos.Right + ang:Up() * self.Offset.Pos.Up
 					ang:RotateAroundAxis(ang:Up(), self.Offset.Ang.Up)
 					ang:RotateAroundAxis(ang:Right(), self.Offset.Ang.Right)
@@ -294,7 +314,7 @@ function SWEP:DrawWorldModel()
 		end
 	end
 
-	bone_ent = self.Owner and self.Owner or self
+	bone_ent = self:GetOwner() and self:GetOwner() or self
 
 	for k, name in pairs(self.wRenderOrder) do
 		local v = self.WElements[name]
@@ -321,11 +341,13 @@ function SWEP:DrawWorldModel()
 		local sprite = v.spritemat
 
 		if (v.type == "Model" and IsValid(model)) then
-			model:SetPos(pos + ang:Forward() * v.pos.x + ang:Right() * v.pos.y + ang:Up() * v.pos.z)
-			ang:RotateAroundAxis(ang:Up(), v.angle.y)
-			ang:RotateAroundAxis(ang:Right(), v.angle.p)
-			ang:RotateAroundAxis(ang:Forward(), v.angle.r)
-			model:SetAngles(ang)
+			if not v.bonemerge then
+				model:SetPos(pos + ang:Forward() * v.pos.x + ang:Right() * v.pos.y + ang:Up() * v.pos.z)
+				ang:RotateAroundAxis(ang:Up(), v.angle.y)
+				ang:RotateAroundAxis(ang:Right(), v.angle.p)
+				ang:RotateAroundAxis(ang:Forward(), v.angle.r)
+				model:SetAngles(ang)
+			end
 			-- //model:SetModelScale(v.size)
 			local matrix = Matrix()
 			matrix:Scale(v.size)
@@ -355,6 +377,16 @@ function SWEP:DrawWorldModel()
 
 			render.SetColorModulation(v.color.r / 255, v.color.g / 255, v.color.b / 255)
 			render.SetBlend(v.color.a / 255)
+
+			if v.bonemerge then
+				model:SetParent(self)
+				if not model:IsEffectActive(EF_BONEMERGE) then
+					model:AddEffects(EF_BONEMERGE)
+				end
+			elseif model:IsEffectActive(EF_BONEMERGE) then
+				model:RemoveEffects(EF_BONEMERGE)
+				model:SetParent(nil)
+			end
 			model:DrawModel()
 			render.SetBlend(1)
 			render.SetColorModulation(1, 1, 1)
@@ -393,16 +425,30 @@ function SWEP:GetBoneOrientation(basetabl, tabl, ent, bone_override)
 	if (tabl.rel and tabl.rel ~= "") then
 		local v = basetabl[tabl.rel]
 		if (not v) then return end
-		--As clavus states in his original code, don't make your elements named the same as a bone, because recursion.
-		pos, ang = self:GetBoneOrientation(basetabl, v, ent)
-		if (not pos) then return end
-		pos = pos + ang:Forward() * v.pos.x + ang:Right() * v.pos.y + ang:Up() * v.pos.z
-		ang:RotateAroundAxis(ang:Up(), v.angle.y)
-		ang:RotateAroundAxis(ang:Right(), v.angle.p)
-		ang:RotateAroundAxis(ang:Forward(), v.angle.r)
-		-- For mirrored viewmodels.  You might think to scale negatively on X, but this isn't the case.
+		if v.bonemerge and v.curmodel and ent ~= v.curmodel then
+			v.curmodel:SetupBones()
+			if tabl.bone == nil or tabl.bone == "" then
+				pos, ang = self:GetBoneOrientation(basetabl, v, v.curmodel, 0 )
+			else
+				pos, ang = self:GetBoneOrientation(basetabl, v, v.curmodel, tabl.bone )
+			end
+			if ( not pos ) then return end
+		else
+			--As clavus states in his original code, don't make your elements named the same as a bone, because recursion.
+			pos, ang = self:GetBoneOrientation(basetabl, v, ent)
+			if (not pos) then return end
+			pos = pos + ang:Forward() * v.pos.x + ang:Right() * v.pos.y + ang:Up() * v.pos.z
+			ang:RotateAroundAxis(ang:Up(), v.angle.y)
+			ang:RotateAroundAxis(ang:Right(), v.angle.p)
+			ang:RotateAroundAxis(ang:Forward(), v.angle.r)
+			-- For mirrored viewmodels.  You might think to scale negatively on X, but this isn't the case.
+		end
 	else
-		bone = ent:LookupBone(bone_override or tabl.bone)
+		if isnumber( bone_override ) then
+			bone = bone_override
+		else
+			bone = ent:LookupBone(bone_override or tabl.bone)
+		end
 		if (not bone) or (bone == -1) then return end
 		pos, ang = Vector(0, 0, 0), Angle(0, 0, 0)
 		local m = ent:GetBoneMatrix(bone)
@@ -411,7 +457,7 @@ function SWEP:GetBoneOrientation(basetabl, tabl, ent, bone_override)
 			pos, ang = m:GetTranslation(), m:GetAngles()
 		end
 
-		if (IsValid(self.Owner) and self.Owner:IsPlayer() and ent == self.Owner:GetViewModel() and self.ViewModelFlip) then
+		if (IsValid(self:GetOwner()) and self:GetOwner():IsPlayer() and ent == self:GetOwner():GetViewModel() and self.ViewModelFlip) then
 			ang.r = -ang.r
 		end
 	end
@@ -456,12 +502,13 @@ Returns:   Nothing.
 Notes:  Creates the elements for whatever you give it.
 Purpose:  SWEP Construction Kit Compatibility / Basic Attachments.
 ]]--
-function SWEP:CreateModels(tabl)
+function SWEP:CreateModels(tabl, is_vm )
 	if (not tabl) then return end
 
 	for k, v in pairs(tabl) do
 		if (v.type == "Model" and v.model and (not IsValid(v.curmodel) or v.curmodelname ~= v.model) and v.model ~= "" ) then
 			v.curmodel = ClientsideModel(v.model, RENDERGROUP_VIEWMODEL)
+			TFA.RegisterClientsideModel( v.curmodel, self )
 
 			if (IsValid(v.curmodel)) then
 				v.curmodel:SetPos(self:GetPos())
@@ -488,30 +535,40 @@ function SWEP:CreateModels(tabl)
 				matrix:Scale(v.size)
 				v.curmodel:EnableMatrix("RenderMultiply", matrix)
 				v.curmodelname = v.model
+				if is_vm then
+					v.view = true
+				else
+					v.view = false
+				end
 			else
 				v.curmodel = nil
 			end
 			-- // make sure we create a unique name based on the selected options
 		elseif (v.type == "Sprite" and v.sprite and v.sprite ~= "" and (not v.spritemat or v.cursprite ~= v.sprite)) then
-			local name = v.sprite .. "-"
+			if v.vmt then
+				v.spritemat = Material(v.sprite)
+				v.cursprite = v.sprite
+			else
+				local name = v.sprite .. "-"
 
-			local params = {
-				["$basetexture"] = v.sprite
-			}
+				local params = {
+					["$basetexture"] = v.sprite
+				}
 
-			local tocheck = {"nocull", "additive", "vertexalpha", "vertexcolor", "ignorez"}
+				local tocheck = {"nocull", "additive", "vertexalpha", "vertexcolor", "ignorez"}
 
-			for i, j in pairs(tocheck) do
-				if (v[j]) then
-					params["$" .. j] = 1
-					name = name .. "1"
-				else
-					name = name .. "0"
+				for i, j in pairs(tocheck) do
+					if (v[j]) then
+						params["$" .. j] = 1
+						name = name .. "1"
+					else
+						name = name .. "0"
+					end
 				end
-			end
 
-			v.cursprite = v.sprite
-			v.spritemat = CreateMaterial(name, "UnlitGeneric", params)
+				v.cursprite = v.sprite
+				v.spritemat = CreateMaterial(name, "UnlitGeneric", params)
+			end
 		end
 	end
 end
@@ -623,7 +680,7 @@ function SWEP:ResetBonePositions(val)
 		return
 	end
 
-	vm = self.Owner:GetViewModel()
+	vm = self:GetOwner():GetViewModel()
 	if not IsValid(vm) then return end
 	if (not vm:GetBoneCount()) then return end
 

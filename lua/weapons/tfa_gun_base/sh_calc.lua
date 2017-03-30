@@ -33,14 +33,14 @@ function SWEP:CalculateRatios()
 	elseif spr then
 		adstransitionspeed = 7.5
 	end
-	self.CrouchingRatio = l_mathApproach(self.CrouchingRatio or 0, self.Owner:Crouching() and 1 or 0, ft / self.ToCrouchTime)
+	self.CrouchingRatio = l_mathApproach(self.CrouchingRatio or 0, self:GetOwner():Crouching() and 1 or 0, ft / self.ToCrouchTime)
 	self.SpreadRatio = l_mathClamp(self.SpreadRatio - self:GetStat("Primary.SpreadRecovery") * ft, 1, self:GetStat("Primary.SpreadMultiplierMax"))
 	self.IronSightsProgress = l_mathApproach(self.IronSightsProgress,ist, (ist - self.IronSightsProgress ) * ft * adstransitionspeed )
 	self.SprintProgress = l_mathApproach(self.SprintProgress,sprt, (sprt - self.SprintProgress ) * ft * adstransitionspeed )
 	self.ProceduralHolsterProgress = l_mathApproach(self.ProceduralHolsterProgress,sprt, (sprt - self.SprintProgress ) * ft * self.ProceduralHolsterTime * 15 )
 	self.InspectingProgress = l_mathApproach(self.InspectingProgress, self.Inspecting and 1 or 0, ( ( self.Inspecting and 1 or 0 )  - self.InspectingProgress ) * ft * 10 )
 	self.CLIronSightsProgress = self.IronSightsProgress--compatibility	
-	jr_targ = math.min( math.abs(self.Owner:GetVelocity().z) / 500, 1)
+	jr_targ = math.min( math.abs(self:GetOwner():GetVelocity().z) / 500, 1)
 	self.JumpRatio = l_mathApproach(self.JumpRatio, jr_targ, ( jr_targ  - self.JumpRatio ) * ft * 20 )
 end
 
@@ -91,8 +91,8 @@ function SWEP:CalculateConeRecoil()
 		crec = l_Lerp(crc_2, l_Lerp(crc_1, crec, self:GetStat("Primary.Recoil") * self:GetStat("ChangeStateRecoilMultiplier")), crec * self:GetStat("CrouchRecoilMultiplier"))
 	end
 
-	local ovel = self.Owner:GetVelocity():Length2D()
-	local vfc_1 = l_mathClamp(ovel / self.Owner:GetWalkSpeed(), 0, 2)
+	local ovel = self:GetOwner():GetVelocity():Length2D()
+	local vfc_1 = l_mathClamp(ovel / self:GetOwner():GetWalkSpeed(), 0, 2)
 
 	if dynacc then
 		ccon = l_Lerp(vfc_1, ccon, ccon * self:GetStat("WalkAccuracyMultiplier"))
@@ -126,7 +126,7 @@ function SWEP:CalculateViewModelFlip()
 
 	righthanded = true
 
-	if SERVER and self.Owner:GetInfoNum("cl_tfa_viewmodel_flip", 0) == 1 then
+	if SERVER and self:GetOwner():GetInfoNum("cl_tfa_viewmodel_flip", 0) == 1 then
 		righthanded = false
 	end
 

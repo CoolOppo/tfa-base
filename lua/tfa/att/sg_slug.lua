@@ -12,8 +12,8 @@ ATTACHMENT.WeaponTable = {
 	["Primary"] = {
 		["Damage"] = function( wep, stat ) return wep.Primary.NumShots * stat * 0.7 end,
 		["NumShots"] = function( wep, stat ) return 1, true end,
-		["Spread"] = function( wep, stat ) return math.max( stat - 0.02, stat * 0.5 ) end,
-		["IronAccuracy"] = function( wep, stat ) return math.max( stat - 0.02, stat * 0.5 ) end,
+		["Spread"] = function( wep, stat ) return math.max( stat - 0.015, stat * 0.5 ) end,
+		["IronAccuracy"] = function( wep, stat ) return math.max( stat - 0.03, stat * 0.25 ) end,
 		["Range"] = function( wep, stat ) return stat + 100 * 39.370 end
 	}
 }

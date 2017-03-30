@@ -2,6 +2,10 @@ if SERVER then
 	AddCSLuaFile()
 end
 
+if TFA_DisableHostilePatching == nil then
+	TFA_DisableHostilePatching = false --Change this if you need to
+end
+
 local cv_melee_scaling, cv_melee_basefactor
 local nzombies = string.lower(engine.ActiveGamemode() or "") == "nzombies"
 
@@ -16,147 +20,13 @@ if nzombies then
 	--cv_melee_juggscale = CreateConVar("sv_tfa_nz_melee_juggernaut", "1.5", {FCVAR_SERVER_CAN_EXECUTE, FCVAR_REPLICATED}, "Do X% damage to zombies while you're jug.")
 end
 
-local function VarArgPatch()
-	function ReplacePrimaryFireCooldown(wep)
-		wep.PrimaryAttackOld = wep.PrimaryAttackOld or wep.PrimaryAttack
-		wep.PrimaryAttack = function(self, ...)
-			local npfold = wep:GetNextPrimaryFire()
-			wep.PrimaryAttackOld(wep, ...)
-			if wep:GetNextPrimaryFire() <= npfold then return end
-			-- FAS2 weapons have built-in DTap functionality
-			if wep:IsFAS2() then return end
-
-			-- With double tap, reduce the delay for next primary fire to 2/3
-
-			local dtap1,dtap2 = wep.Owner:HasPerk("dtap"), wep.Owner:HasPerk("dtap2")
-			if wep:IsTFA() then
-				if dtap1 or dtap2 then
-					local delay = wep:GetNextPrimaryFire() - CurTime()
-					if dtap2 then
-						delay = delay * 0.8
-					end
-					if dtap1 then
-						delay = delay * 0.8
-					end
-					wep:SetNextPrimaryFire(CurTime() + delay)
-					if wep:IsTFA() and (  wep:GetStatus() == TFA.GetStatus("shooting") or wep:GetStatus()  == TFA.GetStatus("bashing") ) then
-						delay = wep:GetStatusEnd() - CurTime()
-						if dtap2 then
-							delay = delay * 0.8
-						end
-						if dtap1 then
-							delay = delay * 0.8
-						end
-						wep:SetStatusEnd( CurTime() + delay )
-					end
-				end
-			else
-				local delay = wep:GetNextPrimaryFire() - CurTime()
-				if dtap1 or dtap2 then
-					delay = delay * 0.8
-				end
-				wep:SetNextPrimaryFire(CurTime() + delay)
-			end
-		end
-		wep.SecondaryAttackOld = wep.SecondaryAttackOld or wep.SecondaryAttack
-		wep.SecondaryAttack = function(self, ...)
-			local npfold = wep:GetNextPrimaryFire()
-			wep.SecondaryAttackOld(wep, ...)
-			if wep:GetNextPrimaryFire() <= npfold then return end
-			-- FAS2 weapons have built-in DTap functionality
-			if wep:IsFAS2() then return end
-
-			-- With double tap, reduce the delay for next primary fire to 2/3
-
-			local dtap1,dtap2 = wep.Owner:HasPerk("dtap"), wep.Owner:HasPerk("dtap2")
-			if wep:IsTFA() then
-				if dtap1 or dtap2 then
-					local delay = wep:GetNextPrimaryFire() - CurTime()
-					if dtap2 then
-						delay = delay * 0.8
-					end
-					if dtap1 then
-						delay = delay * 0.8
-					end
-					wep:SetNextPrimaryFire(CurTime() + delay)
-					if wep:IsTFA() and (  wep:GetStatus() == TFA.GetStatus("shooting") or wep:GetStatus()  == TFA.GetStatus("bashing") ) then
-						delay = wep:GetStatusEnd() - CurTime()
-						if dtap2 then
-							delay = delay * 0.8
-						end
-						if dtap1 then
-							delay = delay * 0.8
-						end
-						wep:SetStatusEnd( CurTime() + delay )
-					end
-				end
-			else
-				local delay = wep:GetNextPrimaryFire() - CurTime()
-				if dtap1 or dtap2 then
-					delay = delay * 0.8
-				end
-				wep:SetNextPrimaryFire(CurTime() + delay)
-			end
-		end
-	end
-
-	hook.Add("WeaponEquip", "nzModifyWeaponNextFires", ReplacePrimaryFireCooldown)
-
-	function ReplaceReloadFunction(wep)
-		-- Either not a weapon, doesn't have a reload function, or is FAS2
-		if wep:NZPerkSpecialTreatment() then return end
-		wep.ReloadOld = wep.ReloadOld or wep.Reload
-		if not wep.ReloadOld then return end
-
-		--print("Weapon reload modified")
-		wep.Reload = function(self, ...)
-			if wep.ReloadFinish and wep.ReloadFinish > CurTime() then return end
-			local ply = wep.Owner
-
-			if ply:HasPerk("speed") and not wep:IsTFA() then
-				--print("Hasd perk")
-				local cur = wep:Clip1()
-				if cur >= wep:GetMaxClip1() then return end
-				local give = wep:GetMaxClip1() - cur
-
-				if give > ply:GetAmmoCount(wep:GetPrimaryAmmoType()) then
-					give = ply:GetAmmoCount(wep:GetPrimaryAmmoType())
-				end
-
-				if give <= 0 then return end
-				--print(give)
-				wep:SendWeaponAnim(ACT_VM_RELOAD)
-				wep.ReloadOld(self, ...)
-				local rtime = wep:SequenceDuration(wep:SelectWeightedSequence(ACT_VM_RELOAD)) / 2
-				wep:SetPlaybackRate(2)
-				ply:GetViewModel():SetPlaybackRate(2)
-				local nexttime = CurTime() + rtime
-				wep:SetNextPrimaryFire(nexttime)
-				wep:SetNextSecondaryFire(nexttime)
-				wep.ReloadFinish = nexttime
-
-				timer.Simple(rtime, function()
-					if IsValid(wep) and ply:GetActiveWeapon() == wep then
-						wep:SetPlaybackRate(1)
-						ply:GetViewModel():SetPlaybackRate(1)
-						wep:SendWeaponAnim(ACT_VM_IDLE)
-						wep:SetClip1(give + cur)
-						ply:RemoveAmmo(give, wep:GetPrimaryAmmoType())
-						wep:SetNextPrimaryFire(0)
-						wep:SetNextSecondaryFire(0)
-					end
-				end)
-			else
-				wep.ReloadOld(self, ...)
-			end
-		end
-	end
-
-	hook.Add("WeaponEquip", "nzModifyWeaponReloads", ReplaceReloadFunction)
-end
-
 local function SpreadFix()
+
+	local GAMEMODE = gmod.GetGamemode() or GAMEMODE
+	if not GAMEMODE then return end
+
 	print("[TFA] Patching NZombies")
+	if TFA_DisableHostilePatching then return end
 
 	local ghosttraceentities = {
 		["wall_block"] = true,
@@ -231,7 +101,7 @@ local function MeleeFix()
 			local basefactor = cv_melee_basefactor:GetFloat()
 			dmg:ScaleDamage(((nzRound:GetZombieHealth() - 75) / 75 * scalefactor + 1) * basefactor)
 
-			--if IsValid(ent.Owner) and ent.Owner:IsPlayer() and ent.Owner:HasPerk("jugg") then
+			--if IsValid(ent:GetOwner()) and ent:GetOwner():IsPlayer() and ent:GetOwner():HasPerk("jugg") then
 			--	dmg:ScaleDamage(cv_melee_juggscale:GetFloat())
 			--end
 		end
@@ -271,7 +141,6 @@ local function NZPatch()
 
 	if nzombies then
 		SpreadFix()
-		VarArgPatch()
 		MeleeFix()
 	end
 end

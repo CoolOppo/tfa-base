@@ -1,7 +1,9 @@
 SWEP.Attachments = {
-	--[MDL_ATTACHMENT] = = { offset = { 0, 0 }, atts = { "sample_attachment" }, sel = 1 }
-	--Sorry for copying your syntax, Spy, but it makes it easier on the users and you did an excellent job.  The code's all mine anyways.
+	--[MDL_ATTACHMENT] = = { offset = { 0, 0 }, atts = { "sample_attachment_1", "sample_attachment_2" }, sel = 1, order = 1 }
+	--offset will move the offset the display from the weapon attachment when using CW2.0 style attachment display
+	--atts is a table containing the visible attachments
 	--sel allows you to have an attachment pre-selected, and is used internally by the base to show which attachment is selected in each category.
+	--order is the order it will appear in the TFA style attachment menu
 }
 
 SWEP.AttachmentCache = {
@@ -28,7 +30,23 @@ function SWEP:IsAttached( attn )
 	if v then return true else return false end
 end
 
+local tc
+
 function SWEP:CanAttach( attn )
+	if not self.HasBuiltMutualExclusions then
+		tc = table.Copy( self.AttachmentExclusions )
+		for k,v in pairs( tc ) do
+			if k ~= "BaseClass" then
+				for l,b in pairs(v) do
+					self.AttachmentExclusions[b] = self.AttachmentExclusions[b] or {}
+					if not table.HasValue( self.AttachmentExclusions[b] ) then
+						self.AttachmentExclusions[b][ #self.AttachmentExclusions[b] + 1 ] = k
+					end
+				end
+			end
+		end
+		self.HasBuiltMutualExclusions = true
+	end
 	if att_enabled_cv and ( not att_enabled_cv:GetBool() ) then
 		return false
 	end
@@ -78,8 +96,11 @@ SWEP.StatCache_Blacklist = {
 	["Bodygroups_W"] = true,
 	["Skin"] = true
 }
+
+local retval
 SWEP.StatCache = {}
 SWEP.StatCache2 = {}
+SWEP.StatStringCache = {}
 
 local function mtbl( t1, t2 )
 	local t = table.Copy(t1)
@@ -96,24 +117,51 @@ function SWEP:ClearStatCache(  )
 
 end
 
+local ccv = GetConVar("cl_tfa_debug_cache")
+
 function SWEP:GetStat( stat, default )
 	if istable(default) then
 		default = table.Copy( default )
 	end
-	if self.StatCache2[ stat ] ~= nil then
-		return self.StatCache[ stat ]
-	else
-		--if default == nil then default = 1 end
-		local stbl = string.Explode(".",stat,false)
-		for k,v in pairs(stbl) do
+
+	if self.StatStringCache[ stat ] == nil then
+		local t_stbl = string.Explode(".",stat,false)
+		for k,v in pairs(t_stbl) do
 			local tn = tonumber(v)
-			if tn then stbl[k] = tn end
+			if tn then t_stbl[k] = tn end
+		end
+		self.StatStringCache[ stat ] = t_stbl
+	end
+
+	local stbl = self.StatStringCache[ stat ]
+
+	if self.StatCache2[ stat ] ~= nil then
+		if self.StatCache[ stat ] ~= nil then
+			return self.StatCache[ stat ]
+		else
+			retval = self:GetStatRecursive( self, stbl )
+			if retval ~= nil then
+				return retval
+			else
+				return default
+			end
+		end
+	else
+		if not self:OwnerIsValid() then
+			if IsValid(self) then return self:GetStatRecursive( self, stbl, default ) end
+			return default
 		end
 		local cs = self:GetStatRecursive( self, stbl, default )
+		local cs_og = cs
+		local nc = false
 		for k,v in pairs(self.Attachments) do
 			if v.atts and v.sel then
+				if not v.atts[v.sel] then continue end --Validity Check 1
+				if not TFA.Attachments[ v.atts[v.sel] ] then continue end --Validity Check 2
 				local srctbl = TFA.Attachments[ v.atts[v.sel] ].WeaponTable
-				local tstat, final = self:GetStatRecursive( srctbl, stbl, cs )
+				if not srctbl then continue end --Validity Check 3
+				local tstat, final, nc2 = self:GetStatRecursive( srctbl, stbl, cs )
+				nc = nc2 or nc
 				if tstat ~= nil then
 					if istable(tstat) and istable(cs) and ( not final ) then
 						cs = mtbl( cs, tstat )
@@ -124,8 +172,10 @@ function SWEP:GetStat( stat, default )
 				if final then break end
 			end
 		end
-		if ( not self.StatCache_Blacklist[stat] ) and ( not self.StatCache_Blacklist[stbl[1]] ) then
-			self.StatCache[stat] = cs
+		if ( not self.StatCache_Blacklist[stat] ) and ( not self.StatCache_Blacklist[stbl[1]] ) and ( not nc ) and not ( ccv and ccv:GetBool() ) then
+			if cs ~= cs_og then
+				self.StatCache[stat] = cs
+			end
 			self.StatCache2[stat] = true
 		end
 		return cs
@@ -135,7 +185,7 @@ end
 function SWEP:SetTFAAttachment( cat, id, nw )
 
 	if ( not self.Attachments[cat] ) then return false end
-	if not self:CanAttach( self.Attachments[cat].atts[ id ] or "" ) then return false end
+	if SERVER and ( not self:CanAttach( self.Attachments[cat].atts[ id ] or "" ) ) then return false end
 
 	if id ~= self.Attachments[cat].sel then
 		local att_old = TFA.Attachments[ self.Attachments[cat].atts[ self.Attachments[cat].sel ] or -1 ]
@@ -162,7 +212,7 @@ function SWEP:SetTFAAttachment( cat, id, nw )
 	if nw then
 		net.Start("TFA_Attachment_Set")
 		net.WriteEntity(self)
-		net.WriteInt(cat,4)
+		net.WriteInt(cat,8)
 		net.WriteInt( id or -1 ,5)
 		if SERVER then
 			net.Broadcast()
@@ -188,7 +238,6 @@ function SWEP:InitAttachments()
 			self.Attachments[k] = nil
 		elseif ( not attachments_sorted_alphabetically ) and attachments_sorted_alphabetically:GetBool() then
 			local sval = v.atts[ v.sel ]
-			print(sval)
 			table.sort( v.atts , function(a,b)
 				local aname = ""
 				local bname = ""
@@ -214,6 +263,10 @@ function SWEP:InitAttachments()
 					table.RemoveByValue(v.atts,b)
 				end
 			end
+		end
+		if #v.atts <= 0 then
+			self.Attachments[k] = nil
+			continue
 		end
 		if v.sel then
 			local vsel = v.sel

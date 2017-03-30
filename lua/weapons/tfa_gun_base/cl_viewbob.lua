@@ -40,6 +40,7 @@ local viewbob_intensity_cvar, viewbob_drawing_cvar, viewbob_reloading_cvar
 viewbob_intensity_cvar = GetConVar("cl_tfa_viewbob_intensity")
 viewbob_drawing_cvar = GetConVar("cl_tfa_viewbob_drawing")
 viewbob_reloading_cvar = GetConVar("cl_tfa_viewbob_reloading")
+viewbob_bolting_cvar = GetConVar("cl_tfa_viewbob_bolting")
 local oldangtmp, oldpostmp
 local mzang_fixed
 local mzang_fixed_last
@@ -79,17 +80,18 @@ function SWEP:CalcView(ply, pos, ang, fov)
 	else
 		local vb_d, vb_r, idraw, ireload, ihols, stat
 		stat = self:GetStatus()
-		idraw = stat == TFA.Enum.STATUS_DRAWING
+		idraw = stat == TFA.GetStatus("draw")
 		ihols = TFA.Enum.HolsterStatus[stat]
 		ireload = TFA.Enum.ReloadStatus[stat]
 		vb_d = viewbob_drawing_cvar:GetBool()
 		vb_r = viewbob_reloading_cvar:GetBool()
+		vb_s = viewbob_bolting_cvar:GetBool()
 
-		targbool = ( vb_d and idraw ) or ( vb_r and ireload ) or ( self.GetBashing and self:GetBashing() ) or ( stat == TFA.Enum.STATUS_SHOOTING and self.ViewBob_Shoot )
+		targbool = ( vb_d and idraw ) or ( vb_r and ireload ) or ( self.GetBashing and self:GetBashing() ) or ( vb_s and stat == TFA.Enum.STATUS_SHOOTING and (  self.ViewBob_Shoot or not self:CanInterruptShooting() ) ) or stat == TFA.GetStatus("pump")
 		targbool = targbool and not ( ihols and self.ProceduralHolsterEnabled )
 		targint = targbool and 1 or 0
-		if stat == TFA.Enum.STATUS_RELOADING_SHOTGUN_END or stat == TFA.Enum.STATUS_RELOADING or stat == TFA.Enum.STATUS_SHOOTING then
-			targint = math.min(targint, 1-vm:GetCycle() )
+		if stat == TFA.Enum.STATUS_RELOADING_SHOTGUN_END or stat == TFA.Enum.STATUS_RELOADING or stat == TFA.GetStatus("pump") or ( stat == TFA.Enum.STATUS_RELOADING_WAIT and not self.Shotgun ) or stat == TFA.Enum.STATUS_SHOOTING or ( idraw and vb_d ) then
+			targint = math.min(targint, 1-math.pow( vm:GetCycle(), 2 ) )
 		end
 		progress = l_Lerp(ftv * 15, progress, targint)
 
@@ -130,7 +132,7 @@ function SWEP:CalcView(ply, pos, ang, fov)
 		self.ProceduralViewOffset.y = l_mathApproach(self.ProceduralViewOffset.y, 0, (1 - progress) * ftv * -self.ProceduralViewOffset.y)
 		self.ProceduralViewOffset.r = l_mathApproach(self.ProceduralViewOffset.r, 0, (1 - progress) * ftv * -self.ProceduralViewOffset.r)
 		mzang_fixed_last = mzang_fixed
-		local ints = viewbob_intensity_cvar:GetFloat()
+		local ints = viewbob_intensity_cvar:GetFloat() * 1.25
 		ang:RotateAroundAxis(ang:Right(), l_Lerp(progress, 0, -self.ProceduralViewOffset.p) * ints)
 		ang:RotateAroundAxis(ang:Up(), l_Lerp(progress, 0, self.ProceduralViewOffset.y / 2) * ints)
 		ang:RotateAroundAxis(ang:Forward(), Lerp(progress, 0, self.ProceduralViewOffset.r / 3) * ints)

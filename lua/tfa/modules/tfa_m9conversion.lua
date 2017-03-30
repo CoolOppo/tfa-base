@@ -34,7 +34,7 @@ function TFABaseConv_DefaultInitialize(self)
 	self.ViewModelFOVDefault = self.ViewModelFOV
 	self.DrawCrosshairDefault = self.DrawCrosshair
 	self:SetUpSpread()
-	self:CorrectScopeFOV(self.DefaultFOV and self.DefaultFOV or self.Owner:GetFOV())
+	self:CorrectScopeFOV(self.DefaultFOV and self.DefaultFOV or self:GetOwner():GetFOV())
 
 	if CLIENT then
 		self:InitMods()

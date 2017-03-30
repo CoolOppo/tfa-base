@@ -11,7 +11,7 @@ function EFFECT:Init(data)
 	self.Attachment = data:GetAttachment()
 	local AddVel = vector_origin
 
-	if LocalPlayer and IsValid(LocalPlayer()) then
+	if LocalPlayer and LocalPlayer():IsValid() then
 		AddVel = LocalPlayer():GetVelocity()
 	end
 

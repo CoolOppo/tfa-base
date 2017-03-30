@@ -7,7 +7,7 @@ if CLIENT then
 	hook.Add("PreDrawEffects", "TFAMuzzleUpdate", function()
 		if not IsValid(ply) then ply = LocalPlayer() end
 		if IsValid(ply) then
-			if not IsValid(vm) then vm = LocalPlayer():GetViewModel() return end
+			if not IsValid(vm) then vm = ply:GetViewModel() return end
 			local tbl = vm:GetAttachments()
 
 			if tbl then
@@ -34,7 +34,7 @@ if CLIENT then
 		if IsValid(particle.FollowEnt) and particle.Att then
 			local angpos = particle.FollowEnt:GetAttachment(particle.Att)
 
-			if angpos and angpos.Pos then
+			if angpos then
 				particle.OffPos = WorldToLocal(particle:GetPos(), particle:GetAngles(), angpos.Pos, angpos.Ang)
 			end
 		end
@@ -54,12 +54,12 @@ if CLIENT then
 			first = true
 		end
 
-		if not IsValid(ply) or not IsValid(vm) then return end
+		if not ply:IsValid() or not vm:IsValid() then return end
 		wep = ply:GetActiveWeapon()
 		if IsValid(wep) and wep.IsCurrentlyScoped and wep:IsCurrentlyScoped() then return end
 
 		if IsValid(self.FollowEnt) then
-			local owent = self.FollowEnt.Owner or self.FollowEnt
+			local owent = self.FollowEnt:GetOwner() or self.FollowEnt
 			if not IsValid(owent) then return end
 			local firvel
 
@@ -73,7 +73,7 @@ if CLIENT then
 				if self.FollowEnt == vm then
 					local angpos = TFAVMAttachments[self.Att]
 
-					if angpos and angpos.Pos then
+					if angpos then
 						local tmppos = LocalToWorld(self.OffPos, self:GetAngles(), angpos.Pos, angpos.Ang)
 						local npos = tmppos + self:GetVelocity() * FrameTime()
 						self.OffPos = WorldToLocal(npos + firvel * 0.5, self:GetAngles(), angpos.Pos, angpos.Ang)
@@ -82,7 +82,7 @@ if CLIENT then
 				else
 					local angpos = self.FollowEnt:GetAttachment(self.Att)
 
-					if angpos and angpos.Pos then
+					if angpos then
 						local tmppos = LocalToWorld(self.OffPos, self:GetAngles(), angpos.Pos, angpos.Ang)
 						local npos = tmppos + self:GetVelocity() * FrameTime()
 						self.OffPos = WorldToLocal(npos + firvel * 0.5, self:GetAngles(), angpos.Pos, angpos.Ang)

@@ -7,14 +7,14 @@ function EFFECT:Init(data)
 	self.Attachment = data:GetAttachment()
 	self.Position = self:GetTracerShootPos(data:GetOrigin(), self.WeaponEnt, self.Attachment)
 
-	if IsValid(self.WeaponEnt.Owner) then
-		if self.WeaponEnt.Owner:ShouldDrawLocalPlayer() then
-			ang = self.WeaponEnt.Owner:GetAimVector():Angle()
+	if IsValid(self.WeaponEnt:GetOwner()) then
+		if self.WeaponEnt:GetOwner():ShouldDrawLocalPlayer() then
+			ang = self.WeaponEnt:GetOwner():GetAimVector():Angle()
 			ang:Normalize()
 			--ang.p = math.Clamp(ang.p,-55,55)
 			self.Forward = ang:Forward()
 		else
-			self.WeaponEnt = self.WeaponEnt.Owner:GetViewModel()
+			self.WeaponEnt = self.WeaponEnt:GetOwner():GetViewModel()
 		end
 	end
 
@@ -24,7 +24,7 @@ function EFFECT:Init(data)
 	self.vOffset = self.Position
 	dir = self.Forward
 
-	if IsValid(LocalPlayer()) then
+	if LocalPlayer():IsValid() then
 		AddVel = LocalPlayer():GetVelocity()
 	end
 
@@ -49,7 +49,7 @@ function EFFECT:Init(data)
 		dlight.b = 64
 		dlight.brightness = 4
 		dlight.Decay = 1750
-		dlight.Size = 50
+		dlight.Size = 128
 		dlight.DieTime = CurTime() + 0.3
 	end
 

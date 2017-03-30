@@ -6,6 +6,15 @@ local cv_gv = GetConVar("sv_gravity")
 local cv_sl = GetConVar("cl_tfa_fx_impact_ricochet_sparklife")
 --local cv_sc = GetConVar("cl_tfa_fx_impact_ricochet_sparks")
 
+local DFX = {
+	["AR2Tracer"] = true,
+	["Tracer"] = true,
+	["GunshipTracer"] = true,
+	["GaussTracer"] = true,
+	["AirboatGunTracer"] = true,
+	["AirboatGunHeavyTracer"] = true
+}
+
 function EFFECT:Init(data)
 	self.StartPos = data:GetOrigin()
 	self.Dir = data:GetNormal()
@@ -16,18 +25,33 @@ function EFFECT:Init(data)
 	self.DieTime = CurTime() + self.LifeTime
 	self.Thickness = 1
 	self.Grav = Vector(0, 0, -cv_gv:GetFloat())
-	self.PartMult = data:GetMagnitude()
+	self.PartMult = data:GetRadius()
 	self.SparkLife = cv_sl:GetFloat()
 	self.WeaponEnt = data:GetEntity()
 	if not IsValid(self.WeaponEnt) then return end
-
-	if self.WeaponEnt.TracerName then
+	if self.WeaponEnt.TracerPCF then
+		local traceres = util.QuickTrace(self.StartPos, self.Dir * 9999999, Entity( math.Round( data:GetScale() ) ) )
+		self.EndPos = traceres.HitPos or self.StartPos
+		local efn = self.WeaponEnt.TracerName
+		local spos = self.StartPos
+		local cnt = math.min( math.Round( data:GetMagnitude() ), 6000 )
+		timer.Simple( cnt / 1000000, function()
+			TFA.ParticleTracer( efn, spos, traceres.HitPos or spos, false )
+		end)
+		return
+	end
+	local tn = self.WeaponEnt.BulletTracerName
+	if tn and tn ~= "" and not DFX[tn] then
 		local fx = EffectData()
 		fx:SetStart(self.StartPos)
-		local traceres = util.QuickTrace(self.StartPos, self.Dir * 9999999, nil)
-		fx:SetOrigin(traceres.HitPos or self.StartPos)
-		util.Effect(self.WeaponEnt.TracerName, fx)
+		local traceres = util.QuickTrace(self.StartPos, self.Dir * 9999999, Entity( math.Round( data:GetScale() ) ) )
+		self.EndPos = traceres.HitPos or self.StartPos
+		fx:SetOrigin( self.EndPos )
+		fx:SetEntity( self.WeaponEnt )
+		fx:SetMagnitude( 1 )
+		util.Effect(tn, fx)
 		self:Remove()
+		return
 		--Sparks
 		--Impact
 	else
