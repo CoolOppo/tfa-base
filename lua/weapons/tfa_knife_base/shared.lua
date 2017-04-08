@@ -128,7 +128,7 @@ function SWEP:SmackDamage(tr, fwd, primary)
 	self:ApplyForce( tr.Entity, dmginfo:GetDamageForce(), tr.HitPos )
 end
 
-function SWEP:SmackEffect(tr, fwd)
+function SWEP:SmackEffect(tr)
 	local vSrc = tr.StartPos
 	local bFirstTimePredicted = IsFirstTimePredicted()
 	local bHitWater = bit.band(util.PointContents(vSrc), MASK_WATER) ~= 0

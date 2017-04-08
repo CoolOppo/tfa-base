@@ -3,10 +3,11 @@ if SERVER then AddCSLuaFile() end
 TFA = TFA or {}
 
 local do_load = true
-local version = 4.261
-local version_string = "4.2.6.1"
+local version = 4.262
+local version_string = "4.2.6.2"
 local changelog = [[
-	* Knife prediction improvements ( general melee to follow )
+	* Knife prediction improvements
+	* Melee base prediction fixes
 ]]
 
 local function testFunc()

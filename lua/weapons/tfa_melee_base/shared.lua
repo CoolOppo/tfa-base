@@ -170,39 +170,111 @@ local fwd,eang,scl,dirv
 local strikedir = Vector()
 
 tr = {}
-local bul = {}
 local srctbl
 SWEP.hpf = false
 SWEP.hpw = false
 
 local lim_up_vec = Vector(1,1,0.05)
 
-function SWEP:ApplyForce(ent, force, posv, now)
+function SWEP:ApplyForce(ent, force, posv )
 	if not IsValid(ent) or not ent.GetPhysicsObjectNum then return end
 
-	if now then
-		if ent.GetRagdollEntity then
-			ent = ent:GetRagdollEntity() or ent
-		end
+	if ent.GetRagdollEntity and IsValid( ent:GetRagdollEntity() ) and ent ~= ent:GetRagdollEntity() then
+		ent = ent:GetRagdollEntity()
+		timer.Simple(0, function()
+			if IsValid(self) and self:OwnerIsValid() and IsValid(ent) then
+				self:ApplyForce(ent, force, posv, false)
+			end
+		end)
+		return
+	end
 
-		if not IsValid(ent) then return end
-		local phys = ent:GetPhysicsObjectNum(0)
+	if not IsValid(ent) then return end
 
-		if IsValid(phys) then
-			if ent:IsPlayer() or ent:IsNPC() then
-				ent:SetVelocity( force * 0.1 * lim_up_vec )
-				phys:SetVelocity(phys:GetVelocity() + force * 0.1 * lim_up_vec )
-			else
-				phys:ApplyForceOffset(force, posv)
+	if ent:IsPlayer() or ent:IsNPC()  then
+		ent:SetVelocity( force * 0.1 * lim_up_vec )
+	end
+
+	if ent:GetPhysicsObjectCount() > 1 then
+		for i = 0, ent:GetPhysicsObjectCount() - 1 do
+			local phys = ent:GetPhysicsObjectNum( i )
+
+			if IsValid(phys) then
+				phys:ApplyForceOffset(force / ent:GetPhysicsObjectCount(), posv)
 			end
 		end
 	else
-		timer.Simple(0, function()
-			if IsValid(self) and self:OwnerIsValid() and IsValid(ent) then
-				self:ApplyForce(ent, force, posv, true)
-			end
-		end)
+		local phys = ent:GetPhysicsObjectNum(0)
+
+		if IsValid(phys) then
+			phys:ApplyForceOffset(force, posv)
+		end
 	end
+end
+
+function SWEP:ApplyDamage( trace, dmginfo, attk )
+
+	local dam,force = dmginfo:GetBaseDamage(), dmginfo:GetDamageForce()
+
+	dmginfo:SetDamagePosition(trace.HitPos)
+	dmginfo:SetReportedPosition(trace.StartPos)
+	trace.Entity:DispatchTraceAttack(dmginfo, trace, fwd)
+
+	dmginfo:SetDamage( dam )
+	dmginfo:SetDamageForce( force )
+	dmginfo:SetAttacker( self:GetOwner() )
+
+	self:ApplyForce( trace.Entity, dmginfo:GetDamageForce(), trace.HitPos )
+
+	dmginfo:SetDamage( dam )
+	dmginfo:SetDamageForce( force )
+	dmginfo:SetAttacker( self:GetOwner() )
+end
+
+function SWEP:SmackEffect( trace, dmg )
+	local vSrc = trace.StartPos
+	local bFirstTimePredicted = IsFirstTimePredicted()
+	local bHitWater = bit.band(util.PointContents(vSrc), MASK_WATER) ~= 0
+	local bEndNotWater = bit.band(util.PointContents(trace.HitPos), MASK_WATER) == 0
+
+	local trSplash = bHitWater and bEndNotWater and util.TraceLine({
+		start = trace.HitPos,
+		endpos = vSrc,
+		mask = MASK_WATER
+	}) or not (bHitWater or bEndNotWater) and util.TraceLine({
+		start = vSrc,
+		endpos = trace.HitPos,
+		mask = MASK_WATER
+	})
+
+	if (trSplash and bFirstTimePredicted) then
+		local data = EffectData()
+		data:SetOrigin(trSplash.HitPos)
+		data:SetScale(1)
+
+		if (bit.band(util.PointContents(trSplash.HitPos), CONTENTS_SLIME) ~= 0) then
+			data:SetFlags(FX_WATER_IN_SLIME)
+		end
+
+		util.Effect("watersplash", data)
+	end
+
+	local dam,force,dt = dmg:GetBaseDamage(), dmg:GetDamageForce(), dmg:GetDamageType()
+
+	if (trace.Hit and bFirstTimePredicted and ( not trSplash) and self:DoImpactEffect(trace, dt ) ~= true ) then
+		local data = EffectData()
+		data:SetOrigin(trace.HitPos)
+		data:SetStart(vSrc)
+		data:SetSurfaceProp(trace.SurfaceProps)
+		data:SetDamageType( dt )
+		data:SetHitBox(trace.HitBox)
+		data:SetEntity(trace.Entity)
+		util.Effect("Impact", data)
+	end
+
+	dmg:SetDamage( dam )
+	dmg:SetDamageForce( force )
+	dmg:SetAttacker( self:GetOwner() )
 end
 
 function SWEP:MakeDoor(ent, dmginfo)
@@ -386,43 +458,53 @@ local red = Color(255,0,0,255)
 function SWEP:Strike( attk, precision )
 	local hitWorld,hitFlesh,needsCB
 	local distance, direction, maxhull
+	local ow = self:GetOwner()
+
 	distance = attk.len
 	direction = attk.dir
 	maxhull = attk.hull
+
 	table.Empty( totalResults )
-	eang = self:GetOwner():EyeAngles()
-	fwd = self:GetOwner():EyeAngles():Forward()
-	tr.start = self:GetOwner():GetShootPos()
+
+	eang = ow:EyeAngles()
+	fwd = ow:EyeAngles():Forward()
+	tr.start = ow:GetShootPos()
 	scl = direction:Length() / precision / 2
+
 	tr.maxs = Vector(scl,scl,scl)
 	tr.mins = -tr.maxs
 	tr.mask = MASK_SHOT
 	tr.filter = function(ent)
-		if ent == self:GetOwner() or ent == self then return false end
+		if ent == ow or ent == self then return false end
 
 		return true
 	end
+
 	hitWorld = false
 	hitFlesh = false
+
 	if attk.callback then
 		needsCB = true
 	else
 		needsCB = false
 	end
+
 	if maxhull then
 		tr.maxs.x = math.min( tr.maxs.x, maxhull / 2 )
 		tr.maxs.y = math.min( tr.maxs.y, maxhull / 2 )
 		tr.maxs.z = math.min( tr.maxs.z, maxhull / 2 )
 		tr.mins = -tr.maxs
 	end
+
 	strikedir:Zero()
 	strikedir:Add(direction.x * eang:Right())
 	strikedir:Add(direction.y * eang:Forward())
 	strikedir:Add(direction.z * eang:Up())
+
 	local strikedirfull = strikedir * 1
 	debugoverlay.Line( tr.start + Vector(0,0,-1) + fwd * distance / 2 - strikedirfull / 2, tr.start + Vector(0,0,-1) + fwd * distance / 2 + strikedirfull / 2, 5, red )
 	if SERVER and not game.SinglePlayer() then
-		self:GetOwner():LagCompensation( true )
+		ow:LagCompensation( true )
 	end
 	for i = 1, precision do
 		dirv = LerpVector( ( i - 0.5 ) / precision, -direction / 2, direction / 2 )
@@ -434,86 +516,74 @@ function SWEP:Strike( attk, precision )
 		traceres = util.TraceLine( tr )
 		table.insert(totalResults, traceres)
 	end
+
 	if SERVER and not game.SinglePlayer() then
-		self:GetOwner():LagCompensation( false )
+		ow:LagCompensation( false )
 	end
 
 	local forcevec = strikedirfull:GetNormalized() * (attack.force or attack.dmg / 4) * 128
-	bul.Damage = attk.dmg
-	bul.Force = 1
-	bul.Tracer = 0
-	bul.Num = 1
-	bul.HullSize = ( attk.hull / 2 ) or 4
-	bul.Distance = 16
-	bul.Callback = function(a, b, c)
+	local damage = DamageInfo()
+	damage:SetAttacker(self:GetOwner())
+	damage:SetInflictor(self)
+	damage:SetDamage(attk.dmg)
+	damage:SetDamageType( attk.dmgtype or DMG_SLASH )
+	damage:SetDamageForce( forcevec )
 
-		if b.Fraction >= 1 then
-			c:ScaleDamage(0)
-
-			return
-		end
-
-		if b.HitPos:Distance(b.StartPos) >= bul.Distance then
-			c:ScaleDamage(0)
-
-			return
-		end
-
-		c:SetDamageType(attack.dmgtype or DMG_SLASH)
-		local hitent = b.Entity
-
-		if c:IsDamageType(DMG_BURN) and hitent.Ignite then
-			hitent:Ignite(bul.Damage / 10, 1)
-		end
-
-		if not IsValid(self) then return end
-
-		if TraceHitFlesh(b) and not hitFlesh then
-			if attk.callback and IsValid(self) and needsCB then
-				attk.callback(attack,self,b)
-				needsCB = false
-			end
-			if attk.hitflesh then
-				self:EmitSound(attk.hitflesh)
-			end
-			hitFlesh = true
-			self:DoImpactEffect(b, attack.dmgtype)
-		elseif ( not TraceHitFlesh( b ) ) and b.Hit then
-			if not hitWorld then
-				if attk.hitworld and not hitFlesh then
-					self:EmitSound(attack.hitworld)
-				end
-				hitWorld = true
-				self:DoImpactEffect(b, attack.dmgtype)
-			end
-		end
-
-		self:ApplyForce(hitent, forcevec, traceres.HitPos)
-		self:BurstDoor(hitent, c)
-	end
 	local fleshHits = 0
 	for k,v in ipairs(totalResults) do --Handle flesh
-		if v.Hit and v.Fraction > 0 and v.Fraction < 1 and IsValid(v.Entity) and TraceHitFlesh( v ) and ( not v.Entity.HasMeleeHit ) then
-			bul.Src = v.HitPos - strikedir:GetNormalized() * 1
-			bul.Dir = strikedir:GetNormalized() * 2
-			self:GetOwner():FireBullets(bul)
+		if v.Hit and IsValid(v.Entity) and TraceHitFlesh( v ) and ( not v.Entity.HasMeleeHit ) then
+			self:ApplyDamage( v, damage, attk )
+			self:SmackEffect(v, damage)
 			v.Entity.HasMeleeHit = true
 			fleshHits = fleshHits + 1
 			if fleshHits >= ( attk.maxhits or 3 ) then
 				break
 			end
-		end
-		--debugoverlay.Sphere( v.HitPos, 5, 5, color_white )
-	end
-	for k,v in ipairs(totalResults) do --Handle world
-		if v.Hit and ( not TraceHitFlesh( v ) ) and not hitWorld then
+			if attk.hitflesh and not hitFlesh then
+				if SERVER and not sp then
+					net.Start( "tfaSoundEvent" )
+					net.WriteEntity( v.Entity )
+					net.WriteString( attk.hitflesh )
+					net.SendOmit( self:GetOwner() )
+				else
+					v.Entity:EmitSound( attk.hitflesh )
+				end
+			end
 			if attk.callback and needsCB then
 				attk.callback(attack,self,v)
 				needsCB = false
 			end
-			bul.Src = v.HitPos + v.HitNormal
-			bul.Dir = -v.HitNormal * 2
-			self:GetOwner():FireBullets(bul)
+			hitFlesh = true
+		end
+		--debugoverlay.Sphere( v.HitPos, 5, 5, color_white )
+	end
+
+	for k,v in ipairs(totalResults) do --Handle world
+		if v.Hit and ( not TraceHitFlesh( v ) ) then
+			self:ApplyDamage( v, damage )
+			if not hitWorld then
+				self:SmackEffect(v, damage)
+				if attk.hitworld and not hitFlesh then
+					if SERVER and not sp then
+						net.Start( "tfaSoundEvent" )
+						net.WriteEntity( self )
+						net.WriteString( attk.hitworld )
+						net.SendOmit( self:GetOwner() )
+					else
+						if v.Entity:IsValid() then
+							v.Entity:EmitSound( attk.hitworld )
+						else
+							self:EmitSound( attk.hitworld )
+						end
+					end
+				end
+				if attk.callback and needsCB then
+					attk.callback(attack,self,v)
+					needsCB = false
+				end
+				self:BurstDoor( v.Entity, damage)
+				hitWorld = true
+			end
 		end
 	end
 	for k,v in ipairs(totalResults) do --Handle empty + cleanup

@@ -317,7 +317,9 @@ local nzombies = string.lower( engine.ActiveGamemode() or "" ) == "nzombies"
 function SWEP:Initialize()
 	self.DrawCrosshairDefault = self.DrawCrosshair
 	self.HasInitialized = true
-	self.BobScaleCustom = 1
+	if ( not self.BobScaleCustom ) or self.BobScaleCustom <= 0 then
+		self.BobScaleCustom = 1
+	end
 	self.BobScale = 0
 	self.SwayScaleCustom = 1
 	self.SwayScale = 0
