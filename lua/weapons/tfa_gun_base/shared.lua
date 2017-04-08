@@ -352,6 +352,21 @@ function SWEP:Initialize()
 	if nzombies then
 		self:NZDeploy()
 	end
+	if SERVER then
+		if self.Owner:IsNPC() then
+			local seq = self.Weapon.Owner:LookupSequence("shootp1") 
+			if self.Weapon.Owner:GetSequenceName(seq) == "shootp1" then
+				self:SetWeaponHoldType("pistol")		
+			else
+				self:SetWeaponHoldType("ar2")
+			end
+			if self.Owner:GetClass() == "npc_citizen" then
+				self.Weapon.Owner:Fire( "DisableWeaponPickup" )
+			end
+			self.Weapon.Owner:SetKeyValue( "spawnflags", "256" )
+			return
+		end
+	end
 end
 
 function SWEP:Equip( ... )
@@ -433,6 +448,9 @@ Returns:  True/False to allow holster.  Useful for animations.
 Purpose:  Standard SWEP Function
 ]]
 function SWEP:Holster(target)
+	if self.Owner:IsNPC() then
+		return
+	end
 	if not IsValid(self) then return end
 	ct = l_CT()
 	stat = self:GetStatus()
@@ -461,6 +479,9 @@ function SWEP:Holster(target)
 end
 
 function SWEP:FinishHolster()
+	if self.Owner:IsNPC() then
+		return
+	end
 	if SERVER then
 		ent = self:GetSwapTarget()
 		self:CleanParticles()
@@ -478,6 +499,9 @@ function SWEP:FinishHolster()
 end
 
 function SWEP:WeaponUse(plyv)
+	if self.Owner:IsNPC() then
+		return
+	end
 	plyv:ConCommand("+use")
 	self:GetHolding()
 
@@ -527,6 +551,19 @@ Notes:  This is blank.
 Purpose:  Standard SWEP Function
 ]]
 function SWEP:Think()
+	if self.Owner:IsNPC() then
+		if SERVER then
+			if self.Owner:GetClass() == "npc_combine_s" then
+				if self.Owner:GetActivity() == 16 then
+					self:PrimaryAttack()
+				end
+			else
+				if self.Owner:GetActivity() == 11 then
+					self:PrimaryAttack()
+				end
+			end
+		end
+	end
 end
 
 --[[
@@ -539,6 +576,9 @@ Purpose:  Standard SWEP Function
 local finalstat
 
 function SWEP:PlayerThink()
+	if self.Owner:IsNPC() then
+		return
+	end
 	ft = TFA.FrameTime()
 	if not self:NullifyOIV() then return end
 	self:Think2()
@@ -548,6 +588,9 @@ function SWEP:PlayerThink()
 end
 
 function SWEP:PlayerThinkCL()
+	if self.Owner:IsNPC() then
+		return
+	end
 	ft = TFA.FrameTime()
 	if not self:NullifyOIV() then return end
 	self:CalculateRatios()
@@ -566,6 +609,9 @@ end
 local is, spr, waittime, sht, lact
 
 function SWEP:Think2()
+	if self.Owner:IsNPC() then
+		return
+	end
 	if self.LuaShellRequestTime > 0 and CurTime() > self.LuaShellRequestTime then
 		self.LuaShellRequestTime = -1
 		self:MakeShell()
@@ -755,6 +801,9 @@ if CLIENT then
 end
 
 function SWEP:IronSights()
+	if self.Owner:IsNPC() then
+		return
+	end
 	if not self:GetStat("Scoped") and not self:GetStat("Scoped_3D") then
 		if not ironsights_cv:GetBool() then
 			self.data.ironsights_default = self.data.ironsights_default or self.data.ironsights
@@ -906,6 +955,9 @@ SWEP.is_cached = nil
 SWEP.is_cached_old = false
 
 function SWEP:GetIronSights( ignorestatus )
+	if self.Owner:IsNPC() then
+		return
+	end
 	if ignorestatus then
 		issighting = self:GetIronSightsRaw()
 		issprinting = self:GetSprinting()
@@ -974,6 +1026,9 @@ end
 SWEP.is_sndcache_old = false
 
 function SWEP:IronSightSounds()
+	if self.Owner:IsNPC() then
+		return
+	end
 	is = self:GetIronSights()
 	if SERVER or ( CLIENT and IsFirstTimePredicted() ) then
 		if is ~= self.is_sndcache_old then
@@ -991,6 +1046,14 @@ local legacy_reloads_cv = GetConVar("sv_tfa_reloads_legacy")
 local dryfire_cvar = GetConVar("sv_tfa_allow_dryfire")
 
 function SWEP:CanPrimaryAttack( )
+	if self.Owner:IsNPC() then
+		if SERVER then
+			if CurTime() < self:GetNextPrimaryFire() then 
+				return false 
+			end
+			return true
+		end
+	end
 	stat = self:GetStatus()
 	if not TFA.Enum.ReadyStatus[stat] and stat ~= TFA.Enum.STATUS_SHOOTING then
 		if self.Shotgun and TFA.Enum.ReloadStatus[stat] then
@@ -1048,6 +1111,42 @@ function SWEP:CanPrimaryAttack( )
 end
 
 function SWEP:PrimaryAttack()
+	if self.Owner:IsNPC() then
+		if self:Clip1() <= 0 then
+			if SERVER then
+				self.Owner:SetSchedule(SCHED_RELOAD)
+			end
+			return
+		end
+		if SERVER then
+			if CurTime() < self:GetNextPrimaryFire() then 
+				return false 
+			end
+		end
+		local times_to_fire = 2
+		if self.OnlyBurstFire then
+			times_to_fire = 3
+		end
+		if self.Primary.Automatic then
+			times_to_fire = math.random(5,8)
+		end
+		self:SetNextPrimaryFire( CurTime() + (((self.Primary.RPM / 60) / 100)*times_to_fire) + math.random(0.2, 0.6))
+		timer.Create( "GunTimer", (self.Primary.RPM / 60) / 100, times_to_fire, function()
+			self.Weapon:EmitSound(self.Primary.Sound)
+			self:TakePrimaryAmmo(1)
+			local damage_to_do = self.Primary.Damage * 0.16
+			local bullet = {}
+			bullet.Num = self.Primary.NumShots
+			bullet.Src = self.Owner:GetShootPos()
+			bullet.Dir = self.Owner:GetAimVector()
+			bullet.Tracer = 1 
+			bullet.Damage = damage_to_do
+			bullet.AmmoType = self.Primary.Ammo 
+			self.Owner:FireBullets( bullet )
+		end)
+		return
+	end
+
 	if not IsValid(self) then return end
 	if not self:VMIV() then return end
 	if not self:CanPrimaryAttack() then return end
@@ -1109,6 +1208,9 @@ function SWEP:CanSecondaryAttack()
 end
 
 function SWEP:SecondaryAttack()
+	if self.Owner:IsNPC() then
+		return
+	end
 	if self.data and self:GetStat("data.ironsights") == 0 and self.AltAttack then
 		self:AltAttack()
 		return
@@ -1120,6 +1222,9 @@ function SWEP:GetLegacyReloads()
 end
 
 function SWEP:Reload(released)
+	if self.Owner:IsNPC() then
+		return
+	end
 	if not self:VMIV() then return end
 	if self:Ammo1() <= 0 then return end
 	if self:GetStat("Primary.ClipSize") < 0 then return end
@@ -1174,6 +1279,9 @@ function SWEP:Reload(released)
 end
 
 function SWEP:Reload2(released)
+	if self.Owner:IsNPC() then
+		return
+	end
 	if not self:VMIV() then return end
 	if self:Ammo2() <= 0 then return end
 	if self:GetStat("Secondary.ClipSize") < 0 then return end
@@ -1228,6 +1336,9 @@ function SWEP:Reload2(released)
 end
 
 function SWEP:DoPump()
+	if self.Owner:IsNPC() then
+		return
+	end
 	succ,tanim = self:PlayAnimation( self:GetStat("PumpAction") )
 	self:SetStatus( TFA.GetStatus("pump") )
 	self:SetStatusEnd( CurTime() + self:GetActivityLength( tanim, true ) )
@@ -1236,6 +1347,9 @@ function SWEP:DoPump()
 end
 
 function SWEP:LoadShell( )
+	if self.Owner:IsNPC() then
+		return
+	end
 	success, tanim = self:ChooseReloadAnim()
 	if self.StatusLengthOverride[ tanim ] then
 		self:SetStatusEnd(ct + self:GetActivityLength( tanim, true ) )
@@ -1248,6 +1362,9 @@ function SWEP:LoadShell( )
 end
 
 function SWEP:CompleteReload()
+	if self.Owner:IsNPC() then
+		return
+	end
 	local maxclip = self:GetPrimaryClipSize( true )
 	local curclip = self:Clip1()
 	local amounttoreplace = math.min(maxclip - curclip, self:Ammo1())
@@ -1257,6 +1374,9 @@ end
 
 
 function SWEP:CheckAmmo()
+	if self.Owner:IsNPC() then
+		return
+	end
 	if self:GetIronSights() or self:GetSprinting() then return end
 
 	--if self.NextInspectAnim == nil then
@@ -1280,6 +1400,9 @@ end
 
 local cv_strip = GetConVar("sv_tfa_weapon_strip")
 function SWEP:DoAmmoCheck()
+	if self.Owner:IsNPC() then
+		return
+	end
 	if IsValid(self) and SERVER and cv_strip:GetBool() and self:Clip1() == 0 and self:Ammo1() == 0 then
 		timer.Simple(.1, function()
 			if SERVER and IsValid(self) and self:OwnerIsValid() then
@@ -1336,6 +1459,9 @@ Purpose:  Standard SWEP Function
 
 local nfov
 function SWEP:TranslateFOV(fov)
+	if self.Owner:IsNPC() then
+		return
+	end
 	self:CorrectScopeFOV()
 	nfov = l_Lerp(self.IronSightsProgress, fov, fov * math.min( self:GetStat("Secondary.IronFOV") / 90,1))
 
@@ -1366,6 +1492,9 @@ local centered_sprintpos = Vector(0,-1,1)
 local centered_sprintang = Vector(-15,0,0)
 
 function SWEP:CalculateViewModelOffset( )
+	if self.Owner:IsNPC() then
+		return
+	end
 
 	if self:GetStat("VMPos_Additive") then
 		target_pos:Zero()
@@ -1482,6 +1611,9 @@ local posfac = 0.75
 local gunswaycvar = GetConVar("cl_tfa_gunbob_intensity")
 
 function SWEP:Sway(pos, ang)
+	if self.Owner:IsNPC() then
+		return
+	end
 	if not self:OwnerIsValid() then return pos, ang end
 	rft = (SysTime() - (self.LastSysT or SysTime())) * game.GetTimeScale()
 
@@ -1548,6 +1680,9 @@ local vmfov
 local bbvec
 
 function SWEP:GetViewModelPosition( pos, ang )
+	if self.Owner:IsNPC() then
+		return
+	end
 	if not IsValid(self:GetOwner()) then return end
 	--Bobscale
 	if self.Sprint_Mode == TFA.Enum.LOCOMOTION_ANI then
@@ -1611,6 +1746,9 @@ function SWEP:GetViewModelPosition( pos, ang )
 end
 
 function SWEP:ToggleInspect()
+	if self.Owner:IsNPC() then
+		return
+	end
 	if self:GetSprinting() or self:GetIronSights() or self:GetStatus() ~= TFA.Enum.STATUS_IDLE then return end
 	self.Inspecting = not self.Inspecting
 	--if self.Inspecting then
