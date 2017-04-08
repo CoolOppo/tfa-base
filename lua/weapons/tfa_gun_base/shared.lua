@@ -1131,13 +1131,6 @@ function SWEP:PrimaryAttack()
 		self:SetNextPrimaryFire( CurTime() + (((self.Primary.RPM / 60) / 100)*times_to_fire) + math.random(0.2, 0.6))
 		timer.Create( "GunTimer", (self.Primary.RPM / 60) / 100, times_to_fire, function()
 			self.Weapon:EmitSound(self.Primary.Sound)
-			self:ShootEffectsCustom()
-			if self.MuzzleFlashEnabled then
-				self:ShootEffectsCustom()
-			end
-			if self.EjectionSmoke then
-				self:EjectionSmoke()
-			end
 			self:TakePrimaryAmmo(1)
 			local damage_to_do = self.Primary.Damage * 0.16
 			local bullet = {}
