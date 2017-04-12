@@ -20,6 +20,7 @@ if nzombies then
 	--cv_melee_juggscale = CreateConVar("sv_tfa_nz_melee_juggernaut", "1.5", {FCVAR_SERVER_CAN_EXECUTE, FCVAR_REPLICATED}, "Do X% damage to zombies while you're jug.")
 end
 
+--[[
 local function SpreadFix()
 
 	local GAMEMODE = gmod.GetGamemode() or GAMEMODE
@@ -84,6 +85,7 @@ local function SpreadFix()
 		if ent:IsPlayer() and ent:HasPerk("dtap2") then return true end
 	end
 end
+]]--
 
 local function MeleeFix()
 	hook.Add("EntityTakeDamage", "TFA_MeleeScaling", function(target, dmg)
@@ -140,7 +142,7 @@ local function NZPatch()
 	end
 
 	if nzombies then
-		SpreadFix()
+		--SpreadFix()
 		MeleeFix()
 	end
 end
