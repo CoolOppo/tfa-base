@@ -11,6 +11,8 @@ local angpos
 local traceres
 local dot_sz
 
+local trails_enabled_cv = GetConVar("cl_tfa_laser_trails")
+
 function SWEP:DrawLaser( is_vm )
 	if not laserline then
 		laserline = Material( self.LaserLine or "effects/spark_noz")
@@ -41,7 +43,7 @@ function SWEP:DrawLaser( is_vm )
 		render.DrawQuadEasy(traceres.HitPos, traceres.HitNormal, dot_sz, dot_sz, col, 0)
 		render.SetMaterial(lasernoise)
 		render.DrawQuadEasy(traceres.HitPos, traceres.HitNormal, dot_sz / 2 * math.Rand( 0.7, 1.3 ), dot_sz / 2 * math.Rand( 0.7, 1.3 ) , col, math.random(-180,180))
-		if self.laserpos_old then
+		if self.laserpos_old and trails_enabled_cv:GetBool() then
 			render.SetMaterial(laserline)
 			render.DrawBeam(self.laserpos_old, traceres.HitPos, dot_sz / 2, 0.2, 1, col )
 		end
