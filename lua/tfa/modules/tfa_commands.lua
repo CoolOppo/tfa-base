@@ -312,6 +312,11 @@ if CLIENT then
 		--print("Ironsights resight con var created")
 	end
 
+	if GetConVar("cl_tfa_laser_trails") == nil then
+		CreateClientConVar("cl_tfa_laser_trails", 1, true, true)
+		--print("Laser trails con var created")
+	end
+
 	--Crosshair Params
 	if GetConVar("cl_tfa_hud_crosshair_length") == nil then
 		CreateClientConVar("cl_tfa_hud_crosshair_length", 1, true, false)

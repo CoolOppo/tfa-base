@@ -309,7 +309,8 @@ if CLIENT then
 			cl_tfa_viewmodel_offset_z = "0",
 			cl_tfa_viewmodel_offset_fov = "0",
 			cl_tfa_viewmodel_flip = "0",
-			cl_tfa_viewmodel_centered = "0"
+			cl_tfa_viewmodel_centered = "0",
+			cl_tfa_laser_trails = "1"
 		}
 
 		panel:AddControl("ComboBox", tfaOptionCL)
@@ -383,6 +384,11 @@ if CLIENT then
 		panel:AddControl("CheckBox", {
 			Label = "Centered Viewmodel",
 			Command = "cl_tfa_viewmodel_centered"
+		})
+
+		panel:AddControl("CheckBox", {
+			Label = "Laser Dot Trails",
+			Command = "cl_tfa_laser_trails"
 		})
 
 		panel:AddControl("CheckBox", {
