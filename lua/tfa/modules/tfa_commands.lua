@@ -39,6 +39,10 @@ if GetConVar("sv_tfa_penetration_limit") == nil then
 	--print("Dry fire con var created")
 end
 
+if GetConVar("sv_tfa_penetration_hitmarker") == nil then
+	CreateConVar("sv_tfa_penetration_hitmarker", "1", {FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE}, "Should penetrating bullet send hitmarker to attacker?")
+end
+
 if GetConVar("sv_tfa_damage_multiplier") == nil then
 	CreateConVar("sv_tfa_damage_multiplier", "1", {FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE}, "Multiplier for TFA base projectile damage.")
 	--print("Damage Multiplier con var created")
