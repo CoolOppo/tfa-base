@@ -3,10 +3,10 @@ if SERVER then AddCSLuaFile() end
 TFA = TFA or {}
 
 local do_load = true
-local version = 4.264
-local version_string = "4.2.6.4"
+local version = 4.265
+local version_string = "4.2.6.5"
 local changelog = [[
-	* Fixed Yura's crosshair nitpick
+	* Added laser-dot trail convar ( thanks Yura )
 ]]
 
 local function testFunc()
