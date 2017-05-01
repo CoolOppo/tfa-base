@@ -146,6 +146,9 @@ function SWEP:GetActivityLength( tanim, status )
 	end
 	]]--
 	tanim = tanim or self:GetLastActivity()
+	if tanim < 0 then
+		return 0
+	end
 	nm = self.OwnerViewModel:GetSequenceName( self.OwnerViewModel:SelectWeightedSequence( tanim ) )
 	if tanim == self.OwnerViewModel:GetSequenceActivity( self.OwnerViewModel:GetSequence() ) then
 		sqlen = self.OwnerViewModel:SequenceDuration( self.OwnerViewModel:GetSequence() )

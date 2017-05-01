@@ -802,7 +802,7 @@ function SWEP:DrawHUD()
 				crosshairwidth = crosshairwidth_cvar:GetFloat()
 				drawdot = drawdot_cvar:GetBool()
 				local scale = (s_cone * 90) / self:GetOwner():GetFOV() * ScrH() / 1.44 * cgapscale_cvar:GetFloat()
-				local gap = scale
+				local gap = math.Round( scale / 2 ) * 2
 				local length = 1
 
 				if not clen_usepixels:GetBool() then

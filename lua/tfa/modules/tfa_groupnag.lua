@@ -25,6 +25,7 @@ if CLIENT then
 	local TFA_NAGCOUNT = 0
 
 	hook.Add("TFA_ClientLoad", "TFA_NAG", function()
+		if true then return end
 		TFA.GetGroupMembers("tfa-mods", function(members)
 			if not table.HasValue(members,LocalPlayer():SteamID64()) then --They're not a member
 
