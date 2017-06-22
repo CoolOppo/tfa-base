@@ -251,7 +251,7 @@ SWEP.MuzzleAttachmentRaw = nil --This will override whatever string you gave.  T
 SWEP.AutoDetectMuzzleAttachment = false --For multi-barrel weapons, detect the proper attachment?
 SWEP.MuzzleFlashEffect = nil --Change to a string of your muzzle flash effect.  Copy/paste one of the existing from the base.
 SWEP.SmokeParticle = nil --Smoke particle (ID within the PCF), defaults to something else based on holdtype; "" to disable
-SWEP.EjectionSmokeEnabled = false --Disable automatic ejection smoke
+SWEP.EjectionSmokeEnabled = true --Disable automatic ejection smoke
 --Shell eject override
 SWEP.LuaShellEject = false --Enable shell ejection through lua?
 SWEP.LuaShellEjectDelay = 0 --The delay to actually eject things

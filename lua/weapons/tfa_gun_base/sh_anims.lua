@@ -1,4 +1,5 @@
 ACT_VM_FIDGET_EMPTY = ACT_VM_FIDGET_EMPTY or ACT_CROSSBOW_FIDGET_UNLOADED
+ACT_VM_FIDGET_SILENCED = ACT_VM_FIDGET_SILENCED or ACT_RPG_FIDGET_UNLOADED
 ACT_VM_BLOWBACK = ACT_VM_BLOWBACK or -2
 
 SWEP.Locomotion_Data_Queued = nil
@@ -454,6 +455,8 @@ function SWEP:SelectInspectAnim( pri )
 
 	seed = self:GetSeed()
 
+	if self:GetActivityEnabled( ACT_VM_FIDGET_SILENCED ) and ( self.Silenced or self:GetSilenced() ) then
+		tanim = ACT_VM_FIDGET_SILENCED
 	if self:GetActivityEnabled( ACT_VM_FIDGET_EMPTY ) and self.Primary.ClipSize > 0 and math.Round(self:Clip1()) == 0 then
 		tanim = ACT_VM_FIDGET_EMPTY
 	elseif self.InspectionActions then

@@ -900,24 +900,62 @@ function SWEP:DrawHUD()
 		for k, v in pairs(tbl) do
 			local dimension = h
 
-			if k == "scopetex" then
-				dimension = dimension * self:GetStat("ScopeScale") ^ 2 * TFA_SCOPE_SCOPESCALE
-			elseif k == "reticletex" then
-				dimension = dimension * (self:GetStat("ReticleScale") and self:GetStat("ReticleScale") or 1) ^ 2 * (TFA_SCOPE_RETICLESCALE and TFA_SCOPE_RETICLESCALE or 1)
+			if k == "ScopeBorder" then
+				if istable(v) then
+					surface.SetDrawColor(v)
+				else
+					surface.SetDrawColor(color_black)
+				end
+				surface.DrawRect(0,0,w / 2 - dimension / 2,dimension)
+				surface.DrawRect(w / 2 + dimension / 2,0,w / 2 - dimension / 2,dimension)
+			elseif k == "ScopeMaterial" then
+				surface.SetMaterial(v)
+				surface.SetDrawColor(255,255,255,255)
+				surface.DrawTexturedRect(w / 2 - dimension / 2, (h - dimension) / 2, dimension, dimension )
+			elseif k == "ScopeOverlay" then
+				surface.SetMaterial(v)
+				surface.SetDrawColor(255,255,255,255)
+				surface.DrawTexturedRect(0,0,w,h )
+			elseif k == "ScopeCrosshair" then
+				local t = type(v)
+				if t == "IMaterial" then
+					surface.SetMaterial(v)
+					surface.SetDrawColor(255,255,255,255)
+					surface.DrawTexturedRect(w / 2 - dimension / 4, h / 2 - dimension / 4, dimension / 2, dimension / 2 )
+				elseif t == "table" then
+					if not v.cached then
+						v.cached = true
+						v.r = v.r or v.x or v[1] or 0
+						v.g = v.g or v.y or v[2] or v[1] or 0
+						v.b = v.b or v.z or v[3] or v[1] or 0
+						v.a = v.a or v[4] or 255
+						v.s = v.Scale or v.scale or v.s or 0.25
+					end
+					surface.SetDrawColor(v.r,v.g,v.b,v.a )
+					if v.Material then
+						surface.SetMaterial( v.Material )
+						surface.DrawTexturedRect(w / 2 - dimension * v.s / 2, h / 2 - dimension * v.s / 2, dimension * v.s, dimension * v.s )
+					elseif v.Texture then
+						surface.SetTexture( v.Texture )
+						surface.DrawTexturedRect(w / 2 - dimension * v.s / 2, h / 2 - dimension * v.s / 2, dimension * v.s, dimension * v.s )
+					else
+						surface.DrawRect( w / 2 - dimension * v.s / 2, h / 2 , dimension * v.s, 1 )
+						surface.DrawRect( w / 2 , h / 2 - dimension * v.s / 2, 1, dimension * v.s )
+					end
+				end
 			else
-				dimension = dimension * self:GetStat("ReticleScale") ^ 2 * TFA_SCOPE_DOTSCALE
+				if k == "scopetex" then
+					dimension = dimension * self:GetStat("ScopeScale") ^ 2 * TFA_SCOPE_SCOPESCALE
+				elseif k == "reticletex" then
+					dimension = dimension * (self:GetStat("ReticleScale") and self:GetStat("ReticleScale") or 1) ^ 2 * (TFA_SCOPE_RETICLESCALE and TFA_SCOPE_RETICLESCALE or 1)
+				else
+					dimension = dimension * self:GetStat("ReticleScale") ^ 2 * TFA_SCOPE_DOTSCALE
+				end
+
+				surface.SetDrawColor(255,255,255,255)
+				surface.SetTexture(v)
+				surface.DrawTexturedRect(w / 2 - dimension / 2, (h - dimension) / 2, dimension, dimension )
 			end
-
-			local quad = {
-				texture = v,
-				color = Color(255, 255, 255, 255),
-				x = w / 2 - dimension / 2,
-				y = (h - dimension) / 2,
-				w = dimension,
-				h = dimension
-			}
-
-			draw.TexturedQuad(quad)
 		end
 	end
 end

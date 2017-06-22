@@ -587,7 +587,8 @@ SWEP.BurstCountCache = {}
 function SWEP:GetMaxBurst()
 	local fm = self:GetFireMode()
 	if not self.BurstCountCache[ fm ] then
-		local fmn = string.lower( self.FireModes[fm] )
+		local fmt = self:GetStat("FireModes")
+		local fmn = string.lower( fmt[fm] )
 		local bpos = string.find(fmn, "burst")
 		if bpos then
 			self.BurstCountCache[ fm ] = tonumber( string.sub(fmn, 1, bpos - 1) )
@@ -632,10 +633,10 @@ Purpose:  Feature
 function SWEP:CycleSafety()
 	ct = l_CT()
 	local fm = self:GetFireMode()
-
-	if fm ~= #self.FireModes then
+	local fmt = self:GetStat("FireModes")
+	if fm ~= #fmt then
 		self.LastFireMode = fm
-		self:SetFireMode(#self.FireModes)
+		self:SetFireMode(#fmt)
 	else
 		self:SetFireMode(self.LastFireMode or 1)
 	end
@@ -648,25 +649,25 @@ function SWEP:CycleSafety()
 end
 
 --[[
-Function Name:  ProcessFireMode
+Function Name:  1FireMode
 Syntax: self:ProcessFireMode()
 Returns:  Nothing.
 Notes: Processes fire mode changing and whether the swep is auto or not.
 Purpose:  Feature
 ]]--
 local fm
-local sp = game.SinglePlayer()
 
 function SWEP:ProcessFireMode()
 	if self:GetOwner():KeyPressed(IN_RELOAD) and self:GetOwner():KeyDown(IN_USE) and self:GetStatus() == TFA.Enum.STATUS_IDLE and ( SERVER or not sp ) then
-		if self.SelectiveFire and not self:GetOwner():KeyDown(IN_SPEED) then
+		if self:GetStat("SelectiveFire") and not self:GetOwner():KeyDown(IN_SPEED) then
 			self:CycleFireMode()
 		elseif self:GetOwner():KeyDown(IN_SPEED) then
 			self:CycleSafety()
 		end
 	end
 
-	fm = self.FireModes[self:GetFireMode()]
+	local fmt = self:GetStat("FireModes")
+	fm = fmt[self:GetFireMode()]
 
 	if fm == "Automatic" or fm == "Auto" then
 		self.Primary.Automatic = true

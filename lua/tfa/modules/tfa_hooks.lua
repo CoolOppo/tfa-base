@@ -252,22 +252,6 @@ hook.Add("SetupMove", "tfa_setupmove", function(plyv, movedata, commanddata)
 end)
 
 --[[
-Hook: PlayerFootstep
-Function: Weapoon Movement
-Used For:  Weapon viewbob, gunbob per-step
-]]
---
-hook.Add("PlayerFootstep", "tfa_playerfootstep", function(plyv)
-	local isc = TFA.PlayerCarryingTFAWeapon(plyv)
-
-	if isc and wep.Footstep and CLIENT then
-		wep:Footstep()
-	end
-
-	return
-end)
-
---[[
 Hook: HUDShouldDraw
 Function: Weapon HUD
 Used For:  Hides default HUD

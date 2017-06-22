@@ -261,6 +261,7 @@ function SWEP:InitAttachments()
 			for l,b in pairs( v.atts ) do
 				if not TFA.Attachments[b] then
 					table.RemoveByValue(v.atts,b)
+					v.atts[l] = nil
 				end
 			end
 		end

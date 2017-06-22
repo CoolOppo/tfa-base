@@ -231,8 +231,9 @@ function SWEP:ShootEffectsCustom( ifp )
 			self:AddSmokeParticleTBL(att)
 		end
 
-		if (self:GetSilenced()) then
-			util.Effect("tfa_muzzleflash_silenced", fx)
+		local mzsil = self:GetStat( "MuzzleFlashEffectSilenced" )
+		if (self:GetSilenced() and mzsil and mzsil ~= "" ) then
+			util.Effect( mzsil, fx)
 		else
 			util.Effect( self:GetStat( "MuzzleFlashEffect", self.MuzzleFlashEffect or "" ), fx)
 		end

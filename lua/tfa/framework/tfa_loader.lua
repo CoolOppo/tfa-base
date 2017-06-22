@@ -3,10 +3,11 @@ if SERVER then AddCSLuaFile() end
 TFA = TFA or {}
 
 local do_load = true
-local version = 4.265
-local version_string = "4.2.6.5"
+local version = 4.273
+local version_string = "4.2.7.3"
 local changelog = [[
-	* Added laser-dot trail convar ( thanks Yura )
+	* Silenced inspection added ( ACT_VM_FIDGET_SILENCED = ACT_VM_FIDGET_SILENCED or ACT_RPG_FIDGET_UNLOADED )
+	* Have a one-time invitation to my Discord: https://discord.gg/Gxqx67n
 ]]
 
 local function testFunc()
