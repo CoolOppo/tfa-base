@@ -25,6 +25,10 @@ function ENT:Initialize()
 	self:SetFriction(self.Delay)
 	self.killtime = CurTime() + self.Delay
 	self:DrawShadow(true)
+
+	if not self.Inflictor and self:GetOwner():IsValid() and self:GetOwner():GetActiveWeapon():IsValid() then
+		self.Inflictor = self:GetOwner():GetActiveWeapon()
+	end
 end
 
 function ENT:Think()
@@ -48,12 +52,14 @@ function ENT:Explode()
 		return
 	end
 
+	if not self.Inflictor or not self.Inflictor:IsValid() then self.Inflictor = self end
+
 	effectdata = EffectData()
 	effectdata:SetOrigin(self:GetPos())
 	util.Effect("HelicopterMegaBomb", effectdata)
 	util.Effect("Explosion", effectdata)
 	self.Damage = self.mydamage or self.Damage
-	util.BlastDamage(self, self:GetOwner(), self:GetPos(), math.pow( self.Damage / 100,0.75) * 200, self.Damage )
+	util.BlastDamage(self.Inflictor, self:GetOwner(), self:GetPos(), math.pow( self.Damage / 100,0.75) * 200, self.Damage )
 	shake = ents.Create("env_shake")
 	shake:SetOwner(self:GetOwner())
 	shake:SetPos(self:GetPos())
