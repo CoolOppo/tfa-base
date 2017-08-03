@@ -455,7 +455,7 @@ function SWEP:SelectInspectAnim( pri )
 
 	seed = self:GetSeed()
 
-	if self:GetActivityEnabled( ACT_VM_FIDGET_SILENCED ) and ( self.Silenced or self:GetSilenced() ) then
+	if self:GetActivityEnabled( ACT_VM_FIDGET_SILENCED ) and self:GetSilenced() then
 		tanim = ACT_VM_FIDGET_SILENCED
 	elseif self:GetActivityEnabled( ACT_VM_FIDGET_EMPTY ) and self.Primary.ClipSize > 0 and math.Round(self:Clip1()) == 0 then
 		tanim = ACT_VM_FIDGET_EMPTY

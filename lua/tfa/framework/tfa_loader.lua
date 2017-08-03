@@ -3,12 +3,10 @@ if SERVER then AddCSLuaFile() end
 TFA = TFA or {}
 
 local do_load = true
-local version = 4.274
-local version_string = "4.2.7.4"
+local version = 4.278
+local version_string = "4.2.7.8"
 local changelog = [[
-	* ERROR SPAM HOTFIX
-	* Silenced inspection added ( ACT_VM_FIDGET_SILENCED = ACT_VM_FIDGET_SILENCED or ACT_RPG_FIDGET_UNLOADED )
-	* Have a one-time invitation to my Discord: https://discord.gg/Gxqx67n
+	* Unload functions added
 ]]
 
 local function testFunc()

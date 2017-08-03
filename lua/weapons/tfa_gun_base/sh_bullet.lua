@@ -146,6 +146,7 @@ function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet,
 
 		self.MainBullet.Callback = function(a, b, c)
 			if IsValid(self) then
+				c:SetInflictor(self)
 				if self.MainBullet.Callback2 then
 					self.MainBullet.Callback2(a, b, c)
 				end

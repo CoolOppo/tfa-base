@@ -7,7 +7,7 @@ local scale_up = 0.3
 local rate_right = 6
 local scale_right = 0.3
 local rate_forward_view = 6
-local scale_forward_view = 0.5
+local scale_forward_view = 0.35
 local rate_right_view = 6
 local scale_right_view = -1
 
@@ -33,6 +33,7 @@ function SWEP:CalculateBob(pos, ang, intensity, rate )
 	if not self:OwnerIsValid() then return end
 	rate = math.min( rate, rate_clamp )
 
+	local ea = self.Owner:EyeAngles()
 	local up = ang:Up()
 	local ri = ang:Right()
 	local fw = ang:Forward()
@@ -40,6 +41,7 @@ function SWEP:CalculateBob(pos, ang, intensity, rate )
 	if sv_cheats_cv:GetBool() then
 		delta = delta * host_timescale_cv:GetFloat()
 	end
+	local flip_v =  self.ViewModelFlip and -1 or 1
 	delta = delta * game.GetTimeScale()
 	self.LastCalcBob = SysTime()
 
@@ -54,14 +56,13 @@ function SWEP:CalculateBob(pos, ang, intensity, rate )
 	end
 
 	if self.SprintStyle == 1 then
-
 		local intensity2 = math.Clamp( intensity, 0.0, 0.2 )
 		local intensity3 = math.max(intensity-0.3,0) / ( 1 - 0.3 )
 
 		pos:Add( up * math.sin( self.ti * rate_up ) * scale_up * intensity2 )
 		pos:Add( ri * math.sin( self.ti * rate_right ) * scale_right * intensity2 )
-		pos:Add( EyeAngles():Forward()  * math.sin( self.ti * rate_forward_view ) * scale_forward_view * intensity2 )
-		pos:Add( EyeAngles():Right() * math.sin( self.ti * rate_right_view ) * scale_right_view * intensity2 )
+		pos:Add( ea:Forward()  * math.sin( self.ti * rate_forward_view ) * scale_forward_view * intensity2 )
+		pos:Add( ea:Right() * math.sin( self.ti * rate_right_view ) * scale_right_view * intensity2 )
 
 		ang:RotateAroundAxis( ri, math.sin( self.ti * rate_p ) * scale_p * intensity2 )
 		pos:Add( -up * math.sin( self.ti * rate_p ) * scale_p * 0.1 * intensity2 )
@@ -73,29 +74,29 @@ function SWEP:CalculateBob(pos, ang, intensity, rate )
 
 		ang:RotateAroundAxis( ang:Forward(), math.sin( self.ti * rate_r ) * scale_r * intensity2 )
 		pos:Add( ri * math.sin( self.ti * rate_r ) * scale_r * 0.1 * intensity2 )
-		pos:Add( -up * math.sin( self.ti * rate_r ) * scale_r * 0.1 * intensity2 )
+		pos:Add( -up * math.sin( self.ti * rate_r ) * scale_r * 0.1 * intensity2)
 
 		ang:RotateAroundAxis( ang:Up(), math.sin( self.ti * pist_rate ) * pist_scale * intensity3 )
 		pos:Add( ri * math.sin( self.ti * pist_rate ) * pist_scale * 0.1 * intensity3 )
-		pos:Add( fw * math.sin( self.ti * pist_rate * 2 ) * pist_scale * 0.1 * intensity3 )
+		pos:Add( fw * math.sin( self.ti * pist_rate * 2 ) * pist_scale * 0.1 * intensity3)
 		--pos:Add( fw * math.sin( self.ti * pist_rate ) * pist_scale * 0.1 * intensity )
 
 	else
 		pos:Add( up * math.sin( self.ti * rate_up ) * scale_up * intensity )
-		pos:Add( ri * math.sin( self.ti * rate_right ) * scale_right * intensity )
-		pos:Add( EyeAngles():Forward()  * math.max( math.sin( self.ti * rate_forward_view ), 0 ) * scale_forward_view * intensity )
-		pos:Add( EyeAngles():Right() * math.sin( self.ti * rate_right_view ) * scale_right_view * intensity )
+		pos:Add( ri * math.sin( self.ti * rate_right ) * scale_right * intensity * flip_v )
+		pos:Add( ea:Forward()  * math.max( math.sin( self.ti * rate_forward_view ), 0 ) * scale_forward_view * intensity  )
+		pos:Add( ea:Right() * math.sin( self.ti * rate_right_view ) * scale_right_view * intensity * flip_v  )
 
 		ang:RotateAroundAxis( ri, math.sin( self.ti * rate_p ) * scale_p * intensity )
 		pos:Add( -up * math.sin( self.ti * rate_p ) * scale_p * 0.1 * intensity )
 		pos:Add( -fw * math.sin( self.ti * rate_p ) * scale_p * 0.1 * intensity )
 
-		ang:RotateAroundAxis( ang:Up(), math.sin( self.ti * rate_y ) * scale_y * intensity )
-		pos:Add( ri * math.sin( self.ti * rate_y ) * scale_y * 0.1 * intensity )
+		ang:RotateAroundAxis( ang:Up(), math.sin( self.ti * rate_y ) * scale_y * intensity * flip_v  )
+		pos:Add( ri * math.sin( self.ti * rate_y ) * scale_y * 0.1 * intensity * flip_v  )
 		pos:Add( fw * math.sin( self.ti * rate_y ) * scale_y * 0.1 * intensity )
 
-		ang:RotateAroundAxis( ang:Forward(), math.sin( self.ti * rate_r ) * scale_r * intensity )
-		pos:Add( ri * math.sin( self.ti * rate_r ) * scale_r * 0.1 * intensity )
+		ang:RotateAroundAxis( ang:Forward(), math.sin( self.ti * rate_r ) * scale_r * intensity * flip_v  )
+		pos:Add( ri * math.sin( self.ti * rate_r ) * scale_r * 0.1 * intensity * flip_v  )
 		pos:Add( -up * math.sin( self.ti * rate_r ) * scale_r * 0.1 * intensity )
 
 	end

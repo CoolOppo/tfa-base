@@ -675,3 +675,35 @@ function SWEP:ProcessFireMode()
 		self.Primary.Automatic = false
 	end
 end
+
+--[[
+Function Name:  Unload
+Syntax: self:Unload()
+Returns:  Nothing.
+Notes: Returns Clip1 ammo to reserve.
+Purpose:  Utility
+]]--
+
+function SWEP:Unload()
+	local amm = self:Clip1()
+	self:SetClip1(0)
+	if self.OwnerIsValid and self:OwnerIsValid() and self.Owner.GiveAmmo then
+		self.Owner:GiveAmmo(amm, self:GetPrimaryAmmoType(), true)
+	end
+end
+
+--[[
+Function Name:  Unload
+Syntax: self:Unload()
+Returns:  Nothing.
+Notes: Returns Clip1 ammo to reserve.
+Purpose:  Utility
+]]--
+
+function SWEP:Unload2()
+	local amm = self:Clip2()
+	self:SetClip2(0)
+	if self.OwnerIsValid and self:OwnerIsValid() and self.Owner.GiveAmmo then
+		self.Owner:GiveAmmo(amm, self:GetSecondaryAmmoType(), true)
+	end
+end
