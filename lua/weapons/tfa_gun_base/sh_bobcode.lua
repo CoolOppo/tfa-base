@@ -1,185 +1,134 @@
-local stepinterval = 4
-local stepintervaloffset = 0
-SWEP.customboboffset = Vector(0, 0, 0)
+
+SWEP.ti = 0
+SWEP.LastCalcBob = 0
+
+local rate_up = 12
+local scale_up = 0.3
+local rate_right = 6
+local scale_right = 0.3
+local rate_forward_view = 6
+local scale_forward_view = 0.35
+local rate_right_view = 6
+local scale_right_view = -1
+
+local rate_p = 12
+local scale_p = 3
+local rate_y = 6
+local scale_y = 6
+local rate_r = 6
+local scale_r = -3
 
 
---Bob code
-local ftv, ws, rs
-local owvel, meetswalkgate, meetssprintgate, walkfactorv, runfactorv, sprintfactorv
-local customboboffsetx, customboboffsety, customboboffsetz, mypi, curtimecompensated, runspeed, timehasbeensprinting, tironsightscale
-local cl_tfa_viewmodel_centered
-if CLIENT then
-	cl_tfa_viewmodel_centered = GetConVar("cl_tfa_viewmodel_centered")
-end
 
-walkfactorv = 10.25
-runfactorv = 18
-sprintfactorv = 24
+local pist_rate = 6
+local pist_scale = 8
 
-local VecOr = Vector()
+local rate_clamp = 2
 
-function SWEP:DoBobFrame()
-	VecOr:Zero()
-	ftv = FrameTime()
-	ws = self:GetOwner():GetWalkSpeed()
-	rs = self:GetOwner():GetRunSpeed()
-	ftv = ftv * 200 / ws
 
-	if not self.bobtimevar then
-		self.bobtimevar = 0
-	end
+local sv_cheats_cv = GetConVar("sv_cheats")
+local host_timescale_cv = GetConVar("host_timescale")
 
-	owvel = self:GetOwner():GetVelocity():Length()
-	meetssprintgate = false
-	meetswalkgate = false
-
-	if owvel <= ws * 0.55 then
-		meetswalkgate = true
-	end
-
-	if owvel > rs * 0.8 then
-		meetssprintgate = true
-	end
-	if self.Sprint_Mode == TFA.Enum.LOCOMOTION_ANI and meetssprintgate then
-		meetssprintgate = false
-		owvel = math.min(owvel,100)
-	end
-
-	if not self.bobtimehasbeensprinting then
-		self.bobtimehasbeensprinting = 0
-	end
-
-	if not self.tprevvel then
-		self.tprevvel = owvel
-	end
-
-	if not meetssprintgate then
-		self.bobtimehasbeensprinting = math.Approach(self.bobtimehasbeensprinting, 0, ftv / (self.IronSightTime / 2))
-	else
-		self.bobtimehasbeensprinting = math.Approach(self.bobtimehasbeensprinting, 3, ftv)
-	end
-
-	if not self:GetOwner():IsOnGround() then
-		self.bobtimehasbeensprinting = math.Approach(self.bobtimehasbeensprinting, 0, ftv / (5 / 60))
-	end
-
-	if cl_tfa_viewmodel_centered:GetBool() then ftv = ftv * 0.5 end
-
-	if owvel > 1 and owvel <= ws * 0.1 and owvel > self.tprevvel then
-		if self:GetOwner():IsOnGround() then
-			local val1 = math.Round(self.bobtimevar / stepinterval) * stepinterval + stepintervaloffset
-			local val2 = math.Round(self.bobtimevar / stepinterval) * stepinterval - stepintervaloffset
-
-			if math.abs(self.bobtimevar - val1) < math.abs(self.bobtimevar - val2) then
-				self.bobtimevar = math.Approach(self.bobtimevar, val1, ftv / (5 / 60))
-			else
-				self.bobtimevar = math.Approach(self.bobtimevar, val2, ftv / (5 / 60))
-			end
-		end
-	else
-		if self:GetOwner():IsOnGround() then
-			self.bobtimevar = self.bobtimevar + ftv * math.max(1, owvel / (runfactorv + (sprintfactorv - runfactorv) * (meetssprintgate and 1 or 0) - (runfactorv - walkfactorv) * (meetswalkgate and 1 or 0)))
-		else
-			self.bobtimevar = self.bobtimevar + ftv
-		end
-	end
-
-	self.tprevvel = owvel
-end
-
---[[
-Function Name:  CalculateBob
-Syntax: self:CalculateBob(position, angle, scale).
-Returns:  Position and Angle, corrected for viewbob.  Scale controls how much they're affected.
-Notes:  This is really important and slightly messy.
-Purpose:  Feature
-]]--
-
-function SWEP:CalculateBob(pos, ang, ci, igvmf)
+function SWEP:CalculateBob(pos, ang, intensity, rate )
 	if not self:OwnerIsValid() then return end
+	rate = math.min( rate, rate_clamp )
 
-	if not ci then
-		ci = 1
+	local ea = self.Owner:EyeAngles()
+	local up = ang:Up()
+	local ri = ang:Right()
+	local fw = ang:Forward()
+	local delta = math.min( SysTime() - self.LastCalcBob, FrameTime() )
+	if sv_cheats_cv:GetBool() then
+		delta = delta * host_timescale_cv:GetFloat()
+	end
+	local flip_v =  self.ViewModelFlip and -1 or 1
+	delta = delta * game.GetTimeScale()
+	self.LastCalcBob = SysTime()
+
+	self.ti = self.ti + delta * rate
+
+	if self.SprintStyle == nil then
+		if self.RunSightsAng and self.RunSightsAng.x > 5 then
+			self.SprintStyle = 1
+		else
+			self.SprintStyle = 0
+		end
 	end
 
-	ci = ci * 0.66
-	tironsightscale = 1 - 0.6 * self.IronSightsProgress
-	owvel = self:GetOwner():GetVelocity():Length()
-	runspeed = self:GetOwner():GetWalkSpeed()
-	curtimecompensated = self.bobtimevar or 0
-	timehasbeensprinting = self.bobtimehasbeensprinting or 0
+	if self.SprintStyle == 1 then
+		local intensity2 = math.Clamp( intensity, 0.0, 0.2 )
+		local intensity3 = math.max(intensity-0.3,0) / ( 1 - 0.3 )
 
-	if not self.BobScaleCustom then
-		self.BobScaleCustom = 1
-	end
+		pos:Add( up * math.sin( self.ti * rate_up ) * scale_up * intensity2 )
+		pos:Add( ri * math.sin( self.ti * rate_right ) * scale_right * intensity2 )
+		pos:Add( ea:Forward()  * math.sin( self.ti * rate_forward_view ) * scale_forward_view * intensity2 )
+		pos:Add( ea:Right() * math.sin( self.ti * rate_right_view ) * scale_right_view * intensity2 )
 
-	mypi = 0.5 * 3.14159
-	customboboffsetx = math.cos(mypi * (curtimecompensated - 0.5) * 0.5)
-	customboboffsetz = math.sin(mypi * (curtimecompensated - 0.5))
-	customboboffsety = math.sin(mypi * (curtimecompensated - 0.5) * 3 / 8) * 0.5
-	customboboffsetx = customboboffsetx - (math.sin(mypi * (timehasbeensprinting / 2)) * 0.5 + math.sin(mypi * (timehasbeensprinting / 6)) * 2) * math.max(0, (owvel - runspeed * 0.8) / runspeed)
-	--[[
-	if CLIENT then
-		ci = customboboffsetx * (1+ci*self.CLRunSightsProgress)
+		ang:RotateAroundAxis( ri, math.sin( self.ti * rate_p ) * scale_p * intensity2 )
+		pos:Add( -up * math.sin( self.ti * rate_p ) * scale_p * 0.1 * intensity2 )
+		pos:Add( -fw * math.sin( self.ti * rate_p ) * scale_p * 0.1 * intensity2 )
+
+		ang:RotateAroundAxis( ang:Up(), math.sin( self.ti * rate_y ) * scale_y * intensity2 )
+		pos:Add( ri * math.sin( self.ti * rate_y ) * scale_y * 0.1 * intensity2 )
+		pos:Add( fw * math.sin( self.ti * rate_y ) * scale_y * 0.1 * intensity2 )
+
+		ang:RotateAroundAxis( ang:Forward(), math.sin( self.ti * rate_r ) * scale_r * intensity2 )
+		pos:Add( ri * math.sin( self.ti * rate_r ) * scale_r * 0.1 * intensity2 )
+		pos:Add( -up * math.sin( self.ti * rate_r ) * scale_r * 0.1 * intensity2)
+
+		ang:RotateAroundAxis( ang:Up(), math.sin( self.ti * pist_rate ) * pist_scale * intensity3 )
+		pos:Add( ri * math.sin( self.ti * pist_rate ) * pist_scale * 0.1 * intensity3 )
+		pos:Add( fw * math.sin( self.ti * pist_rate * 2 ) * pist_scale * 0.1 * intensity3)
+		--pos:Add( fw * math.sin( self.ti * pist_rate ) * pist_scale * 0.1 * intensity )
+
 	else
-		ci = customboboffsetx * (1+ci*self:RunSightsRatio())
-	end
-	]]--
-	self.customboboffset.x = customboboffsetx * 1.3
-	self.customboboffset.y = customboboffsety
-	self.customboboffset.z = customboboffsetz
-	self.customboboffset = self.customboboffset * self.BobScaleCustom * 0.45
-	local sprintbobfac = math.sqrt(math.Clamp(self.BobScaleCustom - 1, 0, 1))
-	local cboboff2 = customboboffsetx * sprintbobfac * 1.5
-	self.customboboffset = self.customboboffset * (1 + sprintbobfac / 3)
-	pos:Add(self:GetOwner():EyeAngles():Right() * cboboff2)
-	self.customboboffset = self.customboboffset * ci
-	if cl_tfa_viewmodel_centered:GetBool() then self.customboboffset.x = 0 end
-	pos:Add(ang:Right() * self.customboboffset.x * -1.33)
-	pos:Add(ang:Forward() * self.customboboffset.y * -1)
-	pos:Add(ang:Up() * self.customboboffset.z)
-	ang:RotateAroundAxis(ang:Right(), self.customboboffset.x)
-	ang:RotateAroundAxis(ang:Up(), self.customboboffset.y)
-	ang:RotateAroundAxis(ang:Forward(), self.customboboffset.z)
-	tironsightscale = math.pow(tironsightscale, 2)
-	local localisedmove = WorldToLocal(self:GetOwner():GetVelocity(), self:GetOwner():GetVelocity():Angle(), VecOr, self:GetOwner():EyeAngles())
+		pos:Add( up * math.sin( self.ti * rate_up ) * scale_up * intensity )
+		pos:Add( ri * math.sin( self.ti * rate_right ) * scale_right * intensity * flip_v )
+		pos:Add( ea:Forward()  * math.max( math.sin( self.ti * rate_forward_view ), 0 ) * scale_forward_view * intensity  )
+		pos:Add( ea:Right() * math.sin( self.ti * rate_right_view ) * scale_right_view * intensity * flip_v  )
 
-	if igvmf then
-		ang:RotateAroundAxis(ang:Forward(), (math.Approach(localisedmove.y, 0, 1) / (runspeed / 8) * tironsightscale) * (ci or 1))
-		ang:RotateAroundAxis(ang:Right(), (math.Approach(localisedmove.x, 0, 1) / runspeed) * tironsightscale * (ci or 1))
-	else
-		ang:RotateAroundAxis(ang:Forward(), (math.Approach(localisedmove.y, 0, 1) / (runspeed / 8) * tironsightscale) * (ci or 1) * (-1 + 2 * (self.ViewModelFlip and 1 or 0)))
-		ang:RotateAroundAxis(ang:Right(), (math.Approach(localisedmove.x, 0, 1) / runspeed) * tironsightscale * (ci or 1) * (-1 + 2 * (self.ViewModelFlip and 1 or 0)))
-	end
+		ang:RotateAroundAxis( ri, math.sin( self.ti * rate_p ) * scale_p * intensity )
+		pos:Add( -up * math.sin( self.ti * rate_p ) * scale_p * 0.1 * intensity )
+		pos:Add( -fw * math.sin( self.ti * rate_p ) * scale_p * 0.1 * intensity )
 
-	ang:Normalize()
+		ang:RotateAroundAxis( ang:Up(), math.sin( self.ti * rate_y ) * scale_y * intensity * flip_v  )
+		pos:Add( ri * math.sin( self.ti * rate_y ) * scale_y * 0.1 * intensity * flip_v  )
+		pos:Add( fw * math.sin( self.ti * rate_y ) * scale_y * 0.1 * intensity )
+
+		ang:RotateAroundAxis( ang:Forward(), math.sin( self.ti * rate_r ) * scale_r * intensity * flip_v  )
+		pos:Add( ri * math.sin( self.ti * rate_r ) * scale_r * 0.1 * intensity * flip_v  )
+		pos:Add( -up * math.sin( self.ti * rate_r ) * scale_r * 0.1 * intensity )
+
+	end
 
 	return pos, ang
 end
 
---[[
-Function Name:  Footstep
-Syntax: self:Footstep().  Called for each footstep.
-Returns:  Nothing.
-Notes:  Corrects the bob time by making it move closer to the downwards position with each footstep.
-Purpose:  Feature
-]]--
-local val1, val2
-function SWEP:Footstep()
-
-	if not self.bobtimevar then
-		self.bobtimevar = 0
+function SWEP:CalculateViewBob( pos, ang, intensity )
+	if not self:OwnerIsValid() then return end
+	local up = ang:Up()
+	local ri = ang:Right()
+	local opos = pos * 1
+	local ldist = self:GetOwner():GetEyeTraceNoCursor().HitPos:Distance(pos)
+	if ldist <= 0 then
+		ldist = util.QuickTrace( pos, ang:Forward() * 999999, { self:GetOwner(), self:GetOwner():GetEyeTraceNoCursor().Entity } ).HitPos:Distance( pos )
 	end
+	pos:Add( up * math.sin( ( self.ti + 0.5 ) * rate_up ) * scale_up * intensity * -3 )
+	pos:Add( ri * math.sin( ( self.ti + 0.5 ) * rate_right ) * scale_right * intensity * -3 )
 
-	val1 = math.Round(self.bobtimevar / stepinterval) * stepinterval + stepintervaloffset
-	val2 = math.Round(self.bobtimevar / stepinterval) * stepinterval - stepintervaloffset
-	owvel = self:GetOwner():GetVelocity():Length()
+	--ang = ang + vpa
 
-	if owvel > self:GetOwner():GetWalkSpeed() * 0.2 then
-		if math.abs(self.bobtimevar - val1) < math.abs(self.bobtimevar - val2) then
-			self.bobtimevar = math.Approach(self.bobtimevar, val1, 0.15)
-		else
-			self.bobtimevar = math.Approach(self.bobtimevar, val2, 0.15)
-		end
-	end
+	local tpos = opos + ldist * ang:Forward()
+	local oang = ang * 1
+	local nang = (tpos - opos):GetNormalized():Angle()
+	ang:Normalize()
+	nang:Normalize()
+	local vfac = math.Clamp( 1 - math.pow( math.abs( oang.p ) / 90, 3  ), 0, 1 )
+	ang.y = ang.y - math.Clamp( math.AngleDifference(ang.y,nang.y), -2, 2 ) * vfac
+	ang.p = ang.p - math.Clamp( math.AngleDifference(ang.p,nang.p), -2, 2 ) * vfac
+	--ang:Normalize()
+	--ang.r = oang.r
+	--print(ang)
+
+	return pos, ang
 end

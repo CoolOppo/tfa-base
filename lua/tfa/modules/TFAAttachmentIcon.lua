@@ -114,6 +114,7 @@ end
 function PANEL:Paint(w, h)
 	if not IsValid(self.Wep) then return end
 	if self.Attachment == nil then return end
+	if not TFA.Attachments[self.Attachment] then self:SetMouseInputEnabled(false) return end
 	local sel = self:GetSelected()
 	local col = sel and TFA.AttachmentColors["active"] or TFA.AttachmentColors["background"]
 	if not self.Wep:CanAttach( self.Attachment) then col = TFA.AttachmentColors["error"] end

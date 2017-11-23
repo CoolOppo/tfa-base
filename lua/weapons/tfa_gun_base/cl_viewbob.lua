@@ -63,7 +63,7 @@ function SWEP:CalcView(ply, pos, ang, fov)
 	oldpostmp = pos * 1
 	oldangtmp = ang * 1
 	if self.Idle_Mode == TFA.Enum.IDLE_LUA or self.Idle_Mode == TFA.Enum.IDLE_BOTH then
-		pos, ang = self:CalculateBob(pos, ang, -viewbobintensity, true)
+		pos, ang = self:CalculateViewBob(pos, ang, viewbobintensity * self.BobScaleCustom, true)
 		if not ang or not pos then return oldangtmp, oldpostmp end
 	end
 

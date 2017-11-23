@@ -67,6 +67,7 @@ SWEP.ShellAttachment = "2"
 
 SWEP.MuzzleFlashEnabled = true
 SWEP.MuzzleFlashEffect = nil
+SWEP.MuzzleFlashEffectSilenced = "tfa_muzzleflash_silenced"
 SWEP.CustomMuzzleFlash = true
 
 SWEP.EjectionSmokeEnabled = true
@@ -576,7 +577,7 @@ Purpose:  Standard SWEP Function
 local finalstat
 
 function SWEP:PlayerThink()
-	if self.Owner:IsNPC() then
+	if self.Owner:IsNPC() then 
 		return
 	end
 	ft = TFA.FrameTime()
@@ -1539,8 +1540,8 @@ function SWEP:CalculateViewModelOffset( )
 		end
 		adstransitionspeed = self:GetStat("ProceduralHolsterTime") * 15
 	elseif is and ( self.Sights_Mode == TFA.Enum.LOCOMOTION_LUA or self.Sights_Mode == TFA.Enum.LOCOMOTION_HYBRID ) then
-		target_pos = ( self:GetStat("IronSightsPos", self.SightsPos ) or self:GetStat("SightsPos") ) * 1
-		target_ang = ( self:GetStat("IronSightsAng", self.SightsAng ) or self:GetStat("SightsAng") ) * 1
+		target_pos = ( self:GetStat("IronSightsPos", self.SightsPos ) or self:GetStat("SightsPos",vector_origin) ) * 1
+		target_ang = ( self:GetStat("IronSightsAng", self.SightsAng ) or self:GetStat("SightsAng",vector_origin) ) * 1
 		adstransitionspeed = 15 / ( self:GetStat("IronSightTime") / 0.3 )
 	elseif ( spr or self:IsSafety() ) and ( self.Sprint_Mode == TFA.Enum.LOCOMOTION_LUA or self.Sprint_Mode == TFA.Enum.LOCOMOTION_HYBRID or ( self:IsSafety() and not spr ) ) and stat ~= TFA.Enum.STATUS_FIDGET and stat ~= TFA.Enum.STATUS_BASHING then
 		if cl_tfa_viewmodel_centered and cl_tfa_viewmodel_centered:GetBool() then
@@ -1589,8 +1590,6 @@ function SWEP:CalculateViewModelOffset( )
 	vm_offset_ang.p = math.ApproachAngle(vm_offset_ang.p,target_ang.x, math.AngleDifference( target_ang.x, vm_offset_ang.p ) * ft * adstransitionspeed )
 	vm_offset_ang.y = math.ApproachAngle(vm_offset_ang.y,target_ang.y, math.AngleDifference( target_ang.y, vm_offset_ang.y ) * ft * adstransitionspeed )
 	vm_offset_ang.r = math.ApproachAngle(vm_offset_ang.r,target_ang.z, math.AngleDifference( target_ang.z, vm_offset_ang.r ) * ft * adstransitionspeed )
-
-	self:DoBobFrame()
 
 end
 
@@ -1688,14 +1687,10 @@ function SWEP:GetViewModelPosition( pos, ang )
 	if self.Sprint_Mode == TFA.Enum.LOCOMOTION_ANI then
 		self.SprintBobMult = 0
 	end
-	self.BobScaleCustom = l_Lerp(self.IronSightsProgress, 1, l_Lerp( math.min( self:GetOwner():GetVelocity():Length() / self:GetOwner():GetWalkSpeed(), 1 ), self:GetStat("IronBobMult"), self:GetStat("IronBobMultWalk")))
+	self.BobScaleCustom = l_Lerp(self.IronSightsProgress, 0.3, l_Lerp( math.min( self:GetOwner():GetVelocity():Length() / self:GetOwner():GetWalkSpeed(), 1 ), self:GetStat("IronBobMult") / 4, self:GetStat("IronBobMultWalk") / 4))
 	self.BobScaleCustom = l_Lerp(self.SprintProgress, self.BobScaleCustom, self.SprintBobMult)
 	--Start viewbob code
-	local gunbobintensity = gunbob_intensity_cvar:GetFloat() * 0.65 * 0.66
-	if self.Idle_Mode == TFA.Enum.IDLE_LUA or self.Idle_Mode == TFA.Enum.IDLE_BOTH then
-		pos, ang = self:CalculateBob(pos, ang, gunbobintensity)
-	end
-	--local qerp1 = l_Lerp( self.IronSightsProgress, 0, self.ViewModelFlip and 1 or -1) * 10
+	local gunbobintensity = gunbob_intensity_cvar:GetFloat()
 	if not ang then return end
 	--ang:RotateAroundAxis(ang:Forward(), -Qerp(self.IronSightsProgress and self.IronSightsProgress or 0, qerp1, 0))
 	--End viewbob code
@@ -1736,6 +1731,10 @@ function SWEP:GetViewModelPosition( pos, ang )
 		pos:Add(ang:Forward() * bbvec.y * self.BlowbackCurrentRoot)
 		pos:Add(ang:Up() * bbvec.z * self.BlowbackCurrentRoot)
 		--end
+	end
+
+	if self.Idle_Mode == TFA.Enum.IDLE_LUA or self.Idle_Mode == TFA.Enum.IDLE_BOTH then
+		pos, ang = self:CalculateBob(pos, ang, gunbobintensity * self.BobScaleCustom * 0.5, math.max( 0.25, math.sqrt( self:GetOwner():GetVelocity():Length2D() / self:GetOwner():GetRunSpeed() ) * 1.75 ) )
 	end
 
 	if self:GetHidden() then
