@@ -59,11 +59,13 @@ if CLIENT then
 			c.b = bcvar:GetFloat()
 			local alpha = math.Clamp(lasthitmarkertime - CurTime() + solidtime + fadetime, 0, fadetime) / fadetime
 			c.a = acvar:GetFloat() * alpha
-			local w, h = ScrW(), ScrH()
-			local sprw, sprh = h * s, h * s
-			surface.SetDrawColor(c)
-			surface.SetMaterial(spr)
-			surface.DrawTexturedRect(w / 2 - sprw / 2, h / 2 - sprh / 2, sprw, sprh)
+			if alpha > 0 then
+				local w, h = ScrW(), ScrH()
+				local sprw, sprh = h * s, h * s
+				surface.SetDrawColor(c)
+				surface.SetMaterial(spr)
+				surface.DrawTexturedRect(w / 2 - sprw / 2, h / 2 - sprh / 2, sprw, sprh)
+			end
 		end
 	end)
 end
