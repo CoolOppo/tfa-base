@@ -79,6 +79,7 @@ tfa_conv_overrides = tfa_conv_overrides or {
 		["SecondaryAttack"] = function(self)
 			if IsValid(self) and self.OwnerIsValid and self:OwnerIsValid() then
 				self:PrimaryAttack()
+				self:SetNextPrimaryFire( CurTime() )
 				self:PrimaryAttack()
 			end
 		end,
