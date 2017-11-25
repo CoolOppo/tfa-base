@@ -46,18 +46,12 @@ if CLIENT then
 			if not TFA_RENDERTARGET then
 				DrawColorModify(tab)
 			end
-			cam.IgnoreZ(true)
+			-- cam.IgnoreZ(true)
 		end
 	end
 
 	local function InitTFABlur()
-		local cv = GetConVar("cl_tfa_unreal_dof_enabled")
-		hook.Add("PreDrawViewModel", "PreDrawViewModel_TFA_INSPECT", function()
-			if cv and cv:GetBool() then return end
-			Render()
-		end)
 		hook.Add("PostDrawTranslucentRenderables", "PreDrawViewModel_TFA_INSPECT", function()
-			if not ( cv and cv:GetBool() ) then return end
 			Render()
 		end)
 
