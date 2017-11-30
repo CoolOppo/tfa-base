@@ -1667,8 +1667,8 @@ function SWEP:Sway(pos, ang)
 	--finally, blend it into the angle
 	ang:RotateAroundAxis(oldang:Up(), angc.y * 15 * (self.ViewModelFlip and -1 or 1) * fac)
 	ang:RotateAroundAxis(oldang:Right(), angc.p * 15 * fac)
-	ang:RotateAroundAxis(oldang:Forward(), angc.y * 10 * fac)
-	pos:Add(oldang:Right() * angc.y * posfac)
+	ang:RotateAroundAxis(oldang:Forward(), angc.y * 10 * fac * (self.ViewModelFlip and -1 or 1))
+	pos:Add(oldang:Right() * angc.y * posfac * (self.ViewModelFlip and -1 or 1))
 	pos:Add(oldang:Up() * -angc.p * posfac)
 
 	return pos, util_NormalizeAngles(ang)
