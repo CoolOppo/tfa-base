@@ -3,10 +3,12 @@ if SERVER then AddCSLuaFile() end
 TFA = TFA or {}
 
 local do_load = true
-local version = 4.278
-local version_string = "4.2.7.8"
+local version = 4.279
+local version_string = "4.2.7.9"
 local changelog = [[
-	* Unload functions added
+	* Inspection panel tweaks and performance fixes
+	* New font for ammo hud and inspection panel
+	* Fixed ironsight sway direction for flipped viewmodels
 ]]
 
 local function testFunc()
