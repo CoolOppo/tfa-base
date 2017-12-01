@@ -97,74 +97,6 @@ Returns:  Nothing.
 Notes:    Used to manage our Derma.
 Purpose:  Used to manage our Derma.
 ]]--
-local titlefont = nil
-local descriptionfont = nil
-local smallfont = nil
-
-function SWEP:MakeFonts()
-	if not titlefont then
-		surface.CreateFont("TFA_INSPECTION_TITLE", {
-			font = "Aral", -- Use the font-name which is shown to you by your operating system Font Viewer, not the file name
-			size = 64,
-			weight = 500,
-			blursize = 0,
-			scanlines = 0,
-			antialias = true,
-			underline = false,
-			italic = false,
-			strikeout = false,
-			symbol = false,
-			rotary = false,
-			shadow = false,
-			additive = false,
-			outline = false
-		})
-
-		titlefont = true
-	end
-
-	if not descriptionfont then
-		surface.CreateFont("TFA_INSPECTION_DESCR", {
-			font = "Aral", -- Use the font-name which is shown to you by your operating system Font Viewer, not the file name
-			size = 32,
-			weight = 500,
-			blursize = 0,
-			scanlines = 0,
-			antialias = true,
-			underline = false,
-			italic = false,
-			strikeout = false,
-			symbol = false,
-			rotary = false,
-			shadow = false,
-			additive = false,
-			outline = false
-		})
-
-		descriptionfont = true
-	end
-
-	if not smallfont then
-		surface.CreateFont("TFA_INSPECTION_SMALL", {
-			font = "Aral", -- Use the font-name which is shown to you by your operating system Font Viewer, not the file name
-			size = 24,
-			weight = 500,
-			blursize = 0,
-			scanlines = 0,
-			antialias = true,
-			underline = false,
-			italic = false,
-			strikeout = false,
-			symbol = false,
-			rotary = false,
-			shadow = false,
-			additive = false,
-			outline = false
-		})
-
-		smallfont = true
-	end
-end
 
 local function PanelPaintBars(myself, w, h)
 	w = 400
@@ -254,7 +186,6 @@ local dimensions = 64
 function SWEP:GenerateInspectionDerma()
 	TFA_INSPECTIONPANEL = vgui.Create("DPanel")
 	TFA_INSPECTIONPANEL:SetSize(ScrW(), ScrH())
-	self:MakeFonts()
 
 	TFA_INSPECTIONPANEL.Think = function(myself, w, h)
 		local ply = LocalPlayer()
@@ -359,18 +290,41 @@ function SWEP:GenerateInspectionDerma()
 	descriptiontext:Dock(TOP)
 	descriptiontext:SetSize(screenwidth - lbound, 24)
 	descriptiontext.Paint = TextShadowPaint
-	local tmp_rpmstat = self:GetStat("Primary.RPM_Displayed") or self:GetStat("Primary.RPM")
-	local rpmtext = contentpanel:Add("DPanel")
-	rpmtext.Text = infotextpad .. "Firerate: " .. math.floor( tmp_rpmstat ) .. "RPM"
 
-	rpmtext.Think = function(myself)
+	local myauthor = self.Author
+
+	local authortext = contentpanel:Add("DPanel")
+
+	if not myauthor or string.Trim(myauthor) == "" then
+		myauthor = "The Forgotten Architect"
+	end
+
+	authortext.Text = infotextpad .. "Creator: " .. myauthor
+
+	authortext.Think = function(myself)
 		myself.TextColor = TFA_INSPECTIONPANEL.SecondaryColor
 	end
 
-	rpmtext.Font = "TFA_INSPECTION_SMALL"
-	rpmtext:Dock(TOP)
-	rpmtext:SetSize(screenwidth - lbound, 24)
-	rpmtext.Paint = TextShadowPaint
+	authortext.Font = "TFA_INSPECTION_SMALL"
+	authortext:Dock(TOP)
+	authortext:SetSize(screenwidth - lbound, 24)
+	authortext.Paint = TextShadowPaint
+
+	if self.Manufacturer and string.Trim(self.Manufacturer) ~= "" then
+		local makertext = contentpanel:Add("DPanel")
+
+		makertext.Text = infotextpad .. "Manufacturer: " .. self.Manufacturer
+
+		makertext.Think = function(myself)
+			myself.TextColor = TFA_INSPECTIONPANEL.SecondaryColor
+		end
+
+		makertext.Font = "TFA_INSPECTION_SMALL"
+		makertext:Dock(TOP)
+		makertext:SetSize(screenwidth - lbound, 24)
+		makertext.Paint = TextShadowPaint
+	end
+
 	local capacitytext = contentpanel:Add("DPanel")
 	capacitytext.Text = infotextpad .. "Capacity: " .. self:GetStat("Primary.ClipSize") .. (self:CanChamber() and (self.Akimbo and " + 2" or " + 1") or "") .. " Rounds"
 
@@ -398,23 +352,20 @@ function SWEP:GenerateInspectionDerma()
 		ammotypetext.Paint = TextShadowPaint
 	end
 
-	local makertext = contentpanel:Add("DPanel")
-	local mymaker = self.Manufacturer or self.Author
+	if self.Purpose and string.Trim(self.Purpose) ~= "" then
+		local purpose = contentpanel:Add("DPanel")
 
-	if not mymaker or string.Trim(mymaker) == "" then
-		mymaker = "The Forgotten Architect"
+		purpose.Text = infotextpad .. "Purpose: " .. self.Purpose
+
+		purpose.Think = function(myself)
+			myself.TextColor = TFA_INSPECTIONPANEL.SecondaryColor
+		end
+
+		purpose.Font = "TFA_INSPECTION_SMALL"
+		purpose:Dock(TOP)
+		purpose:SetSize(screenwidth - lbound, 24)
+		purpose.Paint = TextShadowPaint
 	end
-
-	makertext.Text = infotextpad .. "Maker: " .. mymaker
-
-	makertext.Think = function(myself)
-		myself.TextColor = TFA_INSPECTIONPANEL.SecondaryColor
-	end
-
-	makertext.Font = "TFA_INSPECTION_SMALL"
-	makertext:Dock(TOP)
-	makertext:SetSize(screenwidth - lbound, 24)
-	makertext.Paint = TextShadowPaint
 
 	--Bottom block (bars and such)
 	local statspanel = contentpanel:Add("DPanel")
