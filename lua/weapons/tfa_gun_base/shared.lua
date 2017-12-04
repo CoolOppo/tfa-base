@@ -355,9 +355,9 @@ function SWEP:Initialize()
 	end
 	if SERVER then
 		if self.Owner:IsNPC() then
-			local seq = self.Weapon.Owner:LookupSequence("shootp1") 
+			local seq = self.Weapon.Owner:LookupSequence("shootp1")
 			if self.Weapon.Owner:GetSequenceName(seq) == "shootp1" then
-				self:SetWeaponHoldType("pistol")		
+				self:SetWeaponHoldType("pistol")
 			else
 				self:SetWeaponHoldType("ar2")
 			end
@@ -577,7 +577,7 @@ Purpose:  Standard SWEP Function
 local finalstat
 
 function SWEP:PlayerThink()
-	if self.Owner:IsNPC() then 
+	if self.Owner:IsNPC() then
 		return
 	end
 	ft = TFA.FrameTime()
@@ -1049,8 +1049,8 @@ local dryfire_cvar = GetConVar("sv_tfa_allow_dryfire")
 function SWEP:CanPrimaryAttack( )
 	if self.Owner:IsNPC() then
 		if SERVER then
-			if CurTime() < self:GetNextPrimaryFire() then 
-				return false 
+			if CurTime() < self:GetNextPrimaryFire() then
+				return false
 			end
 			return true
 		end
@@ -1120,8 +1120,8 @@ function SWEP:PrimaryAttack()
 			return
 		end
 		if SERVER then
-			if CurTime() < self:GetNextPrimaryFire() then 
-				return false 
+			if CurTime() < self:GetNextPrimaryFire() then
+				return false
 			end
 		end
 		local times_to_fire = 2
@@ -1140,9 +1140,9 @@ function SWEP:PrimaryAttack()
 			bullet.Num = self.Primary.NumShots
 			bullet.Src = self.Owner:GetShootPos()
 			bullet.Dir = self.Owner:GetAimVector()
-			bullet.Tracer = 1 
+			bullet.Tracer = 1
 			bullet.Damage = damage_to_do
-			bullet.AmmoType = self.Primary.Ammo 
+			bullet.AmmoType = self.Primary.Ammo
 			self.Owner:FireBullets( bullet )
 		end)
 		return
@@ -1678,11 +1678,18 @@ local gunbob_intensity_cvar = GetConVar("cl_tfa_gunbob_intensity")
 local vmfov
 local bbvec
 
+local vmpos_cached, vmang_cached
+local last_getvmpos
+
 function SWEP:GetViewModelPosition( pos, ang )
 	if self.Owner:IsNPC() then
 		return
 	end
 	if not IsValid(self:GetOwner()) then return end
+	if CLIENT and last_getvmpos and last_getvmpos == CurTime() then
+		return vmpos_cached, vmang_cached
+	end
+	last_getvmpos = CurTime()
 	--Bobscale
 	if self.Sprint_Mode == TFA.Enum.LOCOMOTION_ANI then
 		self.SprintBobMult = 0
@@ -1741,6 +1748,7 @@ function SWEP:GetViewModelPosition( pos, ang )
 		pos = pos - ang:Up() * 5
 	end
 
+	vmpos_cached,vmang_cached = pos, ang
 	return pos, ang
 end
 
