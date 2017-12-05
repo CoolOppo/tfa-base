@@ -167,6 +167,7 @@ function SWEP:ViewModelDrawn()
 				break
 			end
 
+			if v.type == "Quad" and v.draw_func_outer then continue end
 			if (v.hide) then continue end
 			local model = v.curmodel
 			local sprite = v.spritemat
@@ -235,6 +236,43 @@ function SWEP:ViewModelDrawn()
 		end
 	end
 end
+
+function SWEP:HandsDrawn()
+	if self.VElements then
+		for k, name in ipairs(self.vRenderOrder) do
+			local v = self.VElements[name]
+
+			if (not v) then
+				self.vRenderOrder = nil
+				break
+			end
+
+			if v.type ~= "Quad" then continue end
+			if not v.draw_func_outer then continue end
+
+			if (v.hide) then continue end
+			local model = v.curmodel
+			local sprite = v.spritemat
+			if (not v.bone) then continue end
+			local pos, ang = self:GetBoneOrientation(self.VElements, v, vm)
+			if (not pos) then continue end
+			local aktiv = self:GetStat("VElements." .. name .. ".active")
+			if aktiv ~= nil and aktiv == false then continue end
+
+			local drawpos = pos + ang:Forward() * v.pos.x + ang:Right() * v.pos.y + ang:Up() * v.pos.z
+			ang:RotateAroundAxis(ang:Up(), v.angle.y)
+			ang:RotateAroundAxis(ang:Right(), v.angle.p)
+			ang:RotateAroundAxis(ang:Forward(), v.angle.r)
+			v.draw_func_outer(self,drawpos,ang,v.size)
+		end
+	end
+end
+
+hook.Add("PostDrawPlayerHands","TFAHandsDrawn",function(hands,vm,ply,wep)
+	if wep.HandsDrawn then
+		wep:HandsDrawn()
+	end
+end)
 SWEP.wRenderOrder = nil
 --[[
 Function Name:  DrawWorldModel

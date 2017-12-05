@@ -1688,7 +1688,7 @@ function SWEP:GetViewModelPosition( pos, ang )
 	if not IsValid(self:GetOwner()) then return end
 	if CLIENT and last_getvmpos and last_getvmpos == CurTime() then
 		return vmpos_cached, vmang_cached
-	end
+	end 
 	last_getvmpos = CurTime()
 	--Bobscale
 	if self.Sprint_Mode == TFA.Enum.LOCOMOTION_ANI then
