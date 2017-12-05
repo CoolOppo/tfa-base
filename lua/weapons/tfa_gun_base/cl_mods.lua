@@ -235,9 +235,13 @@ function SWEP:ViewModelDrawn()
 			end
 		end
 	end
+
+	if not self.UseHands and self.ViewModelDrawnPost then
+		self:ViewModelDrawnPost()
+	end
 end
 
-function SWEP:HandsDrawn()
+function SWEP:ViewModelDrawnPost()
 	if self.VElements then
 		for k, name in ipairs(self.vRenderOrder) do
 			local v = self.VElements[name]
@@ -269,8 +273,8 @@ function SWEP:HandsDrawn()
 end
 
 hook.Add("PostDrawPlayerHands","TFAHandsDrawn",function(hands,vm,ply,wep)
-	if wep.HandsDrawn then
-		wep:HandsDrawn()
+	if wep.ViewModelDrawnPost then
+		wep:ViewModelDrawnPost()
 	end
 end)
 SWEP.wRenderOrder = nil
