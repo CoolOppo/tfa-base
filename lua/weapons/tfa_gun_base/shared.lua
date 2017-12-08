@@ -1678,18 +1678,11 @@ local gunbob_intensity_cvar = GetConVar("cl_tfa_gunbob_intensity")
 local vmfov
 local bbvec
 
-local vmpos_cached, vmang_cached
-local last_getvmpos
-
 function SWEP:GetViewModelPosition( pos, ang )
 	if self.Owner:IsNPC() then
 		return
 	end
 	if not IsValid(self:GetOwner()) then return end
-	if CLIENT and last_getvmpos and last_getvmpos == CurTime() then
-		return vmpos_cached, vmang_cached
-	end 
-	last_getvmpos = CurTime()
 	--Bobscale
 	if self.Sprint_Mode == TFA.Enum.LOCOMOTION_ANI then
 		self.SprintBobMult = 0
@@ -1698,7 +1691,7 @@ function SWEP:GetViewModelPosition( pos, ang )
 	self.BobScaleCustom = l_Lerp(self.SprintProgress, self.BobScaleCustom, self.SprintBobMult)
 	--Start viewbob code
 	local gunbobintensity = gunbob_intensity_cvar:GetFloat()
-	if not ang then return end
+	if not ang then ang = EyeAngles() end
 	--ang:RotateAroundAxis(ang:Forward(), -Qerp(self.IronSightsProgress and self.IronSightsProgress or 0, qerp1, 0))
 	--End viewbob code
 
@@ -1748,7 +1741,6 @@ function SWEP:GetViewModelPosition( pos, ang )
 		pos = pos - ang:Up() * 5
 	end
 
-	vmpos_cached,vmang_cached = pos, ang
 	return pos, ang
 end
 
