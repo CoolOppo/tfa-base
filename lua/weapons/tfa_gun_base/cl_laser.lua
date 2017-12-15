@@ -36,6 +36,13 @@ function SWEP:DrawLaser( is_vm )
 		if ( not att ) or att <= 0 then return end
 		angpos = self.OwnerViewModel:GetAttachment( att )
 		if not angpos then return end
+
+		if self.LaserDotISMovement and self.CLIronSightsProgress > 0 then
+			local isang = self:GetStat("IronSightsAng")
+			angpos.Ang:RotateAroundAxis(angpos.Ang:Right(), isang.y * (self.ViewModelFlip and -1 or 1) * self.CLIronSightsProgress)
+			angpos.Ang:RotateAroundAxis(angpos.Ang:Up(), -isang.x * self.CLIronSightsProgress)
+		end
+
 		traceres = util.QuickTrace( self:GetOwner():GetShootPos(), angpos.Ang:Forward() * 999999, self:GetOwner())
 		dot_sz = math.Rand( self.LaserDotMin or 1.5, self.LaserDotMax or 2 )
 
