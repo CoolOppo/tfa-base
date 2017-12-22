@@ -341,6 +341,8 @@ function SWEP:DrawWorldModel()
 		self:SetupBones()
 	end
 
+	self:UpdateWMBonePositions(self)
+
 	if (not self.WElements) then return end
 	--self.WElements = self:GetStat("WElements")
 	self:CreateModels(self.WElements)
@@ -731,5 +733,95 @@ function SWEP:ResetBonePositions(val)
 		vm:ManipulateBoneScale(i, Vector(1, 1, 1))
 		vm:ManipulateBoneAngles(i, Angle(0, 0, 0))
 		vm:ManipulateBonePosition(i, vector_origin)
+	end
+end
+
+--[[
+Function Name:  UpdateWMBonePositions
+Syntax: self:UpdateWMBonePositions( worldmodel ).
+Returns:   Nothing.
+Notes:   Updates the bones for a worldmodel.
+Purpose:  SWEP Construction Kit Compatibility / Basic Attachments.
+]]--
+function SWEP:UpdateWMBonePositions(wm)
+	if not self.WorldModelBoneMods then
+		self.WorldModelBoneMods = {}
+	end
+	local WM_BoneMods = self:GetStat("WorldModelBoneMods", self.WorldModelBoneMods)
+	if table.Count( WM_BoneMods ) > 0 then
+		local stat = self:GetStatus()
+
+		if (not wm:GetBoneCount()) then return end
+		local loopthrough = {}
+		local wbones = {}
+
+		for i = 0, wm:GetBoneCount() do
+			local bonename = wm:GetBoneName(i)
+
+			if (WM_BoneMods[bonename]) then
+				wbones[bonename] = WM_BoneMods[bonename]
+			else
+				wbones[bonename] = {
+					scale = onevec,
+					pos = vector_origin,
+					angle = angle_zero
+				}
+			end
+		end
+
+		loopthrough = wbones
+
+		for k, v in pairs(loopthrough) do
+			local bone = wm:LookupBone(k)
+			if (not bone) or (bone == -1) then continue end
+			local s = Vector(v.scale.x, v.scale.y, v.scale.z)
+			local p = Vector(v.pos.x, v.pos.y, v.pos.z)
+			local childscale = Vector(1, 1, 1)
+			local cur = wm:GetBoneParent(bone)
+
+			while (cur ~= -1) do
+				local pscale = loopthrough[wm:GetBoneName(cur)].scale
+				childscale = childscale * pscale
+				cur = wm:GetBoneParent(cur)
+			end
+
+			s = s * childscale
+
+			if wm:GetManipulateBoneScale(bone) ~= s then
+				wm:ManipulateBoneScale(bone, s)
+			end
+
+			if wm:GetManipulateBoneAngles(bone) ~= v.angle then
+				wm:ManipulateBoneAngles(bone, v.angle)
+			end
+
+			if wm:GetManipulateBonePosition(bone) ~= p then
+				wm:ManipulateBonePosition(bone, p)
+			end
+		end
+	end
+end
+
+--[[
+Function Name:  ResetWMBonePositions
+Syntax: self:ResetWMBonePositions( worldmodel ).
+Returns:   Nothing.
+Notes:   Resets the bones for a worldmodel.
+Purpose:  SWEP Construction Kit Compatibility / Basic Attachments.
+]]--
+function SWEP:ResetWMBonePositions( wm )
+	if SERVER then
+		self:CallOnClient("ResetWMBonePositions", "")
+		return
+	end
+
+	if not wm then wm = self end
+	if not IsValid(wm) then return end
+	if (not wm:GetBoneCount()) then return end
+
+	for i = 0, wm:GetBoneCount() do
+		wm:ManipulateBoneScale(i, Vector(1, 1, 1))
+		wm:ManipulateBoneAngles(i, Angle(0, 0, 0))
+		wm:ManipulateBonePosition(i, vector_origin)
 	end
 end

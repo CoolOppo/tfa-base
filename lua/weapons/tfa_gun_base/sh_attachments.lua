@@ -91,6 +91,7 @@ end
 
 SWEP.StatCache_Blacklist = {
 	["ViewModelBoneMods"] = true,
+	["WorldModelBoneMods"] = true,
 	["MaterialTable"] = true,
 	["Bodygroups_V"] = true,
 	["Bodygroups_W"] = true,
