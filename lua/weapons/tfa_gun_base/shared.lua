@@ -1439,7 +1439,7 @@ function SWEP:AdjustMouseSensitivity()
 	if self:GetIronSights() then
 		sensval = sensval * sensitivity_cvar:GetFloat() / 100
 
-		if sensitivity_fov_cvar:GetFloat() then
+		if sensitivity_fov_cvar:GetBool() then
 			fovv = self:GetStat("Secondary.IronFOV") or 70
 			sensval = sensval * TFA.CalculateSensitivtyScale( fovv )
 		else
