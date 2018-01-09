@@ -690,7 +690,7 @@ function SWEP:Think2()
 			self:TakePrimaryAmmo(1,true)
 			self:TakePrimaryAmmo(-1)
 			lact = self:GetLastActivity()
-			if self.StatusLengthOverride[ lact ] then
+			if self:GetActivityLength(lact,true) < self:GetActivityLength(lact,false) - 0.01 then
 				sht = self:GetStat("ShellTime")
 				if sht then sht = sht / self:NZAnimationSpeed(ACT_VM_RELOAD) end
 				waittime = ( sht or self:GetActivityLength( lact , false ) ) -  self:GetActivityLength( lact , true )
@@ -1246,7 +1246,11 @@ function SWEP:Reload(released)
 				success, tanim = self:ChooseShotgunReloadAnim()
 				if self.ShotgunEmptyAnim  then
 					local _, tg = self:ChooseAnimation( "reload_empty" )
-					if tanim == tg and self.ShotgunEmptyAnim_Shell then
+					local action = tanim
+					if type(tg) == "string" then
+						action = self.OwnerViewModel:GetSequenceName( self.OwnerViewModel:SelectWeightedSequenceSeeded( tanim, self:GetSeed() ) )
+					end
+					if action == tg and self.ShotgunEmptyAnim_Shell then
 						self:SetStatus(TFA.Enum.STATUS_RELOADING_SHOTGUN_START_SHELL)
 					else
 						self:SetStatus(TFA.Enum.STATUS_RELOADING_SHOTGUN_START)
@@ -1352,7 +1356,7 @@ function SWEP:LoadShell( )
 		return
 	end
 	success, tanim = self:ChooseReloadAnim()
-	if self.StatusLengthOverride[ tanim ] then
+	if self:GetActivityLength(tanim,true) < self:GetActivityLength(tanim,false) then
 		self:SetStatusEnd(ct + self:GetActivityLength( tanim, true ) )
 	else
 		sht = self:GetStat("ShellTime")

@@ -158,7 +158,13 @@ function SWEP:GetActivityLength( tanim, status)--, seq )
 	slo = self.StatusLengthOverride[nm] or self.StatusLengthOverride[tanim]
 	sqlo = self.SequenceLengthOverride[nm] or self.SequenceLengthOverride[tanim]
 	sqro = self.SequenceRateOverride[nm] or self.SequenceRateOverride[tanim]
-	sqros = self.SequenceRateOverrideScaled[nm] or self.SequenceRateOverrideScaled[tanim]
+	sqros = self:GetStat("SequenceRateOverrideScaled." .. nm ) or self:GetStat("SequenceRateOverrideScaled." .. act ) 
+	--[[
+	slo = self:GetStat("StatusLengthOverride." .. nm ) or self:GetStat("StatusLengthOverride." .. act )
+	sqlo = self:GetStat("SequenceLengthOverride." .. nm ) or self:GetStat("SequenceLengthOverride." .. act ) 
+	sqro = self:GetStat("SequenceRateOverride." .. nm ) or self:GetStat("SequenceRateOverride." .. act ) 
+	sqros = self:GetStat("SequenceRateOverrideScaled." .. nm ) or self:GetStat("SequenceRateOverrideScaled." .. act ) 
+	]]--
 	if status and slo then
 		sqlen = slo
 	elseif sqlo then
