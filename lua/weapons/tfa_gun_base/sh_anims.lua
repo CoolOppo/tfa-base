@@ -240,6 +240,7 @@ function SWEP:SendViewModelAnim(act, rate, targ, blend )
 end
 
 function SWEP:SendViewModelSeq(seq, rate, targ, blend )
+	local seqold = seq
 	local vm = self.OwnerViewModel
 	if type(seq) == "string" then
 		seq = vm:LookupSequence(seq) or 0
@@ -247,11 +248,17 @@ function SWEP:SendViewModelSeq(seq, rate, targ, blend )
 
 	if not self:VMIV() then return end
 	local act = vm:GetSequenceActivity(seq)
-	if self.SequenceRateOverrideScaled[act] then
+	if self.SequenceRateOverrideScaled[seqold] then
+		rate = self.SequenceRateOverrideScaled[seqold]
+		targ = false
+	elseif self.SequenceRateOverrideScaled[act] then
 		rate = self.SequenceRateOverrideScaled[act]
 		targ = false
 	end
-	if self.SequenceRateOverride[act] then
+	if self.SequenceRateOverride[seqold] then
+		rate = self.SequenceRateOverride[seqold]
+		targ = true
+	elseif self.SequenceRateOverride[act] then
 		rate = self.SequenceRateOverride[act]
 		targ = true
 	end

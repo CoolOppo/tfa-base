@@ -134,7 +134,7 @@ end
 ]]--
 
 local slo,sqlo,sqro,sqros
-function SWEP:GetActivityLength( tanim, status )
+function SWEP:GetActivityLength( tanim, status)--, seq )
 	if not self:VMIV() then return 0 end
 	--[[
 	if not self.HasCachedIDs then
@@ -155,10 +155,10 @@ function SWEP:GetActivityLength( tanim, status )
 	else
 		sqlen = self.OwnerViewModel:SequenceDuration( self.OwnerViewModel:SelectWeightedSequenceSeeded( math.max(tanim or 1,1), self:GetSeed() ) )
 	end
-	slo = self.StatusLengthOverride[tanim] or self.StatusLengthOverride[nm]
-	sqlo = self.SequenceLengthOverride[tanim] or self.SequenceLengthOverride[nm]
-	sqro = self.SequenceRateOverride[tanim] or self.SequenceRateOverride[nm]
-	sqros = self.SequenceRateOverrideScaled[tanim] or self.SequenceRateOverrideScaled[nm]
+	slo = self.StatusLengthOverride[nm] or self.StatusLengthOverride[tanim]
+	sqlo = self.SequenceLengthOverride[nm] or self.SequenceLengthOverride[tanim]
+	sqro = self.SequenceRateOverride[nm] or self.SequenceRateOverride[tanim]
+	sqros = self.SequenceRateOverrideScaled[nm] or self.SequenceRateOverrideScaled[tanim]
 	if status and slo then
 		sqlen = slo
 	elseif sqlo then
