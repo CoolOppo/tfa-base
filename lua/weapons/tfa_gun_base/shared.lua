@@ -1247,7 +1247,7 @@ function SWEP:Reload(released)
 				if self.ShotgunEmptyAnim  then
 					local _, tg = self:ChooseAnimation( "reload_empty" )
 					local action = tanim
-					if type(tg) == "string" and tonumber(tanim)>0 then
+					if type(tg) == "string" and tonumber(tanim) and tonumber(tanim)>0 then
 						action = self.OwnerViewModel:GetSequenceName( self.OwnerViewModel:SelectWeightedSequenceSeeded( tanim, self:GetSeed() ) )
 					end
 					if action == tg and self.ShotgunEmptyAnim_Shell then
