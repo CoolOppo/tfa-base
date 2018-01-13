@@ -1,5 +1,0 @@
-SpriteCard
-{
-$basetexture "particle/killingfloor/feathers"
-$depthblend 1
-}

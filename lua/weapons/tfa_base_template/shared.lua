@@ -255,7 +255,9 @@ SWEP.EjectionSmokeEnabled = true --Disable automatic ejection smoke
 --Shell eject override
 SWEP.LuaShellEject = false --Enable shell ejection through lua?
 SWEP.LuaShellEjectDelay = 0 --The delay to actually eject things
-SWEP.LuaShellEffect = nil --The effect used for shell ejection; Defaults to that used for blowback
+SWEP.LuaShellModel = nil --The model to use for ejected shells
+SWEP.LuaShellScale = nil --The model scale to use for ejected shells
+SWEP.LuaShellYaw = nil --The model yaw rotation ( relative ) to use for ejected shells
 --Tracer Stuff
 SWEP.TracerName 		= nil 	--Change to a string of your tracer name.  Can be custom. There is a nice example at https://github.com/garrynewman/garrysmod/blob/master/garrysmod/gamemodes/base/entities/effects/tooltracer.lua
 SWEP.TracerCount 		= 3 	--0 disables, otherwise, 1 in X chance

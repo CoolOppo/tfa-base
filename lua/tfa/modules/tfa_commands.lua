@@ -456,6 +456,10 @@ if CLIENT then
 		CreateClientConVar("cl_tfa_fx_ejectionsmoke", 1, true, true)
 	end
 
+	if GetConVar("cl_tfa_fx_ejectionlife") == nil then
+		CreateClientConVar("cl_tfa_fx_ejectionlife", 15, true, true)
+	end
+
 	if GetConVar("cl_tfa_fx_impact_enabled") == nil then
 		CreateClientConVar("cl_tfa_fx_impact_enabled", 1, true, true)
 	end

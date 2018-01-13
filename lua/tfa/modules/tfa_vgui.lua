@@ -12,6 +12,10 @@ if CLIENT then
 	language.Add("tfa3dsq.hq","1 - High (1024x)")
 	language.Add("tfa3dsq.mq","2 - Medium (512x)")
 	language.Add("tfa3dsq.lq","3 - Low (256x)")
+	language.Add("tfa3dsb.label","3D Scope Blur Mode")
+	language.Add("tfa3dsb.nb","0 - No Blur")
+	language.Add("tfa3dsb.sb","1 - Standard Blur")
+	language.Add("tfa3dsb.bb","2 - Bokeh Blur")
 
 	local function tfaOptionServer(panel)
 		--Here are whatever default categories you want.
@@ -174,6 +178,9 @@ if CLIENT then
 			cl_tfa_3dscope = "1",
 			cl_tfa_3dscope_overlay = "1",
 			cl_tfa_3dscope_quality = "-1",
+			cl_tfa_fx_rtscopeblur_passes = "3",
+			cl_tfa_fx_rtscopeblur_intensity = "4",
+			cl_tfa_fx_rtscopeblur_mode = "1",
 			cl_tfa_scope_sensitivity_3d = "2",
 			cl_tfa_scope_sensitivity_autoscale = "1",
 			cl_tfa_scope_sensitivity = "100",
@@ -259,6 +266,46 @@ if CLIENT then
 
 		panel:AddControl("ComboBox", tfaOption3DSQ)
 
+		local tfaOption3DSB = {
+			Options = {},
+			CVars = {},
+			Label = "#tfa3dsb.label",
+			MenuButton = "0",
+			Folder = "TFA 3D Scope Blur."
+		}
+
+		tfaOption3DSB.Options["#tfa3dsb.nb"] = {
+			cl_tfa_fx_rtscopeblur_mode = "0"
+		}
+
+		tfaOption3DSB.Options["#tfa3dsb.sb"] = {
+			cl_tfa_fx_rtscopeblur_mode = "1"
+		}
+
+		tfaOption3DSB.Options["#tfa3dsb.bb"] = {
+			cl_tfa_fx_rtscopeblur_mode = "2"
+		}
+
+		tfaOption3DSB.CVars = table.GetKeys( tfaOption3DSB.Options["#tfa3dsb.bb"] )
+
+		panel:AddControl("ComboBox", tfaOption3DSB)
+
+		panel:AddControl("Slider", {
+			Label = "Scope Blur Quality",
+			Command = "cl_tfa_fx_rtscopeblur_passes",
+			Type = "Integer",
+			Min = "1",
+			Max = "5"
+		})
+
+		panel:AddControl("Slider", {
+			Label = "Scope Blur Strength",
+			Command = "cl_tfa_fx_rtscopeblur_intensity",
+			Type = "Float",
+			Min = "0.01",
+			Max = "10"
+		})
+
 		panel:AddControl("CheckBox", {
 			Label = "Toggle Ironsights",
 			Command = "cl_tfa_ironsights_toggle"
@@ -270,12 +317,12 @@ if CLIENT then
 		})
 
 		panel:AddControl("CheckBox", {
-			Label = "Compensate sensitivity for FOV",
+			Label = "Compensate Sensitivity for FOV",
 			Command = "cl_tfa_scope_sensitivity_autoscale"
 		})
 
 		panel:AddControl("Slider", {
-			Label = "Scope sensitivity",
+			Label = "Scope Sensitivity",
 			Command = "cl_tfa_scope_sensitivity",
 			Type = "Integer",
 			Min = "1",
@@ -420,7 +467,8 @@ if CLIENT then
 			cl_tfa_fx_gasblur = "1",
 			cl_tfa_fx_muzzlesmoke = "1",
 			cl_tfa_fx_muzzlesmoke_limited = "0",
-			cl_tfa_inspection_bokeh = "0"
+			cl_tfa_inspection_bokeh = "0",
+			cl_tfa_fx_ejectionlife = "15"
 		}
 
 		panel:AddControl("ComboBox", tfaOptionPerf)
@@ -458,6 +506,14 @@ if CLIENT then
 		panel:AddControl("CheckBox", {
 			Label = "Use Inspection BokehDOF",
 			Command = "cl_tfa_inspection_bokeh"
+		})
+
+		panel:AddControl("Slider", {
+			Label = "Ejected Shell Life",
+			Command = "cl_tfa_fx_ejectionlife",
+			Type = "Integer",
+			Min = "0",
+			Max = "60"
 		})
 
 		panel:AddControl("Slider", {
