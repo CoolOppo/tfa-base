@@ -33,6 +33,15 @@ function EFFECT:Init(data)
 	if cv_life then
 		self.LifeTime = cv_life:GetFloat()
 	end
+	
+	self.StartTime = CurTime()
+	self.Emitter = ParticleEmitter(self:GetPos())
+	self.SmokeDelta = 0
+	if cv_eject:GetBool() then
+		self.SmokeDeath = self.StartTime + math.Rand(self.SmokeTime[1],self.SmokeTime[2])
+	else
+		self.SmokeDeath = -1
+	end
 
 	self.Position = bvec
 	self.WeaponEnt = data:GetEntity()
@@ -43,10 +52,12 @@ function EFFECT:Init(data)
 	local owent = self.WeaponEnt:GetOwner()
 
 	if not IsValid(owent) then
-		owent = self.WeaponEnt:GetParent()
+		self.StartTime = -1000
+		self.SmokeDeath = -1000
+		return
 	end
 
-	if IsValid(owent) and owent:IsPlayer() then
+	if owent:IsPlayer() then
 		if owent ~= LocalPlayer() or owent:ShouldDrawLocalPlayer() then
 			self.WeaponEnt = owent:GetActiveWeapon()
 			if not IsValid(self.WeaponEnt) then return end
@@ -88,7 +99,7 @@ function EFFECT:Init(data)
 	end
 
 	local model, scale, yaw = self:FindModel(self.WeaponEntOG)
-	if model:find("shotgun") then
+	if model:lower():find("shotgun") then
 		self.Shotgun = true
 	end
 
@@ -121,20 +132,11 @@ function EFFECT:Init(data)
 		physObj:SetVelocity(velocity)
 		physObj:AddAngleVelocity(VectorRand() * velocity:Length()*5)
 	end
-	
-	self.StartTime = CurTime()
-	self.Emitter = ParticleEmitter(self:GetPos())
-	self.SmokeDelta = 0
-	if cv_eject:GetBool() then
-		self.SmokeDeath = self.StartTime + math.Rand(self.SmokeTime[1],self.SmokeTime[2])
-	else
-		self.SmokeDeath = -1
-	end
 end
 
 function EFFECT:FindModel( wep )
 	if not IsValid(wep) then
-		return "models/bullets/w_pbullet1.mdl", 1
+		return unpack(self.ShellPresets["rifle"])
 	end
 
 	if wep.ShellModel then
@@ -209,7 +211,9 @@ function EFFECT:Think()
 		end
 	end
 	if CurTime() > self.StartTime + self.LifeTime then
-		self.Emitter:Finish()
+		if self.Emitter then
+			self.Emitter:Finish()
+		end
 		return false
 	else
 		return true
