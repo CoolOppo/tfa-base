@@ -51,7 +51,7 @@ function EFFECT:Init(data)
 	self.Dir = data:GetNormal()
 	local owent = self.WeaponEnt:GetOwner()
 
-	if not IsValid(owent) then
+	if self.LifeTime <= 0 or not IsValid(owent) then
 		self.StartTime = -1000
 		self.SmokeDeath = -1000
 		return
