@@ -396,10 +396,16 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon)
 			traceres.Entity:Fire("SetHealth","",-1)
 		end
 	end
+	local cl = hitent:GetClass()
+
+	if cl == "npc_helicopter" then
+		if  (weapon:GetStat("Primary.NumShots") * weapon:GetStat("Primary.Damage")) >= 26 then
+			dmginfo:SetDamageType(bit.bor(dmginfo:GetDamageType(),DMG_AIRBOAT))
+		end
+	end
 
 	if atype ~= DMG_BULLET then
 		if (dmginfo:IsDamageType(DMG_SHOCK) or dmginfo:IsDamageType(DMG_BLAST)) and traceres.Hit and IsValid(hitent) and hitent.Fire then
-			local cl = hitent:GetClass()
 			if cl == "npc_strider" then
 				hitent:SetHealth(math.max(hitent:Health() - dmginfo:GetDamage(), 2))
 

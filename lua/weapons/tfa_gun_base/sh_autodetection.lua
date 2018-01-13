@@ -186,11 +186,6 @@ function SWEP:AutoDetectDamageType()
 		else
 			self.Primary.DamageType = DMG_BULLET
 		end
-		if  (self.Primary.NumShots * self.Primary.Damage) >= 26 then
-			self.Primary.DamageType = bit.bor(self.Primary.DamageType, DMG_AIRBOAT)
-		elseif self.Primary.Damage >= 150 then
-			self.Primary.DamageType = bit.bor(self.Primary.DamageType, DMG_AIRBOAT)
-		end
 	end
 end
 
