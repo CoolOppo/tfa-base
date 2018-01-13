@@ -3,11 +3,13 @@ if SERVER then AddCSLuaFile() end
 TFA = TFA or {}
 
 local do_load = true
-local version = 4.28
-local version_string = "4.2.8.0"
+local version = 4.3
+local version_string = "4.3.0.0"
 local changelog = [[
-	* Numerous bugfixes
-	* Notably: FOV fixed in overlay-style scopes + shotgun timing fixes
+	* New shell ejection effects
+	* New shell models (Soldier11's)
+	* RT Scope Blur
+	* New clientside options on the performance and scope panels
 ]]
 
 local function testFunc()
