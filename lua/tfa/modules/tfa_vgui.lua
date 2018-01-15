@@ -468,7 +468,8 @@ if CLIENT then
 			cl_tfa_fx_muzzlesmoke = "1",
 			cl_tfa_fx_muzzlesmoke_limited = "0",
 			cl_tfa_inspection_bokeh = "0",
-			cl_tfa_fx_ejectionlife = "15"
+			cl_tfa_fx_ejectionlife = "15",
+			cl_tfa_legacy_shells = "0"
 		}
 
 		panel:AddControl("ComboBox", tfaOptionPerf)
@@ -506,6 +507,11 @@ if CLIENT then
 		panel:AddControl("CheckBox", {
 			Label = "Use Inspection BokehDOF",
 			Command = "cl_tfa_inspection_bokeh"
+		})
+		
+		panel:AddControl("CheckBox", {
+			Label = "Use Legacy Shell-Ejection",
+			Command = "cl_tfa_legacy_shells"
 		})
 
 		panel:AddControl("Slider", {

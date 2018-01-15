@@ -259,6 +259,7 @@ if CLIENT then
 	if GetConVar("cl_tfa_3dscope_quality") == nil then
 		CreateClientConVar("cl_tfa_3dscope_quality", -1, true, true)
 	end
+	
 
 	if GetConVar("cl_tfa_3dscope") == nil then
 		CreateClientConVar("cl_tfa_3dscope", 1, true, true)
@@ -451,6 +452,10 @@ if CLIENT then
 	if GetConVar("cl_tfa_fx_muzzlesmoke_limited") == nil then
 		CreateClientConVar("cl_tfa_fx_muzzlesmoke_limited", 0, true, true)
 	end
+	
+	if GetConVar("cl_tfa_legacy_shells") == nil then
+		CreateClientConVar("cl_tfa_legacy_shells", 0, true, true)
+	end
 
 	if GetConVar("cl_tfa_fx_ejectionsmoke") == nil then
 		CreateClientConVar("cl_tfa_fx_ejectionsmoke", 1, true, true)
@@ -529,4 +534,5 @@ if CLIENT then
 	if GetConVar("cl_tfa_debug_cache") == nil then
 		CreateClientConVar("cl_tfa_debug_cache", 0, false, false)
 	end
+	
 end

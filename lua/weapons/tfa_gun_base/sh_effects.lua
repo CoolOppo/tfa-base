@@ -1,4 +1,5 @@
 local fx, sp
+local shelltype
 
 function SWEP:PCFTracer( bul, hitpos, ovrride )
 	if bul.PCFTracer then
@@ -43,6 +44,13 @@ function SWEP:MakeShellBridge(ifp)
 end
 
 function SWEP:MakeShell()
+
+	if TFA.GetLegacyShellsEnabled() then
+		shelltype = "tfa_shell_legacy"
+	else
+		shelltype = "tfa_shell"
+	end
+
 	if IsValid(self) and self:VMIV() then
 		local vm = (not self:GetOwner().ShouldDrawLocalPlayer or self:GetOwner():ShouldDrawLocalPlayer()) and self.OwnerViewModel or self
 
@@ -62,7 +70,7 @@ function SWEP:MakeShell()
 				fx:SetScale(1)
 				fx:SetOrigin(angpos.Pos)
 				fx:SetNormal(angpos.Ang:Forward())
-				util.Effect("tfa_shell", fx)
+				util.Effect(shelltype, fx)
 			end
 		end
 	end

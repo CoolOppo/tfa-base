@@ -1,5 +1,6 @@
 local tmpsp = game.SinglePlayer()
 local gas_cl_enabled = GetConVar("cl_tfa_fx_gasblur")
+local oldshell_cl_enabled = GetConVar("cl_tfa_legacy_shells")
 
 local l_FT = FrameTime
 local l_mathClamp = math.Clamp
@@ -242,6 +243,19 @@ function TFA.GetGasEnabled()
 
 	if gas_cl_enabled then
 		enabled = gas_cl_enabled:GetBool()
+	else
+		enabled = false
+	end
+
+	return enabled
+end
+
+function TFA.GetLegacyShellsEnabled()
+	if tmpsp then return math.Round(Entity(1):GetInfoNum("cl_tfa_legacy_shells", 0)) ~= 0 end
+	local enabled
+
+	if oldshell_cl_enabled then
+		enabled = oldshell_cl_enabled:GetBool()
 	else
 		enabled = false
 	end
