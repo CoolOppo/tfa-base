@@ -49,10 +49,10 @@ hook.Add("PostDrawTranslucentRenderables", "tfa_draw_rt_blur", function()
 	if not isfunction(funcs[mode]) then return end
 
 	local ply = LocalPlayer()
-	if not IsValid(ply) then return end
+	if not IsValid(ply) or ply:ShouldDrawLocalPlayer() then return end
 
 	local wep = ply:GetActiveWeapon()
-	if not IsValid(wep) or not wep.IsTFAWeapon or (not wep:GetStat("RTMaterialOverride") or not wep.RTCode) then return end
+	if not IsValid(wep) or not wep.IsTFAWeapon or (not wep.GetStat or not wep:GetStat("RTMaterialOverride") or not wep.RTCode) then return end
 
 	if wep.GLDeployed and wep:GLDeployed() then
 		tfablurintensity = Lerp(FT() * 12.5, tfablurintensity, 0)
