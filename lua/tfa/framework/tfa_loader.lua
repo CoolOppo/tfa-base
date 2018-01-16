@@ -3,15 +3,13 @@ if SERVER then AddCSLuaFile() end
 TFA = TFA or {}
 
 local do_load = true
-local version = 4.31
-local version_string = "4.3.1.0"
+local version = 4.32
+local version_string = "4.3.2.0"
 local changelog = [[
-	* New shell ejection effects
-	* New shell models (Soldier11's)
-	* RT Scope Blur
-	* New clientside options on the performance and scope panels
-	* * Shell hotfixes
-	* * Weapons no longer have airboat damage type, finally fixing ragdolls
+	* Added ability to override new shell effects
+	* Fixed serverside modules/external files loader
+	* Fixed LookupAttachment error for externally registered weapons
+	* Fixed scope background blur working in thirdperson
 ]]
 
 local function testFunc()

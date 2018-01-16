@@ -43,9 +43,13 @@ function SWEP:MakeShellBridge(ifp)
 	end
 end
 
+SWEP.ShellEffectOverride = nil
+
 function SWEP:MakeShell()
 
-	if TFA.GetLegacyShellsEnabled() then
+	if self.ShellEffectOverride then
+		shelltype = self.ShellEffectOverride
+	elseif TFA.GetLegacyShellsEnabled() then
 		shelltype = "tfa_shell_legacy"
 	else
 		shelltype = "tfa_shell"
@@ -53,6 +57,8 @@ function SWEP:MakeShell()
 
 	if IsValid(self) and self:VMIV() then
 		local vm = (not self:GetOwner().ShouldDrawLocalPlayer or self:GetOwner():ShouldDrawLocalPlayer()) and self.OwnerViewModel or self
+
+		if type(shelltype) ~= "string" or shelltype == "" then return end -- allows to disable shells by setting override to "" - will shut up all rp fags
 
 		if IsValid(vm) then
 			fx = EffectData()
