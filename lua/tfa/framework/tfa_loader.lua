@@ -58,10 +58,10 @@ if do_load then
 	for fileid, filename in pairs(flist) do
 
 		local typev = "SHARED"
-		if string.find(filename,"cl_") then
+		if filename:StartWith("cl_") then
 			typev = "CLIENT"
-		elseif string.find(filename,"sv_") then
-			typev = SERVER
+		elseif filename:StartWith("sv_") then
+			typev = "SERVER"
 		end
 
 		if SERVER and typev ~= "SERVER" then
@@ -80,10 +80,10 @@ if do_load then
 	for fileid, filename in pairs(flist) do
 
 		local typev = "SHARED"
-		if string.find(filename,"cl_") then
+		if filename:StartWith("cl_") then
 			typev = "CLIENT"
-		elseif string.find(filename,"sv_") then
-			typev = SERVER
+		elseif filename:StartWith("sv_") then
+			typev = "SERVER"
 		end
 
 		if SERVER and typev ~= "SERVER" then
@@ -102,10 +102,10 @@ if do_load then
 	for fileid, filename in pairs(flist) do
 
 		local typev = "SHARED"
-		if string.find(filename,"cl_") then
+		if filename:StartWith("cl_") then
 			typev = "CLIENT"
-		elseif string.find(filename,"sv_") then
-			typev = SERVER
+		elseif filename:StartWith("sv_") then
+			typev = "SERVER"
 		end
 
 		if SERVER and typev ~= "SERVER" then
