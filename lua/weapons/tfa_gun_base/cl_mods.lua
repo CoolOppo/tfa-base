@@ -82,7 +82,7 @@ function SWEP:ViewModelDrawn()
 	if not self.CameraAttachment then
 		self.CameraAttachment = -1
 
-		for k, v in pairs(self.CameraAttachments) do
+		for k, v in ipairs(self.CameraAttachments) do
 			local attid = vm:LookupAttachment(v)
 
 			if attid and attid > 0 then
