@@ -3,10 +3,10 @@ local uAng = Angle(90, 0, 0)
 
 EFFECT.Velocity = {120,160}
 EFFECT.ShellPresets = {
-	["sniper"] = { "models/hdweapons/rifleshell.mdl", 1.6, 90 },
-	["rifle"] = { "models/hdweapons/rifleshell.mdl", 1, 90 },
-	["pistol"] = { "models/hdweapons/shell.mdl", 1, 90 },
-	["smg"] = { "models/hdweapons/shell.mdl", 1.2, 90 },
+	["sniper"] = { "models/hdweapons/rifleshell.mdl", 0.487 / 1.236636, 90 },--1.236636 is shell diameter, then divide base diameter into that for 7.62x54mm
+	["rifle"] = { "models/hdweapons/rifleshell.mdl", 0.4709 / 1.236636, 90 },--1.236636 is shell diameter, then divide base diameter into that for standard nato rifle
+	["pistol"] = { "models/hdweapons/shell.mdl", 0.391 / 0.955581, 90 },--0.955581 is shell diameter, then divide base diameter into that for 9mm luger
+	["smg"] = { "models/hdweapons/shell.mdl", .476 / 0.955581, 90 },--.45 acp
 	["shotgun"] = { "models/hdweapons/shotgun_shell.mdl", 1, 90 }
 }
 EFFECT.SoundFiles 	= { Sound(")player/pl_shell1.wav"),Sound(")player/pl_shell2.wav"),Sound(")player/pl_shell3.wav")}
@@ -47,6 +47,7 @@ function EFFECT:Init(data)
 	self.WeaponEnt = data:GetEntity()
 	if not IsValid(self.WeaponEnt) then return end
 	self.WeaponEntOG = self.WeaponEnt
+	if self.WeaponEntOG.LuaShellEffect and self.WeaponEntOG.LuaShellEffect == "" then return end
 	self.Attachment = data:GetAttachment()
 	self.Dir = data:GetNormal()
 	local owent = self.WeaponEnt:GetOwner()
@@ -99,6 +100,11 @@ function EFFECT:Init(data)
 	end
 
 	local model, scale, yaw = self:FindModel(self.WeaponEntOG)
+
+	model = self.WeaponEntOG.ShellModel or self.WeaponEntOG.LuaShellModel or model
+	scale = self.WeaponEntOG.ShellScale or self.WeaponEntOG.LuaShellScale or scale
+	yaw = self.WeaponEntOG.ShellYaw or self.WeaponEntOG.LuaShellYaw or yaw
+	
 	if model:lower():find("shotgun") then
 		self.Shotgun = true
 	end
@@ -137,14 +143,6 @@ end
 function EFFECT:FindModel( wep )
 	if not IsValid(wep) then
 		return unpack(self.ShellPresets["rifle"])
-	end
-
-	if wep.ShellModel then
-		return wep.ShellModel, wep.ShellSize or 1, wep.ShellYaw or 90
-	end
-
-	if wep.LuaShellModel then
-		return wep.LuaShellModel, wep.LuaShellSize or wep.ShellSize or 1, wep.LuaShellYaw or wep.ShellYaw or 90
 	end
 
 	local ammotype =  (wep.Primary.Ammo or wep:GetPrimaryAmmoType()):lower()

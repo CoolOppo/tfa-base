@@ -3,13 +3,11 @@ if SERVER then AddCSLuaFile() end
 TFA = TFA or {}
 
 local do_load = true
-local version = 4.32
-local version_string = "4.3.2.0"
+local version = 4.321
+local version_string = "4.3.2.1"
 local changelog = [[
-	* Added ability to override new shell effects
-	* Fixed serverside modules/external files loader
-	* Fixed LookupAttachment error for externally registered weapons
-	* Fixed scope background blur working in thirdperson
+	* SWEP.LuaShellEffect = "" disables the new tfa_shell stuff
+	* Shells resized using actual math
 ]]
 
 local function testFunc()
