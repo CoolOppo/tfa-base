@@ -3,10 +3,10 @@ local uAng = Angle(90, 0, 0)
 
 EFFECT.Velocity = {120,160}
 EFFECT.ShellPresets = {
-	["sniper"] = { "models/hdweapons/rifleshell.mdl", 0.487 / 1.236636, 90 },--1.236636 is shell diameter, then divide base diameter into that for 7.62x54mm
-	["rifle"] = { "models/hdweapons/rifleshell.mdl", 0.4709 / 1.236636, 90 },--1.236636 is shell diameter, then divide base diameter into that for standard nato rifle
-	["pistol"] = { "models/hdweapons/shell.mdl", 0.391 / 0.955581, 90 },--0.955581 is shell diameter, then divide base diameter into that for 9mm luger
-	["smg"] = { "models/hdweapons/shell.mdl", .476 / 0.955581, 90 },--.45 acp
+	["sniper"] = { "models/hdweapons/rifleshell.mdl",math.pow( 0.487 / 1.236636,1/3), 90 },--1.236636 is shell diameter, then divide base diameter into that for 7.62x54mm
+	["rifle"] = { "models/hdweapons/rifleshell.mdl", math.pow(0.4709 / 1.236636,1/3), 90 },--1.236636 is shell diameter, then divide base diameter into that for standard nato rifle
+	["pistol"] = { "models/hdweapons/shell.mdl", math.pow(0.391 / 0.955581,1/3), 90 },--0.955581 is shell diameter, then divide base diameter into that for 9mm luger
+	["smg"] = { "models/hdweapons/shell.mdl", math.pow(.476 / 0.955581,1/3), 90 },--.45 acp
 	["shotgun"] = { "models/hdweapons/shotgun_shell.mdl", 1, 90 }
 }
 EFFECT.SoundFiles 	= { Sound(")player/pl_shell1.wav"),Sound(")player/pl_shell2.wav"),Sound(")player/pl_shell3.wav")}
@@ -33,7 +33,7 @@ function EFFECT:Init(data)
 	if cv_life then
 		self.LifeTime = cv_life:GetFloat()
 	end
-	
+
 	self.StartTime = CurTime()
 	self.Emitter = ParticleEmitter(self:GetPos())
 	self.SmokeDelta = 0
@@ -104,7 +104,7 @@ function EFFECT:Init(data)
 	model = self.WeaponEntOG.ShellModel or self.WeaponEntOG.LuaShellModel or model
 	scale = self.WeaponEntOG.ShellScale or self.WeaponEntOG.LuaShellScale or scale
 	yaw = self.WeaponEntOG.ShellYaw or self.WeaponEntOG.LuaShellYaw or yaw
-	
+
 	if model:lower():find("shotgun") then
 		self.Shotgun = true
 	end
@@ -189,7 +189,7 @@ function EFFECT:Think()
 			self.Emitter:SetPos(pos)
 			for i = 0, thicc do
 				local particle = self.Emitter:Add("particles/smokey", pos)
-		
+
 				if (particle) then
 					particle:SetVelocity(VectorRand() * (5*math.sqrt(thicc)) + self:GetVelocity() * 0.1 )
 					particle:SetLifeTime(0)
