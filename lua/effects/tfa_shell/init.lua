@@ -2,7 +2,7 @@ local bvec = Vector(0, 0, 0)
 local uAng = Angle(90, 0, 0)
 
 EFFECT.Velocity = {120,160}
-EFFECT.VelocityRand = 35
+EFFECT.VelocityRand = {-15,40}
 EFFECT.VelocityRandAngle = 12.5
 
 EFFECT.ShellPresets = {
@@ -117,7 +117,10 @@ function EFFECT:Init(data)
 	self:SetPos(angpos.Pos)
 	local mdlang = angpos.Ang * 1
 	mdlang:RotateAroundAxis(mdlang:Up(),yaw)
-	self:SetAngles( IsValid(owent) and owent:EyeAngles() or mdlang)
+
+	local owang = IsValid(owent) and owent:EyeAngles() or mdlang
+
+	self:SetAngles( owang )
 
 	self:SetRenderMode(RENDERMODE_TRANSALPHA)
 
@@ -126,7 +129,7 @@ function EFFECT:Init(data)
 
 	self:PhysicsInitBox(self:OBBMins(),self:OBBMaxs())
 
-	local velocity = angpos.Ang:Forward() * math.Rand( self.Velocity[1],self.Velocity[2] ) + VectorRand() * self.VelocityRand
+	local velocity = angpos.Ang:Forward() * math.Rand( self.Velocity[1],self.Velocity[2] ) + owang:Forward() * math.Rand(self.VelocityRand[1],self.VelocityRand[2])
 	if IsValid(owent) then
 		velocity = velocity + owent:GetVelocity()
 	end
