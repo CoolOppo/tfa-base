@@ -3,10 +3,10 @@ if SERVER then AddCSLuaFile() end
 TFA = TFA or {}
 
 local do_load = true
-local version = 4.322
-local version_string = "4.3.2.2"
+local version = 4.323
+local version_string = "4.3.2.3"
 local changelog = [[
-	* Shells resized AGAIN and double-checked for accuracy this time using OBBMaxs()-OBBMins()
+	* More violent shell ejection; shell angle determined by eye angles
 ]]
 
 local function testFunc()
