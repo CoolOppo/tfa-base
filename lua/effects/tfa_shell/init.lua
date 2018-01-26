@@ -2,6 +2,9 @@ local bvec = Vector(0, 0, 0)
 local uAng = Angle(90, 0, 0)
 
 EFFECT.Velocity = {120,160}
+EFFECT.VelocityRand = 35
+EFFECT.VelocityRandAngle = 12.5
+
 EFFECT.ShellPresets = {
 	["sniper"] = { "models/hdweapons/rifleshell.mdl",math.pow( 0.487 / 1.236636,1/3), 90 },--1.236636 is shell diameter, then divide base diameter into that for 7.62x54mm
 	["rifle"] = { "models/hdweapons/rifleshell.mdl", math.pow(0.4709 / 1.236636,1/3), 90 },--1.236636 is shell diameter, then divide base diameter into that for standard nato rifle
@@ -114,7 +117,7 @@ function EFFECT:Init(data)
 	self:SetPos(angpos.Pos)
 	local mdlang = angpos.Ang * 1
 	mdlang:RotateAroundAxis(mdlang:Up(),yaw)
-	self:SetAngles(mdlang)
+	self:SetAngles( IsValid(owent) and owent:EyeAngles() or mdlang)
 
 	self:SetRenderMode(RENDERMODE_TRANSALPHA)
 
@@ -123,7 +126,7 @@ function EFFECT:Init(data)
 
 	self:PhysicsInitBox(self:OBBMins(),self:OBBMaxs())
 
-	local velocity = angpos.Ang:Forward() * math.Rand( self.Velocity[1],self.Velocity[2] )
+	local velocity = angpos.Ang:Forward() * math.Rand( self.Velocity[1],self.Velocity[2] ) + VectorRand() * self.VelocityRand
 	if IsValid(owent) then
 		velocity = velocity + owent:GetVelocity()
 	end
@@ -136,7 +139,7 @@ function EFFECT:Init(data)
 		physObj:SetMass(5)
 		physObj:SetMaterial("gmod_silent")
 		physObj:SetVelocity(velocity)
-		physObj:AddAngleVelocity(VectorRand() * velocity:Length()*5)
+		physObj:AddAngleVelocity(VectorRand() * velocity:Length()* self.VelocityRandAngle )
 	end
 end
 
