@@ -258,6 +258,7 @@ Used For:  Hides default HUD
 ]]--
 
 local cv_he = GetConVar("cl_tfa_hud_enabled", 1)
+local cv_xh = GetConVar("cl_tfa_hud_crosshair_enable_custom")
 
 if CLIENT then
 	local TFAHudHide = {
@@ -265,8 +266,12 @@ if CLIENT then
 		CHudSecondaryAmmo = true
 	}
 
+	local TFACrossHide = {
+		CHudCrosshair = true
+	}
+
 	hook.Add("HUDShouldDraw", "tfa_hidehud", function(name)
-		if TFAHudHide[name] and cv_he:GetBool() then
+		if (TFAHudHide[name] and cv_he:GetBool()) or (TFACrossHide[name] and cv_xh:GetBool()) then
 			local ictfa = TFA.PlayerCarryingTFAWeapon()
 			if ictfa then return false end
 		end

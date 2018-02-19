@@ -681,122 +681,8 @@ function SWEP:DrawHUD()
 	self:DoInspectionDerma()
 
 	--Crosshair
-	local drawcrossy
-	drawcrossy = self.DrawCrosshairDefault
 
-	if not drawcrossy then
-		drawcrossy = self.DrawCrosshair
-	end
-
-	local stat = self:GetStatus()
-
-	self.clrelp = self.clrelp or 0
-	self.clrelp = math.Approach(self.clrelp, TFA.Enum.ReloadStatus[stat] and 0 or 1, ((TFA.Enum.ReloadStatus[stat] and 0 or 1) - self.clrelp) * FrameTime() * 15)
-	local crossa = crossa_cvar:GetFloat() * math.pow(math.min(1 - ((self.IronSightsProgress and not self.DrawCrosshairIS) and self.IronSightsProgress or 0), 1 - self.SprintProgress, 1 - self.CLOldNearWallProgress, 1 - self.InspectingProgress, self.clrelp), 2)
-	local outa = outa_cvar:GetFloat() * math.pow(math.min(1 - ((self.IronSightsProgress and not self.DrawCrosshairIS) and self.IronSightsProgress or 0), 1 - self.SprintProgress, 1 - self.CLOldNearWallProgress, 1 - self.InspectingProgress, self.clrelp), 2)
-	self.DrawCrosshair = false
-	if self:GetHolding() then drawcrossy = false end
-
-	if drawcrossy then
-		if crosscustomenable_cvar:GetBool() then
-			if LocalPlayer():IsValid() and self:GetOwner() == LocalPlayer() then
-				ply = LocalPlayer()
-
-				if not ply.interpposx then
-					ply.interpposx = ScrW() / 2
-				end
-
-				if not ply.interpposy then
-					ply.interpposy = ScrH() / 2
-				end
-
-				local x, y -- local, always
-				local s_cone = self:CalculateConeRecoil()
-
-				-- If we're drawing the local player, draw the crosshair where they're aiming
-				-- instead of in the center of the screen.
-				if (self:GetOwner():ShouldDrawLocalPlayer() and not ply:GetNW2Bool("ThirtOTS", false)) then
-					local tr = util.GetPlayerTrace(self:GetOwner())
-					tr.mask = CONTENTS_SOLID + CONTENTS_MOVEABLE + CONTENTS_MONSTER + CONTENTS_WINDOW + CONTENTS_DEBRIS + CONTENTS_GRATE + CONTENTS_AUX -- This controls what the crosshair will be projected onto.
-					local trace = util.TraceLine(tr)
-					local coords = trace.HitPos:ToScreen()
-					coords.x = math.Clamp(coords.x, 0, ScrW())
-					coords.y = math.Clamp(coords.y, 0, ScrH())
-					ply.interpposx = math.Approach(ply.interpposx, coords.x, (ply.interpposx - coords.x) * FrameTime() * 7.5)
-					ply.interpposy = math.Approach(ply.interpposy, coords.y, (ply.interpposy - coords.y) * FrameTime() * 7.5)
-					x, y = ply.interpposx, ply.interpposy
-					-- Center of screen
-				else
-					x, y = ScrW() / 2.0, ScrH() / 2.0
-				end
-
-				if not self.selftbl then
-					self.selftbl = {ply, self}
-				end
-
-				local crossr, crossg, crossb, crosslen, crosshairwidth, drawdot, teamcol
-				local targent = util.QuickTrace(ply:GetShootPos(), ply:EyeAngles():Forward() * 999999999, self.selftbl).Entity
-				teamcol = GetTeamColor(targent)
-				crossr = crossr_cvar:GetFloat()
-				crossg = crossg_cvar:GetFloat()
-				crossb = crossb_cvar:GetFloat()
-				crosslen = crosslen_cvar:GetFloat() * 0.01
-				crosscol.r = crossr
-				crosscol.g = crossg
-				crosscol.b = crossb
-				crosscol.a = crossa
-				crosscol = ColorMix(crosscol, teamcol, 1, CMIX_MULT)
-				crossr = crosscol.r
-				crossg = crosscol.g
-				crossb = crosscol.b
-				crossa = crosscol.a
-				crosshairwidth = crosshairwidth_cvar:GetFloat()
-				drawdot = drawdot_cvar:GetBool()
-				local scale = (s_cone * 90) / self:GetOwner():GetFOV() * ScrH() / 1.44 * cgapscale_cvar:GetFloat()
-				local gap = math.Round( scale / 2 ) * 2
-				local length = 1
-
-				if not clen_usepixels:GetBool() then
-					length = gap + ScrH() * 1.777 * crosslen
-				else
-					length = gap + crosslen * 100
-				end
-
-				--Outline
-				if outline_enabled_cvar:GetBool() then
-					local outr, outg, outb, outlinewidth
-					outr = outr_cvar:GetFloat()
-					outg = outg_cvar:GetFloat()
-					outb = outb_cvar:GetFloat()
-					outlinewidth = outlinewidth_cvar:GetFloat()
-					surface.SetDrawColor(outr, outg, outb, outa)
-					surface.DrawRect(math.Round(x - length - outlinewidth) - crosshairwidth / 2, math.Round(y - outlinewidth) - crosshairwidth / 2, math.Round(length - gap + outlinewidth * 2) + crosshairwidth, math.Round(outlinewidth * 2) + crosshairwidth) -- Left
-					surface.DrawRect(math.Round(x + gap - outlinewidth) - crosshairwidth / 2, math.Round(y - outlinewidth) - crosshairwidth / 2, math.Round(length - gap + outlinewidth * 2) + crosshairwidth, math.Round(outlinewidth * 2) + crosshairwidth) -- Right
-					surface.DrawRect(math.Round(x - outlinewidth) - crosshairwidth / 2, math.Round(y - length - outlinewidth) - crosshairwidth / 2, math.Round(outlinewidth * 2) + crosshairwidth, math.Round(length - gap + outlinewidth * 2) + crosshairwidth) -- Top
-					surface.DrawRect(math.Round(x - outlinewidth) - crosshairwidth / 2, math.Round(y + gap - outlinewidth) - crosshairwidth / 2, math.Round(outlinewidth * 2) + crosshairwidth, math.Round(length - gap + outlinewidth * 2) + crosshairwidth) -- Bottom
-
-					if drawdot then
-						surface.DrawRect(math.Round(x - outlinewidth) - crosshairwidth / 2, math.Round(y - outlinewidth) - crosshairwidth / 2, math.Round(outlinewidth * 2) + crosshairwidth, math.Round(outlinewidth * 2) + crosshairwidth) --Dot
-					end
-				end
-
-				--Main Crosshair
-				surface.SetDrawColor(crossr, crossg, crossb, crossa)
-				surface.DrawRect(math.Round(x - length) - crosshairwidth / 2, math.Round(y) - crosshairwidth / 2, math.Round(length - gap) + crosshairwidth, crosshairwidth) -- Left
-				surface.DrawRect(math.Round(x + gap) - crosshairwidth / 2, math.Round(y) - crosshairwidth / 2, math.Round(length - gap) + crosshairwidth, crosshairwidth) -- Right
-				surface.DrawRect(math.Round(x) - crosshairwidth / 2, math.Round(y - length) - crosshairwidth / 2, crosshairwidth, math.Round(length - gap) + crosshairwidth) -- Top
-				surface.DrawRect(math.Round(x) - crosshairwidth / 2, math.Round(y + gap) - crosshairwidth / 2, crosshairwidth, math.Round(length - gap) + crosshairwidth) -- Bottom
-
-				if drawdot then
-					surface.DrawRect(math.Round(x) - crosshairwidth / 2, math.Round(y) - crosshairwidth / 2, crosshairwidth, crosshairwidth) --dot
-				end
-			end
-		else
-			if math.min(1 - self.IronSightsProgress, 1 - self.SprintProgress) > 0.5 then
-				self.DrawCrosshair = true
-			end
-		end
-	end
+	self:DrawHUDCrosshair()
 
 	--Ammo
 
@@ -1100,6 +986,125 @@ function SWEP:DrawHUDAmmo()
 					yy = yy + TFASleekFontHeightMedium
 					xx = xx - TFASleekFontHeightMedium / 3
 				end
+			end
+		end
+	end
+end
+
+function SWEP:DrawHUDCrosshair()
+	local drawcrossy
+	drawcrossy = self.DrawCrosshairDefault
+
+	if not drawcrossy then
+		drawcrossy = self.DrawCrosshair
+	end
+
+	local stat = self:GetStatus()
+
+	self.clrelp = self.clrelp or 0
+	self.clrelp = math.Approach(self.clrelp, TFA.Enum.ReloadStatus[stat] and 0 or 1, ((TFA.Enum.ReloadStatus[stat] and 0 or 1) - self.clrelp) * FrameTime() * 15)
+	local crossa = crossa_cvar:GetFloat() * math.pow(math.min(1 - ((self.IronSightsProgress and not self.DrawCrosshairIS) and self.IronSightsProgress or 0), 1 - self.SprintProgress, 1 - self.CLOldNearWallProgress, 1 - self.InspectingProgress, self.clrelp), 2)
+	local outa = outa_cvar:GetFloat() * math.pow(math.min(1 - ((self.IronSightsProgress and not self.DrawCrosshairIS) and self.IronSightsProgress or 0), 1 - self.SprintProgress, 1 - self.CLOldNearWallProgress, 1 - self.InspectingProgress, self.clrelp), 2)
+	self.DrawCrosshair = false
+	if self:GetHolding() then drawcrossy = false end
+
+	if drawcrossy then
+		if crosscustomenable_cvar:GetBool() then
+			if LocalPlayer():IsValid() and self:GetOwner() == LocalPlayer() then
+				ply = LocalPlayer()
+
+				if not ply.interpposx then
+					ply.interpposx = ScrW() / 2
+				end
+
+				if not ply.interpposy then
+					ply.interpposy = ScrH() / 2
+				end
+
+				local x, y -- local, always
+				local s_cone = self:CalculateConeRecoil()
+
+				-- If we're drawing the local player, draw the crosshair where they're aiming
+				-- instead of in the center of the screen.
+				if (self:GetOwner():ShouldDrawLocalPlayer() and not ply:GetNW2Bool("ThirtOTS", false)) then
+					local tr = util.GetPlayerTrace(self:GetOwner())
+					tr.mask = CONTENTS_SOLID + CONTENTS_MOVEABLE + CONTENTS_MONSTER + CONTENTS_WINDOW + CONTENTS_DEBRIS + CONTENTS_GRATE + CONTENTS_AUX -- This controls what the crosshair will be projected onto.
+					local trace = util.TraceLine(tr)
+					local coords = trace.HitPos:ToScreen()
+					coords.x = math.Clamp(coords.x, 0, ScrW())
+					coords.y = math.Clamp(coords.y, 0, ScrH())
+					ply.interpposx = math.Approach(ply.interpposx, coords.x, (ply.interpposx - coords.x) * FrameTime() * 7.5)
+					ply.interpposy = math.Approach(ply.interpposy, coords.y, (ply.interpposy - coords.y) * FrameTime() * 7.5)
+					x, y = ply.interpposx, ply.interpposy
+					-- Center of screen
+				else
+					x, y = ScrW() / 2.0, ScrH() / 2.0
+				end
+
+				if not self.selftbl then
+					self.selftbl = {ply, self}
+				end
+
+				local crossr, crossg, crossb, crosslen, crosshairwidth, drawdot, teamcol
+				local targent = util.QuickTrace(ply:GetShootPos(), ply:EyeAngles():Forward() * 999999999, self.selftbl).Entity
+				teamcol = GetTeamColor(targent)
+				crossr = crossr_cvar:GetFloat()
+				crossg = crossg_cvar:GetFloat()
+				crossb = crossb_cvar:GetFloat()
+				crosslen = crosslen_cvar:GetFloat() * 0.01
+				crosscol.r = crossr
+				crosscol.g = crossg
+				crosscol.b = crossb
+				crosscol.a = crossa
+				crosscol = ColorMix(crosscol, teamcol, 1, CMIX_MULT)
+				crossr = crosscol.r
+				crossg = crosscol.g
+				crossb = crosscol.b
+				crossa = crosscol.a
+				crosshairwidth = crosshairwidth_cvar:GetFloat()
+				drawdot = drawdot_cvar:GetBool()
+				local scale = (s_cone * 90) / self:GetOwner():GetFOV() * ScrH() / 1.44 * cgapscale_cvar:GetFloat()
+				local gap = math.Round( scale / 2 ) * 2
+				local length = 1
+
+				if not clen_usepixels:GetBool() then
+					length = gap + ScrH() * 1.777 * crosslen
+				else
+					length = gap + crosslen * 100
+				end
+
+				--Outline
+				if outline_enabled_cvar:GetBool() then
+					local outr, outg, outb, outlinewidth
+					outr = outr_cvar:GetFloat()
+					outg = outg_cvar:GetFloat()
+					outb = outb_cvar:GetFloat()
+					outlinewidth = outlinewidth_cvar:GetFloat()
+					surface.SetDrawColor(outr, outg, outb, outa)
+					surface.DrawRect(math.Round(x - length - outlinewidth) - crosshairwidth / 2, math.Round(y - outlinewidth) - crosshairwidth / 2, math.Round(length - gap + outlinewidth * 2) + crosshairwidth, math.Round(outlinewidth * 2) + crosshairwidth) -- Left
+					surface.DrawRect(math.Round(x + gap - outlinewidth) - crosshairwidth / 2, math.Round(y - outlinewidth) - crosshairwidth / 2, math.Round(length - gap + outlinewidth * 2) + crosshairwidth, math.Round(outlinewidth * 2) + crosshairwidth) -- Right
+					surface.DrawRect(math.Round(x - outlinewidth) - crosshairwidth / 2, math.Round(y - length - outlinewidth) - crosshairwidth / 2, math.Round(outlinewidth * 2) + crosshairwidth, math.Round(length - gap + outlinewidth * 2) + crosshairwidth) -- Top
+					surface.DrawRect(math.Round(x - outlinewidth) - crosshairwidth / 2, math.Round(y + gap - outlinewidth) - crosshairwidth / 2, math.Round(outlinewidth * 2) + crosshairwidth, math.Round(length - gap + outlinewidth * 2) + crosshairwidth) -- Bottom
+
+					if drawdot then
+						surface.DrawRect(math.Round(x - outlinewidth) - crosshairwidth / 2, math.Round(y - outlinewidth) - crosshairwidth / 2, math.Round(outlinewidth * 2) + crosshairwidth, math.Round(outlinewidth * 2) + crosshairwidth) --Dot
+					end
+				end
+
+				--Main Crosshair
+				surface.SetDrawColor(crossr, crossg, crossb, crossa)
+				surface.DrawRect(math.Round(x - length) - crosshairwidth / 2, math.Round(y) - crosshairwidth / 2, math.Round(length - gap) + crosshairwidth, crosshairwidth) -- Left
+				surface.DrawRect(math.Round(x + gap) - crosshairwidth / 2, math.Round(y) - crosshairwidth / 2, math.Round(length - gap) + crosshairwidth, crosshairwidth) -- Right
+				surface.DrawRect(math.Round(x) - crosshairwidth / 2, math.Round(y - length) - crosshairwidth / 2, crosshairwidth, math.Round(length - gap) + crosshairwidth) -- Top
+				surface.DrawRect(math.Round(x) - crosshairwidth / 2, math.Round(y + gap) - crosshairwidth / 2, crosshairwidth, math.Round(length - gap) + crosshairwidth) -- Bottom
+
+				if drawdot then
+					surface.DrawRect(math.Round(x) - crosshairwidth / 2, math.Round(y) - crosshairwidth / 2, crosshairwidth, crosshairwidth) --dot
+				end
+			end
+		else
+			if math.min(1 - self.IronSightsProgress, 1 - self.SprintProgress) > 0.5 then
+				self.DrawCrosshair = true
 			end
 		end
 	end
