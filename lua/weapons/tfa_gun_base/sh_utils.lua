@@ -158,12 +158,12 @@ function SWEP:GetActivityLength( tanim, status)--, seq )
 	slo = self.StatusLengthOverride[nm] or self.StatusLengthOverride[tanim]
 	sqlo = self.SequenceLengthOverride[nm] or self.SequenceLengthOverride[tanim]
 	sqro = self.SequenceRateOverride[nm] or self.SequenceRateOverride[tanim]
-	sqros = self:GetStat("SequenceRateOverrideScaled." .. nm ) or self:GetStat("SequenceRateOverrideScaled." .. ( act or "0") ) 
+	sqros = self:GetStat("SequenceRateOverrideScaled." .. nm ) or self:GetStat("SequenceRateOverrideScaled." .. ( act or "0") )
 	--[[
 	slo = self:GetStat("StatusLengthOverride." .. nm ) or self:GetStat("StatusLengthOverride." .. act )
-	sqlo = self:GetStat("SequenceLengthOverride." .. nm ) or self:GetStat("SequenceLengthOverride." .. act ) 
-	sqro = self:GetStat("SequenceRateOverride." .. nm ) or self:GetStat("SequenceRateOverride." .. act ) 
-	sqros = self:GetStat("SequenceRateOverrideScaled." .. nm ) or self:GetStat("SequenceRateOverrideScaled." .. act ) 
+	sqlo = self:GetStat("SequenceLengthOverride." .. nm ) or self:GetStat("SequenceLengthOverride." .. act )
+	sqro = self:GetStat("SequenceRateOverride." .. nm ) or self:GetStat("SequenceRateOverride." .. act )
+	sqros = self:GetStat("SequenceRateOverrideScaled." .. nm ) or self:GetStat("SequenceRateOverrideScaled." .. act )
 	]]--
 	if status and slo then
 		sqlen = slo
@@ -664,7 +664,7 @@ Purpose:  Feature
 local fm
 
 function SWEP:ProcessFireMode()
-	if self:GetOwner():KeyPressed(IN_RELOAD) and self:GetOwner():KeyDown(IN_USE) and self:GetStatus() == TFA.Enum.STATUS_IDLE and ( SERVER or not sp ) then
+	if self:OwnerIsValid() and self:GetOwner():KeyPressed(IN_RELOAD) and self:GetOwner():KeyDown(IN_USE) and self:GetStatus() == TFA.Enum.STATUS_IDLE and ( SERVER or not sp ) then
 		if self:GetStat("SelectiveFire") and not self:GetOwner():KeyDown(IN_SPEED) then
 			self:CycleFireMode()
 		elseif self:GetOwner():KeyDown(IN_SPEED) then
