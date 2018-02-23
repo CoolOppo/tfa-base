@@ -198,6 +198,47 @@ function SWEP:UpdateSmokeParticleTBL(att)
 	end
 end
 
+function SWEP:MuzzleSmoke(sp)
+	if self.SmokeParticle == nil then
+		self.SmokeParticle = self.SmokeParticles[ self.DefaultHoldType or self.HoldType ]
+	end
+	local vm = self.OwnerViewModel
+	self:UpdateMuzzleAttachment()
+	local att = math.max(1, self.MuzzleAttachmentRaw or (sp and vm or self):LookupAttachment(self.MuzzleAttachment))
+	if self.Akimbo then
+		att = 1 + self.AnimCycle
+	end
+	fx = EffectData()
+	fx:SetOrigin(self:GetOwner():GetShootPos())
+	fx:SetNormal(self:GetOwner():EyeAngles():Forward())
+	fx:SetEntity(self)
+	fx:SetAttachment(att)
+	if CurTime() > ( self.NextSmokeParticle[ att ] or -1 ) and self.SmokeParticle and self.SmokeParticle ~= "" then
+		util.Effect("tfa_muzzlesmoke", fx)
+		self:AddSmokeParticleTBL(att)
+	end
+end
+
+function SWEP:MuzzleFlashCustom(sp)
+	local vm = self.OwnerViewModel
+	local att = math.max(1, self.MuzzleAttachmentRaw or (sp and vm or self):LookupAttachment(self.MuzzleAttachment))
+	if self.Akimbo then
+		att = 1 + self.AnimCycle
+	end
+	fx = EffectData()
+	fx:SetOrigin(self:GetOwner():GetShootPos())
+	fx:SetNormal(self:GetOwner():EyeAngles():Forward())
+	fx:SetEntity(self)
+	fx:SetAttachment(att)
+
+	local mzsil = self:GetStat( "MuzzleFlashEffectSilenced" )
+	if (self:GetSilenced() and mzsil and mzsil ~= "" ) then
+		util.Effect( mzsil, fx)
+	else
+		util.Effect( self:GetStat( "MuzzleFlashEffect", self.MuzzleFlashEffect or "" ), fx)
+	end
+end
+
 function SWEP:ShootEffectsCustom( ifp )
 	if self.DoMuzzleFlash ~= nil then
 		self.MuzzleFlashEnabled = self.DoMuzzleFlash
@@ -226,31 +267,9 @@ function SWEP:ShootEffectsCustom( ifp )
 	end
 
 	if (CLIENT and ifp and not sp) or (sp and SERVER) then
-		if self.SmokeParticle == nil then
-			self.SmokeParticle = self.SmokeParticles[ self.DefaultHoldType or self.HoldType ]
-		end
-		local vm = self.OwnerViewModel
 		self:UpdateMuzzleAttachment()
-		local att = math.max(1, self.MuzzleAttachmentRaw or (sp and vm or self):LookupAttachment(self.MuzzleAttachment))
-		if self.Akimbo then
-			att = 1 + self.AnimCycle
-		end
-		fx = EffectData()
-		fx:SetOrigin(self:GetOwner():GetShootPos())
-		fx:SetNormal(self:GetOwner():EyeAngles():Forward())
-		fx:SetEntity(self)
-		fx:SetAttachment(att)
-		if CurTime() > ( self.NextSmokeParticle[ att ] or -1 ) and self.SmokeParticle and self.SmokeParticle ~= "" then
-			util.Effect("tfa_muzzlesmoke", fx)
-			self:AddSmokeParticleTBL(att)
-		end
-
-		local mzsil = self:GetStat( "MuzzleFlashEffectSilenced" )
-		if (self:GetSilenced() and mzsil and mzsil ~= "" ) then
-			util.Effect( mzsil, fx)
-		else
-			util.Effect( self:GetStat( "MuzzleFlashEffect", self.MuzzleFlashEffect or "" ), fx)
-		end
+		self:MuzzleFlashCustom(sp)
+		self:MuzzleSmoke(sp)
 	end
 end
 
