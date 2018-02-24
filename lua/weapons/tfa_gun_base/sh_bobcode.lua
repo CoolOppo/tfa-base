@@ -104,14 +104,16 @@ function SWEP:CalculateBob(pos, ang, intensity, rate )
 	return pos, ang
 end
 
-function SWEP:CalculateViewBob( pos, ang, intensity )
+function SWEP:CalculateViewBob( pos, ang, intensity, compensate )
 	if not self:OwnerIsValid() then return end
 	local up = ang:Up()
 	local ri = ang:Right()
 	local opos = pos * 1
 	local ldist = self:GetOwner():GetEyeTraceNoCursor().HitPos:Distance(pos)
 	if ldist <= 0 then
-		ldist = util.QuickTrace( pos, ang:Forward() * 999999, { self:GetOwner(), self:GetOwner():GetEyeTraceNoCursor().Entity } ).HitPos:Distance( pos )
+		local e = self:GetOwner():GetEyeTraceNoCursor().Entity
+		if not ( IsValid(e) and not e:IsWorld() ) then e=nil end
+		ldist = util.QuickTrace( pos, ang:Forward() * 999999, { self:GetOwner(), e } ).HitPos:Distance( pos )
 	end
 	pos:Add( up * math.sin( ( self.ti + 0.5 ) * rate_up ) * scale_up * intensity * -3 )
 	pos:Add( ri * math.sin( ( self.ti + 0.5 ) * rate_right ) * scale_right * intensity * -3 )
@@ -120,10 +122,10 @@ function SWEP:CalculateViewBob( pos, ang, intensity )
 
 	local tpos = opos + ldist * ang:Forward()
 	local oang = ang * 1
-	local nang = (tpos - opos):GetNormalized():Angle()
+	local nang = (tpos - pos):GetNormalized():Angle()
 	ang:Normalize()
 	nang:Normalize()
-	local vfac = math.Clamp( 1 - math.pow( math.abs( oang.p ) / 90, 3  ), 0, 1 )
+	local vfac = math.Clamp( 1 - math.pow( math.abs( oang.p ) / 90, 3  ), 0, 1 )  *compensate
 	ang.y = ang.y - math.Clamp( math.AngleDifference(ang.y,nang.y), -2, 2 ) * vfac
 	ang.p = ang.p - math.Clamp( math.AngleDifference(ang.p,nang.p), -2, 2 ) * vfac
 	--ang:Normalize()

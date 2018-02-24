@@ -347,8 +347,6 @@ if CLIENT then
 
 		tfaOptionCL.Options["#Default"] = {
 			cl_tfa_viewbob_bolting = "0",
-			cl_tfa_viewbob_reloading = "1",
-			cl_tfa_viewbob_drawing = "0",
 			sv_tfa_gunbob_intensity = "1",
 			sv_tfa_viewbob_intensity = "1",
 			cl_tfa_viewmodel_offset_x = "0",
@@ -365,18 +363,8 @@ if CLIENT then
 		--These are the panel controls.  Adding these means that you don't have to go into the console.
 
 		panel:AddControl("CheckBox", {
-			Label = "Use Viebob While Drawing",
-			Command = "cl_tfa_viewbob_drawing"
-		})
-
-		panel:AddControl("CheckBox", {
-			Label = "Use Viebob While Reloading",
-			Command = "cl_tfa_viewbob_reloading"
-		})
-
-		panel:AddControl("CheckBox", {
-			Label = "Use Viebob While Bolting",
-			Command = "cl_tfa_viewbob_bolting"
+			Label = "Use Animated Viewbob",
+			Command = "cl_tfa_viewbob_animated"
 		})
 
 

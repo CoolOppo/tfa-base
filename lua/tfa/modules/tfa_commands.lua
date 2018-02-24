@@ -482,16 +482,9 @@ if CLIENT then
 	end
 
 	--viewbob
-	if GetConVar("cl_tfa_viewbob_drawing") == nil then
-		CreateClientConVar("cl_tfa_viewbob_drawing", 0, true, false)
-	end
 
-	if GetConVar("cl_tfa_viewbob_reloading") == nil then
-		CreateClientConVar("cl_tfa_viewbob_reloading", 1, true, false)
-	end
-
-	if GetConVar("cl_tfa_viewbob_bolting") == nil then
-		CreateClientConVar("cl_tfa_viewbob_bolting", 0, true, false)
+	if GetConVar("cl_tfa_viewbob_animated") == nil then
+		CreateClientConVar("cl_tfa_viewbob_animated", 1, true, false)
 	end
 
 	--Viewmodel Mods

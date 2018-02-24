@@ -1610,7 +1610,7 @@ local oldang = Angle()
 local anga = Angle()
 local angb = Angle()
 local angc = Angle()
-local posfac = 0.75
+local posfac = 0
 local gunswaycvar = GetConVar("cl_tfa_gunbob_intensity")
 
 function SWEP:Sway(pos, ang)
@@ -1636,7 +1636,7 @@ function SWEP:Sway(pos, ang)
 	--rate = rate to restore our angle to the proper one
 	--fac = factor to multiply by
 	--each is interpolated from normal value to the ironsights value using iron sights ratio
-	local angrange = l_Lerp(self.IronSightsProgress, 7.5, 2.5) * gunswaycvar:GetFloat()
+	local angrange = l_Lerp(self.IronSightsProgress, 15, 2.5) * gunswaycvar:GetFloat()
 	local rate = l_Lerp(self.IronSightsProgress, 15, 30)
 	local fac = l_Lerp(self.IronSightsProgress, 0.6, 0.15)
 	--calculate angle differences
@@ -1674,6 +1674,9 @@ function SWEP:Sway(pos, ang)
 	ang:RotateAroundAxis(oldang:Forward(), angc.y * 10 * fac * (self.ViewModelFlip and -1 or 1))
 	pos:Add(oldang:Right() * angc.y * posfac * (self.ViewModelFlip and -1 or 1))
 	pos:Add(oldang:Up() * -angc.p * posfac)
+	--extras
+	pos:Add( oldang:Up() * math.sin( math.rad(angc.p) ) * -75 )
+	pos:Add( oldang:Right() * math.sin( math.rad(angc.y) ) * 75  * (self.ViewModelFlip and -1 or 1) )
 
 	return pos, util_NormalizeAngles(ang)
 end
@@ -1691,8 +1694,8 @@ function SWEP:GetViewModelPosition( pos, ang )
 	if self.Sprint_Mode == TFA.Enum.LOCOMOTION_ANI then
 		self.SprintBobMult = 0
 	end
-	self.BobScaleCustom = l_Lerp(self.IronSightsProgress, 0.3, l_Lerp( math.min( self:GetOwner():GetVelocity():Length() / self:GetOwner():GetWalkSpeed(), 1 ), self:GetStat("IronBobMult") / 4, self:GetStat("IronBobMultWalk") / 4))
-	self.BobScaleCustom = l_Lerp(self.SprintProgress, self.BobScaleCustom, self.SprintBobMult)
+	self.BobScaleCustom = l_Lerp(self.IronSightsProgress, l_Lerp( math.min( self:GetOwner():GetVelocity():Length() / self:GetOwner():GetWalkSpeed(), 1 ),0.2,0.4), l_Lerp( math.min( self:GetOwner():GetVelocity():Length() / self:GetOwner():GetWalkSpeed(), 1 ), self:GetStat("IronBobMult") / 4, self:GetStat("IronBobMultWalk") / 4))
+	self.BobScaleCustom = l_Lerp(self.SprintProgress, self.BobScaleCustom, self.SprintBobMult )
 	--Start viewbob code
 	local gunbobintensity = gunbob_intensity_cvar:GetFloat()
 	if not ang then ang = EyeAngles() end
@@ -1738,7 +1741,7 @@ function SWEP:GetViewModelPosition( pos, ang )
 	end
 
 	if self.Idle_Mode == TFA.Enum.IDLE_LUA or self.Idle_Mode == TFA.Enum.IDLE_BOTH then
-		pos, ang = self:CalculateBob(pos, ang, gunbobintensity * self.BobScaleCustom * 0.5, math.max( 0.25, math.sqrt( self:GetOwner():GetVelocity():Length2D() / self:GetOwner():GetRunSpeed() ) * 1.75 ) )
+		pos, ang = self:CalculateBob(pos, ang, gunbobintensity * self.BobScaleCustom * 0.5, math.min( math.max( 0.25, math.sqrt( self:GetOwner():GetVelocity():Length2D() / self:GetOwner():GetRunSpeed() ) * 1.75 ), self:GetSprinting() and 5 or 3) )
 	end
 
 	if self:GetHidden() then

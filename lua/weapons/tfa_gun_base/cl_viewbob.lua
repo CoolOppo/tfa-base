@@ -2,6 +2,8 @@ SWEP.SprintBobMult = 1.5 -- More is more bobbing, proportionally.  This is multi
 SWEP.IronBobMult = 0.0 -- More is more bobbing, proportionally.  This is multiplication, not addition.  You want to make this < 1 for sighting, 0 to outright disable.
 SWEP.IronBobMultWalk = 0.2 -- More is more bobbing, proportionally.  This is multiplication, not addition.  You want to make this < 1 for sighting, 0 to outright disable.
 
+SWEP.SprintViewBobMult = 4
+
 --[[
 Function Name:  CalcView
 Syntax: Don't ever call this manually.
@@ -36,17 +38,40 @@ local procedural_vellimit = 5
 local l_Lerp = Lerp
 local l_mathApproach = math.Approach
 local l_mathClamp = math.Clamp
-local viewbob_intensity_cvar, viewbob_drawing_cvar, viewbob_reloading_cvar
+local viewbob_intensity_cvar, viewbob_animated_cvar
 viewbob_intensity_cvar = GetConVar("cl_tfa_viewbob_intensity")
-viewbob_drawing_cvar = GetConVar("cl_tfa_viewbob_drawing")
-viewbob_reloading_cvar = GetConVar("cl_tfa_viewbob_reloading")
-viewbob_bolting_cvar = GetConVar("cl_tfa_viewbob_bolting")
+viewbob_animated_cvar = GetConVar("cl_tfa_viewbob_animated")
 local oldangtmp, oldpostmp
 local mzang_fixed
 local mzang_fixed_last
 local mzang_velocity = Angle()
 local progress = 0
 local targint,targbool
+
+function SWEP:CalcViewModelView(vm,opos,oang,pos,ang)
+	if not ang then return end
+	if ply ~= LocalPlayer() then return end
+	local vm = ply:GetViewModel()
+	if not IsValid(vm) then return end
+	if not CLIENT then return end
+	local ftv = math.max(FrameTime(), 0.001)
+	local viewbobintensity = viewbob_intensity_cvar:GetFloat() * 0.5
+
+	holprog = TFA.Enum.HolsterStatus[self:GetStatus()] and 1 or 0
+	self.ViewHolProg = math.Approach(self.ViewHolProg, holprog, ftv / 5)
+
+	oldpostmp = pos * 1
+	oldangtmp = ang * 1
+	if self.Idle_Mode == TFA.Enum.IDLE_LUA or self.Idle_Mode == TFA.Enum.IDLE_BOTH then
+		local bsc = l_Lerp(self.IronSightsProgress,  l_Lerp( math.min( self:GetOwner():GetVelocity():Length() / self:GetOwner():GetWalkSpeed(), 1 ),0,1), l_Lerp( math.min( self:GetOwner():GetVelocity():Length() / self:GetOwner():GetWalkSpeed(), 1 ), self:GetStat("IronBobMult") / 4, self:GetStat("IronBobMultWalk") / 4))
+		bsc = l_Lerp(self.SprintProgress, bsc, self.SprintViewBobMult)
+		pos, ang = self:CalculateViewBob(pos, ang, viewbobintensity * bsc, ( 1 - self.SprintProgress ) * 0.6 + 0.4 )
+		if not ang or not pos then return oldangtmp, oldpostmp end
+	end
+
+	return self:GetViewModelPosition( pos, LerpAngle(self.ViewHolProg, ang, oldangtmp) )
+end
+
 
 function SWEP:CalcView(ply, pos, ang, fov)
 	if not ang then return end
@@ -55,7 +80,7 @@ function SWEP:CalcView(ply, pos, ang, fov)
 	if not IsValid(vm) then return end
 	if not CLIENT then return end
 	local ftv = math.max(FrameTime(), 0.001)
-	local viewbobintensity = 0.2 * viewbob_intensity_cvar:GetFloat()
+	local viewbobintensity = viewbob_intensity_cvar:GetFloat() * 0.5
 
 	holprog = TFA.Enum.HolsterStatus[self:GetStatus()] and 1 or 0
 	self.ViewHolProg = math.Approach(self.ViewHolProg, holprog, ftv / 5)
@@ -63,11 +88,13 @@ function SWEP:CalcView(ply, pos, ang, fov)
 	oldpostmp = pos * 1
 	oldangtmp = ang * 1
 	if self.Idle_Mode == TFA.Enum.IDLE_LUA or self.Idle_Mode == TFA.Enum.IDLE_BOTH then
-		pos, ang = self:CalculateViewBob(pos, ang, viewbobintensity * self.BobScaleCustom, true)
+		local bsc = l_Lerp(self.IronSightsProgress,  l_Lerp( math.min( self:GetOwner():GetVelocity():Length() / self:GetOwner():GetWalkSpeed(), 1 ),0,1), l_Lerp( math.min( self:GetOwner():GetVelocity():Length() / self:GetOwner():GetWalkSpeed(), 1 ), self:GetStat("IronBobMult") / 4, self:GetStat("IronBobMultWalk") / 4))
+		bsc = l_Lerp(self.SprintProgress, bsc, self.SprintViewBobMult)
+		pos, ang = self:CalculateViewBob(pos, ang, viewbobintensity * bsc, ( 1 - self.SprintProgress ) * 0.6 + 0.4 )
 		if not ang or not pos then return oldangtmp, oldpostmp end
 	end
 
-	if self.CameraAngCache then
+	if self.CameraAngCache and viewbob_animated_cvar:GetBool() then
 		self.CameraAttachmentScale = self.CameraAttachmentScale or 1
 		ang:RotateAroundAxis(ang:Right(), (self.CameraAngCache.p + self.CameraOffset.p) * viewbobintensity * 5 * self.CameraAttachmentScale)
 		ang:RotateAroundAxis(ang:Up(), (self.CameraAngCache.y + self.CameraOffset.y) * viewbobintensity * 5 * self.CameraAttachmentScale)
@@ -83,9 +110,9 @@ function SWEP:CalcView(ply, pos, ang, fov)
 		idraw = stat == TFA.GetStatus("draw")
 		ihols = TFA.Enum.HolsterStatus[stat]
 		ireload = TFA.Enum.ReloadStatus[stat]
-		vb_d = viewbob_drawing_cvar:GetBool()
-		vb_r = viewbob_reloading_cvar:GetBool()
-		vb_s = viewbob_bolting_cvar:GetBool()
+		vb_d = viewbob_animated_cvar:GetBool()
+		vb_r = viewbob_animated_cvar:GetBool()
+		vb_s = viewbob_animated_cvar:GetBool()
 
 		targbool = ( vb_d and idraw ) or ( vb_r and ireload ) or ( self.GetBashing and self:GetBashing() ) or ( vb_s and stat == TFA.Enum.STATUS_SHOOTING and (  self.ViewBob_Shoot or not self:CanInterruptShooting() ) ) or stat == TFA.GetStatus("pump")
 		targbool = targbool and not ( ihols and self.ProceduralHolsterEnabled )
