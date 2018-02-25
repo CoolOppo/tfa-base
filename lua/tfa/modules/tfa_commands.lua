@@ -193,6 +193,10 @@ if GetConVar("sv_tfa_bullet_penetration") == nil then
 	CreateConVar("sv_tfa_bullet_penetration", "1", {FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE}, "Allow bullet penetration?")
 end
 
+if GetConVar("sv_tfa_bullet_doordestruction") == nil then
+	CreateConVar("sv_tfa_bullet_doordestruction", "1", {FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE}, "Allow players to shoot down doors?")
+end
+
 if GetConVar("sv_tfa_bullet_ricochet") == nil then
 	CreateConVar("sv_tfa_bullet_ricochet", "0", {FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE}, "Allow bullet ricochet?")
 end
