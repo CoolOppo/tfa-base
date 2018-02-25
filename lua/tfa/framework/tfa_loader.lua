@@ -4,10 +4,10 @@ TFA = TFA or {}
 
 local do_load = true
 local version = 4.324
-local version_string = "4.3.4.0"
+local version_string = "4.3.4.1"
 local changelog = [[
-	* More violent shell ejection; shell angle determined by eye angles
-	* Viewbob tweaks
+	* Fixed console spam with dropped weapons
+	* Added ability to disable door destruction (thanks to Ralph)
 ]]
 
 local function testFunc()
