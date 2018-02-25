@@ -637,7 +637,8 @@ end
 
 function SWEP.MainBullet:HandleDoor(ply, traceres, dmginfo, wep)
 	-- Don't break down doors if the player doesn't want to
-	if GetConVar("sv_tfa_bullet_doordestruction"):GetInt() == 0 then
+	local doordestruction = GetConVar("sv_tfa_bullet_doordestruction"):GetInt()
+	if doordestruction == 0 then
 		return
 	end
 
