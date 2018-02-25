@@ -3,7 +3,7 @@ if SERVER then AddCSLuaFile() end
 TFA = TFA or {}
 
 local do_load = true
-local version = 4.324
+local version = 4.341
 local version_string = "4.3.4.1"
 local changelog = [[
 	* Fixed console spam with dropped weapons
