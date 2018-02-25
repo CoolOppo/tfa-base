@@ -636,6 +636,11 @@ function SWEP.MainBullet:MakeDoor(ent, dmginfo)
 end
 
 function SWEP.MainBullet:HandleDoor(ply, traceres, dmginfo, wep)
+	-- Don't break down doors if the player doesn't want to
+	if GetConVar("sv_tfa_bullet_doordestruction"):GetInt() == 0 then
+		return
+	end
+
 	local ent = traceres.Entity
 	if not IsValid(ent) then return end
 	if not ents.Create then return end
