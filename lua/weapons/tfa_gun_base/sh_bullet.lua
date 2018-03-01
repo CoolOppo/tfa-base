@@ -635,7 +635,12 @@ function SWEP.MainBullet:MakeDoor(ent, dmginfo)
 	end
 end
 
+local cv_doordestruction = GetConVar("sv_tfa_bullet_doordestruction")
+
 function SWEP.MainBullet:HandleDoor(ply, traceres, dmginfo, wep)
+	-- Don't do anything if door desstruction isn't enabled
+	if not cv_doordestruction:GetBool() then return end
+
 	local ent = traceres.Entity
 	if not IsValid(ent) then return end
 	if not ents.Create then return end

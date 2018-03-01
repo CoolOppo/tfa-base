@@ -343,16 +343,22 @@ function SWEP:Initialize()
 	self:IconFix()
 	self:CreateFireModes()
 	self:FixAkimbo()
+	self:PathStatsTable('Primary')
+	self:PathStatsTable('Secondary')
 	self:ClearStatCache()
+
 	if not self.IronSightsMoveSpeed then
 		self.IronSightsMoveSpeed = self.MoveSpeed * 0.8
 	end
+
 	if self:GetStat("Skin") and isnumber(self:GetStat("Skin")) then
 		self:SetSkin(self:GetStat("Skin"))
 	end
+
 	if nzombies then
 		self:NZDeploy()
 	end
+
 	if SERVER then
 		if self.Owner:IsNPC() then
 			local seq = self.Weapon.Owner:LookupSequence("shootp1")
@@ -368,6 +374,47 @@ function SWEP:Initialize()
 			return
 		end
 	end
+end
+
+function SWEP:PathStatsTable(statID)
+	local tableDest = self[statID]
+	local tableCopy = table.Copy(tableDest)
+	self[statID .. '_TFA'] = tableCopy
+	local ammo = statID .. '.Ammo'
+	local clipSize = statID .. '.ClipSize'
+	local defaultClip = statID .. '.DefaultClip'
+	local automatic = statID .. '.Automatic'
+	table.Empty(tableDest)
+
+	local ignore = false
+
+	local function ignoreHack(key)
+		if key == 'Ammo' then
+			return self:GetStat(ammo)
+		elseif key == 'ClipSize' then
+			return self:GetStat(clipSize)
+		elseif key == 'DefaultClip' then
+			return self:GetStat(defaultClip)
+		elseif key == 'Automatic' then
+			return self:GetStat(automatic)
+		else
+			return tableCopy[key]
+		end
+	end
+
+	self[statID] = setmetatable(tableDest, {
+		__index = function(_, key)
+			if ignore then return tableCopy[key] end
+			ignore = true
+			local val = ignoreHack(key)
+			ignore = false
+			return val
+		end,
+		
+		__newindex = function(_, key, value)
+			tableCopy[key] = value
+		end
+	})
 end
 
 function SWEP:Equip( ... )

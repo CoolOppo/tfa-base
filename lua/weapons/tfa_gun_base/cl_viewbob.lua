@@ -50,9 +50,9 @@ local targint,targbool
 
 function SWEP:CalcViewModelView(vm,opos,oang,pos,ang)
 	if not ang then return end
-	if ply ~= LocalPlayer() then return end
-	local vm = ply:GetViewModel()
 	if not IsValid(vm) then return end
+	local ply = self:GetOwner()
+	if not self:OwnerIsValid() or ply ~= LocalPlayer() then return end
 	if not CLIENT then return end
 	local ftv = math.max(FrameTime(), 0.001)
 	local viewbobintensity = viewbob_intensity_cvar:GetFloat() * 0.5
@@ -63,7 +63,7 @@ function SWEP:CalcViewModelView(vm,opos,oang,pos,ang)
 	oldpostmp = pos * 1
 	oldangtmp = ang * 1
 	if self.Idle_Mode == TFA.Enum.IDLE_LUA or self.Idle_Mode == TFA.Enum.IDLE_BOTH then
-		local bsc = l_Lerp(self.IronSightsProgress,  l_Lerp( math.min( self:GetOwner():GetVelocity():Length() / self:GetOwner():GetWalkSpeed(), 1 ),0,1), l_Lerp( math.min( self:GetOwner():GetVelocity():Length() / self:GetOwner():GetWalkSpeed(), 1 ), self:GetStat("IronBobMult") / 4, self:GetStat("IronBobMultWalk") / 4))
+		local bsc = l_Lerp(self.IronSightsProgress, l_Lerp(math.min(ply:GetVelocity():Length() / ply:GetWalkSpeed(), 1), 0, 1), l_Lerp(math.min(ply:GetVelocity():Length() / ply:GetWalkSpeed(), 1), self:GetStat("IronBobMult") / 4, self:GetStat("IronBobMultWalk") / 4))
 		bsc = l_Lerp(self.SprintProgress, bsc, self.SprintViewBobMult)
 		pos, ang = self:CalculateViewBob(pos, ang, viewbobintensity * bsc, ( 1 - self.SprintProgress ) * 0.6 + 0.4 )
 		if not ang or not pos then return oldangtmp, oldpostmp end

@@ -8,6 +8,8 @@ local version_string = "4.3.5.0"
 local changelog = [[
 	* Cancelling an empty reload on a closed bolt weapon will play the first deploy and cock the gun upon next draw
 	* Viewbob tweaks
+	* Fixed console spam with dropped weapons
+	* Added ability to disable door destruction (thanks to Ralph)
 ]]
 
 local function testFunc()

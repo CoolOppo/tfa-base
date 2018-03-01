@@ -41,6 +41,7 @@ if CLIENT then
 			sv_tfa_spread_multiplier = "1",
 			sv_tfa_bullet_penetration = "1",
 			sv_tfa_bullet_ricochet = "0",
+			sv_tfa_bullet_doordestruction = "1",
 			sv_tfa_reloads_legacy = "0",
 			sv_tfa_reloads_enabled = "1",
 			sv_tfa_cmenu = "1",
@@ -90,6 +91,11 @@ if CLIENT then
 		panel:AddControl("CheckBox", {
 			Label = "Enable Bullet Ricochet",
 			Command = "sv_tfa_bullet_ricochet"
+		})
+
+		panel:AddControl("CheckBox", {
+			Label = "Enable Bullet Door Destruction",
+			Command = "sv_tfa_bullet_doordestruction"
 		})
 
 		panel:AddControl("CheckBox", {
@@ -496,7 +502,7 @@ if CLIENT then
 			Label = "Use Inspection BokehDOF",
 			Command = "cl_tfa_inspection_bokeh"
 		})
-		
+
 		panel:AddControl("CheckBox", {
 			Label = "Use Legacy Shell-Ejection",
 			Command = "cl_tfa_legacy_shells"
