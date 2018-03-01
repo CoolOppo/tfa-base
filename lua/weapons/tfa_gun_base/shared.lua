@@ -457,6 +457,15 @@ function SWEP:Holster(target)
 	stat = self:GetStatus()
 
 	if not TFA.Enum.HolsterStatus[stat] then
+
+		if stat == TFA.GetStatus("reloading_wait") and self:Clip1() <= self:GetStat("Primary.ClipSize") and not self.DisableChambering then
+			self:ResetFirstDeploy()
+			if game.SinglePlayer() then
+				self:CallOnClient("ResetFirstDeploy","")
+			end
+			print("resetting first deploy")
+		end
+
 		success, tanim = self:ChooseHolsterAnim()
 
 		if IsFirstTimePredicted() then

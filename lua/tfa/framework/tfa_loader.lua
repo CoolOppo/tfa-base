@@ -3,10 +3,10 @@ if SERVER then AddCSLuaFile() end
 TFA = TFA or {}
 
 local do_load = true
-local version = 4.324
-local version_string = "4.3.4.0"
+local version = 4.325
+local version_string = "4.3.5.0"
 local changelog = [[
-	* More violent shell ejection; shell angle determined by eye angles
+	* Cancelling an empty reload on a closed bolt weapon will play the first deploy and cock the gun upon next draw
 	* Viewbob tweaks
 ]]
 

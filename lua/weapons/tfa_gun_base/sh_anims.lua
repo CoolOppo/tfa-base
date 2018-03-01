@@ -445,6 +445,11 @@ function SWEP:ChooseDrawAnim()
 	end
 end
 
+function SWEP:ResetFirstDeploy()
+	self.IsFirstDeploy = true
+	self.LastDeployAnim = math.huge
+end
+
 --[[
 Function Name:  ChooseInspectAnim
 Syntax: self:ChooseInspectAnim().
