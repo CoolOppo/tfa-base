@@ -48,30 +48,19 @@ local mzang_velocity = Angle()
 local progress = 0
 local targint,targbool
 
-function SWEP:CalcViewModelView(vm,opos,oang,pos,ang)
+function SWEP:CalcViewModelView(vm,oldPos,oldAng,pos,ang)
 	if not ang then return end
 	if not IsValid(vm) then return end
-	local ply = self:GetOwner()
-	if not self:OwnerIsValid() or ply ~= LocalPlayer() then return end
 	if not CLIENT then return end
-	local ftv = math.max(FrameTime(), 0.001)
 	local viewbobintensity = viewbob_intensity_cvar:GetFloat() * 0.5
-
-	holprog = TFA.Enum.HolsterStatus[self:GetStatus()] and 1 or 0
-	self.ViewHolProg = math.Approach(self.ViewHolProg, holprog, ftv / 5)
-
-	oldpostmp = pos * 1
-	oldangtmp = ang * 1
 	if self.Idle_Mode == TFA.Enum.IDLE_LUA or self.Idle_Mode == TFA.Enum.IDLE_BOTH then
-		local bsc = l_Lerp(self.IronSightsProgress, l_Lerp(math.min(ply:GetVelocity():Length() / ply:GetWalkSpeed(), 1), 0, 1), l_Lerp(math.min(ply:GetVelocity():Length() / ply:GetWalkSpeed(), 1), self:GetStat("IronBobMult") / 4, self:GetStat("IronBobMultWalk") / 4))
+		local bsc = l_Lerp(self.IronSightsProgress,  l_Lerp( math.min( self:GetOwner():GetVelocity():Length() / self:GetOwner():GetWalkSpeed(), 1 ),0,1), l_Lerp( math.min( self:GetOwner():GetVelocity():Length() / self:GetOwner():GetWalkSpeed(), 1 ), self:GetStat("IronBobMult") / 4, self:GetStat("IronBobMultWalk") / 4))
 		bsc = l_Lerp(self.SprintProgress, bsc, self.SprintViewBobMult)
 		pos, ang = self:CalculateViewBob(pos, ang, viewbobintensity * bsc, ( 1 - self.SprintProgress ) * 0.6 + 0.4 )
 		if not ang or not pos then return oldangtmp, oldpostmp end
 	end
-
-	return self:GetViewModelPosition( pos, LerpAngle(self.ViewHolProg, ang, oldangtmp) )
+	return self:GetViewModelPosition(pos, ang)
 end
-
 
 function SWEP:CalcView(ply, pos, ang, fov)
 	if not ang then return end
@@ -87,12 +76,6 @@ function SWEP:CalcView(ply, pos, ang, fov)
 
 	oldpostmp = pos * 1
 	oldangtmp = ang * 1
-	if self.Idle_Mode == TFA.Enum.IDLE_LUA or self.Idle_Mode == TFA.Enum.IDLE_BOTH then
-		local bsc = l_Lerp(self.IronSightsProgress,  l_Lerp( math.min( self:GetOwner():GetVelocity():Length() / self:GetOwner():GetWalkSpeed(), 1 ),0,1), l_Lerp( math.min( self:GetOwner():GetVelocity():Length() / self:GetOwner():GetWalkSpeed(), 1 ), self:GetStat("IronBobMult") / 4, self:GetStat("IronBobMultWalk") / 4))
-		bsc = l_Lerp(self.SprintProgress, bsc, self.SprintViewBobMult)
-		pos, ang = self:CalculateViewBob(pos, ang, viewbobintensity * bsc, ( 1 - self.SprintProgress ) * 0.6 + 0.4 )
-		if not ang or not pos then return oldangtmp, oldpostmp end
-	end
 
 	if self.CameraAngCache and viewbob_animated_cvar:GetBool() then
 		self.CameraAttachmentScale = self.CameraAttachmentScale or 1
@@ -118,7 +101,7 @@ function SWEP:CalcView(ply, pos, ang, fov)
 		targbool = targbool and not ( ihols and self.ProceduralHolsterEnabled )
 		targint = targbool and 1 or 0
 		if stat == TFA.Enum.STATUS_RELOADING_SHOTGUN_END or stat == TFA.Enum.STATUS_RELOADING or stat == TFA.GetStatus("pump") or ( stat == TFA.Enum.STATUS_RELOADING_WAIT and not self.Shotgun ) or stat == TFA.Enum.STATUS_SHOOTING or ( idraw and vb_d ) then
-			targint = math.min(targint, 1-math.pow( vm:GetCycle(), 2 ) )
+			targint = math.min(targint, 1-math.pow( math.max( vm:GetCycle()-0.5,0)*2, 2 ) )
 		end
 		progress = l_Lerp(ftv * 15, progress, targint)
 
@@ -165,5 +148,12 @@ function SWEP:CalcView(ply, pos, ang, fov)
 		ang:RotateAroundAxis(ang:Forward(), Lerp(progress, 0, self.ProceduralViewOffset.r / 3) * ints)
 	end
 
-	return pos, LerpAngle(self.ViewHolProg, ang, oldangtmp), fov
+	if self.Idle_Mode == TFA.Enum.IDLE_LUA or self.Idle_Mode == TFA.Enum.IDLE_BOTH then
+		local bsc = l_Lerp(self.IronSightsProgress,  l_Lerp( math.min( self:GetOwner():GetVelocity():Length() / self:GetOwner():GetWalkSpeed(), 1 ),0,1), l_Lerp( math.min( self:GetOwner():GetVelocity():Length() / self:GetOwner():GetWalkSpeed(), 1 ), self:GetStat("IronBobMult") / 4, self:GetStat("IronBobMultWalk") / 4))
+		bsc = l_Lerp(self.SprintProgress, bsc, self.SprintViewBobMult)
+		pos, ang = self:CalculateViewBob(pos, ang, viewbobintensity * bsc, ( 1 - self.SprintProgress ) * 0.6 + 0.4 )
+		if not ang or not pos then return oldangtmp, oldpostmp end
+	end
+
+	return pos, LerpAngle(math.pow(self.ViewHolProg,2), ang, oldangtmp), fov
 end

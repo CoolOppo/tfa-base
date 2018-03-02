@@ -165,7 +165,125 @@ function SWEP:CalculateViewModelOffset( )
 	self:DoBobFrame()
 
 end
+local target_pos,target_ang,adstransitionspeed, hls
+local flip_vec = Vector(-1,1,1)
+local flip_ang = Vector(1,-1,-1)
+local cl_tfa_viewmodel_offset_x
+local cl_tfa_viewmodel_offset_y,cl_tfa_viewmodel_offset_z, cl_tfa_viewmodel_centered, fovmod_add, fovmod_mult
+if CLIENT then
+	cl_tfa_viewmodel_offset_x = GetConVar("cl_tfa_viewmodel_offset_x")
+	cl_tfa_viewmodel_offset_y = GetConVar("cl_tfa_viewmodel_offset_y")
+	cl_tfa_viewmodel_offset_z = GetConVar("cl_tfa_viewmodel_offset_z")
+	cl_tfa_viewmodel_centered = GetConVar("cl_tfa_viewmodel_centered")
+	fovmod_add = GetConVar("cl_tfa_viewmodel_offset_fov")
+	fovmod_mult = GetConVar("cl_tfa_viewmodel_multiplier_fov")
+end
+target_pos = Vector()
+target_ang = Vector()
 
+local centered_sprintpos = Vector(0,-1,1)
+local centered_sprintang = Vector(-15,0,0)
+
+function SWEP:CalculateViewModelOffset( )
+	if self.Owner:IsNPC() then
+		return
+	end
+
+	if self:GetStat("VMPos_Additive") then
+		target_pos:Zero()
+		target_ang:Zero()
+	else
+		target_pos = self:GetStat( "VMPos" ) * 1
+		target_ang = self:GetStat( "VMAng" ) * 1
+	end
+
+	if cl_tfa_viewmodel_centered:GetBool() then
+		if self:GetStat("CenteredPos") then
+			target_pos.x = self:GetStat("CenteredPos").x
+			target_pos.y = self:GetStat("CenteredPos").y
+			target_pos.z = self:GetStat("CenteredPos").z
+			if self:GetStat("CenteredAng") then
+				target_ang.x = self:GetStat("CenteredAng").x
+				target_ang.y = self:GetStat("CenteredAng").y
+				target_ang.z = self:GetStat("CenteredAng").z
+			end
+		elseif self:GetStat("IronSightsPos") then
+			target_pos.x = self:GetStat("IronSightsPos").x
+			target_pos.z = target_pos.z - 3
+			if self:GetStat("IronSightsAng") then
+				target_ang:Zero()
+				target_ang.y = self:GetStat("IronSightsAng").y
+			end
+		end
+	end
+
+	adstransitionspeed = 10
+
+	is = self:GetIronSights()
+	spr = self:GetSprinting()
+	stat = self:GetStatus()
+	hls = ( TFA.Enum.HolsterStatus[ stat ] and self.ProceduralHolsterEnabled ) or ( TFA.Enum.ReloadStatus[ stat ] and self.ProceduralReloadEnabled )
+	if hls then
+		target_pos = self:GetStat( "ProceduralHolsterPos" ) * 1
+		target_ang = self:GetStat("ProceduralHolsterAng") * 1
+		if self.ViewModelFlip then
+			target_pos = target_pos * flip_vec
+			target_ang = target_ang * flip_ang
+		end
+		adstransitionspeed = self:GetStat("ProceduralHolsterTime") * 15
+	elseif is and ( self.Sights_Mode == TFA.Enum.LOCOMOTION_LUA or self.Sights_Mode == TFA.Enum.LOCOMOTION_HYBRID ) then
+		target_pos = ( self:GetStat("IronSightsPos", self.SightsPos ) or self:GetStat("SightsPos",vector_origin) ) * 1
+		target_ang = ( self:GetStat("IronSightsAng", self.SightsAng ) or self:GetStat("SightsAng",vector_origin) ) * 1
+		adstransitionspeed = 15 / ( self:GetStat("IronSightTime") / 0.3 )
+	elseif ( spr or self:IsSafety() ) and ( self.Sprint_Mode == TFA.Enum.LOCOMOTION_LUA or self.Sprint_Mode == TFA.Enum.LOCOMOTION_HYBRID or ( self:IsSafety() and not spr ) ) and stat ~= TFA.Enum.STATUS_FIDGET and stat ~= TFA.Enum.STATUS_BASHING then
+		if cl_tfa_viewmodel_centered and cl_tfa_viewmodel_centered:GetBool() then
+			target_pos = target_pos + centered_sprintpos
+			target_ang = target_ang + centered_sprintang
+		else
+			target_pos = self:GetStat("RunSightsPos") * 1
+			target_ang = self:GetStat("RunSightsAng") * 1
+		end
+		adstransitionspeed = 7.5
+	end
+	if cl_tfa_viewmodel_offset_x and not is then
+		target_pos.x = target_pos.x + cl_tfa_viewmodel_offset_x:GetFloat()
+		target_pos.y = target_pos.y + cl_tfa_viewmodel_offset_y:GetFloat()
+		target_pos.z = target_pos.z + cl_tfa_viewmodel_offset_z:GetFloat()
+	end
+
+	if self.Inspecting then
+		if not self.InspectPos then
+			self.InspectPos = self.InspectPosDef * 1
+
+			if self.ViewModelFlip then
+				self.InspectPos.x = self.InspectPos.x * -1
+			end
+		end
+
+		if not self.InspectAng then
+			self.InspectAng = self.InspectAngDef * 1
+
+			if self.ViewModelFlip then
+				self.InspectAng.x = self.InspectAngDef.x * 1
+				self.InspectAng.y = self.InspectAngDef.y * -1
+				self.InspectAng.z = self.InspectAngDef.z * -1
+			end
+		end
+
+		target_pos = self:GetStat("InspectPos") * 1
+		target_ang = self:GetStat("InspectAng") * 1
+		adstransitionspeed = 10
+	end
+
+	vm_offset_pos.x = math.Approach(vm_offset_pos.x,target_pos.x, (target_pos.x - vm_offset_pos.x) * ft * adstransitionspeed )
+	vm_offset_pos.y = math.Approach(vm_offset_pos.y,target_pos.y, (target_pos.y - vm_offset_pos.y) * ft * adstransitionspeed )
+	vm_offset_pos.z = math.Approach(vm_offset_pos.z,target_pos.z, (target_pos.z- vm_offset_pos.z) * ft * adstransitionspeed )
+
+	vm_offset_ang.p = math.ApproachAngle(vm_offset_ang.p,target_ang.x, math.AngleDifference( target_ang.x, vm_offset_ang.p ) * ft * adstransitionspeed )
+	vm_offset_ang.y = math.ApproachAngle(vm_offset_ang.y,target_ang.y, math.AngleDifference( target_ang.y, vm_offset_ang.y ) * ft * adstransitionspeed )
+	vm_offset_ang.r = math.ApproachAngle(vm_offset_ang.r,target_ang.z, math.AngleDifference( target_ang.z, vm_offset_ang.r ) * ft * adstransitionspeed )
+
+end
 
 --[[
 Function Name:  Sway
@@ -179,10 +297,13 @@ local oldang = Angle()
 local anga = Angle()
 local angb = Angle()
 local angc = Angle()
-local posfac = 0.75
+local posfac = 0
 local gunswaycvar = GetConVar("cl_tfa_gunbob_intensity")
 
 function SWEP:Sway(pos, ang)
+	if self.Owner:IsNPC() then
+		return
+	end
 	if not self:OwnerIsValid() then return pos, ang end
 	rft = (SysTime() - (self.LastSysT or SysTime())) * game.GetTimeScale()
 
@@ -202,7 +323,7 @@ function SWEP:Sway(pos, ang)
 	--rate = rate to restore our angle to the proper one
 	--fac = factor to multiply by
 	--each is interpolated from normal value to the ironsights value using iron sights ratio
-	local angrange = l_Lerp(self.IronSightsProgress, 7.5, 2.5) * gunswaycvar:GetFloat()
+	local angrange = l_Lerp(self.IronSightsProgress, 15, 2.5) * gunswaycvar:GetFloat()
 	local rate = l_Lerp(self.IronSightsProgress, 15, 30)
 	local fac = l_Lerp(self.IronSightsProgress, 0.6, 0.15)
 	--calculate angle differences
@@ -237,27 +358,34 @@ function SWEP:Sway(pos, ang)
 	--finally, blend it into the angle
 	ang:RotateAroundAxis(oldang:Up(), angc.y * 15 * (self.ViewModelFlip and -1 or 1) * fac)
 	ang:RotateAroundAxis(oldang:Right(), angc.p * 15 * fac)
-	ang:RotateAroundAxis(oldang:Forward(), angc.y * 10 * fac)
-	pos:Add(oldang:Right() * angc.y * posfac)
+	ang:RotateAroundAxis(oldang:Forward(), angc.y * 10 * fac * (self.ViewModelFlip and -1 or 1))
+	pos:Add(oldang:Right() * angc.y * posfac * (self.ViewModelFlip and -1 or 1))
 	pos:Add(oldang:Up() * -angc.p * posfac)
+	--extras
+	pos:Add( oldang:Up() * math.sin( math.rad(angc.p) ) * -75 )
+	pos:Add( oldang:Right() * math.sin( math.rad(angc.y) ) * 75  * (self.ViewModelFlip and -1 or 1) )
 
 	return pos, util_NormalizeAngles(ang)
 end
 
 local gunbob_intensity_cvar = GetConVar("cl_tfa_gunbob_intensity")
 local vmfov
+local bbvec
 
 function SWEP:GetViewModelPosition( pos, ang )
-	--Bobscale
-	self.BobScaleCustom = l_Lerp(self.IronSightsProgress, 1, l_Lerp( math.min( self:GetOwner():GetVelocity():Length() / self:GetOwner():GetWalkSpeed(), 1 ), self.IronBobMult, self.IronBobMultWalk))
-	self.BobScaleCustom = l_Lerp(self.SprintProgress, self.BobScaleCustom, self.SprintBobMult)
-	--Start viewbob code
-	local gunbobintensity = gunbob_intensity_cvar:GetFloat() * 0.65 * 0.66
-	if self.Idle_Mode == TFA.Enum.IDLE_LUA or self.Idle_Mode == TFA.Enum.IDLE_BOTH then
-		pos, ang = self:CalculateBob(pos, ang, gunbobintensity)
+	if self.Owner:IsNPC() then
+		return
 	end
-	--local qerp1 = l_Lerp( self.IronSightsProgress, 0, self.ViewModelFlip and 1 or -1) * 10
-	if not ang then return end
+	if not IsValid(self:GetOwner()) then return end
+	--Bobscale
+	if self.Sprint_Mode == TFA.Enum.LOCOMOTION_ANI then
+		self.SprintBobMult = 0
+	end
+	self.BobScaleCustom = l_Lerp(self.IronSightsProgress, l_Lerp( math.min( self:GetOwner():GetVelocity():Length() / self:GetOwner():GetWalkSpeed(), 1 ),0.2,0.4), l_Lerp( math.min( self:GetOwner():GetVelocity():Length() / self:GetOwner():GetWalkSpeed(), 1 ), self:GetStat("IronBobMult") / 4, self:GetStat("IronBobMultWalk") / 4))
+	self.BobScaleCustom = l_Lerp(self.SprintProgress, self.BobScaleCustom, self.SprintBobMult )
+	--Start viewbob code
+	local gunbobintensity = gunbob_intensity_cvar:GetFloat()
+	if not ang then ang = EyeAngles() end
 	--ang:RotateAroundAxis(ang:Forward(), -Qerp(self.IronSightsProgress and self.IronSightsProgress or 0, qerp1, 0))
 	--End viewbob code
 
@@ -265,16 +393,18 @@ function SWEP:GetViewModelPosition( pos, ang )
 		self.ogviewmodelfov = self.ViewModelFOV
 	end
 
-	vmfov = self.ogviewmodelfov * fovmod_mult:GetFloat()
-	vmfov = vmfov + fovmod_add:GetFloat()
+	vmfov = l_Lerp( self.IronSightsProgress, self.ogviewmodelfov * fovmod_mult:GetFloat(), self.ogviewmodelfov )
+	vmfov = l_Lerp( self.IronSightsProgress, vmfov + fovmod_add:GetFloat(), vmfov )
 	self.ViewModelFOV = vmfov
 
-	pos:Add(ang:Right() * self.VMPos.x)
-	pos:Add(ang:Forward() * self.VMPos.y)
-	pos:Add(ang:Up() * self.VMPos.z)
-	ang:RotateAroundAxis(ang:Right(), self.VMAng.x)
-	ang:RotateAroundAxis(ang:Up(), self.VMAng.y)
-	ang:RotateAroundAxis(ang:Forward(), self.VMAng.z)
+	if self:GetStat("VMPos_Additive") then
+		pos:Add(ang:Right() * self.VMPos.x)
+		pos:Add(ang:Forward() * self.VMPos.y)
+		pos:Add(ang:Up() * self.VMPos.z)
+		ang:RotateAroundAxis(ang:Right(), self.VMAng.x)
+		ang:RotateAroundAxis(ang:Up(), self.VMAng.y)
+		ang:RotateAroundAxis(ang:Forward(), self.VMAng.z)
+	end
 
 	pos, ang = self:Sway(pos, ang)
 	ang:RotateAroundAxis(ang:Right(), vm_offset_ang.p)
@@ -290,14 +420,19 @@ function SWEP:GetViewModelPosition( pos, ang )
 
 	if self.BlowbackEnabled and self.BlowbackCurrentRoot > 0.01 then
 		--if !(  self.Blowback_PistolMode and !( self:Clip1()==-1 or self:Clip1()>0 ) ) then
-		pos:Add(ang:Right() * self.BlowbackVector.x * self.BlowbackCurrentRoot)
-		pos:Add(ang:Forward() * self.BlowbackVector.y * self.BlowbackCurrentRoot)
-		pos:Add(ang:Up() * self.BlowbackVector.z * self.BlowbackCurrentRoot)
+		bbvec = self:GetStat("BlowbackVector")
+		pos:Add(ang:Right() * bbvec.x * self.BlowbackCurrentRoot)
+		pos:Add(ang:Forward() * bbvec.y * self.BlowbackCurrentRoot)
+		pos:Add(ang:Up() * bbvec.z * self.BlowbackCurrentRoot)
 		--end
 	end
 
+	if self.Idle_Mode == TFA.Enum.IDLE_LUA or self.Idle_Mode == TFA.Enum.IDLE_BOTH then
+		pos, ang = self:CalculateBob(pos, ang, gunbobintensity * self.BobScaleCustom * 0.5, math.min( math.max( 0.25, math.sqrt( self:GetOwner():GetVelocity():Length2D() / self:GetOwner():GetRunSpeed() ) * 1.75 ), self:GetSprinting() and 5 or 3) )
+	end
+
 	if self:GetHidden() then
-		pos.z = -10000
+		pos = pos - ang:Up() * 5
 	end
 
 	return pos, ang

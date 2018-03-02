@@ -3,13 +3,14 @@ if SERVER then AddCSLuaFile() end
 TFA = TFA or {}
 
 local do_load = true
-local version = 4.325
-local version_string = "4.3.5.0"
+local version = 4.3251
+local version_string = "4.3.5.1"
 local changelog = [[
 	* Cancelling an empty reload on a closed bolt weapon will play the first deploy and cock the gun upon next draw
 	* Viewbob tweaks
 	* Fixed console spam with dropped weapons
 	* Added ability to disable door destruction (thanks to Ralph)
+	* Fixed weapon bounce in new viewbob, increased intensity, smooth eye focus
 ]]
 
 local function testFunc()

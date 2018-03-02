@@ -2,6 +2,9 @@
 SWEP.ti = 0
 SWEP.LastCalcBob = 0
 
+SWEP.tiView = 0
+SWEP.LastCalcViewBob = 0
+
 local rate_up = 12
 local scale_up = 0.3
 local rate_right = 6
@@ -44,6 +47,7 @@ function SWEP:CalculateBob(pos, ang, intensity, rate )
 	local flip_v =  self.ViewModelFlip and -1 or 1
 	delta = delta * game.GetTimeScale()
 	self.LastCalcBob = SysTime()
+	self.bobRateCached = rate
 
 	self.ti = self.ti + delta * rate
 
@@ -104,23 +108,36 @@ function SWEP:CalculateBob(pos, ang, intensity, rate )
 	return pos, ang
 end
 
+SWEP.BobEyeFocus = 512
+
 function SWEP:CalculateViewBob( pos, ang, intensity, compensate )
 	if not self:OwnerIsValid() then return end
 	local up = ang:Up()
 	local ri = ang:Right()
 	local opos = pos * 1
 	local ldist = self:GetOwner():GetEyeTraceNoCursor().HitPos:Distance(pos)
+	local delta = math.min( SysTime() - self.LastCalcViewBob, FrameTime() )
+	if sv_cheats_cv:GetBool() then
+		delta = delta * host_timescale_cv:GetFloat()
+	end
+	local flip_v =  self.ViewModelFlip and -1 or 1
+	delta = delta * game.GetTimeScale()
+	self.LastCalcViewBob = SysTime()
+	local rate = self.bobRateCached or 0
+	self.tiView = self.tiView + delta * rate
 	if ldist <= 0 then
 		local e = self:GetOwner():GetEyeTraceNoCursor().Entity
 		if not ( IsValid(e) and not e:IsWorld() ) then e=nil end
 		ldist = util.QuickTrace( pos, ang:Forward() * 999999, { self:GetOwner(), e } ).HitPos:Distance( pos )
 	end
-	pos:Add( up * math.sin( ( self.ti + 0.5 ) * rate_up ) * scale_up * intensity * -3 )
-	pos:Add( ri * math.sin( ( self.ti + 0.5 ) * rate_right ) * scale_right * intensity * -3 )
+	self.BobEyeFocus = math.Approach( self.BobEyeFocus, ldist, (ldist-self.BobEyeFocus) * delta * 10 )
+	pos:Add( up * math.sin( ( self.tiView + 0.5 ) * rate_up ) * scale_up * intensity * -7 )
+	pos:Add( ri * math.sin( ( self.tiView + 0.5 ) * rate_right ) * scale_right * intensity * -7 )
 
 	--ang = ang + vpa
 
-	local tpos = opos + ldist * ang:Forward()
+	local tpos = opos + self.BobEyeFocus * ang:Forward()
+	print(self.BobEyeFocus)
 	local oang = ang * 1
 	local nang = (tpos - pos):GetNormalized():Angle()
 	ang:Normalize()
