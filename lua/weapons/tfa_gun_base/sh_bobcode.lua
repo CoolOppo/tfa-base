@@ -137,7 +137,6 @@ function SWEP:CalculateViewBob( pos, ang, intensity, compensate )
 	--ang = ang + vpa
 
 	local tpos = opos + self.BobEyeFocus * ang:Forward()
-	print(self.BobEyeFocus)
 	local oang = ang * 1
 	local nang = (tpos - pos):GetNormalized():Angle()
 	ang:Normalize()
