@@ -510,7 +510,6 @@ function SWEP:Holster(target)
 			if game.SinglePlayer() then
 				self:CallOnClient("ResetFirstDeploy","")
 			end
-			print("resetting first deploy")
 		end
 
 		success, tanim = self:ChooseHolsterAnim()
