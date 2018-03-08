@@ -23,7 +23,7 @@ function SWEP:PCFTracer( bul, hitpos, ovrride )
 end
 
 function SWEP:EventShell()
-	if SERVER then
+	if SERVER and not game.SinglePlayer() then
 		net.Start( "tfaBaseShellSV" )
 		net.WriteEntity(self)
 		net.SendOmit(self:GetOwner())

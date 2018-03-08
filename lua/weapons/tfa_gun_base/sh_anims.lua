@@ -728,7 +728,7 @@ function SWEP:ChooseShootAnim(ifp)
 	if not self.BlowbackEnabled or (not self:GetIronSights() and self.Blowback_Only_Iron) then
 		success = true
 
-		if self.LuaShellEject and ifp then
+		if self.LuaShellEject and ( ifp or game.SinglePlayer() ) then
 			self:EventShell()
 		end
 
@@ -759,8 +759,10 @@ function SWEP:ChooseShootAnim(ifp)
 		end
 
 		if ifp then
-			self:EventShell()
 			self:BlowbackFull(ifp)
+		end
+		if ifp or game.SinglePlayer() then
+			self:EventShell()
 		end
 
 		self:SendViewModelAnim(ACT_VM_BLOWBACK)
