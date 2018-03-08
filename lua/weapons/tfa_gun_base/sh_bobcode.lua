@@ -116,7 +116,7 @@ function SWEP:CalculateViewBob( pos, ang, intensity, compensate )
 	local ri = ang:Right()
 	local opos = pos * 1
 	local ldist = self:GetOwner():GetEyeTraceNoCursor().HitPos:Distance(pos)
-	local delta = math.min( SysTime() - self.LastCalcViewBob, FrameTime() )
+	local delta = math.min( SysTime() - self.LastCalcViewBob, FrameTime(), 1/30 )
 	if sv_cheats_cv:GetBool() then
 		delta = delta * host_timescale_cv:GetFloat()
 	end
@@ -141,7 +141,7 @@ function SWEP:CalculateViewBob( pos, ang, intensity, compensate )
 	local nang = (tpos - pos):GetNormalized():Angle()
 	ang:Normalize()
 	nang:Normalize()
-	local vfac = math.Clamp( 1 - math.pow( math.abs( oang.p ) / 90, 3  ), 0, 1 )  *compensate
+	local vfac = math.Clamp( 1 - math.pow( math.abs( oang.p ) / 90, 3  ), 0, 1 ) * (math.Clamp( ldist/196,0,1)*0.7+0.3) * compensate
 	ang.y = ang.y - math.Clamp( math.AngleDifference(ang.y,nang.y), -2, 2 ) * vfac
 	ang.p = ang.p - math.Clamp( math.AngleDifference(ang.p,nang.p), -2, 2 ) * vfac
 	--ang:Normalize()
