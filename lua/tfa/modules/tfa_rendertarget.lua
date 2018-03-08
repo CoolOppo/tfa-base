@@ -179,16 +179,4 @@ if CLIENT then
 		end
 	end)
 	TFA.RT_DRAWING = false
-	hook.Add("PreDrawViewModel", "TFASCREENS", function()
-		--[[
-		if not TFA_RT_DRAWING then
-			TFA_RT_DRAWING = true
-			TFARenderScreen()
-			TFA_RT_DRAWING = false
-		end
-		]]--
-	end)
-	hook.Add("RenderScene", "TFASCREENS", function()
-	end)
-	--hook.Add("RenderScene", "TFASCREENS", TFARenderScreen)
 end

@@ -41,7 +41,7 @@ Purpose:  SWEP Construction Kit Compatibility / Basic Attachments.
 ]]--
 function SWEP:PreDrawViewModel( vm, wep, ply )
 	self:ProcessBodygroups()
-	vm:SetupBones()
+	--vm:SetupBones()
 	if self:GetHidden() then
 		render.SetBlend(0)
 	end
@@ -202,6 +202,10 @@ function SWEP:ViewModelDrawn()
 					model:SetParent(self.OwnerViewModel or self)
 					if not model:IsEffectActive(EF_BONEMERGE) then
 						v.curmodel:AddEffects(EF_BONEMERGE)
+						v.curmodel:AddEffects(EF_BONEMERGE_FASTCULL)
+						v.curmodel:SetMoveType( MOVETYPE_NONE )
+						v.curmodel:SetPos( Vector( 0, 0, 0 ) )
+						v.curmodel:SetAngles( Angle( 0, 0, 0 ) )
 					end
 				elseif model:IsEffectActive(EF_BONEMERGE) then
 					model:RemoveEffects(EF_BONEMERGE)
