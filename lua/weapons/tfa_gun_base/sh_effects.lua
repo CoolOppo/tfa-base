@@ -33,6 +33,7 @@ function SWEP:EventShell()
 end
 
 function SWEP:MakeShellBridge(ifp)
+	if game.SinglePlayer() and CLIENT then return end
 	if ifp then
 		if self.LuaShellEjectDelay > 0 then
 			self.LuaShellRequestTime = CurTime() + self.LuaShellEjectDelay / self:NZAnimationSpeed( ACT_VM_PRIMARYATTACK )
