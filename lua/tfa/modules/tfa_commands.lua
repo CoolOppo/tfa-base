@@ -282,7 +282,7 @@ if CLIENT then
 	end,"3DScopeEnabledCB")
 
 	if GetConVar("cl_tfa_scope_sensitivity_3d") == nil then
-		CreateClientConVar("cl_tfa_scope_sensitivity_3d", 1, true, true) --0 = no sensitivity mod, 1 = scaled to 2D sensitivity, 2 = compensated, 3 = RT FOV compensated
+		CreateClientConVar("cl_tfa_scope_sensitivity_3d", 2, true, true) --0 = no sensitivity mod, 1 = scaled to 2D sensitivity, 2 = compensated, 3 = RT FOV compensated
 	else
 		cvars.RemoveChangeCallback( "cl_tfa_scope_sensitivity_3d", "3DScopeModeCB" )
 	end

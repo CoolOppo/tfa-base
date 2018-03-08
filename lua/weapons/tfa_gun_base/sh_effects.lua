@@ -28,7 +28,6 @@ function SWEP:EventShell()
 		net.WriteEntity(self)
 		net.SendOmit(self:GetOwner())
 	else
-		self:EjectionSmoke(true)
 		self:MakeShellBridge(true)
 	end
 end
@@ -46,7 +45,6 @@ end
 SWEP.ShellEffectOverride = nil
 
 function SWEP:MakeShell()
-
 	if self.ShellEffectOverride then
 		shelltype = self.ShellEffectOverride
 	elseif TFA.GetLegacyShellsEnabled() then
@@ -55,14 +53,13 @@ function SWEP:MakeShell()
 		shelltype = "tfa_shell"
 	end
 
-	if IsValid(self) and self:VMIV() then
-		local vm = (not self:GetOwner().ShouldDrawLocalPlayer or self:GetOwner():ShouldDrawLocalPlayer()) and self.OwnerViewModel or self
-
+	if IsValid(self) then
+		self:EjectionSmoke(true)
+		local vm = ( (CLIENT and self:GetOwner()~=LocalPlayer()) or ( self:GetOwner().ShouldDrawLocalPlayer and self:GetOwner():ShouldDrawLocalPlayer() ) ) and self or self.OwnerViewModel 
 		if type(shelltype) ~= "string" or shelltype == "" then return end -- allows to disable shells by setting override to "" - will shut up all rp fags
-
 		if IsValid(vm) then
 			fx = EffectData()
-			local attid = vm:LookupAttachment(self.ShellAttachment)
+			local attid = vm:LookupAttachment(self:GetStat("ShellAttachment"))
 			if self.Akimbo then
 				attid = 3 + self.AnimCycle
 			end
@@ -122,8 +119,8 @@ Notes:    Puff of smoke on shell attachment.
 Purpose:  FX
 ]]--
 function SWEP:EjectionSmoke( ovrr )
-	if TFA.GetEJSmokeEnabled() and ( self.EjectionSmokeEnabled or ovrr ) then
-		local vm = self.OwnerViewModel
+	if TFA.GetEJSmokeEnabled() and ( self:GetStat("EjectionSmokeEnabled") or ovrr ) then
+		local vm = self:IsFirstPerson() and self.OwnerViewModel or self
 
 		if IsValid(vm) then
 			local att = vm:LookupAttachment(self.ShellAttachment)

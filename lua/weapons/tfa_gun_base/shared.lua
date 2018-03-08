@@ -672,7 +672,6 @@ function SWEP:Think2()
 	if self.LuaShellRequestTime > 0 and CurTime() > self.LuaShellRequestTime then
 		self.LuaShellRequestTime = -1
 		self:MakeShell()
-		self:EjectionSmoke()
 	end
 
 	if not self.HasInitialized then
@@ -1246,7 +1245,7 @@ function SWEP:PrimaryAttack()
 		self:ShootEffectsCustom()
 	end
 
-	if self.EjectionSmoke and IsFirstTimePredicted() and not (self.LuaShellEject and self.LuaShellEjectDelay > 0) then
+	if self.EjectionSmoke and CLIENT and self:GetOwner()==LocalPlayer() and IsFirstTimePredicted() and not self.LuaShellEject then
 		self:EjectionSmoke()
 	end
 	self:DoAmmoCheck()

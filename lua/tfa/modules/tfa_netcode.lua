@@ -92,7 +92,6 @@ if CLIENT then
 
 		if IsValid(wep) and wep.MakeShellBridge then
 			wep:MakeShellBridge(true)
-			wep:EjectionSmoke(true)
 		end
 	end)
 

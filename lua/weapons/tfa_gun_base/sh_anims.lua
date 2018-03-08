@@ -718,8 +718,8 @@ function SWEP:ChooseShootAnim(ifp)
 	if not self:VMIV() then return end
 
 	if self:GetIronSights() and ( self.Sights_Mode == TFA.Enum.LOCOMOTION_ANI or self.Sights_Mode == TFA.Enum.LOCOMOTION_HYBRID ) and self:GetStat("IronAnimation.shoot") then
-		if self.LuaShellEject then
-			self:MakeShellBridge(ifp)
+		if self.LuaShellEject and ifp then
+			self:EventShell()
 		end
 
 		return self:PlayAnimation(self:GetStat("IronAnimation.shoot"))
@@ -728,8 +728,8 @@ function SWEP:ChooseShootAnim(ifp)
 	if not self.BlowbackEnabled or (not self:GetIronSights() and self.Blowback_Only_Iron) then
 		success = true
 
-		if self.LuaShellEject then
-			self:MakeShellBridge(ifp)
+		if self.LuaShellEject and ifp then
+			self:EventShell()
 		end
 
 		if self:GetActivityEnabled( ACT_VM_PRIMARYATTACK_SILENCED ) and self:GetSilenced() then
@@ -759,10 +759,10 @@ function SWEP:ChooseShootAnim(ifp)
 		end
 
 		if ifp then
+			self:EventShell()
 			self:BlowbackFull(ifp)
 		end
 
-		self:MakeShellBridge(ifp)
 		self:SendViewModelAnim(ACT_VM_BLOWBACK)
 
 		return true, ACT_VM_IDLE
