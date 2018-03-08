@@ -3,7 +3,7 @@ if SERVER then AddCSLuaFile() end
 TFA = TFA or {}
 
 local do_load = true
-local version = 4.3251
+local version = 4.351
 local version_string = "4.3.5.1"
 local changelog = [[
 	* Cancelling an empty reload on a closed bolt weapon will play the first deploy and cock the gun upon next draw
