@@ -179,4 +179,23 @@ if CLIENT then
 		end
 	end)
 	TFA.RT_DRAWING = false
+
+	local rt_res_tbl = { [0] = 2048, [1] = 1024, [2] = 512, [3] = 512 } -- this duplicate 512x is not my error you can look above yourself
+	local cv_rt = GetConVar("cl_tfa_3dscope_quality")
+
+	local function checkConVar()
+		if not cv_rt then cv_rt = GetConVar("cl_tfa_3dscope_quality") end
+
+		if cv_rt:GetInt() < 0 then return end -- it's set to autodetect already
+
+		local res = rt_res_tbl[math.Clamp(cv_rt:GetInt(), 0, 3)]
+
+		if res and (ScrW() < res or ScrH() < res) then
+			print("[TFA Base] Your screen resolution is too low for selected RT scope resolution, reverting to auto-detect.")
+			cv_rt:SetInt(-1)
+		end
+	end
+
+	hook.Add("InitPostEntity", "TFA_RT_ResolutionEnforcer", checkConVar)
+	cvars.AddChangeCallback("cl_tfa_3dscope_quality", checkConVar, "TFA_RT_ResolutionEnforcer")
 end
