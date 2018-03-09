@@ -180,7 +180,7 @@ if CLIENT then
 	end)
 	TFA.RT_DRAWING = false
 
-	local rt_res_tbl = { [0] = 2048, [1] = 1024, [2] = 512, [3] = 256 } -- this duplicate 512x is not my error you can look above yourself
+	local rt_res_tbl = { [0] = 2048, [1] = 1024, [2] = 512, [3] = 256 } 
 	local cv_rt = GetConVar("cl_tfa_3dscope_quality")
 
 	local function checkConVar()
