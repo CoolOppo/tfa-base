@@ -55,3 +55,15 @@ matproxy.Add( {
 	end
 } )
 
+matproxy.Add({
+	name = "TFA_RTScope",
+	init = function(self, mat, values)
+		self.RTMaterial = Material("!tfa_rtmaterial")
+	end,
+	bind = function(self, mat, ent)
+		if not self.RTMaterial then
+			self.RTMaterial = Material("!tfa_rtmaterial")
+		end
+		mat:SetTexture("$basetexture", self.RTMaterial:GetTexture("$basetexture"))
+	end
+})
