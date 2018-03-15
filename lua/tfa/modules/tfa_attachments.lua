@@ -29,10 +29,14 @@ if SERVER then
 
 	net.Receive("TFA_Attachment_RequestAll", function( len, ply )
 		if IsValid(ply) then
-			for k,v in pairs( ents.GetAll() ) do
-				if v:IsWeapon() and v.IsTFAWeapon then
-					UpdateWeapon( v, ply )
+			if not ply.TFA_RequestAll then
+				for k,v in pairs( ents.GetAll() ) do
+					if v:IsWeapon() and v.IsTFAWeapon then
+						UpdateWeapon( v, ply )
+					end
 				end
+
+				ply.TFA_RequestAll = true
 			end
 		end
 	end)
