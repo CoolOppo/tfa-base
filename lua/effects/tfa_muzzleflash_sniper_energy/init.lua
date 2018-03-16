@@ -39,7 +39,7 @@ function EFFECT:Init(data)
 	self.vOffset = self.Position
 	dir = self.Forward
 	AddVel = AddVel * 0.05
-	local dot = dir:GetNormalized():Dot(EyeAngles():Forward())
+	local dot = dir:GetNormalized():Dot(GetViewEntity():EyeAngles():Forward())
 	local dotang = math.deg(math.acos(math.abs(dot)))
 	local halofac = math.Clamp(1 - (dotang / 90), 0, 1)
 

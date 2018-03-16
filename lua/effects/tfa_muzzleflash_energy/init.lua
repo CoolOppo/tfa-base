@@ -55,7 +55,7 @@ function EFFECT:Init(data)
 
 	ParticleEffectAttach("tfa_muzzle_energy", PATTACH_POINT_FOLLOW, self.WeaponEnt, data:GetAttachment())
 	--[[
-	local dot = dir:GetNormalized():Dot(EyeAngles():Forward())
+	local dot = dir:GetNormalized():Dot(GetViewEntity():EyeAngles():Forward())
 	local dotang = math.deg(math.acos(math.abs(dot)))
 	local halofac = math.Clamp(1 - (dotang / 90), 0, 1)
 	local emitter = ParticleEmitter( self.vOffset )

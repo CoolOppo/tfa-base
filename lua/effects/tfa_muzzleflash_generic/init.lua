@@ -1,78 +1,48 @@
-local function rvec(vec)
-	vec.x = math.Round(vec.x)
-	vec.y = math.Round(vec.y)
-	vec.z = math.Round(vec.z)
 
-	return vec
-end
-
-local blankvec = Vector(0, 0, 0)
+local AddVel = Vector()
+local ang
 
 function EFFECT:Init(data)
-	self.StartPacket = data:GetStart()
+	self.WeaponEnt = data:GetEntity()
+	if not IsValid(self.WeaponEnt) then return end
 	self.Attachment = data:GetAttachment()
-	local AddVel = vector_origin
+	self.Position = self:GetTracerShootPos(data:GetOrigin(), self.WeaponEnt, self.Attachment)
 
-	if LocalPlayer and LocalPlayer():IsValid() then
-		AddVel = LocalPlayer():GetVelocity()
-	end
-
-	if game.SinglePlayer() then
-		AddVel = Entity(1):GetVelocity()
-	end
-
-	self.Position = data:GetOrigin()
-	self.Forward = data:GetNormal()
-	self.Angle = self.Forward:Angle()
-	self.Right = self.Angle:Right()
-	local wepent = Entity(math.Round(self.StartPacket.z))
-	local ownerent = player.GetByID(math.Round(self.StartPacket.x))
-	local serverside = false
-
-	if math.Round(self.StartPacket.y) == 1 then
-		serverside = true
-	end
-
-	if IsValid(wepent) and (wepent.IsFirstPerson and not wepent:IsFirstPerson()) or serverside then
-		data:SetEntity(wepent)
-		self.Position = blankvec
-	end
-
-	--[[
-	self.Forward = ownerent:EyeAngles():Forward()
-	self.Angle = self.Forward:Angle()
-	self.Right = self.Angle:Right()
-	]]--
-	if serverside and IsValid(ownerent) then
-		if LocalPlayer() == ownerent then return end
-		AddVel = ownerent:GetVelocity()
-	end
-
-	if (not self.Position) or (rvec(self.Position) == blankvec) then
-		self.WeaponEnt = data:GetEntity()
-		self.Attachment = data:GetAttachment()
-
-		if self.WeaponEnt and IsValid(self.WeaponEnt) then
-			local rpos = self.WeaponEnt:GetAttachment(self.Attachment)
-
-			if rpos and rpos.Pos then
-				self.Position = rpos.Pos
-
-				if data:GetNormal() == vector_origin then
-					self.Forward = rpos.Ang:Up()
-					self.Angle = self.Forward:Angle()
-					self.Right = self.Angle:Right()
-				end
+	if IsValid(self.WeaponEnt:GetOwner()) then
+		if self.WeaponEnt:GetOwner() == LocalPlayer() then
+			if self.WeaponEnt:GetOwner():ShouldDrawLocalPlayer() then
+				ang = self.WeaponEnt:GetOwner():EyeAngles()
+				ang:Normalize()
+				--ang.p = math.max(math.min(ang.p,55),-55)
+				self.Forward = ang:Forward()
+			else
+				self.WeaponEnt = self.WeaponEnt:GetOwner():GetViewModel()
 			end
+			--ang.p = math.max(math.min(ang.p,55),-55)
+		else
+			ang = self.WeaponEnt:GetOwner():EyeAngles()
+			ang:Normalize()
+			self.Forward = ang:Forward()
 		end
+	end
+
+	self.Forward = self.Forward or data:GetNormal()
+	self.Angle = self.Forward:Angle()
+	self.Right = self.Angle:Right()
+	self.vOffset = self.Position
+	dir = self.Forward
+
+	if LocalPlayer():IsValid() then
+		AddVel = LocalPlayer():GetVelocity()
 	end
 
 	self.vOffset = self.Position
 	dir = self.Forward
 	AddVel = AddVel * 0.05
-	local dot = dir:GetNormalized():Dot(EyeAngles():Forward())
+	local dot = dir:GetNormalized():Dot(GetViewEntity():EyeAngles():Forward())
 	local dotang = math.deg(math.acos(math.abs(dot)))
-	local halofac = math.Clamp(1 - (dotang / 90), 0, 1)
+	local halofac = math.abs(dot)
+	local epos = ownerent:GetShootPos()
 
 	if CLIENT and not IsValid(ownerent) then
 		ownerent = LocalPlayer()
@@ -81,54 +51,134 @@ function EFFECT:Init(data)
 	local dlight = DynamicLight(ownerent:EntIndex())
 
 	if (dlight) then
-		dlight.pos = self.vOffset - ownerent:EyeAngles():Right() * 5 + 1.05 * ownerent:GetVelocity() * FrameTime()
+		dlight.pos = epos + ownerent:EyeAngles():Forward() * self.vOffset:Distance(epos) + 1.05 * ownerent:GetVelocity() * FrameTime()--self.vOffset - ownerent:EyeAngles():Right() * 5 + 1.05 * ownerent:GetVelocity() * FrameTime()
 		dlight.r = 255
 		dlight.g = 192
 		dlight.b = 64
-		dlight.brightness = 4
-		dlight.Decay = 1750
+		dlight.brightness = 4.5
+		dlight.Decay = 500
 		dlight.Size = 128
-		dlight.DieTime = CurTime() + 0.3
+		dlight.DieTime = CurTime() + 0.2
 	end
 
 	local emitter = ParticleEmitter(self.vOffset)
+	local sval = 1-math.random(0,1)*2
 
-	for i = 0, 4 do
-		local particle = emitter:Add("effects/scotchmuzzleflash" .. math.random(1, 4), self.vOffset)
+	if self.WeaponEnt.XTick == nil then
+		self.WeaponEnt.XTick = 0
+	end
+
+	self.WeaponEnt.XTick = 1 - self.WeaponEnt.XTick
+
+	if self.WeaponEnt.XTick == 1 then
+		local particle = emitter:Add("effects/muzzleflashX_nemole", self.vOffset)
 
 		if (particle) then
 			particle:SetVelocity(dir * 4 + 1.05 * AddVel)
 			particle:SetLifeTime(0)
 			particle:SetDieTime(0.1)
-			particle:SetStartAlpha(math.Rand(225, 255))
+			particle:SetStartAlpha(math.Rand(200, 255))
 			particle:SetEndAlpha(0)
-			particle:SetStartSize(7.5 * (halofac * 0.8 + 0.2), 0, 1)
-			particle:SetEndSize(0)
-			local r = math.Rand(-180, 180) * 3.14 / 180
+			--particle:SetStartSize( 8 * (halofac*0.8+0.2), 0, 1)
+			--particle:SetEndSize( 0 )
+			particle:SetStartSize(2 * (halofac * 0.8 + 0.2), 0, 1)
+			particle:SetEndSize(4 * (halofac * 0.8 + 0.2), 0, 1)
+			local r = math.Rand(-10, 10) * 3.14 / 180
 			particle:SetRoll(r)
-			particle:SetRollDelta(math.sqrt(math.Clamp(r, -90, 90)) / 9)
-			particle:SetColor(255, 218, 97)
+			particle:SetRollDelta(r / 5)
+			particle:SetColor(255, 255, 255)
 			particle:SetLighting(false)
 			particle.FollowEnt = self.WeaponEnt
 			particle.Att = self.Attachment
 			TFARegPartThink(particle, TFAMuzzlePartFunc)
+			particle:SetPos(vector_origin)
 		end
-	end
-
-	for i = 0, 4 do
-		local particle = emitter:Add("particles/flamelet" .. math.random(1, 5), self.vOffset + (dir * 0.8 * i))
+		--particle:SetStartSize( 8 * (halofac*0.8+0.2), 0, 1)
+		--particle:SetEndSize( 0 )
+	else
+		local particle = emitter:Add("effects/muzzleflashX_nemole", self.vOffset)
 
 		if (particle) then
-			particle:SetVelocity((dir * 6 * i) + 1.05 * AddVel)
+			particle:SetVelocity(dir * 4 + 1.05 * AddVel)
 			particle:SetLifeTime(0)
 			particle:SetDieTime(0.1)
 			particle:SetStartAlpha(math.Rand(200, 255))
 			particle:SetEndAlpha(0)
-			particle:SetStartSize(math.max(3.8 - 0.65 * i, 1))
-			particle:SetEndSize(1)
-			particle:SetRoll(math.Rand(0, 360))
-			particle:SetRollDelta(math.Rand(-10, 10))
-			particle:SetColor(255, 218, 97)
+			particle:SetStartSize(2 * (halofac * 0.8 + 0.2) * 0.3, 0, 1)
+			particle:SetEndSize(4 * (halofac * 0.8 + 0.2) * 0.3, 0, 1)
+			local r = math.Rand(-10, 10) * 3.14 / 180
+			particle:SetRoll(r)
+			particle:SetRollDelta(r / 5)
+			particle:SetColor(255, 255, 255)
+			particle:SetLighting(false)
+			particle.FollowEnt = self.WeaponEnt
+			particle.Att = self.Attachment
+			TFARegPartThink(particle, TFAMuzzlePartFunc)
+			particle:SetPos(vector_origin)
+		end
+	end
+
+	for i = 1, 8 do
+		local particle = emitter:Add("effects/scotchmuzzleflash4", self.vOffset + dir*0.4*i)
+
+		if (particle) then
+			particle:SetVelocity(dir * 32 + 1.05 * AddVel)
+			particle:SetLifeTime(0)
+			particle:SetDieTime(0.2)
+			particle:SetStartAlpha(math.Rand(128,255) * (halofac * 0.8 + 0.2))
+			particle:SetEndAlpha(0)
+			--particle:SetStartSize( 7.5 * (halofac*0.8+0.2), 0, 1)
+			--particle:SetEndSize( 0 )
+			particle:SetStartSize(1 * (halofac * 0.8 + 0.2) * math.Rand(1,1.5) * (1+(8-i)*0.1) )
+			particle:SetEndSize(5 * (halofac * 0.8 + 0.2) * math.Rand(0.75,1) * (1+(8-i)*0.1) )
+			particle:SetRoll(math.rad(math.Rand(0, 360)))
+			particle:SetRollDelta(math.rad(math.Rand(15,30)) * sval)
+			particle:SetColor(255, 255, 255)
+			particle:SetLighting(false)
+			particle.FollowEnt = self.WeaponEnt
+			particle.Att = self.Attachment
+			TFARegPartThink(particle, TFAMuzzlePartFunc)
+		end
+	end
+	for i = 1, 8 do
+		local particle = emitter:Add("effects/scotchmuzzleflash1", self.vOffset )
+
+		if (particle) then
+			particle:SetVelocity(dir * 6 + 1.05 * AddVel)
+			particle:SetLifeTime(0)
+			particle:SetDieTime(0.5)
+			particle:SetStartAlpha(math.Rand(40,140))
+			particle:SetEndAlpha(0)
+			--particle:SetStartSize( 7.5 * (halofac*0.8+0.2), 0, 1)
+			--particle:SetEndSize( 0 )
+			particle:SetStartSize(1 * (halofac * 0.8 + 0.2) * math.Rand(1,1.5) )
+			particle:SetEndSize(14 * (halofac * 0.8 + 0.2) * math.Rand(0.5,1) )
+			particle:SetRoll(math.rad(math.Rand(0, 360)))
+			particle:SetRollDelta(math.rad(math.Rand(30,60)) * sval)
+			particle:SetColor(255, 255, 255)
+			particle:SetLighting(false)
+			particle.FollowEnt = self.WeaponEnt
+			particle.Att = self.Attachment
+			--TFARegPartThink(particle, TFAMuzzlePartFunc)
+		end
+	end
+
+	for i = 1, 3 do
+		local particle = emitter:Add("effects/scotchmuzzleflash4", self.vOffset + dir*0.9*i)
+
+		if (particle) then
+			--particle:SetVelocity(dir * 32 + 1.05 * AddVel)
+			particle:SetLifeTime(0)
+			particle:SetDieTime(0.2)
+			particle:SetStartAlpha(255 * (1-halofac))
+			particle:SetEndAlpha(0)
+			--particle:SetStartSize( 7.5 * (halofac*0.8+0.2), 0, 1)
+			--particle:SetEndSize( 0 )
+			particle:SetStartSize(math.max(12 - 2 * i, 1) * 0.2)
+			particle:SetEndSize(math.max(12 - 2 * i, 1) * 0.6)
+			particle:SetRoll(math.rad(math.Rand(0, 360)))
+			particle:SetRollDelta(math.rad(math.Rand(15,30)) * sval)
+			particle:SetColor(255, 255, 255)
 			particle:SetLighting(false)
 			particle.FollowEnt = self.WeaponEnt
 			particle.Att = self.Attachment
@@ -136,18 +186,18 @@ function EFFECT:Init(data)
 		end
 	end
 
-	for i = 0, 3 do
-		local particle = emitter:Add("particles/smokey", self.vOffset + dir * math.Rand(3, 6))
+	for i = 0, 6 do
+		local particle = emitter:Add("particles/smokey", self.vOffset + dir * math.Rand(6, 10))
 
 		if (particle) then
-			particle:SetVelocity(VectorRand() * 5 + dir * math.Rand(13, 20) + 1.05 * AddVel)
+			particle:SetVelocity(VectorRand() * 10 + dir * math.Rand(15, 20) + 1.05 * AddVel)
 			particle:SetLifeTime(0)
-			particle:SetDieTime(math.Rand(0.5, 0.5))
-			particle:SetStartAlpha(math.Rand(5, 15))
+			particle:SetDieTime(math.Rand(0.6, 0.7))
+			particle:SetStartAlpha(math.Rand(6, 10))
 			particle:SetEndAlpha(0)
-			particle:SetStartSize(math.Rand(3, 5))
-			particle:SetEndSize(math.Rand(2, 5))
-			particle:SetRoll(math.Rand(0, 360))
+			particle:SetStartSize(math.Rand(5, 7))
+			particle:SetEndSize(math.Rand(12, 14))
+			particle:SetRoll(math.rad(math.Rand(0, 360)))
 			particle:SetRollDelta(math.Rand(-0.8, 0.8))
 			particle:SetLighting(true)
 			particle:SetAirResistance(10)
@@ -156,25 +206,25 @@ function EFFECT:Init(data)
 		end
 	end
 
-	local sparkcount = math.random(2, 3)
+	local sparkcount = math.random(3,5)
 
 	for i = 0, sparkcount do
 		local particle = emitter:Add("effects/yellowflare", self.Position)
 
 		if (particle) then
-			particle:SetVelocity((VectorRand() + Vector(0, 0, 0.3)) * 15 * Vector(0.8, 0.8, 0.6) + dir * math.Rand(45, 60) + 1.15 * AddVel)
+			particle:SetVelocity( ((VectorRand() + Vector(0, 0, 0.3)) * 10 * Vector(0.8, 0.8, 0.6) + dir * math.Rand(45, 60) * 1.1 + 1.15 * AddVel) * 0.5 )
 			particle:SetLifeTime(0)
-			particle:SetDieTime(math.Rand(0.25, 0.4))
+			particle:SetDieTime(math.Rand(0.15, 0.3))
 			particle:SetStartAlpha(255)
 			particle:SetEndAlpha(0)
-			particle:SetStartSize(.35)
-			particle:SetEndSize(1.15)
+			particle:SetStartSize(0.5)
+			particle:SetEndSize(1.0)
 			particle:SetRoll(math.rad(math.Rand(0, 360)))
-			particle:SetGravity(Vector(0, 0, -50))
-			particle:SetAirResistance(40)
-			particle:SetStartLength(0.2)
-			particle:SetEndLength(0.05)
-			particle:SetColor(255, 200, 140)
+			particle:SetGravity(vector_origin)
+			particle:SetAirResistance(20)
+			particle:SetStartLength(0.4)
+			particle:SetEndLength(0.1)
+			particle:SetColor(255, math.random(192,225), math.random(140,192))
 			particle:SetVelocityScale(true)
 
 			particle:SetThinkFunction(function(pa)
@@ -191,7 +241,7 @@ function EFFECT:Init(data)
 	end
 
 	if TFA.GetGasEnabled() then
-		for i = 0, 2 do
+		for i = 0, 1 do
 			local particle = emitter:Add("sprites/heatwave", self.vOffset + (dir * i))
 
 			if (particle) then
@@ -205,9 +255,6 @@ function EFFECT:Init(data)
 				particle:SetRoll(math.Rand(0, 360))
 				particle:SetRollDelta(math.Rand(-2, 2))
 				particle:SetAirResistance(5)
-				particle.FollowEnt = self.WeaponEnt
-				particle.Att = self.Attachment
-				TFARegPartThink(particle, TFAMuzzlePartFunc)
 				particle:SetGravity(Vector(0, 0, 40))
 				particle:SetColor(255, 255, 255)
 			end
@@ -223,3 +270,4 @@ end
 
 function EFFECT:Render()
 end
+

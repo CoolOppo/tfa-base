@@ -1,6 +1,6 @@
 "UnlitGeneric"
 {
-	$basetexture  "effects/muzzleflash4_scotch"
+	$basetexture  "effects/muzzleflash3_scotch"
 	$additive  "1"
 	$vertexcolor  1
 	$vertexalpha  "1"

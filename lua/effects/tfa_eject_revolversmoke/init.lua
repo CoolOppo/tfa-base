@@ -72,9 +72,9 @@ function EFFECT:Init(data)
 	end
 
 	local AddVel = ownerent:GetVelocity()
-	local dot = dir:GetNormalized():Dot(EyeAngles():Forward())
+	local dot = dir:GetNormalized():Dot(GetViewEntity():EyeAngles():Forward())
 	local dotang = math.deg(math.acos(math.abs(dot)))
-	local halofac = math.sqrt(math.Clamp(1 - (dotang / 90), 0, 1))
+	local halofac = math.abs(dot)
 	--[[
 	local dlight = DynamicLight( ownerent:EntIndex()+64 )
 	if ( dlight ) then
