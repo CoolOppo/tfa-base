@@ -31,9 +31,11 @@ function EFFECT:Init(data)
 	self.vOffset = self.Position
 	dir = self.Forward
 
-	if LocalPlayer():IsValid() then
-		AddVel = LocalPlayer():GetVelocity()
+	local owner = self.WeaponEnt:GetOwner()
+	if not IsValid(ownerent) then
+		ownerent = LocalPlayer()
 	end
+	AddVel = ownerent:GetVelocity()
 
 	AddVel = AddVel * 0.05
 	self.vOffset = self.Position
@@ -42,10 +44,6 @@ function EFFECT:Init(data)
 	local dot = dir:GetNormalized():Dot(GetViewEntity():EyeAngles():Forward())
 	local dotang = math.deg(math.acos(math.abs(dot)))
 	local halofac = math.Clamp(1 - (dotang / 90), 0, 1)
-
-	if CLIENT and not IsValid(ownerent) then
-		ownerent = LocalPlayer()
-	end
 
 	local dlight = DynamicLight(ownerent:EntIndex())
 

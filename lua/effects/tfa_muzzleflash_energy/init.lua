@@ -31,17 +31,15 @@ function EFFECT:Init(data)
 	self.vOffset = self.Position
 	dir = self.Forward
 
-	if LocalPlayer():IsValid() then
-		AddVel = LocalPlayer():GetVelocity()
+	local owner = self.WeaponEnt:GetOwner()
+	if not IsValid(ownerent) then
+		ownerent = LocalPlayer()
 	end
+	AddVel = ownerent:GetVelocity()
 
 	self.vOffset = self.Position
 	dir = self.Forward
 	AddVel = AddVel * 0.05
-
-	if CLIENT and not IsValid(ownerent) then
-		ownerent = LocalPlayer()
-	end
 
 	if (dlight) then
 		dlight.Pos = self.Position + dir * 1 - dir:Angle():Right() * 5

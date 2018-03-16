@@ -67,9 +67,11 @@ function EFFECT:Init(data)
 	self.vOffset = self:GetTracerShootPos(angpos.Pos, self.WeaponEnt, self.Attachment)
 	dir = dir or angpos.Ang:Forward() --angpos.Ang:Forward()
 
-	if CLIENT and not IsValid(ownerent) then
+	local owner = self.WeaponEnt:GetOwner()
+	if not IsValid(ownerent) then
 		ownerent = LocalPlayer()
 	end
+	AddVel = ownerent:GetVelocity()
 
 	local AddVel = ownerent:GetVelocity()
 	local dot = dir:GetNormalized():Dot(GetViewEntity():EyeAngles():Forward())
