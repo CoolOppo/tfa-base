@@ -6,7 +6,9 @@ TFA_Base_Particles["tfa_muzzle_energy"] = "tfa_muzzleflashes"
 TFA_Base_Particles["tfa_muzzle_gauss"] = "tfa_muzzleflashes"
 TFA_Base_Particles["weapon_muzzle_smoke_long"] = "csgo_fx"
 TFA_Base_Particles["weapon_muzzle_smoke"] = "csgo_fx"
-TFA_Base_Particles["DUMMY_TFA_SMOKE"] = "tfa_smoke"
+--legacy
+TFA_Base_Particles["smoke_trail_tfa"] = "tfa_smoke"
+TFA_Base_Particles["smoke_trail_controlled"] = "tfa_smoke"
 local addedparts = {}
 local cachedparts = {}
 
