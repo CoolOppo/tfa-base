@@ -62,7 +62,7 @@ function EFFECT:Init(data)
 	local sparticle = emitter:Add("effects/muzzleflashX_nemole_w", self.vOffset)
 
 	if (sparticle) then
-		sparticle:SetVelocity(dir * 4 + 1.05 * AddVel)
+		sparticle:SetVelocity(dir * 4 )
 		sparticle:SetLifeTime(0)
 		sparticle:SetDieTime(0.08)
 		sparticle:SetStartAlpha(math.Rand(200, 255))
@@ -86,7 +86,7 @@ function EFFECT:Init(data)
 		local particle = emitter:Add("effects/scotchmuzzleflashw", self.vOffset)
 
 		if (particle) then
-			particle:SetVelocity(dir * 4 + 1.05 * AddVel)
+			particle:SetVelocity(dir * 4 )
 			particle:SetLifeTime(0)
 			particle:SetDieTime(0.10)
 			particle:SetStartAlpha(math.Rand(225, 255))

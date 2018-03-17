@@ -96,7 +96,7 @@ function EFFECT:Init(data)
 		local particle = emitter:Add("effects/splash" .. tostring(math.random(1, 2)), self.vOffset)
 
 		if (particle) then
-			particle:SetVelocity(dir * 4 + 1.05 * AddVel)
+			particle:SetVelocity(dir * 4 )
 			particle:SetLifeTime(0)
 			particle:SetDieTime(0.15)
 			particle:SetStartAlpha(math.Rand(32, 64))

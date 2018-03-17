@@ -76,7 +76,7 @@ if CLIENT then
 					if angpos then
 						local tmppos = LocalToWorld(self.OffPos, self:GetAngles(), angpos.Pos, angpos.Ang)
 						local npos = tmppos + self:GetVelocity() * FrameTime()
-						self.OffPos = WorldToLocal(npos + firvel * 0.5, self:GetAngles(), angpos.Pos, angpos.Ang)
+						self.OffPos = WorldToLocal(npos + firvel, self:GetAngles(), angpos.Pos, angpos.Ang)
 						self:SetPos(npos + firvel)
 					end
 				else

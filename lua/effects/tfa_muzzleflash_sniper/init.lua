@@ -68,10 +68,10 @@ function EFFECT:Init(data)
 	self.WeaponEnt.XTick = 1 - self.WeaponEnt.XTick
 
 	if self.WeaponEnt.XTick == 1 then
-		local particle = emitter:Add("effects/muzzleflashX_nemole", self.vOffset)
+		local particle = emitter:Add("effects/muzzleflashX_nemole", self.vOffset + FrameTime() * AddVel )
 
 		if (particle) then
-			particle:SetVelocity(dir * 4 + 1.05 * AddVel)
+			particle:SetVelocity(dir * 4 )
 			particle:SetLifeTime(0)
 			particle:SetDieTime(0.1)
 			particle:SetStartAlpha(math.Rand(200, 255))
@@ -93,10 +93,10 @@ function EFFECT:Init(data)
 		--particle:SetStartSize( 8 * (halofac*0.8+0.2), 0, 1)
 		--particle:SetEndSize( 0 )
 	else
-		local particle = emitter:Add("effects/muzzleflashX_nemole", self.vOffset)
+		local particle = emitter:Add("effects/muzzleflashX_nemole", self.vOffset + FrameTime() * AddVel )
 
 		if (particle) then
-			particle:SetVelocity(dir * 4 + 1.05 * AddVel)
+			particle:SetVelocity(dir * 4 )
 			particle:SetLifeTime(0)
 			particle:SetDieTime(0.1)
 			particle:SetStartAlpha(math.Rand(200, 255))
@@ -116,12 +116,12 @@ function EFFECT:Init(data)
 	end
 
 	for i = 1, 8 do
-		local particle = emitter:Add("effects/scotchmuzzleflash4", self.vOffset + dir*0.4*i)
+		local particle = emitter:Add("effects/scotchmuzzleflash4", self.vOffset + dir*0.4*i + FrameTime() * AddVel )
 
 		if (particle) then
-			particle:SetVelocity(dir * 32 + 1.05 * AddVel)
+			particle:SetVelocity(dir * 32 )
 			particle:SetLifeTime(0)
-			particle:SetDieTime(0.2)
+			particle:SetDieTime(0.1525)
 			particle:SetStartAlpha(math.Rand(128,255) * (halofac * 0.8 + 0.2))
 			particle:SetEndAlpha(0)
 			--particle:SetStartSize( 7.5 * (halofac*0.8+0.2), 0, 1)
@@ -164,9 +164,9 @@ function EFFECT:Init(data)
 		local particle = emitter:Add("effects/scotchmuzzleflash4", self.vOffset + dir*1.2*i)
 
 		if (particle) then
-			--particle:SetVelocity(dir * 32 + 1.05 * AddVel)
+			--particle:SetVelocity(dir * 32 )
 			particle:SetLifeTime(0)
-			particle:SetDieTime(0.2)
+			particle:SetDieTime(0.1525)
 			particle:SetStartAlpha(255 * (1-halofac))
 			particle:SetEndAlpha(0)
 			--particle:SetStartSize( 7.5 * (halofac*0.8+0.2), 0, 1)

@@ -49,7 +49,7 @@ function EFFECT:Init(data)
 	local sparticle = emitter:Add("effects/scotchmuzzleflash" .. math.random(1, 4), self.vOffset)
 
 	if (sparticle) then
-		sparticle:SetVelocity(dir * 4 + 1.05 * AddVel)
+		sparticle:SetVelocity(dir * 4 )
 		sparticle:SetLifeTime(0)
 		sparticle:SetDieTime(0.15)
 		sparticle:SetStartAlpha(math.Rand(16, 32))

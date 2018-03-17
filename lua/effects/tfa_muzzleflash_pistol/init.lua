@@ -61,12 +61,12 @@ function EFFECT:Init(data)
 	local emitter = ParticleEmitter(self.vOffset)
 	local sval = 1-math.random(0,1)*2
 	for i = 1, 8 do
-		local particle = emitter:Add("effects/scotchmuzzleflash4", self.vOffset + dir*0.4*i)
+		local particle = emitter:Add("effects/scotchmuzzleflash4", self.vOffset + dir*0.4*i + FrameTime() * AddVel )
 
 		if (particle) then
-			particle:SetVelocity(dir * 32 + 1.05 * AddVel)
+			particle:SetVelocity(dir * 32 )
 			particle:SetLifeTime(0)
-			particle:SetDieTime(0.2)
+			particle:SetDieTime(0.1525)
 			particle:SetStartAlpha(math.Rand(128,255) * (halofac * 0.8 + 0.2))
 			particle:SetEndAlpha(0)
 			--particle:SetStartSize( 7.5 * (halofac*0.8+0.2), 0, 1)
@@ -109,9 +109,9 @@ function EFFECT:Init(data)
 		local particle = emitter:Add("effects/scotchmuzzleflash4", self.vOffset + dir*0.9*i)
 
 		if (particle) then
-			--particle:SetVelocity(dir * 32 + 1.05 * AddVel)
+			--particle:SetVelocity(dir * 32 )
 			particle:SetLifeTime(0)
-			particle:SetDieTime(0.2)
+			particle:SetDieTime(0.1525)
 			particle:SetStartAlpha(255 * (1-halofac))
 			particle:SetEndAlpha(0)
 			--particle:SetStartSize( 7.5 * (halofac*0.8+0.2), 0, 1)
