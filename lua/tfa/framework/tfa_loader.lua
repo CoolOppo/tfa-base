@@ -3,12 +3,10 @@ if SERVER then AddCSLuaFile() end
 TFA = TFA or {}
 
 local do_load = true
-local version = 4.352
-local version_string = "4.3.5.2"
+local version = 4.36
+local version_string = "4.3.6.0"
 local changelog = [[
-	* Fixed shells networking
-	* Fixed RT scope resolution autodetect
-	* Added RT scope material proxy
+	* Muzzles + smoke updated, the latter taken from CS:GO
 ]]
 
 local function testFunc()
