@@ -210,6 +210,27 @@ SWEP.SprintProgress = 0
 SWEP.SpreadRatio = 0
 SWEP.CrouchingRatio = 0
 SWEP.SmokeParticles = {
+	pistol = "weapon_muzzle_smoke",
+	smg = "weapon_muzzle_smoke",
+	grenade = "weapon_muzzle_smoke",
+	ar2 = "weapon_muzzle_smoke",
+	shotgun = "weapon_muzzle_smoke_long",
+	rpg = "weapon_muzzle_smoke_long",
+	physgun = "weapon_muzzle_smoke_long",
+	crossbow = "weapon_muzzle_smoke_long",
+	melee = "weapon_muzzle_smoke",
+	slam = "weapon_muzzle_smoke",
+	normal = "weapon_muzzle_smoke",
+	melee2 = "weapon_muzzle_smoke",
+	knife = "weapon_muzzle_smoke",
+	duel = "weapon_muzzle_smoke",
+	camera = "weapon_muzzle_smoke",
+	magic = "weapon_muzzle_smoke",
+	revolver = "weapon_muzzle_smoke_long",
+	silenced = "weapon_muzzle_smoke"
+}
+--[[
+SWEP.SmokeParticles = {
 	pistol = "smoke_trail_controlled",
 	smg = "smoke_trail_tfa",
 	grenade = "smoke_trail_tfa",
@@ -229,10 +250,7 @@ SWEP.SmokeParticles = {
 	revolver = "smoke_trail_tfa",
 	silenced = "smoke_trail_controlled"
 }
-
-for k, v in pairs(SWEP.SmokeParticles) do
-	PrecacheParticleSystem(v)
-end
+]]--
 
 SWEP.Inspecting = false
 SWEP.InspectingProgress = 0

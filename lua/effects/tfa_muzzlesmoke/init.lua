@@ -34,21 +34,6 @@ function EFFECT:Init(data)
 		end
 	end
 
-	self.Forward = self.Forward or data:GetNormal()
-	self.Angle = self.Forward:Angle()
-	self.Right = self.Angle:Right()
-	self.vOffset = self.Position
-	dir = self.Forward
-
-	if LocalPlayer():IsValid() then
-		AddVel = LocalPlayer():GetVelocity()
-	end
-
-	self.vOffset = self.Position
-	dir = self.Forward
-	AddVel = AddVel * 0.05
-
-
 	if TFA.GetMZSmokeEnabled == nil or TFA.GetMZSmokeEnabled() then
 		ParticleEffectAttach(smokepart, PATTACH_POINT_FOLLOW, self.WeaponEnt, self.Attachment)
 	end
