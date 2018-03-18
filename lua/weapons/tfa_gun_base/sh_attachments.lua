@@ -214,7 +214,7 @@ function SWEP:SetTFAAttachment( cat, id, nw )
 		net.Start("TFA_Attachment_Set")
 		net.WriteEntity(self)
 		net.WriteInt(cat,8)
-		net.WriteInt( id or -1 ,5)
+		net.WriteInt( id or -1 ,7)
 		if SERVER then
 			net.Broadcast()
 		elseif CLIENT then

@@ -22,7 +22,7 @@ if SERVER then
 			net.Start("TFA_Attachment_Set")
 			net.WriteEntity( wep )
 			net.WriteInt( k, 8 )
-			net.WriteInt( v.sel or -1, 7 )
+			net.WriteInt( v.sel or -1,7)
 			net.Send(ply)
 		end
 	end
