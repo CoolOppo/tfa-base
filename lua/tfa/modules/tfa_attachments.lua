@@ -22,7 +22,7 @@ if SERVER then
 			net.Start("TFA_Attachment_Set")
 			net.WriteEntity( wep )
 			net.WriteInt( k, 8 )
-			net.WriteInt( v.sel or -1, 5 )
+			net.WriteInt( v.sel or -1, 7 )
 			net.Send(ply)
 		end
 	end
@@ -45,7 +45,7 @@ if SERVER then
 		local wep = net.ReadEntity()
 		if IsValid(ply) and IsValid(wep) and wep.SetTFAAttachment and ply:GetActiveWeapon() == wep then
 			local cat = net.ReadInt(8)
-			local ind = net.ReadInt(5)
+			local ind = net.ReadInt(7)
 			wep:SetTFAAttachment( cat, ind, true )
 		end
 	end)
@@ -56,7 +56,7 @@ if CLIENT then
 		local wep = net.ReadEntity()
 		if IsValid(wep) and wep.SetTFAAttachment then
 			local cat = net.ReadInt(8)
-			local ind = net.ReadInt(5)
+			local ind = net.ReadInt(7)
 			wep:SetTFAAttachment( cat, ind, false )
 		end
 	end)
