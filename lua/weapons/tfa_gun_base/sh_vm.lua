@@ -273,6 +273,10 @@ local gunbob_intensity_cvar = GetConVar("cl_tfa_gunbob_intensity")
 local vmfov
 local bbvec
 
+function SWEP:AirWalkScale()
+	return (( self:OwnerIsValid() and self:GetOwner():IsOnGround() ) and 1 or 0.2 )
+end
+
 function SWEP:GetViewModelPosition( pos, ang )
 	if self.Owner:IsNPC() then
 		return
@@ -329,7 +333,7 @@ function SWEP:GetViewModelPosition( pos, ang )
 	end
 
 	if self.Idle_Mode == TFA.Enum.IDLE_LUA or self.Idle_Mode == TFA.Enum.IDLE_BOTH then
-		pos, ang = self:CalculateBob(pos, ang, gunbobintensity * self.BobScaleCustom * 0.5, math.min( math.max( 0.25, math.sqrt( self:GetOwner():GetVelocity():Length2D() / self:GetOwner():GetRunSpeed() ) * 1.75 ), self:GetSprinting() and 5 or 3) )
+		pos, ang = self:CalculateBob(pos, ang, gunbobintensity * self.BobScaleCustom * 0.5, math.min( math.max( 0.25, math.sqrt( ( math.max(self:GetOwner():GetVelocity():Length2D() * self:AirWalkScale() - self:GetOwner():GetVelocity().z * 0.5,0) ) / self:GetOwner():GetRunSpeed() ) * 1.75 ), self:GetSprinting() and 5 or 3) )
 	end
 
 	if self:GetHidden() then
