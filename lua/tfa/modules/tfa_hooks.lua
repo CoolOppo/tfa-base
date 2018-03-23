@@ -3,12 +3,12 @@ local ply,wep,sp
 sp = game.SinglePlayer()
 
 --[[
-Hook: PlayerTick
+Hook: PlayerPostThink
 Function: Weapon Logic
 Used For: Main weapon "think" logic
 ]]--
 
-hook.Add("PlayerTick", "PlayerTickTFA", function(plyv)
+hook.Add("PlayerPostThink", "PlayerTickTFA", function(plyv)
 	wep = plyv:GetActiveWeapon() or wep
 
 	if IsValid(wep) and wep.PlayerThink  and wep.IsTFAWeapon then
