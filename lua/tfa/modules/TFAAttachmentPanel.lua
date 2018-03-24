@@ -91,8 +91,6 @@ function PANEL:Initialize()
 		p:SetWeapon( self.Wep )
 		p:SetGunAttachment( self.Att )
 		p:SetAttachment( v[1] )
-		print(v[1])
-		print(v[2])
 		p:SetID( v[2] )
 
 		p:SetSize(dimensions,dimensions)
