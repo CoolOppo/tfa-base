@@ -284,8 +284,7 @@ SWEP.AnimCycle = 0 -- Start on the right
 SWEP.VElements = nil --Export from SWEP Creation Kit.  For each item that can/will be toggled, set active=false in its individual table
 SWEP.WElements = nil --Export from SWEP Creation Kit.  For each item that can/will be toggled, set active=false in its individual table
 SWEP.Attachments = {
-	--[MDL_ATTACHMENT] = = { offset = { 0, 0 }, atts = { "si_eotech" }, sel = 0 }
-	--Sorry for kind-of copying your syntax, Spy, but it makes it easier on the users and you did an excellent job.  The internal code's all mine anyways.
+	--[ORDER] = = { atts = { "si_eotech" }, sel = 0 }
 	--sel allows you to have an attachment pre-selected, and is used internally by the base to show which attachment is selected in each category.
 }
 SWEP.AttachmentDependencies = {}--{["si_acog"] = {"bg_rail"}}
