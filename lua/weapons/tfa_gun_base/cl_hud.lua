@@ -586,7 +586,13 @@ function SWEP:GenerateInspectionDerma()
 
 		local needs_spacer = false
 		local i = 0
-		for k,v in pairs(self.Attachments) do
+
+
+		self:GenerateVGUIAttachmentTable()
+
+		local i=0
+
+		for k,v in pairs(self.VGUIAttachments) do
 			if k ~= "BaseClass" then
 				local testpanel = TFA_INSPECTIONPANEL:Add("TFAAttachmentPanel")
 				testpanel:SetParent( scrollpanel )
@@ -595,6 +601,7 @@ function SWEP:GenerateInspectionDerma()
 				testpanel:SetViewModel(self.OwnerViewModel)
 				testpanel:SetWeapon(self)
 				testpanel:SetAttachment(k)
+				testpanel:SetCategory(v.cat or k)
 				testpanel:Initialize()
 				if i > 0 and not needs_spacer then
 					testpanel:Position()
@@ -610,7 +617,7 @@ function SWEP:GenerateInspectionDerma()
 		if needs_spacer and IsValid(scrollpanel) then
 			local testpanel = scrollpanel:Add("DPanel")
 			testpanel.VAtt = i + 1
-			testpanel:SetPos( math.floor( testpanel:GetParent():GetWide() - padding * 2 - testpanel:GetWide() ), math.max( testpanel.VAtt - 1, 0 ) * dimensions + math.max( testpanel.VAtt - 1, 0 ) * padding * 4 + math.max( testpanel.VAtt - 1, 0 ) * spacing )
+			testpanel:SetPos( math.floor( testpanel:GetParent():GetWide() - 32 - testpanel:GetWide() ), math.max( testpanel.VAtt - 1, 0 ) * dimensions + math.max( testpanel.VAtt - 1, 0 ) * padding * 4 + math.max( testpanel.VAtt - 1, 0 ) * spacing )
 			testpanel:SetHeight(32,32)
 			testpanel.Paint = function() end
 		end

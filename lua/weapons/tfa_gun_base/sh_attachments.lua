@@ -1,3 +1,6 @@
+local ATT_DIMENSION = 64
+local ATT_MAX_SCREEN_RATIO = 1/3
+
 SWEP.Attachments = {
 	--[MDL_ATTACHMENT] = = { offset = { 0, 0 }, atts = { "sample_attachment_1", "sample_attachment_2" }, sel = 1, order = 1 }
 	--offset will move the offset the display from the weapon attachment when using CW2.0 style attachment display
@@ -289,6 +292,52 @@ function SWEP:InitAttachments()
 	end
 
 	self:BuildAttachmentCache()
+end
+
+function SWEP:GenerateVGUIAttachmentTable() 
+	self.VGUIAttachments = {}
+	local keyz = table.GetKeys( self.Attachments )
+	table.RemoveByValue( keyz, "BaseClass" )
+	table.sort( keyz, function(a,b)
+		--A and B are keys
+		local v1 = self.Attachments[a]
+		local v2 = self.Attachments[b]
+		if v1 and v2 and ( v1.order or v2.order ) then
+			return ( v1.order or a ) < ( v2.order or b )
+		else
+			return a < b
+		end
+	end)
+	for i, k in ipairs(keyz) do
+		local v = self.Attachments[k]
+		self.VGUIAttachments[i]=table.Copy( v )
+		self.VGUIAttachments[i].cat = k
+		self.VGUIAttachments[i].offset = nil
+		self.VGUIAttachments[i].order = nil
+	end
+	local max_row_atts = math.floor( ScrW() * ATT_MAX_SCREEN_RATIO  / ATT_DIMENSION )
+	local i = 1
+	while ( i <= #self.VGUIAttachments ) do
+		local v = self.VGUIAttachments[i]
+		for l,b in pairs(v.atts) do
+			if not istable(b) then
+				v.atts[l] = { b, l }--name, ID
+			end
+		end
+		if (#v.atts > max_row_atts) then
+			while ( #v.atts > max_row_atts ) do
+				local t = table.Copy( v )
+				for j=1,max_row_atts do
+					table.remove(t.atts,1)
+				end
+				for j=1,#v.atts - max_row_atts do
+					table.remove(v.atts)
+				end
+				table.insert(self.VGUIAttachments,i+1,t)
+			end
+		end
+		i = i + 1
+	end
 end
 
 local bgt

@@ -7,7 +7,6 @@ local padding = TFA.AttachmentUIPadding
 local PANEL = {}
 
 PANEL.Wep = nil
-PANEL.Att = nil
 PANEL.Header = nil
 PANEL.TextTable = {}
 PANEL.DefaultWidth = 0
@@ -23,7 +22,6 @@ end
 
 function PANEL:Init()
 	self.Wep = nil
-	self.Att = nil
 	self.Header = nil
 	self.TextTable = {}
 	self.DefaultHeight = 0
@@ -44,7 +42,6 @@ end
 
 function PANEL:SetAttachment( att )
 	if att ~= nil then
-		self.Att = att
 		self:SetZPos( 200 - att )
 	end
 end
@@ -238,7 +235,6 @@ end
 
 function PANEL:Paint( w, h )
 	if not IsValid(self.Wep) then return end
-	if self.Att == nil then return end
 	if ( self.Wep.InspectingProgress or 0 ) < 0.01 then self:Remove() end
 	if IsValid( self.ContentPanel ) and not self:GetActive() then
 		local _, cph = self.ContentPanel:LocalToScreen(0,math.max(self.ContentPanel:GetTall(),32))

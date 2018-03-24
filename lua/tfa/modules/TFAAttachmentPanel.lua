@@ -18,6 +18,7 @@ PANEL.x = -1
 PANEL.y = -1
 PANEL.AttachmentTable = {}
 PANEL.AttachmentIcons = {}
+PANEL.VAtt = 0
 
 function PANEL:Init()
 	self.HasInitialized = false
@@ -35,8 +36,9 @@ function PANEL:Initialize()
 	if not IsValid(self.VM) then return false end
 	if not IsValid(self.Wep) then return false end
 	if not self.Att then return end
-	self.AttachmentTable = self.Wep.Attachments[ self.Att ]
-	local attCnt = #self.AttachmentTable.atts
+	self.AttachmentTable = self.Wep.Attachments[ self.VAtt ]
+	self.VGUIAttachmentTable = self.Wep.VGUIAttachments[ self.VAtt ]
+	local attCnt = #self.VGUIAttachmentTable.atts
 	self:Position()
 	local truewidth = dimensions * attCnt + padding * ( math.max(0,attCnt-1) + 2 )
 	local finalwidth = math.max( truewidth, dimensions * tooltip_mincount + padding * ( math.max(0,tooltip_mincount-1) + 2 ) )
@@ -83,13 +85,15 @@ function PANEL:Initialize()
 	--for _,k in ipairs(keyz) do
 	--	local v = self.AttachmentTable.atts[k]
 	local i = 0
-	for k,v in ipairs( self.AttachmentTable.atts ) do
+	for k,v in ipairs( self.VGUIAttachmentTable.atts ) do
 		local p = toppanel:Add("TFAAttachmentIcon")
 
 		p:SetWeapon( self.Wep )
 		p:SetGunAttachment( self.Att )
-		p:SetAttachment( v )
-		p:SetID(k)
+		p:SetAttachment( v[1] )
+		print(v[1])
+		print(v[2])
+		p:SetID( v[2] )
 
 		p:SetSize(dimensions,dimensions)
 		p:SetPos( dimensions * i + padding * ( i + 1 ), padding )
@@ -104,6 +108,7 @@ function PANEL:Initialize()
 	return true
 end
 
+--[[
 function PANEL:CalcVAtt()
 	if not self.VAtt then
 		self.VAtt = 0
@@ -127,11 +132,12 @@ function PANEL:CalcVAtt()
 		--self:SetZPos( 100 - self.VAtt )
 	end
 end
+]]--
 
 function PANEL:Think()
 	if not IsValid(self.ToolTip) then return end
 
-	self:CalcVAtt()
+	--self:CalcVAtt()
 
 	local header = nil
 	local texttable = nil
@@ -180,6 +186,12 @@ end
 
 function PANEL:SetAttachment( att )
 	if att ~= nil then
+		self.VAtt = att
+	end
+end
+
+function PANEL:SetCategory( att )
+	if att ~= nil then
 		self.Att = att
 	end
 end
@@ -190,7 +202,7 @@ function PANEL:GetAnchoredH()
 end
 
 function PANEL:Position()
-	self:CalcVAtt()
+	--self:CalcVAtt()
 	self:SetPos( math.floor( self:GetParent():GetWide() - 32 - self:GetWide() ), math.max( self.VAtt - 1, 0 ) * dimensions + math.max( self.VAtt - 1, 0 ) * padding * 4 + math.max( self.VAtt - 1, 0 ) * spacing )
 	self.HAnchored = true
 end
