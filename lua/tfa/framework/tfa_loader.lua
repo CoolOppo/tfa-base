@@ -3,10 +3,11 @@ if SERVER then AddCSLuaFile() end
 TFA = TFA or {}
 
 local do_load = true
-local version = 4.36
-local version_string = "4.3.6.0"
+local version = 4.37
+local version_string = "4.3.7.0"
 local changelog = [[
-	* Muzzles + smoke updated, the latter taken from CS:GO
+	* Attachment UI now allows rows to affect the same category, and will break apart exceedingly large rows
+	* Legacy attachment UI removed
 ]]
 
 local function testFunc()
