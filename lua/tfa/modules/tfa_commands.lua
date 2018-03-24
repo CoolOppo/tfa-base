@@ -247,10 +247,6 @@ end
 
 --Clientside Convars
 if CLIENT then
-	if GetConVar("cl_tfa_inspection_style") == nil then
-		CreateClientConVar("cl_tfa_inspection_style", 0, true, false)
-	end
-
 	if GetConVar("cl_tfa_viewbob_intensity") == nil then
 		CreateClientConVar("cl_tfa_viewbob_intensity", 1, true, false)
 	end

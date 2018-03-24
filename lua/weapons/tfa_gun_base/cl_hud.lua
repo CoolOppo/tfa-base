@@ -245,7 +245,7 @@ function SWEP:GenerateInspectionDerma()
 		surface.SetDrawColor(mycol)
 		surface.SetTexture(TFA_INSPECTIONPANEL.SideBar or 1)
 		surface.DrawTexturedRect(0, 0, 32, h)
-		if IsValid(self) and self:IsTFAInspectionStyle() then
+		if IsValid(self) then
 			surface.DrawTexturedRectUV( ScrW() - 32 - 32 - 32, 0, 32, h, 1, 0, 0, 1)
 		end
 	end
@@ -549,7 +549,7 @@ function SWEP:GenerateInspectionDerma()
 
 	local scrollpanel
 	if ( not att_enabled_cv ) or att_enabled_cv:GetBool() then
-		if self.Attachments and self:IsTFAInspectionStyle() then
+		if self.Attachments then
 			scrollpanel = contentpanel:Add("DScrollPanel")
 			scrollpanel:SetPos( 0, 0 )
 			scrollpanel:SetSize( ScrW() - 64 - 26, math.floor( contentpanel:GetTall() ) )
@@ -589,14 +589,9 @@ function SWEP:GenerateInspectionDerma()
 		for k,v in pairs(self.Attachments) do
 			if k ~= "BaseClass" then
 				local testpanel = TFA_INSPECTIONPANEL:Add("TFAAttachmentPanel")
-				if self:IsTFAInspectionStyle() then
-					testpanel:SetStyle(0)
-					testpanel:SetParent( scrollpanel )
-					testpanel:SetContentPanel( scrollpanel )
-					i = i + 1
-				else
-					testpanel:SetStyle(1)
-				end
+				testpanel:SetParent( scrollpanel )
+				testpanel:SetContentPanel( scrollpanel )
+				i = i + 1
 				testpanel:SetViewModel(self.OwnerViewModel)
 				testpanel:SetWeapon(self)
 				testpanel:SetAttachment(k)

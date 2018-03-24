@@ -50,15 +50,6 @@ function SWEP:Get3DSensitivity( )
 	return f(self)
 end
 
-local tfa_insp_cv = GetConVar("cl_tfa_inspection_style")
-
-function SWEP:IsTFAInspectionStyle()
-	if tfa_insp_cv:GetInt() == 0 or not self:IsFirstPerson() then
-		return true
-	end
-	return false
-end
-
 function SWEP:GetSeed()
 	local sd = math.floor( self:Clip1() + self:Ammo1() + self:Clip2() + self:Ammo2() + self:GetLastActivity() ) + self:GetNextIdleAnim() + self:GetNextPrimaryFire() + self:GetNextSecondaryFire()
 	return math.Round( sd )

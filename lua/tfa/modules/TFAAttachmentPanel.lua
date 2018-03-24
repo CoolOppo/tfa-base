@@ -18,7 +18,6 @@ PANEL.x = -1
 PANEL.y = -1
 PANEL.AttachmentTable = {}
 PANEL.AttachmentIcons = {}
-PANEL.Style = 0
 
 function PANEL:Init()
 	self.HasInitialized = false
@@ -30,7 +29,6 @@ function PANEL:Init()
 	self.AttachmentTable = {}
 	self.AttachmentIcons = {}
 	self:SetMouseInputEnabled(true)
-	self.Style = 0
 end
 
 function PANEL:Initialize()
@@ -156,9 +154,7 @@ function PANEL:Think()
 	self.ToolTip:SetHeader(header)
 	self.ToolTip:SetTextTable(texttable)
 	self.ToolTip:SetActive( texttable and #texttable > 0 )
-	if self:GetStyle() == 0 then
-		self.ToolTip:SetContentPanel( self.ContentPanel )
-	end
+	self.ToolTip:SetContentPanel( self.ContentPanel )
 	self:Position()
 end
 
@@ -193,45 +189,10 @@ function PANEL:GetAnchoredH()
 	return false
 end
 
-function PANEL:SetStyle( s )
-	self.Style = s
-end
-
-function PANEL:GetStyle()
-	return self.Style
-end
-
 function PANEL:Position()
-	if IsValid(self.Wep) and self:GetStyle() == 1 then
-		local AngPos = self.VM:GetAttachment(self.Att)
-		if not AngPos then return end
-		local scr = AngPos.Pos:ToScreen()
-		local w,h = self:GetSize()
-		local tx = math.Clamp( scr.x - w / 2 + self.AttachmentTable.offset[1], 0, ScrW() - w )
-		local ty = math.Clamp( scr.y - h / 2 + self.AttachmentTable.offset[2], 0, ScrH() - h )
-		self:SetPos( math.floor(tx), math.floor(ty) )
-		self.HAnchored = false
-		--[[
-		if IsValid( self.ToolTip ) then
-			local xp, yp = self:GetPos()
-			self.ToolTip:SetPos( xp, yp + self:GetTall() )
-		end
-		]]--
-	else
-		self:CalcVAtt()
-		self:SetPos( math.floor( self:GetParent():GetWide() - 32 - self:GetWide() ), math.max( self.VAtt - 1, 0 ) * dimensions + math.max( self.VAtt - 1, 0 ) * padding * 4 + math.max( self.VAtt - 1, 0 ) * spacing )
-		self.HAnchored = true
-	--[[else
-		self:CalcVAtt()
-		local hv = math.Round( ScrH() * 0.8)
-		self:SetPos( ScrW() - 64 - padding * 2 - self:GetWide(), ( ScrH() - hv ) / 2 + 64 + math.max( self.VAtt - 1, 0 ) * dimensions + math.max( self.VAtt - 1, 0 ) * padding * 4 + math.max( self.VAtt - 1, 0 ) * spacing  )
-		--self:SetPos( ScrW() - 64 - padding * 2 - math.max( ( dimensions + padding ) * 3 ,self:GetWide()), ( ScrH() - hv ) / 2 + 32 + math.max( self.VAtt - 1, 0 ) * dimensions + math.max( self.VAtt - 1, 0 ) * padding * 4 + math.max( self.VAtt - 1, 0 ) * spacing  )
-		--self:SetPos( ScrW() - 64 - padding * 2 - 256, ( ScrH() - hv ) / 2 + math.max( self.VAtt - 1, 0 ) * dimensions + math.max( self.VAtt - 1, 0 ) * padding * 4 + math.max( self.VAtt - 1, 0 ) * spacing  )
-		--self:SetPos( 64 + padding, ( ScrH() - hv ) / 2 + 312 + math.max( self.VAtt - 1, 0 ) * dimensions + math.max( self.VAtt - 1, 0 ) * padding * 4 + math.max( self.VAtt - 1, 0 ) * spacing  )
-		self.HAnchored = true
-	end
-	]]--
-	end
+	self:CalcVAtt()
+	self:SetPos( math.floor( self:GetParent():GetWide() - 32 - self:GetWide() ), math.max( self.VAtt - 1, 0 ) * dimensions + math.max( self.VAtt - 1, 0 ) * padding * 4 + math.max( self.VAtt - 1, 0 ) * spacing )
+	self.HAnchored = true
 end
 
 function PANEL:Paint( w, h )
