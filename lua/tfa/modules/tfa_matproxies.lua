@@ -74,7 +74,6 @@ matproxy.Add( {
 		cvec.x = c.r/255
 		cvec.y = c.g/255
 		cvec.z = c.b/255
-		print(mat)
 		mat:SetVector( self.ResultTo, cvec )
 	end
 } )
