@@ -26,10 +26,12 @@ function SWEP:DrawLaser( is_vm )
 	if not lasernoise then
 		lasernoise = Material( self.LaserNoise or "effects/splash1")
 	end
-	pc = self:GetOwner():GetWeaponColor()
-	col.r = pc.x * 255
-	col.g = pc.y * 255
-	col.b = pc.z * 255
+	local ow = self:GetOwner()
+	local f = ow.GetNW2Vector or ow.GetNWVector
+	pc = f(ow,"TFALaserColor",vector_origin)
+	col.r = pc.x
+	col.g = pc.y
+	col.b = pc.z
 
 	if is_vm then
 		att = self:GetStat("LaserSightAttachment")

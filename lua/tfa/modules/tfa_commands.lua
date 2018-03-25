@@ -527,5 +527,33 @@ if CLIENT then
 	if GetConVar("cl_tfa_debug_cache") == nil then
 		CreateClientConVar("cl_tfa_debug_cache", 0, false, false)
 	end
+
+	--Reticule Color
+	if GetConVar("cl_tfa_reticule_color_r") == nil then
+		CreateClientConVar("cl_tfa_reticule_color_r", 255, true, true)
+		--print("Reticule tweaking con vars created")
+	end
+
+	if GetConVar("cl_tfa_reticule_color_g") == nil then
+		CreateClientConVar("cl_tfa_reticule_color_g", 0, true, true)
+	end
+
+	if GetConVar("cl_tfa_reticule_color_b") == nil then
+		CreateClientConVar("cl_tfa_reticule_color_b", 0, true, true)
+	end
+
+	--Laser Color
+	if GetConVar("cl_tfa_laser_color_r") == nil then
+		CreateClientConVar("cl_tfa_laser_color_r", 255, true, true)
+		--print("Laser tweaking con vars created")
+	end
+
+	if GetConVar("cl_tfa_laser_color_g") == nil then
+		CreateClientConVar("cl_tfa_laser_color_g", 0, true, true)
+	end
+
+	if GetConVar("cl_tfa_laser_color_b") == nil then
+		CreateClientConVar("cl_tfa_laser_color_b", 0, true, true)
+	end
 	
 end

@@ -836,6 +836,7 @@ function SWEP:DrawHUDAmmo()
 
 	targbool = ( not TFA.Enum.HUDDisabledStatus[stat] ) or fm ~= lfm
 	targbool = targbool or ( stat == TFA.Enum.STATUS_SHOOTING and self.LastBoltShoot and CurTime() > self.LastBoltShoot + self.BoltTimerOffset)
+	targbool = targbool or ( self:GetStat("PumpAction") and ( stat==TFA.GetStatus("pump") or ( stat == TFA.Enum.STATUS_SHOOTING and self:Clip1() == 0 )  ) )
 
 	refact, succ = self:SelectInspectAnim()
 	if self:GetLastActivity() == refact and succ then

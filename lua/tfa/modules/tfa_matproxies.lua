@@ -1,3 +1,21 @@
+local nvec = Vector()
+
+if SERVER then
+	hook.Add("Think","NetworkTFAColors",function()
+		for k,v in pairs(player.GetAll()) do
+			local f = v.SetNW2Vector or v.SetNWVector
+			nvec.x = v:GetInfoNum("cl_tfa_laser_color_r",255)
+			nvec.y = v:GetInfoNum("cl_tfa_laser_color_g",0)
+			nvec.z = v:GetInfoNum("cl_tfa_laser_color_b",0)
+			f(v,"TFALaserColor",nvec)
+			nvec.x = v:GetInfoNum("cl_tfa_reticule_color_r",255)
+			nvec.y = v:GetInfoNum("cl_tfa_reticule_color_g",0)
+			nvec.z = v:GetInfoNum("cl_tfa_reticule_color_b",0)
+			f(v,"TFAReticuleColor",nvec)
+		end
+	end)
+end
+
 if not matproxy then return end
 matproxy.Add( {
 	name = "PlayerWeaponColorStatic",
@@ -47,11 +65,53 @@ matproxy.Add( {
 		end
 		if ( !IsValid( owner ) or !owner:IsPlayer() ) then return end
 
-		local c = owner:GetWeaponColor()
-		cvec.x = c.r
-		cvec.y = c.g
-		cvec.z = c.b
+		local c
+		if owner.GetNW2Vector then
+			c = owner:GetNW2Vector("TFALaserColor") or cvec
+		else
+			c = owner:GetNWVector("TFALaserColor") or cvec
+		end
+		cvec.x = c.r/255
+		cvec.y = c.g/255
+		cvec.z = c.b/255
 		mat:SetVector( self.ResultTo, cvec )
+	end
+} )
+
+local cvec_r = Vector()
+
+matproxy.Add( {
+	name = "TFAReticuleColor",
+
+	init = function( self, mat, values )
+
+		self.ResultTo = values.resultvar
+
+	end,
+
+	bind = function( self, mat, ent )
+
+		if ( !IsValid( ent ) ) then return end
+
+		local owner = ent:GetOwner()
+		if !IsValid(owner) then
+			owner = ent:GetParent()
+		end
+		if IsValid(owner) and owner:IsWeapon() then
+			owner = owner:GetOwner() or owner:GetOwner()
+		end
+		if ( !IsValid( owner ) or !owner:IsPlayer() ) then return end
+
+		local c
+		if owner.GetNW2Vector then
+			c = owner:GetNW2Vector("TFAReticuleColor") or cvec_r
+		else
+			c = owner:GetNWVector("TFAReticuleColor") or cvec_r
+		end
+		cvec_r.x = c.r/255
+		cvec_r.y = c.g/255
+		cvec_r.z = c.b/255
+		mat:SetVector( self.ResultTo, cvec_r )
 	end
 } )
 

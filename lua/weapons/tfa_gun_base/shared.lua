@@ -1266,7 +1266,7 @@ function SWEP:PrimaryAttack()
 		self:EjectionSmoke()
 	end
 	self:DoAmmoCheck()
-	if self:GetStatus() == TFA.GetStatus("shooting") and self.PumpAction then
+	if self:GetStatus() == TFA.GetStatus("shooting") and self:GetStat("PumpAction") then
 		if self:Clip1() == 0 and self:GetStat("PumpAction").value_empty then
 			--finalstat = TFA.GetStatus("pump_ready")
 			self:SetShotgunCancel( true )

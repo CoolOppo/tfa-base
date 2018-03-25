@@ -923,12 +923,58 @@ if CLIENT then
 		})
 	end
 
+	local function tfaOptionColors(panel)
+		local tfaOptionCO = {
+			Options = {},
+			CVars = {},
+			Label = "#Presets",
+			MenuButton = "1",
+			Folder = "TFA SWEP Settings Colors"
+		}
+
+		tfaOptionCO.Options["#Default"] = {
+			cl_tfa_laser_color_r = "255",
+			cl_tfa_laser_color_g = "0",
+			cl_tfa_laser_color_b = "0",
+			cl_tfa_reticule_color_r = "255",
+			cl_tfa_reticule_color_g = "0",
+			cl_tfa_reticule_color_b = "0"
+		}
+
+		panel:AddControl("ComboBox", tfaOptionCO)
+
+		panel:AddControl("Color", {
+			Label = "Laser Color",
+			Red = "cl_tfa_laser_color_r",
+			Green = "cl_tfa_laser_color_g",
+			Blue = "cl_tfa_laser_color_b",
+			ShowHSV = 1,
+			ShowRGB = 1,
+			Multiplier = 255
+		})
+
+		panel:AddControl("Color", {
+			Label = "Reticule Color",
+			Red = "cl_tfa_reticule_color_r",
+			Green = "cl_tfa_reticule_color_g",
+			Blue = "cl_tfa_reticule_color_b",
+			ShowHSV = 1,
+			ShowRGB = 1,
+			Multiplier = 255
+		})
+
+		panel:AddControl("Label", {
+			Text = "By TheForgottenArchitect"
+		})
+	end
+
 	local function tfaAddOption()
 		spawnmenu.AddToolMenuOption("Options", "TFA SWEP Base Settings", "tfaOptionVM", "Viewmodel", "", "", tfaOptionVM)
 		spawnmenu.AddToolMenuOption("Options", "TFA SWEP Base Settings", "tfaOptionSights", "Scopes / Sights", "", "", tfaOptionSights)
 		spawnmenu.AddToolMenuOption("Options", "TFA SWEP Base Settings", "tfaOptionPerformance", "Performance", "", "", tfaOptionPerformance)
 		spawnmenu.AddToolMenuOption("Options", "TFA SWEP Base Settings", "TFASwepBaseCrosshair", "HUD / Crosshair", "", "", tfaOptionHUD)
 		spawnmenu.AddToolMenuOption("Options", "TFA SWEP Base Settings", "TFASwepBaseDeveloper", "Developer", "", "", tfaOptionDeveloper)
+		spawnmenu.AddToolMenuOption("Options", "TFA SWEP Base Settings", "TFASwepBaseColor", "Color Customisation", "", "", tfaOptionColors)
 		spawnmenu.AddToolMenuOption("Options", "TFA SWEP Base Settings", "TFASwepBaseServer", "Admin / Server", "", "", tfaOptionServer)
 		--spawnmenu.AddToolMenuOption("Options", "TFA SWEP Base Settings", "TFASwepBaseRestriction", "Restriction", "", "", tfaOptionRestriction)
 	end
