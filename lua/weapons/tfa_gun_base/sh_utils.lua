@@ -486,6 +486,7 @@ Purpose:  Utility
 ]]--
 function SWEP:IsFirstPerson()
 	if not IsValid(self) or not self:OwnerIsValid() then return false end
+	if CLIENT and ( not game.SinglePlayer() ) and self:GetOwner() ~= GetViewEntity() then return false end
 	if sp and SERVER then return not self:GetOwner().TFASDLP end
 	if self:GetOwner().ShouldDrawLocalPlayer and self:GetOwner():ShouldDrawLocalPlayer() then return false end
 	local gmsdlp

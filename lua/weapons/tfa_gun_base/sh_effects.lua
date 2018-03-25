@@ -56,7 +56,7 @@ function SWEP:MakeShell()
 
 	if IsValid(self) then
 		self:EjectionSmoke(true)
-		local vm = ( (CLIENT and self:GetOwner()~=LocalPlayer()) or ( self:GetOwner().ShouldDrawLocalPlayer and self:GetOwner():ShouldDrawLocalPlayer() ) ) and self or self.OwnerViewModel 
+		local vm = ( self:IsFirstPerson() ) and self.OwnerViewModel or self
 		if type(shelltype) ~= "string" or shelltype == "" then return end -- allows to disable shells by setting override to "" - will shut up all rp fags
 		if IsValid(vm) then
 			fx = EffectData()

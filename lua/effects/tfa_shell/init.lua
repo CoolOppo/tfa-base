@@ -62,7 +62,7 @@ function EFFECT:Init(data)
 	end
 
 	if owent:IsPlayer() then
-		if owent ~= LocalPlayer() or owent:ShouldDrawLocalPlayer() then
+		if owent ~= GetViewEntity() or owent:ShouldDrawLocalPlayer() then
 			self.WeaponEnt = owent:GetActiveWeapon()
 			if not IsValid(self.WeaponEnt) then return end
 		else

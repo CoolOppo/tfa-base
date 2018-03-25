@@ -54,15 +54,23 @@ matproxy.Add( {
 
 	bind = function( self, mat, ent )
 
-		if ( !IsValid( ent ) ) then return end
+		local owner
 
-		local owner = ent:GetOwner()
-		if !IsValid(owner) then
-			owner = ent:GetParent()
+		if ( IsValid( ent ) ) then 
+			owner = ent:GetOwner()
+			if not IsValid(owner) then
+				owner = ent:GetParent()
+			end
+			if IsValid(owner) and owner:IsWeapon() then
+				owner = owner:GetOwner() or owner:GetOwner()
+			end
+			if not ( IsValid(owner) and owner:IsPlayer() ) then
+				owner = GetViewEntity()
+			end
+		else
+			owner = GetViewEntity()
 		end
-		if IsValid(owner) and owner:IsWeapon() then
-			owner = owner:GetOwner() or owner:GetOwner()
-		end
+		
 		if ( !IsValid( owner ) or !owner:IsPlayer() ) then return end
 
 		local c
@@ -102,10 +110,10 @@ matproxy.Add( {
 				owner = owner:GetOwner() or owner:GetOwner()
 			end
 			if not ( IsValid(owner) and owner:IsPlayer() ) then
-				owner = LocalPlayer()
+				owner = GetViewEntity()
 			end
 		else
-			owner = LocalPlayer()
+			owner = GetViewEntity()
 		end
 		
 		if ( !IsValid( owner ) or !owner:IsPlayer() ) then return end
