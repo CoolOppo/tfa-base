@@ -113,7 +113,7 @@ local function TFAContextBlock()
 	if GetViewEntity() ~= plyv then return end
 	local wepv = plyv:GetActiveWeapon()
 	if not IsValid(wepv) then return end
-	if GetInspectionKey() == TFA.BindToKey( input.LookupBinding("+menu_context", true) or "c" , KEY_C ) and wepv.ToggleInspect then
+	if GetInspectionKey() == TFA.BindToKey( input.LookupBinding("+menu_context", true) or "c" , KEY_C ) and wepv.ToggleInspect and cv_cm:GetBool() and not ply:KeyDown(IN_USE) then
 		return false
 	end
 end
@@ -132,7 +132,7 @@ if CLIENT then
 		local key = GetInspectionKey()
 		local kd = input.IsKeyDown( key )
 		if IsValid( vgui.GetKeyboardFocus() ) then kd = false end
-		if kd ~= kd_old and kd and cv_cm:GetBool() then
+		if kd ~= kd_old and kd and cv_cm:GetBool() and not ( plyv:KeyDown(IN_USE) and not wepv.Inspecting) then
 			wepv:ToggleInspect()
 		end
 		kd_old = kd
