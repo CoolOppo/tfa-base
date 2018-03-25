@@ -937,7 +937,7 @@ if CLIENT then
 			cl_tfa_laser_color_g = "0",
 			cl_tfa_laser_color_b = "0",
 			cl_tfa_reticule_color_r = "255",
-			cl_tfa_reticule_color_g = "0",
+			cl_tfa_reticule_color_g = "100",
 			cl_tfa_reticule_color_b = "0"
 		}
 

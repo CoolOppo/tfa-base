@@ -74,6 +74,7 @@ matproxy.Add( {
 		cvec.x = c.r/255
 		cvec.y = c.g/255
 		cvec.z = c.b/255
+		print(mat)
 		mat:SetVector( self.ResultTo, cvec )
 	end
 } )
@@ -91,15 +92,23 @@ matproxy.Add( {
 
 	bind = function( self, mat, ent )
 
-		if ( !IsValid( ent ) ) then return end
+		local owner
 
-		local owner = ent:GetOwner()
-		if !IsValid(owner) then
-			owner = ent:GetParent()
+		if ( IsValid( ent ) ) then 
+			owner = ent:GetOwner()
+			if not IsValid(owner) then
+				owner = ent:GetParent()
+			end
+			if IsValid(owner) and owner:IsWeapon() then
+				owner = owner:GetOwner() or owner:GetOwner()
+			end
+			if not ( IsValid(owner) and owner:IsPlayer() ) then
+				owner = LocalPlayer()
+			end
+		else
+			owner = LocalPlayer()
 		end
-		if IsValid(owner) and owner:IsWeapon() then
-			owner = owner:GetOwner() or owner:GetOwner()
-		end
+		
 		if ( !IsValid( owner ) or !owner:IsPlayer() ) then return end
 
 		local c

@@ -535,7 +535,7 @@ if CLIENT then
 	end
 
 	if GetConVar("cl_tfa_reticule_color_g") == nil then
-		CreateClientConVar("cl_tfa_reticule_color_g", 0, true, true)
+		CreateClientConVar("cl_tfa_reticule_color_g", 100, true, true)
 	end
 
 	if GetConVar("cl_tfa_reticule_color_b") == nil then
