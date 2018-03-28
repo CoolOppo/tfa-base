@@ -517,12 +517,13 @@ function SWEP:Holster(target)
 	if self.Owner:IsNPC() then
 		return
 	end
+
+	if not IsValid(target) then return true end
 	if not IsValid(self) then return end
 	ct = l_CT()
 	stat = self:GetStatus()
 
 	if not TFA.Enum.HolsterStatus[stat] then
-
 		if stat == TFA.GetStatus("reloading_wait") and self:Clip1() <= self:GetStat("Primary.ClipSize") and ( not self:GetStat("DisableChambering") ) and ( not self:GetStat("Shotgun") ) then
 			self:ResetFirstDeploy()
 			if game.SinglePlayer() then
@@ -533,10 +534,6 @@ function SWEP:Holster(target)
 		success, tanim = self:ChooseHolsterAnim()
 
 		if IsFirstTimePredicted() then
-			if not IsValid(target) then
-				target = self:GetOwner()
-			end
-
 			self:SetSwapTarget(target)
 		end
 
@@ -561,40 +558,11 @@ function SWEP:FinishHolster()
 		self:CleanParticles()
 		self:Holster(ent)
 
-		if IsValid(ent) then
-			if ent == self:GetOwner() then
-				self:WeaponUse(self:GetOwner())
-			else
-				self:GetOwner():SelectWeapon(ent:GetClass())
-				self.OwnerViewModel = nil
-			end
+		if IsValid(ent) and ent:IsWeapon() then
+			self:GetOwner():SelectWeapon(ent:GetClass())
+			self.OwnerViewModel = nil
 		end
 	end
-end
-
-function SWEP:WeaponUse(plyv)
-	if self.Owner:IsNPC() then
-		return
-	end
-	plyv:ConCommand("+use")
-	self:GetHolding()
-
-	timer.Simple(0.1, function()
-		if IsValid(plyv) then
-			plyv:ConCommand("-use")
-			self:GetHolding()
-
-			timer.Simple(0.2, function()
-				if IsValid(plyv) and IsValid(self) then
-					ent = plyv:GetNW2Entity("LastHeldEntity")
-
-					if not IsValid(ent) or not ent:IsPlayerHolding() then
-						self:Deploy()
-					end
-				end
-			end)
-		end
-	end)
 end
 
 --[[
