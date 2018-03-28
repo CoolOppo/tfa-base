@@ -3,13 +3,14 @@ if SERVER then AddCSLuaFile() end
 TFA = TFA or {}
 
 local do_load = true
-local version = 4.38
-local version_string = "4.3.8.0"
+local version = 4.381
+local version_string = "4.3.8.1"
 local changelog = [[
 	* Attachment UI now allows rows to affect the same category, and will break apart exceedingly large rows
 	* Legacy attachment UI removed
 	* Reticules/lasers now colorable in context menu
 	* Hold E as you hit your inspection key to access the context menu as normal
+	* PATCH - Exploit regarding new C-Menu fix, viewmodel viewpunch made into a cvar ( it'll go down with recoil if disabled )
 ]]
 
 local function testFunc()

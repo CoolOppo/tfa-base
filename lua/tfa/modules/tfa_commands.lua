@@ -256,6 +256,10 @@ if CLIENT then
 		--print("Viewbob intensity con var created")
 	end
 
+	if GetConVar("cl_tfa_viewmodel_viewpunch") == nil then
+		CreateClientConVar("cl_tfa_viewmodel_viewpunch", 1, true, false)
+	end
+
 	if GetConVar("cl_tfa_3dscope_quality") == nil then
 		CreateClientConVar("cl_tfa_3dscope_quality", -1, true, true)
 	end

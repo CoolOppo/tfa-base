@@ -352,9 +352,10 @@ if CLIENT then
 		}
 
 		tfaOptionCL.Options["#Default"] = {
-			cl_tfa_viewbob_bolting = "0",
-			sv_tfa_gunbob_intensity = "1",
-			sv_tfa_viewbob_intensity = "1",
+			cl_tfa_viewbob_animated = "0",
+			cl_tfa_gunbob_intensity = "1",
+			cl_tfa_viewmodel_viewpunch = "1",
+			cl_tfa_viewbob_intensity = "1",
 			cl_tfa_viewmodel_offset_x = "0",
 			cl_tfa_viewmodel_offset_y = "0",
 			cl_tfa_viewmodel_offset_z = "0",
@@ -373,6 +374,10 @@ if CLIENT then
 			Command = "cl_tfa_viewbob_animated"
 		})
 
+		panel:AddControl("CheckBox", {
+			Label = "Use Viewmodel Viewpunch",
+			Command = "cl_tfa_viewmodel_viewpunch"
+		})
 
 		panel:AddControl("Slider", {
 			Label = "Gun Bob Intensity",

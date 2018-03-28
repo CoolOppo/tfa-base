@@ -124,7 +124,7 @@ function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet,
 		self.MainBullet.Inflictor = self
 		self.MainBullet.Num = num_bullets
 		self.MainBullet.Src = self:GetOwner():GetShootPos()
-		self.MainBullet.Dir = self:GetOwner():GetAimVector()
+		self.MainBullet.Dir = self:GetOwner():EyeAngles():Forward()
 		self.MainBullet.HullSize = self:GetStat("Primary.HullSize") or 0
 		self.MainBullet.Spread.x = aimcone
 		self.MainBullet.Spread.y = aimcone
@@ -176,7 +176,7 @@ function SWEP:Recoil(recoil, ifp)
 	end
 
 	math.randomseed( self:GetSeed() + 1 )
-	self:GetOwner():SetVelocity(-self:GetOwner():GetAimVector() * self:GetStat("Primary.Knockback") * cv_forcemult:GetFloat() * recoil / 5)
+	self:GetOwner():SetVelocity(-self:GetOwner():EyeAngles():Forward() * self:GetStat("Primary.Knockback") * cv_forcemult:GetFloat() * recoil / 5)
 	local tmprecoilang = Angle(math.Rand(self:GetStat("Primary.KickDown"), self:GetStat("Primary.KickUp")) * recoil * -1, math.Rand(-self:GetStat("Primary.KickHorizontal"), self:GetStat("Primary.KickHorizontal")) * recoil, 0)
 	local maxdist = math.min(math.max(0, 89 + self:GetOwner():EyeAngles().p - math.abs(self:GetOwner():GetViewPunchAngles().p * 2)), 88.5)
 	local tmprecoilangclamped = Angle(math.Clamp(tmprecoilang.p, -maxdist, maxdist), tmprecoilang.y, 0)
