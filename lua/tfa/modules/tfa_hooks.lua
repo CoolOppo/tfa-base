@@ -266,12 +266,8 @@ if CLIENT then
 		CHudSecondaryAmmo = true
 	}
 
-	local TFACrossHide = {
-		CHudCrosshair = true
-	}
-
 	hook.Add("HUDShouldDraw", "tfa_hidehud", function(name)
-		if (TFAHudHide[name] and cv_he:GetBool()) or (TFACrossHide[name] and cv_xh:GetBool()) then
+		if (TFAHudHide[name] and cv_he:GetBool()) then
 			local ictfa = TFA.PlayerCarryingTFAWeapon()
 			if ictfa then return false end
 		end
