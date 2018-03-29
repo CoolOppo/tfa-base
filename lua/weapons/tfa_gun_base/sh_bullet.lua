@@ -110,13 +110,13 @@ function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet,
 
 		self.MainBullet.PCFTracer = nil
 
-		if self.TracerName and self.TracerName ~= "" then
-			if self.TracerPCF then
+		if self:GetStat("TracerName") and self:GetStat("TracerName") ~= "" then
+			if self:GetStat("TracerPCF") then
 				TracerName = nil
-				self.MainBullet.PCFTracer = self.TracerName
+				self.MainBullet.PCFTracer = self:GetStat("TracerName")
 				self.MainBullet.Tracer = 0
 			else
-				TracerName = self.TracerName
+				TracerName = self:GetStat("TracerName")
 			end
 		end
 
@@ -131,7 +131,7 @@ function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet,
 		if self.TracerPCF then
 			self.MainBullet.Tracer = 0
 		else
-			self.MainBullet.Tracer = self.TracerCount and self.TracerCount or 3
+			self.MainBullet.Tracer = self:GetStat("TracerCount") or 3
 		end
 		self.MainBullet.TracerName = TracerName
 		self.MainBullet.PenetrationCount = 0

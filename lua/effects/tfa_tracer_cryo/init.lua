@@ -1,7 +1,7 @@
 EFFECT.Mat = Material("effects/laser_tracer")
 EFFECT.Col1 = Color(255, 255, 255, 255) --Color(225,225,225,225)
 EFFECT.Col2 = Color(65, 128, 255, 200)
-EFFECT.Speed = 4096
+EFFECT.Speed = 1024*3
 EFFECT.TracerLength = 128
 
 --[[---------------------------------------------------------
@@ -19,7 +19,7 @@ function EFFECT:Init(data)
 	--self.Alpha = 255
 	self.Life = 0
 	self.MaxLife = self.Length / self.Speed
-	self:SetRenderBoundsWS(self.StartPos, self.EndPos)
+	self:SetRenderBoundsWS(self.StartPos, self.EndPos, Vector(1000,1000,1000))
 	self.CurPos = self.StartPos
 end
 
@@ -44,7 +44,7 @@ lerpedcol.r = Lerp(self.Life, self.Col1.r, self.Col2.r)
 lerpedcol.g = Lerp(self.Life, self.Col1.g, self.Col2.g)
 lerpedcol.b = Lerp(self.Life, self.Col1.b, self.Col2.b)
 lerpedcol.a = Lerp(self.Life, self.Col1.a, self.Col2.a)
-local startbeampos = Lerp(self.Life, self.StartPos, self.EndPos)
-local endbeampos = Lerp(self.Life + self.TracerLength / self.Length, self.StartPos, self.EndPos)
+local startbeampos = LerpVector(self.Life, self.StartPos, self.EndPos)
+local endbeampos = LerpVector(self.Life + self.TracerLength / self.Length, self.StartPos, self.EndPos)
 render.DrawBeam(startbeampos, endbeampos, 8, 0, 1, lerpedcol)
 end

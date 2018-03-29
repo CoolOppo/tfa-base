@@ -46,8 +46,8 @@ end
 SWEP.ShellEffectOverride = nil
 
 function SWEP:MakeShell()
-	if self.ShellEffectOverride then
-		shelltype = self.ShellEffectOverride
+	if self:GetStat("ShellEffectOverride") then
+		shelltype = self:GetStat("ShellEffectOverride")
 	elseif TFA.GetLegacyShellsEnabled() then
 		shelltype = "tfa_shell_legacy"
 	else
@@ -211,7 +211,7 @@ function SWEP:MuzzleSmoke(sp)
 	fx:SetNormal(self:GetOwner():EyeAngles():Forward())
 	fx:SetEntity(self)
 	fx:SetAttachment(att)
-	if CurTime() > ( self.NextSmokeParticle[ att ] or -1 ) and self.SmokeParticle and self.SmokeParticle ~= "" then
+	if CurTime() > ( self.NextSmokeParticle[ att ] or -1 ) and self:GetStat("SmokeParticle") and self:GetStat("SmokeParticle") ~= "" then
 		util.Effect("tfa_muzzlesmoke", fx)
 		self:AddSmokeParticleTBL(att)
 	end
