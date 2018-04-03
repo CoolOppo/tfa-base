@@ -124,10 +124,6 @@ end
 local ccv = GetConVar("cl_tfa_debug_cache")
 
 function SWEP:GetStat( stat, default )
-	if istable(default) then
-		default = table.Copy( default )
-	end
-
 	if self.StatStringCache[ stat ] == nil then
 		local t_stbl = string.Explode(".", stat, false)
 
@@ -150,15 +146,15 @@ function SWEP:GetStat( stat, default )
 				self.StatCache[ stat ] = retval
 				return retval
 			else
-				return default
+				return istable(default) and table.Copy(default) or default
 			end
 		end
 	else
 		if not self:OwnerIsValid() then
-			if IsValid(self) then return self:GetStatRecursive( self, stbl, default ) end
+			if IsValid(self) then return self:GetStatRecursive( self, stbl, istable(default) and table.Copy(default) or default ) end
 			return default
 		end
-		local cs = self:GetStatRecursive( self, stbl, default )
+		local cs = self:GetStatRecursive( self, stbl, istable(default) and table.Copy(default) or default )
 		local cs_og = cs
 		local nc = false
 		for k,v in pairs(self.Attachments) do
