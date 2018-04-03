@@ -129,11 +129,12 @@ function SWEP:GetStat( stat, default )
 	end
 
 	if self.StatStringCache[ stat ] == nil then
-		local t_stbl = string.Explode(".",stat,false)
-		for k,v in pairs(t_stbl) do
-			local tn = tonumber(v)
-			if tn then t_stbl[k] = tn end
+		local t_stbl = string.Explode(".", stat, false)
+
+		for k, v in ipairs(t_stbl) do
+			t_stbl[k] = tonumber(v) or v
 		end
+
 		self.StatStringCache[ stat ] = t_stbl
 	end
 
@@ -144,7 +145,9 @@ function SWEP:GetStat( stat, default )
 			return self.StatCache[ stat ]
 		else
 			retval = self:GetStatRecursive( self, stbl )
+
 			if retval ~= nil then
+				self.StatCache[ stat ] = retval
 				return retval
 			else
 				return default
