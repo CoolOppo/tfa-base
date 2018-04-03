@@ -820,7 +820,7 @@ function SWEP:Think2()
 
 	if stat == TFA.Enum.STATUS_IDLE and self:GetShotgunCancel() then
 		if self.PumpAction then
-			if CurTime() > self:GetNextPrimaryFire() and not self:GetOwner():KeyDown(IN_ATTACK) then
+			if CurTime > self:GetNextPrimaryFire() and not self:GetOwner():KeyDown(IN_ATTACK) then
 				self:DoPump()
 			end
 		else
