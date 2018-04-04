@@ -1095,6 +1095,7 @@ function SWEP:CanPrimaryAttack( )
 			return true
 		end
 	end
+
 	stat = self:GetStatus()
 	if not TFA.Enum.ReadyStatus[stat] and stat ~= TFA.Enum.STATUS_SHOOTING then
 		if self.Shotgun and TFA.Enum.ReloadStatus[stat] then
