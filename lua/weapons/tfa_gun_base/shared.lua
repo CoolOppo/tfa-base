@@ -291,6 +291,7 @@ end
 
 --[[Localize Functions]]
 local l_ct = CurTime
+local CurTime = CurTime
 --[[Frequently Reused Local Vars]]
 local success --Used for animations
 local stat, statend --Weapon status
@@ -654,7 +655,10 @@ function SWEP:Think2()
 	if self.Owner:IsNPC() then
 		return
 	end
-	if self.LuaShellRequestTime > 0 and CurTime() > self.LuaShellRequestTime then
+
+	local CurTime = CurTime()
+
+	if self.LuaShellRequestTime > 0 and CurTime > self.LuaShellRequestTime then
 		self.LuaShellRequestTime = -1
 		self:MakeShell()
 	end
@@ -717,7 +721,7 @@ function SWEP:Think2()
 				waittime = self:GetActivityLength( self:GetLastActivity(), false ) - self:GetActivityLength( self:GetLastActivity(), true )
 				if waittime > 0.01 then
 					finalstat = TFA.GetStatus("reloading_wait")
-					self:SetStatusEnd( CurTime() + waittime )
+					self:SetStatusEnd( CurTime + waittime )
 				else
 					finalstat = self:LoadShell()
 				end
@@ -739,7 +743,7 @@ function SWEP:Think2()
 			end
 			if waittime > 0.01 then
 				finalstat = TFA.GetStatus("reloading_wait")
-				self:SetStatusEnd( CurTime() + waittime )
+				self:SetStatusEnd( CurTime + waittime )
 			else
 				if self:Ammo1() <= 0 or self:Clip1() >= self:GetPrimaryClipSize() or self:GetShotgunCancel() then
 					finalstat = TFA.Enum.STATUS_RELOADING_SHOTGUN_END
@@ -755,7 +759,7 @@ function SWEP:Think2()
 			waittime = self:GetActivityLength( self:GetLastActivity(), false ) - self:GetActivityLength( self:GetLastActivity(), true )
 			if waittime > 0.01 then
 				finalstat = TFA.GetStatus("reloading_wait")
-				self:SetStatusEnd( CurTime() + waittime )
+				self:SetStatusEnd( CurTime + waittime )
 			end
 			--self:SetStatusEnd( self:GetNextPrimaryFire() )
 		elseif stat == TFA.Enum.STATUS_SILENCER_TOGGLE then
@@ -816,7 +820,7 @@ function SWEP:Think2()
 
 	if stat == TFA.Enum.STATUS_IDLE and self:GetShotgunCancel() then
 		if self.PumpAction then
-			if CurTime() > self:GetNextPrimaryFire() and not self:GetOwner():KeyDown(IN_ATTACK) then
+			if CurTime > self:GetNextPrimaryFire() and not self:GetOwner():KeyDown(IN_ATTACK) then
 				self:DoPump()
 			end
 		else
