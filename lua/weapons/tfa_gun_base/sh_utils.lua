@@ -665,12 +665,12 @@ function SWEP:ProcessFireMode()
 	end
 
 	local fmt = self:GetStat("FireModes")
-	fm = fmt[self:GetFireMode()]
+	local _fm = fmt[self:GetFireMode()]
 
-	if fm == "Automatic" or fm == "Auto" then
-		self.Primary.Automatic = true
-	else
-		self.Primary.Automatic = false
+	if not fm or fm ~= _fm then
+		fm = _fm
+		self.Primary.Automatic = fm == "Automatic" or fm == "Auto"
+		self:ClearStatCache()
 	end
 end
 
