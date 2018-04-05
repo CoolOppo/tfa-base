@@ -801,7 +801,7 @@ function SWEP:Think2()
 				if succ == false then
 					self:SetNextIdleAnim(-1)
 				else
-					self:SetNextIdleAnim(math.max(self:GetNextIdleAnim(),CurTime() + 0.1))
+					self:SetNextIdleAnim(math.max(self:GetNextIdleAnim(),CurTime + 0.1))
 				end
 			end
 		end
@@ -813,7 +813,7 @@ function SWEP:Think2()
 				self:PrimaryAttack()
 			else
 				self:SetBurstCount(0)
-				self:SetNextPrimaryFire( CurTime() + self:GetBurstDelay() )
+				self:SetNextPrimaryFire( CurTime + self:GetBurstDelay() )
 			end
 		end
 	end
