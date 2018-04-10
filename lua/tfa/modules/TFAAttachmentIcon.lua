@@ -68,7 +68,7 @@ function PANEL:OnMousePressed()
 end
 
 surface.CreateFont("TFAAttachmentIconFont", {
-	font = "Aral", -- Use the font-name which is shown to you by your operating system Font Viewer, not the file name
+	font = "Roboto", -- Use the font-name which is shown to you by your operating system Font Viewer, not the file name
 	size = 12,
 	weight = 500,
 	blursize = 0,
@@ -85,7 +85,7 @@ surface.CreateFont("TFAAttachmentIconFont", {
 })
 
 surface.CreateFont("TFAAttachmentIconFontTiny", {
-	font = "Aral", -- Use the font-name which is shown to you by your operating system Font Viewer, not the file name
+	font = "Roboto", -- Use the font-name which is shown to you by your operating system Font Viewer, not the file name
 	size = 10,
 	weight = 500,
 	blursize = 0,
