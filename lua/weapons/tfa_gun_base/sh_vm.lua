@@ -285,22 +285,26 @@ function SWEP:GetViewModelPosition( pos, ang )
 		return
 	end
 	if not IsValid(self:GetOwner()) then return end
-	if GetViewEntity().EyeAngles and GetViewEntity()==self:GetOwner() then
+
+	--[[if GetViewEntity().EyeAngles and GetViewEntity()==self:GetOwner() then
 		ang = GetViewEntity():EyeAngles()
-		if not viewpunch_cv then
-			viewpunch_cv = GetConVar("cl_tfa_viewmodel_viewpunch")
-		end
-		if not viewpunch_val then
-			viewpunch_val = viewpunch_cv:GetInt()
-		else
-			local targ = math.Clamp( viewpunch_cv:GetInt() + ( self.IronSightsProgress or 0 ), 0, 1)
-			viewpunch_val = math.Approach(viewpunch_val,targ, (targ - viewpunch_val) * TFA.FrameTime() * 10 )
-		end
-		local vpa = self:GetOwner():GetViewPunchAngles()
-		ang:RotateAroundAxis(ang:Right(),-vpa.p * viewpunch_val)
-		ang:RotateAroundAxis(ang:Up(),vpa.y * viewpunch_val)
-		ang:RotateAroundAxis(ang:Forward(),vpa.r * viewpunch_val)
+	end]] -- NO!
+
+	if not viewpunch_cv then
+		viewpunch_cv = GetConVar("cl_tfa_viewmodel_viewpunch")
 	end
+	if not viewpunch_val then
+		viewpunch_val = viewpunch_cv:GetInt()
+	else
+		local targ = math.Clamp(viewpunch_cv:GetInt() * (1 - self.IronSightsProgress or 0), 0, 1)
+		viewpunch_val = math.Approach(viewpunch_val, targ, (targ - viewpunch_val) * TFA.FrameTime() * 10)
+	end
+
+	local vpa = self:GetOwner():GetViewPunchAngles()
+	ang:RotateAroundAxis(ang:Right(), vpa.p * viewpunch_val)
+	ang:RotateAroundAxis(ang:Up(), vpa.y * viewpunch_val)
+	ang:RotateAroundAxis(ang:Forward(), vpa.r * viewpunch_val)
+
 	--Bobscale
 	if self.Sprint_Mode == TFA.Enum.LOCOMOTION_ANI then
 		self.SprintBobMult = 0
