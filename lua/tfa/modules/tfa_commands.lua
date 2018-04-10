@@ -98,6 +98,10 @@ if GetConVar("sv_tfa_melee_blocking_stun_time") == nil then
 	--print("Damage Multiplier con var created")
 end
 
+if GetConVar("sv_tfa_door_respawn") == nil then
+	CreateConVar("sv_tfa_door_respawn", "-1", {FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE}, "Time for doors to respawn; -1 for never.")
+end
+
 cv_dfc = CreateConVar("sv_tfa_default_clip", "-1", {FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE}, "How many clips will a weapon spawn with? Negative reverts to default values.")
 
 function TFAUpdateDefaultClip()
