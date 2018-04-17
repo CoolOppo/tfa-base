@@ -217,9 +217,11 @@ function SWEP:ReloadCV()
 		if ( not rlcv:GetBool() ) and (not self.Primary.ClipSize_PreEdit) then
 			self.Primary.ClipSize_PreEdit = self.Primary.ClipSize
 			self.Primary.ClipSize = -1
+			self:ClearStatCache()
 		elseif rlcv:GetBool() and self.Primary.ClipSize_PreEdit then
 			self.Primary.ClipSize = self.Primary.ClipSize_PreEdit
 			self.Primary.ClipSize_PreEdit = nil
+			self:ClearStatCache()
 		end
 	end
 end
