@@ -368,7 +368,7 @@ end
 function SWEP:GetFireDelay()
 	if self:GetMaxBurst() > 1 and self:GetStat("Primary.RPM_Burst") and self:GetStat("Primary.RPM_Burst") > 0 then
 		return 60 / self:GetStat("Primary.RPM_Burst")
-	elseif self:GetStat("Primary.RPM_Semi") and not self:GetStat("Primary.Automatic") and self:GetStat("Primary.RPM_Semi") and self:GetStat("Primary.RPM_Semi") > 0 then
+	elseif self:GetStat("Primary.RPM_Semi") and not self.Primary.Automatic and self:GetStat("Primary.RPM_Semi") and self:GetStat("Primary.RPM_Semi") > 0 then
 		return 60 / self:GetStat("Primary.RPM_Semi")
 	elseif self:GetStat("Primary.RPM") and self:GetStat("Primary.RPM") > 0 then
 		return 60 / self:GetStat("Primary.RPM")
@@ -670,7 +670,6 @@ function SWEP:ProcessFireMode()
 	if not fm or fm ~= _fm then
 		fm = _fm
 		self.Primary.Automatic = fm == "Automatic" or fm == "Auto"
-		self:ClearStatCache()
 	end
 end
 

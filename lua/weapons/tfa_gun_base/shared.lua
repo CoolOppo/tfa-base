@@ -401,8 +401,6 @@ function SWEP:PathStatsTable(statID)
 	self[statID .. '_TFA'] = tableCopy
 	local ammo = statID .. '.Ammo'
 	local clipSize = statID .. '.ClipSize'
-	local defaultClip = statID .. '.DefaultClip'
-	local automatic = statID .. '.Automatic'
 	table.Empty(tableDest)
 
 	local ignore = false
@@ -412,10 +410,6 @@ function SWEP:PathStatsTable(statID)
 			return self:GetStat(ammo)
 		elseif key == 'ClipSize' then
 			return self:GetStat(clipSize)
-		elseif key == 'DefaultClip' then
-			return self:GetStat(defaultClip)
-		elseif key == 'Automatic' then
-			return self:GetStat(automatic)
 		else
 			return tableCopy[key]
 		end
