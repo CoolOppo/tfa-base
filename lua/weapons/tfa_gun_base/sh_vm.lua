@@ -194,11 +194,64 @@ Notes:  This is used for calculating the swep viewmodel sway.
 Purpose:  Main SWEP function
 ]]--
 
+
+local eyeAngles,viewPunch,eyeAnglesPunch,oldEyeAngles,delta,motion,counterMotion,compensation,fac,positionCompensation,swayRate,wiggleFactor,flipFactor
+--swayRate = 10
+
+local gunswaycvar = GetConVar("cl_tfa_gunbob_intensity")
+
+function SWEP:Sway(pos, ang)
+	--sanity check
+	if self.Owner:IsNPC() then
+		return
+	end
+	if not self:OwnerIsValid() then return pos, ang end
+	--convar
+	fac = gunswaycvar:GetFloat() * 3 * ( ( 1 - ( self.IronSightsProgress or 0 ) ) * 0.75 + 0.25 )
+	flipFactor =  (self.ViewModelFlip and -1 or 1)
+	--init vars
+	delta = delta or Angle()
+	motion = motion or Angle()
+	counterMotion = counterMotion or Angle()
+	compensation = compensation or Angle()
+	--grab eye angles
+	eyeAngles = self:GetOwner():EyeAngles()
+	viewPunch = self:GetOwner():GetViewPunchAngles()
+	eyeAngles.p = eyeAngles.p - viewPunch.p 
+	eyeAngles.y = eyeAngles.y - viewPunch.y
+	oldEyeAngles = oldEyeAngles or eyeAngles
+	--calculate delta
+	delta.p = math.AngleDifference(eyeAngles.p,oldEyeAngles.p)
+	delta.y = math.AngleDifference(eyeAngles.y,oldEyeAngles.y)
+	delta.r = math.AngleDifference(eyeAngles.r,oldEyeAngles.r)
+	oldEyeAngles = eyeAngles
+	--calculate motions, based on Juckey's methods
+	wiggleFactor = (1- self:GetStat("MoveSpeed") ) / 0.7 + 0.1
+	swayRate = math.pow( self:GetStat("MoveSpeed"), 1.5 ) * 8
+	counterMotion = LerpAngle(ft * ( swayRate * ( 0.75 + (0.5-wiggleFactor) ) ), counterMotion, -motion)
+	compensation.p = math.AngleDifference(motion.p, -counterMotion.p)
+	compensation.y = math.AngleDifference(motion.y, -counterMotion.y)
+	motion = LerpAngle(ft * swayRate, motion, delta + compensation)
+	--modify position/angle
+	positionCompensation = 0.2 + 0.2 * ( self.IronSightsProgress or 0 )
+	pos:Add( -motion.y * positionCompensation * 0.5 * fac * ang:Right() * flipFactor ) --compensate position for yaw
+	pos:Add( -motion.p * positionCompensation * fac * ang:Up() ) --compensate position for pitch
+
+	ang:RotateAroundAxis(ang:Right(),   motion.p * fac)
+	ang:RotateAroundAxis(ang:Up(),      -motion.y * 0.5 * fac * flipFactor)
+	ang:RotateAroundAxis(ang:Forward(), counterMotion.r * 0.5 * fac * flipFactor)
+
+	return pos, ang
+end
+
+
+--[[
 local oldang = Angle()
 local anga = Angle()
 local angb = Angle()
 local angc = Angle()
 local posfac = 0
+
 local gunswaycvar = GetConVar("cl_tfa_gunbob_intensity")
 
 function SWEP:Sway(pos, ang)
@@ -268,6 +321,7 @@ function SWEP:Sway(pos, ang)
 
 	return pos, util_NormalizeAngles(ang)
 end
+]]--
 
 local gunbob_intensity_cvar = GetConVar("cl_tfa_gunbob_intensity")
 local vmfov
