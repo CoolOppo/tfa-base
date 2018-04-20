@@ -226,7 +226,7 @@ function SWEP:Sway(pos, ang)
 	delta.r = math.AngleDifference(eyeAngles.r,oldEyeAngles.r) / ft * 0.0075
 	oldEyeAngles = eyeAngles
 	--calculate motions, based on Juckey's methods
-	wiggleFactor = (1- self:GetStat("MoveSpeed") ) / 0.7 + 0.1
+	wiggleFactor = (1- self:GetStat("MoveSpeed") ) / 0.6 + 0.15
 	swayRate = math.pow( self:GetStat("MoveSpeed"), 1.5 ) * 8
 	counterMotion = LerpAngle(ft * ( swayRate * ( 0.75 + (0.5-wiggleFactor) ) ), counterMotion, -motion)
 	compensation.p = math.AngleDifference(motion.p, -counterMotion.p)
@@ -323,7 +323,6 @@ function SWEP:Sway(pos, ang)
 end
 ]]--
 
-local gunbob_intensity_cvar = GetConVar("cl_tfa_gunbob_intensity")
 local vmfov
 local bbvec
 
@@ -331,8 +330,8 @@ function SWEP:AirWalkScale()
 	return (( self:OwnerIsValid() and self:GetOwner():IsOnGround() ) and 1 or 0.2 )
 end
 
-local viewpunch_cv
-local viewpunch_val
+local viewpunch_cv,viewpunch_val
+local intensityWalk,intensityRun,intensityBreath
 
 function SWEP:GetViewModelPosition( pos, ang )
 	if self.Owner:IsNPC() then
@@ -363,10 +362,16 @@ function SWEP:GetViewModelPosition( pos, ang )
 	if self.Sprint_Mode == TFA.Enum.LOCOMOTION_ANI then
 		self.SprintBobMult = 0
 	end
-	self.BobScaleCustom = l_Lerp(self.IronSightsProgress, l_Lerp( math.min( self:GetOwner():GetVelocity():Length() / self:GetOwner():GetWalkSpeed(), 1 ),0.2,0.4), l_Lerp( math.min( self:GetOwner():GetVelocity():Length() / self:GetOwner():GetWalkSpeed(), 1 ), self:GetStat("IronBobMult") / 4, self:GetStat("IronBobMultWalk") / 4))
-	self.BobScaleCustom = l_Lerp(self.SprintProgress, self.BobScaleCustom, self.SprintBobMult )
+
+	intensityWalk =  math.min( self:GetOwner():GetVelocity():Length2D() / self:GetOwner():GetWalkSpeed(), 1 )
+	intensityBreath = l_Lerp(self.IronSightsProgress,self:GetStat("BreathScale",0.2),self:GetStat("IronBobMultWalk",0.5) * intensityWalk)
+	intensityWalk = intensityWalk * (1-self.IronSightsProgress)
+	intensityRun = l_Lerp(self.SprintProgress,0,self.SprintBobMult)
+
+	if (self.Idle_Mode ~= TFA.Enum.IDLE_LUA and self.Idle_Mode ~= TFA.Enum.IDLE_BOTH) then
+		intensityWalk = 0
+	end
 	--Start viewbob code
-	local gunbobintensity = gunbob_intensity_cvar:GetFloat()
 	if not ang then ang = EyeAngles() end
 	--ang:RotateAroundAxis(ang:Forward(), -Qerp(self.IronSightsProgress and self.IronSightsProgress or 0, qerp1, 0))
 	--End viewbob code
@@ -409,9 +414,9 @@ function SWEP:GetViewModelPosition( pos, ang )
 		--end
 	end
 
-	if self.Idle_Mode == TFA.Enum.IDLE_LUA or self.Idle_Mode == TFA.Enum.IDLE_BOTH then
-		pos, ang = self:CalculateBob(pos, ang, gunbobintensity * self.BobScaleCustom * 0.5, math.min( math.max( 0.25, math.sqrt( ( math.max(self:GetOwner():GetVelocity():Length2D() * self:AirWalkScale() - self:GetOwner():GetVelocity().z * 0.5,0) ) / self:GetOwner():GetRunSpeed() ) * 1.75 ), self:GetSprinting() and 5 or 3) )
-	end
+	local velocity = math.max(self:GetOwner():GetVelocity():Length2D() * self:AirWalkScale() - self:GetOwner():GetVelocity().z * 0.5,0)
+	local rate = math.min( math.max( 0.15, math.sqrt( ( velocity ) / self:GetOwner():GetRunSpeed() ) * 1.75 ), self:GetSprinting() and 5 or 3)
+	pos, ang = self:CalculateBob(pos, ang, math.max( intensityBreath-intensityWalk-intensityRun,0), math.max( intensityWalk-intensityRun,0), intensityRun, rate )
 
 	if self:GetHidden() then
 		pos = pos - ang:Up() * 5

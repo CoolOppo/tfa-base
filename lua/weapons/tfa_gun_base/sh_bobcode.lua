@@ -5,6 +5,10 @@ SWEP.LastCalcBob = 0
 SWEP.tiView = 0
 SWEP.LastCalcViewBob = 0
 
+local TAU = math.pi * 2
+
+local goal
+
 local rate_up = 12
 local scale_up = 0.3
 local rate_right = 6
@@ -28,14 +32,22 @@ local pist_scale = 8
 
 local rate_clamp = 2
 
+local walk_offset_h,walk_offset_v,walk_offset_loop_h,walk_offset_loop_v = 0,0,0,0
+local walkIntensitySmooth = 0
+local walkRate = 160/60*TAU--steps are at 160bpm at default velocity, then divide that by 60 for per-second, multiply by TAU for trig, divided by default walk rate
+local walkVec = Vector()
 
 local sv_cheats_cv = GetConVar("sv_cheats")
 local host_timescale_cv = GetConVar("host_timescale")
+local gunbob_intensity_cvar = GetConVar("cl_tfa_gunbob_intensity")
+local gunbob_intensity = 0
 
-function SWEP:CalculateBob(pos, ang, intensity, rate )
+SWEP.VMOffsetWalk = Vector(0.5,-0.5,-0.5)
+
+function SWEP:CalculateBob(pos, ang, breathIntensity, walkIntensity, runIntensity, rate )
 	if not self:OwnerIsValid() then return end
 	rate = math.min( rate, rate_clamp )
-
+	gunbob_intensity = gunbob_intensity_cvar:GetFloat()
 	local ea = self.Owner:EyeAngles()
 	local up = ang:Up()
 	local ri = ang:Right()
@@ -59,58 +71,91 @@ function SWEP:CalculateBob(pos, ang, intensity, rate )
 		end
 	end
 
-	if self.SprintStyle == 1 then
-		local intensity2 = math.Clamp( intensity, 0.0, 0.2 )
-		local intensity3 = math.max(intensity-0.3,0) / ( 1 - 0.3 )
 
-		pos:Add( up * math.sin( self.ti * rate_up ) * scale_up * intensity2 )
-		pos:Add( ri * math.sin( self.ti * rate_right ) * scale_right * intensity2 )
-		pos:Add( ea:Forward()  * math.sin( self.ti * rate_forward_view ) * scale_forward_view * intensity2 )
-		pos:Add( ea:Right() * math.sin( self.ti * rate_right_view ) * scale_right_view * intensity2 )
+	--preceding calcs
+	goal=walkIntensity
+	walkIntensitySmooth = Lerp( delta * 10, walkIntensitySmooth,goal)
+	walkVec = LerpVector(walkIntensitySmooth,vector_origin,self.VMOffsetWalk)
+	--multipliers
+	breathIntensity = breathIntensity * gunbob_intensity * 1.5
+	walkIntensity = walkIntensitySmooth * gunbob_intensity * 1.5
+	runIntensity = runIntensity * gunbob_intensity * 1.5
+	--breathing
+	pos:Add( ri * math.cos(self.ti * walkRate / 2 ) * flip_v * breathIntensity * 0.6 )
+	pos:Add( up * math.sin(self.ti * walkRate ) * breathIntensity * 0.3 )
+	--footsteps
+	local targ = math.pow( math.max(math.sin( self.ti * walkRate ),0) ,2) * (self.Owner:IsOnGround() and 1 or 0)
+	self.footstepFac = Lerp(delta*7, self.footstepFac or 0, targ )
+	ang:RotateAroundAxis( ri, -self.footstepFac * scale_p * walkIntensity  * 1 * walkIntensitySmooth )
+	pos:Add( -up * -self.footstepFac * scale_p * 0.1 * walkIntensity  * 1 * walkIntensitySmooth  )
+	pos:Add( -fw *-self.footstepFac * scale_p * 0.1 * walkIntensity * 1 * walkIntensitySmooth )
+	--yawing
+	pos:Add( ri * math.sin( self.ti * walkRate / 4 ) * scale_y * 0.1 * walkIntensity * flip_v * 0.2   )
+	ang:RotateAroundAxis( ang:Up(), math.sin( self.ti * walkRate / 4 ) * scale_y * walkIntensity * flip_v * 0.2   )
+	--rolling
+	pos:Add( ri * math.sin( self.ti * walkRate / 2 ) * scale_r * 0.1 * walkIntensity * flip_v * 0.4   )
+	pos:Add( -up * math.sin( self.ti * walkRate / 2 ) * scale_r * 0.1 * walkIntensity * 0.4 )
+	ang:RotateAroundAxis( ang:Forward(), math.sin( self.ti * walkRate / 2 ) * scale_r * walkIntensity * flip_v * 0.4   )
+	--constant offset
+	pos:Add( ri * walkVec.x * flip_v )
+	pos:Add( fw * walkVec.y )
+	pos:Add( up * walkVec.z  )
 
-		ang:RotateAroundAxis( ri, math.sin( self.ti * rate_p ) * scale_p * intensity2 )
-		pos:Add( -up * math.sin( self.ti * rate_p ) * scale_p * 0.1 * intensity2 )
-		pos:Add( -fw * math.sin( self.ti * rate_p ) * scale_p * 0.1 * intensity2 )
+	--sprint calculations
+	if self.SprintProgress>0.005 then
+		if self.SprintStyle == 1 then
+			local intensity2 = math.Clamp( runIntensity, 0.0, 0.2 )
+			local intensity3 = math.max(runIntensity-0.3,0) / ( 1 - 0.3 )
 
-		ang:RotateAroundAxis( ang:Up(), math.sin( self.ti * rate_y ) * scale_y * intensity2 )
-		pos:Add( ri * math.sin( self.ti * rate_y ) * scale_y * 0.1 * intensity2 )
-		pos:Add( fw * math.sin( self.ti * rate_y ) * scale_y * 0.1 * intensity2 )
+			pos:Add( up * math.sin( self.ti * rate_up ) * scale_up * intensity2* 0.33 )
+			pos:Add( ri * math.sin( self.ti * rate_right ) * scale_right * intensity2* 0.33 )
+			pos:Add( ea:Forward()  * math.sin( self.ti * rate_forward_view ) * scale_forward_view * intensity2* 0.33 )
+			pos:Add( ea:Right() * math.sin( self.ti * rate_right_view ) * scale_right_view * intensity2* 0.33 )
 
-		ang:RotateAroundAxis( ang:Forward(), math.sin( self.ti * rate_r ) * scale_r * intensity2 )
-		pos:Add( ri * math.sin( self.ti * rate_r ) * scale_r * 0.1 * intensity2 )
-		pos:Add( -up * math.sin( self.ti * rate_r ) * scale_r * 0.1 * intensity2)
+			ang:RotateAroundAxis( ri, math.sin( self.ti * rate_p ) * scale_p * intensity2* 0.33 )
+			pos:Add( -up * math.sin( self.ti * rate_p ) * scale_p * 0.1 * intensity2* 0.33 )
+			pos:Add( -fw * math.sin( self.ti * rate_p ) * scale_p * 0.1 * intensity2* 0.33 )
 
-		ang:RotateAroundAxis( ang:Up(), math.sin( self.ti * pist_rate ) * pist_scale * intensity3 )
-		pos:Add( ri * math.sin( self.ti * pist_rate ) * pist_scale * 0.1 * intensity3 )
-		pos:Add( fw * math.sin( self.ti * pist_rate * 2 ) * pist_scale * 0.1 * intensity3)
-		--pos:Add( fw * math.sin( self.ti * pist_rate ) * pist_scale * 0.1 * intensity )
+			ang:RotateAroundAxis( ang:Up(), math.sin( self.ti * rate_y ) * scale_y * intensity2* 0.33 )
+			pos:Add( ri * math.sin( self.ti * rate_y ) * scale_y * 0.1 * intensity2* 0.33 )
+			pos:Add( fw * math.sin( self.ti * rate_y ) * scale_y * 0.1 * intensity2* 0.33 )
 
-	else
-		pos:Add( up * math.sin( self.ti * rate_up ) * scale_up * intensity )
-		pos:Add( ri * math.sin( self.ti * rate_right ) * scale_right * intensity * flip_v )
-		pos:Add( ea:Forward()  * math.max( math.sin( self.ti * rate_forward_view ), 0 ) * scale_forward_view * intensity  )
-		pos:Add( ea:Right() * math.sin( self.ti * rate_right_view ) * scale_right_view * intensity * flip_v  )
+			ang:RotateAroundAxis( ang:Forward(), math.sin( self.ti * rate_r ) * scale_r * intensity2* 0.33 )
+			pos:Add( ri * math.sin( self.ti * rate_r ) * scale_r * 0.1 * intensity2* 0.33 )
+			pos:Add( -up * math.sin( self.ti * rate_r ) * scale_r * 0.1 * intensity2* 0.33)
 
-		ang:RotateAroundAxis( ri, math.sin( self.ti * rate_p ) * scale_p * intensity )
-		pos:Add( -up * math.sin( self.ti * rate_p ) * scale_p * 0.1 * intensity )
-		pos:Add( -fw * math.sin( self.ti * rate_p ) * scale_p * 0.1 * intensity )
+			ang:RotateAroundAxis( ang:Up(), math.sin( self.ti * pist_rate ) * pist_scale * intensity3* 0.33 )
+			pos:Add( ri * math.sin( self.ti * pist_rate ) * pist_scale * 0.1 * intensity3* 0.33 )
+			pos:Add( fw * math.sin( self.ti * pist_rate * 2 ) * pist_scale * 0.1 * intensity3* 0.33)
+			--pos:Add( fw * math.sin( self.ti * pist_rate ) * pist_scale * 0.1 * runIntensity* 0.33 )
 
-		ang:RotateAroundAxis( ang:Up(), math.sin( self.ti * rate_y ) * scale_y * intensity * flip_v  )
-		pos:Add( ri * math.sin( self.ti * rate_y ) * scale_y * 0.1 * intensity * flip_v  )
-		pos:Add( fw * math.sin( self.ti * rate_y ) * scale_y * 0.1 * intensity )
+		else
+			pos:Add( up * math.sin( self.ti * rate_up ) * scale_up * runIntensity* 0.33 )
+			pos:Add( ri * math.sin( self.ti * rate_right ) * scale_right * runIntensity * flip_v* 0.33 )
+			pos:Add( ea:Forward()  * math.max( math.sin( self.ti * rate_forward_view ), 0 ) * scale_forward_view * runIntensity* 0.33  )
+			pos:Add( ea:Right() * math.sin( self.ti * rate_right_view ) * scale_right_view * runIntensity * flip_v* 0.33  )
 
-		ang:RotateAroundAxis( ang:Forward(), math.sin( self.ti * rate_r ) * scale_r * intensity * flip_v  )
-		pos:Add( ri * math.sin( self.ti * rate_r ) * scale_r * 0.1 * intensity * flip_v  )
-		pos:Add( -up * math.sin( self.ti * rate_r ) * scale_r * 0.1 * intensity )
+			ang:RotateAroundAxis( ri, math.sin( self.ti * rate_p ) * scale_p * runIntensity* 0.33 )
+			pos:Add( -up * math.sin( self.ti * rate_p ) * scale_p * 0.1 * runIntensity* 0.33 )
+			pos:Add( -fw * math.sin( self.ti * rate_p ) * scale_p * 0.1 * runIntensity* 0.33 )
 
+			ang:RotateAroundAxis( ang:Up(), math.sin( self.ti * rate_y ) * scale_y * runIntensity * flip_v* 0.33  )
+			pos:Add( ri * math.sin( self.ti * rate_y ) * scale_y * 0.1 * runIntensity * flip_v* 0.33  )
+			pos:Add( fw * math.sin( self.ti * rate_y ) * scale_y * 0.1 * runIntensity* 0.33 )
+
+			ang:RotateAroundAxis( ang:Forward(), math.sin( self.ti * rate_r ) * scale_r * runIntensity * flip_v* 0.33  )
+			pos:Add( ri * math.sin( self.ti * rate_r ) * scale_r * 0.1 * runIntensity * flip_v* 0.33  )
+			pos:Add( -up * math.sin( self.ti * rate_r ) * scale_r * 0.1 * runIntensity* 0.33 )
+
+		end
 	end
-
+	
 	return pos, ang
 end
 
 SWEP.BobEyeFocus = 512
 
-function SWEP:CalculateViewBob( pos, ang, intensity, compensate )
+function SWEP:CalculateViewBob( pos, ang, runIntensity, compensate )
 	if not self:OwnerIsValid() then return end
 	local up = ang:Up()
 	local ri = ang:Right()
@@ -131,8 +176,8 @@ function SWEP:CalculateViewBob( pos, ang, intensity, compensate )
 		ldist = util.QuickTrace( pos, ang:Forward() * 999999, { self:GetOwner(), e } ).HitPos:Distance( pos )
 	end
 	self.BobEyeFocus = math.Approach( self.BobEyeFocus, ldist, (ldist-self.BobEyeFocus) * delta * 10 )
-	pos:Add( up * math.sin( ( self.tiView + 0.5 ) * rate_up ) * scale_up * intensity * -7 )
-	pos:Add( ri * math.sin( ( self.tiView + 0.5 ) * rate_right ) * scale_right * intensity * -7 )
+	pos:Add( up * math.sin( ( self.tiView + 0.5 ) * rate_up ) * scale_up * runIntensity * -7 )
+	pos:Add( ri * math.sin( ( self.tiView + 0.5 ) * rate_right ) * scale_right * runIntensity * -7 )
 
 	--ang = ang + vpa
 
