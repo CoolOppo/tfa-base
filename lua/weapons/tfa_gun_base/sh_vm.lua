@@ -221,9 +221,9 @@ function SWEP:Sway(pos, ang)
 	eyeAngles.y = eyeAngles.y - viewPunch.y
 	oldEyeAngles = oldEyeAngles or eyeAngles
 	--calculate delta
-	delta.p = math.AngleDifference(eyeAngles.p,oldEyeAngles.p)
-	delta.y = math.AngleDifference(eyeAngles.y,oldEyeAngles.y)
-	delta.r = math.AngleDifference(eyeAngles.r,oldEyeAngles.r)
+	delta.p = math.AngleDifference(eyeAngles.p,oldEyeAngles.p) / ft * 0.0075
+	delta.y = math.AngleDifference(eyeAngles.y,oldEyeAngles.y) / ft * 0.0075
+	delta.r = math.AngleDifference(eyeAngles.r,oldEyeAngles.r) / ft * 0.0075
 	oldEyeAngles = eyeAngles
 	--calculate motions, based on Juckey's methods
 	wiggleFactor = (1- self:GetStat("MoveSpeed") ) / 0.7 + 0.1
@@ -231,7 +231,7 @@ function SWEP:Sway(pos, ang)
 	counterMotion = LerpAngle(ft * ( swayRate * ( 0.75 + (0.5-wiggleFactor) ) ), counterMotion, -motion)
 	compensation.p = math.AngleDifference(motion.p, -counterMotion.p)
 	compensation.y = math.AngleDifference(motion.y, -counterMotion.y)
-	motion = LerpAngle(ft * swayRate, motion, delta + compensation)
+	motion = LerpAngle( ft * swayRate, motion, delta + compensation)
 	--modify position/angle
 	positionCompensation = 0.2 + 0.2 * ( self.IronSightsProgress or 0 )
 	pos:Add( -motion.y * positionCompensation * 0.5 * fac * ang:Right() * flipFactor ) --compensate position for yaw
