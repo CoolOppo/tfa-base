@@ -195,7 +195,7 @@ Purpose:  Main SWEP function
 ]]--
 
 
-local eyeAngles,viewPunch,eyeAnglesPunch,oldEyeAngles,delta,motion,counterMotion,compensation,fac,positionCompensation,swayRate,wiggleFactor,flipFactor
+local ftc,eyeAngles,viewPunch,eyeAnglesPunch,oldEyeAngles,delta,motion,counterMotion,compensation,fac,positionCompensation,swayRate,wiggleFactor,flipFactor
 --swayRate = 10
 
 local gunswaycvar = GetConVar("cl_tfa_gunbob_intensity")
@@ -221,9 +221,10 @@ function SWEP:Sway(pos, ang)
 	eyeAngles.y = eyeAngles.y - viewPunch.y
 	oldEyeAngles = oldEyeAngles or eyeAngles
 	--calculate delta
-	delta.p = math.AngleDifference(eyeAngles.p,oldEyeAngles.p) / ft * 0.0075
-	delta.y = math.AngleDifference(eyeAngles.y,oldEyeAngles.y) / ft * 0.0075
-	delta.r = math.AngleDifference(eyeAngles.r,oldEyeAngles.r) / ft * 0.0075
+	ftc = math.max(ft,0.0001)
+	delta.p = math.AngleDifference(eyeAngles.p,oldEyeAngles.p) / ftc * 0.0075
+	delta.y = math.AngleDifference(eyeAngles.y,oldEyeAngles.y) / ftc * 0.0075
+	delta.r = math.AngleDifference(eyeAngles.r,oldEyeAngles.r) / ftc * 0.0075
 	oldEyeAngles = eyeAngles
 	--calculate motions, based on Juckey's methods
 	wiggleFactor = (1- self:GetStat("MoveSpeed") ) / 0.6 + 0.15
@@ -243,85 +244,6 @@ function SWEP:Sway(pos, ang)
 
 	return pos, ang
 end
-
-
---[[
-local oldang = Angle()
-local anga = Angle()
-local angb = Angle()
-local angc = Angle()
-local posfac = 0
-
-local gunswaycvar = GetConVar("cl_tfa_gunbob_intensity")
-
-function SWEP:Sway(pos, ang)
-	if self.Owner:IsNPC() then
-		return
-	end
-	if not self:OwnerIsValid() then return pos, ang end
-	rft = (SysTime() - (self.LastSysT or SysTime())) * game.GetTimeScale()
-
-	if rft > l_FT() then
-		rft = l_FT()
-	end
-
-	rft = l_mathClamp(rft, 0, 1 / 30)
-
-	if sv_cheats_cv:GetBool() and host_timescale_cv:GetFloat() < 1 then
-		rft = rft * host_timescale_cv:GetFloat()
-	end
-
-	self.LastSysT = SysTime()
-	ang:Normalize()
-	--angrange = our availalbe ranges
-	--rate = rate to restore our angle to the proper one
-	--fac = factor to multiply by
-	--each is interpolated from normal value to the ironsights value using iron sights ratio
-	local angrange = l_Lerp(self.IronSightsProgress, 15, 2.5) * gunswaycvar:GetFloat()
-	local rate = l_Lerp(self.IronSightsProgress, 15, 30)
-	local fac = l_Lerp(self.IronSightsProgress, 0.6, 0.15)
-	--calculate angle differences
-	anga = self:GetOwner():EyeAngles() - oldang
-	oldang = self:GetOwner():EyeAngles()
-	angb.y = angb.y + (0 - angb.y) * rft * 5
-	angb.p = angb.p + (0 - angb.p) * rft * 5
-
-	--fix jitter
-	if angb.y < 50 and anga.y > 0 and anga.y < 25 then
-		angb.y = angb.y + anga.y / 5
-	end
-
-	if angb.y > -50 and anga.y < 0 and anga.y > -25 then
-		angb.y = angb.y + anga.y / 5
-	end
-
-	if angb.p < 50 and anga.p < 0 and anga.p < 25 then
-		angb.p = angb.p - anga.p / 5
-	end
-
-	if angb.p > -50 and anga.p > 0 and anga.p > -25 then
-		angb.p = angb.p - anga.p / 5
-	end
-
-	--limit range
-	angb.p = l_mathClamp(angb.p, -angrange, angrange)
-	angb.y = l_mathClamp(angb.y, -angrange, angrange)
-	--recover
-	angc.y = angc.y + (angb.y / 15 - angc.y) * rft * rate
-	angc.p = angc.p + (angb.p / 15 - angc.p) * rft * rate
-	--finally, blend it into the angle
-	ang:RotateAroundAxis(oldang:Up(), angc.y * 15 * (self.ViewModelFlip and -1 or 1) * fac)
-	ang:RotateAroundAxis(oldang:Right(), angc.p * 15 * fac)
-	ang:RotateAroundAxis(oldang:Forward(), angc.y * 10 * fac * (self.ViewModelFlip and -1 or 1))
-	pos:Add(oldang:Right() * angc.y * posfac * (self.ViewModelFlip and -1 or 1))
-	pos:Add(oldang:Up() * -angc.p * posfac)
-	--extras
-	pos:Add( oldang:Up() * math.sin( math.rad(angc.p) ) * -75 )
-	pos:Add( oldang:Right() * math.sin( math.rad(angc.y) ) * 75  * (self.ViewModelFlip and -1 or 1) )
-
-	return pos, util_NormalizeAngles(ang)
-end
-]]--
 
 local vmfov
 local bbvec
@@ -371,6 +293,10 @@ function SWEP:GetViewModelPosition( pos, ang )
 	if (self.Idle_Mode ~= TFA.Enum.IDLE_LUA and self.Idle_Mode ~= TFA.Enum.IDLE_BOTH) then
 		intensityWalk = 0
 	end
+
+	local velocity = math.max(self:GetOwner():GetVelocity():Length2D() * self:AirWalkScale() - self:GetOwner():GetVelocity().z * 0.5,0)
+	local rate = math.min( math.max( 0.15, math.sqrt( ( velocity ) / self:GetOwner():GetRunSpeed() ) * 1.75 ), self:GetSprinting() and 5 or 3)
+	pos, ang = self:CalculateBob(pos, ang, math.max( intensityBreath-intensityWalk-intensityRun,0), math.max( intensityWalk-intensityRun,0), intensityRun, rate )
 	--Start viewbob code
 	if not ang then ang = EyeAngles() end
 	--ang:RotateAroundAxis(ang:Forward(), -Qerp(self.IronSightsProgress and self.IronSightsProgress or 0, qerp1, 0))
@@ -413,10 +339,6 @@ function SWEP:GetViewModelPosition( pos, ang )
 		pos:Add(ang:Up() * bbvec.z * self.BlowbackCurrentRoot)
 		--end
 	end
-
-	local velocity = math.max(self:GetOwner():GetVelocity():Length2D() * self:AirWalkScale() - self:GetOwner():GetVelocity().z * 0.5,0)
-	local rate = math.min( math.max( 0.15, math.sqrt( ( velocity ) / self:GetOwner():GetRunSpeed() ) * 1.75 ), self:GetSprinting() and 5 or 3)
-	pos, ang = self:CalculateBob(pos, ang, math.max( intensityBreath-intensityWalk-intensityRun,0), math.max( intensityWalk-intensityRun,0), intensityRun, rate )
 
 	if self:GetHidden() then
 		pos = pos - ang:Up() * 5

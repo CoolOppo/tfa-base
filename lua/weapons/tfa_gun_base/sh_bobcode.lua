@@ -33,9 +33,13 @@ local pist_scale = 8
 local rate_clamp = 2
 
 local walk_offset_h,walk_offset_v,walk_offset_loop_h,walk_offset_loop_v = 0,0,0,0
-local walkIntensitySmooth = 0
+local walkIntensitySmooth,breathIntensitySmooth = 0,0
 local walkRate = 160/60*TAU--steps are at 160bpm at default velocity, then divide that by 60 for per-second, multiply by TAU for trig, divided by default walk rate
 local walkVec = Vector()
+local ownerVelocity,ownerVelocityMod = Vector(), Vector()
+local zVelocity,zVelocitySmooth = 0,0
+local xVelocity,xVelocitySmooth, rightVec = 0,0, Vector()
+local flatVec = Vector(1,1,0)
 
 local sv_cheats_cv = GetConVar("sv_cheats")
 local host_timescale_cv = GetConVar("host_timescale")
@@ -73,25 +77,40 @@ function SWEP:CalculateBob(pos, ang, breathIntensity, walkIntensity, runIntensit
 
 
 	--preceding calcs
-	goal=walkIntensity
-	walkIntensitySmooth = Lerp( delta * 10, walkIntensitySmooth,goal)
+	walkIntensitySmooth = Lerp( delta * 10, walkIntensitySmooth,walkIntensity)
+	breathIntensitySmooth = Lerp( delta * 10, breathIntensitySmooth,breathIntensity)
 	walkVec = LerpVector(walkIntensitySmooth,vector_origin,self.VMOffsetWalk)
+	ownerVelocity = self:GetOwner():GetVelocity()
+	zVelocity = ownerVelocity.z
+	zVelocitySmooth = Lerp( delta * 10, zVelocitySmooth,zVelocity)
+	ownerVelocityMod = ownerVelocity * flatVec
+	ownerVelocityMod:Normalize()
+	rightVec = ea:Right() * flatVec
+	rightVec:Normalize()
+	xVelocity = ownerVelocity:Length2D() * ownerVelocityMod:Dot( rightVec )
+	xVelocitySmooth = Lerp( delta * 7, xVelocitySmooth,xVelocity)
 	--multipliers
-	breathIntensity = breathIntensity * gunbob_intensity * 1.5
+	breathIntensity = breathIntensitySmooth * gunbob_intensity * 1.5
 	walkIntensity = walkIntensitySmooth * gunbob_intensity * 1.5
 	runIntensity = runIntensity * gunbob_intensity * 1.5
 	--breathing
 	pos:Add( ri * math.cos(self.ti * walkRate / 2 ) * flip_v * breathIntensity * 0.6 )
 	pos:Add( up * math.sin(self.ti * walkRate ) * breathIntensity * 0.3 )
 	--footsteps
+	--[[
 	local targ = math.pow( math.max(math.sin( self.ti * walkRate ),0) ,2) * (self.Owner:IsOnGround() and 1 or 0)
 	self.footstepFac = Lerp(delta*7, self.footstepFac or 0, targ )
-	ang:RotateAroundAxis( ri, -self.footstepFac * scale_p * walkIntensity  * 1 * walkIntensitySmooth )
-	pos:Add( -up * -self.footstepFac * scale_p * 0.1 * walkIntensity  * 1 * walkIntensitySmooth  )
-	pos:Add( -fw *-self.footstepFac * scale_p * 0.1 * walkIntensity * 1 * walkIntensitySmooth )
+	]]--
+	local targ = 1-math.Clamp(CurTime() - (self:GetOwner().lastFootstep or -1),0,0.2)/0.2
+	self.footstepFac = Lerp(delta*6, self.footstepFac or 0, targ )
+	targ = math.min( math.max(1-self.IronSightsProgress, math.abs( zVelocity ) / 200 ), 1)
+	self.footstepVelocityFac = Lerp(delta*15, self.footstepVelocityFac or 0, targ )
+	ang:RotateAroundAxis( ri, -self.footstepFac * scale_p * gunbob_intensity  * 1.5 * self.footstepVelocityFac )
+	pos:Add( -up * -self.footstepFac * scale_p * 0.1 * gunbob_intensity  * 1.5 * self.footstepVelocityFac  )
+	pos:Add( -fw *-self.footstepFac * scale_p * 0.1 * gunbob_intensity * 1.5 * self.footstepVelocityFac )
 	--yawing
-	pos:Add( ri * math.sin( self.ti * walkRate / 4 ) * scale_y * 0.1 * walkIntensity * flip_v * 0.2   )
-	ang:RotateAroundAxis( ang:Up(), math.sin( self.ti * walkRate / 4 ) * scale_y * walkIntensity * flip_v * 0.2   )
+	pos:Add( ri * math.sin( self.ti * walkRate / 4 ) * scale_y * 0.1 * walkIntensity * flip_v * 0.1   )
+	ang:RotateAroundAxis( ang:Up(), math.sin( self.ti * walkRate / 4 ) * scale_y * walkIntensity * flip_v * 0.1  )
 	--rolling
 	pos:Add( ri * math.sin( self.ti * walkRate / 2 ) * scale_r * 0.1 * walkIntensity * flip_v * 0.4   )
 	pos:Add( -up * math.sin( self.ti * walkRate / 2 ) * scale_r * 0.1 * walkIntensity * 0.4 )
@@ -100,7 +119,14 @@ function SWEP:CalculateBob(pos, ang, breathIntensity, walkIntensity, runIntensit
 	pos:Add( ri * walkVec.x * flip_v )
 	pos:Add( fw * walkVec.y )
 	pos:Add( up * walkVec.z  )
-
+	--jumping
+	local trigX = -math.Clamp(zVelocitySmooth/200,-1,1)*math.pi/2
+	local jumpIntensity = ( 3 + math.Clamp(math.abs(zVelocitySmooth)-100,0,200)/200*4 ) * ( 1-self.IronSightsProgress*0.8 )
+	pos:Add( ri * math.sin( trigX ) * scale_r * 0.1 * jumpIntensity * flip_v * 0.4   )
+	pos:Add( -up * math.sin( trigX ) * scale_r * 0.1 * jumpIntensity * 0.4 )
+	ang:RotateAroundAxis( ang:Forward(), math.sin( trigX ) * scale_r * jumpIntensity * flip_v * 0.4   )
+	--rolling with horizontal motion
+	ang:RotateAroundAxis( ang:Forward(), xVelocitySmooth * 0.04 )
 	--sprint calculations
 	if self.SprintProgress>0.005 then
 		if self.SprintStyle == 1 then
