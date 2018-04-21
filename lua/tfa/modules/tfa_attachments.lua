@@ -136,6 +136,10 @@ function TFAUpdateAttachments()
 		ATTACHMENT = nil
 	end
 
+	ProtectedCall(function()
+		hook.Run("TFAAttachmentsLoaded")
+	end)
+
 	TFA_ATTACHMENT_ISUPDATING = false
 end
 
