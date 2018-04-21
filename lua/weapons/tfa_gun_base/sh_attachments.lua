@@ -231,6 +231,7 @@ local attachments_sorted_alphabetically = GetConVar("sv_tfa_attachments_alphabet
 
 function SWEP:InitAttachments()
 	if self.HasInitAttachments then return end
+	hook.Run("TFA_PreInitAttachments", self)
 	self.HasInitAttachments = true
 	for k,v in pairs(self.Attachments) do
 		if type(k) == "string" then
@@ -290,7 +291,9 @@ function SWEP:InitAttachments()
 		end
 	end
 
+	hook.Run("TFA_PostInitAttachments", self)
 	self:BuildAttachmentCache()
+	hook.Run("TFA_FinalInitAttachments", self)
 end
 
 function SWEP:GenerateVGUIAttachmentTable() 
