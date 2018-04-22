@@ -210,7 +210,7 @@ function SWEP:Sway(pos, ang, doCalc)
 	end
 	if not self:OwnerIsValid() then return pos, ang end
 	--convar
-	fac = gunswaycvar:GetFloat() * 3 * ( ( 1 - ( self.IronSightsProgress or 0 ) ) * 0.75 + 0.25 )
+	fac = gunswaycvar:GetFloat() * 3 * ( ( 1 - ( self.IronSightsProgress or 0 ) ) * 0.85 + 0.15 )
 	flipFactor =  (self.ViewModelFlip and -1 or 1)
 	--init vars
 	delta = delta or Angle()
