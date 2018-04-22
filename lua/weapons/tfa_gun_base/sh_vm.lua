@@ -272,7 +272,7 @@ function SWEP:Sway(pos, ang, doCalc)
 
 	local velocity = math.max(self:GetOwner():GetVelocity():Length2D() * self:AirWalkScale() - self:GetOwner():GetVelocity().z * 0.5,0)
 	local rate = math.min( math.max( 0.15, math.sqrt( ( velocity ) / self:GetOwner():GetRunSpeed() ) * 1.75 ), self:GetSprinting() and 5 or 3)
-	pos, ang = self:CalculateBob(pos, ang, math.max( intensityBreath-intensityWalk-intensityRun,0), math.max( intensityWalk-intensityRun,0), intensityRun, rate )
+	pos, ang = self:CalculateBob(pos, ang, math.max( intensityBreath-intensityWalk-intensityRun,0), math.max( intensityWalk-intensityRun,0), intensityRun, rate, doCalc )
 
 	return pos, ang
 end

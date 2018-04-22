@@ -9,32 +9,34 @@ local TAU = math.pi * 2
 
 local goal
 
-local rate_up = 12
+local rateScaleFac = 2
+
+local rate_up = 6 * rateScaleFac
 local scale_up = 0.3
-local rate_right = 6
+local rate_right = 3 * rateScaleFac
 local scale_right = 0.3
-local rate_forward_view = 6
+local rate_forward_view = 3 * rateScaleFac
 local scale_forward_view = 0.35
-local rate_right_view = 6
+local rate_right_view = 3 * rateScaleFac
 local scale_right_view = -1
 
-local rate_p = 12
+local rate_p = 6 * rateScaleFac
 local scale_p = 3
-local rate_y = 6
+local rate_y = 3 * rateScaleFac
 local scale_y = 6
-local rate_r = 6
+local rate_r = 3 * rateScaleFac
 local scale_r = -3
 
 
 
-local pist_rate = 6
+local pist_rate = 6 * rateScaleFac
 local pist_scale = 8
 
-local rate_clamp = 2
+local rate_clamp = 2 * rateScaleFac
 
 local walk_offset_h,walk_offset_v,walk_offset_loop_h,walk_offset_loop_v = 0,0,0,0
 local walkIntensitySmooth,breathIntensitySmooth = 0,0
-local walkRate = 160/60*TAU/1.17--steps are at 160bpm at default velocity, then divide that by 60 for per-second, multiply by TAU for trig, divided by default walk rate
+local walkRate = 160/60*TAU/1.085/2 * rateScaleFac--steps are at 160bpm at default velocity, then divide that by 60 for per-second, multiply by TAU for trig, divided by default walk rate
 local walkVec = Vector()
 local ownerVelocity,ownerVelocityMod = Vector(), Vector()
 local zVelocity,zVelocitySmooth = 0,0
@@ -46,9 +48,11 @@ local host_timescale_cv = GetConVar("host_timescale")
 local gunbob_intensity_cvar = GetConVar("cl_tfa_gunbob_intensity")
 local gunbob_intensity = 0
 
+local sp = game.SinglePlayer()
+
 SWEP.VMOffsetWalk = Vector(0.5,-0.5,-0.5)
 
-function SWEP:CalculateBob(pos, ang, breathIntensity, walkIntensity, runIntensity, rate )
+function SWEP:CalculateBob(pos, ang, breathIntensity, walkIntensity, runIntensity, rate, doIt )
 	if not self:OwnerIsValid() then return end
 	rate = math.min( rate, rate_clamp )
 	gunbob_intensity = gunbob_intensity_cvar:GetFloat()
@@ -56,7 +60,7 @@ function SWEP:CalculateBob(pos, ang, breathIntensity, walkIntensity, runIntensit
 	local up = ang:Up()
 	local ri = ang:Right()
 	local fw = ang:Forward()
-	local delta = FrameTime() * (IsFirstTimePredicted() and 0.5 or 0)--math.min( SysTime() - self.LastCalcBob, FrameTime() )
+	local delta = FrameTime() * ( doIt and 1 or 0)--math.min( SysTime() - self.LastCalcBob, FrameTime() )
 	--if sv_cheats_cv:GetBool() then
 	--	delta = delta * host_timescale_cv:GetFloat()
 	--end
@@ -77,18 +81,18 @@ function SWEP:CalculateBob(pos, ang, breathIntensity, walkIntensity, runIntensit
 
 
 	--preceding calcs
-	walkIntensitySmooth = Lerp( delta * 10, walkIntensitySmooth,walkIntensity)
-	breathIntensitySmooth = Lerp( delta * 10, breathIntensitySmooth,breathIntensity)
+	walkIntensitySmooth = Lerp( delta * 10 * rateScaleFac, walkIntensitySmooth,walkIntensity)
+	breathIntensitySmooth = Lerp( delta * 10 * rateScaleFac, breathIntensitySmooth,breathIntensity)
 	walkVec = LerpVector(walkIntensitySmooth,vector_origin,self.VMOffsetWalk)
 	ownerVelocity = self:GetOwner():GetVelocity()
 	zVelocity = ownerVelocity.z
-	zVelocitySmooth = Lerp( delta * 10, zVelocitySmooth,zVelocity)
+	zVelocitySmooth = Lerp( delta * 7 * rateScaleFac, zVelocitySmooth,zVelocity)
 	ownerVelocityMod = ownerVelocity * flatVec
 	ownerVelocityMod:Normalize()
 	rightVec = ea:Right() * flatVec
 	rightVec:Normalize()
 	xVelocity = ownerVelocity:Length2D() * ownerVelocityMod:Dot( rightVec )
-	xVelocitySmooth = Lerp( delta * 7, xVelocitySmooth,xVelocity)
+	xVelocitySmooth = Lerp( delta * 5 * rateScaleFac, xVelocitySmooth,xVelocity)
 	--multipliers
 	breathIntensity = breathIntensitySmooth * gunbob_intensity * 1.5
 	walkIntensity = walkIntensitySmooth * gunbob_intensity * 1.5
@@ -101,13 +105,13 @@ function SWEP:CalculateBob(pos, ang, breathIntensity, walkIntensity, runIntensit
 	local targ = math.pow( math.max(math.sin( self.ti * walkRate ),0) ,2) * (self.Owner:IsOnGround() and 1 or 0)
 	self.footstepFac = Lerp(delta*7, self.footstepFac or 0, targ )
 	]]--
-	local targ = 1-math.Clamp(CurTime() - (self:GetOwner().lastFootstep or -1),0,0.3)/0.3
-	self.footstepFac = Lerp(delta*4, self.footstepFac or 0, targ )
+	local targ = 1-math.Clamp(CurTime() - (self:GetOwner().lastFootstep or -1),0,0.375)/0.375
+	self.footstepFac = Lerp(delta*5 * rateScaleFac, self.footstepFac or 0, targ )
 	targ = math.min( math.max(1-self.IronSightsProgress, math.abs( zVelocity ) / 200 ), 1)
-	self.footstepVelocityFac = Lerp(delta*15, self.footstepVelocityFac or 0, targ )
-	ang:RotateAroundAxis( ri, -self.footstepFac * scale_p * gunbob_intensity  * 2 * self.footstepVelocityFac )
-	pos:Add( -up * -self.footstepFac * scale_p * 0.1 * gunbob_intensity  * 2 * self.footstepVelocityFac  )
-	pos:Add( -fw *-self.footstepFac * scale_p * 0.1 * gunbob_intensity * 2 * self.footstepVelocityFac )
+	self.footstepVelocityFac = Lerp(delta*5 * rateScaleFac, self.footstepVelocityFac or 0, targ )
+	ang:RotateAroundAxis( ri, -self.footstepFac * scale_p * gunbob_intensity  * 1 * self.footstepVelocityFac )
+	pos:Add( -up * -self.footstepFac * scale_p * 0.1 * gunbob_intensity  * 1 * self.footstepVelocityFac  )
+	pos:Add( -fw *-self.footstepFac * scale_p * 0.1 * gunbob_intensity * 1 * self.footstepVelocityFac )
 	--yawing
 	pos:Add( ri * math.sin( self.ti * walkRate / 4 ) * scale_y * 0.1 * walkIntensity * flip_v * 0.1   )
 	ang:RotateAroundAxis( ang:Up(), math.sin( self.ti * walkRate / 4 ) * scale_y * walkIntensity * flip_v * 0.1  )
