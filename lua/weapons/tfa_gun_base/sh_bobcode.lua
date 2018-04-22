@@ -56,13 +56,13 @@ function SWEP:CalculateBob(pos, ang, breathIntensity, walkIntensity, runIntensit
 	local up = ang:Up()
 	local ri = ang:Right()
 	local fw = ang:Forward()
-	local delta = math.min( SysTime() - self.LastCalcBob, FrameTime() )
-	if sv_cheats_cv:GetBool() then
-		delta = delta * host_timescale_cv:GetFloat()
-	end
+	local delta = FrameTime() * (IsFirstTimePredicted() and 0.5 or 0)--math.min( SysTime() - self.LastCalcBob, FrameTime() )
+	--if sv_cheats_cv:GetBool() then
+	--	delta = delta * host_timescale_cv:GetFloat()
+	--end
 	local flip_v =  self.ViewModelFlip and -1 or 1
-	delta = delta * game.GetTimeScale()
-	self.LastCalcBob = SysTime()
+	--delta = delta * game.GetTimeScale()
+	--self.LastCalcBob = SysTime()
 	self.bobRateCached = rate
 
 	self.ti = self.ti + delta * rate
@@ -126,7 +126,7 @@ function SWEP:CalculateBob(pos, ang, breathIntensity, walkIntensity, runIntensit
 	pos:Add( -up * math.sin( trigX ) * scale_r * 0.1 * jumpIntensity * 0.4 )
 	ang:RotateAroundAxis( ang:Forward(), math.sin( trigX ) * scale_r * jumpIntensity * flip_v * 0.4   )
 	--rolling with horizontal motion
-	ang:RotateAroundAxis( ang:Forward(), xVelocitySmooth * 0.04 )
+	ang:RotateAroundAxis( ang:Forward(), xVelocitySmooth * 0.04 * flip_v )
 	--sprint calculations
 	if self.SprintProgress>0.005 then
 		if self.SprintStyle == 1 then

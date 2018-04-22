@@ -68,6 +68,7 @@ local flip_vec = Vector(-1,1,1)
 local flip_ang = Vector(1,-1,-1)
 local cl_tfa_viewmodel_offset_x
 local cl_tfa_viewmodel_offset_y,cl_tfa_viewmodel_offset_z, cl_tfa_viewmodel_centered, fovmod_add, fovmod_mult
+local intensityWalk,intensityRun,intensityBreath
 if CLIENT then
 	cl_tfa_viewmodel_offset_x = GetConVar("cl_tfa_viewmodel_offset_x")
 	cl_tfa_viewmodel_offset_y = GetConVar("cl_tfa_viewmodel_offset_y")
@@ -184,6 +185,8 @@ function SWEP:CalculateViewModelOffset( )
 	vm_offset_ang.y = math.ApproachAngle(vm_offset_ang.y,target_ang.y, math.AngleDifference( target_ang.y, vm_offset_ang.y ) * ft * adstransitionspeed )
 	vm_offset_ang.r = math.ApproachAngle(vm_offset_ang.r,target_ang.z, math.AngleDifference( target_ang.z, vm_offset_ang.r ) * ft * adstransitionspeed )
 
+	self:Sway(self:GetOwner():GetShootPos(),self:GetOwner():EyeAngles(),true)
+
 end
 
 --[[
@@ -200,7 +203,7 @@ local rft,ftc,eyeAngles,viewPunch,eyeAnglesPunch,oldEyeAngles,delta,motion,count
 
 local gunswaycvar = GetConVar("cl_tfa_gunbob_intensity")
 
-function SWEP:Sway(pos, ang)
+function SWEP:Sway(pos, ang, doCalc)
 	--sanity check
 	if self.Owner:IsNPC() then
 		return
@@ -222,41 +225,54 @@ function SWEP:Sway(pos, ang)
 	oldEyeAngles = oldEyeAngles or eyeAngles
 	--calculate delta
 
+	rft = math.max( FrameTime(), 0.001)
+	--[[
 	rft = (SysTime() - (self.LastSysT or SysTime()))
 
 	if rft > l_FT() then
 		rft = l_FT()
 	end
 
-	rft = l_mathClamp(rft, 0, 1 / 30)
-
-	self.LastSysT = SysTime()
-
-	delta.p = math.AngleDifference(eyeAngles.p,oldEyeAngles.p) * rft * 120
-	delta.y = math.AngleDifference(eyeAngles.y,oldEyeAngles.y) * rft * 120
-	delta.r = math.AngleDifference(eyeAngles.r,oldEyeAngles.r) * rft * 120
-	oldEyeAngles = eyeAngles
+	rft = l_mathClamp(rft, 0, 1 / 24)
 	rft = rft * game.GetTimeScale()
 
 	if sv_cheats_cv:GetBool() and host_timescale_cv:GetFloat() < 1 then
 		rft = rft * host_timescale_cv:GetFloat()
 	end
 
-	--calculate motions, based on Juckey's methods
+	self.LastSysT = SysTime()
+	]]--
 	wiggleFactor = (1- self:GetStat("MoveSpeed") ) / 0.6 + 0.15
-	swayRate = math.pow( self:GetStat("MoveSpeed"), 1.5 ) * 8
-	counterMotion = LerpAngle(rft * ( swayRate * ( 0.75 + (0.5-wiggleFactor) ) ), counterMotion, -motion)
-	compensation.p = math.AngleDifference(motion.p, -counterMotion.p)
-	compensation.y = math.AngleDifference(motion.y, -counterMotion.y)
-	motion = LerpAngle( rft * swayRate, motion, delta + compensation)
+	swayRate = math.pow( self:GetStat("MoveSpeed"), 1.5 ) * 10
+	if doCalc then
+		delta.p = math.AngleDifference(eyeAngles.p,oldEyeAngles.p) / rft / 120
+		delta.y = math.AngleDifference(eyeAngles.y,oldEyeAngles.y) / rft / 120
+		delta.r = math.AngleDifference(eyeAngles.r,oldEyeAngles.r) / rft / 120
+		oldEyeAngles = eyeAngles
+
+		--calculate motions, based on Juckey's methods
+		counterMotion = LerpAngle(rft * ( swayRate * ( 0.75 + (0.5-wiggleFactor) ) ), counterMotion, -motion)
+		compensation.p = math.AngleDifference(motion.p, -counterMotion.p)
+		compensation.y = math.AngleDifference(motion.y, -counterMotion.y)
+		motion = LerpAngle( rft * swayRate, motion, delta + compensation)
+	end
 	--modify position/angle
 	positionCompensation = 0.2 + 0.2 * ( self.IronSightsProgress or 0 )
-	pos:Add( -motion.y * positionCompensation * 0.5 * fac * ang:Right() * flipFactor ) --compensate position for yaw
+	pos:Add( -motion.y * positionCompensation * 0.66 * fac * ang:Right() * flipFactor ) --compensate position for yaw
 	pos:Add( -motion.p * positionCompensation * fac * ang:Up() ) --compensate position for pitch
 
 	ang:RotateAroundAxis(ang:Right(),   motion.p * fac)
-	ang:RotateAroundAxis(ang:Up(),      -motion.y * 0.5 * fac * flipFactor)
+	ang:RotateAroundAxis(ang:Up(),      -motion.y * 0.66 * fac * flipFactor)
 	ang:RotateAroundAxis(ang:Forward(), counterMotion.r * 0.5 * fac * flipFactor)
+
+	intensityWalk =  math.min( self:GetOwner():GetVelocity():Length2D() / self:GetOwner():GetWalkSpeed(), 1 )
+	intensityBreath = l_Lerp(self.IronSightsProgress,self:GetStat("BreathScale",0.2),self:GetStat("IronBobMultWalk",0.5) * intensityWalk)
+	intensityWalk = intensityWalk * (1-self.IronSightsProgress)
+	intensityRun = l_Lerp(self.SprintProgress,0,self.SprintBobMult)
+
+	local velocity = math.max(self:GetOwner():GetVelocity():Length2D() * self:AirWalkScale() - self:GetOwner():GetVelocity().z * 0.5,0)
+	local rate = math.min( math.max( 0.15, math.sqrt( ( velocity ) / self:GetOwner():GetRunSpeed() ) * 1.75 ), self:GetSprinting() and 5 or 3)
+	pos, ang = self:CalculateBob(pos, ang, math.max( intensityBreath-intensityWalk-intensityRun,0), math.max( intensityWalk-intensityRun,0), intensityRun, rate )
 
 	return pos, ang
 end
@@ -269,7 +285,6 @@ function SWEP:AirWalkScale()
 end
 
 local viewpunch_cv,viewpunch_val
-local intensityWalk,intensityRun,intensityBreath
 
 function SWEP:GetViewModelPosition( pos, ang )
 	if self.Owner:IsNPC() then
@@ -301,18 +316,9 @@ function SWEP:GetViewModelPosition( pos, ang )
 		self.SprintBobMult = 0
 	end
 
-	intensityWalk =  math.min( self:GetOwner():GetVelocity():Length2D() / self:GetOwner():GetWalkSpeed(), 1 )
-	intensityBreath = l_Lerp(self.IronSightsProgress,self:GetStat("BreathScale",0.2),self:GetStat("IronBobMultWalk",0.5) * intensityWalk)
-	intensityWalk = intensityWalk * (1-self.IronSightsProgress)
-	intensityRun = l_Lerp(self.SprintProgress,0,self.SprintBobMult)
-
 	if (self.Idle_Mode ~= TFA.Enum.IDLE_LUA and self.Idle_Mode ~= TFA.Enum.IDLE_BOTH) then
 		intensityWalk = 0
 	end
-
-	local velocity = math.max(self:GetOwner():GetVelocity():Length2D() * self:AirWalkScale() - self:GetOwner():GetVelocity().z * 0.5,0)
-	local rate = math.min( math.max( 0.15, math.sqrt( ( velocity ) / self:GetOwner():GetRunSpeed() ) * 1.75 ), self:GetSprinting() and 5 or 3)
-	pos, ang = self:CalculateBob(pos, ang, math.max( intensityBreath-intensityWalk-intensityRun,0), math.max( intensityWalk-intensityRun,0), intensityRun, rate )
 	--Start viewbob code
 	if not ang then ang = EyeAngles() end
 	--ang:RotateAroundAxis(ang:Forward(), -Qerp(self.IronSightsProgress and self.IronSightsProgress or 0, qerp1, 0))
