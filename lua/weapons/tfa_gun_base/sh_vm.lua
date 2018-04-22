@@ -232,9 +232,9 @@ function SWEP:Sway(pos, ang)
 
 	self.LastSysT = SysTime()
 
-	delta.p = math.AngleDifference(eyeAngles.p,oldEyeAngles.p) * rft * 150
-	delta.y = math.AngleDifference(eyeAngles.y,oldEyeAngles.y) * rft * 150
-	delta.r = math.AngleDifference(eyeAngles.r,oldEyeAngles.r) * rft * 150
+	delta.p = math.AngleDifference(eyeAngles.p,oldEyeAngles.p) * rft * 120
+	delta.y = math.AngleDifference(eyeAngles.y,oldEyeAngles.y) * rft * 120
+	delta.r = math.AngleDifference(eyeAngles.r,oldEyeAngles.r) * rft * 120
 	oldEyeAngles = eyeAngles
 	rft = rft * game.GetTimeScale()
 
