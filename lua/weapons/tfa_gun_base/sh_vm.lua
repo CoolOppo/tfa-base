@@ -195,7 +195,7 @@ Purpose:  Main SWEP function
 ]]--
 
 
-local ftc,eyeAngles,viewPunch,eyeAnglesPunch,oldEyeAngles,delta,motion,counterMotion,compensation,fac,positionCompensation,swayRate,wiggleFactor,flipFactor
+local rft,ftc,eyeAngles,viewPunch,eyeAnglesPunch,oldEyeAngles,delta,motion,counterMotion,compensation,fac,positionCompensation,swayRate,wiggleFactor,flipFactor
 --swayRate = 10
 
 local gunswaycvar = GetConVar("cl_tfa_gunbob_intensity")
@@ -221,18 +221,34 @@ function SWEP:Sway(pos, ang)
 	eyeAngles.y = eyeAngles.y - viewPunch.y
 	oldEyeAngles = oldEyeAngles or eyeAngles
 	--calculate delta
-	ftc = math.max(ft,0.0001)
-	delta.p = math.AngleDifference(eyeAngles.p,oldEyeAngles.p) / ftc * 0.0075
-	delta.y = math.AngleDifference(eyeAngles.y,oldEyeAngles.y) / ftc * 0.0075
-	delta.r = math.AngleDifference(eyeAngles.r,oldEyeAngles.r) / ftc * 0.0075
+
+	rft = (SysTime() - (self.LastSysT or SysTime()))
+
+	if rft > l_FT() then
+		rft = l_FT()
+	end
+
+	rft = l_mathClamp(rft, 0, 1 / 30)
+
+	self.LastSysT = SysTime()
+
+	delta.p = math.AngleDifference(eyeAngles.p,oldEyeAngles.p) * rft * 150
+	delta.y = math.AngleDifference(eyeAngles.y,oldEyeAngles.y) * rft * 150
+	delta.r = math.AngleDifference(eyeAngles.r,oldEyeAngles.r) * rft * 150
 	oldEyeAngles = eyeAngles
+	rft = rft * game.GetTimeScale()
+
+	if sv_cheats_cv:GetBool() and host_timescale_cv:GetFloat() < 1 then
+		rft = rft * host_timescale_cv:GetFloat()
+	end
+
 	--calculate motions, based on Juckey's methods
 	wiggleFactor = (1- self:GetStat("MoveSpeed") ) / 0.6 + 0.15
 	swayRate = math.pow( self:GetStat("MoveSpeed"), 1.5 ) * 8
-	counterMotion = LerpAngle(ft * ( swayRate * ( 0.75 + (0.5-wiggleFactor) ) ), counterMotion, -motion)
+	counterMotion = LerpAngle(rft * ( swayRate * ( 0.75 + (0.5-wiggleFactor) ) ), counterMotion, -motion)
 	compensation.p = math.AngleDifference(motion.p, -counterMotion.p)
 	compensation.y = math.AngleDifference(motion.y, -counterMotion.y)
-	motion = LerpAngle( ft * swayRate, motion, delta + compensation)
+	motion = LerpAngle( rft * swayRate, motion, delta + compensation)
 	--modify position/angle
 	positionCompensation = 0.2 + 0.2 * ( self.IronSightsProgress or 0 )
 	pos:Add( -motion.y * positionCompensation * 0.5 * fac * ang:Right() * flipFactor ) --compensate position for yaw
