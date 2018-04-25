@@ -143,7 +143,7 @@ function SWEP:ViewModelDrawn()
 		end
 	end
 
-	if self.VElements then
+	if self.VElements and self.HasInitAttachments then
 		--self.VElements = self:GetStat("VElements")
 		self:CreateModels(self.VElements, true)
 
@@ -248,7 +248,7 @@ end
 
 function SWEP:ViewModelDrawnPost()
 	if self.VElements then
-		for k, name in ipairs(self.vRenderOrder) do
+		for k, name in ipairs(self.vRenderOrder or {}) do
 			local v = self.VElements[name]
 
 			if (not v) then
@@ -347,7 +347,7 @@ function SWEP:DrawWorldModel()
 
 	self:UpdateWMBonePositions(self)
 
-	if (not self.WElements) then return end
+	if not self.WElements or not self.HasInitAttachments then return end
 	--self.WElements = self:GetStat("WElements")
 	self:CreateModels(self.WElements)
 
@@ -365,7 +365,7 @@ function SWEP:DrawWorldModel()
 
 	bone_ent = self:GetOwner() and self:GetOwner() or self
 
-	for k, name in pairs(self.wRenderOrder) do
+	for k, name in pairs(self.wRenderOrder or {}) do
 		local v = self.WElements[name]
 
 		if (not v) then
