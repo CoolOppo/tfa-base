@@ -245,9 +245,10 @@ function SWEP:Sway(pos, ang, doCalc)
 	wiggleFactor = (1- self:GetStat("MoveSpeed") ) / 0.6 + 0.15
 	swayRate = math.pow( self:GetStat("MoveSpeed"), 1.5 ) * 10
 	if doCalc then
-		delta.p = math.AngleDifference(eyeAngles.p,oldEyeAngles.p) / rft / 120
-		delta.y = math.AngleDifference(eyeAngles.y,oldEyeAngles.y) / rft / 120
-		delta.r = math.AngleDifference(eyeAngles.r,oldEyeAngles.r) / rft / 120
+		local clampFac = 1.1-math.min((math.abs(motion.p) + math.abs(motion.y) + math.abs(motion.r))/20,1)
+		delta.p = math.AngleDifference(eyeAngles.p,oldEyeAngles.p) / rft / 120 * clampFac
+		delta.y = math.AngleDifference(eyeAngles.y,oldEyeAngles.y) / rft / 120 * clampFac
+		delta.r = math.AngleDifference(eyeAngles.r,oldEyeAngles.r) / rft / 120 * clampFac
 		oldEyeAngles = eyeAngles
 
 		--calculate motions, based on Juckey's methods
