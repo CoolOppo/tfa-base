@@ -643,42 +643,52 @@ function SWEP.MainBullet:HandleDoor(ply, traceres, dmginfo, wep)
 
 	local ent = traceres.Entity
 	if not IsValid(ent) then return end
+	if not IsValid(ply) then return end
 	if not ents.Create then return end
+	if not ply.SetName then return end
+	if ent.TFADoorUntouchable and ent.TFADoorUntouchable > CurTime() then return end
 	ent.TFADoorHealth = ent.TFADoorHealth or defaultdoorhealth
+	ent.TFADoorLastHit = ent.TFADoorLastHit or CurTime()
 
-	if ent:GetClass() == "func_door_rotating" or ent:GetClass() == "prop_door_rotating" then
-		ohp = ent.TFADoorHealth
-		ent.TFADoorHealth = ent.TFADoorHealth - dmginfo:GetDamage() * self.Num
+	if ent:GetClass() ~= "func_door_rotating" and ent:GetClass() ~= "prop_door_rotating" then return end
+	local realDamage = dmginfo:GetDamage() * self.Num
+	ent.TFADoorHealth = math.Clamp(ent.TFADoorHealth - realDamage + (CurTime() - ent.TFADoorLastHit) * 125, 0, defaultdoorhealth)
+	ent.TFADoorLastHit = CurTime()
+	if ent.TFADoorHealth > 0 then return end
 
-		if ent.TFADoorHealth <= 0 then
-			if ((self.Damage * self.Num > 100) or ent.TFADoorHealth < -defaultdoorhealth * 0.66 or not IsValid(ply) or not ply.SetName) and ohp > 0 then
-				self:MakeDoor(ent, dmginfo)
-				ply:EmitSound("ambient/materials/door_hit1.wav", 100, math.random(90, 110))
-			elseif math.random(math.max(1, 5 + math.Round( math.max( 32 - wep.Primary.Damage, 0 ) / 4 ) - wep.Primary.NumShots)) == 1 and ohp > 0  then
-				if ohp > 0 then
-					ply:EmitSound("ambient/materials/door_hit1.wav", 100, math.random(90, 110))
-				end
+	ply:EmitSound("ambient/materials/door_hit1.wav", 100, math.random(90, 110))
 
-				ply.oldname = ply:GetName()
-				ply:SetName("bashingpl" .. ply:EntIndex())
-				ent:SetKeyValue("Speed", "500")
-				ent:SetKeyValue("Open Direction", "Both directions")
-				ent:SetKeyValue("opendir", "0")
-				ent:Fire("unlock", "", .01)
-				ent:Fire("openawayfrom", "bashingpl" .. ply:EntIndex(), .01)
-
-				timer.Simple(0.02, function()
-					if IsValid(ply) then
-						ply:SetName(ply.oldname)
-					end
-				end)
-
-				timer.Simple(0.3, function()
-					if IsValid(ent) then
-						ent:SetKeyValue("Speed", "100")
-					end
-				end)
-			end
-		end
+	if self.Damage * self.Num > 100 then
+		self:MakeDoor(ent, dmginfo)
+		ent.TFADoorUntouchable = CurTime() + 0.5
+		return
 	end
+
+	ply.oldname = ply:GetName()
+	ply:SetName("bashingpl" .. ply:EntIndex())
+	ent:Fire("unlock", "", .01)
+	ent:SetKeyValue("Speed", "500")
+	ent:SetKeyValue("Open Direction", "Both directions")
+	ent:SetKeyValue("opendir", "0")
+	ent:Fire("openawayfrom", "bashingpl" .. ply:EntIndex(), .01)
+
+	timer.Simple(0.02, function()
+		if IsValid(ply) then
+			ply:SetName(ply.oldname)
+		end
+	end)
+
+	timer.Simple(0.3, function()
+		if IsValid(ent) then
+			ent:SetKeyValue("Speed", "100")
+		end
+	end)
+
+	timer.Simple(5, function()
+		if IsValid(ent) then
+			ent.TFADoorHealth = defaultdoorhealth
+		end
+	end)
+
+	ent.TFADoorUntouchable = CurTime() + 5
 end
