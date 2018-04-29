@@ -27,17 +27,19 @@ if SERVER then
 		end
 	end
 
-	net.Receive("TFA_Attachment_RequestAll", function( len, ply )
-		if IsValid(ply) then
-			if not ply.TFA_RequestAll then
-				for k,v in pairs( ents.GetAll() ) do
-					if v:IsWeapon() and v.IsTFAWeapon then
-						UpdateWeapon( v, ply )
-					end
-				end
+	local sp = game.SinglePlayer()
 
-				ply.TFA_RequestAll = true
+	net.Receive("TFA_Attachment_RequestAll", function( len, ply )
+		if not IsValid(ply) then return end
+
+		if sp or not ply.TFA_RequestAll then
+			for k,v in pairs( ents.GetAll() ) do
+				if v:IsWeapon() and v:IsTFA() and v.HasInitAttachments then
+					UpdateWeapon( v, ply )
+				end
 			end
+
+			ply.TFA_RequestAll = true
 		end
 	end)
 
