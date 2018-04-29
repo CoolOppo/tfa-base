@@ -648,12 +648,10 @@ function SWEP.MainBullet:HandleDoor(ply, traceres, dmginfo, wep)
 	if not ply.SetName then return end
 	if ent.TFADoorUntouchable and ent.TFADoorUntouchable > CurTime() then return end
 	ent.TFADoorHealth = ent.TFADoorHealth or defaultdoorhealth
-	ent.TFADoorLastHit = ent.TFADoorLastHit or CurTime()
 
 	if ent:GetClass() ~= "func_door_rotating" and ent:GetClass() ~= "prop_door_rotating" then return end
 	local realDamage = dmginfo:GetDamage() * self.Num
-	ent.TFADoorHealth = math.Clamp(ent.TFADoorHealth - realDamage + (CurTime() - ent.TFADoorLastHit) * 125, 0, defaultdoorhealth)
-	ent.TFADoorLastHit = CurTime()
+	ent.TFADoorHealth = math.Clamp(ent.TFADoorHealth - realDamage, 0, defaultdoorhealth)
 	if ent.TFADoorHealth > 0 then return end
 
 	ply:EmitSound("ambient/materials/door_hit1.wav", 100, math.random(90, 110))
