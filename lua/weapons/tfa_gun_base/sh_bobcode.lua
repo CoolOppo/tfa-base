@@ -105,20 +105,24 @@ function SWEP:CalculateBob(pos, ang, breathIntensity, walkIntensity, runIntensit
 	local targ = math.pow( math.max(math.sin( self.ti * walkRate ),0) ,2) * (self.Owner:IsOnGround() and 1 or 0)
 	self.footstepFac = Lerp(delta*7, self.footstepFac or 0, targ )
 	]]--
-	local targ = 1-math.Clamp(CurTime() - (self:GetOwner().lastFootstep or -1),0,0.375)/0.375
-	self.footstepFac = Lerp(delta*5 * rateScaleFac, self.footstepFac or 0, targ )
+	local targ = 1-math.Clamp( math.abs( CurTime() - (self:GetOwner().lastFootstep or -1) - 0.15),0,0.375)/0.375
+	self.footstepFac = Lerp(delta*10* rateScaleFac, self.footstepFac or 0, targ )
 	targ = math.min( math.max(1-self.IronSightsProgress, math.abs( zVelocity ) / 200 ), 1)
 	self.footstepVelocityFac = Lerp(delta*5 * rateScaleFac, self.footstepVelocityFac or 0, targ )
 	ang:RotateAroundAxis( ri, -self.footstepFac * scale_p * gunbob_intensity  * 1 * self.footstepVelocityFac )
 	pos:Add( -up * -self.footstepFac * scale_p * 0.1 * gunbob_intensity  * 1 * self.footstepVelocityFac  )
 	pos:Add( -fw *-self.footstepFac * scale_p * 0.1 * gunbob_intensity * 1 * self.footstepVelocityFac )
 	--yawing
-	pos:Add( ri * math.sin( self.ti * walkRate / 4 ) * scale_y * 0.1 * walkIntensity * flip_v * 0.1   )
+	pos:Add( ri * math.sin( self.ti * walkRate / 4 ) * scale_y * 0.2 * walkIntensity * flip_v * 0.1   )
 	ang:RotateAroundAxis( ang:Up(), math.sin( self.ti * walkRate / 4 ) * scale_y * walkIntensity * flip_v * 0.1  )
+	--pitch mods
+	ang:RotateAroundAxis( ri, math.sin( self.ti * walkRate / 2 ) * scale_p * walkIntensity *  -0.1 )
+	pos:Add( -up * math.sin( self.ti * walkRate / 2 ) * scale_p * 0.3 * walkIntensity *  -0.1)
+	pos:Add( -fw * math.sin( self.ti * walkRate / 2 ) * scale_p * 0.3 * walkIntensity *  -0.1 )
 	--rolling
-	pos:Add( ri * math.sin( self.ti * walkRate / 2 ) * scale_r * 0.1 * walkIntensity * flip_v * 0.4   )
-	pos:Add( -up * math.sin( self.ti * walkRate / 2 ) * scale_r * 0.1 * walkIntensity * 0.4 )
-	ang:RotateAroundAxis( ang:Forward(), math.sin( self.ti * walkRate / 2 ) * scale_r * walkIntensity * flip_v * 0.4   )
+	pos:Add( ri * math.sin( self.ti * walkRate / 2 ) * scale_r * 0.1 * walkIntensity * flip_v * 0.1   )
+	pos:Add( -up * math.sin( self.ti * walkRate / 2 ) * scale_r * 0.1 * walkIntensity * 0.1 )
+	ang:RotateAroundAxis( ang:Forward(), math.sin( self.ti * walkRate / 2 ) * scale_r * walkIntensity * flip_v * 0.1 )
 	--constant offset
 	pos:Add( ri * walkVec.x * flip_v )
 	pos:Add( fw * walkVec.y )

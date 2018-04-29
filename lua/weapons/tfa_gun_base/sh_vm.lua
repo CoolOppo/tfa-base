@@ -225,7 +225,7 @@ function SWEP:Sway(pos, ang, doCalc)
 	oldEyeAngles = oldEyeAngles or eyeAngles
 	--calculate delta
 
-	rft = math.max( FrameTime(), 0.001)
+	rft = math.Clamp(FrameTime(), 0.001, 1/20)
 	--[[
 	rft = (SysTime() - (self.LastSysT or SysTime()))
 
