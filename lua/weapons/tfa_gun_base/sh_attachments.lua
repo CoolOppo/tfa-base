@@ -322,9 +322,11 @@ function SWEP:GenerateVGUIAttachmentTable()
 
 	local max_row_atts = math.floor( ScrW() * ATT_MAX_SCREEN_RATIO  / ATT_DIMENSION )
 	local i = 1
-
-	for i = 1, #self.VGUIAttachments do
+	
+	while true do
 		local v = self.VGUIAttachments[i]
+		if not v then break end
+		i = i + 1
 
 		for l,b in pairs(v.atts) do
 			if not istable(b) then
@@ -341,7 +343,7 @@ function SWEP:GenerateVGUIAttachmentTable()
 				for j=1,#v.atts - max_row_atts do
 					table.remove(v.atts)
 				end
-				table.insert(self.VGUIAttachments,i+1,t)
+				table.insert(self.VGUIAttachments,i,t)
 			end
 		end
 	end
