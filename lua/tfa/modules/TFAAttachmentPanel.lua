@@ -193,8 +193,7 @@ function PANEL:SetCategory( att )
 end
 
 function PANEL:GetAnchoredH()
-	if self.HAnchored then return true end
-	return false
+	return true
 end
 
 -- @Deprecated
