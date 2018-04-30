@@ -37,6 +37,7 @@ local rate_clamp = 2 * rateScaleFac
 local walk_offset_h,walk_offset_v,walk_offset_loop_h,walk_offset_loop_v = 0,0,0,0
 local walkIntensitySmooth,breathIntensitySmooth = 0,0
 local walkRate = 160/60*TAU/1.085/2 * rateScaleFac--steps are at 160bpm at default velocity, then divide that by 60 for per-second, multiply by TAU for trig, divided by default walk rate
+local walkRateFootstep = TAU / 2
 local walkVec = Vector()
 local ownerVelocity,ownerVelocityMod = Vector(), Vector()
 local zVelocity,zVelocitySmooth = 0,0
@@ -51,6 +52,9 @@ local gunbob_intensity = 0
 local sp = game.SinglePlayer()
 
 SWEP.VMOffsetWalk = Vector(0.5,-0.5,-0.5)
+
+SWEP.footstepTotal = 0
+SWEP.footstepTotalTarget = 0
 
 function SWEP:CalculateBob(pos, ang, breathIntensity, walkIntensity, runIntensity, rate, doIt )
 	if not self:OwnerIsValid() then return end
@@ -100,29 +104,35 @@ function SWEP:CalculateBob(pos, ang, breathIntensity, walkIntensity, runIntensit
 	--breathing
 	pos:Add( ri * math.cos(self.ti * walkRate / 2 ) * flip_v * breathIntensity * 0.6 )
 	pos:Add( up * math.sin(self.ti * walkRate ) * breathIntensity * 0.3 )
+	--footstep time math shit
+	--self.lastLastFootstep = self.lastLastFootstep or 0
+	--if self:GetOwner().lastFootstep ~= self.lastLastFootstep then
+	--	self.footstepTotalTarget = self.lastFootstepTotalTarget + 1
+	--else
+		self.footstepTotalTarget = self.footstepTotalTarget + delta * 160/60 * self:GetOwner():GetVelocity():Length2D() / self:GetOwner():GetWalkSpeed()
+	--end
+	self.footstepTotal = Lerp( delta * 1 * rateScaleFac, self.footstepTotal,self.footstepTotalTarget)
+	--self.lastLastFootstep = self:GetOwner().lastFootstep or 0
+
 	--footsteps
-	--[[
-	local targ = math.pow( math.max(math.sin( self.ti * walkRate ),0) ,2) * (self.Owner:IsOnGround() and 1 or 0)
-	self.footstepFac = Lerp(delta*7, self.footstepFac or 0, targ )
-	]]--
-	local targ = 1-math.Clamp( math.abs( CurTime() - (self:GetOwner().lastFootstep or -1) - 0.15),0,0.375)/0.375
-	self.footstepFac = Lerp(delta*10* rateScaleFac, self.footstepFac or 0, targ )
+	local targ = 1-math.Clamp( math.abs( CurTime() - (self:GetOwner().lastFootstep or -1) - 0.1),0,0.325)/0.325
+	self.footstepFac = Lerp(delta*5* rateScaleFac, self.footstepFac or 0, targ )
 	targ = math.min( math.max(1-self.IronSightsProgress, math.abs( zVelocity ) / 200 ), 1)
 	self.footstepVelocityFac = Lerp(delta*5 * rateScaleFac, self.footstepVelocityFac or 0, targ )
-	ang:RotateAroundAxis( ri, -self.footstepFac * scale_p * gunbob_intensity  * 1 * self.footstepVelocityFac )
-	pos:Add( -up * -self.footstepFac * scale_p * 0.1 * gunbob_intensity  * 1 * self.footstepVelocityFac  )
-	pos:Add( -fw *-self.footstepFac * scale_p * 0.1 * gunbob_intensity * 1 * self.footstepVelocityFac )
-	--yawing
-	pos:Add( ri * math.sin( self.ti * walkRate / 4 ) * scale_y * 0.2 * walkIntensity * flip_v * 0.1   )
-	ang:RotateAroundAxis( ang:Up(), math.sin( self.ti * walkRate / 4 ) * scale_y * walkIntensity * flip_v * 0.1  )
+	ang:RotateAroundAxis( ri, -self.footstepFac * scale_p * gunbob_intensity  * 0.5 * self.footstepVelocityFac )
+	pos:Add( -up * -self.footstepFac * scale_p * 0.1 * gunbob_intensity  * 0.5 * self.footstepVelocityFac  )
+	pos:Add( -fw *-self.footstepFac * scale_p * 0.1 * gunbob_intensity * 0.5 * self.footstepVelocityFac )
 	--pitch mods
-	ang:RotateAroundAxis( ri, math.sin( self.ti * walkRate / 2 ) * scale_p * walkIntensity *  -0.1 )
-	pos:Add( -up * math.sin( self.ti * walkRate / 2 ) * scale_p * 0.3 * walkIntensity *  -0.1)
-	pos:Add( -fw * math.sin( self.ti * walkRate / 2 ) * scale_p * 0.3 * walkIntensity *  -0.1 )
+	ang:RotateAroundAxis( ri, math.sin( self.footstepTotal * walkRateFootstep ) * scale_p * walkIntensity *  -0.1 )
+	pos:Add( -up * math.sin( self.footstepTotal * walkRateFootstep ) * scale_p * 0.3 * walkIntensity *  -0.1)
+	pos:Add( -fw * math.sin( self.footstepTotal * walkRateFootstep ) * scale_p * 0.3 * walkIntensity *  -0.1 )
+	--yawing
+	pos:Add( ri * math.sin(self.footstepTotal * walkRateFootstep / 2 ) * scale_y * 0.4 * walkIntensity * flip_v * 0.05   )
+	ang:RotateAroundAxis( ang:Up(), math.sin( self.footstepTotal * walkRateFootstep / 2 ) * scale_y * walkIntensity * flip_v * 0.05  )
 	--rolling
-	pos:Add( ri * math.sin( self.ti * walkRate / 2 ) * scale_r * 0.1 * walkIntensity * flip_v * 0.1   )
-	pos:Add( -up * math.sin( self.ti * walkRate / 2 ) * scale_r * 0.1 * walkIntensity * 0.1 )
-	ang:RotateAroundAxis( ang:Forward(), math.sin( self.ti * walkRate / 2 ) * scale_r * walkIntensity * flip_v * 0.1 )
+	pos:Add( ri * math.sin( self.footstepTotal * walkRateFootstep ) * scale_r * 0.1 * walkIntensity * flip_v * 0.1   )
+	pos:Add( -up * math.sin( self.footstepTotal * walkRateFootstep ) * scale_r * 0.1 * walkIntensity * 0.1 )
+	ang:RotateAroundAxis( ang:Forward(), math.sin( self.footstepTotal * walkRateFootstep ) * scale_r * walkIntensity * flip_v * 0.1 )
 	--constant offset
 	pos:Add( ri * walkVec.x * flip_v )
 	pos:Add( fw * walkVec.y )
