@@ -584,16 +584,23 @@ function SWEP:GenerateInspectionDerma()
 			myself.ActiveColor = ColorAlpha(INSPECTION_ACTIVECOLOR, TFA_INSPECTIONPANEL.Alpha)
 	]]--
 
-		local needs_spacer = false
-		local i = 0
-
-
 		self:GenerateVGUIAttachmentTable()
 
-		local i=0
+		local i = 0
+		local prevCat
+		local lineY = 0
+		local scrollWide = scrollpanel:GetWide()
 
-		for k,v in pairs(self.VGUIAttachments) do
+		for k, v in pairs(self.VGUIAttachments) do
 			if k ~= "BaseClass" then
+				if prevCat then
+					local isContinuing = prevCat == (v.cat or k)
+					-- print(isContinuing, prevCat, v.cat or k)
+					lineY = lineY + (not isContinuing and 132 or 96)
+				end
+				
+				prevCat = v.cat or k
+
 				local testpanel = TFA_INSPECTIONPANEL:Add("TFAAttachmentPanel")
 				testpanel:SetParent( scrollpanel )
 				testpanel:SetContentPanel( scrollpanel )
@@ -603,23 +610,8 @@ function SWEP:GenerateInspectionDerma()
 				testpanel:SetAttachment(k)
 				testpanel:SetCategory(v.cat or k)
 				testpanel:Initialize()
-				if i > 0 and not needs_spacer then
-					testpanel:Position()
-					local _,yyv = testpanel:GetPos()
-					yyv = yyv + dimensions
-					if yyv > scrollpanel:GetTall() then
-						needs_spacer = true
-					end
-				end
+				testpanel:SetPos(scrollWide - testpanel:GetWide() - 32, lineY)
 			end
-		end
-
-		if needs_spacer and IsValid(scrollpanel) then
-			local testpanel = scrollpanel:Add("DPanel")
-			testpanel.VAtt = i + 1
-			testpanel:SetPos( math.floor( testpanel:GetParent():GetWide() - 32 - testpanel:GetWide() ), math.max( testpanel.VAtt - 1, 0 ) * dimensions + math.max( testpanel.VAtt - 1, 0 ) * padding * 4 + math.max( testpanel.VAtt - 1, 0 ) * spacing )
-			testpanel:SetHeight(32,32)
-			testpanel.Paint = function() end
 		end
 	end
 

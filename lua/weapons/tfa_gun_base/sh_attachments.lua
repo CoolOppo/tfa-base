@@ -300,6 +300,7 @@ function SWEP:GenerateVGUIAttachmentTable()
 	self.VGUIAttachments = {}
 	local keyz = table.GetKeys( self.Attachments )
 	table.RemoveByValue( keyz, "BaseClass" )
+
 	table.sort( keyz, function(a,b)
 		--A and B are keys
 		local v1 = self.Attachments[a]
@@ -310,6 +311,7 @@ function SWEP:GenerateVGUIAttachmentTable()
 			return a < b
 		end
 	end)
+
 	for i, k in ipairs(keyz) do
 		local v = self.Attachments[k]
 		self.VGUIAttachments[i]=table.Copy( v )
@@ -317,15 +319,19 @@ function SWEP:GenerateVGUIAttachmentTable()
 		self.VGUIAttachments[i].offset = nil
 		self.VGUIAttachments[i].order = nil
 	end
+
 	local max_row_atts = math.floor( ScrW() * ATT_MAX_SCREEN_RATIO  / ATT_DIMENSION )
 	local i = 1
-	while ( i <= #self.VGUIAttachments ) do
+
+	for i = 1, #self.VGUIAttachments do
 		local v = self.VGUIAttachments[i]
+
 		for l,b in pairs(v.atts) do
 			if not istable(b) then
 				v.atts[l] = { b, l }--name, ID
 			end
 		end
+
 		if (#v.atts > max_row_atts) then
 			while ( #v.atts > max_row_atts ) do
 				local t = table.Copy( v )
@@ -338,7 +344,6 @@ function SWEP:GenerateVGUIAttachmentTable()
 				table.insert(self.VGUIAttachments,i+1,t)
 			end
 		end
-		i = i + 1
 	end
 end
 

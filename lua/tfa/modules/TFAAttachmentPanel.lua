@@ -39,7 +39,6 @@ function PANEL:Initialize()
 	self.AttachmentTable = self.Wep.Attachments[ self.VAtt ]
 	self.VGUIAttachmentTable = self.Wep.VGUIAttachments[ self.VAtt ]
 	local attCnt = #self.VGUIAttachmentTable.atts
-	self:Position()
 	local truewidth = dimensions * attCnt + padding * ( math.max(0,attCnt-1) + 2 )
 	local finalwidth = math.max( truewidth, dimensions * tooltip_mincount + padding * ( math.max(0,tooltip_mincount-1) + 2 ) )
 	self:SetSize( finalwidth, dimensions + padding * 2 ) --+ tooltipheightmax + padding * 2 )
@@ -159,7 +158,6 @@ function PANEL:Think()
 	self.ToolTip:SetTextTable(texttable)
 	self.ToolTip:SetActive( texttable and #texttable > 0 )
 	self.ToolTip:SetContentPanel( self.ContentPanel )
-	self:Position()
 end
 
 function PANEL:SetContentPanel( p )
@@ -199,6 +197,7 @@ function PANEL:GetAnchoredH()
 	return false
 end
 
+-- @Deprecated
 function PANEL:Position()
 	--self:CalcVAtt()
 	self:SetPos( math.floor( self:GetParent():GetWide() - 32 - self:GetWide() ), math.max( self.VAtt - 1, 0 ) * dimensions + math.max( self.VAtt - 1, 0 ) * padding * 4 + math.max( self.VAtt - 1, 0 ) * spacing )
