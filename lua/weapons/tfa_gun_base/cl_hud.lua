@@ -596,7 +596,7 @@ function SWEP:GenerateInspectionDerma()
 				if prevCat then
 					local isContinuing = prevCat == (v.cat or k)
 					-- print(isContinuing, prevCat, v.cat or k)
-					lineY = lineY + (not isContinuing and 132 or 70)
+					lineY = lineY + (not isContinuing and 132 or 66)
 				end
 				
 				prevCat = v.cat or k
