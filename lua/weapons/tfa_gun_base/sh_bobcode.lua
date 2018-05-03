@@ -29,8 +29,8 @@ local scale_r = -3
 
 
 
-local pist_rate = 6 * rateScaleFac
-local pist_scale = 8
+local pist_rate = 3 * rateScaleFac
+local pist_scale = 9
 
 local rate_clamp = 2 * rateScaleFac
 
@@ -136,27 +136,10 @@ function SWEP:CalculateBob(pos, ang, breathIntensity, walkIntensity, runIntensit
 			local intensity2 = math.Clamp( runIntensity, 0.0, 0.2 )
 			local intensity3 = math.max(runIntensity-0.3,0) / ( 1 - 0.3 )
 
-			pos:Add( up * math.sin( self.ti * rate_up ) * scale_up * intensity2* 0.33 )
-			pos:Add( ri * math.sin( self.ti * rate_right ) * scale_right * intensity2* 0.33 )
-			pos:Add( ea:Forward()  * math.sin( self.ti * rate_forward_view ) * scale_forward_view * intensity2* 0.33 )
-			pos:Add( ea:Right() * math.sin( self.ti * rate_right_view ) * scale_right_view * intensity2* 0.33 )
-
-			ang:RotateAroundAxis( ri, math.sin( self.ti * rate_p ) * scale_p * intensity2* 0.33 )
-			pos:Add( -up * math.sin( self.ti * rate_p ) * scale_p * 0.1 * intensity2* 0.33 )
-			pos:Add( -fw * math.sin( self.ti * rate_p ) * scale_p * 0.1 * intensity2* 0.33 )
-
-			ang:RotateAroundAxis( ang:Up(), math.sin( self.ti * rate_y ) * scale_y * intensity2* 0.33 )
-			pos:Add( ri * math.sin( self.ti * rate_y ) * scale_y * 0.1 * intensity2* 0.33 )
-			pos:Add( fw * math.sin( self.ti * rate_y ) * scale_y * 0.1 * intensity2* 0.33 )
-
-			ang:RotateAroundAxis( ang:Forward(), math.sin( self.ti * rate_r ) * scale_r * intensity2* 0.33 )
-			pos:Add( ri * math.sin( self.ti * rate_r ) * scale_r * 0.1 * intensity2* 0.33 )
-			pos:Add( -up * math.sin( self.ti * rate_r ) * scale_r * 0.1 * intensity2* 0.33)
-
-			ang:RotateAroundAxis( ang:Up(), math.sin( self.ti * pist_rate ) * pist_scale * intensity3* 0.33 )
-			pos:Add( ri * math.sin( self.ti * pist_rate ) * pist_scale * 0.1 * intensity3* 0.33 )
-			pos:Add( fw * math.sin( self.ti * pist_rate * 2 ) * pist_scale * 0.1 * intensity3* 0.33)
-			--pos:Add( fw * math.sin( self.ti * pist_rate ) * pist_scale * 0.1 * runIntensity* 0.33 )
+			ang:RotateAroundAxis( ang:Forward(), math.sin( self.ti * pist_rate ) * pist_scale * intensity3* 0.33 )
+			ang:RotateAroundAxis( ang:Forward(), math.sin( self.ti * pist_rate ) * pist_scale * intensity3* 0.33 * 0.1 )
+			pos:Add( ang:Right() * math.sin( self.ti * pist_rate ) * pist_scale * 0.15 * intensity3* 0.33 )
+			pos:Add( ang:Up() * math.sin( self.ti * pist_rate * 2 + math.pi ) * pist_scale * -0.1 * intensity3* 0.33)
 
 		else
 			pos:Add( up * math.sin( self.ti * rate_up ) * scale_up * runIntensity* 0.33 )
