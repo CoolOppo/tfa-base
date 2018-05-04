@@ -668,7 +668,6 @@ local hudenabled_cvar = GetConVar("cl_tfa_hud_enabled")
 local cgapscale_cvar = GetConVar("cl_tfa_hud_crosshair_gap_scale")
 
 function SWEP:DrawHUD()
-	self.CLOldNearWallProgress = self.CLOldNearWallProgress or 0
 	cam.Start3D() --Workaround for vec:ToScreen()
 	cam.End3D()
 
@@ -993,14 +992,14 @@ function SWEP:DoDrawCrosshair(x, y)
 
 	self.clrelp = self.clrelp or 0
 	self.clrelp = math.Approach(self.clrelp, TFA.Enum.ReloadStatus[stat] and 0 or 1, ((TFA.Enum.ReloadStatus[stat] and 0 or 1) - self.clrelp) * FrameTime() * 15)
-	local crossa = crossa_cvar:GetFloat() * math.pow(math.min(1 - ((self.IronSightsProgress and not self.DrawCrosshairIS) and self.IronSightsProgress or 0), 1 - self.SprintProgress, 1 - self.CLOldNearWallProgress, 1 - self.InspectingProgress, self.clrelp), 2)
-	local outa = outa_cvar:GetFloat() * math.pow(math.min(1 - ((self.IronSightsProgress and not self.DrawCrosshairIS) and self.IronSightsProgress or 0), 1 - self.SprintProgress, 1 - self.CLOldNearWallProgress, 1 - self.InspectingProgress, self.clrelp), 2)
+	local crossa = crossa_cvar:GetFloat() * math.pow(math.min(1 - ((self.IronSightsProgress and not self.DrawCrosshairIS) and self.IronSightsProgress or 0), 1 - self.SprintProgress, 1 - self.InspectingProgress, self.clrelp), 2)
+	local outa = outa_cvar:GetFloat() * math.pow(math.min(1 - ((self.IronSightsProgress and not self.DrawCrosshairIS) and self.IronSightsProgress or 0), 1 - self.SprintProgress, 1 - self.InspectingProgress, self.clrelp), 2)
 
 	if not crosscustomenable_cvar:GetBool() then return math.min(1 - self.IronSightsProgress, 1 - self.SprintProgress) <= 0.5 end
-	
+
 	local ply = LocalPlayer()
 	if not ply:IsValid() or self:GetOwner() ~= ply then return false end
-	
+
 	if not ply.interpposx then
 		ply.interpposx = ScrW() / 2
 	end
