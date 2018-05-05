@@ -27,7 +27,6 @@ function SWEP:Initialize()
 	self.ProjectileModel = nil --Entity to shoot's model
 	self:SetNW2Bool("Ready", false)
 	self:SetNW2Bool("Underhanded", false)
-	self.VElements = {}
 	BaseClass.Initialize(self)
 end
 
