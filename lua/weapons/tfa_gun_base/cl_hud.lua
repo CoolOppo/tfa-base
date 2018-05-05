@@ -997,6 +997,11 @@ end
 function SWEP:DoDrawCrosshair(x, y)
 	if not self.DrawCrosshairDefault then return true end
 	if self:GetHolding() then return true end
+
+	if not crosscustomenable_cvar:GetBool() then
+		return math.min(1 - self.IronSightsProgress, 1 - self.SprintProgress, 1 - self.InspectingProgress) <= 0.5
+	end
+
 	local stat = self:GetStatus()
 
 	self.clrelp = self.clrelp or 0
@@ -1004,7 +1009,6 @@ function SWEP:DoDrawCrosshair(x, y)
 	local crossa = crossa_cvar:GetFloat() * math.pow(math.min(1 - ((self.IronSightsProgress and not self.DrawCrosshairIS) and self.IronSightsProgress or 0), 1 - self.SprintProgress, 1 - self.InspectingProgress, self.clrelp), 2)
 	local outa = outa_cvar:GetFloat() * math.pow(math.min(1 - ((self.IronSightsProgress and not self.DrawCrosshairIS) and self.IronSightsProgress or 0), 1 - self.SprintProgress, 1 - self.InspectingProgress, self.clrelp), 2)
 
-	if not crosscustomenable_cvar:GetBool() then return math.min(1 - self.IronSightsProgress, 1 - self.SprintProgress) <= 0.5 end
 
 	local ply = LocalPlayer()
 	if not ply:IsValid() or self:GetOwner() ~= ply then return false end
