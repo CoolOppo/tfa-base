@@ -590,13 +590,17 @@ function SWEP:GenerateInspectionDerma()
 		local prevCat
 		local lineY = 0
 		local scrollWide = scrollpanel:GetWide()
+		local lastTooltipPanel
 
 		for k, v in pairs(self.VGUIAttachments) do
 			if k ~= "BaseClass" then
 				if prevCat then
 					local isContinuing = prevCat == (v.cat or k)
-					-- print(isContinuing, prevCat, v.cat or k)
 					lineY = lineY + (not isContinuing and 132 or 66)
+
+					if not isContinuing then
+						lastTooltipPanel = nil
+					end
 				end
 				
 				prevCat = v.cat or k
@@ -610,6 +614,11 @@ function SWEP:GenerateInspectionDerma()
 				testpanel:SetAttachment(k)
 				testpanel:SetCategory(v.cat or k)
 				testpanel:Initialize()
+				
+				lastTooltipPanel = lastTooltipPanel or testpanel:InitializeTooltip()
+				testpanel:SetupTooltip(lastTooltipPanel)
+
+				testpanel:PopulateIcons()
 				testpanel:SetPos(scrollWide - testpanel:GetWide() - 32, lineY)
 			end
 		end

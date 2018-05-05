@@ -56,6 +56,11 @@ function PANEL:Initialize()
 		draw.RoundedBox( 0, 0, 0, w, h, ColorAlpha( TFA.AttachmentColors["secondary"], ( self.Wep.InspectingProgress or 0 ) * 128 ) )
 	end
 
+	self.FinalWidth = finalwidth
+	self.TopDockPanel = toppanel
+
+	--self:InitializeTooltip()
+
 	--[[
 
 	local tooltip = self:Add("TFAAttachmentTip")
@@ -68,24 +73,21 @@ function PANEL:Initialize()
 
 	]]--
 
-	local tooltip = vgui.Create("TFAAttachmentTip")
-	tooltip.Anchor = self
-	tooltip:SetWeapon( self.Wep )
-	tooltip:SetAttachment( self.Att )
-	--tooltip:SetHeight( tooltipheightmax + padding * 2 )
-	tooltip:SetWidth( finalwidth )
-	--tooltip:SetSize( finalwidth, tooltipheightmax + padding * 2 )
-	tooltip:SetPos(0, toppanel:GetTall() )
-	self.ToolTip = tooltip
-
 	--local keyz = table.GetKeys( self.AttachmentTable.atts )
 	--table.sort(keyz)
 	--PrintTable(keyz)
 	--for _,k in ipairs(keyz) do
 	--	local v = self.AttachmentTable.atts[k]
+
+	self.HasInitialized = true
+	return true
+end
+
+function PANEL:PopulateIcons()
 	local i = 0
+
 	for k,v in ipairs( self.VGUIAttachmentTable.atts ) do
-		local p = toppanel:Add("TFAAttachmentIcon")
+		local p = self.TopDockPanel:Add("TFAAttachmentIcon")
 
 		p:SetWeapon( self.Wep )
 		p:SetGunAttachment( self.Att )
@@ -101,8 +103,30 @@ function PANEL:Initialize()
 		self.AttachmentIcons[k] = p
 	end
 
-	self.HasInitialized = true
-	return true
+	return self
+end
+
+function PANEL:InitializeTooltip()
+	local tooltip = vgui.Create("TFAAttachmentTip")
+	tooltip.Anchor = self
+	tooltip:SetWeapon(self.Wep)
+	tooltip:SetAttachment(self.Att)
+	tooltip:SetWidth(self.FinalWidth)
+	tooltip:SetPos(0, self.TopDockPanel:GetTall())
+	self.ToolTip = tooltip
+	tooltip.LastTouched = 0
+	tooltip.LastFrameAffectedImportant = 0
+
+	return tooltip
+end
+
+function PANEL:SetupTooltip(tooltip)
+	tooltip.Anchor = self
+	tooltip:SetWidth(math.max(self.FinalWidth, tooltip:GetWide()))
+	tooltip:SetPos(0, self.TopDockPanel:GetTall())
+	self.ToolTip = tooltip
+
+	return tooltip
 end
 
 --[[
@@ -136,8 +160,9 @@ function PANEL:Think()
 
 	--self:CalcVAtt()
 
-	local header = nil
-	local texttable = nil
+	local header
+	local texttable
+
 	for k,v in pairs( self.AttachmentIcons ) do
 		if v:IsHovered() then
 			header = TFA.Attachments[v.Attachment].Name
@@ -145,6 +170,7 @@ function PANEL:Think()
 			break
 		end
 	end
+
 	if not header then
 		for k,v in pairs( self.AttachmentIcons ) do
 			if v:GetSelected() then
@@ -154,10 +180,22 @@ function PANEL:Think()
 			end
 		end
 	end
-	self.ToolTip:SetHeader(header)
-	self.ToolTip:SetTextTable(texttable)
-	self.ToolTip:SetActive( texttable and #texttable > 0 )
-	self.ToolTip:SetContentPanel( self.ContentPanel )
+
+	if header and header ~= '' or self.ToolTip.LastTouched < RealTime() then
+		if texttable and #texttable == 0 and self.ToolTip.LastFrameAffectedImportant > RealTime() then
+			return
+		end
+
+		self.ToolTip:SetHeader(header)
+		self.ToolTip:SetTextTable(texttable)
+		self.ToolTip:SetActive( texttable and #texttable > 0 )
+		self.ToolTip:SetContentPanel( self.ContentPanel )
+		self.ToolTip.LastTouched = RealTime() + 0.1
+
+		if texttable and #texttable ~= 0 then
+			self.ToolTip.LastFrameAffectedImportant = RealTime() + 0.1
+		end
+	end
 end
 
 function PANEL:SetContentPanel( p )
