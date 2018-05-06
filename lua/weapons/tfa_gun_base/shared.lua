@@ -210,6 +210,26 @@ SWEP.SprintProgress = 0
 SWEP.SpreadRatio = 0
 SWEP.CrouchingRatio = 0
 SWEP.SmokeParticles = {
+	pistol = "tfa_ins2_weapon_muzzle_smoke_c",
+	smg = "tfa_ins2_weapon_muzzle_smoke_b",
+	grenade = "tfa_ins2_weapon_muzzle_smoke_b",
+	ar2 = "tfa_ins2_weapon_muzzle_smoke_b",
+	shotgun = "tfa_ins2_weapon_muzzle_smoke",
+	rpg = "tfa_ins2_weapon_muzzle_smoke",
+	physgun = "tfa_ins2_weapon_muzzle_smoke",
+	crossbow = "tfa_ins2_weapon_muzzle_smoke",
+	melee = "tfa_ins2_weapon_muzzle_smoke_b",
+	slam = "tfa_ins2_weapon_muzzle_smoke_b",
+	normal = "tfa_ins2_weapon_muzzle_smoke_b",
+	melee2 = "tfa_ins2_weapon_muzzle_smoke_b",
+	knife = "tfa_ins2_weapon_muzzle_smoke_b",
+	duel = "tfa_ins2_weapon_muzzle_smoke_b",
+	camera = "tfa_ins2_weapon_muzzle_smoke_b",
+	magic = "tfa_ins2_weapon_muzzle_smoke_b",
+	revolver = "tfa_ins2_weapon_muzzle_smoke",
+	silenced = "tfa_ins2_weapon_muzzle_smoke_c"
+}
+--[[ SWEP.SmokeParticles = {
 	pistol = "weapon_muzzle_smoke",
 	smg = "weapon_muzzle_smoke",
 	grenade = "weapon_muzzle_smoke",
@@ -228,7 +248,7 @@ SWEP.SmokeParticles = {
 	magic = "weapon_muzzle_smoke",
 	revolver = "weapon_muzzle_smoke_long",
 	silenced = "weapon_muzzle_smoke"
-}
+}--]] 
 --[[
 SWEP.SmokeParticles = {
 	pistol = "smoke_trail_controlled",
