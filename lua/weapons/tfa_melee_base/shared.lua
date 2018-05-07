@@ -228,7 +228,7 @@ function SWEP:ApplyDamage( trace, dmginfo, attk )
 
 	dmginfo:SetDamage( dam )
 	dmginfo:SetDamageForce( force )
-	dmginfo:SetAttacker( self:GetOwner() )
+	-- dmginfo:SetAttacker( self:GetOwner() )
 end
 
 function SWEP:SmackEffect( trace, dmg )
