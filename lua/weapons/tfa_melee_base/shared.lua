@@ -540,14 +540,15 @@ function SWEP:Strike( attk, precision )
 				break
 			end
 			if attk.hitflesh and not hitFlesh then
-				if SERVER and not sp then
+				/*if SERVER and not sp then
 					net.Start( "tfaSoundEvent" )
 					net.WriteEntity( v.Entity )
 					net.WriteString( attk.hitflesh )
 					net.SendOmit( self:GetOwner() )
 				else
 					v.Entity:EmitSound( attk.hitflesh )
-				end
+				end*/
+				self:EmitSoundNet(attk.hitflesh)
 			end
 			if attk.callback and needsCB then
 				attk.callback(attack,self,v)
@@ -564,7 +565,7 @@ function SWEP:Strike( attk, precision )
 			if not hitWorld then
 				self:SmackEffect(v, damage)
 				if attk.hitworld and not hitFlesh then
-					if SERVER and not sp then
+					/*if SERVER and not sp then
 						net.Start( "tfaSoundEvent" )
 						net.WriteEntity( self )
 						net.WriteString( attk.hitworld )
@@ -575,7 +576,8 @@ function SWEP:Strike( attk, precision )
 						else
 							self:EmitSound( attk.hitworld )
 						end
-					end
+					end*/
+					self:EmitSoundNet(attk.hitworld)
 				end
 				if attk.callback and needsCB then
 					attk.callback(attack,self,v)
