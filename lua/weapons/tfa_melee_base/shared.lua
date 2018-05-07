@@ -274,7 +274,7 @@ function SWEP:SmackEffect( trace, dmg )
 
 	dmg:SetDamage( dam )
 	dmg:SetDamageForce( force )
-	dmg:SetAttacker( self:GetOwner() )
+	-- dmg:SetAttacker( self:GetOwner() )
 end
 
 function SWEP:MakeDoor(ent, dmginfo)
