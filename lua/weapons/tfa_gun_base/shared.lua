@@ -632,8 +632,8 @@ Purpose:  Standard SWEP Function
 ]]
 local finalstat
 
-function SWEP:PlayerThink()
-	if self.Owner:IsNPC() then
+function SWEP:PlayerThink(plyv)
+	if self:GetOwner():IsNPC() then
 		return
 	end
 	ft = TFA.FrameTime()
@@ -875,12 +875,14 @@ function SWEP:IronSights()
 	ct = l_CT()
 	stat = self:GetStatus()
 	local owent = self:GetOwner()
+	if not IsValid(owent) then return end
+
 	issighting = false
 	issprinting = false
 	self.is_old = self:GetIronSightsRaw()
 	self.spr_old = self:GetSprinting()
 	if sprint_cv:GetBool() and not self.AllowSprintAttack then
-		issprinting = self:GetOwner():GetVelocity():Length2D() > self:GetOwner():GetRunSpeed() * 0.6 and self:GetOwner():KeyDown(IN_SPEED)
+		issprinting = owent:GetVelocity():Length2D() > owent:GetRunSpeed() * 0.6 and owent:KeyDown(IN_SPEED)
 	end
 	vm = self.OwnerViewModel
 

@@ -20,6 +20,8 @@ local host_timescale_cv = GetConVar("host_timescale")
 local sv_cheats_cv = GetConVar("sv_cheats")
 
 function SWEP:CalculateRatios()
+	local owent = self:GetOwner()
+	if not IsValid(owent) or not owent:IsPlayer() then return end
 	ft = TFA.FrameTime()
 	stat = self:GetStatus()
 	is = self:GetIronSights()
@@ -33,14 +35,14 @@ function SWEP:CalculateRatios()
 	elseif spr then
 		adstransitionspeed = 7.5
 	end
-	self.CrouchingRatio = l_mathApproach(self.CrouchingRatio or 0, self:GetOwner():Crouching() and 1 or 0, ft / self.ToCrouchTime)
+	self.CrouchingRatio = l_mathApproach(self.CrouchingRatio or 0, owent:Crouching() and 1 or 0, ft / self.ToCrouchTime)
 	self.SpreadRatio = l_mathClamp(self.SpreadRatio - self:GetStat("Primary.SpreadRecovery") * ft, 1, self:GetStat("Primary.SpreadMultiplierMax"))
 	self.IronSightsProgress = l_mathApproach(self.IronSightsProgress,ist, (ist - self.IronSightsProgress ) * ft * adstransitionspeed )
 	self.SprintProgress = l_mathApproach(self.SprintProgress,sprt, (sprt - self.SprintProgress ) * ft * adstransitionspeed )
 	self.ProceduralHolsterProgress = l_mathApproach(self.ProceduralHolsterProgress,sprt, (sprt - self.SprintProgress ) * ft * self.ProceduralHolsterTime * 15 )
 	self.InspectingProgress = l_mathApproach(self.InspectingProgress, self.Inspecting and 1 or 0, ( ( self.Inspecting and 1 or 0 )  - self.InspectingProgress ) * ft * 10 )
 	self.CLIronSightsProgress = self.IronSightsProgress--compatibility	
-	jr_targ = math.min( math.abs(self:GetOwner():GetVelocity().z) / 500, 1)
+	jr_targ = math.min( math.abs(owent:GetVelocity().z) / 500, 1)
 	self.JumpRatio = l_mathApproach(self.JumpRatio, jr_targ, ( jr_targ  - self.JumpRatio ) * ft * 20 )
 end
 
