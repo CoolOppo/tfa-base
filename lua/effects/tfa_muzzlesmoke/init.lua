@@ -3,7 +3,7 @@ local ang
 
 local limit_particle_cv  = GetConVar("cl_tfa_fx_muzzlesmoke_limited")
 
-local SMOKEDELAY = 0.5
+local SMOKEDELAY = 1.5
 
 function EFFECT:Init(data)
 	self.WeaponEnt = data:GetEntity()
@@ -45,12 +45,15 @@ function EFFECT:Init(data)
 		local a = self.Attachment
 		local sp = smokepart
 		if timer.Exists(tn) then timer.Remove(tn) end
+
+		if IsValid(w.SmokePCF) then
+			w.SmokePCF:StopEmission()
+		end
+
 		timer.Create(tn, delay or SMOKEDELAY, 1, function()
 			if IsValid(w) then
-				w:StopParticlesNamed(sp)
-				--local p = w:CreateParticleEffect(sp,a,{[1]={["entity"]=w,["attachtype"]=PATTACH_POINT_FOLLOW}})
-				--p:StartEmission()
-				ParticleEffectAttach(sp, PATTACH_POINT_FOLLOW, w, a)
+				w.SmokePCF = CreateParticleSystem(w, sp, PATTACH_POINT_FOLLOW, a)
+				w.SmokePCF:StartEmission()
 			end
 		end)
 	end
