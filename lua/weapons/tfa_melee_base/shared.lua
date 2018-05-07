@@ -222,7 +222,7 @@ function SWEP:ApplyDamage( trace, dmginfo, attk )
 
 	dmginfo:SetDamage( dam )
 	dmginfo:SetDamageForce( force )
-	dmginfo:SetAttacker( self:GetOwner() )
+	-- dmginfo:SetAttacker( self:GetOwner() )
 
 	self:ApplyForce( trace.Entity, dmginfo:GetDamageForce(), trace.HitPos )
 
