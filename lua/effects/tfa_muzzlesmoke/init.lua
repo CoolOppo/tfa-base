@@ -1,12 +1,17 @@
 local AddVel = Vector()
 local ang
 
+local limit_particle_cv  = GetConVar("cl_tfa_fx_muzzlesmoke_limited")
+
+local SMOKEDELAY = 0.5
+
 function EFFECT:Init(data)
 	self.WeaponEnt = data:GetEntity()
 	if not IsValid(self.WeaponEnt) then return end
+	if limit_particle_cv:GetBool() and self.WeaponEnt:GetOwner() ~= LocalPlayer() then return end
 	self.Attachment = data:GetAttachment()
 	local smokepart = "smoke_trail_tfa"
-
+	local delay = ( self.WeaponEnt.GetStat and self.WeaponEnt:GetStat("SmokeDelay") or self.WeaponEnt.SmokeDelay )
 
 	if self.WeaponEnt.SmokeParticle then
 		smokepart = self.WeaponEnt.SmokeParticle
@@ -35,7 +40,19 @@ function EFFECT:Init(data)
 	end
 
 	if TFA.GetMZSmokeEnabled == nil or TFA.GetMZSmokeEnabled() then
-		ParticleEffectAttach(smokepart, PATTACH_POINT_FOLLOW, self.WeaponEnt, self.Attachment)
+		local w = self.WeaponEnt
+		local tn = w:EntIndex() .. "smokedelay"
+		local a = self.Attachment
+		local sp = smokepart
+		if timer.Exists(tn) then timer.Remove(tn) end
+		timer.Create(tn, delay or SMOKEDELAY, 1, function()
+			if IsValid(w) then
+				w:StopParticlesNamed(sp)
+				--local p = w:CreateParticleEffect(sp,a,{[1]={["entity"]=w,["attachtype"]=PATTACH_POINT_FOLLOW}})
+				--p:StartEmission()
+				ParticleEffectAttach(sp, PATTACH_POINT_FOLLOW, w, a)
+			end
+		end)
 	end
 end
 

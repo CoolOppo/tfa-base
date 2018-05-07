@@ -458,7 +458,7 @@ if CLIENT then
 	end
 
 	if GetConVar("cl_tfa_fx_muzzlesmoke_limited") == nil then
-		CreateClientConVar("cl_tfa_fx_muzzlesmoke_limited", 0, true, true)
+		CreateClientConVar("cl_tfa_fx_muzzlesmoke_limited", 1, true, true)
 	end
 	
 	if GetConVar("cl_tfa_legacy_shells") == nil then

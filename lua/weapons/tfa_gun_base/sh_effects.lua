@@ -162,58 +162,23 @@ Returns:  Nothing.
 Notes:    Calls the proper muzzleflash, muzzle smoke, muzzle light code.
 Purpose:  FX
 ]]--
-
-local limit_particle_cv  = GetConVar("cl_tfa_fx_muzzlesmoke_limited")
-SWEP.NextSmokeParticle = { }
-SWEP.SmokeParticleTable = {
-	[1] = { --[attachment] = 
-		--{ ["time"] = 0. ["end"] = 55 }
-	}
-}
-function SWEP:AddSmokeParticleTBL(att)
-	self:UpdateSmokeParticleTBL()
-	self.SmokeParticleTable[att] = self.SmokeParticleTable[att] or {}
-
-	if (not limit_particle_cv) or (not limit_particle_cv:GetBool()) then
-		self.NextSmokeParticle[ att ] = CurTime() + 0.1 + math.sqrt(math.Clamp(#self.SmokeParticleTable, 0, 15)) * 0.2
-	else
-		self.NextSmokeParticle[ att ] = CurTime() + 0.3 + math.Clamp(#self.SmokeParticleTable, 0, 5) * 0.2
-	end
-
-	table.insert(self.SmokeParticleTable[att], #self.SmokeParticleTable[att] + 1, {
-		["time"] = CurTime(),
-		["delay"] = 4
-	})
-end
-
-function SWEP:UpdateSmokeParticleTBL(att)
-	for k, v in ipairs(self.SmokeParticleTable) do
-		for l, b in ipairs(v) do
-			if CurTime() > b.time + b.delay then
-				table.remove(v, l)
-			end
-		end
-	end
-end
-
 function SWEP:MuzzleSmoke(sp)
 	if self.SmokeParticle == nil then
 		self.SmokeParticle = self.SmokeParticles[ self.DefaultHoldType or self.HoldType ]
 	end
-	local vm = self.OwnerViewModel
-	self:UpdateMuzzleAttachment()
-	local att = math.max(1, self.MuzzleAttachmentRaw or (sp and vm or self):LookupAttachment(self.MuzzleAttachment))
-	if self.Akimbo then
-		att = 1 + self.AnimCycle
-	end
-	fx = EffectData()
-	fx:SetOrigin(self:GetOwner():GetShootPos())
-	fx:SetNormal(self:GetOwner():EyeAngles():Forward())
-	fx:SetEntity(self)
-	fx:SetAttachment(att)
-	if CurTime() > ( self.NextSmokeParticle[ att ] or -1 ) and self:GetStat("SmokeParticle") and self:GetStat("SmokeParticle") ~= "" then
+	if self:GetStat("SmokeParticle") and self:GetStat("SmokeParticle") ~= "" then
+		local vm = self.OwnerViewModel
+		self:UpdateMuzzleAttachment()
+		local att = math.max(1, self.MuzzleAttachmentRaw or (sp and vm or self):LookupAttachment(self.MuzzleAttachment))
+		if self.Akimbo then
+			att = 1 + self.AnimCycle
+		end
+		fx = EffectData()
+		fx:SetOrigin(self:GetOwner():GetShootPos())
+		fx:SetNormal(self:GetOwner():EyeAngles():Forward())
+		fx:SetEntity(self)
+		fx:SetAttachment(att)
 		util.Effect("tfa_muzzlesmoke", fx)
-		self:AddSmokeParticleTBL(att)
 	end
 end
 
