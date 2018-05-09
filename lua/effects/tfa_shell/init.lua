@@ -10,7 +10,7 @@ EFFECT.ShellPresets = {
 	["rifle"] = { "models/hdweapons/rifleshell.mdl", math.pow(0.4709 / 1.236636,1/3), 90 },--1.236636 is shell diameter, then divide base diameter into that for standard nato rifle
 	["pistol"] = { "models/hdweapons/shell.mdl", math.pow(0.391 / 0.955581,1/3), 90 },--0.955581 is shell diameter, then divide base diameter into that for 9mm luger
 	["smg"] = { "models/hdweapons/shell.mdl", math.pow(.476 / 0.955581,1/3), 90 },--.45 acp
-	["shotgun"] = { "models/hdweapons/shotgun_shell.mdl", 1, 90 }
+	["shotgun"] = { "models/hdweapons/shotgun_shell.mdl", 1, 90, 3 }--overrides smoke offset with 3
 }
 EFFECT.SoundFiles 	= { Sound(")player/pl_shell1.wav"),Sound(")player/pl_shell2.wav"),Sound(")player/pl_shell3.wav")}
 EFFECT.SoundFilesSG 	= { Sound(")weapons/fx/tink/shotgun_shell1.wav"),Sound(")weapons/fx/tink/shotgun_shell2.wav"),Sound(")weapons/fx/tink/shotgun_shell3.wav")}
@@ -20,7 +20,7 @@ EFFECT.LifeTime = 15
 EFFECT.FadeTime = 0.5
 
 EFFECT.SmokeRate = 60 --Particles per second, multiplied by velocity down to 10%
-EFFECT.SmokeTime = {0.7,1.4}
+EFFECT.SmokeTime = {5,7}
 EFFECT.SmokeThickness = {2,2} --Particles on each puff
 
 local cv_eject
@@ -102,7 +102,7 @@ function EFFECT:Init(data)
 		}
 	end
 
-	local model, scale, yaw = self:FindModel(self.WeaponEntOG)
+	local model, scale, yaw, len = self:FindModel(self.WeaponEntOG)
 
 	model = self.WeaponEntOG.ShellModel or self.WeaponEntOG.LuaShellModel or model
 	scale = self.WeaponEntOG.ShellScale or self.WeaponEntOG.LuaShellScale or scale
@@ -144,6 +144,8 @@ function EFFECT:Init(data)
 		physObj:SetVelocity(velocity)
 		physObj:AddAngleVelocity(VectorRand() * velocity:Length()* self.VelocityRandAngle )
 	end
+
+	self.SmokeOffsetLength = len or ( self:OBBMaxs().x - self:OBBMins().x)
 end
 
 function EFFECT:FindModel( wep )
@@ -189,6 +191,7 @@ function EFFECT:Think()
 		self.SmokeDelta = self.SmokeDelta + FrameTime() * math.Clamp( self:GetVelocity():Length() / self.Velocity[1], 0.2, 1.5 )
 		self.LastSysTime = SysTime()
 		local pos = self:GetPos()
+		pos:Add( self:GetAngles():Forward() * self.SmokeOffsetLength )
 		while ( self.SmokeDelta > 1/self.SmokeRate ) do
 			self.SmokeDelta = self.SmokeDelta - 1/self.SmokeRate
 			local thicc = math.random(self.SmokeThickness[1],self.SmokeThickness[2])
@@ -197,18 +200,18 @@ function EFFECT:Think()
 				local particle = self.Emitter:Add("particles/smokey", pos)
 
 				if (particle) then
-					particle:SetVelocity(VectorRand() * (5*math.sqrt(thicc)) + self:GetVelocity() * 0.1 )
+					particle:SetVelocity(VectorRand() * (1*math.sqrt(thicc)) + self:GetVelocity() * 0.1 )
 					particle:SetLifeTime(0)
-					particle:SetDieTime(math.Rand(0.6, 0.7))
+					particle:SetDieTime(math.Rand(1.2,1.4))
 					particle:SetStartAlpha(math.Rand(16, 32))
 					particle:SetEndAlpha(0)
-					particle:SetStartSize(math.Rand(0.75,1.5))
-					particle:SetEndSize(math.Rand(3, 4))
+					particle:SetStartSize(math.Rand(0.3,0.5))
+					particle:SetEndSize(math.Rand(5,6))
 					particle:SetRoll(math.rad(math.Rand(0, 360)))
 					particle:SetRollDelta(math.Rand(-0.8, 0.8))
 					particle:SetLighting(true)
 					particle:SetAirResistance(10)
-					particle:SetGravity(Vector(0, 0, 60))
+					particle:SetGravity(Vector(0, 0, 40))
 					particle:SetColor(255, 255, 255)
 				end
 			end

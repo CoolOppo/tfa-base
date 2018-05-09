@@ -400,10 +400,10 @@ function SWEP:GenerateInspectionDerma()
 	accuracytext.Think = function(myself)
 		if not IsValid(self) then return end
 		local spread = self:GetStat("Primary.Spread")
-		local accuracystr = "Accuracy: " .. math.Round( spread * 90) .. "°"
+		local accuracystr = "Accuracy: " .. math.Round( spread * 180) .. "°"
 
 		if self:GetStat("data.ironsights") ~= 0 then
-			accuracystr = accuracystr .. " || " .. math.Round( self:GetStat("Primary.IronAccuracy", spread) * 90 ) .. "°"
+			accuracystr = accuracystr .. " || " .. math.Round( self:GetStat("Primary.IronAccuracy", spread) * 180 ) .. "°"
 		end
 
 		myself.Text = accuracystr

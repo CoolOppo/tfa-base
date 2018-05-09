@@ -61,7 +61,7 @@ SWEP.footstepTotalTarget = 0
 
 function SWEP:CalculateBob(pos, ang, breathIntensity, walkIntensity, runIntensity, rate, doIt )
 	if not self:OwnerIsValid() then return end
-	rate = math.min( rate, rate_clamp )
+	rate = math.min( rate or 0.5, rate_clamp )
 	gunbob_intensity = gunbob_intensity_cvar:GetFloat()
 	local ea = self.Owner:EyeAngles()
 	local up = ang:Up()
