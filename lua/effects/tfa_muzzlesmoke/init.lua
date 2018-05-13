@@ -51,8 +51,11 @@ function EFFECT:Init(data)
 		end
 
 		timer.Create(tn, delay or SMOKEDELAY, 1, function()
-			if IsValid(w) then
-				w.SmokePCF = CreateParticleSystem(w, sp, PATTACH_POINT_FOLLOW, a)
+			if not IsValid(w) then return end
+
+			w.SmokePCF = CreateParticleSystem(w, sp, PATTACH_POINT_FOLLOW, a)
+
+			if IsValid(w.SmokePCF) then
 				w.SmokePCF:StartEmission()
 			end
 		end)
