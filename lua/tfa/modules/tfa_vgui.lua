@@ -973,6 +973,108 @@ if CLIENT then
 		})
 	end
 
+	local function tfaOptionBallistics(panel)
+		--Here are whatever default categories you want.
+		local tfaOptionPerf = {
+			Options = {},
+			CVars = {},
+			Label = "#Presets",
+			MenuButton = "1",
+			Folder = "TFA SWEP Settings Ballistics"
+		}
+
+		tfaOptionPerf.Options["#Default"] = {
+			["sv_tfa_ballistics_enabled"] = nil,
+			["sv_tfa_ballistics_bullet_life"] = 10,
+			["sv_tfa_ballistics_bullet_damping_air"] = 1,
+			["sv_tfa_ballistics_bullet_damping_water"] = 3,
+			["sv_tfa_ballistics_bullet_velocity"] = 1,
+			["cl_tfa_ballistics_mp"] = 1,
+			["cl_tfa_ballistics_fx_bullet"] = 1,
+			["cl_tfa_ballistics_fx_tracers_style"] = 1,
+			["cl_tfa_ballistics_fx_tracers_mp"] = 1,
+			["cl_tfa_ballistics_fx_tracers_adv"] = 1,
+		}
+		panel:AddControl("ComboBox", tfaOptionPerf)
+
+		panel:AddControl("Label", {
+			Text = "Serverside"
+		})
+
+		panel:AddControl("CheckBox", {
+			Label = "Enabler",
+			Command = "sv_tfa_ballistics_enabled"
+		})
+
+		panel:AddControl("Slider", {
+			Label = "Bullet Life",
+			Command = "sv_tfa_ballistics_bullet_life",
+			Type = "Float",
+			Min = "0",
+			Max = "20"
+		})
+
+		panel:AddControl("Slider", {
+			Label = "Bullet Air Resistance",
+			Command = "sv_tfa_ballistics_bullet_damping_air",
+			Type = "Float",
+			Min = "0",
+			Max = "10"
+		})
+
+		panel:AddControl("Slider", {
+			Label = "Bullet Water Resistance",
+			Command = "sv_tfa_ballistics_bullet_damping_water",
+			Type = "Float",
+			Min = "0",
+			Max = "10"
+		})
+
+		panel:AddControl("Slider", {
+			Label = "Bullet Velocity",
+			Command = "sv_tfa_ballistics_bullet_velocity",
+			Type = "Float",
+			Min = "0",
+			Max = "2"
+		})
+
+		panel:AddControl("Label", {
+			Text = "Clientside"
+		})
+
+		panel:AddControl("CheckBox", {
+			Label = "Bullet Models",
+			Command = "cl_tfa_ballistics_fx_bullet"
+		})
+
+		panel:AddControl("CheckBox", {
+			Label = "HQ Position Calcuations",
+			Command = "cl_tfa_ballistics_fx_tracers_adv"
+		})
+
+		panel:AddControl("CheckBox", {
+			Label = "Multiplayer Ballistics",
+			Command = "cl_tfa_ballistics_mp"
+		})
+
+		panel:AddControl("CheckBox", {
+			Label = "Multiplayer Tracers",
+			Command = "cl_tfa_ballistics_fx_tracers_mp"
+		})
+
+		panel:AddControl("Slider", {
+			Label = "Tracer Style",
+			Command = "cl_tfa_ballistics_fx_tracers_style",
+			Type = "Int",
+			Min = "0",
+			Max = "1"
+		})
+
+		panel:AddControl("Label", {
+			Text = "By TheForgottenArchitect"
+		})
+	end
+
 	local function tfaAddOption()
 		spawnmenu.AddToolMenuOption("Options", "TFA SWEP Base Settings", "tfaOptionVM", "Viewmodel", "", "", tfaOptionVM)
 		spawnmenu.AddToolMenuOption("Options", "TFA SWEP Base Settings", "tfaOptionSights", "Scopes / Sights", "", "", tfaOptionSights)
@@ -980,6 +1082,7 @@ if CLIENT then
 		spawnmenu.AddToolMenuOption("Options", "TFA SWEP Base Settings", "TFASwepBaseCrosshair", "HUD / Crosshair", "", "", tfaOptionHUD)
 		spawnmenu.AddToolMenuOption("Options", "TFA SWEP Base Settings", "TFASwepBaseDeveloper", "Developer", "", "", tfaOptionDeveloper)
 		spawnmenu.AddToolMenuOption("Options", "TFA SWEP Base Settings", "TFASwepBaseColor", "Color Customisation", "", "", tfaOptionColors)
+		spawnmenu.AddToolMenuOption("Options", "TFA SWEP Base Settings", "TFASwepBaseBallistics", "Ballistics", "", "", tfaOptionBallistics)
 		spawnmenu.AddToolMenuOption("Options", "TFA SWEP Base Settings", "TFASwepBaseServer", "Admin / Server", "", "", tfaOptionServer)
 		--spawnmenu.AddToolMenuOption("Options", "TFA SWEP Base Settings", "TFASwepBaseRestriction", "Restriction", "", "", tfaOptionRestriction)
 	end

@@ -157,7 +157,11 @@ function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet,
 			end
 		end
 
-		self:GetOwner():FireBullets(self.MainBullet)
+		if TFA.Ballistics and TFA.Ballistics:ShouldUse(self) then
+			TFA.Ballistics:FireBullets(self,self.MainBullet)
+		else
+			self:GetOwner():FireBullets(self.MainBullet)
+		end
 	end
 end
 
