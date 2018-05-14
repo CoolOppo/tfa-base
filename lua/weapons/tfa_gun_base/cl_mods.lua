@@ -347,8 +347,8 @@ function SWEP:DrawWorldModel()
 
 	self:UpdateWMBonePositions(self)
 
-	if not self.WElements or not self.HasInitAttachments then return end
-	--self.WElements = self:GetStat("WElements")
+	if not self.WElements then return end
+
 	self:CreateModels(self.WElements)
 
 	if (not self.wRenderOrder) then
