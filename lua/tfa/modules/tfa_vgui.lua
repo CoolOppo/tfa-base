@@ -16,6 +16,9 @@ if CLIENT then
 	language.Add("tfa3dsb.nb","0 - No Blur")
 	language.Add("tfa3dsb.sb","1 - Standard Blur")
 	language.Add("tfa3dsb.bb","2 - Bokeh Blur")
+	language.Add("tfabaltra.di","0 - Disabled")
+	language.Add("tfabaltra.sm","1 - Smokey")
+	language.Add("tfabaltra.re","2 - Bright Red")
 
 	local function tfaOptionServer(panel)
 		--Here are whatever default categories you want.
@@ -1038,6 +1041,14 @@ if CLIENT then
 			Max = "2"
 		})
 
+		panel:AddControl("Slider", {
+			Label = "Sub-Steps",
+			Command = "sv_tfa_ballistics_substeps",
+			Type = "Integer",
+			Min = "1",
+			Max = "5"
+		})
+
 		panel:AddControl("Label", {
 			Text = "Clientside"
 		})
@@ -1062,13 +1073,26 @@ if CLIENT then
 			Command = "cl_tfa_ballistics_fx_tracers_mp"
 		})
 
-		panel:AddControl("Slider", {
-			Label = "Tracer Style",
-			Command = "cl_tfa_ballistics_fx_tracers_style",
-			Type = "Int",
-			Min = "0",
-			Max = "1"
+		local tfaOptionTracerStyle = {
+			Options = {},
+			CVars = {"cl_tfa_ballistics_fx_tracers_style"},
+			Label = "#Presets",
+			MenuButton = "1",
+			Folder = "TFASSBallTracerStyle"
+		}
+		tfaOptionTracerStyle.Options["#tfabaltra.di"] = {
+			["cl_tfa_ballistics_fx_tracers_style"] = 0
+		}
+		tfaOptionTracerStyle.Options["#tfabaltra.sm"] = {
+			["cl_tfa_ballistics_fx_tracers_style"] = 1
+		}
+		tfaOptionTracerStyle.Options["#tfabaltra.re"] = {
+			["cl_tfa_ballistics_fx_tracers_style"] = 2
+		}
+		panel:AddControl("Label", {
+			Text = "Tracer Style:"
 		})
+		panel:AddControl("ComboBox", tfaOptionTracerStyle)
 
 		panel:AddControl("Label", {
 			Text = "By TheForgottenArchitect"
