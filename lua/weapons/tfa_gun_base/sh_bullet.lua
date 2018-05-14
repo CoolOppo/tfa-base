@@ -14,14 +14,20 @@ local function DirectDamage(a, b, c)
 	end
 end
 
+local ballistics_distcv = GetConVar("sv_tfa_ballistics_mindist")
+
 local function BallisticFirebullet(ply, bul, ovr)
 	local wep = ply:GetActiveWeapon()
 
 	if TFA.Ballistics and TFA.Ballistics:ShouldUse(wep) then
-		if ovr then
-			TFA.Ballistics:FireBullets(wep, bul, angle_zero, true)
+		if ballistics_distcv:GetInt() == -1 or ply:GetEyeTrace().HitPos:Distance(ply:GetShootPos()) > ( ballistics_distcv:GetFloat() * TFA.Ballistics.UnitScale ) then
+			if ovr then
+				TFA.Ballistics:FireBullets(wep, bul, angle_zero, true)
+			else
+				TFA.Ballistics:FireBullets(wep, bul)
+			end
 		else
-			TFA.Ballistics:FireBullets(wep, bul)
+			ply:FireBullets(bul)
 		end
 	else
 		ply:FireBullets(bul)

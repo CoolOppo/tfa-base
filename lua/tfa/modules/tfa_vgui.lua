@@ -1,24 +1,23 @@
 --Config GUI
-
 if CLIENT then
-	language.Add("tfa3dsm.label","3D Scope Sensitivity Mode")
-	language.Add("tfa3dsm.nc","0 - No Compensation")
-	language.Add("tfa3dsm.sc","1 - Standard Compensation")
-	language.Add("tfa3dsm.3d","2 - 3D Compensation")
-	language.Add("tfa3dsm.rt","3 - RT FOV Compensation")
-	language.Add("tfa3dsq.label","3D Scope Quality")
-	language.Add("tfa3dsq.at","-1 - Autodetected")
-	language.Add("tfa3dsq.ul","0 - Ultra (2048x)")
-	language.Add("tfa3dsq.hq","1 - High (1024x)")
-	language.Add("tfa3dsq.mq","2 - Medium (512x)")
-	language.Add("tfa3dsq.lq","3 - Low (256x)")
-	language.Add("tfa3dsb.label","3D Scope Blur Mode")
-	language.Add("tfa3dsb.nb","0 - No Blur")
-	language.Add("tfa3dsb.sb","1 - Standard Blur")
-	language.Add("tfa3dsb.bb","2 - Bokeh Blur")
-	language.Add("tfabaltra.di","0 - Disabled")
-	language.Add("tfabaltra.sm","1 - Smokey")
-	language.Add("tfabaltra.re","2 - Bright Red")
+	language.Add("tfa3dsm.label", "3D Scope Sensitivity Mode")
+	language.Add("tfa3dsm.nc", "0 - No Compensation")
+	language.Add("tfa3dsm.sc", "1 - Standard Compensation")
+	language.Add("tfa3dsm.3d", "2 - 3D Compensation")
+	language.Add("tfa3dsm.rt", "3 - RT FOV Compensation")
+	language.Add("tfa3dsq.label", "3D Scope Quality")
+	language.Add("tfa3dsq.at", "-1 - Autodetected")
+	language.Add("tfa3dsq.ul", "0 - Ultra (2048x)")
+	language.Add("tfa3dsq.hq", "1 - High (1024x)")
+	language.Add("tfa3dsq.mq", "2 - Medium (512x)")
+	language.Add("tfa3dsq.lq", "3 - Low (256x)")
+	language.Add("tfa3dsb.label", "3D Scope Blur Mode")
+	language.Add("tfa3dsb.nb", "0 - No Blur")
+	language.Add("tfa3dsb.sb", "1 - Standard Blur")
+	language.Add("tfa3dsb.bb", "2 - Bokeh Blur")
+	language.Add("tfabaltra.di", "0 - Disabled")
+	language.Add("tfabaltra.sm", "1 - Smokey")
+	language.Add("tfabaltra.re", "2 - Bright Red")
 
 	local function tfaOptionServer(panel)
 		--Here are whatever default categories you want.
@@ -55,7 +54,6 @@ if CLIENT then
 		panel:AddControl("ComboBox", tfaOptionSV)
 
 		--These are the panel controls.  Adding these means that you don't have to go into the console.
-
 		panel:AddControl("CheckBox", {
 			Label = "Require reload keypress",
 			Command = "sv_tfa_allow_dryfire"
@@ -167,7 +165,6 @@ if CLIENT then
 			Max = "1"
 		})
 
-
 		panel:AddControl("Label", {
 			Text = "By TheForgottenArchitect"
 		})
@@ -194,13 +191,12 @@ if CLIENT then
 			cl_tfa_scope_sensitivity_autoscale = "1",
 			cl_tfa_scope_sensitivity = "100",
 			cl_tfa_ironsights_toggle = "0",
-			cl_tfa_ironsights_resight = "1",
+			cl_tfa_ironsights_resight = "1"
 		}
 
 		panel:AddControl("ComboBox", tfaOptionCL)
 
 		--These are the panel controls.  Adding these means that you don't have to go into the console.
-
 		panel:AddControl("CheckBox", {
 			Label = "Enable 3D Scopes",
 			Command = "cl_tfa_3dscope"
@@ -239,8 +235,7 @@ if CLIENT then
 			cl_tfa_scope_sensitivity_3d = "3"
 		}
 
-		tfaOption3DSM.CVars = table.GetKeys( tfaOption3DSM.Options["#tfa3dsm.3d"] )
-
+		tfaOption3DSM.CVars = table.GetKeys(tfaOption3DSM.Options["#tfa3dsm.3d"])
 		panel:AddControl("ComboBox", tfaOption3DSM)
 
 		local tfaOption3DSQ = {
@@ -271,8 +266,7 @@ if CLIENT then
 			cl_tfa_3dscope_quality = "3"
 		}
 
-		tfaOption3DSQ.CVars = table.GetKeys( tfaOption3DSQ.Options["#tfa3dsq.ul"] )
-
+		tfaOption3DSQ.CVars = table.GetKeys(tfaOption3DSQ.Options["#tfa3dsq.ul"])
 		panel:AddControl("ComboBox", tfaOption3DSQ)
 
 		local tfaOption3DSB = {
@@ -295,8 +289,7 @@ if CLIENT then
 			cl_tfa_fx_rtscopeblur_mode = "2"
 		}
 
-		tfaOption3DSB.CVars = table.GetKeys( tfaOption3DSB.Options["#tfa3dsb.bb"] )
-
+		tfaOption3DSB.CVars = table.GetKeys(tfaOption3DSB.Options["#tfa3dsb.bb"])
 		panel:AddControl("ComboBox", tfaOption3DSB)
 
 		panel:AddControl("Slider", {
@@ -343,7 +336,6 @@ if CLIENT then
 		})
 	end
 
-
 	local function tfaOptionVM(panel)
 		--Here are whatever default categories you want.
 		local tfaOptionCL = {
@@ -371,7 +363,6 @@ if CLIENT then
 		panel:AddControl("ComboBox", tfaOptionCL)
 
 		--These are the panel controls.  Adding these means that you don't have to go into the console.
-
 		panel:AddControl("CheckBox", {
 			Label = "Use Animated Viewbob",
 			Command = "cl_tfa_viewbob_animated"
@@ -988,16 +979,19 @@ if CLIENT then
 
 		tfaOptionPerf.Options["#Default"] = {
 			["sv_tfa_ballistics_enabled"] = nil,
+			["sv_tfa_ballistics_mindist"] = -1,
 			["sv_tfa_ballistics_bullet_life"] = 10,
 			["sv_tfa_ballistics_bullet_damping_air"] = 1,
 			["sv_tfa_ballistics_bullet_damping_water"] = 3,
 			["sv_tfa_ballistics_bullet_velocity"] = 1,
+			["sv_tfa_ballistics_bullet_substeps"] = 3,
 			["cl_tfa_ballistics_mp"] = 1,
 			["cl_tfa_ballistics_fx_bullet"] = 1,
 			["cl_tfa_ballistics_fx_tracers_style"] = 1,
 			["cl_tfa_ballistics_fx_tracers_mp"] = 1,
-			["cl_tfa_ballistics_fx_tracers_adv"] = 1,
+			["cl_tfa_ballistics_fx_tracers_adv"] = 1
 		}
+
 		panel:AddControl("ComboBox", tfaOptionPerf)
 
 		panel:AddControl("Label", {
@@ -1007,6 +1001,14 @@ if CLIENT then
 		panel:AddControl("CheckBox", {
 			Label = "Enabler",
 			Command = "sv_tfa_ballistics_enabled"
+		})
+
+		panel:AddControl("Slider", {
+			Label = "Activation Distance (-1=always)",
+			Command = "sv_tfa_ballistics_mindist",
+			Type = "Int",
+			Min = "-1",
+			Max = "100"
 		})
 
 		panel:AddControl("Slider", {
@@ -1080,18 +1082,23 @@ if CLIENT then
 			MenuButton = "1",
 			Folder = "TFASSBallTracerStyle"
 		}
+
 		tfaOptionTracerStyle.Options["#tfabaltra.di"] = {
 			["cl_tfa_ballistics_fx_tracers_style"] = 0
 		}
+
 		tfaOptionTracerStyle.Options["#tfabaltra.sm"] = {
 			["cl_tfa_ballistics_fx_tracers_style"] = 1
 		}
+
 		tfaOptionTracerStyle.Options["#tfabaltra.re"] = {
 			["cl_tfa_ballistics_fx_tracers_style"] = 2
 		}
+
 		panel:AddControl("Label", {
 			Text = "Tracer Style:"
 		})
+
 		panel:AddControl("ComboBox", tfaOptionTracerStyle)
 
 		panel:AddControl("Label", {
