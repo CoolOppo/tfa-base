@@ -97,15 +97,25 @@ function BallisticBullet:_checkWater(delta, target)
 end
 
 --internal function for handling acceleration
+local function GetWind()
+	local wind = vector_origin
+	if StormFox then
+		local windSpeed = StormFox.GetNetworkData( "Wind" ) * TFA.Ballistics.UnitScale
+		local windAng = Angle( 0, StormFox.GetNetworkData( "WindAngle" ), 0 )
+		wind = windSpeed * windAng:Forward():GetNormalized()
+	end
+	return wind
+end
 function BallisticBullet:_accelerate(delta)
 	local dragDensity = self.Underwater and TFA.Ballistics.WaterResistance or TFA.Ballistics.AirResistance
 	local drag = -self.velocity:GetNormalized() * self.velocity:Length() * self.velocity:Length() * 0.00006 * dragDensity
+	local wind = GetWind()
 
 	if self.Underwater then
 		self.velocity = self.velocity / (1 + TFA.Ballistics.WaterResistance * delta)
 	end
 
-	self.velocity = self.velocity + (TFA.Ballistics.Gravity + drag) * delta
+	self.velocity = self.velocity + (TFA.Ballistics.Gravity + drag + wind) * delta
 	self.damage = self.startDamage * self.velocity:Length() / self.startVelocity
 end
 
