@@ -8,8 +8,9 @@ function SWEP:FixAkimbo()
 		self.Akimbo_Inverted = self.ViewModelFlip
 		self.AnimCycle = self.ViewModelFlip and 0 or 01
 		self:ClearStatCache()
-		timer.Simple(FrameTime(),function()
-				timer.Simple(0.01,function()
+
+		timer.Simple(FrameTime(), function()
+			timer.Simple(0.01, function()
 				if IsValid(self) and self:OwnerIsValid() then
 					self:SetClip1(self.Primary.ClipSize)
 				end
@@ -19,10 +20,12 @@ function SWEP:FixAkimbo()
 end
 
 function SWEP:ToggleAkimbo(arg1)
-	if self.Akimbo and ( IsFirstTimePredicted() or ( arg1 and arg1 == "asdf" ) ) then
+	if self.Akimbo and (IsFirstTimePredicted() or (arg1 and arg1 == "asdf")) then
 		self.AnimCycle = 1 - self.AnimCycle
 	end
+
 	if SERVER and game.SinglePlayer() then
-		self:SetNW2Int("AnimCycle",self.AnimCycle)
+		self.SetNW2Int = self.SetNW2Int or self.SetNWInt
+		self:SetNW2Int("AnimCycle", self.AnimCycle)
 	end
 end

@@ -12,7 +12,6 @@
 	["bulletOverride"] = Bool --disable coming out of gun barrel on clientside
 }
 ]]
-
 local BallisticBullet = {
 	["owner"] = NULL,
 	["inflictor"] = NULL,
@@ -99,13 +98,16 @@ end
 --internal function for handling acceleration
 local function GetWind()
 	local wind = vector_origin
+
 	if StormFox then
-		local windSpeed = StormFox.GetNetworkData( "Wind" ) * TFA.Ballistics.UnitScale
-		local windAng = Angle( 0, StormFox.GetNetworkData( "WindAngle" ), 0 )
+		local windSpeed = StormFox.GetNetworkData("Wind") * TFA.Ballistics.UnitScale
+		local windAng = Angle(0, StormFox.GetNetworkData("WindAngle"), 0)
 		wind = windSpeed * windAng:Forward():GetNormalized()
 	end
+
 	return wind
 end
+
 function BallisticBullet:_accelerate(delta)
 	local dragDensity = self.Underwater and TFA.Ballistics.WaterResistance or TFA.Ballistics.AirResistance
 	local drag = -self.velocity:GetNormalized() * self.velocity:Length() * self.velocity:Length() * 0.00006 * dragDensity
@@ -219,12 +221,20 @@ function BallisticBullet:Render()
 				self.curmodel:SetAngles(sang)
 
 				if not self.vOffsetPos then
+					local att
+
+					if self.inflictor.GetMuzzleAttachment and self.inflictor:GetMuzzleAttachment() then
+						att = self.inflictor:GetMuzzleAttachment()
+					else
+						att = self.inflictor.MuzzleAttachmentRaw or 1
+					end
+
 					if LocalPlayer():ShouldDrawLocalPlayer() then
-						local npos = LocalPlayer():GetActiveWeapon():GetAttachment(1) or DEFANGPOS
+						local npos = LocalPlayer():GetActiveWeapon():GetAttachment(att) or DEFANGPOS
 						self.vOffsetPos = self.curmodel:WorldToLocal(npos.Pos)
 						self.vOffsetAng = self.curmodel:WorldToLocalAngles(npos.Ang)
 					else
-						local npos = LocalPlayer():GetViewModel():GetAttachment(1) or DEFANGPOS
+						local npos = LocalPlayer():GetViewModel():GetAttachment(att) or DEFANGPOS
 						self.vOffsetPos = self.curmodel:WorldToLocal(npos.Pos)
 						self.vOffsetAng = self.curmodel:WorldToLocalAngles(npos.Ang)
 					end

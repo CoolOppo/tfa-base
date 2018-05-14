@@ -209,10 +209,8 @@ function TFA.Ballistics:FireBullets(wep, b, angIn, bulletOverride)
 		}
 
 		--disable shotgun tracers
-		if oldNum > 1 then
-			if util.SharedRandom(sharedRandomSeed, 0, math.sqrt(oldNum), i) > 1 then
-				struct.smokeparticle = ""
-			end
+		if oldNum > 1 and util.SharedRandom(sharedRandomSeed, 0, math.sqrt(oldNum), i) > 1 then
+			struct.smokeparticle = ""
 		end
 
 		if CLIENT then

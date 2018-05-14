@@ -1,5 +1,3 @@
-
-
 SWEP.AmmoRangeTable = {
 	["SniperPenetratedRound"] = 2,
 	["SniperPenetratedBullet"] = 2,
@@ -10,11 +8,11 @@ SWEP.AmmoRangeTable = {
 	["def"] = 1
 }
 
-function SWEP:AmmoRangeMultiplier( )
-	return self.AmmoRangeTable[ self.Primary.Ammo or "def" ] or self.AmmoRangeTable["def"] or 1
+function SWEP:AmmoRangeMultiplier()
+	return self.AmmoRangeTable[self.Primary.Ammo or "def"] or self.AmmoRangeTable["def"] or 1
 end
 
-function SWEP:MetersToUnits( x )
+function SWEP:MetersToUnits(x)
 	return x * 39.3701 * 4 / 3
 end
 
@@ -24,91 +22,93 @@ SWEP.SensitivtyFunctions = {
 	[0] = function() return 1 end,
 	[1] = function(self, ...)
 		if self:GetStat("Secondary.ScopeZoom") then
-			return TFA.CalculateSensitivtyScale( 90 / self:GetStat("Secondary.ScopeZoom"), self:GetStat("Secondary.IronFOV"), self.Secondary.ScopeScreenScale or 0.392592592592592 )
+			return TFA.CalculateSensitivtyScale(90 / self:GetStat("Secondary.ScopeZoom"), self:GetStat("Secondary.IronFOV"), self.Secondary.ScopeScreenScale or 0.392592592592592)
 		else
-			return self.SensitivtyFunctions[2]( self, ... )
+			return self.SensitivtyFunctions[2](self, ...)
 		end
 	end,
 	[2] = function(self, ...)
 		if self:GetStat("RTScopeFOV") then
-			return TFA.CalculateSensitivtyScale(  self:GetStat("RTScopeFOV"), self:GetStat("Secondary.IronFOV"), self.Secondary.ScopeScreenScale or 0.392592592592592 )
+			return TFA.CalculateSensitivtyScale(self:GetStat("RTScopeFOV"), self:GetStat("Secondary.IronFOV"), self.Secondary.ScopeScreenScale or 0.392592592592592)
 		else
-			return self.SensitivtyFunctions[0]( self, ... )
+			return self.SensitivtyFunctions[0](self, ...)
 		end
 	end,
 	[3] = function(self, ...)
 		if self:GetStat("RTScopeFOV") then
-			return TFA.CalculateSensitivtyScale(  self:GetStat("RTScopeFOV"), self:GetStat("Secondary.IronFOV"), 1 )
+			return TFA.CalculateSensitivtyScale(self:GetStat("RTScopeFOV"), self:GetStat("Secondary.IronFOV"), 1)
 		else
-			return self.SensitivtyFunctions[0]( self, ... )
+			return self.SensitivtyFunctions[0](self, ...)
 		end
 	end
 }
 
-function SWEP:Get3DSensitivity( )
-	local f = self.SensitivtyFunctions[ cv_3dmode:GetInt() ]
+function SWEP:Get3DSensitivity()
+	local f = self.SensitivtyFunctions[cv_3dmode:GetInt()]
+
 	return f(self)
 end
 
 function SWEP:GetSeed()
-	local sd = math.floor( self:Clip1() + self:Ammo1() + self:Clip2() + self:Ammo2() + self:GetLastActivity() ) + self:GetNextIdleAnim() + self:GetNextPrimaryFire() + self:GetNextSecondaryFire()
-	return math.Round( sd )
+	local sd = math.floor(self:Clip1() + self:Ammo1() + self:Clip2() + self:Ammo2() + self:GetLastActivity()) + self:GetNextIdleAnim() + self:GetNextPrimaryFire() + self:GetNextSecondaryFire()
+
+	return math.Round(sd)
 end
 
-SWEP.SharedRandomValues = {
-
-}
-
+SWEP.SharedRandomValues = {}
 local seed
 
-function SWEP:SharedRandom( min, max, id ) --math.random equivalent
+--math.random equivalent
+function SWEP:SharedRandom(min, max, id)
 	if min and not max then
 		max = min
 		min = 1
 	end
+
 	min = math.Round(min)
 	max = math.Round(max)
-	local key = ( id or "Weapon" ) .. min .. max
+	local key = (id or "Weapon") .. min .. max
 	seed = self:GetSeed()
-	local val = math.floor( util.SharedRandom( id or "Weapon", min, max + 1 , seed ) )
-	if self.SharedRandomValues[ key ] and self.SharedRandomValues[ key ] == val then
+	local val = math.floor(util.SharedRandom(id or "Weapon", min, max + 1, seed))
+
+	if self.SharedRandomValues[key] and self.SharedRandomValues[key] == val then
 		if min < val and max > val then
-			math.randomseed( seed )
-			if ( math.Rand(0,1) < 0.5 ) then
-				math.randomseed( seed + 1 )
-				val = math.random( min, val - 1 )
+			math.randomseed(seed)
+
+			if (math.Rand(0, 1) < 0.5) then
+				math.randomseed(seed + 1)
+				val = math.random(min, val - 1)
 			else
-				math.randomseed( seed + 1 )
-				val = math.random( val + 1, max )
+				math.randomseed(seed + 1)
+				val = math.random(val + 1, max)
 			end
 		elseif min < val then
-			math.randomseed( seed + 1 )
-			val = math.random( min, val - 1 )
+			math.randomseed(seed + 1)
+			val = math.random(min, val - 1)
 		elseif max > val then
-			math.randomseed( seed + 1 )
-			val = math.random( val + 1, max )
+			math.randomseed(seed + 1)
+			val = math.random(val + 1, max)
 		end
 	end
+
 	if IsFirstTimePredicted() then
-		timer.Simple(0,function()
+		timer.Simple(0, function()
 			if IsValid(self) then
-				self.SharedRandomValues[ key ] = val
+				self.SharedRandomValues[key] = val
 			end
 		end)
 	end
+
 	return val
 end
 
 local oiv = nil
-
 local rlcv = GetConVar("sv_tfa_reloads_enabled")
-
 local holding_result_cached = false
 local last_held_check = -1
 local sp = game.SinglePlayer()
 local sqlen
 local nm
-
 --[[
 local sqind
 
@@ -122,10 +122,12 @@ function SWEP:TranslateSequenceActivityTable( tbl )
 		tbl[k] = nil
 	end
 end
-]]--
+]]
+--
+local slo, sqlo, sqro, sqros
 
-local slo,sqlo,sqro,sqros
-function SWEP:GetActivityLength( tanim, status)--, seq )
+--, seq )
+function SWEP:GetActivityLength(tanim, status)
 	if not self:VMIV() then return 0 end
 	--[[
 	if not self.HasCachedIDs then
@@ -135,27 +137,30 @@ function SWEP:GetActivityLength( tanim, status)--, seq )
 		self:TranslateSequenceActivityTable( self.SequenceRateOverrideScaled )
 		self.HasCachedIDs = true
 	end
-	]]--
+	]]
+	--
 	tanim = tanim or self:GetLastActivity()
-	if tanim < 0 then
-		return 0
-	end
-	nm = self.OwnerViewModel:GetSequenceName( self.OwnerViewModel:SelectWeightedSequence( tanim ) )
-	if tanim == self.OwnerViewModel:GetSequenceActivity( self.OwnerViewModel:GetSequence() ) then
-		sqlen = self.OwnerViewModel:SequenceDuration( self.OwnerViewModel:GetSequence() )
+	if tanim < 0 then return 0 end
+	nm = self.OwnerViewModel:GetSequenceName(self.OwnerViewModel:SelectWeightedSequence(tanim))
+
+	if tanim == self.OwnerViewModel:GetSequenceActivity(self.OwnerViewModel:GetSequence()) then
+		sqlen = self.OwnerViewModel:SequenceDuration(self.OwnerViewModel:GetSequence())
 	else
-		sqlen = self.OwnerViewModel:SequenceDuration( self.OwnerViewModel:SelectWeightedSequenceSeeded( math.max(tanim or 1,1), self:GetSeed() ) )
+		sqlen = self.OwnerViewModel:SequenceDuration(self.OwnerViewModel:SelectWeightedSequenceSeeded(math.max(tanim or 1, 1), self:GetSeed()))
 	end
+
 	slo = self.StatusLengthOverride[nm] or self.StatusLengthOverride[tanim]
 	sqlo = self.SequenceLengthOverride[nm] or self.SequenceLengthOverride[tanim]
 	sqro = self.SequenceRateOverride[nm] or self.SequenceRateOverride[tanim]
-	sqros = self:GetStat("SequenceRateOverrideScaled." .. nm ) or self:GetStat("SequenceRateOverrideScaled." .. ( act or "0") )
+	sqros = self:GetStat("SequenceRateOverrideScaled." .. nm) or self:GetStat("SequenceRateOverrideScaled." .. (act or "0"))
+
 	--[[
 	slo = self:GetStat("StatusLengthOverride." .. nm ) or self:GetStat("StatusLengthOverride." .. act )
 	sqlo = self:GetStat("SequenceLengthOverride." .. nm ) or self:GetStat("SequenceLengthOverride." .. act )
 	sqro = self:GetStat("SequenceRateOverride." .. nm ) or self:GetStat("SequenceRateOverride." .. act )
 	sqros = self:GetStat("SequenceRateOverrideScaled." .. nm ) or self:GetStat("SequenceRateOverrideScaled." .. act )
-	]]--
+	]]
+	--
 	if status and slo then
 		sqlen = slo
 	elseif sqlo then
@@ -165,18 +170,23 @@ function SWEP:GetActivityLength( tanim, status)--, seq )
 	elseif sqros then
 		sqlen = sqlen / sqros
 	end
-	sqlen = sqlen / self:NZAnimationSpeed( tanim )
+
+	sqlen = sqlen / self:NZAnimationSpeed(tanim)
+
 	return sqlen
 end
 
-function SWEP:GetAnimationRate( tanim )
+function SWEP:GetAnimationRate(tanim)
 	sqlen = 1
+
 	if self.SequenceRateOverride[tanim] then
 		sqlen = self.SequenceRateOverride[tanim]
 	elseif self.SequenceRateOverrideScaled[tanim] then
 		sqlen = sqlen / self.SequenceRateOverrideScaled[tanim]
 	end
-	sqlen = sqlen / self:NZAnimationSpeed( tanim )
+
+	sqlen = sqlen / self:NZAnimationSpeed(tanim)
+
 	return sqlen
 end
 
@@ -188,23 +198,32 @@ function SWEP:GetHolding()
 
 	if holding_result_cached == nil then
 		holding_result_cached = false
+
 		if not IsValid(self:GetOwner()) or not self:GetOwner():IsPlayer() then
 			holding_result_cached = false
+
 			return false
 		end
+
 		local ent = self:GetOwner():GetNW2Entity("LastHeldEntity")
+
 		if not IsValid(ent) then
 			holding_result_cached = false
+
 			return false
 		end
+
 		if ent.IsPlayerHolding then
-			ent:SetNW2Bool("PlayerHolding",ent:IsPlayerHolding())
+			ent:SetNW2Bool("PlayerHolding", ent:IsPlayerHolding())
 		end
+
 		if ent:GetNW2Bool("PlayerHolding") then
 			holding_result_cached = true
+
 			return true
 		end
 	end
+
 	return holding_result_cached
 end
 
@@ -214,7 +233,7 @@ end
 
 function SWEP:ReloadCV()
 	if rlcv then
-		if ( not rlcv:GetBool() ) and (not self.Primary.ClipSize_PreEdit) then
+		if (not rlcv:GetBool()) and (not self.Primary.ClipSize_PreEdit) then
 			self.Primary.ClipSize_PreEdit = self.Primary.ClipSize
 			self.Primary.ClipSize = -1
 			self:ClearStatCache()
@@ -227,7 +246,10 @@ function SWEP:ReloadCV()
 end
 
 function SWEP:OwnerIsValid()
-	if oiv == nil then oiv = IsValid(self:GetOwner()) end
+	if oiv == nil then
+		oiv = IsValid(self:GetOwner())
+	end
+
 	return oiv
 end
 
@@ -236,6 +258,7 @@ function SWEP:NullifyOIV()
 		self:GetHolding()
 		oiv = nil
 	end
+
 	return self:VMIV()
 end
 
@@ -244,6 +267,7 @@ function SWEP:VMIV()
 		if IsValid(self:GetOwner()) and self:GetOwner().GetViewModel then
 			self.OwnerViewModel = self:GetOwner():GetViewModel()
 		end
+
 		return false
 	else
 		return self.OwnerViewModel
@@ -260,20 +284,20 @@ function SWEP:CanChamber()
 	end
 end
 
-function SWEP:GetPrimaryClipSize( calc )
+function SWEP:GetPrimaryClipSize(calc)
 	targetclip = self:GetStat("Primary.ClipSize")
 
-	if self:CanChamber() and not ( calc and self:Clip1() <= 0 ) then
-		targetclip = targetclip + ( self.Akimbo and 2 or 1)
+	if self:CanChamber() and not (calc and self:Clip1() <= 0) then
+		targetclip = targetclip + (self.Akimbo and 2 or 1)
 	end
 
-	return math.max(targetclip,-1)
+	return math.max(targetclip, -1)
 end
 
-function SWEP:GetSecondaryClipSize( calc )
+function SWEP:GetSecondaryClipSize(calc)
 	targetclip = self:GetStat("Secondary.ClipSize")
 
-	return math.max(targetclip,-1)
+	return math.max(targetclip, -1)
 end
 
 --[[
@@ -302,11 +326,13 @@ function SWEP:Ammo2()
 	return self:GetOwner():GetAmmoCount( self:GetSecondaryAmmoTypeC() or -1 )
 end
 
-]]--
-
+]]
+--
 local at
+
 function SWEP:GetPrimaryAmmoTypeC()
-	at = self:GetStat( "Primary.Ammo" )
+	at = self:GetStat("Primary.Ammo")
+
 	if at and at ~= self.Primary.Ammo then
 		return at
 	elseif self.GetPrimaryAmmoTypeOld then
@@ -317,7 +343,8 @@ function SWEP:GetPrimaryAmmoTypeC()
 end
 
 function SWEP:GetSecondaryAmmoTypeC()
-	at = self:GetStat( "Secondary.Ammo" )
+	at = self:GetStat("Secondary.Ammo")
+
 	if at and at ~= self.Secondary.Ammo then
 		return at
 	elseif self.GetSecondaryAmmoTypeOld then
@@ -328,43 +355,35 @@ function SWEP:GetSecondaryAmmoTypeC()
 end
 
 function SWEP:Ammo1()
-	return self:GetOwner():GetAmmoCount( self:GetPrimaryAmmoTypeC() or 0 )
+	return self:GetOwner():GetAmmoCount(self:GetPrimaryAmmoTypeC() or 0)
 end
 
 function SWEP:Ammo2()
-	return self:GetOwner():GetAmmoCount( self:GetSecondaryAmmoTypeC() or -1 )
+	return self:GetOwner():GetAmmoCount(self:GetSecondaryAmmoTypeC() or -1)
 end
 
-function SWEP:TakePrimaryAmmo( num, pool )
-
+function SWEP:TakePrimaryAmmo(num, pool)
 	-- Doesn't use clips
 	if self:GetStat("Primary.ClipSize") < 0 or pool then
-
-		if ( self:Ammo1() <= 0 ) then return end
-
-		self:GetOwner():RemoveAmmo( math.min( self:Ammo1(), num), self:GetPrimaryAmmoTypeC() )
+		if (self:Ammo1() <= 0) then return end
+		self:GetOwner():RemoveAmmo(math.min(self:Ammo1(), num), self:GetPrimaryAmmoTypeC())
 
 		return
 	end
 
-	self:SetClip1( math.max(self:Clip1() - num,0) )
-
+	self:SetClip1(math.max(self:Clip1() - num, 0))
 end
 
-function SWEP:TakeSecondaryAmmo( num, pool )
-
+function SWEP:TakeSecondaryAmmo(num, pool)
 	-- Doesn't use clips
 	if self:GetStat("Secondary.ClipSize") < 0 or pool then
-
-		if ( self:Ammo2() <= 0 ) then return end
-
-		self:GetOwner():RemoveAmmo( math.min( self:Ammo2(), num), self:GetSecondaryAmmoTypeC() )
+		if (self:Ammo2() <= 0) then return end
+		self:GetOwner():RemoveAmmo(math.min(self:Ammo2(), num), self:GetSecondaryAmmoTypeC())
 
 		return
 	end
 
-	self:SetClip2( math.max(self:Clip2() - num,0) )
-
+	self:SetClip2(math.max(self:Clip2() - num, 0))
 end
 
 function SWEP:GetFireDelay()
@@ -396,7 +415,8 @@ Syntax: self:IsSafety( ).
 Returns:   Are we in safety firemode.
 Notes:    Non.
 Purpose:  Utility
-]]--
+]]
+--
 function SWEP:IsSafety()
 	if not self:GetStat("FireModes") then return false end
 	local fm = self:GetStat("FireModes")[self:GetFireMode()]
@@ -436,6 +456,7 @@ function SWEP:UpdateMuzzleAttachment()
 	end
 
 	local mzm = self:GetStat("MuzzleAttachmentMod", 0)
+
 	if mzm and mzm > 0 then
 		self.MuzzleAttachmentRaw = mzm
 	end
@@ -459,7 +480,8 @@ Syntax: self:IsCurrentlyScoped( ).
 Returns:   Is the player scoped in enough to display the overlay?  true/false, returns a boolean.
 Notes:    Change SWEP.ScopeOverlayThreshold to change when the overlay is displayed.
 Purpose:  Utility
-]]--
+]]
+--
 function SWEP:IsCurrentlyScoped()
 	return (self.IronSightsProgress > self:GetStat("ScopeOverlayThreshold")) and self:GetStat("Scoped")
 end
@@ -470,12 +492,14 @@ Syntax: self:IsHidden( ).
 Returns:   Should we hide self?.
 Notes:
 Purpose:  Utility
-]]--
+]]
+--
 function SWEP:GetHidden()
 	if not self:VMIV() then return true end
 	if self.DrawViewModel ~= nil and not self.DrawViewModel then return true end
 	if self.ShowViewModel ~= nil and not self.ShowViewModel then return true end
 	if self:GetHolding() then return true end
+
 	return self:IsCurrentlyScoped()
 end
 
@@ -485,10 +509,11 @@ Syntax: self:IsFirstPerson( ).
 Returns:   Is the owner in first person.
 Notes:    Broken in singplayer because gary.
 Purpose:  Utility
-]]--
+]]
+--
 function SWEP:IsFirstPerson()
 	if not IsValid(self) or not self:OwnerIsValid() then return false end
-	if CLIENT and ( not game.SinglePlayer() ) and self:GetOwner() ~= GetViewEntity() then return false end
+	if CLIENT and (not game.SinglePlayer()) and self:GetOwner() ~= GetViewEntity() then return false end
 	if sp and SERVER then return not self:GetOwner().TFASDLP end
 	if self:GetOwner().ShouldDrawLocalPlayer and self:GetOwner():ShouldDrawLocalPlayer() then return false end
 	local gmsdlp
@@ -500,6 +525,7 @@ function SWEP:IsFirstPerson()
 	end
 
 	if gmsdlp then return false end
+
 	return true
 end
 
@@ -509,13 +535,33 @@ Syntax: self:GetMuzzlePos( hacky workaround that doesn't work anyways ).
 Returns:   The AngPos for the muzzle attachment.
 Notes:    Defaults to the first attachment, and uses GetFPMuzzleAttachment
 Purpose:  Utility
-]]--
+]]
+--
 local fp
+
+function SWEP:GetMuzzleAttachment()
+	local vmod = self.OwnerViewModel
+	local att = math.max(1, self.MuzzleAttachmentRaw or (sp and vmod or self):LookupAttachment(self.MuzzleAttachment))
+
+	if self.Akimbo then
+		if sp and CLIENT then
+			self.GetNW2Int = self.GetNW2Int or self.GetNWInt
+			att = 1 + self:GetNW2Int("AnimCycle")
+		else
+			att = 1 + self.AnimCycle
+		end
+	end
+
+	return att
+end
+
 function SWEP:GetMuzzlePos(ignorepos)
 	fp = self:IsFirstPerson()
+
 	if not IsValid(vm) then
 		vm = self.OwnerViewModel
 	end
+
 	if not IsValid(vm) then
 		vm = self
 	end
@@ -549,10 +595,9 @@ function SWEP:FindEvenBurstNumber()
 	return nil
 end
 
-
 function SWEP:GetFireModeName()
 	local fm = self:GetFireMode()
-	local fmn = string.lower( self:GetStat("FireModes")[fm] )
+	local fmn = string.lower(self:GetStat("FireModes")[fm])
 	if fmn == "safe" or fmn == "holster" then return "Safety" end
 	if self:GetStat("FireModeName") then return self:GetStat("FireModeName") end
 	if fmn == "auto" or fmn == "automatic" then return "Full-Auto" end
@@ -579,6 +624,7 @@ function SWEP:GetFireModeName()
 
 	local bpos = string.find(fmn, "burst")
 	if bpos then return string.sub(fmn, 1, bpos - 1) .. " Round Burst" end
+
 	return ""
 end
 
@@ -586,17 +632,20 @@ SWEP.BurstCountCache = {}
 
 function SWEP:GetMaxBurst()
 	local fm = self:GetFireMode()
-	if not self.BurstCountCache[ fm ] then
+
+	if not self.BurstCountCache[fm] then
 		local fmt = self:GetStat("FireModes")
-		local fmn = string.lower( fmt[fm] )
+		local fmn = string.lower(fmt[fm])
 		local bpos = string.find(fmn, "burst")
+
 		if bpos then
-			self.BurstCountCache[ fm ] = tonumber( string.sub(fmn, 1, bpos - 1) )
+			self.BurstCountCache[fm] = tonumber(string.sub(fmn, 1, bpos - 1))
 		else
-			self.BurstCountCache[ fm ] = 1
+			self.BurstCountCache[fm] = 1
 		end
 	end
-	return self.BurstCountCache[ fm ]
+
+	return self.BurstCountCache[fm]
 end
 
 --[[
@@ -605,8 +654,10 @@ Syntax: self:CycleFireMode()
 Returns:  Nothing.
 Notes: Cycles to next firemode.
 Purpose:  Feature
-]]--
+]]
+--
 local l_CT = CurTime
+
 function SWEP:CycleFireMode()
 	local fm = self:GetFireMode()
 	fm = fm + 1
@@ -617,10 +668,10 @@ function SWEP:CycleFireMode()
 
 	self:SetFireMode(fm)
 	self:EmitSound("Weapon_AR2.Empty")
-	self:SetNextPrimaryFire(l_CT() + math.max( self:GetFireDelay(), 0.25))
+	self:SetNextPrimaryFire(l_CT() + math.max(self:GetFireDelay(), 0.25))
 	self.BurstCount = 0
 	self:SetStatus(TFA.GetStatus("firemode"))
-	self:SetStatusEnd( self:GetNextPrimaryFire() )
+	self:SetStatusEnd(self:GetNextPrimaryFire())
 end
 
 --[[
@@ -629,11 +680,13 @@ Syntax: self:CycleSafety()
 Returns:  Nothing.
 Notes: Toggles safety
 Purpose:  Feature
-]]--
+]]
+--
 function SWEP:CycleSafety()
 	ct = l_CT()
 	local fm = self:GetFireMode()
 	local fmt = self:GetStat("FireModes")
+
 	if fm ~= #fmt then
 		self.LastFireMode = fm
 		self:SetFireMode(#fmt)
@@ -642,7 +695,7 @@ function SWEP:CycleSafety()
 	end
 
 	self:EmitSound("Weapon_AR2.Empty")
-	self:SetNextPrimaryFire(ct + math.max( self:GetFireDelay(), 0.25))
+	self:SetNextPrimaryFire(ct + math.max(self:GetFireDelay(), 0.25))
 	self.BurstCount = 0
 	--self:SetStatus(TFA.Enum.STATUS_FIREMODE)
 	--self:SetStatusEnd( self:GetNextPrimaryFire() )
@@ -654,11 +707,12 @@ Syntax: self:ProcessFireMode()
 Returns:  Nothing.
 Notes: Processes fire mode changing and whether the swep is auto or not.
 Purpose:  Feature
-]]--
+]]
+--
 local fm
 
 function SWEP:ProcessFireMode()
-	if self:OwnerIsValid() and self:GetOwner():KeyPressed(IN_RELOAD) and self:GetOwner():KeyDown(IN_USE) and self:GetStatus() == TFA.Enum.STATUS_IDLE and ( SERVER or not sp ) then
+	if self:OwnerIsValid() and self:GetOwner():KeyPressed(IN_RELOAD) and self:GetOwner():KeyDown(IN_USE) and self:GetStatus() == TFA.Enum.STATUS_IDLE and (SERVER or not sp) then
 		if self:GetStat("SelectiveFire") and not self:GetOwner():KeyDown(IN_SPEED) then
 			self:CycleFireMode()
 		elseif self:GetOwner():KeyDown(IN_SPEED) then
@@ -681,11 +735,12 @@ Syntax: self:Unload()
 Returns:  Nothing.
 Notes: Returns Clip1 ammo to reserve.
 Purpose:  Utility
-]]--
-
+]]
+--
 function SWEP:Unload()
 	local amm = self:Clip1()
 	self:SetClip1(0)
+
 	if self.OwnerIsValid and self:OwnerIsValid() and self.Owner.GiveAmmo then
 		self.Owner:GiveAmmo(amm, self:GetPrimaryAmmoType(), true)
 	end
@@ -697,11 +752,12 @@ Syntax: self:Unload()
 Returns:  Nothing.
 Notes: Returns Clip1 ammo to reserve.
 Purpose:  Utility
-]]--
-
+]]
+--
 function SWEP:Unload2()
 	local amm = self:Clip2()
 	self:SetClip2(0)
+
 	if self.OwnerIsValid and self:OwnerIsValid() and self.Owner.GiveAmmo then
 		self.Owner:GiveAmmo(amm, self:GetSecondaryAmmoType(), true)
 	end

@@ -1,22 +1,25 @@
 local fx, sp
 local shelltype
 
-function SWEP:PCFTracer( bul, hitpos, ovrride )
+function SWEP:PCFTracer(bul, hitpos, ovrride)
 	if bul.PCFTracer then
 		self:UpdateMuzzleAttachment()
 		local mzp = self:GetMuzzlePos()
 		if bul.PenetrationCount > 0 and not ovrride then return end --Taken care of with the pen effect
-		if ( CLIENT or game.SinglePlayer() ) and self.Scoped and self:IsCurrentlyScoped() and self:IsFirstPerson() then
-			TFA.ParticleTracer( bul.PCFTracer, self:GetOwner():GetShootPos() - self:GetOwner():EyeAngles():Up() * 5 , hitpos, false, 0, -1 )
+
+		if (CLIENT or game.SinglePlayer()) and self.Scoped and self:IsCurrentlyScoped() and self:IsFirstPerson() then
+			TFA.ParticleTracer(bul.PCFTracer, self:GetOwner():GetShootPos() - self:GetOwner():EyeAngles():Up() * 5, hitpos, false, 0, -1)
 		else
 			local vent = self
-			if ( CLIENT or game.SinglePlayer() ) and self:IsFirstPerson() then
+
+			if (CLIENT or game.SinglePlayer()) and self:IsFirstPerson() then
 				vent = self.OwnerViewModel
 			end
+
 			if game.SinglePlayer() and not self:IsFirstPerson() then
-				TFA.ParticleTracer( bul.PCFTracer, self:GetOwner():GetShootPos() + self:GetOwner():GetAimVector() * 32, hitpos, false )
+				TFA.ParticleTracer(bul.PCFTracer, self:GetOwner():GetShootPos() + self:GetOwner():GetAimVector() * 32, hitpos, false)
 			else
-				TFA.ParticleTracer( bul.PCFTracer, mzp.Pos, hitpos, false, vent, self.MuzzleAttachmentRaw or 1 )
+				TFA.ParticleTracer(bul.PCFTracer, mzp.Pos, hitpos, false, vent, self.MuzzleAttachmentRaw or 1)
 			end
 		end
 	end
@@ -24,7 +27,7 @@ end
 
 function SWEP:EventShell()
 	if SERVER and not game.SinglePlayer() then
-		net.Start( "tfaBaseShellSV" )
+		net.Start("tfaBaseShellSV")
 		net.WriteEntity(self)
 		net.SendOmit(self:GetOwner())
 	else
@@ -34,9 +37,10 @@ end
 
 function SWEP:MakeShellBridge(ifp)
 	if game.SinglePlayer() and CLIENT then return end
+
 	if ifp then
 		if self.LuaShellEjectDelay > 0 then
-			self.LuaShellRequestTime = CurTime() + self.LuaShellEjectDelay / self:NZAnimationSpeed( ACT_VM_PRIMARYATTACK )
+			self.LuaShellRequestTime = CurTime() + self.LuaShellEjectDelay / self:NZAnimationSpeed(ACT_VM_PRIMARYATTACK)
 		else
 			self:MakeShell()
 		end
@@ -56,14 +60,17 @@ function SWEP:MakeShell()
 
 	if IsValid(self) then
 		self:EjectionSmoke(true)
-		local vm = ( self:IsFirstPerson() ) and self.OwnerViewModel or self
+		local vm = (self:IsFirstPerson()) and self.OwnerViewModel or self
 		if type(shelltype) ~= "string" or shelltype == "" then return end -- allows to disable shells by setting override to "" - will shut up all rp fags
+
 		if IsValid(vm) then
 			fx = EffectData()
 			local attid = vm:LookupAttachment(self:GetStat("ShellAttachment"))
+
 			if self.Akimbo then
 				attid = 3 + self.AnimCycle
 			end
+
 			attid = math.Clamp(attid and attid or 2, 1, 127)
 			local angpos = vm:GetAttachment(attid)
 
@@ -86,7 +93,8 @@ Syntax: self:CleanParticles().
 Returns:  Nothing.
 Notes:    Cleans up particles.
 Purpose:  FX
-]]--
+]]
+--
 function SWEP:CleanParticles()
 	if not IsValid(self) then return end
 
@@ -118,9 +126,10 @@ Syntax: self:EjectionSmoke().
 Returns:  Nothing.
 Notes:    Puff of smoke on shell attachment.
 Purpose:  FX
-]]--
-function SWEP:EjectionSmoke( ovrr )
-	if TFA.GetEJSmokeEnabled() and ( self:GetStat("EjectionSmokeEnabled") or ovrr ) then
+]]
+--
+function SWEP:EjectionSmoke(ovrr)
+	if TFA.GetEJSmokeEnabled() and (self:GetStat("EjectionSmokeEnabled") or ovrr) then
 		local vm = self:IsFirstPerson() and self.OwnerViewModel or self
 
 		if IsValid(vm) then
@@ -161,18 +170,16 @@ Syntax: self:ShootEffectsCustom().
 Returns:  Nothing.
 Notes:    Calls the proper muzzleflash, muzzle smoke, muzzle light code.
 Purpose:  FX
-]]--
-function SWEP:MuzzleSmoke(sp)
+]]
+--
+function SWEP:MuzzleSmoke(spv)
 	if self.SmokeParticle == nil then
-		self.SmokeParticle = self.SmokeParticles[ self.DefaultHoldType or self.HoldType ]
+		self.SmokeParticle = self.SmokeParticles[self.DefaultHoldType or self.HoldType]
 	end
+
 	if self:GetStat("SmokeParticle") and self:GetStat("SmokeParticle") ~= "" then
-		local vm = self.OwnerViewModel
 		self:UpdateMuzzleAttachment()
-		local att = math.max(1, self.MuzzleAttachmentRaw or (sp and vm or self):LookupAttachment(self.MuzzleAttachment))
-		if self.Akimbo then
-			att = 1 + self.AnimCycle
-		end
+		local att = self:GetMuzzleAttachment()
 		fx = EffectData()
 		fx:SetOrigin(self:GetOwner():GetShootPos())
 		fx:SetNormal(self:GetOwner():EyeAngles():Forward())
@@ -182,31 +189,28 @@ function SWEP:MuzzleSmoke(sp)
 	end
 end
 
-function SWEP:MuzzleFlashCustom(sp)
-	local vm = self.OwnerViewModel
-	local att = math.max(1, self.MuzzleAttachmentRaw or (sp and vm or self):LookupAttachment(self.MuzzleAttachment))
-	if self.Akimbo then
-		att = 1 + self.AnimCycle
-	end
+function SWEP:MuzzleFlashCustom(spv)
+	local att = self:GetMuzzleAttachment()
 	fx = EffectData()
 	fx:SetOrigin(self:GetOwner():GetShootPos())
 	fx:SetNormal(self:GetOwner():EyeAngles():Forward())
 	fx:SetEntity(self)
 	fx:SetAttachment(att)
+	local mzsil = self:GetStat("MuzzleFlashEffectSilenced")
 
-	local mzsil = self:GetStat( "MuzzleFlashEffectSilenced" )
-	if (self:GetSilenced() and mzsil and mzsil ~= "" ) then
-		util.Effect( mzsil, fx)
+	if (self:GetSilenced() and mzsil and mzsil ~= "") then
+		util.Effect(mzsil, fx)
 	else
-		util.Effect( self:GetStat( "MuzzleFlashEffect", self.MuzzleFlashEffect or "" ), fx)
+		util.Effect(self:GetStat("MuzzleFlashEffect", self.MuzzleFlashEffect or ""), fx)
 	end
 end
 
-function SWEP:ShootEffectsCustom( ifp )
+function SWEP:ShootEffectsCustom(ifp)
 	if self.DoMuzzleFlash ~= nil then
 		self.MuzzleFlashEnabled = self.DoMuzzleFlash
 		self.DoMuzzleFlash = nil
 	end
+
 	if not self.MuzzleFlashEnabled then return end
 	if self:IsFirstPerson() and not self:VMIV() then return end
 	if not self:GetOwner().GetShootPos then return end
@@ -242,10 +246,10 @@ Syntax: self:CanDustEffect( concise material name ).
 Returns:  True/False
 Notes:    Used for the impact effect.  Should be used with GetMaterialConcise.
 Purpose:  Utility
-]]--
-
-function SWEP:CanDustEffect( matv )
-	local n = self:GetMaterialConcise(matv )
+]]
+--
+function SWEP:CanDustEffect(matv)
+	local n = self:GetMaterialConcise(matv)
 	if n == "energy" or n == "dirt" or n == "ceramic" or n == "plastic" or n == "wood" then return true end
 
 	return false
@@ -257,8 +261,8 @@ Syntax: self:CanSparkEffect( concise material name ).
 Returns:  True/False
 Notes:    Used for the impact effect.  Should be used with GetMaterialConcise.
 Purpose:  Utility
-]]--
-
+]]
+--
 function SWEP:CanSparkEffect(matv)
 	local n = self:GetMaterialConcise(matv)
 	if n == "default" or n == "metal" then return true end
