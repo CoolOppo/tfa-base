@@ -1,3 +1,18 @@
+--[[Bullet Struct:
+[BULLET_ID] = {
+	["owner"] = Entity, --used for dmginfo SetAttacker
+	["inflictor"] = Entity, --used for dmginfo SetInflictor
+	["damage"] = Double, --floating point number representing inflicted damage
+	["force"] = Double,
+	["pos"] = Vector, --vector representing current position
+	["velocity"] = Vector, --vector representing movement velocity
+	["model"] = String --optional variable representing the given model,
+	["bul"] = {} --optional table containing bullet data,
+	["smokeparticle"] = String, --smoke particle name from within pcf
+	["bulletOverride"] = Bool --disable coming out of gun barrel on clientside
+}
+]]
+
 local BallisticBullet = {
 	["owner"] = NULL,
 	["inflictor"] = NULL,
@@ -184,41 +199,46 @@ function BallisticBullet:Render()
 	if IsValid(self.curmodel) and (cv_bullet_style:GetBool() or self.smokeparticle ~= "") then
 		local fpos, fang
 
-		if self.owner == GetViewEntity() or self.owner == LocalPlayer() then
-			local spos, sang = self.pos, self.velocity:Angle()
-			self.curmodel:SetPos(spos)
-			self.curmodel:SetAngles(sang)
+		if self.customPosition then
+			fpos = self.pos
+			fang = self.velocity:Angle()
+		else
+			if self.owner == GetViewEntity() or self.owner == LocalPlayer() then
+				local spos, sang = self.pos, self.velocity:Angle()
+				self.curmodel:SetPos(spos)
+				self.curmodel:SetAngles(sang)
 
-			if not self.vOffsetPos then
-				if LocalPlayer():ShouldDrawLocalPlayer() then
-					local npos = LocalPlayer():GetActiveWeapon():GetAttachment(1) or DEFANGPOS
-					self.vOffsetPos = self.curmodel:WorldToLocal(npos.Pos)
-					self.vOffsetAng = self.curmodel:WorldToLocalAngles(npos.Ang)
-				else
-					local npos = LocalPlayer():GetViewModel():GetAttachment(1) or DEFANGPOS
+				if not self.vOffsetPos then
+					if LocalPlayer():ShouldDrawLocalPlayer() then
+						local npos = LocalPlayer():GetActiveWeapon():GetAttachment(1) or DEFANGPOS
+						self.vOffsetPos = self.curmodel:WorldToLocal(npos.Pos)
+						self.vOffsetAng = self.curmodel:WorldToLocalAngles(npos.Ang)
+					else
+						local npos = LocalPlayer():GetViewModel():GetAttachment(1) or DEFANGPOS
+						self.vOffsetPos = self.curmodel:WorldToLocal(npos.Pos)
+						self.vOffsetAng = self.curmodel:WorldToLocalAngles(npos.Ang)
+					end
+				end
+
+				fpos = self.curmodel:LocalToWorld(self.vOffsetPos)
+				fang = self.curmodel:LocalToWorldAngles(self.vOffsetAng)
+			elseif self.owner:IsPlayer() and cv_tracers_adv:GetBool() then
+				local spos, sang = self.pos, self.velocity:Angle()
+				self.curmodel:SetPos(spos)
+				self.curmodel:SetAngles(sang)
+
+				if not self.vOffsetPos then
+					local npos = self.owner:GetActiveWeapon():GetAttachment(1) or DEFANGPOS
 					self.vOffsetPos = self.curmodel:WorldToLocal(npos.Pos)
 					self.vOffsetAng = self.curmodel:WorldToLocalAngles(npos.Ang)
 				end
+
+				fpos = self.curmodel:LocalToWorld(self.vOffsetPos)
+				fang = self.curmodel:LocalToWorldAngles(self.vOffsetAng)
+			else
+				fpos = self.pos
+				fang = self.velocity:Angle()
 			end
-
-			fpos = self.curmodel:LocalToWorld(self.vOffsetPos)
-			fang = self.curmodel:LocalToWorldAngles(self.vOffsetAng)
-		elseif self.owner:IsPlayer() and cv_tracers_adv:GetBool() then
-			local spos, sang = self.pos, self.velocity:Angle()
-			self.curmodel:SetPos(spos)
-			self.curmodel:SetAngles(sang)
-
-			if not self.vOffsetPos then
-				local npos = self.owner:GetActiveWeapon():GetAttachment(1) or DEFANGPOS
-				self.vOffsetPos = self.curmodel:WorldToLocal(npos.Pos)
-				self.vOffsetAng = self.curmodel:WorldToLocalAngles(npos.Ang)
-			end
-
-			fpos = self.curmodel:LocalToWorld(self.vOffsetPos)
-			fang = self.curmodel:LocalToWorldAngles(self.vOffsetAng)
-		else
-			fpos = self.pos
-			fang = self.velocity:Angle()
 		end
 
 		self.curmodel:SetPos(fpos)

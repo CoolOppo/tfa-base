@@ -1,16 +1,3 @@
---[[Bullet Struct:
-[BULLET_ID] = {
-	["owner"] = Entity, --used for dmginfo SetAttacker
-	["inflictor"] = Entity, --used for dmginfo SetInflictor
-	["damage"] = Double, --floating point number representing inflicted damage
-	["force"] = Double,
-	["pos"] = Vector, --vector representing current position
-	["velocity"] = Vector, --vector representing movement velocity
-	["model"] = String --optional variable representing the given model,
-	["bul"] = {} --optional table containing bullet data,
-	["smokeparticle"] = String --smoke particle name from within pcf
-}
-]]
 --default cvar integration
 local cv_gravity = GetConVar("sv_gravity")
 local cv_ts = GetConVar("host_timescale")
@@ -160,18 +147,16 @@ function TFA.Ballistics:AutoDetectVelocity(damage)
 end
 
 function TFA.Ballistics:ShouldUse(wep)
-	if not self.Enabled then return false end
-
 	if wep.UseBallistics == nil then
 		if wep:IsTFA() and wep:GetStat("TracerPCF") then return false end
 
-		return true
+		return self.Enabled
 	else
 		return wep.UseBallistics
 	end
 end
 
-function TFA.Ballistics:FireBullets(wep, b, angIn)
+function TFA.Ballistics:FireBullets(wep, b, angIn, bulletOverride)
 	if not IsValid(wep) then return end
 	if not IsValid(wep:GetOwner()) then return end
 	local vel, sharedRandomSeed
@@ -216,10 +201,11 @@ function TFA.Ballistics:FireBullets(wep, b, angIn)
 			["inflictor"] = wep, --used for dmginfo SetInflictor
 			["damage"] = b.Damage, --floating point number representing inflicted damage
 			["force"] = b.Force,
-			["pos"] = wep:GetOwner():GetShootPos(), --b.Src, --vector representing current position
-			["velocity"] = ang:Forward() * vel, --b.Dir * vel, --vector representing movement velocity
+			["pos"] = bulletOverride and b.Src or wep:GetOwner():GetShootPos(), --b.Src, --vector representing current position
+			["velocity"] = (bulletOverride and b.Dir or ang:Forward()) * vel, --b.Dir * vel, --vector representing movement velocity
 			["model"] = wep.BulletModel or b.Model, --optional variable representing the given model
-			["smokeparticle"] = b.SmokeParticle
+			["smokeparticle"] = b.SmokeParticle,
+			["customPosition"] = b.CustomPosition or bulletOverride
 		}
 
 		--disable shotgun tracers
@@ -249,7 +235,9 @@ function TFA.Ballistics:FireBullets(wep, b, angIn)
 				["Dir"] = b.Dir,
 				["Attacker"] = b.Attacker,
 				["Spread"] = b.Spread,
-				["SmokeParticle"] = struct.smokeparticle
+				["SmokeParticle"] = struct.smokeparticle,
+				["CustomPosition"] = struct.customPosition,
+				["Model"] = struct.model
 			})
 
 			net.WriteAngle(ang)
@@ -281,7 +269,7 @@ if CLIENT then
 			ang = net.ReadAngle()
 			if not wep then return end
 			if not b then return end
-			TFA.Ballistics:FireBullets(wep, b, ang)
+			TFA.Ballistics:FireBullets(wep, b, ang, b.CustomPosition)
 		end
 	end)
 end

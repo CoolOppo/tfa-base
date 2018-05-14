@@ -14,6 +14,20 @@ local function DirectDamage(a, b, c)
 	end
 end
 
+local function BallisticFirebullet(ply, bul, ovr)
+	local wep = ply:GetActiveWeapon()
+
+	if TFA.Ballistics and TFA.Ballistics:ShouldUse(wep) then
+		if ovr then
+			TFA.Ballistics:FireBullets(wep, bul, angle_zero, true)
+		else
+			TFA.Ballistics:FireBullets(wep, bul)
+		end
+	else
+		ply:FireBullets(bul)
+	end
+end
+
 --[[
 Function Name:  ShootBulletInformation
 Syntax: self:ShootBulletInformation( ).
@@ -69,7 +83,7 @@ function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet,
 				ang:RotateAroundAxis(ang:Up(), -aimcone / 2 + math.Rand(0, aimcone))
 				dir = ang:Forward()
 				ent:SetPos(self:GetOwner():GetShootPos())
-				ent:SetOwner( self:GetOwner() )
+				ent:SetOwner(self:GetOwner())
 				ent:SetAngles(self:GetOwner():EyeAngles())
 				ent.damage = self:GetStat("Primary.Damage")
 				ent.mydamage = self:GetStat("Primary.Damage")
@@ -128,11 +142,13 @@ function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet,
 		self.MainBullet.HullSize = self:GetStat("Primary.HullSize") or 0
 		self.MainBullet.Spread.x = aimcone
 		self.MainBullet.Spread.y = aimcone
+
 		if self.TracerPCF then
 			self.MainBullet.Tracer = 0
 		else
 			self.MainBullet.Tracer = self:GetStat("TracerCount") or 3
 		end
+
 		self.MainBullet.TracerName = TracerName
 		self.MainBullet.PenetrationCount = 0
 		self.MainBullet.AmmoType = self:GetPrimaryAmmoType()
@@ -147,21 +163,17 @@ function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet,
 		self.MainBullet.Callback = function(a, b, c)
 			if IsValid(self) then
 				c:SetInflictor(self)
+
 				if self.MainBullet.Callback2 then
 					self.MainBullet.Callback2(a, b, c)
 				end
 
 				self.MainBullet:Penetrate(a, b, c, self)
-
-				self:PCFTracer( self.MainBullet, b.HitPos or vector_origin )
+				self:PCFTracer(self.MainBullet, b.HitPos or vector_origin)
 			end
 		end
 
-		if TFA.Ballistics and TFA.Ballistics:ShouldUse(self) then
-			TFA.Ballistics:FireBullets(self,self.MainBullet)
-		else
-			self:GetOwner():FireBullets(self.MainBullet)
-		end
+		BallisticFirebullet(self:GetOwner(), self.MainBullet)
 	end
 end
 
@@ -179,7 +191,7 @@ function SWEP:Recoil(recoil, ifp)
 		self.SpreadRatio = l_mathClamp(self.SpreadRatio + self:GetStat("Primary.SpreadIncrement"), 1, self:GetStat("Primary.SpreadMultiplierMax"))
 	end
 
-	math.randomseed( self:GetSeed() + 1 )
+	math.randomseed(self:GetSeed() + 1)
 	self:GetOwner():SetVelocity(-self:GetOwner():EyeAngles():Forward() * self:GetStat("Primary.Knockback") * cv_forcemult:GetFloat() * recoil / 5)
 	local tmprecoilang = Angle(math.Rand(self:GetStat("Primary.KickDown"), self:GetStat("Primary.KickUp")) * recoil * -1, math.Rand(-self:GetStat("Primary.KickHorizontal"), self:GetStat("Primary.KickHorizontal")) * recoil, 0)
 	local maxdist = math.min(math.max(0, 89 + self:GetOwner():EyeAngles().p - math.abs(self:GetOwner():GetViewPunchAngles().p * 2)), 88.5)
@@ -233,7 +245,6 @@ Notes:    Always lowercase.
 Purpose:  Utility
 ]]
 --
-
 function SWEP:GetAmmoForceMultiplier()
 	-- pistol, 357, smg1, ar2, buckshot, slam, SniperPenetratedRound, AirboatGun
 	--AR2=Rifle ~= Caliber>.308
@@ -357,20 +368,20 @@ local rngfac
 local mfac
 local atype
 
-function SWEP:SetBulletTracerName( nm )
+function SWEP:SetBulletTracerName(nm)
 	self.BulletTracerName = nm or self.BulletTracerName or ""
 end
 
 function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon)
-
 	if self.TracerName and self.TracerName ~= "" then
 		weapon.BulletTracerName = self.TracerName
+
 		if game.SinglePlayer() then
-			weapon:CallOnClient("SetBulletTracerName",weapon.BulletTracerName)
+			weapon:CallOnClient("SetBulletTracerName", weapon.BulletTracerName)
 		end
 	end
 
-	DisableOwnerDamage(ply,traceres,dmginfo)
+	DisableOwnerDamage(ply, traceres, dmginfo)
 	if not IsValid(weapon) then return end
 	local hitent = traceres.Entity
 	self:HandleDoor(ply, traceres, dmginfo, weapon)
@@ -386,8 +397,7 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon)
 	end
 
 	atype = weapon:GetStat("Primary.DamageType")
-
-	dmginfo:SetDamageType( atype )
+	dmginfo:SetDamageType(atype)
 
 	if SERVER and penetration_hitmarker_cvar:GetBool() and IsValid(ply) and ply:IsPlayer() and IsValid(hitent) and (hitent:IsPlayer() or hitent:IsNPC()) then
 		net.Start("tfaHitmarker")
@@ -395,30 +405,27 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon)
 	end
 
 	if IsValid(traceres.Entity) and traceres.Entity:GetClass() == "npc_sniper" then
-		traceres.Entity.TFAHP = ( traceres.Entity.TFAHP or 100 ) - dmginfo:GetDamage()
+		traceres.Entity.TFAHP = (traceres.Entity.TFAHP or 100) - dmginfo:GetDamage()
+
 		if traceres.Entity.TFAHP <= 0 then
-			traceres.Entity:Fire("SetHealth","",-1)
+			traceres.Entity:Fire("SetHealth", "", -1)
 		end
 	end
+
 	local cl = hitent:GetClass()
 
-	if cl == "npc_helicopter" then
-		if  (weapon:GetStat("Primary.NumShots") * weapon:GetStat("Primary.Damage")) >= 26 then
-			dmginfo:SetDamageType(bit.bor(dmginfo:GetDamageType(),DMG_AIRBOAT))
-		end
+	if cl == "npc_helicopter" and (weapon:GetStat("Primary.NumShots") * weapon:GetStat("Primary.Damage")) >= 26 then
+		dmginfo:SetDamageType(bit.bor(dmginfo:GetDamageType(), DMG_AIRBOAT))
 	end
 
 	if atype ~= DMG_BULLET then
-		if (dmginfo:IsDamageType(DMG_SHOCK) or dmginfo:IsDamageType(DMG_BLAST)) and traceres.Hit and IsValid(hitent) and hitent.Fire then
-			if cl == "npc_strider" then
-				hitent:SetHealth(math.max(hitent:Health() - dmginfo:GetDamage(), 2))
+		if (dmginfo:IsDamageType(DMG_SHOCK) or dmginfo:IsDamageType(DMG_BLAST)) and traceres.Hit and IsValid(hitent) and hitent.Fire and cl == "npc_strider" then
+			hitent:SetHealth(math.max(hitent:Health() - dmginfo:GetDamage(), 2))
 
-				if hitent:Health() <= 3 then
-					hitent:Extinguish()
-					hitent:Fire("sethealth", "-1", 0.01)
-					dmginfo:ScaleDamage(0)
-				end
-
+			if hitent:Health() <= 3 then
+				hitent:Extinguish()
+				hitent:Fire("sethealth", "-1", 0.01)
+				dmginfo:ScaleDamage(0)
 			end
 		end
 
@@ -428,15 +435,15 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon)
 
 		if dmginfo:IsDamageType(DMG_BLAST) and weapon.Primary.DamageTypeHandled and traceres.Hit and not traceres.HitSky then
 			local tmpdmg = dmginfo:GetDamage()
-			dmginfo:SetDamageForce( dmginfo:GetDamageForce() / 2)
-			util.BlastDamageInfo(dmginfo,traceres.HitPos,tmpdmg / 2)
+			dmginfo:SetDamageForce(dmginfo:GetDamageForce() / 2)
+			util.BlastDamageInfo(dmginfo, traceres.HitPos, tmpdmg / 2)
 			--util.BlastDamage(weapon, weapon:GetOwner(), traceres.HitPos, tmpdmg / 2, tmpdmg)
 			local fx = EffectData()
 			fx:SetOrigin(traceres.HitPos)
 			fx:SetNormal(traceres.HitNormal)
 
 			if weapon.Primary.ImpactEffect then
-				util.Effect( weapon.Primary.ImpactEffect, fx)
+				util.Effect(weapon.Primary.ImpactEffect, fx)
 			elseif tmpdmg > 90 then
 				util.Effect("HelicopterMegaBomb", fx)
 				util.Effect("Explosion", fx)
@@ -462,11 +469,13 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon)
 	pentrace.mask = MASK_SHOT
 	pentrace.filter = {}
 	pentraceres = util.TraceLine(pentrace)
-	if IsValid(pentraceres.Entity) and pentraceres.Entity.IsNPC and ( pentraceres.Entity:IsNPC() or pentraceres.Entity:IsPlayer() ) then
+
+	if IsValid(pentraceres.Entity) and pentraceres.Entity.IsNPC and (pentraceres.Entity:IsNPC() or pentraceres.Entity:IsPlayer()) then
 		if IsValid(ply) and ply:IsPlayer() then
 			self.Dir = self.Attacker:EyeAngles():Forward()
 		end
-		self.Src = traceres.HitPos + self.Dir * ( pentraceres.Entity:OBBMaxs() - pentraceres.Entity:OBBMins() ):Length2D()
+
+		self.Src = traceres.HitPos + self.Dir * (pentraceres.Entity:OBBMaxs() - pentraceres.Entity:OBBMins()):Length2D()
 		pentraceres.HitPos = self.Src
 		pentraceres.Normal = self.Dir
 		--debugoverlay.Sphere( self.Src, 5, 5, color_white, true)
@@ -478,6 +487,7 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon)
 	if (self.Num or 0) <= 1 then
 		self.Spread = Vector(0, 0, 0)
 	end
+
 	self.Tracer = 0 --weapon.TracerName and 0 or 1
 	self.TracerName = ""
 	rngfac = math.pow(pentraceres.HitPos:Distance(traceres.HitPos) / penetrationoffset:Length(), 2)
@@ -500,26 +510,31 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon)
 	decalbul.TracerName = ""
 	decalbul.Callback = DirectDamage
 
-
 	if self.PenetrationCount <= 1 and IsValid(weapon) then
-	--	local tmpres = util.QuickTrace( pentraceres.HitPos or traceres.HitPos, self.Dir * 9999999, pentraceres.Entity )
-	--	weapon:PCFTracer( self, tmpres.HitPos or traceres.HitPos, true )
-		weapon:PCFTracer( self, pentraceres.HitPos or traceres.HitPos, true )
+		--	local tmpres = util.QuickTrace( pentraceres.HitPos or traceres.HitPos, self.Dir * 9999999, pentraceres.Entity )
+		--	weapon:PCFTracer( self, tmpres.HitPos or traceres.HitPos, true )
+		weapon:PCFTracer(self, pentraceres.HitPos or traceres.HitPos, true)
 	end
+
 	--else
-		local fx = EffectData()
-		fx:SetOrigin(self.Src)
-		fx:SetNormal(self.Dir)
-		if IsValid(ply) then
-			fx:SetNormal( ply:EyeAngles():Forward() )
-		end
-		fx:SetMagnitude( ( self.PenetrationCount + 1 ) * 1000 )
-		fx:SetEntity( weapon )
-		if IsValid(pentraceres.Entity) and pentraceres.Entity.EntIndex then
-			fx:SetScale( pentraceres.Entity:EntIndex() )
-		end
-		fx:SetRadius( self.Damage / 32 )
-		util.Effect("tfa_penetrate", fx)
+	local fx = EffectData()
+	fx:SetOrigin(self.Src)
+	fx:SetNormal(self.Dir)
+
+	if IsValid(ply) then
+		fx:SetNormal(ply:EyeAngles():Forward())
+	end
+
+	fx:SetMagnitude((self.PenetrationCount + 1) * 1000)
+	fx:SetEntity(weapon)
+
+	if IsValid(pentraceres.Entity) and pentraceres.Entity.EntIndex then
+		fx:SetScale(pentraceres.Entity:EntIndex())
+	end
+
+	fx:SetRadius(self.Damage / 32)
+	util.Effect("tfa_penetrate", fx)
+
 	--end
 	if IsValid(ply) then
 		timer.Simple(0, function()
@@ -528,12 +543,12 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon)
 			end
 		end)
 
-		ply:FireBullets(self)
+		BallisticFirebullet(ply, self, true)
 	end
 end
 
 function SWEP.MainBullet:Ricochet(ply, traceres, dmginfo, weapon)
-	DisableOwnerDamage(ply,traceres,dmginfo)
+	DisableOwnerDamage(ply, traceres, dmginfo)
 	if ricochet_cvar and not ricochet_cvar:GetBool() then return end
 	maxpen = math.min(penetration_max_cvar and penetration_max_cvar:GetInt() - 1 or 1, weapon.Primary.MaxPenetration)
 	if self.PenetrationCount > maxpen then return end
@@ -590,7 +605,7 @@ function SWEP.MainBullet:Ricochet(ply, traceres, dmginfo, weapon)
 
 		timer.Simple(0, function()
 			if IsValid(ply) then
-				ply:FireBullets(self)
+				BallisticFirebullet(ply, self, true)
 			end
 		end)
 
@@ -601,12 +616,11 @@ function SWEP.MainBullet:Ricochet(ply, traceres, dmginfo, weapon)
 end
 
 local defaultdoorhealth = 250
-local ohp = 250
 local cv_doorres = GetConVar("sv_tfa_door_respawn")
 
 function SWEP.MainBullet:MakeDoor(ent, dmginfo)
 	local dir = dmginfo:GetDamageForce():GetNormalized()
-	local force = dir * math.max( math.sqrt( dmginfo:GetDamageForce():Length() / 1000 ), 1 ) * 1000
+	local force = dir * math.max(math.sqrt(dmginfo:GetDamageForce():Length() / 1000), 1) * 1000
 	pos = ent:GetPos()
 	ang = ent:GetAngles()
 	mdl = ent:GetModel()
@@ -614,13 +628,13 @@ function SWEP.MainBullet:MakeDoor(ent, dmginfo)
 	ent:SetNotSolid(true)
 	ent:SetNoDraw(true)
 	local prop = ents.Create("prop_physics")
-	prop:SetPos(pos + dir * 16 )
+	prop:SetPos(pos + dir * 16)
 	prop:SetAngles(ang)
 	prop:SetModel(mdl)
 	prop:SetSkin(ski or 0)
 	prop:Spawn()
-	prop:SetVelocity( force )
-	prop:GetPhysicsObject():ApplyForceOffset( force , dmginfo:GetDamagePosition())
+	prop:SetVelocity(force)
+	prop:GetPhysicsObject():ApplyForceOffset(force, dmginfo:GetDamagePosition())
 	prop:SetPhysicsAttacker(dmginfo:GetAttacker())
 	prop:EmitSound("physics/wood/wood_furniture_break" .. tostring(math.random(1, 2)) .. ".wav", 110, math.random(90, 110))
 
@@ -644,7 +658,6 @@ local cv_doordestruction = GetConVar("sv_tfa_bullet_doordestruction")
 function SWEP.MainBullet:HandleDoor(ply, traceres, dmginfo, wep)
 	-- Don't do anything if door desstruction isn't enabled
 	if not cv_doordestruction:GetBool() then return end
-
 	local ent = traceres.Entity
 	if not IsValid(ent) then return end
 	if not IsValid(ply) then return end
@@ -652,17 +665,16 @@ function SWEP.MainBullet:HandleDoor(ply, traceres, dmginfo, wep)
 	if not ply.SetName then return end
 	if ent.TFADoorUntouchable and ent.TFADoorUntouchable > CurTime() then return end
 	ent.TFADoorHealth = ent.TFADoorHealth or defaultdoorhealth
-
 	if ent:GetClass() ~= "func_door_rotating" and ent:GetClass() ~= "prop_door_rotating" then return end
 	local realDamage = dmginfo:GetDamage() * self.Num
 	ent.TFADoorHealth = math.Clamp(ent.TFADoorHealth - realDamage, 0, defaultdoorhealth)
 	if ent.TFADoorHealth > 0 then return end
-
 	ply:EmitSound("ambient/materials/door_hit1.wav", 100, math.random(90, 110))
 
 	if self.Damage * self.Num > 100 then
 		self:MakeDoor(ent, dmginfo)
 		ent.TFADoorUntouchable = CurTime() + 0.5
+
 		return
 	end
 
