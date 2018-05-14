@@ -121,11 +121,18 @@ end
 --Render
 local cv_receive,cv_bullet_style,cv_tracers_style,cv_tracers_mp,cv_tracers_adv
 if CLIENT then
+	cv_receive = CreateClientConVar("cl_tfa_ballistics_mp","1",true,false,"Receive bullet data from other players?")
+	cv_bullet_style = CreateClientConVar("cl_tfa_ballistics_fx_bullet","1",true,false,"Display bullet models for each TFA ballistics bullet?")
+	cv_tracers_style = CreateClientConVar("cl_tfa_ballistics_fx_tracers_style","1",true,false,"Style of tracers for TFA ballistics? 0=disable,1=smoke")
+	cv_tracers_mp = CreateClientConVar("cl_tfa_ballistics_fx_tracers_mp","1",true,false,"Enable tracers for other TFA ballistics users?")
+	cv_tracers_adv = CreateClientConVar("cl_tfa_ballistics_fx_tracers_adv","1",true,false,"Enable advanced tracer calculations for other users? This corrects smoke trail to their barrel")
+	--[[
 	cv_receive = GetConVar("cl_tfa_ballistics_mp")
 	cv_bullet_style = GetConVar("cl_tfa_ballistics_fx_bullet")
 	cv_tracers_style = GetConVar("cl_tfa_ballistics_fx_tracers_style")
-	cv_tracers_mp = GetConVar("cl_tfa_ballistics_fx_tracers_mp","1")
+	cv_tracers_mp = GetConVar("cl_tfa_ballistics_fx_tracers_mp")
 	cv_tracers_adv = GetConVar("cl_tfa_ballistics_fx_tracers_adv")
+	]]--
 end
 local DEFANGPOS =  { Pos=vector_origin, Ang = angle_zero } 
 function BallisticBullet:Render()
