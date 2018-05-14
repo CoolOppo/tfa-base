@@ -41,22 +41,24 @@ function EFFECT:Init(data)
 
 	if TFA.GetMZSmokeEnabled == nil or TFA.GetMZSmokeEnabled() then
 		local w = self.WeaponEnt
-		local tn = w:EntIndex() .. "smokedelay"
 		local a = self.Attachment
+		local tn = "tfasmokedelay_" .. w:EntIndex() .. "_" .. a
 		local sp = smokepart
 		if timer.Exists(tn) then timer.Remove(tn) end
 
-		if IsValid(w.SmokePCF) then
-			w.SmokePCF:StopEmission()
+		w.SmokePCF = w.SmokePCF or {}
+
+		if IsValid(w.SmokePCF[a]) then
+			w.SmokePCF[a]:StopEmission()
 		end
 
 		timer.Create(tn, delay or SMOKEDELAY, 1, function()
 			if not IsValid(w) then return end
 
-			w.SmokePCF = CreateParticleSystem(w, sp, PATTACH_POINT_FOLLOW, a)
+			w.SmokePCF[a] = CreateParticleSystem(w, sp, PATTACH_POINT_FOLLOW, a)
 
-			if IsValid(w.SmokePCF) then
-				w.SmokePCF:StartEmission()
+			if IsValid(w.SmokePCF[a]) then
+				w.SmokePCF[a]:StartEmission()
 			end
 		end)
 	end
