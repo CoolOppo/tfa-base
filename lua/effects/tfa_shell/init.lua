@@ -176,6 +176,8 @@ function EFFECT:BounceSound()
 end
 
 function EFFECT:PhysicsCollide(data)
+	if self:WaterLevel() > 0 then return end
+
 	if data.Speed > 60 then
 		self:BounceSound()
 		local impulse = (data.OurOldVelocity - 2 * data.OurOldVelocity:Dot(data.HitNormal) * data.HitNormal)*0.33
@@ -217,6 +219,17 @@ function EFFECT:Think()
 			end
 		end
 	end
+
+	if self:WaterLevel() > 0 and not self.WaterSplashed then
+		self.WaterSplashed = true
+
+		local ef = EffectData()
+		ef:SetOrigin(self:GetPos())
+		ef:SetScale(1)
+
+		util.Effect("watersplash", ef)
+	end
+
 	if CurTime() > self.StartTime + self.LifeTime then
 		if self.Emitter then
 			self.Emitter:Finish()
