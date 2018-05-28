@@ -1,4 +1,3 @@
-local AddVel = Vector()
 local ang
 
 local limit_particle_cv  = GetConVar("cl_tfa_fx_muzzlesmoke_limited")
@@ -8,10 +7,11 @@ local SMOKEDELAY = 1.5
 function EFFECT:Init(data)
 	self.WeaponEnt = data:GetEntity()
 	if not IsValid(self.WeaponEnt) then return end
+	self.WeaponEntOG = self.WeaponEnt
 	if limit_particle_cv:GetBool() and self.WeaponEnt:GetOwner() ~= LocalPlayer() then return end
 	self.Attachment = data:GetAttachment()
 	local smokepart = "smoke_trail_tfa"
-	local delay = ( self.WeaponEnt.GetStat and self.WeaponEnt:GetStat("SmokeDelay") or self.WeaponEnt.SmokeDelay )
+	local delay = self.WeaponEnt.GetStat and self.WeaponEnt:GetStat("SmokeDelay") or self.WeaponEnt.SmokeDelay
 
 	if self.WeaponEnt.SmokeParticle then
 		smokepart = self.WeaponEnt.SmokeParticle
@@ -40,25 +40,28 @@ function EFFECT:Init(data)
 	end
 
 	if TFA.GetMZSmokeEnabled == nil or TFA.GetMZSmokeEnabled() then
-		local w = self.WeaponEnt
+		local e = self.WeaponEnt
+		local w = self.WeaponEntOG
 		local a = self.Attachment
 		local tn = "tfasmokedelay_" .. w:EntIndex() .. "_" .. a
 		local sp = smokepart
 		if timer.Exists(tn) then timer.Remove(tn) end
 
-		w.SmokePCF = w.SmokePCF or {}
+		e.SmokePCF = e.SmokePCF or {}
 
-		if IsValid(w.SmokePCF[a]) then
-			w.SmokePCF[a]:StopEmission()
+		local _a = w.Akimbo and a or 1
+
+		if IsValid(e.SmokePCF[_a]) then
+			e.SmokePCF[_a]:StopEmission()
 		end
 
 		timer.Create(tn, delay or SMOKEDELAY, 1, function()
-			if not IsValid(w) then return end
+			if not IsValid(e) then return end
 
-			w.SmokePCF[a] = CreateParticleSystem(w, sp, PATTACH_POINT_FOLLOW, a)
+			e.SmokePCF[_a] = CreateParticleSystem(e, sp, PATTACH_POINT_FOLLOW, a)
 
-			if IsValid(w.SmokePCF[a]) then
-				w.SmokePCF[a]:StartEmission()
+			if IsValid(e.SmokePCF[_a]) then
+				e.SmokePCF[_a]:StartEmission()
 			end
 		end)
 	end
