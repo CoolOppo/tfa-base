@@ -225,7 +225,7 @@ SWEP.RTCode = function(self, rt, scrw, scrh)
 	surface.SetDrawColor(color_white)
 	surface.DrawRect(-512, -512, 1024, 1024)
 	render.OverrideAlphaWriteEnable(true, true)
-	local ang = EyeAngles()
+	local ang = vm:GetAngles()
 	if self.RTScopeAttachment and self.RTScopeAttachment > 0 then
 		local AngPos = vm:GetAttachment( self.RTScopeAttachment )
 

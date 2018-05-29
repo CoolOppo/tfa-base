@@ -1,110 +1,101 @@
+local function CreateReplConVar(cvarname, cvarvalue, description)
+	return CreateConVar(cvarname, cvarvalue, CLIENT and {FCVAR_REPLICATED} or {FCVAR_REPLICATED, FCVAR_ARCHIVE, FCVAR_NOTIFY}, description)
+end -- replicated only on clients, archive/notify on server
+
 --Serverside Convars
 
 if GetConVar("sv_tfa_soundscale") == nil then
-	CreateConVar("sv_tfa_soundscale","1",{FCVAR_ARCHIVE,FCVAR_SERVER_CAN_EXECUTE,FCVAR_REPLICATED},"Scale times in accordance to timescale?")
-	--print("Weapon strip/removal con var created")
+	CreateReplConVar("sv_tfa_soundscale", "1", "Scale sound pitch in accordance to timescale?")
 end
 
 if GetConVar("sv_tfa_weapon_strip") == nil then
-	CreateConVar("sv_tfa_weapon_strip", "0", {FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE}, "Allow the removal of empty weapons? 1 for true, 0 for false")
-	--print("Weapon strip/removal con var created")
+	CreateReplConVar("sv_tfa_weapon_strip", "0", "Allow the removal of empty weapons?")
 end
+
 if GetConVar("sv_tfa_spread_legacy") == nil then
-	CreateConVar("sv_tfa_spread_legacy", "0", {FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE}, "Use legacy spread algorithms?")
-	--print("Weapon strip/removal con var created")
+	CreateReplConVar("sv_tfa_spread_legacy", "0", "Use legacy spread algorithms?")
 end
 
 if GetConVar("sv_tfa_cmenu") == nil then
-	CreateConVar("sv_tfa_cmenu", "1", {FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE}, "Allow custom context menu?")
-	--print("Weapon strip/removal con var created")
+	CreateReplConVar("sv_tfa_cmenu", "1", "Allow custom context menu?")
 end
 
 if GetConVar("sv_tfa_cmenu_key") == nil then
-	CreateConVar("sv_tfa_cmenu_key", "-1", {FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE}, "Override the inspection menu key?  Uses the KEY enum available on the gmod wiki. -1 to not.")
-	--print("Weapon strip/removal con var created")
+	CreateReplConVar("sv_tfa_cmenu_key", "-1", "Override the inspection menu key?  Uses the KEY enum available on the gmod wiki. -1 to not.")
 end
 
 if GetConVar("sv_tfa_range_modifier") == nil then
-	CreateConVar("sv_tfa_range_modifier", "0.5", {FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE}, "This controls how much the range affects damage.  0.5 means the maximum loss of damage is 0.5.")
-	--print("Dry fire con var created")
+	CreateReplConVar("sv_tfa_range_modifier", "0.5", "This controls how much the range affects damage.  0.5 means the maximum loss of damage is 0.5.")
 end
 
 if GetConVar("sv_tfa_allow_dryfire") == nil then
-	CreateConVar("sv_tfa_allow_dryfire", "1", {FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE}, "Allow dryfire?")
-	--print("Dry fire con var created")
+	CreateReplConVar("sv_tfa_allow_dryfire", "1", "Allow dryfire?")
 end
 
 if GetConVar("sv_tfa_penetration_limit") == nil then
-	CreateConVar("sv_tfa_penetration_limit", "2", {FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE}, "Number of objects we can penetrate through.")
-	--print("Dry fire con var created")
+	CreateReplConVar("sv_tfa_penetration_limit", "2", "Number of objects we can penetrate through.")
 end
 
 if GetConVar("sv_tfa_penetration_hitmarker") == nil then
-	CreateConVar("sv_tfa_penetration_hitmarker", "1", {FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE}, "Should penetrating bullet send hitmarker to attacker?")
+	CreateReplConVar("sv_tfa_penetration_hitmarker", "1", "Should penetrating bullet send hitmarker to attacker?")
 end
 
 if GetConVar("sv_tfa_damage_multiplier") == nil then
-	CreateConVar("sv_tfa_damage_multiplier", "1", {FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE}, "Multiplier for TFA base projectile damage.")
-	--print("Damage Multiplier con var created")
+	CreateReplConVar("sv_tfa_damage_multiplier", "1", "Multiplier for TFA base projectile damage.")
 end
 
 if GetConVar("sv_tfa_damage_mult_min") == nil then
 	CreateConVar("sv_tfa_damage_mult_min", "0.95", {FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE}, "This is the lower range of a random damage factor.")
-	--print("Damage Multiplier con var created")
 end
 
 if GetConVar("sv_tfa_damage_mult_max") == nil then
-	CreateConVar("sv_tfa_damage_mult_max", "1.05", {FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE}, "This is the lower range of a random damage factor.")
-	--print("Damage Multiplier con var created")
+	CreateReplConVar("sv_tfa_damage_mult_max", "1.05", "This is the higher range of a random damage factor.")
 end
 
 if GetConVar("sv_tfa_melee_damage_npc") == nil then
-	CreateConVar("sv_tfa_melee_damage_npc", "1", {FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE}, "Damage multiplier against NPCs using TFA Melees.")
-	--print("Damage Multiplier con var created")
+	CreateReplConVar("sv_tfa_melee_damage_npc", "1", "Damage multiplier against NPCs using TFA Melees.")
 end
 
 if GetConVar("sv_tfa_melee_damage_ply") == nil then
-	CreateConVar("sv_tfa_melee_damage_ply", "0.65", {FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE}, "Damage multiplier against players using TFA Melees.")
-	--print("Damage Multiplier con var created")
+	CreateReplConVar("sv_tfa_melee_damage_ply", "0.65", "Damage multiplier against players using TFA Melees.")
 end
 
 if GetConVar("sv_tfa_melee_blocking_timed") == nil then
-	CreateConVar("sv_tfa_melee_blocking_timed", "1", {FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE}, "Enable timed blocking?")
-	--print("Damage Multiplier con var created")
+	CreateReplConVar("sv_tfa_melee_blocking_timed", "1", "Enable timed blocking?")
 end
 
 if GetConVar("sv_tfa_melee_blocking_anglemult") == nil then
-	CreateConVar("sv_tfa_melee_blocking_anglemult", "1", {FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE}, "Players can block attacks in an angle around their view.  This multiplies that angle.")
-	--print("Damage Multiplier con var created")
+	CreateReplConVar("sv_tfa_melee_blocking_anglemult", "1", "Players can block attacks in an angle around their view.  This multiplies that angle.")
 end
 
 if GetConVar("sv_tfa_melee_blocking_deflection") == nil then
-	CreateConVar("sv_tfa_melee_blocking_deflection", "1", {FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE}, "For weapons that can deflect bullets ( e.g. certain katans ), can you deflect bullets?  Set to 1 to enable for parries, or 2 for all blocks.")
-	--print("Damage Multiplier con var created")
+	CreateReplConVar("sv_tfa_melee_blocking_deflection", "1", "For weapons that can deflect bullets ( e.g. certain katans ), can you deflect bullets?  Set to 1 to enable for parries, or 2 for all blocks.")
 end
 
 if GetConVar("sv_tfa_melee_blocking_timed") == nil then
-	CreateConVar("sv_tfa_melee_blocking_timed", "1", {FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE}, "Enable timed blocking?")
-	--print("Damage Multiplier con var created")
+	CreateReplConVar("sv_tfa_melee_blocking_timed", "1", "Enable timed blocking?")
 end
 
 if GetConVar("sv_tfa_melee_blocking_stun_enabled") == nil then
-	CreateConVar("sv_tfa_melee_blocking_stun_enabled", "1", {FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE}, "Stun NPCs on block?")
-	--print("Damage Multiplier con var created")
+	CreateReplConVar("sv_tfa_melee_blocking_stun_enabled", "1", "Stun NPCs on block?")
 end
 
 if GetConVar("sv_tfa_melee_blocking_stun_time") == nil then
-	CreateConVar("sv_tfa_melee_blocking_stun_time", "0.65", {FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE}, "How long to stun NPCs on block.")
-	--print("Damage Multiplier con var created")
+	CreateReplConVar("sv_tfa_melee_blocking_stun_time", "0.65", "How long to stun NPCs on block.")
 end
 
 if GetConVar("sv_tfa_door_respawn") == nil then
-	CreateConVar("sv_tfa_door_respawn", "-1", {FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE}, "Time for doors to respawn; -1 for never.")
+	CreateReplConVar("sv_tfa_door_respawn", "-1", "Time for doors to respawn; -1 for never.")
 end
 
-cv_dfc = CreateConVar("sv_tfa_default_clip", "-1", {FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE}, "How many clips will a weapon spawn with? Negative reverts to default values.")
+local cv_dfc
+if GetConVar("sv_tfa_default_clip") == nil then
+	cv_dfc = CreateReplConVar("sv_tfa_default_clip", "-1", "How many clips will a weapon spawn with? Negative reverts to default values.")
+else
+	cv_dfc = GetConVar("sv_tfa_default_clip")
+end
 
-function TFAUpdateDefaultClip()
+local function TFAUpdateDefaultClip()
 	local dfc = cv_dfc:GetInt()
 	local weplist = weapons.GetList()
 	if not weplist or #weplist <= 0 then return end
@@ -148,129 +139,114 @@ end
 --if GetConVar("sv_tfa_default_clip") == nil then
 
 cvars.AddChangeCallback("sv_tfa_default_clip", function(convar_name, value_old, value_new)
-	print("Update Default Clip")
 	TFAUpdateDefaultClip()
 end, "TFAUpdateDefaultClip")
 
---print("Default clip size con var created")
 --end
 if GetConVar("sv_tfa_unique_slots") == nil then
-	CreateConVar("sv_tfa_unique_slots", "1", {FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE}, "Give TFA-based Weapons unique slots? 1 for true, 0 for false. RESTART AFTER CHANGING.")
-	--print("Unique slot con var created")
+	CreateReplConVar("sv_tfa_unique_slots", "1", "Give TFA-based Weapons unique slots? 1 for true, 0 for false. RESTART AFTER CHANGING.")
 end
 
 if GetConVar("sv_tfa_spread_multiplier") == nil then
-	CreateConVar("sv_tfa_spread_multiplier", "1", {FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE}, "Increase for more spread, decrease for less.")
-	--print("Arrow force con var created")
+	CreateReplConVar("sv_tfa_spread_multiplier", "1", "Increase for more spread, decrease for less.")
 end
 
 if GetConVar("sv_tfa_force_multiplier") == nil then
-	CreateConVar("sv_tfa_force_multiplier", "1", {FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE}, "Arrow force multiplier (not arrow velocity, but how much force they give on impact).")
-	--print("Arrow force con var created")
+	CreateReplConVar("sv_tfa_force_multiplier", "1", "Arrow force multiplier (not arrow velocity, but how much force they give on impact).")
 end
 
 if GetConVar("sv_tfa_dynamicaccuracy") == nil then
-	CreateConVar("sv_tfa_dynamicaccuracy", "1", {FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE}, "Dynamic acuracy?  (e.g.more accurate on crouch, less accurate on jumping.")
-	--print("DynAcc con var created")
+	CreateReplConVar("sv_tfa_dynamicaccuracy", "1", "Dynamic acuracy?  (e.g.more accurate on crouch, less accurate on jumping.")
 end
 
 if GetConVar("sv_tfa_ammo_detonation") == nil then
-	CreateConVar("sv_tfa_ammo_detonation", "1", {FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE}, "Ammo Detonation?  (e.g. shoot ammo until it explodes) ")
-	--print("DynAcc con var created")
+	CreateReplConVar("sv_tfa_ammo_detonation", "1", "Ammo Detonation?  (e.g. shoot ammo until it explodes) ")
 end
 
 if GetConVar("sv_tfa_ammo_detonation_mode") == nil then
-	CreateConVar("sv_tfa_ammo_detonation_mode", "2", {FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE}, "Ammo Detonation Mode?  (0=Bullets,1=Blast,2=Mix) ")
-	--print("DynAcc con var created")
+	CreateReplConVar("sv_tfa_ammo_detonation_mode", "2", "Ammo Detonation Mode?  (0=Bullets,1=Blast,2=Mix) ")
 end
 
 if GetConVar("sv_tfa_ammo_detonation_chain") == nil then
-	CreateConVar("sv_tfa_ammo_detonation_chain", "1", {FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE}, "Ammo Detonation Chain?  (0=Ammo boxes don't detonate other ammo boxes, 1 you can chain them together) ")
-	--print("DynAcc con var created")
+	CreateReplConVar("sv_tfa_ammo_detonation_chain", "1", "Ammo Detonation Chain?  (0=Ammo boxes don't detonate other ammo boxes, 1 you can chain them together) ")
 end
 
 if GetConVar("sv_tfa_scope_gun_speed_scale") == nil then
-	CreateConVar("sv_tfa_scope_gun_speed_scale", "0", {FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE}, "Scale player sensitivity based on player move speed?")
+	CreateReplConVar("sv_tfa_scope_gun_speed_scale", "0", "Scale player sensitivity based on player move speed?")
 end
 
 if GetConVar("sv_tfa_bullet_penetration") == nil then
-	CreateConVar("sv_tfa_bullet_penetration", "1", {FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE}, "Allow bullet penetration?")
+	CreateReplConVar("sv_tfa_bullet_penetration", "1", "Allow bullet penetration?")
 end
 
 if GetConVar("sv_tfa_bullet_doordestruction") == nil then
-	CreateConVar("sv_tfa_bullet_doordestruction", "1", {FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE}, "Allow players to shoot down doors?")
+	CreateReplConVar("sv_tfa_bullet_doordestruction", "1", "Allow players to shoot down doors?")
 end
 
 if GetConVar("sv_tfa_bullet_ricochet") == nil then
-	CreateConVar("sv_tfa_bullet_ricochet", "0", {FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE}, "Allow bullet ricochet?")
+	CreateReplConVar("sv_tfa_bullet_ricochet", "0", "Allow bullet ricochet?")
 end
 
 if GetConVar("sv_tfa_holdtype_dynamic") == nil then
-	CreateConVar("sv_tfa_holdtype_dynamic", "1", {FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE}, "Allow dynamic holdtype?")
+	CreateReplConVar("sv_tfa_holdtype_dynamic", "1", "Allow dynamic holdtype?")
 end
 
 if GetConVar("sv_tfa_arrow_lifetime") == nil then
-	CreateConVar("sv_tfa_arrow_lifetime", "30", {FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE}, "Arrow lifetime.")
-end
-
-if GetConVar("sv_tfa_arrow_lifetime") == nil then
-	CreateConVar("sv_tfa_arrow_lifetime", "30", {FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE}, "Arrow lifetime.")
+	CreateReplConVar("sv_tfa_arrow_lifetime", "30", "Arrow lifetime.")
 end
 
 if GetConVar("sv_tfa_worldmodel_culldistance") == nil then
-	CreateConVar("sv_tfa_worldmodel_culldistance", "-1", {FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE}, "-1 to leave unculled.  Anything else is feet*16.")
+	CreateReplConVar("sv_tfa_worldmodel_culldistance", "-1", "-1 to leave unculled.  Anything else is feet*16.")
 end
 
 if GetConVar("sv_tfa_reloads_legacy") == nil then
-	CreateConVar("sv_tfa_reloads_legacy", "0", {FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE}, "-1 to leave unculled.  Anything else is feet*16.")
+	CreateReplConVar("sv_tfa_reloads_legacy", "0", "Enable legacy-style reloading?")
 end
 
 if GetConVar("sv_tfa_fx_penetration_decal") == nil then
-	CreateConVar("sv_tfa_fx_penetration_decal", "1", {FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE}, "Enable decals on the other side of a penetrated object?")
+	CreateReplConVar("sv_tfa_fx_penetration_decal", "1", "Enable decals on the other side of a penetrated object?")
 end
 
 if GetConVar("sv_tfa_ironsights_enabled") == nil then
-	CreateConVar("sv_tfa_ironsights_enabled", "1", {FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE}, "Enable ironsights? Disabling this still allows scopes.")
+	CreateReplConVar("sv_tfa_ironsights_enabled", "1", "Enable ironsights? Disabling this still allows scopes.")
 end
 
 if GetConVar("sv_tfa_sprint_enabled") == nil then
-	CreateConVar("sv_tfa_sprint_enabled", "1", {FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE}, "Enable sprinting? Disabling this allows shooting while IN_SPEED.")
+	CreateReplConVar("sv_tfa_sprint_enabled", "1", "Enable sprinting? Disabling this allows shooting while IN_SPEED.")
 end
 
 if GetConVar("sv_tfa_reloads_enabled") == nil then
-	CreateConVar("sv_tfa_reloads_enabled", "1", {FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE}, "Enable reloading? Disabling this allows shooting from ammo pool.")
+	CreateReplConVar("sv_tfa_reloads_enabled", "1", "Enable reloading? Disabling this allows shooting from ammo pool.")
 end
 
 if GetConVar("sv_tfa_attachments_enabled") == nil then
-	CreateConVar("sv_tfa_attachments_enabled", "1", {FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE}, "Display attachment picker?")
+	CreateReplConVar("sv_tfa_attachments_enabled", "1", "Display attachment picker?")
 end
 
 if GetConVar("sv_tfa_attachments_alphabetical") == nil then
-	CreateConVar("sv_tfa_attachments_alphabetical", "0", {FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE}, "Override weapon attachment order to be alphabetical.")
+	CreateReplConVar("sv_tfa_attachments_alphabetical", "0", "Override weapon attachment order to be alphabetical.")
 end
 
 --Clientside Convars
 if CLIENT then
 	if GetConVar("cl_tfa_viewbob_intensity") == nil then
-		CreateClientConVar("cl_tfa_viewbob_intensity", 1, true, false)
+		CreateClientConVar("cl_tfa_viewbob_intensity", 1, true, false, "View bob intensity multiplier")
 	end
 
 	if GetConVar("cl_tfa_gunbob_intensity") == nil then
-		CreateClientConVar("cl_tfa_gunbob_intensity", 1, true, false)
-		--print("Viewbob intensity con var created")
+		CreateClientConVar("cl_tfa_gunbob_intensity", 1, true, false, "Gun bob intensity multiplier")
 	end
 
 	if GetConVar("cl_tfa_viewmodel_viewpunch") == nil then
-		CreateClientConVar("cl_tfa_viewmodel_viewpunch", 1, true, false)
+		CreateClientConVar("cl_tfa_viewmodel_viewpunch", 1, true, false, "Use viewmodel viewpunch?")
 	end
 
 	if GetConVar("cl_tfa_3dscope_quality") == nil then
-		CreateClientConVar("cl_tfa_3dscope_quality", -1, true, true)
+		CreateClientConVar("cl_tfa_3dscope_quality", -1, true, true, "3D scope quality (leave -1 for autodetected)")
 	end
-	
 
 	if GetConVar("cl_tfa_3dscope") == nil then
-		CreateClientConVar("cl_tfa_3dscope", 1, true, true)
+		CreateClientConVar("cl_tfa_3dscope", 1, true, true, "Enable 3D scopes?")
 	else
 		cvars.RemoveChangeCallback( "cl_tfa_3dscope", "3DScopeEnabledCB" )
 	end
@@ -302,64 +278,57 @@ if CLIENT then
 	end,"3DScopeModeCB")
 
 	if GetConVar("cl_tfa_3dscope_overlay") == nil then
-		CreateClientConVar("cl_tfa_3dscope_overlay", 0, true, true)
+		CreateClientConVar("cl_tfa_3dscope_overlay", 0, true, true, "Enable 3D scope shadows?")
 	end
 
 	if GetConVar("cl_tfa_scope_sensitivity_autoscale") == nil then
-		CreateClientConVar("cl_tfa_scope_sensitivity_autoscale", 100, true, true)
-		--print("Scope sensitivity autoscale con var created")
+		CreateClientConVar("cl_tfa_scope_sensitivity_autoscale", 100, true, true, "Compensate sensitivity for FOV?")
 	end
 
 	if GetConVar("cl_tfa_scope_sensitivity") == nil then
 		CreateClientConVar("cl_tfa_scope_sensitivity", 100, true, true)
-		--print("Scope sensitivity con var created")
 	end
 
 	if GetConVar("cl_tfa_ironsights_toggle") == nil then
-		CreateClientConVar("cl_tfa_ironsights_toggle", 1, true, true)
-		--print("Ironsights toggle con var created")
+		CreateClientConVar("cl_tfa_ironsights_toggle", 1, true, true, "Toggle ironsights?")
 	end
 
 	if GetConVar("cl_tfa_ironsights_resight") == nil then
-		CreateClientConVar("cl_tfa_ironsights_resight", 1, true, true)
-		--print("Ironsights resight con var created")
+		CreateClientConVar("cl_tfa_ironsights_resight", 1, true, true, "Keep ironsights after reload or sprint?")
 	end
 
 	if GetConVar("cl_tfa_laser_trails") == nil then
-		CreateClientConVar("cl_tfa_laser_trails", 1, true, true)
-		--print("Laser trails con var created")
+		CreateClientConVar("cl_tfa_laser_trails", 1, true, true, "Enable laser dot trails?")
 	end
 
 	--Crosshair Params
 	if GetConVar("cl_tfa_hud_crosshair_length") == nil then
-		CreateClientConVar("cl_tfa_hud_crosshair_length", 1, true, false)
+		CreateClientConVar("cl_tfa_hud_crosshair_length", 1, true, false, "Crosshair length")
 	end
 
 	if GetConVar("cl_tfa_hud_crosshair_length_use_pixels") == nil then
-		CreateClientConVar("cl_tfa_hud_crosshair_length_use_pixels", 0, true, false)
+		CreateClientConVar("cl_tfa_hud_crosshair_length_use_pixels", 0, true, false, "Should crosshair length use pixels?")
 	end
 
 	if GetConVar("cl_tfa_hud_crosshair_width") == nil then
-		CreateClientConVar("cl_tfa_hud_crosshair_width", 1, true, false)
+		CreateClientConVar("cl_tfa_hud_crosshair_width", 1, true, false, "Crosshair width")
 	end
 
 	if GetConVar("cl_tfa_hud_crosshair_enable_custom") == nil then
-		CreateClientConVar("cl_tfa_hud_crosshair_enable_custom", 1, true, false)
-		--print("Custom crosshair con var created")
+		CreateClientConVar("cl_tfa_hud_crosshair_enable_custom", 1, true, false, "Enable custom crosshair?")
 	end
 
 	if GetConVar("cl_tfa_hud_crosshair_gap_scale") == nil then
-		CreateClientConVar("cl_tfa_hud_crosshair_gap_scale", 1, true, false)
+		CreateClientConVar("cl_tfa_hud_crosshair_gap_scale", 1, true, false, "Crosshair gap scale")
 	end
 
 	if GetConVar("cl_tfa_hud_crosshair_dot") == nil then
-		CreateClientConVar("cl_tfa_hud_crosshair_dot", 0, true, false)
+		CreateClientConVar("cl_tfa_hud_crosshair_dot", 0, true, false, "Enable crosshair dot?")
 	end
 
 	--Crosshair Color
 	if GetConVar("cl_tfa_hud_crosshair_color_r") == nil then
 		CreateClientConVar("cl_tfa_hud_crosshair_color_r", 225, true, false)
-		--print("Crosshair tweaking con vars created")
 	end
 
 	if GetConVar("cl_tfa_hud_crosshair_color_g") == nil then
@@ -375,7 +344,7 @@ if CLIENT then
 	end
 
 	if GetConVar("cl_tfa_hud_crosshair_color_team") == nil then
-		CreateClientConVar("cl_tfa_hud_crosshair_color_team", 1, true, false)
+		CreateClientConVar("cl_tfa_hud_crosshair_color_team", 1, true, false, "Should crosshair use team color of entity being aimed at?")
 	end
 
 	--Crosshair Outline
@@ -396,19 +365,19 @@ if CLIENT then
 	end
 
 	if GetConVar("cl_tfa_hud_crosshair_outline_width") == nil then
-		CreateClientConVar("cl_tfa_hud_crosshair_outline_width", 1, true, false)
+		CreateClientConVar("cl_tfa_hud_crosshair_outline_width", 1, true, false, "Crosshair outline width")
 	end
 
 	if GetConVar("cl_tfa_hud_crosshair_outline_enabled") == nil then
-		CreateClientConVar("cl_tfa_hud_crosshair_outline_enabled", 1, true, false)
+		CreateClientConVar("cl_tfa_hud_crosshair_outline_enabled", 1, true, false, "Enable crosshair outline?")
 	end
 
 	if GetConVar("cl_tfa_hud_hitmarker_enabled") == nil then
-		CreateClientConVar("cl_tfa_hud_hitmarker_enabled", 1, true, false)
+		CreateClientConVar("cl_tfa_hud_hitmarker_enabled", 1, true, false, "Enable hit marker?")
 	end
 
 	if GetConVar("cl_tfa_hud_hitmarker_fadetime") == nil then
-		CreateClientConVar("cl_tfa_hud_hitmarker_fadetime", 0.3, true, false)
+		CreateClientConVar("cl_tfa_hud_hitmarker_fadetime", 0.3, true, false, "Hit marker fade time (in seconds)")
 	end
 
 	if GetConVar("cl_tfa_hud_hitmarker_solidtime") == nil then
@@ -416,12 +385,11 @@ if CLIENT then
 	end
 
 	if GetConVar("cl_tfa_hud_hitmarker_scale") == nil then
-		CreateClientConVar("cl_tfa_hud_hitmarker_scale", 1, true, false)
+		CreateClientConVar("cl_tfa_hud_hitmarker_scale", 1, true, false, "Hit marker scale")
 	end
 
 	if GetConVar("cl_tfa_hud_hitmarker_color_r") == nil then
 		CreateClientConVar("cl_tfa_hud_hitmarker_color_r", 225, true, false)
-		--print("hitmarker tweaking con vars created")
 	end
 
 	if GetConVar("cl_tfa_hud_hitmarker_color_g") == nil then
@@ -446,43 +414,43 @@ if CLIENT then
 	end
 
 	if GetConVar("cl_tfa_hud_enabled") == nil then
-		CreateClientConVar("cl_tfa_hud_enabled", 1, true, false)
+		CreateClientConVar("cl_tfa_hud_enabled", 1, true, false, "Enable 3D2D hud?")
 	end
 
 	if GetConVar("cl_tfa_fx_gasblur") == nil then
-		CreateClientConVar("cl_tfa_fx_gasblur", 0, true, true)
+		CreateClientConVar("cl_tfa_fx_gasblur", 0, true, true, "Enable muzzle gas blur?")
 	end
 
 	if GetConVar("cl_tfa_fx_muzzlesmoke") == nil then
-		CreateClientConVar("cl_tfa_fx_muzzlesmoke", 1, true, true)
+		CreateClientConVar("cl_tfa_fx_muzzlesmoke", 1, true, true, "Enable muzzle smoke trail?")
 	end
 
 	if GetConVar("cl_tfa_fx_muzzlesmoke_limited") == nil then
-		CreateClientConVar("cl_tfa_fx_muzzlesmoke_limited", 1, true, true)
+		CreateClientConVar("cl_tfa_fx_muzzlesmoke_limited", 1, true, true, "Limit muzzle smoke trails?")
 	end
-	
+
 	if GetConVar("cl_tfa_legacy_shells") == nil then
-		CreateClientConVar("cl_tfa_legacy_shells", 0, true, true)
+		CreateClientConVar("cl_tfa_legacy_shells", 0, true, true, "Use legacy shells?")
 	end
 
 	if GetConVar("cl_tfa_fx_ejectionsmoke") == nil then
-		CreateClientConVar("cl_tfa_fx_ejectionsmoke", 1, true, true)
+		CreateClientConVar("cl_tfa_fx_ejectionsmoke", 1, true, true, "Enable shell ejection smoke?")
 	end
 
 	if GetConVar("cl_tfa_fx_ejectionlife") == nil then
-		CreateClientConVar("cl_tfa_fx_ejectionlife", 15, true, true)
+		CreateClientConVar("cl_tfa_fx_ejectionlife", 15, true, true, "How long shells exist in the world")
 	end
 
 	if GetConVar("cl_tfa_fx_impact_enabled") == nil then
-		CreateClientConVar("cl_tfa_fx_impact_enabled", 1, true, true)
+		CreateClientConVar("cl_tfa_fx_impact_enabled", 1, true, true, "Enable custom bullet impact effects?")
 	end
 
 	if GetConVar("cl_tfa_fx_impact_ricochet_enabled") == nil then
-		CreateClientConVar("cl_tfa_fx_impact_ricochet_enabled", 1, true, true)
+		CreateClientConVar("cl_tfa_fx_impact_ricochet_enabled", 1, true, true, "Enable bullet ricochet effect?")
 	end
 
 	if GetConVar("cl_tfa_fx_impact_ricochet_sparks") == nil then
-		CreateClientConVar("cl_tfa_fx_impact_ricochet_sparks", 6, true, true)
+		CreateClientConVar("cl_tfa_fx_impact_ricochet_sparks", 6, true, true, "Enable bullet ricochet sparks?")
 	end
 
 	if GetConVar("cl_tfa_fx_impact_ricochet_sparklife") == nil then
@@ -492,7 +460,7 @@ if CLIENT then
 	--viewbob
 
 	if GetConVar("cl_tfa_viewbob_animated") == nil then
-		CreateClientConVar("cl_tfa_viewbob_animated", 1, true, false)
+		CreateClientConVar("cl_tfa_viewbob_animated", 1, true, false, "Use animated viewbob?")
 	end
 
 	--Viewmodel Mods
@@ -525,21 +493,20 @@ if CLIENT then
 	end
 
 	if GetConVar("cl_tfa_debug_crosshair") == nil then
-		CreateClientConVar("cl_tfa_debug_crosshair", 0, false, false)
+		CreateClientConVar("cl_tfa_debug_crosshair", 0, false, false, "Debug crosshair (Admin only)")
 	end
 
 	if GetConVar("cl_tfa_debug_rt") == nil then
-		CreateClientConVar("cl_tfa_debug_rt", 0, false, false)
+		CreateClientConVar("cl_tfa_debug_rt", 0, false, false, "Debug RT scopes (Admin only)")
 	end
 
 	if GetConVar("cl_tfa_debug_cache") == nil then
-		CreateClientConVar("cl_tfa_debug_cache", 0, false, false)
+		CreateClientConVar("cl_tfa_debug_cache", 0, false, false, "Disable stat caching (may cause heavy performance impact!)")
 	end
 
 	--Reticule Color
 	if GetConVar("cl_tfa_reticule_color_r") == nil then
 		CreateClientConVar("cl_tfa_reticule_color_r", 255, true, true)
-		--print("Reticule tweaking con vars created")
 	end
 
 	if GetConVar("cl_tfa_reticule_color_g") == nil then
@@ -553,7 +520,6 @@ if CLIENT then
 	--Laser Color
 	if GetConVar("cl_tfa_laser_color_r") == nil then
 		CreateClientConVar("cl_tfa_laser_color_r", 255, true, true)
-		--print("Laser tweaking con vars created")
 	end
 
 	if GetConVar("cl_tfa_laser_color_g") == nil then
