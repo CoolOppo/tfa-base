@@ -1,4 +1,4 @@
-if SERVER then AddCSLuaFile() end 
+if SERVER then AddCSLuaFile() end
 
 TFA = TFA or {}
 
