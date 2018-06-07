@@ -240,7 +240,8 @@ function TFA.Ballistics:FireBullets(wep, b, angIn, bulletOverride)
 				["Spread"] = b.Spread,
 				["SmokeParticle"] = struct.smokeparticle,
 				["CustomPosition"] = struct.customPosition,
-				["Model"] = struct.model
+				["Model"] = struct.model,
+				["Velocity"] = vel
 			})
 
 			net.WriteAngle(ang)
