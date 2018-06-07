@@ -162,7 +162,9 @@ function TFA.Ballistics:FireBullets(wep, b, angIn, bulletOverride)
 	if not IsValid(wep:GetOwner()) then return end
 	local vel, sharedRandomSeed
 
-	if wep.GetStat and wep:GetStat("Primary.Velocity") then
+	if b.Velocity then
+		vel = b.Velocity
+	elseif wep.GetStat and wep:GetStat("Primary.Velocity") then
 		vel = wep:GetStat("Primary.Velocity") * TFA.Ballistics.UnitScale
 	elseif wep.Primary and wep.Primary.Velocity then
 		vel = wep.Primary.Velocity * TFA.Ballistics.UnitScale
