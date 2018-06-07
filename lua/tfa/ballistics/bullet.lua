@@ -34,7 +34,7 @@ local traceData = {
 	output = traceRes
 }
 
-local MASK_SHOT_NOWATER = bit.band(bit.bnot(MASK_WATER), MASK_SHOT)
+local MASK_SHOT_NOWATER = MASK_SHOT
 
 --main update block
 function BallisticBullet:Update(delta)
@@ -83,7 +83,7 @@ function BallisticBullet:_checkWater(delta, target)
 
 	if traceRes.Hit and traceRes.Fraction < 1 and traceRes.Fraction > 0 and not self.Underwater then
 		self.Underwater = true
-		newPos = traceRes.HitPos
+		newPos = traceRes.HitPos + traceRes.Normal
 		self.velocity = self.velocity / TFA.Ballistics.WaterEntranceResistance
 		local fx = EffectData()
 		fx:SetOrigin(newPos)
@@ -118,13 +118,13 @@ function BallisticBullet:_accelerate(delta)
 	end
 
 	self.velocity = self.velocity + (TFA.Ballistics.Gravity + drag + wind) * delta
-	self.damage = self.startDamage * self.velocity:Length() / self.startVelocity
+	self.damage = self.startDamage * math.sqrt(self.velocity:Length() / self.startVelocity)
 end
 
 --internal function for moving with collision test
 function BallisticBullet:_moveSafe(newPos)
 	traceData.start = self.pos
-	traceData.endpos = newPos
+	traceData.endpos = newPos + (newPos - self.pos):GetNormalized()
 	traceData.filter = {self.owner, self.inflictor}
 	traceData.mask = MASK_SHOT_NOWATER
 
