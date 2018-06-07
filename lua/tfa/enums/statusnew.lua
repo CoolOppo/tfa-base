@@ -48,6 +48,9 @@ TFA.AddStatus( "grenade_throw" )
 TFA.AddStatus( "blocking" )
 TFA.AddStatus( "blocking_end" )
 
+TFA.AddStatus( "bow_shoot" )
+TFA.AddStatus( "bow_cancel" )
+
 TFA.Enum.HolsterStatus = {
 	[TFA.Enum.STATUS_HOLSTER] = true,
 	[TFA.Enum.STATUS_HOLSTER_FINAL] = true,

@@ -21,6 +21,7 @@ local function BallisticFirebullet(ply, bul, ovr)
 
 	if TFA.Ballistics and TFA.Ballistics:ShouldUse(wep) then
 		if ballistics_distcv:GetInt() == -1 or ply:GetEyeTrace().HitPos:Distance(ply:GetShootPos()) > ( ballistics_distcv:GetFloat() * TFA.Ballistics.UnitScale ) then
+			bul.SmokeParticle = bul.SmokeParticle or wep.BulletTracer or wep.TracerBallistic or wep.BallisticTracer or wep.BallisticsTracer
 			if ovr then
 				TFA.Ballistics:FireBullets(wep, bul, angle_zero, true)
 			else

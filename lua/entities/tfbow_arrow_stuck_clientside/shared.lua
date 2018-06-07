@@ -121,7 +121,7 @@ function ENT:TargetEnt( init )
 
 			self.posoff, self.angoff = WorldToLocal(self:GetPos(), self:GetAngles(), bonepos, bonerot)
 		end
-		self:FollowBone( self.targent, self.targbone )
+		self:FollowBone( self.targent, self.targbone or -1 )
 		self:SetOwner( self.targent )
 		self:SetLocalPos( self.posoff )
 		self:SetLocalAngles( self.angoff )
