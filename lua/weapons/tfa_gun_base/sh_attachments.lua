@@ -114,11 +114,14 @@ local function mtbl( t1, t2 )
 	return t
 end
 
-function SWEP:ClearStatCache(  )
-
-	table.Empty( self.StatCache )
-	table.Empty( self.StatCache2 )
-
+function SWEP:ClearStatCache( vn )
+	if vn then
+		self.StatCache[ vn ] = nil
+		self.StatCache2[ vn ] = nil
+	else
+		table.Empty( self.StatCache )
+		table.Empty( self.StatCache2 )
+	end
 end
 
 local ccv = GetConVar("cl_tfa_debug_cache")
