@@ -289,6 +289,14 @@ function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet,
 			c:SetInflictor(self)
 		end
 
+		if self.MainBullet.Callback2 then
+			self.MainBullet.Callback2(a, b, c)
+		end
+
+		if SERVER and IsValid(a) and a:IsPlayer() and IsValid(b.Entity) and (b.Entity:IsPlayer() or b.Entity:IsNPC()) then
+			self:SendHitMarker(a, b, c)
+		end
+
 		AttachArrowModel(a, b, c, self)
 	end
 
