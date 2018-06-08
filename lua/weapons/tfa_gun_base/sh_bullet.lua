@@ -367,7 +367,6 @@ local decalbul = {
 local maxpen
 local penetration_max_cvar = GetConVar("sv_tfa_penetration_limit")
 local penetration_cvar = GetConVar("sv_tfa_bullet_penetration")
-local penetration_hitmarker_cvar = GetConVar("sv_tfa_penetration_hitmarker")
 local ricochet_cvar = GetConVar("sv_tfa_bullet_ricochet")
 local cv_rangemod = GetConVar("sv_tfa_range_modifier")
 local cv_decalbul = GetConVar("sv_tfa_fx_penetration_decal")
@@ -406,9 +405,8 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon)
 	atype = weapon:GetStat("Primary.DamageType")
 	dmginfo:SetDamageType(atype)
 
-	if SERVER and penetration_hitmarker_cvar:GetBool() and IsValid(ply) and ply:IsPlayer() and IsValid(hitent) and (hitent:IsPlayer() or hitent:IsNPC()) then
-		net.Start("tfaHitmarker")
-		net.Send(ply)
+	if SERVER and IsValid(ply) and ply:IsPlayer() and IsValid(hitent) and (hitent:IsPlayer() or hitent:IsNPC()) then
+		weapon:SendHitMarker(ply, traceres, dmginfo)
 	end
 
 	if IsValid(traceres.Entity) and traceres.Entity:GetClass() == "npc_sniper" then
