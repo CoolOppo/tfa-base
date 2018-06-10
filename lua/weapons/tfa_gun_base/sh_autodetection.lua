@@ -1,13 +1,8 @@
 function SWEP:PatchAmmoTypeAccessors()
 	self.GetPrimaryAmmoTypeOld = self.GetPrimaryAmmoTypeOld or self.GetPrimaryAmmoType
-	self.GetPrimaryAmmoType = function(myself,...)
-		return myself.GetPrimaryAmmoTypeC(myself,...)
-	end
-
+	self.GetPrimaryAmmoType = function(myself, ...) return myself.GetPrimaryAmmoTypeC(myself, ...) end
 	self.GetSecondaryAmmoTypeOld = self.GetSecondaryAmmoTypeOld or self.GetSecondaryAmmoType
-	self.GetSecondaryAmmoType = function(myself,...)
-		return myself.GetSecondaryAmmoTypeC(myself,...)
-	end
+	self.GetSecondaryAmmoType = function(myself, ...) return myself.GetSecondaryAmmoTypeC(myself, ...) end
 end
 
 function SWEP:FixProjectile()
@@ -15,10 +10,12 @@ function SWEP:FixProjectile()
 		self.Primary.Projectile = self.ProjectileEntity
 		self.ProjectileEntity = nil
 	end
+
 	if self.ProjectileModel and self.ProjectileModel ~= "" then
 		self.Primary.ProjectileModel = self.ProjectileModel
 		self.ProjectileModel = nil
 	end
+
 	if self.ProjectileVelocity and self.ProjectileVelocity ~= "" then
 		self.Primary.ProjectileVelocity = self.ProjectileVelocity
 		self.ProjectileVelocity = nil
@@ -27,8 +24,9 @@ end
 
 function SWEP:AutoDetectRange()
 	if self.Primary.Range <= 0 then
-		self.Primary.Range = math.sqrt( self.Primary.Damage / 32 ) * self:MetersToUnits( 350 ) * self:AmmoRangeMultiplier()
+		self.Primary.Range = math.sqrt(self.Primary.Damage / 32) * self:MetersToUnits(350) * self:AmmoRangeMultiplier()
 	end
+
 	if self.Primary.RangeFalloff <= 0 then
 		self.Primary.RangeFalloff = 0.5
 	end
@@ -52,21 +50,23 @@ end
 
 function SWEP:FixCone()
 	if self.Primary.Cone then
-		if ( not self.Primary.Spread ) or self.Primary.Spread < 0  then
+		if (not self.Primary.Spread) or self.Primary.Spread < 0 then
 			self.Primary.Spread = self.Primary.Cone
 		end
+
 		self.Primary.Cone = nil
 	end
 end
 
-function SWEP:FixIdles() --legacy compatibility
+--legacy compatibility
+function SWEP:FixIdles()
 	if self.DisableIdleAnimations ~= nil and self.DisableIdleAnimations == true then
 		self.Idle_Mode = TFA.Enum.IDLE_LUA
 	end
 end
 
 function SWEP:FixIS()
-	if self.SightsPos and ( not self.IronSightsPos or ( self.IronSightsPos.x ~= self.SightsPos.x and self.SightsPos.x ~= 0 ) ) then
+	if self.SightsPos and (not self.IronSightsPos or (self.IronSightsPos.x ~= self.SightsPos.x and self.SightsPos.x ~= 0)) then
 		self.IronSightsPos = self.SightsPos or Vector()
 		self.IronSightsAng = self.SightsAng or Vector()
 	end
@@ -77,17 +77,20 @@ local legacy_spread_cv = GetConVar("sv_tfa_spread_legacy")
 function SWEP:AutoDetectSpread()
 	if legacy_spread_cv and legacy_spread_cv:GetBool() then
 		self:SetUpSpreadLegacy()
+
 		return
 	end
 
 	if self.Primary.SpreadMultiplierMax == -1 or not self.Primary.SpreadMultiplierMax then
 		self.Primary.SpreadMultiplierMax = math.Clamp(math.sqrt(math.sqrt(self.Primary.Damage / 35) * 10 / 5) * 5, 0.01 / self.Primary.Spread, 0.1 / self.Primary.Spread)
 	end
+
 	if self.Primary.SpreadIncrement == -1 or not self.Primary.SpreadIncrement then
 		self.Primary.SpreadIncrement = self.Primary.SpreadMultiplierMax * 60 / self.Primary.RPM * 0.85 * 1.5
 	end
+
 	if self.Primary.SpreadRecovery == -1 or not self.Primary.SpreadRecovery then
-		self.Primary.SpreadRecovery = math.max(self.Primary.SpreadMultiplierMax * math.pow(self.Primary.RPM / 600, 1 / 3) * 0.75,self.Primary.SpreadMultiplierMax / 1.5)
+		self.Primary.SpreadRecovery = math.max(self.Primary.SpreadMultiplierMax * math.pow(self.Primary.RPM / 600, 1 / 3) * 0.75, self.Primary.SpreadMultiplierMax / 1.5)
 	end
 end
 
@@ -97,7 +100,8 @@ Syntax: self:AutoDetectMuzzle().  Call only once, or it's redundant.
 Returns:  Nothing.
 Notes:  Detects the proper muzzle flash effect if you haven't specified one.
 Purpose:  Autodetection
-]]--
+]]
+--
 function SWEP:AutoDetectMuzzle()
 	if not self.MuzzleFlashEffect then
 		local a = string.lower(self.Primary.Ammo)
@@ -129,9 +133,11 @@ Syntax: self:AutoDetectDamage().  Call only once.  Hopefully you call this only 
 Returns:  Nothing.
 Notes:  Fixes the damage for GDCW.
 Purpose:  Autodetection
-]]--
+]]
+--
 function SWEP:AutoDetectDamage()
 	if self.Primary.Damage and self.Primary.Damage ~= -1 then return end
+
 	if self.Primary.Round then
 		local rnd = string.lower(self.Primary.Round)
 
@@ -177,8 +183,8 @@ Syntax: self:AutoDetectDamageType().  Call only once.  Hopefully you call this o
 Returns:  Nothing.
 Notes:  Sets a damagetype
 Purpose:  Autodetection
-]]--
-
+]]
+--
 function SWEP:AutoDetectDamageType()
 	if self.Primary.DamageType == -1 or not self.Primary.DamageType then
 		if self.DamageType and not self.Primary.DamageType then
@@ -195,11 +201,11 @@ Syntax: self:AutoDetectForce().  Call only once.  Hopefully you call this only o
 Returns:  Nothing.
 Notes:  Detects force from damage
 Purpose:  Autodetection
-]]--
-
+]]
+--
 function SWEP:AutoDetectForce()
 	if self.Primary.Force == -1 or not self.Primary.Force then
-		self.Primary.Force = self.Force or ( math.sqrt( self.Primary.Damage / 16 ) * 3 / math.sqrt( self.Primary.NumShots ) )
+		self.Primary.Force = self.Force or (math.sqrt(self.Primary.Damage / 16) * 3 / math.sqrt(self.Primary.NumShots))
 	end
 end
 
@@ -209,8 +215,8 @@ Syntax: self:AutoDetectKnockback().  Call only once.  Hopefully you call this on
 Returns:  Nothing.
 Notes:  Detects knockback from force
 Purpose:  Autodetection
-]]--
-
+]]
+--
 function SWEP:AutoDetectKnockback()
 	if self.Primary.Knockback == -1 or not self.Primary.Knockback then
 		self.Primary.Knockback = self.Knockback or math.max(math.pow(self.Primary.Force - 3.25, 2), 0) * math.pow(self.Primary.NumShots, 1 / 3)
@@ -223,7 +229,8 @@ Syntax: self:IconFix().  Call only once.  Hopefully you call this only once on l
 Returns:  Nothing.
 Notes:  Fixes the icon.  Call this if you give it a texture path, or just nothing.
 Purpose:  Autodetection
-]]--
+]]
+--
 local selicon_final = {}
 
 function SWEP:IconFix()
@@ -233,7 +240,8 @@ function SWEP:IconFix()
 	local proceed = true
 
 	if selicon_final[self.Gun] then
-		self.WepSelectIcon =  selicon_final[self.Gun]
+		self.WepSelectIcon = selicon_final[self.Gun]
+
 		return
 	end
 
@@ -259,9 +267,11 @@ Syntax: self:CorrectScopeFOV( fov ).  Call only once.  Hopefully you call this o
 Returns:  Nothing.
 Notes:  If you're using scopezoom instead of FOV, this translates it.
 Purpose:  Autodetection
-]]--
+]]
+--
 function SWEP:CorrectScopeFOV(fov)
 	fov = fov or self.DefaultFOV
+
 	if not self.Secondary.IronFOV or self.Secondary.IronFOV <= 0 then
 		if self.Scoped then
 			self.Secondary.IronFOV = fov / (self.Secondary.ScopeZoom and self.Secondary.ScopeZoom or 2)
@@ -270,14 +280,15 @@ function SWEP:CorrectScopeFOV(fov)
 		end
 	end
 end
+
 --[[
 Function Name:  CreateFireModes
 Syntax: self:CreateFireModes( is first draw).  Call as much as you like.  isfirstdraw controls whether the default fire mode is set.
 Returns:  Nothing.
 Notes:  Autodetects fire modes depending on what params you set up.
 Purpose:  Autodetection
-]]--
-
+]]
+--
 SWEP.FireModeCache = {}
 
 function SWEP:CreateFireModes(isfirstdraw)
@@ -318,7 +329,6 @@ function SWEP:CreateFireModes(isfirstdraw)
 				self.FireModes[1] = "Single"
 			end
 		end
-
 	end
 
 	if self.FireModes[#self.FireModes] ~= "Safe" then
@@ -326,14 +336,14 @@ function SWEP:CreateFireModes(isfirstdraw)
 	end
 
 	if not self.FireModeCache or #self.FireModeCache <= 0 then
-		for k,v in ipairs(self.FireModes) do
+		for k, v in ipairs(self.FireModes) do
 			self.FireModeCache[v] = k
 		end
 
 		if type(self.DefaultFireMode) == "number" then
-			self:SetFireMode(self.DefaultFireMode or (self.Primary.Automatic and 1 or #self.FireModes - 1) )
+			self:SetFireMode(self.DefaultFireMode or (self.Primary.Automatic and 1 or #self.FireModes - 1))
 		else
-			self:SetFireMode( self.FireModeCache[self.DefaultFireMode] or (self.Primary.Automatic and 1 or #self.FireModes - 1) )
+			self:SetFireMode(self.FireModeCache[self.DefaultFireMode] or (self.Primary.Automatic and 1 or #self.FireModes - 1))
 		end
 	end
 end
@@ -344,22 +354,18 @@ Syntax: self:CacheAnimations( ).  Call as much as you like.
 Returns:  Nothing.
 Notes:  This is what autodetects animations for the SWEP.SequenceEnabled and SWEP.SequenceLength tables.
 Purpose:  Autodetection
-]]--
-
+]]
+--
 ACT_VM_FIDGET_SILENCED = ACT_VM_FIDGET_SILENCED or ACT_RPG_FIDGET_UNLOADED
-
 --SWEP.actlist = {ACT_VM_DRAW, ACT_VM_DRAW_EMPTY, ACT_VM_DRAW_SILENCED, ACT_VM_DRAW_DEPLOYED, ACT_VM_HOLSTER, ACT_VM_HOLSTER_EMPTY, ACT_VM_IDLE, ACT_VM_IDLE_EMPTY, ACT_VM_IDLE_SILENCED, ACT_VM_PRIMARYATTACK, ACT_VM_PRIMARYATTACK_1, ACT_VM_PRIMARYATTACK_EMPTY, ACT_VM_PRIMARYATTACK_SILENCED, ACT_VM_SECONDARYATTACK, ACT_VM_RELOAD, ACT_VM_RELOAD_EMPTY, ACT_VM_RELOAD_SILENCED, ACT_VM_ATTACH_SILENCER, ACT_VM_RELEASE, ACT_VM_DETACH_SILENCER, ACT_VM_FIDGET, ACT_VM_FIDGET_EMPTY, ACT_VM_FIDGET_SILENCED, ACT_SHOTGUN_RELOAD_START, ACT_VM_DRYFIRE, ACT_VM_DRYFIRE_SILENCED }
 --If you really want, you can remove things from SWEP.actlist and manually enable animations and set their lengths.
 SWEP.SequenceEnabled = {}
 SWEP.SequenceLength = {}
 SWEP.SequenceLengthOverride = {} --Override this if you want to change the length of a sequence but not the next idle
-
 SWEP.ActCache = {}
-
-local vm,seq
+local vm, seq
 
 function SWEP:CacheAnimations()
-
 	table.Empty(self.ActCache)
 
 	if self.CanBeSilenced and self.SequenceEnabled[ACT_VM_IDLE_SILENCED] == nil then
@@ -371,16 +377,30 @@ function SWEP:CacheAnimations()
 
 	if IsValid(vm) then
 		self:BuildAnimActivities()
-		for k, v in ipairs(table.GetKeys(self.AnimationActivities)) do
-			seq = vm:SelectWeightedSequence(v)
 
-			if seq ~= -1 and vm:GetSequenceActivity(seq) == v and not self.ActCache[seq] then
-				self.SequenceEnabled[v] = true
-				self.SequenceLength[v] = vm:SequenceDuration(seq)
-				self.ActCache[seq] = v
+		for k, v in ipairs(table.GetKeys(self.AnimationActivities)) do
+			if isnumber(v) then
+				seq = vm:SelectWeightedSequence(v)
+
+				if seq ~= -1 and vm:GetSequenceActivity(seq) == v and not self.ActCache[seq] then
+					self.SequenceEnabled[v] = true
+					self.SequenceLength[v] = vm:SequenceDuration(seq)
+					self.ActCache[seq] = v
+				else
+					self.SequenceEnabled[v] = false
+					self.SequenceLength[v] = 0.0
+				end
 			else
-				self.SequenceEnabled[v] = false
-				self.SequenceLength[v] = 0.0
+				local s = vm:LookupSequence(v)
+
+				if s and s > 0 then
+					self.SequenceEnabled[v] = true
+					self.SequenceLength[v] = vm:SequenceDuration(s)
+					self.ActCache[seq] = v
+				else
+					self.SequenceEnabled[v] = false
+					self.SequenceLength[v] = 0.0
+				end
 			end
 		end
 	else

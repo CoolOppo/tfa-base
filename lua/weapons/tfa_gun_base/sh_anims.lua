@@ -11,7 +11,6 @@ local ServersideLooped = {
 --[ACT_VM_IDLE] = true,
 --[ACT_VM_IDLE_EMPTY] = true,
 --[ACT_VM_IDLE_SILENCED] = true
-local IdleBlendTime = 0.0
 local d, pbr
 
 --[[
