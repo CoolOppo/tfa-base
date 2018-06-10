@@ -14,8 +14,9 @@ EFFECT.ShellPresets = {
 
 EFFECT.SoundFiles = {Sound(")player/pl_shell1.wav"), Sound(")player/pl_shell2.wav"), Sound(")player/pl_shell3.wav")}
 EFFECT.SoundFilesSG = {Sound(")weapons/fx/tink/shotgun_shell1.wav"), Sound(")weapons/fx/tink/shotgun_shell2.wav"), Sound(")weapons/fx/tink/shotgun_shell3.wav")}
-EFFECT.SoundLevel = {60, 80}
+EFFECT.SoundLevel = {45, 55}
 EFFECT.SoundPitch = {80, 120}
+EFFECT.SoundVolume = {0.85, 0.95}
 EFFECT.LifeTime = 15
 EFFECT.FadeTime = 0.5
 EFFECT.SmokeRate = 60 --Particles per second, multiplied by velocity down to 10%
@@ -106,9 +107,9 @@ function EFFECT:Init(data)
 	end
 
 	local model, scale, yaw, len = self:FindModel(self.WeaponEntOG)
-	model = self.WeaponEntOG.ShellModel or self.WeaponEntOG.LuaShellModel or model
-	scale = self.WeaponEntOG.ShellScale or self.WeaponEntOG.LuaShellScale or scale
-	yaw = self.WeaponEntOG.ShellYaw or self.WeaponEntOG.LuaShellYaw or yaw
+	model = self.WeaponEntOG:GetStat("ShellModel") or self.WeaponEntOG:GetStat("LuaShellModel") or model
+	scale = self.WeaponEntOG:GetStat("ShellScale") or self.WeaponEntOG:GetStat("LuaShellScale") or scale
+	yaw = self.WeaponEntOG:GetStat("ShellYaw") or self.WeaponEntOG:GetStat("LuaShellYaw") or yaw
 
 	if model:lower():find("shotgun") then
 		self.Shotgun = true
@@ -142,6 +143,14 @@ function EFFECT:Init(data)
 	end
 
 	self.SmokeOffsetLength = len or (self:OBBMaxs().x - self:OBBMins().x)
+	local ss = self.WeaponEntOG:GetStat("ShellSound") or self.WeaponEntOG:GetStat("LuaShellSound")
+
+	if ss then
+		self.ImpactSound = ss
+	else
+		self.ImpactSound = self.Shotgun and self.SoundFilesSG[math.random(1, #self.SoundFiles)] or self.SoundFiles[math.random(1, #self.SoundFiles)]
+	end
+
 	self.setup = true
 end
 
@@ -166,8 +175,7 @@ function EFFECT:FindModel(wep)
 end
 
 function EFFECT:BounceSound()
-	local snd = self.Shotgun and self.SoundFilesSG[math.random(1, #self.SoundFiles)] or self.SoundFiles[math.random(1, #self.SoundFiles)]
-	sound.Play(snd, self:GetPos(), math.Rand(self.SoundLevel[1], self.SoundLevel[2]), math.Rand(self.SoundPitch[1], self.SoundPitch[2]))
+	sound.Play(self.ImpactSound, self:GetPos(), math.Rand(self.SoundLevel[1], self.SoundLevel[2]), math.Rand(self.SoundPitch[1], self.SoundPitch[2]), math.Rand(self.SoundVolume[1], self.SoundVolume[2]))
 end
 
 function EFFECT:PhysicsCollide(data)
