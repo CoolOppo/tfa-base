@@ -765,3 +765,13 @@ function SWEP:Unload2()
 		self.Owner:GiveAmmo(amm, self:GetSecondaryAmmoType(), true)
 	end
 end
+
+local penetration_hitmarker_cvar = GetConVar("sv_tfa_penetration_hitmarker")
+
+function SWEP:SendHitMarker(ply, traceres, dmginfo)
+	if not SERVER or not penetration_hitmarker_cvar:GetBool() then return end
+	if not IsValid(ply) or not ply:IsPlayer() then return end
+
+	net.Start("tfaHitmarker")
+	net.Send(ply)
+end

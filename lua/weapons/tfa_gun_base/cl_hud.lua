@@ -650,13 +650,6 @@ function SWEP:DoInspectionDerma()
 	cam.End3D()
 end
 
---[[
-Function Name:  DrawHUD
-Syntax: self:DrawHUD( ).
-Returns:  Nothing.
-Notes:    Used to draw the HUD.  Can you read?
-Purpose:  HUD
-]]--
 local crosscol = Color(255, 255, 255, 255)
 local crossa_cvar = GetConVar("cl_tfa_hud_crosshair_color_a")
 local outa_cvar = GetConVar("cl_tfa_hud_crosshair_outline_color_a")
@@ -676,126 +669,25 @@ local outlinewidth_cvar = GetConVar("cl_tfa_hud_crosshair_outline_width")
 local hudenabled_cvar = GetConVar("cl_tfa_hud_enabled")
 local cgapscale_cvar = GetConVar("cl_tfa_hud_crosshair_gap_scale")
 
+--[[
+Function Name:  DrawHUD
+Syntax: self:DrawHUD( ).
+Returns:  Nothing.
+Notes:    Used to draw the HUD.  Can you read?
+Purpose:  HUD
+]]--
 function SWEP:DrawHUD()
-	cam.Start3D() --Workaround for vec:ToScreen()
-	cam.End3D()
-
+	-- Inspection Derma
 	self:DoInspectionDerma()
 
-	--Crosshair
-
-	--self:DrawHUDCrosshair()
-
-	--Ammo
-
+	-- 3D2D Ammo
 	self:DrawHUDAmmo() --so it's swappable easily
+end
 
+function SWEP:DrawHUDBackground()
 	--Scope Overlay
 	if self.IronSightsProgress > self:GetStat("ScopeOverlayThreshold") and self:GetStat("Scoped") then
-		local tbl = nil
-
-		if self:GetStat("Secondary.UseACOG") then
-			tbl = TFA_SCOPE_ACOG
-		end
-
-		if self:GetStat("Secondary.UseMilDot") then
-			tbl = TFA_SCOPE_MILDOT
-		end
-
-		if self:GetStat("Secondary.UseSVD") then
-			tbl = TFA_SCOPE_SVD
-		end
-
-		if self:GetStat("Secondary.UseParabolic") then
-			tbl = TFA_SCOPE_PARABOLIC
-		end
-
-		if self:GetStat("Secondary.UseElcan") then
-			tbl = TFA_SCOPE_ELCAN
-		end
-
-		if self:GetStat("Secondary.UseGreenDuplex") then
-			tbl = TFA_SCOPE_GREENDUPLEX
-		end
-
-		if self:GetStat("Secondary.UseAimpoint") then
-			tbl = TFA_SCOPE_AIMPOINT
-		end
-
-		if self:GetStat("Secondary.UseMatador") then
-			tbl = TFA_SCOPE_MATADOR
-		end
-
-		if self:GetStat("Secondary.ScopeTable") then
-			tbl = self:GetStat("Secondary.ScopeTable")
-		end
-
-		if not tbl then
-			tbl = TFA_SCOPE_MILDOT
-		end
-
-		local w, h = ScrW(), ScrH()
-
-		for k, v in pairs(tbl) do
-			local dimension = h
-
-			if k == "ScopeBorder" then
-				if istable(v) then
-					surface.SetDrawColor(v)
-				else
-					surface.SetDrawColor(color_black)
-				end
-				surface.DrawRect(0,0,w / 2 - dimension / 2,dimension)
-				surface.DrawRect(w / 2 + dimension / 2,0,w / 2 - dimension / 2,dimension)
-			elseif k == "ScopeMaterial" then
-				surface.SetMaterial(v)
-				surface.SetDrawColor(255,255,255,255)
-				surface.DrawTexturedRect(w / 2 - dimension / 2, (h - dimension) / 2, dimension, dimension )
-			elseif k == "ScopeOverlay" then
-				surface.SetMaterial(v)
-				surface.SetDrawColor(255,255,255,255)
-				surface.DrawTexturedRect(0,0,w,h )
-			elseif k == "ScopeCrosshair" then
-				local t = type(v)
-				if t == "IMaterial" then
-					surface.SetMaterial(v)
-					surface.SetDrawColor(255,255,255,255)
-					surface.DrawTexturedRect(w / 2 - dimension / 4, h / 2 - dimension / 4, dimension / 2, dimension / 2 )
-				elseif t == "table" then
-					if not v.cached then
-						v.cached = true
-						v.r = v.r or v.x or v[1] or 0
-						v.g = v.g or v.y or v[2] or v[1] or 0
-						v.b = v.b or v.z or v[3] or v[1] or 0
-						v.a = v.a or v[4] or 255
-						v.s = v.Scale or v.scale or v.s or 0.25
-					end
-					surface.SetDrawColor(v.r,v.g,v.b,v.a )
-					if v.Material then
-						surface.SetMaterial( v.Material )
-						surface.DrawTexturedRect(w / 2 - dimension * v.s / 2, h / 2 - dimension * v.s / 2, dimension * v.s, dimension * v.s )
-					elseif v.Texture then
-						surface.SetTexture( v.Texture )
-						surface.DrawTexturedRect(w / 2 - dimension * v.s / 2, h / 2 - dimension * v.s / 2, dimension * v.s, dimension * v.s )
-					else
-						surface.DrawRect( w / 2 - dimension * v.s / 2, h / 2 , dimension * v.s, 1 )
-						surface.DrawRect( w / 2 , h / 2 - dimension * v.s / 2, 1, dimension * v.s )
-					end
-				end
-			else
-				if k == "scopetex" then
-					dimension = dimension * self:GetStat("ScopeScale") ^ 2 * TFA_SCOPE_SCOPESCALE
-				elseif k == "reticletex" then
-					dimension = dimension * (self:GetStat("ReticleScale") and self:GetStat("ReticleScale") or 1) ^ 2 * (TFA_SCOPE_RETICLESCALE and TFA_SCOPE_RETICLESCALE or 1)
-				else
-					dimension = dimension * self:GetStat("ReticleScale") ^ 2 * TFA_SCOPE_DOTSCALE
-				end
-
-				surface.SetDrawColor(255,255,255,255)
-				surface.SetTexture(v)
-				surface.DrawTexturedRect(w / 2 - dimension / 2, (h - dimension) / 2, dimension, dimension )
-			end
-		end
+		self:DrawScopeOverlay()
 	end
 end
 
@@ -814,6 +706,8 @@ SWEP.TextCol = Color(255, 255, 255, 255) --Primary text color
 SWEP.TextColContrast = Color(32, 32, 32, 255) --Secondary Text Color (used for shadow)
 
 function SWEP:DrawHUDAmmo()
+	cam.Start3D() --Workaround for vec:ToScreen()
+	cam.End3D()
 
 	if self:GetStat("Primary.Ammo") == "none" or self:GetStat("Primary.Ammo") == "" then return end
 
@@ -1100,4 +994,112 @@ function SWEP:DoDrawCrosshair(x, y)
 	end
 
 	return true
+end
+
+local w, h
+function SWEP:DrawScopeOverlay()
+	local tbl = nil
+
+	if self:GetStat("Secondary.UseACOG") then
+		tbl = TFA_SCOPE_ACOG
+	end
+
+	if self:GetStat("Secondary.UseMilDot") then
+		tbl = TFA_SCOPE_MILDOT
+	end
+
+	if self:GetStat("Secondary.UseSVD") then
+		tbl = TFA_SCOPE_SVD
+	end
+
+	if self:GetStat("Secondary.UseParabolic") then
+		tbl = TFA_SCOPE_PARABOLIC
+	end
+
+	if self:GetStat("Secondary.UseElcan") then
+		tbl = TFA_SCOPE_ELCAN
+	end
+
+	if self:GetStat("Secondary.UseGreenDuplex") then
+		tbl = TFA_SCOPE_GREENDUPLEX
+	end
+
+	if self:GetStat("Secondary.UseAimpoint") then
+		tbl = TFA_SCOPE_AIMPOINT
+	end
+
+	if self:GetStat("Secondary.UseMatador") then
+		tbl = TFA_SCOPE_MATADOR
+	end
+
+	if self:GetStat("Secondary.ScopeTable") then
+		tbl = self:GetStat("Secondary.ScopeTable")
+	end
+
+	if not tbl then
+		tbl = TFA_SCOPE_MILDOT
+	end
+
+	w, h = ScrW(), ScrH()
+
+	for k, v in pairs(tbl) do
+		local dimension = h
+
+		if k == "ScopeBorder" then
+			if istable(v) then
+				surface.SetDrawColor(v)
+			else
+				surface.SetDrawColor(color_black)
+			end
+			surface.DrawRect(0,0,w / 2 - dimension / 2,dimension)
+			surface.DrawRect(w / 2 + dimension / 2,0,w / 2 - dimension / 2,dimension)
+		elseif k == "ScopeMaterial" then
+			surface.SetMaterial(v)
+			surface.SetDrawColor(255,255,255,255)
+			surface.DrawTexturedRect(w / 2 - dimension / 2, (h - dimension) / 2, dimension, dimension )
+		elseif k == "ScopeOverlay" then
+			surface.SetMaterial(v)
+			surface.SetDrawColor(255,255,255,255)
+			surface.DrawTexturedRect(0,0,w,h )
+		elseif k == "ScopeCrosshair" then
+			local t = type(v)
+			if t == "IMaterial" then
+				surface.SetMaterial(v)
+				surface.SetDrawColor(255,255,255,255)
+				surface.DrawTexturedRect(w / 2 - dimension / 4, h / 2 - dimension / 4, dimension / 2, dimension / 2 )
+			elseif t == "table" then
+				if not v.cached then
+					v.cached = true
+					v.r = v.r or v.x or v[1] or 0
+					v.g = v.g or v.y or v[2] or v[1] or 0
+					v.b = v.b or v.z or v[3] or v[1] or 0
+					v.a = v.a or v[4] or 255
+					v.s = v.Scale or v.scale or v.s or 0.25
+				end
+				surface.SetDrawColor(v.r,v.g,v.b,v.a )
+				if v.Material then
+					surface.SetMaterial( v.Material )
+					surface.DrawTexturedRect(w / 2 - dimension * v.s / 2, h / 2 - dimension * v.s / 2, dimension * v.s, dimension * v.s )
+				elseif v.Texture then
+					surface.SetTexture( v.Texture )
+					surface.DrawTexturedRect(w / 2 - dimension * v.s / 2, h / 2 - dimension * v.s / 2, dimension * v.s, dimension * v.s )
+				else
+					surface.DrawRect( w / 2 - dimension * v.s / 2, h / 2 , dimension * v.s, 1 )
+					surface.DrawRect( w / 2 , h / 2 - dimension * v.s / 2, 1, dimension * v.s )
+				end
+			end
+		else
+			if k == "scopetex" then
+				dimension = dimension * self:GetStat("ScopeScale") ^ 2 * TFA_SCOPE_SCOPESCALE
+			elseif k == "reticletex" then
+				dimension = dimension * (self:GetStat("ReticleScale") and self:GetStat("ReticleScale") or 1) ^ 2 * (TFA_SCOPE_RETICLESCALE and TFA_SCOPE_RETICLESCALE or 1)
+			else
+				dimension = dimension * self:GetStat("ReticleScale") ^ 2 * TFA_SCOPE_DOTSCALE
+			end
+
+			surface.SetDrawColor(255,255,255,255)
+			surface.SetTexture(v)
+			surface.DrawTexturedRect(w / 2 - dimension / 2, (h - dimension) / 2, dimension, dimension )
+		end
+	end
 end
