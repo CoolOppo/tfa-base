@@ -385,6 +385,7 @@ function SWEP:Initialize()
 	self:PathStatsTable('Primary')
 	self:PathStatsTable('Secondary')
 	self:ClearStatCache()
+	self:InitializeAnims()
 
 	if not self.IronSightsMoveSpeed then
 		self.IronSightsMoveSpeed = self.MoveSpeed * 0.8

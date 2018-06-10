@@ -19,7 +19,7 @@ local d, pbr
 ]]
 --
 --Override this after SWEP:Initialize, for example, in attachments
-SWEP.Animations = {
+SWEP.Animations_Base = {
 	["draw_first"] = {
 		["type"] = TFA.Enum.ANIMATION_ACT, --Sequence or act
 		["value"] = ACT_VM_DRAW_DEPLOYED,
@@ -131,8 +131,15 @@ SWEP.Animations = {
 	}
 }
 
+SWEP.Animations = {}
 SWEP.AnimationActivities = {}
-
+function SWEP:InitializeAnims()
+	setmetatable(self.Animations, {
+		__index = function(t, k)
+			return self.Animations_Base[k]
+		end
+	})
+end
 function SWEP:GetActivityEnabled(act)
 	local stat = self:GetStat("SequenceEnabled." .. act)
 	if stat then return stat end
