@@ -147,9 +147,6 @@ SWEP.VMAng = Vector(0,0,0)
 SWEP.CameraOffset = Angle(0, 0, 0)
 SWEP.VMPos_Additive = true
 
-local vm_offset_pos = Vector()
-local vm_offset_ang = Angle()
-
 SWEP.IronAnimation = {
 	--[[
 	["in"] = {
@@ -248,7 +245,7 @@ SWEP.SmokeParticles = {
 	magic = "weapon_muzzle_smoke",
 	revolver = "weapon_muzzle_smoke_long",
 	silenced = "weapon_muzzle_smoke"
-}--]] 
+}--]]
 --[[
 SWEP.SmokeParticles = {
 	pistol = "smoke_trail_controlled",
@@ -288,39 +285,17 @@ local function l_Lerp(v, f, t)
 end
 
 local l_mathApproach = math.Approach
-local l_mathClamp = math.Clamp
 local l_CT = CurTime
-local l_FT = FrameTime
 
---[[
-Function Name:  QerpAngle
-Syntax: QerpAngle(progress, starting value, ending value, period)
-Returns:  The quadratically interpolated angle.
-Purpose:  Utility function / Animation
-]]
-local l_NormalizeAngle = math.NormalizeAngle
-local LerpAngle = LerpAngle
-
-local function util_NormalizeAngles(a)
-	a.p = l_NormalizeAngle(a.p)
-	a.y = l_NormalizeAngle(a.y)
-	a.r = l_NormalizeAngle(a.r)
-
-	return a
-end
 
 --[[Localize Functions]]
 local l_ct = CurTime
-local CurTime = CurTime
 --[[Frequently Reused Local Vars]]
 local success --Used for animations
 local stat, statend --Weapon status
-local ct, ft, rft --Curtime, frametime, real frametime
+local ct, ft --Curtime, frametime, real frametime
 ft = 0.01
 local sp --Singleplayer
-
-local host_timescale_cv = GetConVar("host_timescale")
-local sv_cheats_cv = GetConVar("sv_cheats")
 
 --[[
 Function Name:  SetupDataTables
@@ -353,6 +328,11 @@ Purpose:  Standard SWEP Function
 sp = game.SinglePlayer()
 
 local nzombies = string.lower( engine.ActiveGamemode() or "" ) == "nzombies"
+local PistolHoldTypes = {
+	["pistol"] = true,
+	["357"] = true,
+	["revolver"] = true
+}
 
 function SWEP:Initialize()
 	self.DrawCrosshairDefault = self.DrawCrosshair
@@ -383,8 +363,8 @@ function SWEP:Initialize()
 	self:IconFix()
 	self:CreateFireModes()
 	self:FixAkimbo()
-	self:PathStatsTable('Primary')
-	self:PathStatsTable('Secondary')
+	self:PathStatsTable("Primary")
+	self:PathStatsTable("Secondary")
 	self:ClearStatCache()
 
 	if not self.IronSightsMoveSpeed then
@@ -399,37 +379,34 @@ function SWEP:Initialize()
 		self:NZDeploy()
 	end
 
-	if SERVER then
-		if self.Owner:IsNPC() then
-			local seq = self.Weapon.Owner:LookupSequence("shootp1")
-			if self.Weapon.Owner:GetSequenceName(seq) == "shootp1" then
-				self:SetWeaponHoldType("pistol")
-			else
-				self:SetWeaponHoldType("ar2")
-			end
-			if self.Owner:GetClass() == "npc_citizen" then
-				self.Weapon.Owner:Fire( "DisableWeaponPickup" )
-			end
-			self.Weapon.Owner:SetKeyValue( "spawnflags", "256" )
-			return
+	if SERVER and self.Owner:IsNPC() then
+		local seq = self.Owner:LookupSequence("shootp1")
+		if self.Owner:GetSequenceName(seq) == "shootp1" and PistolHoldTypes[self.DefaultHoldType or self.HoldType] then
+			self:SetWeaponHoldType("pistol")
+		else
+			self:SetWeaponHoldType("ar2")
 		end
+		if self.Owner:GetClass() == "npc_citizen" then
+			self.Owner:Fire( "DisableWeaponPickup" )
+		end
+		self.Owner:SetKeyValue( "spawnflags", "256" )
+		return
 	end
 end
 
 function SWEP:PathStatsTable(statID)
 	local tableDest = self[statID]
 	local tableCopy = table.Copy(tableDest)
-	self[statID .. '_TFA'] = tableCopy
-	local ammo = statID .. '.Ammo'
-	local clipSize = statID .. '.ClipSize'
+	self[statID .. "_TFA"] = tableCopy
+	local ammo = statID .. ".Ammo"
+	local clipSize = statID .. ".ClipSize"
 	table.Empty(tableDest)
-
 	local ignore = false
 
 	local function ignoreHack(key)
-		if key == 'Ammo' then
+		if key == "Ammo" then
 			return self:GetStat(ammo)
-		elseif key == 'ClipSize' then
+		elseif key == "ClipSize" then
 			return self:GetStat(clipSize)
 		else
 			return tableCopy[key]
@@ -442,9 +419,9 @@ function SWEP:PathStatsTable(statID)
 			ignore = true
 			local val = ignoreHack(key)
 			ignore = false
+
 			return val
 		end,
-		
 		__newindex = function(_, key, value)
 			tableCopy[key] = value
 		end
@@ -609,21 +586,18 @@ Notes:  This is blank.
 Purpose:  Standard SWEP Function
 ]]
 function SWEP:Think()
-	if self.Owner:IsNPC() then
-		if SERVER then
-			if self.Owner:GetClass() == "npc_combine_s" then
-				if self.Owner:GetActivity() == 16 then
-					self:PrimaryAttack()
-				end
-			else
-				if self.Owner:GetActivity() == 11 then
-					self:PrimaryAttack()
-				end
+	if self.Owner:IsNPC() and SERVER then
+		if self.Owner:GetClass() == "npc_combine_s" then
+			if self.Owner:GetActivity() == 16 then
+				self:PrimaryAttack()
+			end
+		else
+			if self.Owner:GetActivity() == 11 then
+				self:PrimaryAttack()
 			end
 		end
 	end
 end
-
 --[[
 Function Name:  Think2
 Syntax: self:Think2().  Called from PlayerThink.
@@ -671,9 +645,9 @@ function SWEP:Think2()
 		return
 	end
 
-	local CurTime = CurTime()
+	local CT = CurTime()
 
-	if self.LuaShellRequestTime > 0 and CurTime > self.LuaShellRequestTime then
+	if self.LuaShellRequestTime > 0 and CT > self.LuaShellRequestTime then
 		self.LuaShellRequestTime = -1
 		self:MakeShell()
 	end
@@ -736,7 +710,7 @@ function SWEP:Think2()
 				waittime = self:GetActivityLength( self:GetLastActivity(), false ) - self:GetActivityLength( self:GetLastActivity(), true )
 				if waittime > 0.01 then
 					finalstat = TFA.GetStatus("reloading_wait")
-					self:SetStatusEnd( CurTime + waittime )
+					self:SetStatusEnd( CT + waittime )
 				else
 					finalstat = self:LoadShell()
 				end
@@ -758,7 +732,7 @@ function SWEP:Think2()
 			end
 			if waittime > 0.01 then
 				finalstat = TFA.GetStatus("reloading_wait")
-				self:SetStatusEnd( CurTime + waittime )
+				self:SetStatusEnd( CT + waittime )
 			else
 				if self:Ammo1() <= 0 or self:Clip1() >= self:GetPrimaryClipSize() or self:GetShotgunCancel() then
 					finalstat = TFA.Enum.STATUS_RELOADING_SHOTGUN_END
@@ -774,7 +748,7 @@ function SWEP:Think2()
 			waittime = self:GetActivityLength( self:GetLastActivity(), false ) - self:GetActivityLength( self:GetLastActivity(), true )
 			if waittime > 0.01 then
 				finalstat = TFA.GetStatus("reloading_wait")
-				self:SetStatusEnd( CurTime + waittime )
+				self:SetStatusEnd( CT + waittime )
 			end
 			--self:SetStatusEnd( self:GetNextPrimaryFire() )
 		elseif stat == TFA.Enum.STATUS_SILENCER_TOGGLE then
@@ -816,7 +790,7 @@ function SWEP:Think2()
 				if succ == false then
 					self:SetNextIdleAnim(-1)
 				else
-					self:SetNextIdleAnim(math.max(self:GetNextIdleAnim(),CurTime + 0.1))
+					self:SetNextIdleAnim(math.max(self:GetNextIdleAnim(),CT + 0.1))
 				end
 			end
 		end
@@ -828,14 +802,14 @@ function SWEP:Think2()
 				self:PrimaryAttack()
 			else
 				self:SetBurstCount(0)
-				self:SetNextPrimaryFire( CurTime + self:GetBurstDelay() )
+				self:SetNextPrimaryFire( CT + self:GetBurstDelay() )
 			end
 		end
 	end
 
 	if stat == TFA.Enum.STATUS_IDLE and self:GetShotgunCancel() then
 		if self.PumpAction then
-			if CurTime > self:GetNextPrimaryFire() and not self:GetOwner():KeyDown(IN_ATTACK) then
+			if CT > self:GetNextPrimaryFire() and not self:GetOwner():KeyDown(IN_ATTACK) then
 				self:DoPump()
 			end
 		else
@@ -1108,13 +1082,11 @@ local legacy_reloads_cv = GetConVar("sv_tfa_reloads_legacy")
 local dryfire_cvar = GetConVar("sv_tfa_allow_dryfire")
 
 function SWEP:CanPrimaryAttack( )
-	if self.Owner:IsNPC() then
-		if SERVER then
-			if CurTime() < self:GetNextPrimaryFire() then
-				return false
-			end
-			return true
+	if self.Owner:IsNPC() and SERVER then
+		if CurTime() < self:GetNextPrimaryFire() then
+			return false
 		end
+		return true
 	end
 
 	stat = self:GetStatus()
@@ -1172,6 +1144,7 @@ function SWEP:CanPrimaryAttack( )
 
 	return true
 end
+local npc_ar2_damage_cv = GetConVar("sk_npc_dmg_ar2")
 
 function SWEP:PrimaryAttack()
 	if self.Owner:IsNPC() then
@@ -1179,25 +1152,29 @@ function SWEP:PrimaryAttack()
 			if SERVER then
 				self.Owner:SetSchedule(SCHED_RELOAD)
 			end
+
 			return
 		end
-		if SERVER then
-			if CurTime() < self:GetNextPrimaryFire() then
-				return false
-			end
-		end
+
+		if SERVER and CurTime() < self:GetNextPrimaryFire() then return false end
+
 		local times_to_fire = 2
+
 		if self.OnlyBurstFire then
 			times_to_fire = 3
 		end
+
 		if self.Primary.Automatic then
-			times_to_fire = math.random(5,8)
+			times_to_fire = math.random(5, 8)
 		end
-		self:SetNextPrimaryFire( CurTime() + (((self.Primary.RPM / 60) / 100)*times_to_fire) + math.random(0.2, 0.6))
-		timer.Create( "GunTimer", (self.Primary.RPM / 60) / 100, times_to_fire, function()
-			self.Weapon:EmitSound(self.Primary.Sound)
+
+		self:SetNextPrimaryFire(CurTime() + (((self.Primary.RPM / 60) / 100) * times_to_fire) + math.random(0.2, 0.6))
+
+		timer.Create("GunTimer" .. tostring(self:GetOwner():EntIndex()), (self.Primary.RPM / 60) / 100, times_to_fire, function()
+			if not IsValid(self) then return end
+			self:EmitSound(self.Primary.Sound)
 			self:TakePrimaryAmmo(1)
-			local damage_to_do = self.Primary.Damage * 0.16
+			local damage_to_do = self.Primary.Damage * npc_ar2_damage_cv:GetFloat() / 16
 			local bullet = {}
 			bullet.Num = self.Primary.NumShots
 			bullet.Src = self.Owner:GetShootPos()
@@ -1205,68 +1182,82 @@ function SWEP:PrimaryAttack()
 			bullet.Tracer = 1
 			bullet.Damage = damage_to_do
 			bullet.AmmoType = self.Primary.Ammo
-			self.Owner:FireBullets( bullet )
+			self.Owner:FireBullets(bullet)
 		end)
+
 		return
 	end
 
 	if not IsValid(self) then return end
 	if not self:VMIV() then return end
 	if not self:CanPrimaryAttack() then return end
-	if self.CanBeSilenced and self:GetOwner():KeyDown(IN_USE) and ( SERVER or not sp ) then
-		self:ChooseSilenceAnim( not self:GetSilenced() )
+
+	if self.CanBeSilenced and self:GetOwner():KeyDown(IN_USE) and (SERVER or not sp) then
+		self:ChooseSilenceAnim(not self:GetSilenced())
 		success, tanim = self:SetStatus(TFA.Enum.STATUS_SILENCER_TOGGLE)
-		self:SetStatusEnd( l_CT() + self:GetActivityLength( tanim ) )
+		self:SetStatusEnd(l_CT() + self:GetActivityLength(tanim))
+
 		return
 	end
-	self:SetNextPrimaryFire( CurTime() + self:GetFireDelay() )
+
+	self:SetNextPrimaryFire(CurTime() + self:GetFireDelay())
+
 	if self:GetMaxBurst() > 1 then
-		self:SetBurstCount( math.max(1,self:GetBurstCount() + 1) )
+		self:SetBurstCount(math.max(1, self:GetBurstCount() + 1))
 	end
+
 	if self.PumpAction and self:GetShotgunCancel() then return end
 	self:SetStatus(TFA.Enum.STATUS_SHOOTING)
 	self:SetStatusEnd(self:GetNextPrimaryFire())
 	self:ToggleAkimbo()
 	succ, tanim = self:ChooseShootAnim()
-	if ( not game.SinglePlayer() ) or ( not self:IsFirstPerson() ) then
+
+	if (not game.SinglePlayer()) or (not self:IsFirstPerson()) then
 		self:GetOwner():SetAnimation(PLAYER_ATTACK1)
 	end
-	if self:GetStat("Primary.Sound") and IsFirstTimePredicted()  and not ( sp and CLIENT ) then
+
+	if self:GetStat("Primary.Sound") and IsFirstTimePredicted() and not (sp and CLIENT) then
 		if self:GetStat("Primary.SilencedSound") and self:GetSilenced() then
-			self:EmitSound(self:GetStat("Primary.SilencedSound")	)
+			self:EmitSound(self:GetStat("Primary.SilencedSound"))
 		else
 			self:EmitSound(self:GetStat("Primary.Sound"))
 		end
 	end
-	self:TakePrimaryAmmo( self:GetStat("Primary.AmmoConsumption") )
+
+	self:TakePrimaryAmmo(self:GetStat("Primary.AmmoConsumption"))
+
 	if self:Clip1() == 0 and self:GetStat("Primary.ClipSize") > 0 then
-		self:SetNextPrimaryFire( math.max( self:GetNextPrimaryFire(), CurTime() + ( self.Primary.DryFireDelay or self:GetActivityLength(tanim, true) ) ) )
+		self:SetNextPrimaryFire(math.max(self:GetNextPrimaryFire(), CurTime() + (self.Primary.DryFireDelay or self:GetActivityLength(tanim, true))))
 	end
+
 	self:ShootBulletInformation()
 	local _, CurrentRecoil = self:CalculateConeRecoil()
-	self:Recoil(CurrentRecoil,IsFirstTimePredicted())
+	self:Recoil(CurrentRecoil, IsFirstTimePredicted())
+
 	if sp and SERVER then
-		self:CallOnClient("Recoil","")
+		self:CallOnClient("Recoil", "")
 	end
-	if self.MuzzleFlashEnabled and ( not self:IsFirstPerson() or not self.AutoDetectMuzzleAttachment ) then
+
+	if self.MuzzleFlashEnabled and (not self:IsFirstPerson() or not self.AutoDetectMuzzleAttachment) then
 		self:ShootEffectsCustom()
 	end
 
-	if self.EjectionSmoke and CLIENT and self:GetOwner()==LocalPlayer() and IsFirstTimePredicted() and not self.LuaShellEject then
+	if self.EjectionSmoke and CLIENT and self:GetOwner() == LocalPlayer() and IsFirstTimePredicted() and not self.LuaShellEject then
 		self:EjectionSmoke()
 	end
+
 	self:DoAmmoCheck()
+
 	if self:GetStatus() == TFA.GetStatus("shooting") and self:GetStat("PumpAction") then
 		if self:Clip1() == 0 and self:GetStat("PumpAction").value_empty then
 			--finalstat = TFA.GetStatus("pump_ready")
-			self:SetShotgunCancel( true )
-		elseif ( self:GetStat("Primary.ClipSize") < 0 or self:Clip1() > 0 ) and self:GetStat("PumpAction").value then
+			self:SetShotgunCancel(true)
+		elseif (self:GetStat("Primary.ClipSize") < 0 or self:Clip1() > 0) and self:GetStat("PumpAction").value then
 			--finalstat = TFA.GetStatus("pump_ready")
-			self:SetShotgunCancel( true )
+			self:SetShotgunCancel(true)
 		end
 	end
 end
-
 function SWEP:CanSecondaryAttack()
 end
 
@@ -1309,7 +1300,7 @@ function SWEP:Reload(released)
 				if self.ShotgunEmptyAnim  then
 					local _, tg = self:ChooseAnimation( "reload_empty" )
 					local action = tanim
-					if type(tg) == "string" and tonumber(tanim) and tonumber(tanim)>0 then
+					if type(tg) == "string" and tonumber(tanim) and tonumber(tanim) > 0 then
 						action = self.OwnerViewModel:GetSequenceName( self.OwnerViewModel:SelectWeightedSequenceSeeded( tanim, self:GetSeed() ) )
 					end
 					if action == tg and self.ShotgunEmptyAnim_Shell then
