@@ -19,7 +19,7 @@ local d, pbr
 ]]
 --
 --Override this after SWEP:Initialize, for example, in attachments
-SWEP.Animations_Base = {
+SWEP.BaseAnimations = {
 	["draw_first"] = {
 		["type"] = TFA.Enum.ANIMATION_ACT, --Sequence or act
 		["value"] = ACT_VM_DRAW_DEPLOYED,
@@ -128,6 +128,18 @@ SWEP.Animations_Base = {
 	["silencer_detach"] = {
 		["type"] = TFA.Enum.ANIMATION_ACT, --Sequence or act
 		["value"] = ACT_VM_DETACH_SILENCER
+	},
+	["silencer_detach"] = {
+		["type"] = TFA.Enum.ANIMATION_ACT, --Sequence or act
+		["value"] = ACT_VM_DETACH_SILENCER
+	},
+	["rof"] = {
+		["type"] = TFA.Enum.ANIMATION_ACT, --Sequence or act
+		["value"] = ACT_VM_FIREMODE
+	},
+	["rof_is"] = {
+		["type"] = TFA.Enum.ANIMATION_ACT, --Sequence or act
+		["value"] = ACT_VM_IFIREMODE
 	}
 }
 
@@ -136,22 +148,32 @@ SWEP.AnimationActivities = {}
 function SWEP:InitializeAnims()
 	setmetatable(self.Animations, {
 		__index = function(t, k)
-			return self.Animations_Base[k]
+			return self.BaseAnimations[k]
 		end
 	})
+end
+function SWEP:BuildAnimActivities()
+	for k, v in pairs(self.BaseAnimations) do
+		local kvt = self:GetStat("Animations." .. k)
+
+		if kvt.value then
+			self.AnimationActivities[kvt.value] = k
+		end
+	end
+	for k, v in pairs(self.Animations) do
+		local kvt = self:GetStat("Animations." .. k)
+
+		if kvt.value then
+			self.AnimationActivities[kvt.value] = k
+		end
+	end
 end
 function SWEP:GetActivityEnabled(act)
 	local stat = self:GetStat("SequenceEnabled." .. act)
 	if stat then return stat end
 
 	if #self.AnimationActivities <= 0 then
-		for k, v in pairs(self.Animations) do
-			local kvt = self:GetStat("Animations." .. k)
-
-			if kvt.value then
-				self.AnimationActivities[kvt.value] = k
-			end
-		end
+		self:BuildAnimActivities()
 	end
 
 	local keysel = self.AnimationActivities[act] or ""
@@ -430,7 +452,7 @@ Returns:
 Notes:  
 Purpose:  Animation / Utility
 ]]
-local __, tldata, tmpa
+local __, tldata
 
 function SWEP:Locomote(flipis, is, flipsp, spr)
 	if not (flipis or flipsp) then return end
@@ -511,12 +533,10 @@ Notes:  Requires autodetection or otherwise the list of valid anims.
 Purpose:  Animation / Utility
 ]]
 --
-local seed
 
 function SWEP:SelectInspectAnim(pri)
 	tanim = ACT_VM_FIDGET
 	success = true
-	seed = self:GetSeed()
 
 	if self:GetActivityEnabled(ACT_VM_FIDGET_SILENCED) and self:GetSilenced() then
 		tanim = ACT_VM_FIDGET_SILENCED
@@ -903,6 +923,38 @@ function SWEP:ChooseDryFireAnim()
 
 			return success, tanim
 		end
+	end
+
+	if typev ~= TFA.Enum.ANIMATION_SEQ then
+		return self:SendViewModelAnim(tanim)
+	else
+		return self:SendViewModelSeq(tanim)
+	end
+end
+
+--[[
+Function Name:  ChooseROFAnim
+Syntax: self:ChooseROFAnim().
+Returns:  Could we successfully find an animation?  Which action?
+Notes:  Requires autodetection or otherwise the list of valid anims.  Called when we change the firemode.
+Purpose:  Animation / Utility
+]]
+--
+function SWEP:ChooseROFAnim()
+	if not self:VMIV() then return end
+	--self:ResetEvents()
+	if self:GetIronSights() and self:GetActivityEnabled(ACT_VM_IFIREMODE) then
+		typev, tanim = self:ChooseAnimation("rof_is")
+		success = true
+	elseif self:GetActivityEnabled(ACT_VM_FIREMODE) then
+		typev, tanim = self:ChooseAnimation("rof")
+		success = true
+	else
+		success = false
+		local _
+		_, tanim = nil, nil
+
+		return success, tanim
 	end
 
 	if typev ~= TFA.Enum.ANIMATION_SEQ then

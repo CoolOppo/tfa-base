@@ -671,8 +671,13 @@ function SWEP:CycleFireMode()
 	end
 
 	self:SetFireMode(fm)
-	self:EmitSound("Weapon_AR2.Empty")
-	self:SetNextPrimaryFire(l_CT() + math.max(self:GetFireDelay(), 0.25))
+	local a = self:ChooseROFAnim()
+	if a then
+		self:SetNextPrimaryFire(l_CT() + self:GetActivityLength())
+	else
+		self:EmitSound("Weapon_AR2.Empty")
+		self:SetNextPrimaryFire(l_CT() + math.max(self:GetFireDelay(), 0.25))
+	end
 	self.BurstCount = 0
 	self:SetStatus(TFA.GetStatus("firemode"))
 	self:SetStatusEnd(self:GetNextPrimaryFire())

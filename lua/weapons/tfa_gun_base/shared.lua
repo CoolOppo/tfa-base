@@ -365,6 +365,7 @@ function SWEP:Initialize()
 	self.SwayScale = 0
 	self:SetSilenced( self.Silenced or self.DefaultSilenced )
 	self.Silenced = self.Silenced or self.DefaultSilenced
+	self:InitializeAnims()
 	self:PatchAmmoTypeAccessors()
 	self:FixRPM()
 	self:FixIdles()
@@ -385,7 +386,6 @@ function SWEP:Initialize()
 	self:PathStatsTable('Primary')
 	self:PathStatsTable('Secondary')
 	self:ClearStatCache()
-	self:InitializeAnims()
 
 	if not self.IronSightsMoveSpeed then
 		self.IronSightsMoveSpeed = self.MoveSpeed * 0.8
