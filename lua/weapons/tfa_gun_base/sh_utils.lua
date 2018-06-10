@@ -457,7 +457,10 @@ function SWEP:UpdateMuzzleAttachment()
 
 	local mzm = self:GetStat("MuzzleAttachmentMod", 0)
 
-	if mzm and mzm > 0 then
+	if mzm then
+	if isstring(mzm) then
+		self.MuzzleAttachmentRaw = vm:LookupAttachment(mzm)
+	elseif mzm > 0 then
 		self.MuzzleAttachmentRaw = mzm
 	end
 end
