@@ -140,22 +140,31 @@ function SWEP:GetStat( stat, default )
 	local stbl = self.StatStringCache[ stat ]
 
 	if self.StatCache2[ stat ] ~= nil then
+		local finalReturn
 		if self.StatCache[ stat ] ~= nil then
-			return self.StatCache[ stat ]
+			finalReturn = self.StatCache[ stat ]
 		else
 			retval = self:GetStatRecursive( self, stbl )
 
 			if retval ~= nil then
 				self.StatCache[ stat ] = retval
-				return retval
+				finalReturn = retval
 			else
-				return istable(default) and table.Copy(default) or default
+				finalReturn = istable(default) and table.Copy(default) or default
 			end
 		end
+		finalReturn = hook.Run("TFA_GetStat",self,stat,finalReturn) or finalReturn
+		return finalReturn
 	else
 		if not self:OwnerIsValid() then
-			if IsValid(self) then return self:GetStatRecursive( self, stbl, istable(default) and table.Copy(default) or default ) end
-			return default
+			if IsValid(self) then
+				local finalReturn = self:GetStatRecursive( self, stbl, istable(default) and table.Copy(default) or default )
+				hook.Run("TFA_GetStat",stat,finalReturn)
+				return finalReturn
+			end
+			local finalReturn = default
+			finalReturn = hook.Run("TFA_GetStat",self,stat,finalReturn) or finalReturn
+			return finalReturn
 		end
 		local cs = self:GetStatRecursive( self, stbl, istable(default) and table.Copy(default) or default )
 		local cs_og = cs
@@ -184,7 +193,9 @@ function SWEP:GetStat( stat, default )
 			end
 			self.StatCache2[stat] = true
 		end
-		return cs
+		local finalReturn = cs
+		finalReturn = hook.Run("TFA_GetStat",self,stat,finalReturn) or finalReturn
+		return finalReturn
 	end
 end
 

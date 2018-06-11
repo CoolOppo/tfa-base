@@ -316,6 +316,7 @@ function SWEP:SetupDataTables()
 	self:NetworkVar("Int", 2, "LastActivity")
 	self:NetworkVar("Int", 3, "BurstCount")
 	self:NetworkVar("Entity", 0, "SwapTarget")
+	hook.Run("TFA_SetupDataTables",self)
 end
 
 --[[
@@ -335,6 +336,7 @@ local PistolHoldTypes = {
 }
 
 function SWEP:Initialize()
+	hook.Run("TFA_PreInitialize",self)
 	self.DrawCrosshairDefault = self.DrawCrosshair
 	self.HasInitialized = true
 	if ( not self.BobScaleCustom ) or self.BobScaleCustom <= 0 then
@@ -392,6 +394,7 @@ function SWEP:Initialize()
 		self.Owner:SetKeyValue( "spawnflags", "256" )
 		return
 	end
+	hook.Run("TFA_Initialize",self)
 end
 
 function SWEP:PathStatsTable(statID)
@@ -426,6 +429,7 @@ function SWEP:PathStatsTable(statID)
 			tableCopy[key] = value
 		end
 	})
+	hook.Run("TFA_PathStatsTable",self)
 end
 
 function SWEP:Equip( ... )
@@ -442,7 +446,7 @@ Purpose:  Standard SWEP Function
 ]]
 
 function SWEP:Deploy()
-
+	hook.Run("TFA_PreDeploy",self)
 	if engine.ActiveGamemode() == "terrortown" and IsValid(self:GetOwner()) and IsValid(self:GetOwner():GetViewModel()) then
 		self.OwnerViewModel = self:GetOwner():GetViewModel()
 		self.OwnerViewModel:SetModel(self.ViewModel)
@@ -495,6 +499,10 @@ function SWEP:Deploy()
 	end
 
 	self:InitAttachments()
+	local v = hook.Run("TFA_Deploy",self)
+	if v ~= nil then
+		return v
+	end
 
 	return true
 end
@@ -507,6 +515,10 @@ Returns:  True/False to allow holster.  Useful for animations.
 Purpose:  Standard SWEP Function
 ]]
 function SWEP:Holster(target)
+	local v = hook.Run("TFA_PreHolster",self)
+	if v ~= nil then
+		return v
+	end
 	if self.Owner:IsNPC() then
 		return
 	end
@@ -543,8 +555,12 @@ function SWEP:Holster(target)
 end
 
 function SWEP:FinishHolster()
+	local v2 = hook.Run("TFA_Holster",self)
 	if self.Owner:IsNPC() then
 		return
+	end
+	if v2 ~= nil then
+		return v2
 	end
 	if SERVER then
 		ent = self:GetSwapTarget()
@@ -566,6 +582,7 @@ Returns:  Nil.
 Purpose:  Standard SWEP Function
 ]]
 function SWEP:OnRemove()
+	return hook.Run("TFA_OnRemove",self)
 end
 
 --[[
@@ -576,6 +593,7 @@ Returns:  Nil.
 Purpose:  Standard SWEP Function
 ]]
 function SWEP:OnDrop()
+	return hook.Run("TFA_OnDrop",self)
 end
 
 --[[
@@ -1067,7 +1085,7 @@ function SWEP:IronSightSounds()
 	end
 	is = self:GetIronSights()
 	if SERVER or ( CLIENT and IsFirstTimePredicted() ) then
-		if is ~= self.is_sndcache_old then
+		if is ~= self.is_sndcache_old and hook.Run("TFA_IronSightSounds",self) == nil then
 			if is then
 				self:EmitSound(self.IronInSound or "TFA.IronIn")
 			else
@@ -1082,6 +1100,10 @@ local legacy_reloads_cv = GetConVar("sv_tfa_reloads_legacy")
 local dryfire_cvar = GetConVar("sv_tfa_allow_dryfire")
 
 function SWEP:CanPrimaryAttack( )
+	local v = hook.Run("TFA_PreCanPrimaryAttack",self)
+	if v ~= nil then
+		return v
+	end
 	if self.Owner:IsNPC() and SERVER then
 		if CurTime() < self:GetNextPrimaryFire() then
 			return false
@@ -1141,6 +1163,10 @@ function SWEP:CanPrimaryAttack( )
 	self.HasPlayedEmptyClick = false
 
 	if CurTime() < self:GetNextPrimaryFire() then return false end
+	local v2 = hook.Run("TFA_CanPrimaryAttack",self)
+	if v2 ~= nil then
+		return v2
+	end
 
 	return true
 end
@@ -1193,6 +1219,7 @@ function SWEP:PrimaryAttack()
 	if not IsValid(self) then return end
 	if not self:VMIV() then return end
 	if not self:CanPrimaryAttack() then return end
+	if hook.Run("TFA_PrimaryAttack",self) then return end
 
 	if self.CanBeSilenced and self:GetOwner():KeyDown(IN_USE) and (SERVER or not sp) then
 		self:ChooseSilenceAnim(not self:GetSilenced())
@@ -1259,11 +1286,13 @@ function SWEP:PrimaryAttack()
 			self:SetShotgunCancel(true)
 		end
 	end
+	hook.Run("TFA_PostPrimaryAttack",self)
 end
 function SWEP:CanSecondaryAttack()
 end
 
 function SWEP:SecondaryAttack()
+	if hook.Run("TFA_SecondaryAttack",self) then return end
 	if self.Owner:IsNPC() then
 		return
 	end
@@ -1278,6 +1307,7 @@ function SWEP:GetLegacyReloads()
 end
 
 function SWEP:Reload(released)
+	if hook.Run("TFA_PreReload",self,released) then return end
 	if self.Owner:IsNPC() then
 		return
 	end
@@ -1297,6 +1327,7 @@ function SWEP:Reload(released)
 		end
 	elseif TFA.Enum.ReadyStatus[stat] or ( stat == TFA.Enum.STATUS_SHOOTING and self:CanInterruptShooting() ) then
 		if self:Clip1() < self:GetPrimaryClipSize() then
+			if hook.Run("TFA_Reload",self) then return end
 			if self.Shotgun then
 				success, tanim = self:ChooseShotgunReloadAnim()
 				if self.ShotgunEmptyAnim  then
@@ -1336,6 +1367,7 @@ function SWEP:Reload(released)
 			self:CheckAmmo()
 		end
 	end
+	hook.Run("TFA_PostReload",self)
 end
 
 function SWEP:Reload2(released)
@@ -1396,6 +1428,7 @@ function SWEP:Reload2(released)
 end
 
 function SWEP:DoPump()
+	if hook.Run("TFA_Pump",self) then return end
 	if self.Owner:IsNPC() then
 		return
 	end
@@ -1407,6 +1440,7 @@ function SWEP:DoPump()
 end
 
 function SWEP:LoadShell( )
+	if hook.Run("TFA_LoadShell",self) then return end
 	if self.Owner:IsNPC() then
 		return
 	end
@@ -1422,6 +1456,7 @@ function SWEP:LoadShell( )
 end
 
 function SWEP:CompleteReload()
+	if hook.Run("TFA_CompleteReload",self) then return end
 	if self.Owner:IsNPC() then
 		return
 	end
@@ -1434,6 +1469,7 @@ end
 
 
 function SWEP:CheckAmmo()
+	if hook.Run("TFA_CheckAmmo",self) then return end
 	if self.Owner:IsNPC() then
 		return
 	end
@@ -1522,10 +1558,12 @@ function SWEP:TranslateFOV(fov)
 	if self.Owner:IsNPC() then
 		return
 	end
+	if hook.Run("TFA_PreTranslateFOV",self,fov) then return end
 	self:CorrectScopeFOV()
 	nfov = l_Lerp(self.IronSightsProgress, fov, fov * math.min( self:GetStat("Secondary.IronFOV") / 90,1))
-
-	return l_Lerp(self.SprintProgress, nfov, nfov + self.SprintFOVOffset)
+	local ret = l_Lerp(self.SprintProgress, nfov, nfov + self.SprintFOVOffset)
+	ret = hook.Run("TFA_TranslateFOV",self,ret) or ret
+	return ret
 end
 
 function SWEP:GetPrimaryAmmoType()
