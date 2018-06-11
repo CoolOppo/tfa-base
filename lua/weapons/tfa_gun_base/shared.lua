@@ -1172,6 +1172,8 @@ function SWEP:PrimaryAttack()
 
 		timer.Create("GunTimer" .. tostring(self:GetOwner():EntIndex()), (self.Primary.RPM / 60) / 100, times_to_fire, function()
 			if not IsValid(self) then return end
+			if not IsValid(self.Owner) then return end
+			if not self:GetOwner().GetShootPos then return end
 			self:EmitSound(self.Primary.Sound)
 			self:TakePrimaryAmmo(1)
 			local damage_to_do = self.Primary.Damage * npc_ar2_damage_cv:GetFloat() / 16
