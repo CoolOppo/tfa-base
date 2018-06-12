@@ -176,7 +176,7 @@ function SWEP:Think2()
 			if not ( game.SinglePlayer() and CLIENT ) then
 				self:EmitSound((slashtrace.MatType == MAT_FLESH or slashtrace.MatType == MAT_ALIENFLESH) and self:GetStat("Secondary.BashHitSound_Flesh") or self:GetStat("Secondary.BashHitSound"))
 			end
-			
+
 			if game.GetTimeScale() > 0.99 then
 				self:GetOwner():FireBullets({
 					Attacker = self:GetOwner(),

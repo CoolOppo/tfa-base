@@ -10,7 +10,7 @@ if SERVER then
 	util.AddNetworkString("tfaTracerSP")
 	util.AddNetworkString("tfaBaseShellSV")
 	--util.AddNetworkString("tfaAltAttack")
-	
+
 	--Enable CKey Inspection
 
 	net.Receive("tfaRequestFidget",function(length,client)

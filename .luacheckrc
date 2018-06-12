@@ -8,8 +8,12 @@ ignore = {
 stds.addon = {}
 stds.addon.globals = {
 	"TFA",
-
-	"ATTACHMENT"
+	"ACT_VM_BLOWBACK",
+	"ATTACHMENT",--gmod stuff that we're addin in from hereon out
+	"BaseClass",
+	"LANG",
+	"WEPS",
+	
 }
 
 stds.addon.read_globals = {

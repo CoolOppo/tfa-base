@@ -15,55 +15,55 @@ if CLIENT then
    -- Many non-gun weapons benefit from some help
    local help_spec = {text = "", font = "TabLarge", xalign = TEXT_ALIGN_CENTER}
    function SWEP:DrawHelp()
-      local data = self.HUDHelp
+	  local data = self.HUDHelp
 
-      local translate = data.translatable
-      local primary   = data.primary
-      local secondary = data.secondary
+	  local translate = data.translatable
+	  local primary   = data.primary
+	  local secondary = data.secondary
 
-      if translate then
-         primary   = primary   and GetPTranslation(primary,   data.translate_params)
-         secondary = secondary and GetPTranslation(secondary, data.translate_params)
-      end
+	  if translate then
+		 primary   = primary   and GetPTranslation(primary,   data.translate_params)
+		 secondary = secondary and GetPTranslation(secondary, data.translate_params)
+	  end
 
-      help_spec.pos  = {ScrW() / 2.0, ScrH() - 40}
-      help_spec.text = secondary or primary
-      draw.TextShadow(help_spec, 2)
+	  help_spec.pos  = {ScrW() / 2.0, ScrH() - 40}
+	  help_spec.text = secondary or primary
+	  draw.TextShadow(help_spec, 2)
 
-      -- if no secondary exists, primary is drawn at the bottom and no top line
-      -- is drawn
-      if secondary then
-         help_spec.pos[2] = ScrH() - 60
-         help_spec.text = primary
-         draw.TextShadow(help_spec, 2)
-      end
+	  -- if no secondary exists, primary is drawn at the bottom and no top line
+	  -- is drawn
+	  if secondary then
+		 help_spec.pos[2] = ScrH() - 60
+		 help_spec.text = primary
+		 draw.TextShadow(help_spec, 2)
+	  end
    end
 
    local function SafeKey(binding, default)
-      local b = input.LookupBinding(binding)
-      if not b then return default end
+	  local b = input.LookupBinding(binding)
+	  if not b then return default end
 
-      return string.upper(b)
+	  return string.upper(b)
    end
 
    local Key = Key or SafeKey
 
    -- mousebuttons are enough for most weapons
    local default_key_params = {
-      primaryfire   = Key("+attack",  "LEFT MOUSE"),
-      secondaryfire = Key("+attack2", "RIGHT MOUSE"),
-      usekey        = Key("+use",     "USE")
+	  primaryfire   = Key("+attack",  "LEFT MOUSE"),
+	  secondaryfire = Key("+attack2", "RIGHT MOUSE"),
+	  usekey		= Key("+use",	 "USE")
    };
 
    function SWEP:AddHUDHelp(primary_text, secondary_text, translate, extra_params)
-      extra_params = extra_params or {}
+	  extra_params = extra_params or {}
 
-      self.HUDHelp = {
-         primary = primary_text,
-         secondary = secondary_text,
-         translatable = translate,
-         translate_params = table.Merge(extra_params, default_key_params)
-      };
+	  self.HUDHelp = {
+		 primary = primary_text,
+		 secondary = secondary_text,
+		 translatable = translate,
+		 translate_params = table.Merge(extra_params, default_key_params)
+	  };
    end
 end
 
@@ -73,14 +73,14 @@ end
 
 function SWEP:IsEquipment()
    if WEPS and WEPS.IsEquipment then
-      local val = WEPS.IsEquipment(self)
-      if val ~= nil then
-         return val
-      else
-         return false
-      end
+	  local val = WEPS.IsEquipment(self)
+	  if val ~= nil then
+		 return val
+	  else
+		 return false
+	  end
    else
-      return false
+	  return false
    end
 end
 
@@ -90,20 +90,20 @@ function SWEP:PreDrop()
    if not IsValid(self) then return end
    if not self.Ammo1 then return end
    if SERVER and IsValid(self:GetOwner()) and self.Primary.Ammo ~= "none" then
-      local ammo = self:Ammo1()
+	  local ammo = self:Ammo1()
 
-      -- Do not drop ammo if we have another gun that uses this type
-      for _, w in pairs(self:GetOwner():GetWeapons()) do
-         if IsValid(w) and w ~= self and w:GetPrimaryAmmoType() == self:GetPrimaryAmmoType() then
-            ammo = 0
-         end
-      end
+	  -- Do not drop ammo if we have another gun that uses this type
+	  for _, w in pairs(self:GetOwner():GetWeapons()) do
+		 if IsValid(w) and w ~= self and w:GetPrimaryAmmoType() == self:GetPrimaryAmmoType() then
+			ammo = 0
+		 end
+	  end
 
-      self.StoredAmmo = ammo
+	  self.StoredAmmo = ammo
 
-      if ammo > 0 then
-         self:GetOwner():RemoveAmmo(ammo, self.Primary.Ammo)
-      end
+	  if ammo > 0 then
+		 self:GetOwner():RemoveAmmo(ammo, self.Primary.Ammo)
+	  end
    end
 end
 
@@ -115,8 +115,8 @@ function SWEP:DampenDrop()
    -- this when dropping guns on death.
    local phys = self:GetPhysicsObject()
    if IsValid(phys) then
-      phys:SetVelocityInstantaneous(Vector(0,0,-75) + phys:GetVelocity() * 0.001)
-      phys:AddAngleVelocity(phys:GetAngleVelocity() * -0.99)
+	  phys:SetVelocityInstantaneous(Vector(0,0,-75) + phys:GetVelocity() * 0.001)
+	  phys:AddAngleVelocity(phys:GetAngleVelocity() * -0.99)
    end
 end
 
@@ -128,33 +128,33 @@ local SF_WEAPON_START_CONSTRAINED = 1
 function SWEP:EquipTTT(newowner)
    if engine.ActiveGamemode() ~= "terrortown" then return end
    if SERVER then
-      if self:IsOnFire() then
-         self:Extinguish()
-      end
+	  if self:IsOnFire() then
+		 self:Extinguish()
+	  end
 
-      self.fingerprints = self.fingerprints or {}
+	  self.fingerprints = self.fingerprints or {}
 
-      if not table.HasValue(self.fingerprints, newowner) then
-         table.insert(self.fingerprints, newowner)
-      end
+	  if not table.HasValue(self.fingerprints, newowner) then
+		 table.insert(self.fingerprints, newowner)
+	  end
 
-      if self:HasSpawnFlags(SF_WEAPON_START_CONSTRAINED) then
-         -- If this weapon started constrained, unset that spawnflag, or the
-         -- weapon will be re-constrained and float
-         local flags = self:GetSpawnFlags()
-         local newflags = bit.band(flags, bit.bnot(SF_WEAPON_START_CONSTRAINED))
-         self:SetKeyValue("spawnflags", newflags)
-      end
+	  if self:HasSpawnFlags(SF_WEAPON_START_CONSTRAINED) then
+		 -- If this weapon started constrained, unset that spawnflag, or the
+		 -- weapon will be re-constrained and float
+		 local flags = self:GetSpawnFlags()
+		 local newflags = bit.band(flags, bit.bnot(SF_WEAPON_START_CONSTRAINED))
+		 self:SetKeyValue("spawnflags", newflags)
+	  end
    end
 
    if not self.Ammo1 then return end
    if SERVER and IsValid(newowner) and self.StoredAmmo > 0 and self.Primary.Ammo ~= "none" then
-      local ammo = newowner:GetAmmoCount(self.Primary.Ammo)
-      self.Primary.ClipMax = self.Primary.ClipMax or ( math.abs( self.Primary.ClipSize ) * 4 )
-      local given = math.min(self.StoredAmmo, self.Primary.ClipMax - ammo)
+	  local ammo = newowner:GetAmmoCount(self.Primary.Ammo)
+	  self.Primary.ClipMax = self.Primary.ClipMax or ( math.abs( self.Primary.ClipSize ) * 4 )
+	  local given = math.min(self.StoredAmmo, self.Primary.ClipMax - ammo)
 
-      newowner:GiveAmmo( given, self.Primary.Ammo)
-      self.StoredAmmo = 0
+	  newowner:GiveAmmo( given, self.Primary.Ammo)
+	  self.StoredAmmo = 0
    end
 end
 
@@ -166,30 +166,30 @@ end
 function SWEP:DyingShot()
    local fired = false
   -- if self.IronSightsProgress and self.IronSightsProgress > 0.01  then
-      self:SetIronSightsRaw(false)
+	  self:SetIronSightsRaw(false)
 
-      if self:GetNextPrimaryFire() > CurTime() then
-         return fired
-      end
+	  if self:GetNextPrimaryFire() > CurTime() then
+		 return fired
+	  end
 
-      -- Owner should still be alive here
-      if IsValid(self:GetOwner()) then
-         local punch = self.Primary.Recoil or 5
+	  -- Owner should still be alive here
+	  if IsValid(self:GetOwner()) then
+		 local punch = self.Primary.Recoil or 5
 
-         -- Punch view to disorient aim before firing dying shot
-         local eyeang = self:GetOwner():EyeAngles()
-         eyeang.pitch = eyeang.pitch - math.Rand(-punch, punch)
-         eyeang.yaw = eyeang.yaw - math.Rand(-punch, punch)
-         self:GetOwner():SetEyeAngles( eyeang )
+		 -- Punch view to disorient aim before firing dying shot
+		 local eyeang = self:GetOwner():EyeAngles()
+		 eyeang.pitch = eyeang.pitch - math.Rand(-punch, punch)
+		 eyeang.yaw = eyeang.yaw - math.Rand(-punch, punch)
+		 self:GetOwner():SetEyeAngles( eyeang )
 
-         MsgN(self:GetOwner():Nick() .. " fired his DYING SHOT")
+		 MsgN(self:GetOwner():Nick() .. " fired his DYING SHOT")
 
-         self:GetOwner().dying_wep = self
+		 self:GetOwner().dying_wep = self
 
-         self:PrimaryAttack()
+		 self:PrimaryAttack()
 
-         fired = true
-      end
+		 fired = true
+	  end
   -- end
 
    return fired

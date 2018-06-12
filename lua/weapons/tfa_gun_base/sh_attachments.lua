@@ -336,7 +336,7 @@ function SWEP:GenerateVGUIAttachmentTable()
 
 	local max_row_atts = math.floor( ScrW() * ATT_MAX_SCREEN_RATIO  / ATT_DIMENSION )
 	local i = 1
-	
+
 	while true do
 		local v = self.VGUIAttachments[i]
 		if not v then break end

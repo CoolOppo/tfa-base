@@ -413,7 +413,7 @@ end
 Function Name:  IsSafety
 Syntax: self:IsSafety( ).
 Returns:   Are we in safety firemode.
-Notes:    Non.
+Notes:	Non.
 Purpose:  Utility
 ]]
 --
@@ -482,7 +482,7 @@ end
 Function Name:  IsCurrentlyScoped
 Syntax: self:IsCurrentlyScoped( ).
 Returns:   Is the player scoped in enough to display the overlay?  true/false, returns a boolean.
-Notes:    Change SWEP.ScopeOverlayThreshold to change when the overlay is displayed.
+Notes:	Change SWEP.ScopeOverlayThreshold to change when the overlay is displayed.
 Purpose:  Utility
 ]]
 --
@@ -511,7 +511,7 @@ end
 Function Name:  IsFirstPerson
 Syntax: self:IsFirstPerson( ).
 Returns:   Is the owner in first person.
-Notes:    Broken in singplayer because gary.
+Notes:	Broken in singplayer because gary.
 Purpose:  Utility
 ]]
 --
@@ -537,7 +537,7 @@ end
 Function Name:  GetMuzzlePos
 Syntax: self:GetMuzzlePos( hacky workaround that doesn't work anyways ).
 Returns:   The AngPos for the muzzle attachment.
-Notes:    Defaults to the first attachment, and uses GetFPMuzzleAttachment
+Notes:	Defaults to the first attachment, and uses GetFPMuzzleAttachment
 Purpose:  Utility
 ]]
 --

@@ -1,5 +1,5 @@
 include("shared.lua")
 
 function ENT:Draw()
-    self:DrawModel() -- Draw the model.
+	self:DrawModel() -- Draw the model.
 end

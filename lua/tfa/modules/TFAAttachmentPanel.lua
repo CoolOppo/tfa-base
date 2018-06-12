@@ -181,7 +181,7 @@ function PANEL:Think()
 		end
 	end
 
-	if header and header ~= '' or self.ToolTip.LastTouched < RealTime() then
+	if header and header ~= "" or self.ToolTip.LastTouched < RealTime() then
 		if texttable and #texttable == 0 and self.ToolTip.LastFrameAffectedImportant > RealTime() then
 			return
 		end

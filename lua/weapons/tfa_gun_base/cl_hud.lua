@@ -94,7 +94,7 @@ end
 Function Name:  DoInspectionDerma
 Syntax: self:DoInspectionDerma( ).
 Returns:  Nothing.
-Notes:    Used to manage our Derma.
+Notes:	Used to manage our Derma.
 Purpose:  Used to manage our Derma.
 ]]--
 
@@ -602,7 +602,7 @@ function SWEP:GenerateInspectionDerma()
 						lastTooltipPanel = nil
 					end
 				end
-				
+
 				prevCat = v.cat or k
 
 				local testpanel = TFA_INSPECTIONPANEL:Add("TFAAttachmentPanel")
@@ -614,7 +614,7 @@ function SWEP:GenerateInspectionDerma()
 				testpanel:SetAttachment(k)
 				testpanel:SetCategory(v.cat or k)
 				testpanel:Initialize()
-				
+
 				lastTooltipPanel = lastTooltipPanel or testpanel:InitializeTooltip()
 				testpanel:SetupTooltip(lastTooltipPanel)
 
@@ -673,7 +673,7 @@ local cgapscale_cvar = GetConVar("cl_tfa_hud_crosshair_gap_scale")
 Function Name:  DrawHUD
 Syntax: self:DrawHUD( ).
 Returns:  Nothing.
-Notes:    Used to draw the HUD.  Can you read?
+Notes:	Used to draw the HUD.  Can you read?
 Purpose:  HUD
 ]]--
 function SWEP:DrawHUD()

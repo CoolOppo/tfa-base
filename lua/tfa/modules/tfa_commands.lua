@@ -529,5 +529,5 @@ if CLIENT then
 	if GetConVar("cl_tfa_laser_color_b") == nil then
 		CreateClientConVar("cl_tfa_laser_color_b", 0, true, true)
 	end
-	
+
 end

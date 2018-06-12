@@ -10,7 +10,7 @@ Syntax: Don't ever call this manually.
 Returns:  Nothing.
 Notes:  Used to calculate view angles.
 Purpose:  Feature
-]]--'
+]]--"
 
 local ta = Angle()
 local v = Vector()

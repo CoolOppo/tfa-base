@@ -39,7 +39,7 @@ end
 Function Name:  ShootBulletInformation
 Syntax: self:ShootBulletInformation( ).
 Returns:   Nothing.
-Notes:    Used to generate a self.MainBullet table which is then sent to self:ShootBullet, and also to call shooteffects.
+Notes:	Used to generate a self.MainBullet table which is then sent to self:ShootBullet, and also to call shooteffects.
 Purpose:  Bullet
 ]]
 --
@@ -68,7 +68,7 @@ end
 Function Name:  ShootBullet
 Syntax: self:ShootBullet(damage, recoil, number of bullets, spray cone, disable ricochet, override the generated self.MainBullet table with this value if you send it).
 Returns:   Nothing.
-Notes:    Used to shoot a self.MainBullet.
+Notes:	Used to shoot a self.MainBullet.
 Purpose:  Bullet
 ]]
 --
@@ -216,7 +216,7 @@ end
 Function Name:  GetAmmoRicochetMultiplier
 Syntax: self:GetAmmoRicochetMultiplier( ).
 Returns:  The ricochet multiplier for our ammotype.  More is more chance to ricochet.
-Notes:    Only compatible with default ammo types, unless you/I mod that.  BMG ammotype is detected based on name and category.
+Notes:	Only compatible with default ammo types, unless you/I mod that.  BMG ammotype is detected based on name and category.
 Purpose:  Utility
 ]]
 --
@@ -248,7 +248,7 @@ end
 Function Name:  GetMaterialConcise
 Syntax: self:GetMaterialConcise( ).
 Returns:  The string material name.
-Notes:    Always lowercase.
+Notes:	Always lowercase.
 Purpose:  Utility
 ]]
 --
@@ -289,7 +289,7 @@ end
 Function Name:  GetMaterialConcise
 Syntax: self:GetMaterialConcise( ).
 Returns:  The string material name.
-Notes:    Always lowercase.
+Notes:	Always lowercase.
 Purpose:  Utility
 ]]
 --
@@ -327,7 +327,7 @@ end
 Function Name:  GetPenetrationMultiplier
 Syntax: self:GetPenetrationMultiplier( concise material name).
 Returns:  The multilier for how much you can penetrate through a material.
-Notes:    Should be used with GetMaterialConcise.
+Notes:	Should be used with GetMaterialConcise.
 Purpose:  Utility
 ]]
 --

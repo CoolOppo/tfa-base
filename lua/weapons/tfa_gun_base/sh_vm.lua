@@ -263,7 +263,7 @@ function SWEP:Sway(pos, ang, doCalc)
 	pos:Add( -motion.p * positionCompensation * fac * ang:Up() ) --compensate position for pitch
 
 	ang:RotateAroundAxis(ang:Right(),   motion.p * fac)
-	ang:RotateAroundAxis(ang:Up(),      -motion.y * 0.66 * fac * flipFactor)
+	ang:RotateAroundAxis(ang:Up(),	  -motion.y * 0.66 * fac * flipFactor)
 	ang:RotateAroundAxis(ang:Forward(), counterMotion.r * 0.5 * fac * flipFactor)
 
 	intensityWalk =  math.min( self:GetOwner():GetVelocity():Length2D() / self:GetOwner():GetWalkSpeed(), 1 )

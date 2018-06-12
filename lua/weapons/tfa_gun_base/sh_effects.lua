@@ -91,7 +91,7 @@ end
 Function Name:  CleanParticles
 Syntax: self:CleanParticles().
 Returns:  Nothing.
-Notes:    Cleans up particles.
+Notes:	Cleans up particles.
 Purpose:  FX
 ]]
 --
@@ -124,7 +124,7 @@ end
 Function Name:  EjectionSmoke
 Syntax: self:EjectionSmoke().
 Returns:  Nothing.
-Notes:    Puff of smoke on shell attachment.
+Notes:	Puff of smoke on shell attachment.
 Purpose:  FX
 ]]
 --
@@ -168,7 +168,7 @@ end
 Function Name:  ShootEffectsCustom
 Syntax: self:ShootEffectsCustom().
 Returns:  Nothing.
-Notes:    Calls the proper muzzleflash, muzzle smoke, muzzle light code.
+Notes:	Calls the proper muzzleflash, muzzle smoke, muzzle light code.
 Purpose:  FX
 ]]
 --
@@ -244,7 +244,7 @@ end
 Function Name:  CanDustEffect
 Syntax: self:CanDustEffect( concise material name ).
 Returns:  True/False
-Notes:    Used for the impact effect.  Should be used with GetMaterialConcise.
+Notes:	Used for the impact effect.  Should be used with GetMaterialConcise.
 Purpose:  Utility
 ]]
 --
@@ -259,7 +259,7 @@ end
 Function Name:  CanSparkEffect
 Syntax: self:CanSparkEffect( concise material name ).
 Returns:  True/False
-Notes:    Used for the impact effect.  Should be used with GetMaterialConcise.
+Notes:	Used for the impact effect.  Should be used with GetMaterialConcise.
 Purpose:  Utility
 ]]
 --

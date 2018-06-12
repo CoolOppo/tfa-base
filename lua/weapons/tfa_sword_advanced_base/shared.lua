@@ -20,7 +20,7 @@ SWEP.DrawCrosshair = false -- set false if you want no crosshair
 SWEP.Weight = 50 -- rank relative ot other weapons. bigger is better
 SWEP.AutoSwitchTo = true -- Auto switch to if we pick it up
 SWEP.AutoSwitchFrom = true -- Auto switch from if you pick up a better weapon
-SWEP.Secondary.IronFOV = 90 -- How much you 'zoom' in. Less is more!  Don't have this be <= 0
+SWEP.Secondary.IronFOV = 90 -- How much you "zoom" in. Less is more!  Don't have this be <= 0
 SWEP.WeaponLength = 8 --16 = 1 foot
 SWEP.MoveSpeed = 0.9 --Multiply the player's movespeed by this.
 SWEP.IronSightsMoveSpeed = 0.8 --Multiply the player's movespeed by this when sighting.

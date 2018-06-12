@@ -7,7 +7,7 @@ end
 local PANEL = {}
 DEFINE_BASECLASS("Panel")
 local JS_CallbackHack = [[(function(){
-	var funcname = '%s';
+	var funcname = "%s";
 	window[funcname] = function(){
 		_gm[funcname].apply(_gm,arguments);
 	}
@@ -24,7 +24,7 @@ function PANEL:Init()
 	self.MouseActions = {}
 	self.URL = "about:blank"
 	--
-	-- Implement a console - because awesomium doesn"t provide it for us anymore
+	-- Implement a console - because awesomium doesn't provide it for us anymore
 	--
 	local console_funcs = {"log", "error", "debug", "warn", "info"}
 
@@ -176,7 +176,7 @@ end
 -----------------------------------------------------------]]
 function PANEL:QueueJavascript(js)
 	--
-	-- Can skip using the queue if there"s nothing else in it
+	-- Can skip using the queue if there's nothing else in it
 	--
 	if not (self.JS or self:IsLoading()) then return self:RunJavascript(js) end
 	self.JS = self.JS or {}
@@ -286,7 +286,7 @@ function PANEL:AddFunction(obj, funcname, func)
 		obj = "window"
 	end
 
-	-- Create the `object` if it doesn"t exist
+	-- Create the `object` if it doesn't exist
 	if not self.Callbacks[obj] then
 		self:NewObject(obj)
 		self.Callbacks[obj] = {}

@@ -15,51 +15,51 @@ local l_CT = CurTime
 
 --[[{
 {
-['act'] = ACT_VM_HITLEFT, -- Animation; ACT_VM_THINGY, ideally something unique per-sequence
-['src'] = Vector(20,10,0), -- Trace source; X ( +right, -left ), Y ( +forward, -back ), Z ( +up, -down )
-['dir'] = Vector(-40,30,0), -- Trace direction/length; X ( +right, -left ), Y ( +forward, -back ), Z ( +up, -down )
-['dmg'] = 60, --Damage
-['dmgtype'] = DMG_SLASH, --DMG_SLASH,DMG_CRUSH, etc.
-['delay'] = 0.2, --Delay
-['spr'] = true, --Allow attack while sprinting?
-['snd'] = "Swing.Sound", -- Sound ID
+["act"] = ACT_VM_HITLEFT, -- Animation; ACT_VM_THINGY, ideally something unique per-sequence
+["src"] = Vector(20,10,0), -- Trace source; X ( +right, -left ), Y ( +forward, -back ), Z ( +up, -down )
+["dir"] = Vector(-40,30,0), -- Trace direction/length; X ( +right, -left ), Y ( +forward, -back ), Z ( +up, -down )
+["dmg"] = 60, --Damage
+["dmgtype"] = DMG_SLASH, --DMG_SLASH,DMG_CRUSH, etc.
+["delay"] = 0.2, --Delay
+["spr"] = true, --Allow attack while sprinting?
+["snd"] = "Swing.Sound", -- Sound ID
 ["viewpunch"] = Angle(1,-10,0), --viewpunch angle
-['end'] = 1, --time before next attack
-['hull'] = 10, --Hullsize
-['direction'] = "L", --Swing direction
+["end"] = 1, --time before next attack
+["hull"] = 10, --Hullsize
+["direction"] = "L", --Swing direction
 ["combotime"] = 0.2 --If you hold attack down, attack this much earlier
 },
 {
-['act'] = ACT_VM_HITRIGHT, -- Animation; ACT_VM_THINGY, ideally something unique per-sequence
-['src'] = Vector(-10,10,0), -- Trace source; X ( +right, -left ), Y ( +forward, -back ), Z ( +up, -down )
-['dir'] = Vector(40,30,0), -- Trace direction/length; X ( +right, -left ), Y ( +forward, -back ), Z ( +up, -down )
-['dmg'] = 60, --Damage
-['dmgtype'] = DMG_SLASH, --DMG_SLASH,DMG_CRUSH, etc.
-['delay'] = 0.2, --Delay
-['spr'] = true, --Allow attack while sprinting?
-['snd'] = "Swing.Sound", -- Sound ID
+["act"] = ACT_VM_HITRIGHT, -- Animation; ACT_VM_THINGY, ideally something unique per-sequence
+["src"] = Vector(-10,10,0), -- Trace source; X ( +right, -left ), Y ( +forward, -back ), Z ( +up, -down )
+["dir"] = Vector(40,30,0), -- Trace direction/length; X ( +right, -left ), Y ( +forward, -back ), Z ( +up, -down )
+["dmg"] = 60, --Damage
+["dmgtype"] = DMG_SLASH, --DMG_SLASH,DMG_CRUSH, etc.
+["delay"] = 0.2, --Delay
+["spr"] = true, --Allow attack while sprinting?
+["snd"] = "Swing.Sound", -- Sound ID
 ["viewpunch"] = Angle(1,10,0), --viewpunch angle
-['end'] = 1, --time before next attack
-['hull'] = 10, --Hullsize
-['direction'] = "R", --Swing direction
+["end"] = 1, --time before next attack
+["hull"] = 10, --Hullsize
+["direction"] = "R", --Swing direction
 ["combotime"] = 0.2 --If you hold attack down, attack this much earlier
 }
 }
 
 SWEP.Secondary.Attacks = {
 {
-['act'] = ACT_VM_MISSCENTER, -- Animation; ACT_VM_THINGY, ideally something unique per-sequence
-['src'] = Vector(0,5,0), -- Trace source; X ( +right, -left ), Y ( +forward, -back ), Z ( +up, -down )
-['dir'] = Vector(0,50,0), -- Trace direction/length; X ( +right, -left ), Y ( +forward, -back ), Z ( +up, -down )
-['dmg'] = 60, --Damage
-['dmgtype'] = DMG_SLASH, --DMG_SLASH,DMG_CRUSH, etc.
-['delay'] = 0.2, --Delay
-['spr'] = true, --Allow attack while sprinting?
-['snd'] = "Swing.Sound", -- Sound ID
+["act"] = ACT_VM_MISSCENTER, -- Animation; ACT_VM_THINGY, ideally something unique per-sequence
+["src"] = Vector(0,5,0), -- Trace source; X ( +right, -left ), Y ( +forward, -back ), Z ( +up, -down )
+["dir"] = Vector(0,50,0), -- Trace direction/length; X ( +right, -left ), Y ( +forward, -back ), Z ( +up, -down )
+["dmg"] = 60, --Damage
+["dmgtype"] = DMG_SLASH, --DMG_SLASH,DMG_CRUSH, etc.
+["delay"] = 0.2, --Delay
+["spr"] = true, --Allow attack while sprinting?
+["snd"] = "Swing.Sound", -- Sound ID
 ["viewpunch"] = Angle(5,0,0), --viewpunch angle
-['end'] = 1, --time before next attack
-['callback'] = function(tbl,wep,tr) end,
-['kickback'] = nil--Recoil if u hit something with this activity
+["end"] = 1, --time before next attack
+["callback"] = function(tbl,wep,tr) end,
+["kickback"] = nil--Recoil if u hit something with this activity
 }
 }
 ]]--

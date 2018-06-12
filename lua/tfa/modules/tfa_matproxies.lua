@@ -70,7 +70,7 @@ matproxy.Add( {
 		else
 			owner = GetViewEntity()
 		end
-		
+
 		if ( !IsValid( owner ) or !owner:IsPlayer() ) then return end
 
 		local c
@@ -115,7 +115,7 @@ matproxy.Add( {
 		else
 			owner = GetViewEntity()
 		end
-		
+
 		if ( !IsValid( owner ) or !owner:IsPlayer() ) then return end
 
 		local c

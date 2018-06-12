@@ -154,7 +154,7 @@ SWEP.RunSightsAng = Vector(0, 0, 0) --Change this, using SWEP Creation Kit prefe
 --[[IRONSIGHTS]]--
 SWEP.data = {}
 SWEP.data.ironsights = 1 --Enable Ironsights
-SWEP.Secondary.IronFOV = 70 -- How much you 'zoom' in. Less is more!  Don't have this be <= 0.  A good value for ironsights is like 70.
+SWEP.Secondary.IronFOV = 70 -- How much you "zoom" in. Less is more!  Don't have this be <= 0.  A good value for ironsights is like 70.
 SWEP.IronSightsPos = Vector(0, 0, 0) --Change this, using SWEP Creation Kit preferably
 SWEP.IronSightsAng = Vector(0, 0, 0) --Change this, using SWEP Creation Kit preferably
 --[[INSPECTION]]--

@@ -2,7 +2,7 @@
 Function Name:  FireAnimationEvent
 Syntax: self:FireAnimationEvent( position, angle, event id, options).
 Returns:  Nothing.
-Notes:    Used to capture and disable viewmodel animation events, unless you disable that feature.
+Notes:	Used to capture and disable viewmodel animation events, unless you disable that feature.
 Purpose:  FX
 ]]--
 function SWEP:FireAnimationEvent(pos, ang, event, options)
@@ -32,7 +32,7 @@ end
 Function Name:  MakeMuzzleSmoke
 Syntax: self:MakeMuzzleSmoke( entity, attachment).
 Returns:  Nothing.
-Notes:    Deprecated. Used to make the muzzle smoke effect, clientside.
+Notes:	Deprecated. Used to make the muzzle smoke effect, clientside.
 Purpose:  FX
 ]]--
 
@@ -53,7 +53,7 @@ end
 Function Name:  ImpactEffect
 Syntax: self:ImpactEffect( position, normal (ang:Up()), materialt ype).
 Returns:  Nothing.
-Notes:    Used to make the impact effect.  See utilities code for CanDustEffect.
+Notes:	Used to make the impact effect.  See utilities code for CanDustEffect.
 Purpose:  FX
 ]]--
 
