@@ -16,7 +16,7 @@ TFA.Particles.PCFParticles["smoke_trail_controlled"] = "tfa_smoke"
 local addedparts = {}
 local cachedparts = {}
 
-function TFA_Initialize_Particles()
+function TFA.Particles.Initialize()
 	for k, v in pairs(TFA.Particles.PCFParticles) do
 		if not addedparts[v] then
 			game.AddParticles("particles/" .. v .. ".pcf")
@@ -30,5 +30,5 @@ function TFA_Initialize_Particles()
 	end
 end
 
-hook.Add("InitPostEntity", "TFA_Initialize_Particles", TFA_Initialize_Particles)
-TFA_Initialize_Particles()
+hook.Add("InitPostEntity", "TFA.Particles.Initialize", TFA.Particles.Initialize)
+TFA.Particles.Initialize()

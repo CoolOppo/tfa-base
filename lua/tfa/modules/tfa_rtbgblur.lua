@@ -16,7 +16,7 @@ funcs[1] = function()
 	render.SetMaterial(blurTex)
 	local passes = cv_blur_passes:GetInt()
 
-	for i = 1, passes do
+	for _ = 1, passes do
 		render.UpdateScreenEffectTexture()
 
 		blurTex:SetFloat("$blur", tfablurintensity * cv_blur_intensity:GetFloat() / math.sqrt(passes) )
