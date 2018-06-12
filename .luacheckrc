@@ -43,6 +43,8 @@ stds.gmod.read_globals = {
 	"GAMEMODE",
 	"NULL",
 
+	"BaseClass",
+
 	"vector_origin",
 	"vector_up",
 	"angle_zero",
