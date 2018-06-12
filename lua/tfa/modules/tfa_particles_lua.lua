@@ -1,5 +1,6 @@
-TFAFlareParts = {}
-TFAVMAttachments = {}
+TFA.Particles = TFA.Particles or {}
+TFA.Particles.FlareParts = {}
+TFA.Particles.VMAttachments = {}
 
 local ply,vm,wep
 
@@ -14,12 +15,12 @@ if CLIENT then
 				local i = 1
 
 				while i <= #tbl do
-					TFAVMAttachments[i] = vm:GetAttachment(i)
+					TFA.Particles.VMAttachments[i] = vm:GetAttachment(i)
 					i = i + 1
 				end
 			end
 
-			for k, v in pairs(TFAFlareParts) do
+			for k, v in pairs(TFA.Particles.FlareParts) do
 				if v and v.ThinkFunc then
 					v:ThinkFunc()
 				end
@@ -27,7 +28,7 @@ if CLIENT then
 		end
 	end)
 
-	function TFARegPartThink(particle, partfunc)
+	function TFA.Particles.RegisterParticleThink(particle, partfunc)
 		if not particle or not partfunc then return end
 		particle.ThinkFunc = partfunc
 
@@ -39,16 +40,16 @@ if CLIENT then
 			end
 		end
 
-		table.insert(TFAFlareParts, #TFAFlareParts + 1, particle)
+		table.insert(TFA.Particles.FlareParts, #TFA.Particles.FlareParts + 1, particle)
 
 		timer.Simple(particle:GetDieTime(), function()
 			if particle then
-				table.RemoveByValue(TFAFlareParts, particle)
+				table.RemoveByValue(TFA.Particles.FlareParts, particle)
 			end
 		end)
 	end
 
-	function TFAMuzzlePartFunc(self, first)
+	function TFA.Particles.FollowMuzzle(self, first)
 		if self.isfirst == nil then
 			self.isfirst = false
 			first = true
@@ -71,7 +72,7 @@ if CLIENT then
 
 			if self.Att and self.OffPos then
 				if self.FollowEnt == vm then
-					local angpos = TFAVMAttachments[self.Att]
+					local angpos = TFA.Particles.VMAttachments[self.Att]
 
 					if angpos then
 						local tmppos = LocalToWorld(self.OffPos, self:GetAngles(), angpos.Pos, angpos.Ang)

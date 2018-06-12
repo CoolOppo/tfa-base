@@ -38,7 +38,6 @@ function EFFECT:Init(data)
 
 	AddVel = ownerent:GetVelocity()
 	self.vOffset = self.Position
-	dir = self.Forward
 	AddVel = AddVel * 0.05
 	local dot = dir:GetNormalized():Dot(GetViewEntity():EyeAngles():Forward())
 	local halofac = math.abs(dot)
@@ -78,7 +77,7 @@ function EFFECT:Init(data)
 			particle:SetLighting(false)
 			particle.FollowEnt = self.WeaponEnt
 			particle.Att = self.Attachment
-			TFARegPartThink(particle, TFAMuzzlePartFunc)
+			TFA.Particles.RegisterParticleThink(particle, TFA.Particles.FollowMuzzle)
 		end
 	end
 
@@ -101,7 +100,7 @@ function EFFECT:Init(data)
 			particle:SetLighting(false)
 			particle.FollowEnt = self.WeaponEnt
 			particle.Att = self.Attachment
-			--TFARegPartThink(particle, TFAMuzzlePartFunc)
+			--TFA.Particles.RegisterParticleThink(particle, TFA.Particles.FollowMuzzle)
 		end
 	end
 
@@ -124,7 +123,7 @@ function EFFECT:Init(data)
 			particle:SetLighting(false)
 			particle.FollowEnt = self.WeaponEnt
 			particle.Att = self.Attachment
-			TFARegPartThink(particle, TFAMuzzlePartFunc)
+			TFA.Particles.RegisterParticleThink(particle, TFA.Particles.FollowMuzzle)
 		end
 	end
 

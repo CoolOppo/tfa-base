@@ -38,7 +38,6 @@ function EFFECT:Init(data)
 
 	AddVel = ownerent:GetVelocity()
 	self.vOffset = self.Position
-	dir = self.Forward
 	AddVel = AddVel * 0.05
 	local dlight = DynamicLight(ownerent:EntIndex())
 

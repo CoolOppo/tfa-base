@@ -77,7 +77,7 @@ function EFFECT:Init(data)
 			particle:SetLighting(false)
 			particle.FollowEnt = self.WeaponEnt
 			particle.Att = self.Attachment
-			TFARegPartThink(particle, TFAMuzzlePartFunc)
+			TFA.Particles.RegisterParticleThink(particle, TFA.Particles.FollowMuzzle)
 		end
 	end
 
@@ -102,7 +102,7 @@ function EFFECT:Init(data)
 			particle:SetLighting(false)
 			particle.FollowEnt = self.WeaponEnt
 			particle.Att = self.Attachment
-			TFARegPartThink(particle, TFAMuzzlePartFunc)
+			TFA.Particles.RegisterParticleThink(particle, TFA.Particles.FollowMuzzle)
 			particle:SetPos(vector_origin)
 		end
 	end

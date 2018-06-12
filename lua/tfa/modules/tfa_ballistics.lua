@@ -113,7 +113,7 @@ function TFA.Ballistics.Bullets:Update()
 			if v.delete then
 				self[k] = nil
 			else
-				for i = 1, TFA.Ballistics.SubSteps do
+				for _ = 1, TFA.Ballistics.SubSteps do
 					v:Update(delta)
 				end
 			end
@@ -127,7 +127,7 @@ function TFA.Ballistics:AutoDetectVelocity(damage)
 	DMGs = table.GetKeys(LUT)
 	table.sort(DMGs)
 
-	for k, v in ipairs(DMGs) do
+	for _, v in ipairs(DMGs) do
 		if v < damage then
 			lutMin = v
 		elseif lutMin then

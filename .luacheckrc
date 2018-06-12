@@ -13,7 +13,7 @@ stds.addon.globals = {
 	"BaseClass",
 	"LANG",
 	"WEPS",
-	
+	"Key"
 }
 
 stds.addon.read_globals = {
