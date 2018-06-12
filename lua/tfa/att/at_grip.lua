@@ -4,7 +4,7 @@ end
 
 ATTACHMENT.Name = "Foregrip"
 --ATTACHMENT.ID = "base" -- normally this is just your filename
-ATTACHMENT.Description = { TFA.AttachmentColors["+"], "30% lower H-recoil", TFA.AttachmentColors["+"], "10% lower V-recoil", TFA.AttachmentColors["-"], "10% higher spread recovery" }
+ATTACHMENT.Description = { TFA.Attachments.Colors["+"], "30% lower H-recoil", TFA.Attachments.Colors["+"], "10% lower V-recoil", TFA.Attachments.Colors["-"], "10% higher spread recovery" }
 ATTACHMENT.Icon = "entities/tfa_si_eotech.png" --Revers to label, please give it an icon though!  This should be the path to a png, like "entities/tfa_ammo_match.png"
 ATTACHMENT.ShortName = "FGRIP"
 

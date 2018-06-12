@@ -8,18 +8,52 @@ ignore = {
 stds.addon = {}
 stds.addon.globals = {
 	"TFA",
-	"ACT_VM_BLOWBACK",
-	"ATTACHMENT",--gmod stuff that we're addin in from hereon out
-	"BaseClass",
-	"LANG",
-	"WEPS",
-	"Key"
+	"TFA_SCOPE_ACOG",
+	"TFA_SCOPE_MILDOT",
+	"TFA_SCOPE_SVD",
+	"TFA_SCOPE_PARABOLIC",
+	"TFA_SCOPE_ELCAN",
+	"TFA_SCOPE_GREENDUPLEX",
+	"TFA_SCOPE_AIMPOINT",
+	"TFA_SCOPE_MATADOR",
+	"TFA_SCOPE_SCOPESCALE",
+	"TFA_SCOPE_RETICLESCALE",
+	"TFA_SCOPE_DOTSCALE",
+	"TFARegisterAttachment",
+	"TFAUpdateAttachments",
+	"TFA_ATTACHMENT_ISUPDATING",
+	"ACT_VM_BLOWBACK",--gmod stuff that we're addin in from hereon out
+	"ATTACHMENT",
+	"BaseClass"
 }
 
 stds.addon.read_globals = {
 	"TFA_BASE_VERSION",
 	"TFA_BASE_VERSION_STRING",
-	"TFA_BASE_VERSION_CHANGES"
+	"TFA_BASE_VERSION_CHANGES",
+	"TFA_FILE_PATH",
+	"LANG",
+	"WEPS",
+	"Key",
+	"WEAPON_NONE",
+	"WEAPON_MELEE",
+	"WEAPON_PISTOL",
+	"WEAPON_HEAVY",
+	"WEAPON_NADE",
+	"WEAPON_CARRY",
+	"WEAPON_EQUIP1",
+	"WEAPON_EQUIP2",
+	"WEAPON_ROLE",
+	"WEAPON_EQUIP",
+	"WEAPON_UNARMED",
+	"ROLE_INNOCENT",
+	"ROLE_TRAITOR",
+	"ROLE_DETECTIVE",
+	"ROLE_NONE",
+	"nZombies",
+	"NZombies",
+	"NZ",
+	"nzRound"
 }
 
 files = {

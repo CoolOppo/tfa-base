@@ -1,41 +1,44 @@
-TFA.Attachments = {}
-TFA.AttachmentColors = {
+TFA.Attachments = TFA.Attachments or {}
+TFA.Attachments.Atts = {}
+
+TFA.Attachments.Colors = {
 	["active"] = Color(252, 151, 50, 255),
 	["error"] = Color(225, 0, 0, 255),
 	["background"] = Color(15, 15, 15, 64),
 	["primary"] = Color(245, 245, 245, 255),
 	["secondary"] = Color(153, 253, 220, 255),
-	["+"] = Color( 128, 255, 128, 255 ),
-	["-"] = Color( 255, 128, 128, 255 ),
-	["="] = Color( 192, 192, 192, 255 )
+	["+"] = Color(128, 255, 128, 255),
+	["-"] = Color(255, 128, 128, 255),
+	["="] = Color(192, 192, 192, 255)
 }
-TFA.AttachmentUIPadding = 2
+
+TFA.Attachments.UIPadding = 2
 
 if SERVER then
 	util.AddNetworkString("TFA_Attachment_Set")
 	util.AddNetworkString("TFA_Attachment_Reload")
 	util.AddNetworkString("TFA_Attachment_RequestAll")
 
-	local function UpdateWeapon( wep, ply )
-		for k,v in pairs(wep.Attachments) do
+	local function UpdateWeapon(wep, ply)
+		for k, v in pairs(wep.Attachments) do
 			if type(k) == "string" then continue end
 			net.Start("TFA_Attachment_Set")
-			net.WriteEntity( wep )
-			net.WriteInt( k, 8 )
-			net.WriteInt( v.sel or -1,7)
+			net.WriteEntity(wep)
+			net.WriteInt(k, 8)
+			net.WriteInt(v.sel or -1, 7)
 			net.Send(ply)
 		end
 	end
 
 	local sp = game.SinglePlayer()
 
-	net.Receive("TFA_Attachment_RequestAll", function( len, ply )
+	net.Receive("TFA_Attachment_RequestAll", function(len, ply)
 		if not IsValid(ply) then return end
 
 		if sp or not ply.TFA_RequestAll then
-			for k,v in pairs( ents.GetAll() ) do
+			for k, v in pairs(ents.GetAll()) do
 				if v:IsWeapon() and v:IsTFA() and v.HasInitAttachments then
-					UpdateWeapon( v, ply )
+					UpdateWeapon(v, ply)
 				end
 			end
 
@@ -43,46 +46,48 @@ if SERVER then
 		end
 	end)
 
-	net.Receive("TFA_Attachment_Set", function( len, ply )
+	net.Receive("TFA_Attachment_Set", function(len, ply)
 		local wep = net.ReadEntity()
+
 		if IsValid(ply) and IsValid(wep) and wep.SetTFAAttachment and ply:GetActiveWeapon() == wep then
 			local cat = net.ReadInt(8)
 			local ind = net.ReadInt(7)
-			wep:SetTFAAttachment( cat, ind, true )
+			wep:SetTFAAttachment(cat, ind, true)
 		end
 	end)
 end
 
 if CLIENT then
-	net.Receive("TFA_Attachment_Set", function( len )
+	net.Receive("TFA_Attachment_Set", function(len)
 		local wep = net.ReadEntity()
+
 		if IsValid(wep) and wep.SetTFAAttachment then
 			local cat = net.ReadInt(8)
 			local ind = net.ReadInt(7)
-			wep:SetTFAAttachment( cat, ind, false )
+			wep:SetTFAAttachment(cat, ind, false)
 		end
 	end)
-	net.Receive("TFA_Attachment_Reload",function(len)
+
+	net.Receive("TFA_Attachment_Reload", function(len)
 		TFAUpdateAttachments()
 	end)
-	hook.Add("HUDPaint","TFA_Attachment_RequestAll",function()
+
+	hook.Add("HUDPaint", "TFA_Attachment_RequestAll", function()
 		if LocalPlayer():IsValid() then
-			hook.Remove("HUDPaint","TFA_Attachment_RequestAll")
+			hook.Remove("HUDPaint", "TFA_Attachment_RequestAll")
 			net.Start("TFA_Attachment_RequestAll")
 			net.SendToServer()
 		end
 	end)
 end
 
-if not TFA_ATTACHMENTS_ENABLED then return end
-
 function TFARegisterAttachment(att)
 	local base
 
 	if att.Base then
-		base = TFA.Attachments[att.Base]
+		base = TFA.Attachments.Atts[att.Base]
 	else
-		base = TFA.Attachments["base"]
+		base = TFA.Attachments.Atts["base"]
 	end
 
 	if base then
@@ -93,7 +98,7 @@ function TFARegisterAttachment(att)
 		end
 	end
 
-	TFA.Attachments[att.ID or att.Name] = att
+	TFA.Attachments.Atts[att.ID or att.Name] = att
 end
 
 TFA_ATTACHMENT_PATH = "tfa/att/"
@@ -104,7 +109,9 @@ function TFAUpdateAttachments()
 		net.Start("TFA_Attachment_Reload")
 		net.Broadcast()
 	end
-	TFA.Attachments = {}
+
+	TFA.AttachmentColors = TFA.Attachments.Colors --for compatibility
+	TFA.Attachments.Atts = {}
 	TFA_ATTACHMENT_ISUPDATING = true
 	local tbl = file.Find(TFA_ATTACHMENT_PATH .. "*base*", "LUA", "namedesc")
 	local addtbl = file.Find(TFA_ATTACHMENT_PATH .. "*", "LUA", "namedesc")
@@ -151,19 +158,17 @@ if TFAUpdateAttachments then
 	TFAUpdateAttachments()
 end
 
-
-concommand.Add("sv_tfa_attachments_reload",function( ply, cmd, args, argStr)
+concommand.Add("sv_tfa_attachments_reload", function(ply, cmd, args, argStr)
 	if SERVER and ply:IsAdmin() then
 		TFAUpdateAttachments()
 	end
-end,function() end,"Reloads all TFA Attachments",{FCVAR_SERVER_CAN_EXECUTE})
-
+end, function() end, "Reloads all TFA Attachments", {FCVAR_SERVER_CAN_EXECUTE})
 --[[
 
 if SERVER then
-	util.AddNetworkString("TFA.Attachments")
+	util.AddNetworkString("TFA.Attachments.Atts")
 
-	net.Receive("TFA.Attachments", function(length, client)
+	net.Receive("TFA.Attachments.Atts", function(length, client)
 		if IsValid(client) then
 			local wep = client:GetActiveWeapon()
 
@@ -209,7 +214,7 @@ hook.Add("PlayerBindPress", "TFA_Attachment_Binds", function(ply, bind, pressed)
 
 				if attbl.atts[curatt] then
 					wep:Detach(attbl.atts[curatt])
-					net.Start("TFA.Attachments")
+					net.Start("TFA.Attachments.Atts")
 					net.WriteBool(false)
 					net.WriteString(attbl.atts[curatt])
 					net.SendToServer()
@@ -217,7 +222,7 @@ hook.Add("PlayerBindPress", "TFA_Attachment_Binds", function(ply, bind, pressed)
 
 				if attbl.atts[newatt] then
 					wep:Attach(attbl.atts[newatt])
-					net.Start("TFA.Attachments")
+					net.Start("TFA.Attachments.Atts")
 					net.WriteBool(true)
 					net.WriteString(attbl.atts[newatt])
 					net.SendToServer()
@@ -229,4 +234,5 @@ hook.Add("PlayerBindPress", "TFA_Attachment_Binds", function(ply, bind, pressed)
 	end
 end)
 
-]]--
+]]
+--

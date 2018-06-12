@@ -172,8 +172,8 @@ function SWEP:GetStat( stat, default )
 		for k,v in pairs(self.Attachments) do
 			if v.atts and v.sel then
 				if not v.atts[v.sel] then continue end --Validity Check 1
-				if not TFA.Attachments[ v.atts[v.sel] ] then continue end --Validity Check 2
-				local srctbl = TFA.Attachments[ v.atts[v.sel] ].WeaponTable
+				if not TFA.Attachments.Atts[ v.atts[v.sel] ] then continue end --Validity Check 2
+				local srctbl = TFA.Attachments.Atts[ v.atts[v.sel] ].WeaponTable
 				if not srctbl then continue end --Validity Check 3
 				local tstat, final, nc2 = self:GetStatRecursive( srctbl, stbl, cs )
 				nc = nc2 or nc
@@ -205,12 +205,12 @@ function SWEP:SetTFAAttachment( cat, id, nw )
 	if SERVER and ( not self:CanAttach( self.Attachments[cat].atts[ id ] or "" ) ) then return false end
 
 	if id ~= self.Attachments[cat].sel then
-		local att_old = TFA.Attachments[ self.Attachments[cat].atts[ self.Attachments[cat].sel ] or -1 ]
+		local att_old = TFA.Attachments.Atts[ self.Attachments[cat].atts[ self.Attachments[cat].sel ] or -1 ]
 		if att_old then
 			att_old:Detach( self )
 		end
 
-		local att_neue = TFA.Attachments[ self.Attachments[cat].atts[ id ] or -1 ]
+		local att_neue = TFA.Attachments.Atts[ self.Attachments[cat].atts[ id ] or -1 ]
 		if att_neue then
 			att_neue:Attach( self )
 		end
@@ -259,11 +259,11 @@ function SWEP:InitAttachments()
 			table.sort( v.atts , function(a,b)
 				local aname = ""
 				local bname = ""
-				local att_a = TFA.Attachments[ a ]
+				local att_a = TFA.Attachments.Atts[ a ]
 				if att_a then
 					aname = att_a.Name or a
 				end
-				local att_b = TFA.Attachments[ b ]
+				local att_b = TFA.Attachments.Atts[ b ]
 				if att_b then
 					bname = att_b.Name or b
 				end
@@ -277,7 +277,7 @@ function SWEP:InitAttachments()
 	for k,v in pairs(self.Attachments) do
 		if v.atts then
 			for l,b in pairs( v.atts ) do
-				if not TFA.Attachments[b] then
+				if not TFA.Attachments.Atts[b] then
 					table.RemoveByValue(v.atts,b)
 					v.atts[l] = nil
 				end

@@ -50,7 +50,7 @@ function TFA.GetGroupMembers(groupname, callback)
 				async_count = async_count + 1
 				local member_outer = XML_GetMembers(outer_bodytext)
 
-				for k, v in ipairs(member_outer) do
+				for _, v in ipairs(member_outer) do
 					table.insert(members, #members + 1, v)
 				end
 

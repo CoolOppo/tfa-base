@@ -3,7 +3,7 @@ if SERVER then
 	return
 end
 
-local padding = TFA.AttachmentUIPadding
+local padding = TFA.Attachments.UIPadding
 local PANEL = {}
 
 PANEL.Wep = nil
@@ -142,16 +142,16 @@ function PANEL:DrawHeader( w, h )
 	if not self.Header then return 0 end
 	surface.SetFont(headerfont)
 	local _, th = surface.GetTextSize( self.Header )
-	draw.RoundedBox( 0, 0, 0, w, th + padding * 2, ColorAlpha( TFA.AttachmentColors["background"], self.Wep.InspectingProgress * 192 ) )
+	draw.RoundedBox( 0, 0, 0, w, th + padding * 2, ColorAlpha( TFA.Attachments.Colors["background"], self.Wep.InspectingProgress * 192 ) )
 	if self.AnchoredH then
-		draw.SimpleText( self.Header, headerfont, self:GetWide() / 2 , padding, ColorAlpha( TFA.AttachmentColors["primary"], self.Wep.InspectingProgress * 225 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP )
-		--draw.RoundedBox( 0, w / 2 - tw / 2, padding + th + padding / 4, tw, padding / 2, ColorAlpha( TFA.AttachmentColors["primary"], self.Wep.InspectingProgress * 225 ) )
+		draw.SimpleText( self.Header, headerfont, self:GetWide() / 2 , padding, ColorAlpha( TFA.Attachments.Colors["primary"], self.Wep.InspectingProgress * 225 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP )
+		--draw.RoundedBox( 0, w / 2 - tw / 2, padding + th + padding / 4, tw, padding / 2, ColorAlpha( TFA.Attachments.Colors["primary"], self.Wep.InspectingProgress * 225 ) )
 
-		--draw.SimpleText( self.Header, headerfont, self:GetWide() - padding, padding, ColorAlpha( TFA.AttachmentColors["primary"], self.Wep.InspectingProgress * 225 ), TEXT_ALIGN_RIGHT, TEXT_ALIGN_TOP )
-		--draw.RoundedBox( 0, w - padding - tw, padding + th + padding / 4, tw, padding / 2, ColorAlpha( TFA.AttachmentColors["primary"], self.Wep.InspectingProgress * 225 ) )
+		--draw.SimpleText( self.Header, headerfont, self:GetWide() - padding, padding, ColorAlpha( TFA.Attachments.Colors["primary"], self.Wep.InspectingProgress * 225 ), TEXT_ALIGN_RIGHT, TEXT_ALIGN_TOP )
+		--draw.RoundedBox( 0, w - padding - tw, padding + th + padding / 4, tw, padding / 2, ColorAlpha( TFA.Attachments.Colors["primary"], self.Wep.InspectingProgress * 225 ) )
 	else
-		draw.SimpleText( self.Header, headerfont, padding, padding, ColorAlpha( TFA.AttachmentColors["primary"], self.Wep.InspectingProgress * 225 ), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP )
-		--draw.RoundedBox( 0, padding, padding + th + padding / 4, tw, padding / 2, ColorAlpha( TFA.AttachmentColors["primary"], self.Wep.InspectingProgress * 225 ) )
+		draw.SimpleText( self.Header, headerfont, padding, padding, ColorAlpha( TFA.Attachments.Colors["primary"], self.Wep.InspectingProgress * 225 ), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP )
+		--draw.RoundedBox( 0, padding, padding + th + padding / 4, tw, padding / 2, ColorAlpha( TFA.Attachments.Colors["primary"], self.Wep.InspectingProgress * 225 ) )
 	end
 	return th + padding * 2
 end
@@ -160,7 +160,7 @@ function PANEL:DrawTextTable( x, y )
 	if not self.TextTable then return 0 end
 	--y = y + padding
 	local hv = padding
-	local acol = TFA.AttachmentColors["primary"]
+	local acol = TFA.Attachments.Colors["primary"]
 	surface.SetFont(bodyfont)
 	for k,v in pairs(self.TextTable) do
 		if type(v) == "table" or type(v) == "vector" then
@@ -243,7 +243,7 @@ function PANEL:Paint( w, h )
 			return
 		end
 	end
-	draw.RoundedBox( 0, 0, 0, w, h, ColorAlpha( TFA.AttachmentColors["background"], self.Wep.InspectingProgress * 192 ) )
+	draw.RoundedBox( 0, 0, 0, w, h, ColorAlpha( TFA.Attachments.Colors["background"], self.Wep.InspectingProgress * 192 ) )
 	local hh = self:DrawHeader( w, h )
 	self:DrawTextTable( 0, hh )
 	render.SetScissorRect(0,0,ScrW(),ScrH(),false)

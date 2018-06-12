@@ -59,8 +59,8 @@ function EFFECT:Init(data)
 
 	if not angpos or not angpos.Pos then
 		angpos = {
-			Pos = bvec,
-			Ang = uAng
+			Pos = vector_origin,
+			Ang = angle_zero
 		}
 	end
 

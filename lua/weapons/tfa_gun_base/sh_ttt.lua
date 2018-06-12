@@ -6,6 +6,7 @@ SWEP.fingerprints = {}
 
 -- crosshair
 if CLIENT then
+	-- luacheck: globals LANG Key
 	local SafeTranslation = function(x) return x end
 	local GetPTranslation = LANG and LANG.GetParamTranslation or SafeTranslation
 
@@ -73,6 +74,7 @@ function SWEP:GetHeadshotMultiplier(victim, dmginfo)
 end
 
 function SWEP:IsEquipment()
+	-- luacheck: globals WEPS
 	if WEPS and WEPS.IsEquipment then
 		local val = WEPS.IsEquipment(self)
 

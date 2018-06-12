@@ -100,7 +100,7 @@ local function TFAUpdateDefaultClip()
 	local weplist = weapons.GetList()
 	if not weplist or #weplist <= 0 then return end
 
-	for k, v in pairs(weplist) do
+	for _, v in pairs(weplist) do
 		local cl = v.ClassName and v.ClassName or v
 		local wep = weapons.GetStored(cl)
 

@@ -1,7 +1,7 @@
 if SERVER then
 	AddCSLuaFile()
 end
-
+-- luacheck: globals WEAPON_NONE WEAPON_MELEE WEAPON_PISTOL WEAPON_HEAVY WEAPON_NADE WEAPON_CARRY WEAPON_EQUIP1 WEAPON_EQUIP2 WEAPON_ROLE WEAPON_EQUIP WEAPON_UNARMED ROLE_INNOCENT ROLE_TRAITOR ROLE_DETECTIVE ROLE_NONE
 WEAPON_NONE = WEAPON_NONE or 0
 WEAPON_MELEE = WEAPON_MELEE or 1
 WEAPON_PISTOL = WEAPON_PISTOL or 2
@@ -71,7 +71,7 @@ local function PatchWep(wep)
 		--end
 	end
 
-	for k, v in pairs(tbl.CanBuy) do
+	for _, v in pairs(tbl.CanBuy) do
 		if v ~= ROLE_TRAITOR and v ~= ROLE_DETECTIVE then
 			table.RemoveByValue(tbl.CanBuy, v)
 		end
@@ -118,8 +118,8 @@ end
 
 local function Patch()
 	if engine.ActiveGamemode() == "terrortown" then
-		for k, v in pairs(weapons.GetList()) do
-			wep = v.ClassName
+		for _, v in pairs(weapons.GetList()) do
+			local wep = v.ClassName
 
 			if wep then
 				PatchWep(wep)

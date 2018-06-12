@@ -1,5 +1,4 @@
 if SERVER then
-	local wep,ply
 	--Pool netstrings
 	util.AddNetworkString("tfaSoundEvent")
 	util.AddNetworkString("tfa_base_muzzle_mp")
@@ -14,15 +13,15 @@ if SERVER then
 	--Enable CKey Inspection
 
 	net.Receive("tfaRequestFidget",function(length,client)
-		wep = client:GetActiveWeapon()
+		local wep = client:GetActiveWeapon()
 		if IsValid(wep) and wep.CheckAmmo then wep:CheckAmmo() end
 	end)
 
 	--Enable shotgun interruption
 	net.Receive("tfaShotgunInterrupt", function(length, client)
 		if IsValid(client) and client:IsPlayer() and client:Alive() then
-			ply = client
-			wep = ply:GetActiveWeapon()
+			local ply = client
+			local wep = ply:GetActiveWeapon()
 
 			if IsValid(wep) and wep.ShotgunInterrupt then
 				wep:ShotgunInterrupt()
@@ -39,7 +38,7 @@ if SERVER then
 	--[[
 	net.Receive("tfaAltAttack", function(length, client)
 		if IsValid(client) and client:IsPlayer() and client:Alive() then
-			ply = client
+			local ply = client
 			wep = ply:GetActiveWeapon()
 
 			if IsValid(wep) and wep.AltAttack then
@@ -50,7 +49,7 @@ if SERVER then
 	]]--
 	--Distribute muzzles from server to clients
 	net.Receive("tfa_base_muzzle_mp", function(length, plyv)
-		wep = plyv:GetActiveWeapon()
+		local wep = plyv:GetActiveWeapon()
 
 		if IsValid(wep) and wep.ShootEffectsCustom then
 			wep:ShootEffectsCustom()
@@ -71,8 +70,8 @@ if CLIENT then
 
 	--Receive sound events on client
 	net.Receive("tfaSoundEvent", function(length, ply)
-		wep = net.ReadEntity()
-		snd = net.ReadString()
+		local wep = net.ReadEntity()
+		local snd = net.ReadString()
 
 		if IsValid(wep) and snd and snd ~= "" then
 			wep:EmitSound(snd)
@@ -81,14 +80,14 @@ if CLIENT then
 
 	--Receive muzzleflashes on client
 	net.Receive("tfa_base_muzzle_mp", function(length, ply)
-		wep = net.ReadEntity()
+		local wep = net.ReadEntity()
 
 		if IsValid(wep) and wep.ShootEffectsCustom then
 			wep:ShootEffectsCustom(true)
 		end
 	end)
 	net.Receive("tfaBaseShellSV", function(length, ply)
-		wep = net.ReadEntity()
+		local wep = net.ReadEntity()
 
 		if IsValid(wep) and wep.MakeShellBridge then
 			wep:MakeShellBridge(true)

@@ -1,4 +1,4 @@
-TFA_PocketBlock = {}
+local TFA_PocketBlock = {}
 TFA_PocketBlock["tfa_ammo_357"] = true
 TFA_PocketBlock["tfa_ammo_ar2"] = true
 TFA_PocketBlock["tfa_ammo_buckshot"] = true

@@ -20,7 +20,7 @@ if CLIENT then
 				end
 			end
 
-			for k, v in pairs(TFA.Particles.FlareParts) do
+			for _, v in pairs(TFA.Particles.FlareParts) do
 				if v and v.ThinkFunc then
 					v:ThinkFunc()
 				end

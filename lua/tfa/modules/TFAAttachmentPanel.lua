@@ -4,7 +4,7 @@ if SERVER then
 end
 
 local dimensions = 64
-local padding = TFA.AttachmentUIPadding
+local padding = TFA.Attachments.UIPadding
 local spacing = 64
 local tooltip_mincount = 1
 
@@ -53,7 +53,7 @@ function PANEL:Initialize()
 	toppanel:SetHeight( self:GetTall() )
 	toppanel:DockPadding( padding,padding, padding, padding )
 	toppanel.Paint = function(myself,w,h)
-		draw.RoundedBox( 0, 0, 0, w, h, ColorAlpha( TFA.AttachmentColors["secondary"], ( self.Wep.InspectingProgress or 0 ) * 128 ) )
+		draw.RoundedBox( 0, 0, 0, w, h, ColorAlpha( TFA.Attachments.Colors["secondary"], ( self.Wep.InspectingProgress or 0 ) * 128 ) )
 	end
 
 	self.FinalWidth = finalwidth
@@ -165,8 +165,8 @@ function PANEL:Think()
 
 	for k,v in pairs( self.AttachmentIcons ) do
 		if v:IsHovered() then
-			header = TFA.Attachments[v.Attachment].Name
-			texttable = TFA.Attachments[v.Attachment].Description
+			header = TFA.Attachments.Atts[v.Attachment].Name
+			texttable = TFA.Attachments.Atts[v.Attachment].Description
 			break
 		end
 	end
@@ -174,8 +174,8 @@ function PANEL:Think()
 	if not header then
 		for k,v in pairs( self.AttachmentIcons ) do
 			if v:GetSelected() then
-				header = TFA.Attachments[v.Attachment].Name
-				texttable = {}--TFA.Attachments[v.Attachment].Description
+				header = TFA.Attachments.Atts[v.Attachment].Name
+				texttable = {}--TFA.Attachments.Atts[v.Attachment].Description
 				break
 			end
 		end

@@ -1,5 +1,3 @@
-local bvec = Vector(0, 0, 0)
-local uAng = Angle(90, 0, 0)
 EFFECT.Velocity = {120, 160}
 EFFECT.VelocityRand = {-15, 40}
 EFFECT.VelocityRandAngle = 12.5
@@ -49,7 +47,6 @@ function EFFECT:Init(data)
 		self.SmokeDeath = -1
 	end
 
-	self.Position = bvec
 	self.WeaponEnt = data:GetEntity()
 	if not IsValid(self.WeaponEnt) then return end
 	self.WeaponEntOG = self.WeaponEnt
@@ -101,8 +98,8 @@ function EFFECT:Init(data)
 
 	if not angpos or not angpos.Pos then
 		angpos = {
-			Pos = bvec,
-			Ang = uAng
+			Pos = vector_origin,
+			Ang = angle_zero
 		}
 	end
 

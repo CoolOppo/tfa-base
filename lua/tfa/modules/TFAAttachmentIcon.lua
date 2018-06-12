@@ -4,7 +4,7 @@ if SERVER then
 	return
 end
 
-local padding = TFA.AttachmentUIPadding
+local padding = TFA.Attachments.UIPadding
 local PANEL = {}
 PANEL.Wep = nil
 PANEL.ID = nil
@@ -114,27 +114,27 @@ end
 function PANEL:Paint(w, h)
 	if not IsValid(self.Wep) then return end
 	if self.Attachment == nil then return end
-	if not TFA.Attachments[self.Attachment] then self:SetMouseInputEnabled(false) return end
+	if not TFA.Attachments.Atts[self.Attachment] then self:SetMouseInputEnabled(false) return end
 	local sel = self:GetSelected()
-	local col = sel and TFA.AttachmentColors["active"] or TFA.AttachmentColors["background"]
-	if not self.Wep:CanAttach( self.Attachment) then col = TFA.AttachmentColors["error"] end
+	local col = sel and TFA.Attachments.Colors["active"] or TFA.Attachments.Colors["background"]
+	if not self.Wep:CanAttach( self.Attachment) then col = TFA.Attachments.Colors["error"] end
 	draw.RoundedBox(0, 0, 0, w, h, ColorAlpha( col, self.Wep.InspectingProgress * 225))
 
-	if not TFA.Attachments[self.Attachment].Icon then
-		TFA.Attachments[self.Attachment].Icon = "entities/tfa_qmark.png"
+	if not TFA.Attachments.Atts[self.Attachment].Icon then
+		TFA.Attachments.Atts[self.Attachment].Icon = "entities/tfa_qmark.png"
 	end
 
-	if not TFA.Attachments[self.Attachment].Icon_Cached then
-		TFA.Attachments[self.Attachment].Icon_Cached = Material( TFA.Attachments[self.Attachment].Icon, "noclamp smooth" )
+	if not TFA.Attachments.Atts[self.Attachment].Icon_Cached then
+		TFA.Attachments.Atts[self.Attachment].Icon_Cached = Material( TFA.Attachments.Atts[self.Attachment].Icon, "noclamp smooth" )
 	end
 
 	surface.SetDrawColor(ColorAlpha(color_white, self.Wep.InspectingProgress * 255))
-	surface.SetMaterial(TFA.Attachments[self.Attachment].Icon_Cached)
+	surface.SetMaterial(TFA.Attachments.Atts[self.Attachment].Icon_Cached)
 	surface.DrawTexturedRect(padding, padding, w - padding * 2, h - padding * 2)
-	if not TFA.Attachments[self.Attachment].ShortName then
-		TFA.Attachments[self.Attachment].ShortName = abbrev( TFA.Attachments[self.Attachment].Name or "")
+	if not TFA.Attachments.Atts[self.Attachment].ShortName then
+		TFA.Attachments.Atts[self.Attachment].ShortName = abbrev( TFA.Attachments.Atts[self.Attachment].Name or "")
 	end
-	draw.SimpleText( string.upper( TFA.Attachments[self.Attachment].ShortName ) , "TFAAttachmentIconFontTiny", padding / 4, h, ColorAlpha(TFA.AttachmentColors["primary"], self.Wep.InspectingProgress * ( sel and 192 or 64 ) ), TEXT_ALIGN_LEFT, TEXT_ALIGN_BOTTOM)
+	draw.SimpleText( string.upper( TFA.Attachments.Atts[self.Attachment].ShortName ) , "TFAAttachmentIconFontTiny", padding / 4, h, ColorAlpha(TFA.Attachments.Colors["primary"], self.Wep.InspectingProgress * ( sel and 192 or 64 ) ), TEXT_ALIGN_LEFT, TEXT_ALIGN_BOTTOM)
 end
 
 vgui.Register("TFAAttachmentIcon", PANEL, "Panel")

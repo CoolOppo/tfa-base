@@ -74,7 +74,7 @@ local function BlockDamageNew( ent, dmginfo )
 
 	if (wep.IsTFAWeapon and wep.BlockDamageTypes and wep:GetStatus() == TFA.GetStatus("blocking") ) then
 		local canblock = false
-		for k,v in ipairs(wep.BlockDamageTypes) do
+		for _,v in ipairs(wep.BlockDamageTypes) do
 			if dmginfo:IsDamageType(v) then canblock = true end
 		end
 		if canblock then
@@ -152,22 +152,6 @@ end) --Cancel
 hook.Add("ScalePlayerDamage", "aaa_TFA_Melee_Block", function( ent, _, dmginfo ) --Cancel
 	return BlockDamageNew( ent, dmginfo )
 end)
-game.AddDecal("Slash_0", "decals/slash_0")
-game.AddDecal("Slash_45", "decals/slash_45")
-game.AddDecal("Slash_90", "decals/slash_90")
-game.AddDecal("Slash_135", "decals/slash_135")
-
-game.AddAmmoType({
-	name = "TFMSwordHitSlash",
-	dmgtype = DMG_SLASH,
-	tracer = TRACER_NONE
-})
-
-game.AddAmmoType({
-	name = "TFMSwordHitGeneric",
-	dmgtype = DMG_GENERIC,
-	tracer = TRACER_NONE
-})
 
 game.AddAmmoType({
 	name = "TFMSwordHitGenericSlash",
@@ -175,18 +159,7 @@ game.AddAmmoType({
 	tracer = TRACER_NONE
 })
 
-game.AddAmmoType({
-	name = "TFMSwordRayTest",
-	dmgtype = 0,
-	tracer = TRACER_NONE,
-	plydmg = 0,
-	npcdmg = 0,
-	force = 0,
-	minsplash = 1,
-	maxsplash = 1
-})
-
-function TFMPlayerSpawn(ply)
+local function TFMPlayerSpawn(ply)
 	ply:SetNW2Vector("TFM_SwordPosition", Vector(1, 1, 1))
 	ply:SetNW2Vector("TFM_SwordNormal", Vector(1, 1, 1))
 	ply:SetNW2Bool("TFM_IsSprinting", false)

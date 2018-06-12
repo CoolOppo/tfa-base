@@ -138,7 +138,6 @@ function TFA.ParseKeyValues(fn, path, use_escape, keep_key_case, invalid_escape_
 	tbl_tmp = nil
 	value = nil
 	lastvalue = nil
-	seekchar = 0
 	escape = false
 	is_comment = false
 	stringtype = nil

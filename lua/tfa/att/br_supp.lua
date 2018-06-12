@@ -4,7 +4,7 @@ end
 
 ATTACHMENT.Name = "Suppressor"
 --ATTACHMENT.ID = "base" -- normally this is just your filename
-ATTACHMENT.Description = { TFA.AttachmentColors["+"], "Less firing noise", TFA.AttachmentColors["-"], "10% less spread", TFA.AttachmentColors["-"], "5% less damage", TFA.AttachmentColors["-"], "10% less vertical recoil" }
+ATTACHMENT.Description = { TFA.Attachments.Colors["+"], "Less firing noise", TFA.Attachments.Colors["-"], "10% less spread", TFA.Attachments.Colors["-"], "5% less damage", TFA.Attachments.Colors["-"], "10% less vertical recoil" }
 ATTACHMENT.Icon = "entities/tfa_br_supp.png" --Revers to label, please give it an icon though!  This should be the path to a png, like "entities/tfa_ammo_match.png"
 ATTACHMENT.ShortName = "SUPP"
 

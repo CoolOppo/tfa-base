@@ -4,7 +4,7 @@ end
 
 ATTACHMENT.Name = "Aimpoint"
 --ATTACHMENT.ID = "base" -- normally this is just your filename
-ATTACHMENT.Description = { TFA.AttachmentColors["="], "10% higher zoom", TFA.AttachmentColors["-"], "10% higher zoom time" }
+ATTACHMENT.Description = { TFA.Attachments.Colors["="], "10% higher zoom", TFA.Attachments.Colors["-"], "10% higher zoom time" }
 ATTACHMENT.Icon = "entities/tfa_si_aimpoint.png" --Revers to label, please give it an icon though!  This should be the path to a png, like "entities/tfa_ammo_match.png"
 ATTACHMENT.ShortName = "AIM"
 

@@ -1,5 +1,3 @@
-local bvec = Vector(0, 0, 0)
-local uAng = Angle(90, 0, 0)
 local dir
 
 function EFFECT:Init(data)
@@ -48,8 +46,8 @@ function EFFECT:Init(data)
 
 	if not angpos or not angpos.Pos then
 		angpos = {
-			Pos = bvec,
-			Ang = uAng
+			Pos = vector_origin,
+			Ang = angle_zero
 		}
 	end
 

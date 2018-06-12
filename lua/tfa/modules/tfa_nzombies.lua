@@ -2,14 +2,16 @@ if SERVER then
 	AddCSLuaFile()
 end
 
-if TFA_DisableHostilePatching == nil then
-	TFA_DisableHostilePatching = false --Change this if you need to
+TFA.NZombies = TFA.NZombies or {}
+
+if TFA.NZombies.Patch == nil then
+	TFA.NZombies.Patch = true --Change this if you need to
 end
 
-local cv_melee_scaling, cv_melee_basefactor
+local cv_melee_scaling, cv_melee_basefactor, cv_melee_berserkscale
 local nzombies = string.lower(engine.ActiveGamemode() or "") == "nzombies"
 
-if nZombies or NZombies or NZ or NZombies then
+if nZombies or NZombies or NZ then
 	nzombies = true
 end
 
@@ -27,7 +29,7 @@ local function SpreadFix()
 	if not GAMEMODE then return end
 
 	print("[TFA] Patching NZombies")
-	if TFA_DisableHostilePatching then return end
+	if TFA.NZombies.Patch then return end
 
 	local ghosttraceentities = {
 		["wall_block"] = true,
@@ -85,10 +87,11 @@ local function SpreadFix()
 		if ent:IsPlayer() and ent:HasPerk("dtap2") then return true end
 	end
 end
-]]--
-
+]]
+--
 local function MeleeFix()
 	hook.Add("EntityTakeDamage", "TFA_MeleeScaling", function(target, dmg)
+		if not TFA.NZombies.Patch then return end
 		if not nzRound then return end
 		local ent = dmg:GetInflictor()
 
@@ -98,11 +101,10 @@ local function MeleeFix()
 
 		if not IsValid(ent) or not ent:IsWeapon() then return end
 
-		if ent.IsTFAWeapon and ( dmg:IsDamageType(DMG_CRUSH) or dmg:IsDamageType(DMG_CLUB) or dmg:IsDamageType(DMG_SLASH)) then
+		if ent.IsTFAWeapon and (dmg:IsDamageType(DMG_CRUSH) or dmg:IsDamageType(DMG_CLUB) or dmg:IsDamageType(DMG_SLASH)) then
 			local scalefactor = cv_melee_scaling:GetFloat()
 			local basefactor = cv_melee_basefactor:GetFloat()
 			dmg:ScaleDamage(((nzRound:GetZombieHealth() - 75) / 75 * scalefactor + 1) * basefactor)
-
 			--if IsValid(ent:GetOwner()) and ent:GetOwner():IsPlayer() and ent:GetOwner():HasPerk("jugg") then
 			--	dmg:ScaleDamage(cv_melee_juggscale:GetFloat())
 			--end
@@ -110,8 +112,10 @@ local function MeleeFix()
 	end)
 
 	hook.Add("EntityTakeDamage", "TFA_MeleeReceiveLess", function(target, dmg)
+		if not TFA.NZombies.Patch then return end
+
 		if target:IsPlayer() and target.GetActiveWeapon then
-			wep = target:GetActiveWeapon()
+			local wep = target:GetActiveWeapon()
 
 			if IsValid(wep) and wep:IsTFA() and (wep.IsKnife or wep.IsMelee or wep.Primary.Reach) then
 				dmg:ScaleDamage(cv_melee_berserkscale:GetFloat())
@@ -120,21 +124,27 @@ local function MeleeFix()
 	end)
 
 	hook.Add("EntityTakeDamage", "TFA_MeleePaP", function(target, dmg)
+		if not TFA.NZombies.Patch then return end
 		local ent = dmg:GetInflictor()
-		if IsValid( ent ) then
+
+		if IsValid(ent) then
+			local wep
+
 			if ent:IsPlayer() then
 				wep = ent:GetActiveWeapon()
 			elseif ent:IsWeapon() then
 				wep = ent
 			end
-			if IsValid(wep) and wep:IsTFA() and ( wep.Primary.Attacks or wep.IsMelee or wep.Primary.Reach ) and wep:GetPaP() then
-				dmg:ScaleDamage( 2 )
+
+			if IsValid(wep) and wep:IsTFA() and (wep.Primary.Attacks or wep.IsMelee or wep.Primary.Reach) and wep:GetPaP() then
+				dmg:ScaleDamage(2)
 			end
 		end
 	end)
 end
 
 local function NZPatch()
+	if not TFA.NZombies.Patch then return end
 	nzombies = string.lower(engine.ActiveGamemode() or "") == "nzombies"
 
 	if nZombies or NZombies or NZ or NZombies then

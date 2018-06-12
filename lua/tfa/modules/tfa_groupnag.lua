@@ -9,23 +9,25 @@ if SERVER then
 	end)
 end
 
-local function comma_value(amount) --Credit to the lua-user.org wiki
-	local formatted = amount
-
-	while true do
-		formatted, k = string.gsub(formatted, "^(-?%d+)(%d%d%d)", "%1,%2")
-		if (k == 0) then break end
-	end
-
-	return formatted
-end
-
 if CLIENT then
+
+	--[[
+
+	local function comma_value(amount) --Credit to the lua-user.org wiki
+		local formatted = amount
+
+		while true do
+			local k
+			formatted, k = string.gsub(formatted, "^(-?%d+)(%d%d%d)", "%1,%2")
+			if (k == 0) then break end
+		end
+
+		return formatted
+	end
 
 	local TFA_NAGCOUNT = 0
 
 	hook.Add("TFA_ClientLoad", "TFA_NAG", function()
-		if true then return end
 		TFA.GetGroupMembers("tfa-mods", function(members)
 			if not table.HasValue(members,LocalPlayer():SteamID64()) then --They're not a member
 
@@ -49,6 +51,7 @@ if CLIENT then
 			end
 		end)
 	end)
+	]]--
 
 	net.Receive("TFAJoinGroupPopup", function()
 		gui.OpenURL("http://steamcommunity.com/groups/tfa-mods")

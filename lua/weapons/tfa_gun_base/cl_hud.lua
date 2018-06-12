@@ -157,10 +157,10 @@ end
 
 local pad = 4
 local infotextpad = "  "
-local INSPECTION_BACKGROUND = TFA.AttachmentColors["background"]
-local INSPECTION_ACTIVECOLOR = TFA.AttachmentColors["active"]
-local INSPECTION_PRIMARYCOLOR = TFA.AttachmentColors["primary"]
-local INSPECTION_SECONDARYCOLOR = TFA.AttachmentColors["secondary"]
+local INSPECTION_BACKGROUND = TFA.Attachments.Colors["background"]
+local INSPECTION_ACTIVECOLOR = TFA.Attachments.Colors["active"]
+local INSPECTION_PRIMARYCOLOR = TFA.Attachments.Colors["primary"]
+local INSPECTION_SECONDARYCOLOR = TFA.Attachments.Colors["secondary"]
 local worstaccuracy = 0.045
 local bestrpm = 1200
 local worstmove = 0.8
@@ -179,7 +179,7 @@ SWEP.AmmoTypeStrings = {
 
 local att_enabled_cv = GetConVar("sv_tfa_attachments_enabled")
 
-local padding = TFA.AttachmentUIPadding
+local padding = TFA.Attachments.UIPadding
 local spacing = 64
 local dimensions = 64
 
@@ -797,25 +797,25 @@ function SWEP:DrawHUDAmmo()
 				draw.DrawText(str, "TFASleek", xx + 1, yy + 1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
 				draw.DrawText(str, "TFASleek", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT)
 				str = string.upper("RESERVE: " .. self:Ammo1())
-				yy = yy + TFASleekFontHeight
-				xx = xx - TFASleekFontHeight / 3
+				yy = yy + TFA.Fonts.SleekHeight
+				xx = xx - TFA.Fonts.SleekHeight / 3
 				draw.DrawText(str, "TFASleekMedium", xx + 1, yy + 1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
 				draw.DrawText(str, "TFASleekMedium", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT)
-				yy = yy + TFASleekFontHeightMedium
-				xx = xx - TFASleekFontHeightMedium / 3
+				yy = yy + TFA.Fonts.SleekHeightMedium
+				xx = xx - TFA.Fonts.SleekHeightMedium / 3
 			else
 				str = string.upper("AMMO: " .. self:Ammo1())
 				draw.DrawText(str, "TFASleek", xx + 1, yy + 1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
 				draw.DrawText(str, "TFASleek", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT)
-				yy = yy + TFASleekFontHeightMedium
-				xx = xx - TFASleekFontHeightMedium / 3
+				yy = yy + TFA.Fonts.SleekHeightMedium
+				xx = xx - TFA.Fonts.SleekHeightMedium / 3
 			end
 
 			str = string.upper( self:GetFireModeName() .. ( #self:GetStat("FireModes") > 2 and " | +" or "" ) )
 			draw.DrawText(str, "TFASleekSmall", xx + 1, yy + 1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
 			draw.DrawText(str, "TFASleekSmall", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT)
-			yy = yy + TFASleekFontHeightSmall
-			xx = xx - TFASleekFontHeightSmall / 3
+			yy = yy + TFA.Fonts.SleekHeightSmall
+			xx = xx - TFA.Fonts.SleekHeightSmall / 3
 
 			local angpos2
 
@@ -843,18 +843,18 @@ function SWEP:DrawHUDAmmo()
 						draw.DrawText(str, "TFASleek", xx + 1, yy + 1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
 						draw.DrawText(str, "TFASleek", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT)
 						str = string.upper("RESERVE: " .. self:Ammo1())
-						yy = yy + TFASleekFontHeight
-						xx = xx - TFASleekFontHeight / 3
+						yy = yy + TFA.Fonts.SleekHeight
+						xx = xx - TFA.Fonts.SleekHeight / 3
 						draw.DrawText(str, "TFASleekMedium", xx + 1, yy + 1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
 						draw.DrawText(str, "TFASleekMedium", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT)
-						yy = yy + TFASleekFontHeightMedium
-						xx = xx - TFASleekFontHeightMedium / 3
+						yy = yy + TFA.Fonts.SleekHeightMedium
+						xx = xx - TFA.Fonts.SleekHeightMedium / 3
 					else
 						str = string.upper("AMMO: " .. self:Ammo1())
 						draw.DrawText(str, "TFASleek", xx + 1, yy + 1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
 						draw.DrawText(str, "TFASleek", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT)
-						yy = yy + TFASleekFontHeightMedium
-						xx = xx - TFASleekFontHeightMedium / 3
+						yy = yy + TFA.Fonts.SleekHeightMedium
+						xx = xx - TFA.Fonts.SleekHeightMedium / 3
 					end
 
 					str = string.upper( self:GetFireModeName() .. ( #self.FireModes > 2 and " | +" or "" ) )
@@ -870,18 +870,18 @@ function SWEP:DrawHUDAmmo()
 					draw.DrawText(str, "TFASleekSmall", xx + 1, yy + 1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
 					draw.DrawText(str, "TFASleekSmall", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT)
 					str = string.upper("ALT-RESERVE: " .. self:Ammo2())
-					yy = yy + TFASleekFontHeightSmall
-					xx = xx - TFASleekFontHeightSmall / 3
+					yy = yy + TFA.Fonts.SleekHeightSmall
+					xx = xx - TFA.Fonts.SleekHeightSmall / 3
 					draw.DrawText(str, "TFASleekSmall", xx + 1, yy + 1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
 					draw.DrawText(str, "TFASleekSmall", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT)
-					yy = yy + TFASleekFontHeightMedium
-					xx = xx - TFASleekFontHeightMedium / 3
+					yy = yy + TFA.Fonts.SleekHeightMedium
+					xx = xx - TFA.Fonts.SleekHeightMedium / 3
 				else
 					str = string.upper("ALT-AMMO: " .. self:Ammo2())
 					draw.DrawText(str, "TFASleekSmall", xx + 1, yy + 1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
 					draw.DrawText(str, "TFASleekSmall", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT)
-					yy = yy + TFASleekFontHeightMedium
-					xx = xx - TFASleekFontHeightMedium / 3
+					yy = yy + TFA.Fonts.SleekHeightMedium
+					xx = xx - TFA.Fonts.SleekHeightMedium / 3
 				end
 			end
 		end

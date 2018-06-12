@@ -4,7 +4,7 @@ end
 
 ATTACHMENT.Name = "ACOG"
 --ATTACHMENT.ID = "base" -- normally this is just your filename
-ATTACHMENT.Description = { TFA.AttachmentColors["="], "4x zoom", TFA.AttachmentColors["-"], "20% higher zoom time",  TFA.AttachmentColors["-"], "10% slower aimed walking" }
+ATTACHMENT.Description = { TFA.Attachments.Colors["="], "4x zoom", TFA.Attachments.Colors["-"], "20% higher zoom time",  TFA.Attachments.Colors["-"], "10% slower aimed walking" }
 ATTACHMENT.Icon = "entities/tfa_si_acog.png" --Revers to label, please give it an icon though!  This should be the path to a png, like "entities/tfa_ammo_match.png"
 ATTACHMENT.ShortName = "ACOG"
 

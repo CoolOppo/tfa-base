@@ -5,7 +5,7 @@ end
 if CLIENT then
 	local lasthitmarkertime = -1
 	local enabledcvar, solidtimecvar, fadetimecvar, scalecvar
-	local rcvar, gcvar, acvar
+	local rcvar, gcvar, bcvar, acvar
 	local c = Color(255, 255, 255, 255)
 	local spr
 

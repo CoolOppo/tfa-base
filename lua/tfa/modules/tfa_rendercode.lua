@@ -14,7 +14,7 @@ if CLIENT then
 	tab["$pp_colour_mulb"] = 0
 
 	local function MyDrawBokehDOF()
-		if TFA_RENDERTARGET then return end
+		if TFA.DrawingRenderTarget then return end
 		if not ( doblur and doblur:GetBool() ) then return end
 		render.UpdateScreenEffectTexture()
 		render.UpdateFullScreenDepthTexture()
@@ -43,7 +43,7 @@ if CLIENT then
 
 			tab["$pp_colour_brightness"] = -tfablurintensity * 0.02
 			tab["$pp_colour_contrast"] = 1 - tfablurintensity * 0.1
-			if not TFA_RENDERTARGET then
+			if not TFA.DrawingRenderTarget then
 				DrawColorModify(tab)
 			end
 			-- cam.IgnoreZ(true)
@@ -74,7 +74,7 @@ if CLIENT then
 end
 
 hook.Add("PreDrawOpaqueRenderables", "tfaweaponspredrawopaque", function()
-	for k, v in pairs(player.GetAll()) do
+	for _, v in pairs(player.GetAll()) do
 		local wep = v:GetActiveWeapon()
 
 		if IsValid(wep) and wep.PreDrawOpaqueRenderables then

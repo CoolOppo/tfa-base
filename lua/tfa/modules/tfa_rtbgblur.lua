@@ -43,7 +43,7 @@ funcs[2] = function()
 end
 
 hook.Add("PostDrawTranslucentRenderables", "tfa_draw_rt_blur", function()
-	if TFA_RENDERTARGET then return end
+	if TFA.DrawingRenderTarget then return end
 
 	local mode = cv_mode:GetInt()
 	if not isfunction(funcs[mode]) then return end
