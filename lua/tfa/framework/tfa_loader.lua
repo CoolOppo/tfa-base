@@ -43,7 +43,7 @@ if TFA_BASE_VERSION then
 end
 
 if do_load then
-
+	-- luacheck: globals TFA_BASE_VERSION TFA_BASE_VERSION_STRING TFA_BASE_VERSION_CHANGES
 	TFA_BASE_VERSION = version
 	TFA_BASE_VERSION_STRING = version_string
 	TFA_BASE_VERSION_CHANGES = changelog
