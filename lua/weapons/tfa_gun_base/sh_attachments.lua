@@ -6,6 +6,30 @@ SWEP.AttachmentDependencies = {} --{["si_acog"] = {"bg_rail"}}
 SWEP.AttachmentExclusions = {} --{ ["si_iron"] = {"bg_heatshield"} }
 local att_enabled_cv = GetConVar("sv_tfa_attachments_enabled")
 
+function SWEP:RemoveUnusedAttachments()
+	for k, v in pairs(self.Attachments) do
+		if v.atts then
+			local t = {}
+			local i = 1
+
+			for _, b in pairs(v.atts) do
+				if TFA.Attachments.Atts[b] then
+					t[i] = b
+					i = i + 1
+				end
+			end
+
+			v.atts = table.Copy(t)
+		end
+
+		if #v.atts <= 0 then
+			self.Attachments[k] = nil
+			continue
+		end
+	end
+end
+
+
 function SWEP:BuildAttachmentCache()
 	for k, v in pairs(self.Attachments) do
 		if v.atts then
@@ -321,28 +345,7 @@ function SWEP:InitAttachments()
 	end
 
 	hook.Run("TFA_PostInitAttachments", self)
-
-	for k, v in pairs(self.Attachments) do
-		if v.atts then
-			local t = {}
-			local i = 1
-
-			for _, b in pairs(v.atts) do
-				if TFA.Attachments.Atts[b] then
-					t[i] = b
-					i = i + 1
-				end
-			end
-
-			v.atts = table.Copy(t)
-		end
-
-		if #v.atts <= 0 then
-			self.Attachments[k] = nil
-			continue
-		end
-	end
-
+	self:RemoveUnusedAttachments()
 	self:BuildAttachmentCache()
 	hook.Run("TFA_FinalInitAttachments", self)
 end
