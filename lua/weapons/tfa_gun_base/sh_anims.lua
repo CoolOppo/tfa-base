@@ -447,8 +447,8 @@ local success, tanim, typev
 --[[
 Function Name:  Locomote
 Syntax: self:Locomote( flip ironsights, new is, flip sprint, new sprint).
-Returns:  
-Notes:  
+Returns:
+Notes:
 Purpose:  Animation / Utility
 ]]
 local __, tldata

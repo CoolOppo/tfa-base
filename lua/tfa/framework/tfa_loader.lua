@@ -53,7 +53,7 @@ if do_load then
 
 	local flist = file.Find("tfa/enums/*.lua","LUA")
 
-	for fileid, filename in pairs(flist) do
+	for _, filename in pairs(flist) do
 
 		local typev = "SHARED"
 		if filename:StartWith("cl_") then
@@ -75,7 +75,7 @@ if do_load then
 
 	flist = file.Find("tfa/modules/*.lua","LUA")
 
-	for fileid, filename in pairs(flist) do
+	for _, filename in pairs(flist) do
 
 		local typev = "SHARED"
 		if filename:StartWith("cl_") then
@@ -97,7 +97,7 @@ if do_load then
 
 	flist = file.Find("tfa/external/*.lua","LUA")
 
-	for fileid, filename in pairs(flist) do
+	for _, filename in pairs(flist) do
 
 		local typev = "SHARED"
 		if filename:StartWith("cl_") then

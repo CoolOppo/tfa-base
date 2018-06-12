@@ -310,7 +310,7 @@ function SWEP:InitAttachments()
 	hook.Run("TFA_FinalInitAttachments", self)
 end
 
-function SWEP:GenerateVGUIAttachmentTable() 
+function SWEP:GenerateVGUIAttachmentTable()
 	self.VGUIAttachments = {}
 	local keyz = table.GetKeys( self.Attachments )
 	table.RemoveByValue( keyz, "BaseClass" )

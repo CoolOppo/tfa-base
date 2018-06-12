@@ -36,7 +36,7 @@ if SERVER then
 		if not IsValid(ply) then return end
 
 		if sp or not ply.TFA_RequestAll then
-			for k, v in pairs(ents.GetAll()) do
+			for _, v in pairs(ents.GetAll()) do
 				if v:IsWeapon() and v:IsTFA() and v.HasInitAttachments then
 					UpdateWeapon(v, ply)
 				end
@@ -101,7 +101,7 @@ function TFARegisterAttachment(att)
 	TFA.Attachments.Atts[att.ID or att.Name] = att
 end
 
-TFA_ATTACHMENT_PATH = "tfa/att/"
+TFA.Attachments.Path = "tfa/att/"
 TFA_ATTACHMENT_ISUPDATING = false
 
 function TFAUpdateAttachments()
@@ -113,20 +113,18 @@ function TFAUpdateAttachments()
 	TFA.AttachmentColors = TFA.Attachments.Colors --for compatibility
 	TFA.Attachments.Atts = {}
 	TFA_ATTACHMENT_ISUPDATING = true
-	local tbl = file.Find(TFA_ATTACHMENT_PATH .. "*base*", "LUA", "namedesc")
-	local addtbl = file.Find(TFA_ATTACHMENT_PATH .. "*", "LUA", "namedesc")
+	local tbl = file.Find(TFA.Attachments.Path .. "*base*", "LUA", "namedesc")
+	local addtbl = file.Find(TFA.Attachments.Path .. "*", "LUA", "namedesc")
 
-	for k, v in ipairs(addtbl) do
+	for _, v in ipairs(addtbl) do
 		if not string.find(v, "base") then
 			table.insert(tbl, #tbl + 1, v)
 		end
 	end
 
-	addtbl = nil
-
-	for k, v in ipairs(tbl) do
+	for _, v in ipairs(tbl) do
 		local id = v
-		v = TFA_ATTACHMENT_PATH .. v
+		v = TFA.Attachments.Path .. v
 		ATTACHMENT = {}
 		ATTACHMENT.ID = string.Replace(id, ".lua", "")
 

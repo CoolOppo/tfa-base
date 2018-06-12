@@ -112,7 +112,7 @@ function PANEL:GetTextTableHeight( )
 	if not self.TextTable or #self.TextTable <= 0 then return 0 end
 	local hv = padding
 	surface.SetFont(bodyfont)
-	for k,v in pairs(self.TextTable) do
+	for _,v in pairs(self.TextTable) do
 		if type(v) == "string" then
 			local _, th = surface.GetTextSize( v )
 			hv = hv + th
@@ -127,7 +127,7 @@ function PANEL:GetTextTableSize(  )
 	local mw = 0
 	local hv = padding
 	surface.SetFont(bodyfont)
-	for k,v in pairs(self.TextTable) do
+	for _,v in pairs(self.TextTable) do
 		if type(v) == "string" then
 			local tw, th = surface.GetTextSize( v )
 			hv = hv + th
@@ -162,7 +162,7 @@ function PANEL:DrawTextTable( x, y )
 	local hv = padding
 	local acol = TFA.Attachments.Colors["primary"]
 	surface.SetFont(bodyfont)
-	for k,v in pairs(self.TextTable) do
+	for _,v in pairs(self.TextTable) do
 		if type(v) == "table" or type(v) == "vector" then
 			if v.r then
 				acol = Color( v.r or 0, v.g or 0, v.b or 0, v.a or 255 )

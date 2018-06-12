@@ -220,7 +220,7 @@ function SWEP:Sway(pos, ang, doCalc)
 	--grab eye angles
 	eyeAngles = self:GetOwner():EyeAngles()
 	viewPunch = self:GetOwner():GetViewPunchAngles()
-	eyeAngles.p = eyeAngles.p - viewPunch.p 
+	eyeAngles.p = eyeAngles.p - viewPunch.p
 	eyeAngles.y = eyeAngles.y - viewPunch.y
 	oldEyeAngles = oldEyeAngles or eyeAngles
 	--calculate delta

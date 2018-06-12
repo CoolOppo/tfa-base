@@ -7,7 +7,7 @@ hook.Add("PopulateMenuBar", "NPCOptions_MenuBar_TFA", function(menubarV)
 	wpns:SetDeleteSelf(false)
 	local weaponCats = {}
 
-	for k, wep in pairs(weapons.GetList()) do
+	for _, wep in pairs(weapons.GetList()) do
 		if wep and wep.Spawnable and weapons.IsBasedOn(wep.ClassName, "tfa_gun_base") then
 			local cat = wep.Category or "Other"
 			weaponCats[cat] = weaponCats[cat] or {}
@@ -28,7 +28,7 @@ hook.Add("PopulateMenuBar", "NPCOptions_MenuBar_TFA", function(menubarV)
 		wpnSub:SetDeleteSelf(false)
 		table.SortByMember(v, "title", true)
 
-		for l, b in ipairs(v) do
+		for _, b in ipairs(v) do
 			wpnSub:AddCVar(b.title, "gmod_npcweapon", b.class)
 		end
 	end

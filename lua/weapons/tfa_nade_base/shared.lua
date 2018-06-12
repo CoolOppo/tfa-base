@@ -131,7 +131,7 @@ function SWEP:Throw()
 
 		if not bool then
 			self.ProjectileVelocity = self.Velocity and self.Velocity or 550 --Entity to shoot's velocity
-			--Entity to shoot's velocity		
+			--Entity to shoot's velocity
 		else
 			if self.Velocity_Underhand then
 				self.ProjectileVelocity = self.Velocity_Underhand

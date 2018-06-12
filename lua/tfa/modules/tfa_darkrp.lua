@@ -17,7 +17,7 @@ TFA_PocketBlock["tfa_ammo_winchester"] = true
 
 local function TFA_PockBlock(ply, wep) --Get it, because cockblock, hehe.....  so mature.
 	if not IsValid(wep) then return end
-	class = wep:GetClass()
+	local class = wep:GetClass()
 	if TFA_PocketBlock[class] then return false end
 end
 

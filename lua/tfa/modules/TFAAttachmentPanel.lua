@@ -163,7 +163,7 @@ function PANEL:Think()
 	local header
 	local texttable
 
-	for k,v in pairs( self.AttachmentIcons ) do
+	for _,v in pairs( self.AttachmentIcons ) do
 		if v:IsHovered() then
 			header = TFA.Attachments.Atts[v.Attachment].Name
 			texttable = TFA.Attachments.Atts[v.Attachment].Description
@@ -172,7 +172,7 @@ function PANEL:Think()
 	end
 
 	if not header then
-		for k,v in pairs( self.AttachmentIcons ) do
+		for _,v in pairs( self.AttachmentIcons ) do
 			if v:GetSelected() then
 				header = TFA.Attachments.Atts[v.Attachment].Name
 				texttable = {}--TFA.Attachments.Atts[v.Attachment].Description

@@ -1,7 +1,7 @@
 local l_Lerp = function(t, a, b) return a + ( b - a ) * t end
 local l_mathMin = function(a,b) return ( a<b ) and a or b end
 local l_mathMax = function(a,b) return ( a>b ) and a or b end
-local l_ABS = function(a) return (a<0) and -a or a end 
+local l_ABS = function(a) return (a<0) and -a or a end
 local l_mathClamp = function(t,a,b) return l_mathMax(l_mathMin( t,b),a) end
 local l_mathApproach = function(a,b,delta)
 	if a<b then
@@ -41,7 +41,7 @@ function SWEP:CalculateRatios()
 	self.SprintProgress = l_mathApproach(self.SprintProgress,sprt, (sprt - self.SprintProgress ) * ft * adstransitionspeed )
 	self.ProceduralHolsterProgress = l_mathApproach(self.ProceduralHolsterProgress,sprt, (sprt - self.SprintProgress ) * ft * self.ProceduralHolsterTime * 15 )
 	self.InspectingProgress = l_mathApproach(self.InspectingProgress, self.Inspecting and 1 or 0, ( ( self.Inspecting and 1 or 0 )  - self.InspectingProgress ) * ft * 10 )
-	self.CLIronSightsProgress = self.IronSightsProgress--compatibility	
+	self.CLIronSightsProgress = self.IronSightsProgress--compatibility
 	jr_targ = math.min( math.abs(owent:GetVelocity().z) / 500, 1)
 	self.JumpRatio = l_mathApproach(self.JumpRatio, jr_targ, ( jr_targ  - self.JumpRatio ) * ft * 20 )
 end

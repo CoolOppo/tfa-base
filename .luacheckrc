@@ -23,8 +23,8 @@ stds.addon.globals = {
 	"TFAUpdateAttachments",
 	"TFA_ATTACHMENT_ISUPDATING",
 	"ACT_VM_BLOWBACK",--gmod stuff that we're addin in from hereon out
+	"ACT_VM_FIDGET_EMPTY",
 	"ATTACHMENT",
-	"BaseClass"
 }
 
 stds.addon.read_globals = {
@@ -53,7 +53,9 @@ stds.addon.read_globals = {
 	"nZombies",
 	"NZombies",
 	"NZ",
-	"nzRound"
+	"nzRound",
+	"TFADUSKFOV",
+	"StormFox"
 }
 
 files = {

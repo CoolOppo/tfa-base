@@ -90,27 +90,12 @@ end
 
 --Ammo
 
-local AmmoTypes
-local proceed
-
-game.AddAmmoTypeOld = game.AddAmmoTypeOld or game.AddAmmoType
-
-function game.AddAmmoType( tbl )
-	if not tbl.name then return end
-	proceed = true
-	AmmoTypes = game.BuildAmmoTypes()
-	for k,v in pairs( AmmoTypes ) do
-		if v.name == tbl.name then
-			proceed = false
-			break
-		end
-	end
-	if proceed then
-		game.AddAmmoTypeOld( tbl )
-	end
-end
+local AmmoTypes = {}
 
 function TFA.AddAmmo( id, name )
+	if AmmoTypes[name] then return AmmoTypes[name] end
+	AmmoTypes[name] = id
+
 	game.AddAmmoType( {
 		name  = id
 	})
