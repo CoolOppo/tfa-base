@@ -69,6 +69,7 @@ function EFFECT:Init(data)
 	self.vOffset = self.Position
 	dir = self.Norm
 	AddVel = vector_origin
+	local dlight
 
 	if IsValid(self.WeaponEnt) then
 		dlight = DynamicLight(self.WeaponEnt:EntIndex())

@@ -29,14 +29,14 @@ function EFFECT:Init(data)
 	self.Angle = self.Forward:Angle()
 	self.Right = self.Angle:Right()
 	self.vOffset = self.Position
-	dir = self.Forward
+	local dir = self.Forward
+	local ownerent = self.WeaponEnt:GetOwner()
 
-	local owner = self.WeaponEnt:GetOwner()
 	if not IsValid(ownerent) then
 		ownerent = LocalPlayer()
 	end
-	AddVel = ownerent:GetVelocity()
 
+	AddVel = ownerent:GetVelocity()
 	AddVel = AddVel * 0.05
 	self.vOffset = self.Position
 	dir = self.Forward
@@ -44,12 +44,11 @@ function EFFECT:Init(data)
 	local dot = dir:GetNormalized():Dot(GetViewEntity():EyeAngles():Forward())
 	local dotang = math.deg(math.acos(math.abs(dot)))
 	local halofac = math.Clamp(1 - (dotang / 90), 0, 1)
-
 	local emitter = ParticleEmitter(self.vOffset)
 	local sparticle = emitter:Add("effects/scotchmuzzleflash" .. math.random(1, 4), self.vOffset)
 
 	if (sparticle) then
-		sparticle:SetVelocity(dir * 4 )
+		sparticle:SetVelocity(dir * 4)
 		sparticle:SetLifeTime(0)
 		sparticle:SetDieTime(0.15)
 		sparticle:SetStartAlpha(math.Rand(16, 32))

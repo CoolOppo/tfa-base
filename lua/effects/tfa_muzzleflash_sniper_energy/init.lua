@@ -29,14 +29,14 @@ function EFFECT:Init(data)
 	self.Angle = self.Forward:Angle()
 	self.Right = self.Angle:Right()
 	self.vOffset = self.Position
-	dir = self.Forward
+	local dir = self.Forward
+	local ownerent = self.WeaponEnt:GetOwner()
 
-	local owner = self.WeaponEnt:GetOwner()
 	if not IsValid(ownerent) then
 		ownerent = LocalPlayer()
 	end
-	AddVel = ownerent:GetVelocity()
 
+	AddVel = ownerent:GetVelocity()
 	AddVel = AddVel * 0.05
 	self.vOffset = self.Position
 	dir = self.Forward
@@ -44,7 +44,6 @@ function EFFECT:Init(data)
 	local dot = dir:GetNormalized():Dot(GetViewEntity():EyeAngles():Forward())
 	local dotang = math.deg(math.acos(math.abs(dot)))
 	local halofac = math.Clamp(1 - (dotang / 90), 0, 1)
-
 	local dlight = DynamicLight(ownerent:EntIndex())
 
 	if (dlight) then
@@ -62,7 +61,7 @@ function EFFECT:Init(data)
 	local sparticle = emitter:Add("effects/muzzleflashX_nemole_w", self.vOffset)
 
 	if (sparticle) then
-		sparticle:SetVelocity(dir * 4 )
+		sparticle:SetVelocity(dir * 4)
 		sparticle:SetLifeTime(0)
 		sparticle:SetDieTime(0.08)
 		sparticle:SetStartAlpha(math.Rand(200, 255))
@@ -86,7 +85,7 @@ function EFFECT:Init(data)
 		local particle = emitter:Add("effects/scotchmuzzleflashw", self.vOffset)
 
 		if (particle) then
-			particle:SetVelocity(dir * 4 )
+			particle:SetVelocity(dir * 4)
 			particle:SetLifeTime(0)
 			particle:SetDieTime(0.10)
 			particle:SetStartAlpha(math.Rand(225, 255))

@@ -29,7 +29,7 @@ function EFFECT:Init(data)
 	self.Angle = self.Forward:Angle()
 	self.Right = self.Angle:Right()
 	self.vOffset = self.Position
-	dir = self.Forward
+	local dir = self.Forward
 
 	if LocalPlayer():IsValid() then
 		AddVel = LocalPlayer():GetVelocity()
@@ -63,10 +63,10 @@ function EFFECT:Init(data)
 	local emitter = ParticleEmitter(self.vOffset)
 
 	for i = 0, 1 do
-		local particle = emitter:Add("effects/muzzleflashX_nemole", self.vOffset + FrameTime() * AddVel )
+		local particle = emitter:Add("effects/muzzleflashX_nemole", self.vOffset + FrameTime() * AddVel)
 
 		if (particle) then
-			particle:SetVelocity(dir * 4 )
+			particle:SetVelocity(dir * 4)
 			particle:SetLifeTime(0)
 			particle:SetDieTime(0.1)
 			particle:SetStartAlpha(math.Rand(200, 255))

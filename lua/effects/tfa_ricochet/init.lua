@@ -1,10 +1,10 @@
 local RicochetColor = Color(255, 255, 255, 255)
 local RicochetIDOffset = 33
 local RicochetMat = Material("effects/yellowflare")
-
 local cv_gv = GetConVar("sv_gravity")
 local cv_sl = GetConVar("cl_tfa_fx_impact_ricochet_sparklife")
 local cv_sc = GetConVar("cl_tfa_fx_impact_ricochet_sparks")
+
 function EFFECT:Init(data)
 	self.StartPos = data:GetOrigin()
 	self.Dir = data:GetNormal()

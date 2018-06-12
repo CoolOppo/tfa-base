@@ -67,7 +67,7 @@ function EFFECT:Init(data)
 	end
 
 	self.vOffset = self.Position
-	dir = self.Forward
+	local dir = self.Forward
 	AddVel = AddVel * 0.05
 
 	if IsValid(ent) then

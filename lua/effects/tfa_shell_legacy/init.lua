@@ -38,7 +38,7 @@ function EFFECT:Init(data)
 		end
 
 		if self.WeaponEntOG.Akimbo then
-			self.Attachment = 4 - ( game.SinglePlayer() and self.WeaponEntOG:GetNW2Int("AnimCycle",1) or self.WeaponEntOG.AnimCycle )
+			self.Attachment = 4 - (game.SinglePlayer() and self.WeaponEntOG:GetNW2Int("AnimCycle", 1) or self.WeaponEntOG.AnimCycle)
 		end
 
 		if self.WeaponEntOG.ShellAttachmentRaw then
@@ -67,7 +67,7 @@ function EFFECT:Init(data)
 
 	-- Keep the start and end Pos - we're going to interpolate between them
 	self.Pos = self:GetTracerShootPos(angpos.Pos, self.WeaponEnt, self.Attachment)
-	self.Norm =  angpos.Ang:Forward() --angpos.Ang:Forward()
+	self.Norm = angpos.Ang:Forward() --angpos.Ang:Forward()
 	--print(self.Norm)
 	self.Magnitude = data:GetMagnitude()
 	self.Scale = data:GetScale()

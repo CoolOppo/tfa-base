@@ -29,26 +29,23 @@ function EFFECT:Init(data)
 	self.Angle = self.Forward:Angle()
 	self.Right = self.Angle:Right()
 	self.vOffset = self.Position
-	dir = self.Forward
+	local ownerent = self.WeaponEnt:GetOwner()
 
-	local owner = self.WeaponEnt:GetOwner()
 	if not IsValid(ownerent) then
 		ownerent = LocalPlayer()
 	end
-	AddVel = ownerent:GetVelocity()
 
+	AddVel = ownerent:GetVelocity()
 	self.vOffset = self.Position
-	dir = self.Forward
 	AddVel = AddVel * 0.05
+	local dir = self.Forward
 	local dot = dir:GetNormalized():Dot(GetViewEntity():EyeAngles():Forward())
-	local dotang = math.deg(math.acos(math.abs(dot)))
 	local halofac = math.abs(dot)
 	local epos = ownerent:GetShootPos()
-
 	local dlight = DynamicLight(ownerent:EntIndex())
 
 	if (dlight) then
-		dlight.pos = epos + ownerent:EyeAngles():Forward() * self.vOffset:Distance(epos) + 1.05 * ownerent:GetVelocity() * FrameTime()--self.vOffset - ownerent:EyeAngles():Right() * 5 + 1.05 * ownerent:GetVelocity() * FrameTime()
+		dlight.pos = epos + ownerent:EyeAngles():Forward() * self.vOffset:Distance(epos) + 1.05 * ownerent:GetVelocity() * FrameTime() --self.vOffset - ownerent:EyeAngles():Right() * 5 + 1.05 * ownerent:GetVelocity() * FrameTime()
 		dlight.r = 255
 		dlight.g = 225
 		dlight.b = 255
@@ -59,22 +56,23 @@ function EFFECT:Init(data)
 	end
 
 	local emitter = ParticleEmitter(self.vOffset)
-	local sval = 1-math.random(0,1)*2
+	local sval = 1 - math.random(0, 1) * 2
+
 	for i = 1, 8 do
-		local particle = emitter:Add("effects/splash" .. tostring(math.random(1, 2)), self.vOffset + dir*0.4*i + FrameTime() * AddVel )
+		local particle = emitter:Add("effects/splash" .. tostring(math.random(1, 2)), self.vOffset + dir * 0.4 * i + FrameTime() * AddVel)
 
 		if (particle) then
-			particle:SetVelocity(dir * 32 )
+			particle:SetVelocity(dir * 32)
 			particle:SetLifeTime(0)
 			particle:SetDieTime(0.1525)
-			particle:SetStartAlpha(math.Rand(2,8) * (halofac * 0.8 + 0.2))
+			particle:SetStartAlpha(math.Rand(2, 8) * (halofac * 0.8 + 0.2))
 			particle:SetEndAlpha(0)
 			--particle:SetStartSize( 7.5 * (halofac*0.8+0.2), 0, 1)
 			--particle:SetEndSize( 0 )
-			particle:SetStartSize(3 * (halofac * 0.8 + 0.2) * math.Rand(0.25,1) * (1+(8-i)*0.1) )
-			particle:SetEndSize(13 * (halofac * 0.8 + 0.2) * math.Rand(0.75,1) * (1+(8-i)*0.1) )
+			particle:SetStartSize(3 * (halofac * 0.8 + 0.2) * math.Rand(0.25, 1) * (1 + (8 - i) * 0.1))
+			particle:SetEndSize(13 * (halofac * 0.8 + 0.2) * math.Rand(0.75, 1) * (1 + (8 - i) * 0.1))
 			particle:SetRoll(math.rad(math.Rand(-180, 180)))
-			particle:SetRollDelta(math.rad(math.Rand(15,30)) * sval)
+			particle:SetRollDelta(math.rad(math.Rand(15, 30)) * sval)
 			particle:SetColor(192, 255, 255)
 			particle:SetLighting(false)
 			particle.FollowEnt = self.WeaponEnt
@@ -84,11 +82,12 @@ function EFFECT:Init(data)
 	end
 
 	local r = math.Rand(-10, 10) * 3.14 / 180
+
 	for i = 1, 2 do
-		local particle = emitter:Add("effects/scotchmuzzleflashw", self.vOffset + FrameTime() * AddVel )
+		local particle = emitter:Add("effects/scotchmuzzleflashw", self.vOffset + FrameTime() * AddVel)
 
 		if (particle) then
-			particle:SetVelocity(dir * 4 )
+			particle:SetVelocity(dir * 4)
 			particle:SetLifeTime(0)
 			particle:SetDieTime(0.1)
 			particle:SetStartAlpha(math.Rand(200, 255))
@@ -127,7 +126,8 @@ function EFFECT:Init(data)
 				particle:SetColor(255, 255, 255)
 			end
 		end
-		for i = 1,2 do
+
+		for i = 1, 2 do
 			local particle = emitter:Add("particle/particle_ring_refract_01", self.vOffset + (dir * i))
 
 			if (particle) then

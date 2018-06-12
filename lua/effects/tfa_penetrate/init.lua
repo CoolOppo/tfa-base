@@ -1,11 +1,10 @@
 local PenetColor = Color(255, 255, 255, 255)
 local PenetMat = Material("trails/smoke")
 local PenetMat2 = Material("effects/yellowflare")
-
 local cv_gv = GetConVar("sv_gravity")
 local cv_sl = GetConVar("cl_tfa_fx_impact_ricochet_sparklife")
---local cv_sc = GetConVar("cl_tfa_fx_impact_ricochet_sparks")
 
+--local cv_sc = GetConVar("cl_tfa_fx_impact_ricochet_sparks")
 local DFX = {
 	["AR2Tracer"] = true,
 	["Tracer"] = true,
@@ -29,31 +28,37 @@ function EFFECT:Init(data)
 	self.SparkLife = cv_sl:GetFloat()
 	self.WeaponEnt = data:GetEntity()
 	if not IsValid(self.WeaponEnt) then return end
+
 	if self.WeaponEnt.TracerPCF then
-		local traceres = util.QuickTrace(self.StartPos, self.Dir * 9999999, Entity( math.Round( data:GetScale() ) ) )
+		local traceres = util.QuickTrace(self.StartPos, self.Dir * 9999999, Entity(math.Round(data:GetScale())))
 		self.EndPos = traceres.HitPos or self.StartPos
 		local efn = self.WeaponEnt.TracerName
 		local spos = self.StartPos
-		local cnt = math.min( math.Round( data:GetMagnitude() ), 6000 )
-		timer.Simple( cnt / 1000000, function()
-			TFA.ParticleTracer( efn, spos, traceres.HitPos or spos, false )
+		local cnt = math.min(math.Round(data:GetMagnitude()), 6000)
+
+		timer.Simple(cnt / 1000000, function()
+			TFA.ParticleTracer(efn, spos, traceres.HitPos or spos, false)
 		end)
+
 		return
 	end
+
 	local tn = self.WeaponEnt.BulletTracerName
+
 	if tn and tn ~= "" and not DFX[tn] then
 		local fx = EffectData()
 		fx:SetStart(self.StartPos)
-		local traceres = util.QuickTrace(self.StartPos, self.Dir * 9999999, Entity( math.Round( data:GetScale() ) ) )
+		local traceres = util.QuickTrace(self.StartPos, self.Dir * 9999999, Entity(math.Round(data:GetScale())))
 		self.EndPos = traceres.HitPos or self.StartPos
-		fx:SetOrigin( self.EndPos )
-		fx:SetEntity( self.WeaponEnt )
-		fx:SetMagnitude( 1 )
+		fx:SetOrigin(self.EndPos)
+		fx:SetEntity(self.WeaponEnt)
+		fx:SetMagnitude(1)
 		util.Effect(tn, fx)
 		self:Remove()
-		return
 		--Sparks
 		--Impact
+
+		return
 	else
 		local emitter = ParticleEmitter(self.StartPos)
 		--[[
@@ -74,8 +79,8 @@ function EFFECT:Init(data)
 			part:SetVelocityScale(true)
 			part:SetCollide(true)
 		end
-		]]--
-
+		]]
+		--
 		local part = emitter:Add("effects/select_ring", self.StartPos)
 		part:SetStartAlpha(225)
 		part:SetStartSize(1)
@@ -103,25 +108,25 @@ function EFFECT:Think()
 end
 
 function EFFECT:Render()
-if self.DieTime then
-	local fDelta = (self.DieTime - CurTime()) / self.LifeTime
-	fDelta = math.Clamp(fDelta, 0, 1)
-	render.SetMaterial(PenetMat)
-	local color = ColorAlpha(PenetColor, 32 * fDelta)
-	local precision = 16
-	local i = 1
+	if self.DieTime then
+		local fDelta = (self.DieTime - CurTime()) / self.LifeTime
+		fDelta = math.Clamp(fDelta, 0, 1)
+		render.SetMaterial(PenetMat)
+		local color = ColorAlpha(PenetColor, 32 * fDelta)
+		local precision = 16
+		local i = 1
 
-	while i <= precision do
-		render.DrawBeam(self.StartPos + self.Dir * self.Len * ((i - 1) / precision), self.StartPos + self.Dir * self.Len * (i / precision), self.Thickness * fDelta * (1 - i / precision), 0.5, 0.5, color)
-		i = i + 1
+		while i <= precision do
+			render.DrawBeam(self.StartPos + self.Dir * self.Len * ((i - 1) / precision), self.StartPos + self.Dir * self.Len * (i / precision), self.Thickness * fDelta * (1 - i / precision), 0.5, 0.5, color)
+			i = i + 1
+		end
+
+		render.SetMaterial(PenetMat2)
+		i = 1
+
+		while i <= precision do
+			render.DrawBeam(self.StartPos + self.Dir * self.Len * ((i - 1) / precision), self.StartPos + self.Dir * self.Len * (i / precision), self.Thickness / 3 * 2 * fDelta * (1 - i / precision), 0.5, 0.5, color)
+			i = i + 1
+		end
 	end
-
-	render.SetMaterial(PenetMat2)
-	i = 1
-
-	while i <= precision do
-		render.DrawBeam(self.StartPos + self.Dir * self.Len * ((i - 1) / precision), self.StartPos + self.Dir * self.Len * (i / precision), self.Thickness / 3 * 2 * fDelta * (1 - i / precision), 0.5, 0.5, color)
-		i = i + 1
-	end
-end
 end

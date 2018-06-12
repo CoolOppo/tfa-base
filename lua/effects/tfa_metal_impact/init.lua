@@ -18,7 +18,7 @@ function EFFECT:Init(data)
 	local partcount = math.random(self.ParticleCountMin, self.ParticleCountMax)
 
 	--Sparks
-	for i = 1, partcount do
+	for _ = 1, partcount do
 		local part = emitter:Add("effects/yellowflare", self.StartPos)
 		part:SetVelocity(Lerp(self.VelocityRandom, self.Dir, VectorRand()) * math.Rand(self.VelocityMin, self.VelocityMax))
 		part:SetDieTime(math.Rand(0.25, 1) * self.SparkLife)

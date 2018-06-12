@@ -1,7 +1,5 @@
 local ang
-
-local limit_particle_cv  = GetConVar("cl_tfa_fx_muzzlesmoke_limited")
-
+local limit_particle_cv = GetConVar("cl_tfa_fx_muzzlesmoke_limited")
 local SMOKEDELAY = 1.5
 
 function EFFECT:Init(data)
@@ -45,10 +43,12 @@ function EFFECT:Init(data)
 		local a = self.Attachment
 		local tn = "tfasmokedelay_" .. w:EntIndex() .. "_" .. a
 		local sp = smokepart
-		if timer.Exists(tn) then timer.Remove(tn) end
+
+		if timer.Exists(tn) then
+			timer.Remove(tn)
+		end
 
 		e.SmokePCF = e.SmokePCF or {}
-
 		local _a = w.Akimbo and a or 1
 
 		if IsValid(e.SmokePCF[_a]) then
@@ -57,7 +57,6 @@ function EFFECT:Init(data)
 
 		timer.Create(tn, delay or SMOKEDELAY, 1, function()
 			if not IsValid(e) then return end
-
 			e.SmokePCF[_a] = CreateParticleSystem(e, sp, PATTACH_POINT_FOLLOW, a)
 
 			if IsValid(e.SmokePCF[_a]) then
