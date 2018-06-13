@@ -8,6 +8,7 @@ TFA.Particles.PCFParticles["tfa_muzzle_gauss"] = "tfa_muzzleflashes"
 -- TFA.Particles.PCFParticles["weapon_muzzle_smoke_long"] = "csgo_fx"
 -- TFA.Particles.PCFParticles["weapon_muzzle_smoke"] = "csgo_fx"
 TFA.Particles.PCFParticles["tfa_ins2_weapon_muzzle_smoke"] = "tfa_ins2_muzzlesmoke"
+TFA.Particles.PCFParticles["tfa_ins2_weapon_shell_smoke"] = "tfa_ins2_shellsmoke"
 TFA.Particles.PCFParticles["tfa_bullet_smoke_tracer"] = "tfa_ballistics"
 TFA.Particles.PCFParticles["tfa_bullet_fire_tracer"] = "tfa_ballistics"
 --legacy
