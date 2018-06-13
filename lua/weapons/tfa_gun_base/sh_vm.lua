@@ -1,4 +1,5 @@
 local l_Lerp = function(t, a, b) return a + (b - a) * t end
+--[[
 local l_mathMin = function(a, b) return (a < b) and a or b end
 local l_mathMax = function(a, b) return (a > b) and a or b end
 local l_ABS = function(a) return (a < 0) and -a or a end
@@ -21,15 +22,13 @@ local function util_NormalizeAngles(a)
 
 	return a
 end
+]]--
 
 
 local vm_offset_pos = Vector()
 local vm_offset_ang = Angle()
 local l_FT = FrameTime
-local l_CT = CurTime
 local ft = 0.01
-local host_timescale_cv = GetConVar("host_timescale")
-local sv_cheats_cv = GetConVar("sv_cheats")
 --local fps_max_cvar = GetConVar("fps_max")
 
 local righthanded,shouldflip,cl_vm_flip_cv
@@ -85,7 +84,7 @@ local centered_sprintang = Vector(-15,0,0)
 
 function SWEP:CalculateViewModelOffset( )
 
-	ft = TFA.FrameTime()
+	ft = TFA.l_FT()
 
 	if self.Owner:IsNPC() then
 		return
@@ -121,9 +120,9 @@ function SWEP:CalculateViewModelOffset( )
 
 	adstransitionspeed = 10
 
-	is = self:GetIronSights()
-	spr = self:GetSprinting()
-	stat = self:GetStatus()
+	local is = self:GetIronSights()
+	local spr = self:GetSprinting()
+	local stat = self:GetStatus()
 	hls = ( TFA.Enum.HolsterStatus[ stat ] and self.ProceduralHolsterEnabled ) or ( TFA.Enum.ReloadStatus[ stat ] and self.ProceduralReloadEnabled )
 	if hls then
 		target_pos = self:GetStat( "ProceduralHolsterPos" ) * 1
@@ -198,7 +197,7 @@ Purpose:  Main SWEP function
 ]]--
 
 
-local rft,ftc,eyeAngles,viewPunch,eyeAnglesPunch,oldEyeAngles,delta,motion,counterMotion,compensation,fac,positionCompensation,swayRate,wiggleFactor,flipFactor
+local rft,eyeAngles,viewPunch,oldEyeAngles,delta,motion,counterMotion,compensation,fac,positionCompensation,swayRate,wiggleFactor,flipFactor
 --swayRate = 10
 
 local gunswaycvar = GetConVar("cl_tfa_gunbob_intensity")
@@ -225,7 +224,7 @@ function SWEP:Sway(pos, ang, doCalc)
 	oldEyeAngles = oldEyeAngles or eyeAngles
 	--calculate delta
 
-	rft = math.Clamp(FrameTime(), 0.001, 1/20)
+	rft = math.Clamp(l_FT(), 0.001, 1/20)
 	--[[
 	rft = (SysTime() - (self.LastSysT or SysTime()))
 
@@ -304,7 +303,7 @@ function SWEP:GetViewModelPosition( pos, ang )
 		viewpunch_val = ( 1-viewpunch_cv:GetInt())
 	else
 		local targ = math.Clamp( ( 1-viewpunch_cv:GetInt()) * ( 1 - ( self.IronSightsProgress or 0 ) ), 0, 1)
-		viewpunch_val = math.Approach(viewpunch_val, targ, (targ - viewpunch_val) * TFA.FrameTime() * 10)
+		viewpunch_val = math.Approach(viewpunch_val, targ, (targ - viewpunch_val) * TFA.l_FT() * 10)
 	end
 
 	local vpa = self:GetOwner():GetViewPunchAngles()

@@ -17,8 +17,8 @@ function SWEP:ResetEvents()
 
 	if IsFirstTimePredicted() or game.SinglePlayer() then
 		self.EventTimer = l_CT()
-		for k, v in pairs(self.EventTable) do
-			for l, b in pairs(v) do
+		for _, v in pairs(self.EventTable) do
+			for _, b in pairs(v) do
 				b.called = false
 			end
 		end
@@ -44,7 +44,7 @@ function SWEP:ProcessEvents()
 	local evtbl = self.EventTable[ self.LastAct or self:GetLastActivity() ]
 
 	if not evtbl then return end
-	for k, v in pairs(evtbl) do
+	for _, v in pairs(evtbl) do
 		if v.called or l_CT() < self.EventTimer + v.time * self:GetAnimationRate( self.LastAct or self:GetLastActivity() ) then continue end
 		v.called = true
 

@@ -356,7 +356,6 @@ Notes:  This is what autodetects animations for the SWEP.SequenceEnabled and SWE
 Purpose:  Autodetection
 ]]
 --
-ACT_VM_FIDGET_SILENCED = ACT_VM_FIDGET_SILENCED or ACT_RPG_FIDGET_UNLOADED
 --SWEP.actlist = {ACT_VM_DRAW, ACT_VM_DRAW_EMPTY, ACT_VM_DRAW_SILENCED, ACT_VM_DRAW_DEPLOYED, ACT_VM_HOLSTER, ACT_VM_HOLSTER_EMPTY, ACT_VM_IDLE, ACT_VM_IDLE_EMPTY, ACT_VM_IDLE_SILENCED, ACT_VM_PRIMARYATTACK, ACT_VM_PRIMARYATTACK_1, ACT_VM_PRIMARYATTACK_EMPTY, ACT_VM_PRIMARYATTACK_SILENCED, ACT_VM_SECONDARYATTACK, ACT_VM_RELOAD, ACT_VM_RELOAD_EMPTY, ACT_VM_RELOAD_SILENCED, ACT_VM_ATTACH_SILENCER, ACT_VM_RELEASE, ACT_VM_DETACH_SILENCER, ACT_VM_FIDGET, ACT_VM_FIDGET_EMPTY, ACT_VM_FIDGET_SILENCED, ACT_SHOTGUN_RELOAD_START, ACT_VM_DRYFIRE, ACT_VM_DRYFIRE_SILENCED }
 --If you really want, you can remove things from SWEP.actlist and manually enable animations and set their lengths.
 SWEP.SequenceEnabled = {}
@@ -378,7 +377,7 @@ function SWEP:CacheAnimations()
 	if IsValid(vm) then
 		self:BuildAnimActivities()
 
-		for k, v in ipairs(table.GetKeys(self.AnimationActivities)) do
+		for _, v in ipairs(table.GetKeys(self.AnimationActivities)) do
 			if isnumber(v) then
 				seq = vm:SelectWeightedSequence(v)
 

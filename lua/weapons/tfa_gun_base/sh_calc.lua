@@ -1,23 +1,20 @@
-local l_Lerp = function(t, a, b) return a + ( b - a ) * t end
-local l_mathMin = function(a,b) return ( a<b ) and a or b end
-local l_mathMax = function(a,b) return ( a>b ) and a or b end
-local l_ABS = function(a) return (a<0) and -a or a end
-local l_mathClamp = function(t,a,b) return l_mathMax(l_mathMin( t,b),a) end
-local l_mathApproach = function(a,b,delta)
-	if a<b then
-		return l_mathMin(a+l_ABS(delta),b)
+local l_Lerp = function(t, a, b) return a + (b - a) * t end
+local l_mathMin = function(a, b) return (a < b) and a or b end
+local l_mathMax = function(a, b) return (a > b) and a or b end
+local l_ABS = function(a) return (a < 0) and -a or a end
+local l_mathClamp = function(t, a, b) return l_mathMax(l_mathMin(t, b), a) end
+
+local l_mathApproach = function(a, b, delta)
+	if a < b then
+		return l_mathMin(a + l_ABS(delta), b)
 	else
-		return l_mathMax(a-l_ABS(delta),b)
+		return l_mathMax(a - l_ABS(delta), b)
 	end
 end
 
-local is, spr, ist, sprt, ft, hlst, stat,jr_targ
+local is, spr, ist, sprt, ft, stat, jr_targ
 ft = 0.01
-
 SWEP.LastRatio = nil
-
-local host_timescale_cv = GetConVar("host_timescale")
-local sv_cheats_cv = GetConVar("sv_cheats")
 
 function SWEP:CalculateRatios()
 	local owent = self:GetOwner()
@@ -28,22 +25,24 @@ function SWEP:CalculateRatios()
 	spr = self:GetSprinting()
 	ist = is and 1 or 0
 	sprt = spr and 1 or 0
-	hlst = ( ( TFA.Enum.HolsterStatus[ stat ] and self.ProceduralHolsterEnabled ) or ( TFA.Enum.ReloadStatus[ stat ] and self.ProceduralReloadEnabled ) ) and 1 or 0
-	adstransitionspeed = 12.5
+	hlst = ((TFA.Enum.HolsterStatus[stat] and self.ProceduralHolsterEnabled) or (TFA.Enum.ReloadStatus[stat] and self.ProceduralReloadEnabled)) and 1 or 0
+	local adstransitionspeed
+
 	if is then
-		adstransitionspeed = 12.5 / ( self:GetStat("IronSightTime") / 0.3 )
+		adstransitionspeed = 12.5 / (self:GetStat("IronSightTime") / 0.3)
 	elseif spr then
 		adstransitionspeed = 7.5
 	end
+
 	self.CrouchingRatio = l_mathApproach(self.CrouchingRatio or 0, owent:Crouching() and 1 or 0, ft / self.ToCrouchTime)
 	self.SpreadRatio = l_mathClamp(self.SpreadRatio - self:GetStat("Primary.SpreadRecovery") * ft, 1, self:GetStat("Primary.SpreadMultiplierMax"))
-	self.IronSightsProgress = l_mathApproach(self.IronSightsProgress,ist, (ist - self.IronSightsProgress ) * ft * adstransitionspeed )
-	self.SprintProgress = l_mathApproach(self.SprintProgress,sprt, (sprt - self.SprintProgress ) * ft * adstransitionspeed )
-	self.ProceduralHolsterProgress = l_mathApproach(self.ProceduralHolsterProgress,sprt, (sprt - self.SprintProgress ) * ft * self.ProceduralHolsterTime * 15 )
-	self.InspectingProgress = l_mathApproach(self.InspectingProgress, self.Inspecting and 1 or 0, ( ( self.Inspecting and 1 or 0 )  - self.InspectingProgress ) * ft * 10 )
-	self.CLIronSightsProgress = self.IronSightsProgress--compatibility
-	jr_targ = math.min( math.abs(owent:GetVelocity().z) / 500, 1)
-	self.JumpRatio = l_mathApproach(self.JumpRatio, jr_targ, ( jr_targ  - self.JumpRatio ) * ft * 20 )
+	self.IronSightsProgress = l_mathApproach(self.IronSightsProgress, ist, (ist - self.IronSightsProgress) * ft * adstransitionspeed)
+	self.SprintProgress = l_mathApproach(self.SprintProgress, sprt, (sprt - self.SprintProgress) * ft * adstransitionspeed)
+	self.ProceduralHolsterProgress = l_mathApproach(self.ProceduralHolsterProgress, sprt, (sprt - self.SprintProgress) * ft * self.ProceduralHolsterTime * 15)
+	self.InspectingProgress = l_mathApproach(self.InspectingProgress, self.Inspecting and 1 or 0, ((self.Inspecting and 1 or 0) - self.InspectingProgress) * ft * 10)
+	self.CLIronSightsProgress = self.IronSightsProgress --compatibility
+	jr_targ = math.min(math.abs(owent:GetVelocity().z) / 500, 1)
+	self.JumpRatio = l_mathApproach(self.JumpRatio, jr_targ, (jr_targ - self.JumpRatio) * ft * 20)
 end
 
 SWEP.IronRecoilMultiplier = 0.5 --Multiply recoil by this factor when we're in ironsights.  This is proportional, not inversely.
@@ -56,17 +55,14 @@ SWEP.ChangeStateAccuracyMultiplier = 1.5 --Less is more.  A change of state is w
 SWEP.JumpAccuracyMultiplier = 2 --Less is more.  Accuracy * 2 = Half as accurate.  Accuracy * 5 = 1/5 as accurate
 SWEP.WalkAccuracyMultiplier = 1.35 --Less is more.  Accuracy * 2 = Half as accurate.  Accuracy * 5 = 1/5 as accurate
 SWEP.ToCrouchTime = 0.2
-
 local mult_cvar = GetConVar("sv_tfa_spread_multiplier")
 local dynacc_cvar = GetConVar("sv_tfa_dynamicaccuracy")
-local ccon,crec
-
+local ccon, crec
 SWEP.JumpRatio = 0
 
 function SWEP:CalculateConeRecoil()
-	tmpiron = self:GetIronSights()
 	local dynacc = false
-	isr = self.IronSightsProgress or 0
+	local isr = self.IronSightsProgress or 0
 
 	if dynacc_cvar:GetBool() and (self:GetStat("Primary.NumShots") <= 1) then
 		dynacc = true
@@ -102,6 +98,7 @@ function SWEP:CalculateConeRecoil()
 	end
 
 	local jr = self.JumpRatio
+
 	if dynacc then
 		ccon = l_Lerp(jr, ccon, ccon * self:GetStat("JumpAccuracyMultiplier"))
 		crec = l_Lerp(jr, crec, crec * self:GetStat("JumpRecoilMultiplier"))
@@ -116,12 +113,13 @@ function SWEP:CalculateConeRecoil()
 	return ccon, crec
 end
 
-local righthanded,shouldflip,cl_vm_flip_cv
+local righthanded, shouldflip, cl_vm_flip_cv
 
 function SWEP:CalculateViewModelFlip()
 	if CLIENT and not cl_vm_flip_cv then
 		cl_vm_flip_cv = GetConVar("cl_tfa_viewmodel_flip")
 	end
+
 	if self.ViewModelFlipDefault == nil then
 		self.ViewModelFlipDefault = self.ViewModelFlip
 	end

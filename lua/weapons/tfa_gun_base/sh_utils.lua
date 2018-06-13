@@ -152,7 +152,7 @@ function SWEP:GetActivityLength(tanim, status)
 	slo = self.StatusLengthOverride[nm] or self.StatusLengthOverride[tanim]
 	sqlo = self.SequenceLengthOverride[nm] or self.SequenceLengthOverride[tanim]
 	sqro = self.SequenceRateOverride[nm] or self.SequenceRateOverride[tanim]
-	sqros = self:GetStat("SequenceRateOverrideScaled." .. nm) or self:GetStat("SequenceRateOverrideScaled." .. (act or "0"))
+	sqros = self:GetStat("SequenceRateOverrideScaled." .. nm) or self:GetStat("SequenceRateOverrideScaled." .. (tanim or "0"))
 
 	--[[
 	slo = self:GetStat("StatusLengthOverride." .. nm ) or self:GetStat("StatusLengthOverride." .. act )
@@ -285,7 +285,7 @@ function SWEP:CanChamber()
 end
 
 function SWEP:GetPrimaryClipSize(calc)
-	targetclip = self:GetStat("Primary.ClipSize")
+	local targetclip = self:GetStat("Primary.ClipSize")
 
 	if self:CanChamber() and not (calc and self:Clip1() <= 0) then
 		targetclip = targetclip + (self.Akimbo and 2 or 1)
@@ -295,7 +295,7 @@ function SWEP:GetPrimaryClipSize(calc)
 end
 
 function SWEP:GetSecondaryClipSize(calc)
-	targetclip = self:GetStat("Secondary.ClipSize")
+	local targetclip = self:GetStat("Secondary.ClipSize")
 
 	return math.max(targetclip, -1)
 end
@@ -431,7 +431,7 @@ end
 
 function SWEP:UpdateMuzzleAttachment()
 	if not self:VMIV() then return end
-	vm = self.OwnerViewModel
+	local vm = self.OwnerViewModel
 	if not IsValid(vm) then return end
 	self.MuzzleAttachmentRaw = nil
 
@@ -520,15 +520,7 @@ function SWEP:IsFirstPerson()
 	if CLIENT and (not game.SinglePlayer()) and self:GetOwner() ~= GetViewEntity() then return false end
 	if sp and SERVER then return not self:GetOwner().TFASDLP end
 	if self:GetOwner().ShouldDrawLocalPlayer and self:GetOwner():ShouldDrawLocalPlayer() then return false end
-	local gmsdlp
-
-	if LocalPlayer then
-		gmsldp = hook.Call("ShouldDrawLocalPlayer", GAMEMODE, self:GetOwner())
-	else
-		gmsldp = false
-	end
-
-	if gmsdlp then return false end
+	if LocalPlayer and hook.Call("ShouldDrawLocalPlayer", GAMEMODE, self:GetOwner()) then return false end
 
 	return true
 end
@@ -562,15 +554,14 @@ end
 function SWEP:GetMuzzlePos(ignorepos)
 	fp = self:IsFirstPerson()
 
-	if not IsValid(vm) then
-		vm = self.OwnerViewModel
-	end
+	local vm = self.OwnerViewModel
 
 	if not IsValid(vm) then
 		vm = self
 	end
 
-	obj = self:GetStat("MuzzleAttachmentMod") or self.MuzzleAttachmentRaw or vm:LookupAttachment(self.MuzzleAttachment)
+	local obj = self:GetStat("MuzzleAttachmentMod") or self.MuzzleAttachmentRaw or vm:LookupAttachment(self.MuzzleAttachment)
+	local muzzlepos
 	obj = math.Clamp(obj or 1, 1, 128)
 
 	if fp then
