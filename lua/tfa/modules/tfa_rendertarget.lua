@@ -68,7 +68,8 @@ if CLIENT then
 			old_bt = nil
 
 			if IsValid(oldWep) then
-				oldWep.MaterialCached = nil
+				oldWep.MaterialCached_V = nil
+				oldWep.MaterialCached_W = nil
 			end
 
 			oldWep = wep
@@ -99,28 +100,60 @@ if CLIENT then
 
 		if not IsValid(wep) or not wep.IsTFAWeapon then return end
 
-		if wep:GetStat("Skin") and isnumber(wep:GetStat("Skin")) then
-			vm:SetSkin(wep:GetStat("Skin"))
-			wep:SetSkin(wep:GetStat("Skin"))
+		if not wep.MaterialCached then
+			wep.MaterialCached = true
+			wep.MaterialCached_V = nil
+			wep.MaterialCached_W = nil
 		end
 
-		if wep:GetStat("MaterialTable") and not wep.MaterialCached then
-			wep.MaterialCached = {}
+		local skinStat = wep:GetStat("Skin")
 
-			if #wep:GetStat("MaterialTable") >= 1 and #wep:GetMaterials() <= 1 then
-				wep:SetMaterial(wep:GetStat("MaterialTable")[1])
+		if skinStat and isnumber(skinStat) then
+			if vm:GetSkin() ~= skinStat then
+				vm:SetSkin(wep:GetStat("Skin"))
+			end
+			if wep:GetSkin() ~= skinStat then
+				wep:SetSkin(wep:GetStat("Skin"))
+			end
+		end
+
+		if wep:GetStat("MaterialTable_V") and not wep.MaterialCached_V then
+			wep.MaterialCached_V = {}
+			vm:SetSubMaterial()
+
+			local collectedKeys = table.GetKeys(wep:GetStat("MaterialTable_V"))
+			table.Merge(collectedKeys,table.GetKeys(wep:GetStat("MaterialTable")))
+
+			for _, k in pairs(collectedKeys) do
+				local v = wep:GetStat("MaterialTable_V")[k]
+				if not wep.MaterialCached_V[k] then
+					print(v)
+					vm:SetSubMaterial(k - 1, v)
+					wep.MaterialCached_V[k] = true
+				end
+			end
+		end
+
+		if wep:GetStat("MaterialTable_W") and not wep.MaterialCached_W then
+			wep.MaterialCached_W = {}
+
+			local collectedKeys = table.GetKeys(wep:GetStat("MaterialTable_W"))
+			table.Merge(collectedKeys,table.GetKeys(wep:GetStat("MaterialTable")))
+			PrintTable(collectedKeys)
+
+			if #collectedKeys >= 1 and #wep:GetMaterials() <= 1 then
+				wep:SetMaterial(wep:GetStat("MaterialTable_W")[1])
 			else
 				wep:SetMaterial("")
 			end
 
-			wep:SetSubMaterial(nil, nil)
-			vm:SetSubMaterial(nil, nil)
+			wep:SetSubMaterial()
 
-			for k, v in ipairs(wep:GetStat("MaterialTable")) do
-				if not wep.MaterialCached[k] then
+			for _, k in pairs(collectedKeys) do
+				local v = wep:GetStat("MaterialTable_W")[k]
+				if not wep.MaterialCached_W[k] then
 					wep:SetSubMaterial(k - 1, v)
-					vm:SetSubMaterial(k - 1, v)
-					wep.MaterialCached[k] = true
+					wep.MaterialCached_W[k] = true
 				end
 			end
 		end
