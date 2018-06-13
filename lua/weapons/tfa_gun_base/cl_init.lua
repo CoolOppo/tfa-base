@@ -5,7 +5,7 @@ include("shared.lua")
 --[[ Include these modules, because they're clientside.]]--
 
 if CLIENT then
-	for k,v in pairs(SWEP.ClSIDE_MODULES) do
+	for _,v in pairs(SWEP.ClSIDE_MODULES) do
 		include(v)
 	end
 end
@@ -13,7 +13,7 @@ end
 --[[ Include these modules, because they're shared.]]--
 
 if CLIENT then
-	for k,v in pairs(SWEP.SH_MODULES) do
+	for _,v in pairs(SWEP.SH_MODULES) do
 		include(v)
 	end
 end

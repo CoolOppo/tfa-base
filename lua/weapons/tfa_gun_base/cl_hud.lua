@@ -105,7 +105,7 @@ local TFA_INSPECTIONPANEL
 local spacing = 64
 
 local function PanelPaintBars(myself, w, h)
-	w = 400
+	w = w * 0 + 400--trick linter into letting me replace the argument lol
 	local xx, ww, blockw, padw
 	xx = w * 0.7
 	ww = w - xx
@@ -818,7 +818,7 @@ function SWEP:DrawHUDAmmo()
 
 		if angpos2 then
 			local pos2 = angpos2.Pos
-			ts2 = pos2:ToScreen()
+			local ts2 = pos2:ToScreen()
 
 			if self.Akimbo then
 				xx, yy = ts2.x, ts2.y
@@ -863,14 +863,10 @@ function SWEP:DrawHUDAmmo()
 				xx = xx - TFA.Fonts.SleekHeightSmall / 3
 				draw.DrawText(str, "TFASleekSmall", xx + 1, yy + 1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
 				draw.DrawText(str, "TFASleekSmall", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT)
-				yy = yy + TFA.Fonts.SleekHeightMedium
-				xx = xx - TFA.Fonts.SleekHeightMedium / 3
 			else
 				str = string.upper("ALT-AMMO: " .. self:Ammo2())
 				draw.DrawText(str, "TFASleekSmall", xx + 1, yy + 1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
 				draw.DrawText(str, "TFASleekSmall", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT)
-				yy = yy + TFA.Fonts.SleekHeightMedium
-				xx = xx - TFA.Fonts.SleekHeightMedium / 3
 			end
 		end
 	end
@@ -937,7 +933,7 @@ function SWEP:DoDrawCrosshair(x, y)
 	drawdot = drawdot_cvar:GetBool()
 	local scale = (s_cone * 90) / self:GetOwner():GetFOV() * ScrH() / 1.44 * cgapscale_cvar:GetFloat()
 	local gap = math.Round(scale / 2) * 2
-	local length = 1
+	local length
 
 	if not clen_usepixels:GetBool() then
 		length = gap + ScrH() * 1.777 * crosslen

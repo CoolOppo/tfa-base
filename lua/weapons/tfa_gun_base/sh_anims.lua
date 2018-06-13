@@ -1,5 +1,7 @@
+-- luacheck: globals ACT_VM_FIDGET_EMPTY ACT_VM_FIDGET_SILENCED ACT_VM_BLOWBACK ACT_VM_HOLSTER_SILENCED
 ACT_VM_FIDGET_EMPTY = ACT_VM_FIDGET_EMPTY or ACT_CROSSBOW_FIDGET_UNLOADED
 ACT_VM_FIDGET_SILENCED = ACT_VM_FIDGET_SILENCED or ACT_RPG_FIDGET_UNLOADED
+ACT_VM_HOLSTER_SILENCED = ACT_VM_HOLSTER_SILENCED or ACT_CROSSBOW_HOLSTER_UNLOADED
 ACT_VM_BLOWBACK = ACT_VM_BLOWBACK or -2
 SWEP.Locomotion_Data_Queued = nil
 
@@ -65,16 +67,16 @@ SWEP.BaseAnimations = {
 		["value"] = ACT_VM_SECONDARYATTACK
 	},
 	["shoot2_last"] = {
-		["type"] = TFA.Enum.ANIMATION_ACT, --Sequence or act
-		["value"] = ACT_VM_SECONDARYATTACK_EMPTY
+		["type"] = TFA.Enum.ANIMATION_SEQ, --Sequence or act
+		["value"] = "shoot2_last"
 	},
 	["shoot2_empty"] = {
 		["type"] = TFA.Enum.ANIMATION_ACT, --Sequence or act
 		["value"] = ACT_VM_DRYFIRE
 	},
 	["shoot2_silenced"] = {
-		["type"] = TFA.Enum.ANIMATION_ACT, --Sequence or act
-		["value"] = ACT_VM_SECONDARYATTACK_SILENCED
+		["type"] = TFA.Enum.ANIMATION_SEQ, --Sequence or act
+		["value"] = "shoot2_silenced"
 	},
 	["idle"] = {
 		["type"] = TFA.Enum.ANIMATION_ACT, --Sequence or act
@@ -128,10 +130,6 @@ SWEP.BaseAnimations = {
 		["type"] = TFA.Enum.ANIMATION_ACT, --Sequence or act
 		["value"] = ACT_VM_DETACH_SILENCER
 	},
-	["silencer_detach"] = {
-		["type"] = TFA.Enum.ANIMATION_ACT, --Sequence or act
-		["value"] = ACT_VM_DETACH_SILENCER
-	},
 	["rof"] = {
 		["type"] = TFA.Enum.ANIMATION_ACT, --Sequence or act
 		["value"] = ACT_VM_FIREMODE
@@ -152,14 +150,14 @@ function SWEP:InitializeAnims()
 	})
 end
 function SWEP:BuildAnimActivities()
-	for k, v in pairs(self.BaseAnimations) do
+	for k, _ in pairs(self.BaseAnimations) do
 		local kvt = self:GetStat("Animations." .. k)
 
 		if kvt.value then
 			self.AnimationActivities[kvt.value] = k
 		end
 	end
-	for k, v in pairs(self.Animations) do
+	for k, _ in pairs(self.Animations) do
 		local kvt = self:GetStat("Animations." .. k)
 
 		if kvt.value then
@@ -451,7 +449,7 @@ Returns:
 Notes:
 Purpose:  Animation / Utility
 ]]
-local __, tldata
+local tldata
 
 function SWEP:Locomote(flipis, is, flipsp, spr)
 	if not (flipis or flipsp) then return end
@@ -574,7 +572,6 @@ Notes:  Requires autodetection or otherwise the list of valid anims.
 Purpose:  Animation / Utility
 ]]
 --
-ACT_VM_HOLSTER_SILENCED = ACT_VM_HOLSTER_SILENCED or ACT_CROSSBOW_HOLSTER_UNLOADED
 
 function SWEP:ChooseHolsterAnim()
 	if not self:VMIV() then return end
@@ -772,7 +769,8 @@ function SWEP:ChooseADSAnim()
 
 	--self:SetNextIdleAnim(CurTime() + 1)
 	if not a then
-		a, b, c = self:ChooseFlatAnim()
+		local _
+		_, b, c = self:ChooseFlatAnim()
 		a = false
 	end
 
@@ -1087,7 +1085,7 @@ function SWEP:ProcessHoldType()
 		end
 	end
 
-	local curhold, targhold
+	local curhold, targhold, stat
 	curhold = self:GetHoldType()
 	targhold = self.DefaultHoldType
 	stat = self:GetStatus()

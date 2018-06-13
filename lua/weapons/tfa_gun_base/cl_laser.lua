@@ -102,7 +102,7 @@ local default_fov_cv = GetConVar("default_fov")
 local ply
 
 local function GetTrueFOV()
-	local fov = TFADUSKFOV or fov_cv:GetFloat()
+	local fov = TFADUSKFOV or default_fov_cv:GetFloat()
 	if not LocalPlayer():IsValid() then return fov end
 	ply = LocalPlayer()
 	if ply:GetFOV() < ply:GetDefaultFOV() - 1 then

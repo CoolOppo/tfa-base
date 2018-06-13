@@ -5,23 +5,23 @@ AddCSLuaFile("shared.lua")
 include("shared.lua")
 
 --[[ Include these modules]]--
-for k, v in pairs(SWEP.SV_MODULES) do
+for _, v in pairs(SWEP.SV_MODULES) do
 	include(v)
 end
 
 --[[ Include these modules, and AddCSLua them, since they're shared.]]--
-for k, v in pairs(SWEP.SH_MODULES) do
+for _, v in pairs(SWEP.SH_MODULES) do
 	AddCSLuaFile(v)
 	include(v)
 end
 
 --[[ Include these modules if singleplayer, and AddCSLua them, since they're clientside.]]--
-for k, v in pairs(SWEP.ClSIDE_MODULES) do
+for _, v in pairs(SWEP.ClSIDE_MODULES) do
 	AddCSLuaFile(v)
 end
 
 if game.SinglePlayer() then
-	for k, v in pairs(SWEP.ClSIDE_MODULES) do
+	for _, v in pairs(SWEP.ClSIDE_MODULES) do
 		include(v)
 	end
 end

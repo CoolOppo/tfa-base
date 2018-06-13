@@ -38,7 +38,7 @@ function SWEP:BashForce(ent, force, pos, now)
 	end
 end
 
-local function bashcallback(a, b, c, wep)
+local function bashcallback(a, b, c, wep, pain)
 	if not IsValid(wep) then return end
 
 	if c then
@@ -91,14 +91,13 @@ local l_CT = CurTime
 function SWEP:AltAttack()
 	if self:GetStat("Secondary.CanBash") == false then return end
 	if not self:OwnerIsValid() then return end
-	if CurTime() < self:GetNextSecondaryFire() then return end
+	if l_CT() < self:GetNextSecondaryFire() then return end
 	local stat = self:GetStatus()
 	if ( not TFA.Enum.ReadyStatus[stat] ) and not self.Secondary.BashInterrupt then return end
 	if ( stat == TFA.GetStatus("bashing") ) and self.Secondary.BashInterrupt then return end
 	if self:IsSafety() then return end
 	if self:GetHolding() then return end
 
-	local vm = self:GetOwner():GetViewModel()
 	--if SERVER then
 	self:SendViewModelAnim(ACT_VM_HITCENTER)
 
@@ -109,7 +108,6 @@ function SWEP:AltAttack()
 		self:GetOwner():Vox("bash", 0)
 	end
 
-	local altanim = false
 	--if IsValid(wep) and wep.GetHoldType then
 	local ht = self.HoldType
 
@@ -128,21 +126,19 @@ function SWEP:AltAttack()
 	if game.SinglePlayer() and SERVER then self:CallOnClient("BashAnim","") end
 
 	self.tmptoggle = not self.tmptoggle
-	self:SetNextPrimaryFire(CurTime() + (self:GetStat("Secondary.BashEnd") or self:GetActivityLength(ACT_VM_HITCENTER, false) ) )
-	self:SetNextSecondaryFire(CurTime() + (self:GetStat("Secondary.BashEnd") or self:GetActivityLength(ACT_VM_HITCENTER, true) ) )
+	self:SetNextPrimaryFire(l_CT() + (self:GetStat("Secondary.BashEnd") or self:GetActivityLength(ACT_VM_HITCENTER, false) ) )
+	self:SetNextSecondaryFire(l_CT() + (self:GetStat("Secondary.BashEnd") or self:GetActivityLength(ACT_VM_HITCENTER, true) ) )
 
 	if IsFirstTimePredicted() then
 		self:EmitSound(self:GetStat("Secondary.BashSound"))
 	end
 	self:SetStatus(TFA.Enum.STATUS_BASHING)
-	self:SetStatusEnd( CurTime() + (self:GetStat("Secondary.BashEnd") or self:GetActivityLength(ACT_VM_HITCENTER, true) ) )
+	self:SetStatusEnd( l_CT() + (self:GetStat("Secondary.BashEnd") or self:GetActivityLength(ACT_VM_HITCENTER, true) ) )
 
-	self:SetNW2Float("BashTTime", CurTime() + self:GetStat("Secondary.BashDelay"))
+	self:SetNW2Float("BashTTime", l_CT() + self:GetStat("Secondary.BashDelay"))
 end
 
 function SWEP:BashAnim()
-
-	local altanim = false
 	--if IsValid(wep) and wep.GetHoldType then
 	local ht = self.DefaultHoldType or self.HoldType
 
@@ -158,7 +154,7 @@ local ttime = -1
 function SWEP:Think2()
 	ttime = self:GetNW2Float("BashTTime", -1)
 
-	if ttime ~= -1 and CurTime() > ttime then
+	if ttime ~= -1 and l_CT() > ttime then
 		self:SetNW2Float("BashTTime", -1)
 		local pos = self:GetOwner():GetShootPos()
 		local av = self:GetOwner():EyeAngles():Forward()
@@ -169,7 +165,7 @@ function SWEP:Think2()
 		slash.mins = Vector(-10, -5, 0)
 		slash.maxs = Vector(10, 5, 5)
 		local slashtrace = util.TraceHull(slash)
-		pain = self:GetStat("Secondary.BashDamage")
+		local pain = self:GetStat("Secondary.BashDamage")
 
 		if slashtrace.Hit then
 			self:HandleDoor(slashtrace)
@@ -189,7 +185,7 @@ function SWEP:Think2()
 					Src = self:GetOwner():GetShootPos(),
 					Dir = slashtrace.Normal,
 					Callback = function(a, b, c)
-						bashcallback(a, b, c, self)
+						bashcallback(a, b, c, self, pain)
 					end
 				})
 			else

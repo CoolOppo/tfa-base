@@ -1,4 +1,5 @@
---[[Thanks to Clavus.  Like seriously, SCK was brilliant. Even though you didn't include a license anywhere I could find, it's only fit to credit you.]]--
+--[[Thanks to Clavus.  Like seriously, SCK was brilliant. Even though you didn't include a license anywhere I could find, it's only fit to credit you.]]
+--
 SWEP.vRenderOrder = nil
 
 --[[
@@ -7,7 +8,8 @@ Syntax: self:InitMods().  Should be called only once for best performance.
 Returns:  Nothing.
 Notes:  Creates the VElements and WElements table, and sets up mods.
 Purpose:  SWEP Construction Kit Compatibility / Basic Attachments.
-]]--
+]]
+--
 function SWEP:InitMods()
 	--Create a new table for every weapon instance.
 	self.VElements = self:CPTbl(self.VElements)
@@ -38,9 +40,11 @@ Syntax: self:ViewModelDrawn().  Automatically called already.
 Returns:  Nothing.
 Notes:  This draws the mods.
 Purpose:  SWEP Construction Kit Compatibility / Basic Attachments.
-]]--
-function SWEP:PreDrawViewModel( vm, wep, ply )
+]]
+--
+function SWEP:PreDrawViewModel(vm, wep, ply)
 	self:ProcessBodygroups()
+
 	--vm:SetupBones()
 	if self:GetHidden() then
 		render.SetBlend(0)
@@ -51,11 +55,11 @@ SWEP.CameraAttachmentOffsets = {{"p", 0}, {"y", 0}, {"r", 0}}
 SWEP.CameraAttachment = nil
 SWEP.CameraAttachments = {"camera", "attach_camera", "view", "cam", "look"}
 SWEP.CameraAngCache = nil
-
 local tmpvec = Vector(0, 0, -2000)
 
 function SWEP:ViewModelDrawn()
 	render.SetBlend(1)
+
 	if self.DrawHands then
 		self:DrawHands()
 	end
@@ -82,7 +86,7 @@ function SWEP:ViewModelDrawn()
 	if not self.CameraAttachment then
 		self.CameraAttachment = -1
 
-		for k, v in ipairs(self.CameraAttachments) do
+		for _, v in ipairs(self.CameraAttachments) do
 			local attid = vm:LookupAttachment(v)
 
 			if attid and attid > 0 then
@@ -94,6 +98,7 @@ function SWEP:ViewModelDrawn()
 
 	if self.CameraAttachment and self.CameraAttachment > 0 then
 		local angpos = vm:GetAttachment(self.CameraAttachment)
+
 		if angpos and angpos.Ang then
 			local angv = angpos.Ang
 			local off = vm:WorldToLocalAngles(angv)
@@ -102,7 +107,7 @@ function SWEP:ViewModelDrawn()
 			local dissipatestart = 0
 			self.CameraAngCache = self.CameraAngCache or off
 
-			for k, v in pairs(self.CameraAttachmentOffsets) do
+			for _, v in pairs(self.CameraAttachmentOffsets) do
 				local offtype = v[1]
 				local offang = v[2]
 
@@ -121,7 +126,7 @@ function SWEP:ViewModelDrawn()
 
 			local actind = vm:GetSequenceActivity(vm:GetSequence())
 
-			if (actind == ACT_VM_DRAW or actind == ACT_VM_HOLSTER_DRAW_EMPTY or actind == ACT_VM_DRAW_SILENCED) and vm:GetCycle() < 0.05 then
+			if (actind == ACT_VM_DRAW or actind == ACT_VM_HOLSTER_EMPTY or actind == ACT_VM_DRAW_SILENCED) and vm:GetCycle() < 0.05 then
 				self.CameraAngCache.p = 0
 				self.CameraAngCache.y = 0
 				self.CameraAngCache.r = 0
@@ -160,7 +165,7 @@ function SWEP:ViewModelDrawn()
 			end
 		end
 
-		for k, name in ipairs(self.vRenderOrder) do
+		for _, name in ipairs(self.vRenderOrder) do
 			local v = self.VElements[name]
 
 			if (not v) then
@@ -198,14 +203,16 @@ function SWEP:ViewModelDrawn()
 				if (v.skin and v.skin ~= model:GetSkin()) then
 					model:SetSkin(v.skin)
 				end
+
 				if v.bonemerge then
 					model:SetParent(self.OwnerViewModel or self)
+
 					if not model:IsEffectActive(EF_BONEMERGE) then
 						v.curmodel:AddEffects(EF_BONEMERGE)
 						v.curmodel:AddEffects(EF_BONEMERGE_FASTCULL)
-						v.curmodel:SetMoveType( MOVETYPE_NONE )
-						v.curmodel:SetPos( Vector( 0, 0, 0 ) )
-						v.curmodel:SetAngles( Angle( 0, 0, 0 ) )
+						v.curmodel:SetMoveType(MOVETYPE_NONE)
+						v.curmodel:SetPos(Vector(0, 0, 0))
+						v.curmodel:SetAngles(Angle(0, 0, 0))
 					end
 				elseif model:IsEffectActive(EF_BONEMERGE) then
 					model:RemoveEffects(EF_BONEMERGE)
@@ -247,8 +254,10 @@ function SWEP:ViewModelDrawn()
 end
 
 function SWEP:ViewModelDrawnPost()
+	if not self:VMIV() then return end
+
 	if self.VElements then
-		for k, name in ipairs(self.vRenderOrder or {}) do
+		for _, name in ipairs(self.vRenderOrder or {}) do
 			local v = self.VElements[name]
 
 			if (not v) then
@@ -258,39 +267,37 @@ function SWEP:ViewModelDrawnPost()
 
 			if v.type ~= "Quad" then continue end
 			if not v.draw_func_outer then continue end
-
 			if (v.hide) then continue end
-			local model = v.curmodel
-			local sprite = v.spritemat
 			if (not v.bone) then continue end
-			local pos, ang = self:GetBoneOrientation(self.VElements, v, vm)
+			local pos, ang = self:GetBoneOrientation(self.VElements, v, self.OwnerViewModel)
 			if (not pos) then continue end
 			local aktiv = self:GetStat("VElements." .. name .. ".active")
 			if aktiv ~= nil and aktiv == false then continue end
-
 			local drawpos = pos + ang:Forward() * v.pos.x + ang:Right() * v.pos.y + ang:Up() * v.pos.z
 			ang:RotateAroundAxis(ang:Up(), v.angle.y)
 			ang:RotateAroundAxis(ang:Right(), v.angle.p)
 			ang:RotateAroundAxis(ang:Forward(), v.angle.r)
-			v.draw_func_outer(self,drawpos,ang,v.size)
+			v.draw_func_outer(self, drawpos, ang, v.size)
 		end
 	end
 end
 
-hook.Add("PostDrawPlayerHands","TFAHandsDrawn",function(hands,vm,ply,wep)
+hook.Add("PostDrawPlayerHands", "TFAHandsDrawn", function(hands, vm, ply, wep)
 	if wep.ViewModelDrawnPost then
 		wep:ViewModelDrawnPost()
 	end
 end)
+
 SWEP.wRenderOrder = nil
+
 --[[
 Function Name:  DrawWorldModel
 Syntax: self:DrawWorldModel().  Automatically called already.
 Returns:  Nothing.
 Notes:  This draws the world model, plus its attachments.
 Purpose:  SWEP Construction Kit Compatibility / Basic Attachments.
-]]--
-
+]]
+--
 function SWEP:DrawWorldModel()
 	local ply = self:GetOwner()
 
@@ -300,22 +307,22 @@ function SWEP:DrawWorldModel()
 		self:InvalidateBoneCache()
 	end
 
-	if ( self.ShowWorldModel == nil or self.ShowWorldModel or not self:OwnerIsValid() ) then
+	if (self.ShowWorldModel == nil or self.ShowWorldModel or not self:OwnerIsValid()) then
 		if game.SinglePlayer() or CLIENT then
-
 			if IsValid(ply) and self.Offset and self.Offset.Pos and self.Offset.Ang then
-
 				local handBone = ply:LookupBone("ValveBiped.Bip01_R_Hand")
 
 				if handBone then
 					--local pos, ang = ply:GetBonePosition(handBone)
 					local pos, ang
-					local mat = ply:GetBoneMatrix( handBone )
+					local mat = ply:GetBoneMatrix(handBone)
+
 					if mat then
 						pos, ang = mat:GetTranslation(), mat:GetAngles()
 					else
-						pos, ang = ply:GetBonePosition( handBone )
+						pos, ang = ply:GetBonePosition(handBone)
 					end
+
 					pos = pos + ang:Forward() * self.Offset.Pos.Forward + ang:Right() * self.Offset.Pos.Right + ang:Up() * self.Offset.Pos.Up
 					ang:RotateAroundAxis(ang:Up(), self.Offset.Ang.Up)
 					ang:RotateAroundAxis(ang:Right(), self.Offset.Ang.Right)
@@ -337,6 +344,7 @@ function SWEP:DrawWorldModel()
 				end
 			end
 		end
+
 		self:ProcessBodygroups()
 		self:DrawModel()
 	end
@@ -346,9 +354,7 @@ function SWEP:DrawWorldModel()
 	end
 
 	self:UpdateWMBonePositions(self)
-
 	if not self.WElements then return end
-
 	self:CreateModels(self.WElements)
 
 	if (not self.wRenderOrder) then
@@ -376,7 +382,6 @@ function SWEP:DrawWorldModel()
 		if (v.hide) then continue end
 		local aktiv = self:GetStat("WElements." .. name .. ".active")
 		if aktiv ~= nil and aktiv == false then continue end
-
 		local pos, ang
 
 		if (v.bone) then
@@ -397,6 +402,7 @@ function SWEP:DrawWorldModel()
 				ang:RotateAroundAxis(ang:Forward(), v.angle.r)
 				model:SetAngles(ang)
 			end
+
 			-- //model:SetModelScale(v.size)
 			local matrix = Matrix()
 			matrix:Scale(v.size)
@@ -429,6 +435,7 @@ function SWEP:DrawWorldModel()
 
 			if v.bonemerge then
 				model:SetParent(self)
+
 				if not model:IsEffectActive(EF_BONEMERGE) then
 					model:AddEffects(EF_BONEMERGE)
 				end
@@ -436,6 +443,7 @@ function SWEP:DrawWorldModel()
 				model:RemoveEffects(EF_BONEMERGE)
 				model:SetParent(nil)
 			end
+
 			model:DrawModel()
 			render.SetBlend(1)
 			render.SetColorModulation(1, 1, 1)
@@ -465,8 +473,8 @@ Syntax: self:GetBoneOrientation( base bone mod table, bone mod table, entity, bo
 Returns:  Position, Angle.
 Notes:  This is a very specific function for a specific purpose, and shouldn't be used generally to get a bone's orientation.
 Purpose:  SWEP Construction Kit Compatibility / Basic Attachments.
-]]--
-
+]]
+--
 function SWEP:GetBoneOrientation(basetabl, tabl, ent, bone_override)
 	local bone, pos, ang
 	if not IsValid(ent) then return Vector(0, 0, 0), Angle(0, 0, 0) end
@@ -474,14 +482,17 @@ function SWEP:GetBoneOrientation(basetabl, tabl, ent, bone_override)
 	if (tabl.rel and tabl.rel ~= "") then
 		local v = basetabl[tabl.rel]
 		if (not v) then return end
+
 		if v.bonemerge and v.curmodel and ent ~= v.curmodel then
 			v.curmodel:SetupBones()
+
 			if tabl.bone == nil or tabl.bone == "" then
-				pos, ang = self:GetBoneOrientation(basetabl, v, v.curmodel, 0 )
+				pos, ang = self:GetBoneOrientation(basetabl, v, v.curmodel, 0)
 			else
-				pos, ang = self:GetBoneOrientation(basetabl, v, v.curmodel, tabl.bone )
+				pos, ang = self:GetBoneOrientation(basetabl, v, v.curmodel, tabl.bone)
 			end
-			if ( not pos ) then return end
+
+			if (not pos) then return end
 		else
 			--As clavus states in his original code, don't make your elements named the same as a bone, because recursion.
 			pos, ang = self:GetBoneOrientation(basetabl, v, ent)
@@ -493,11 +504,12 @@ function SWEP:GetBoneOrientation(basetabl, tabl, ent, bone_override)
 			-- For mirrored viewmodels.  You might think to scale negatively on X, but this isn't the case.
 		end
 	else
-		if isnumber( bone_override ) then
+		if isnumber(bone_override) then
 			bone = bone_override
 		else
 			bone = ent:LookupBone(bone_override or tabl.bone)
 		end
+
 		if (not bone) or (bone == -1) then return end
 		pos, ang = Vector(0, 0, 0), Angle(0, 0, 0)
 		local m = ent:GetBoneMatrix(bone)
@@ -520,7 +532,8 @@ Syntax: self:CleanModels( elements table ).
 Returns:   Nothing.
 Notes:  Removes all existing models.
 Purpose:  SWEP Construction Kit Compatibility / Basic Attachments.
-]]--
+]]
+--
 function SWEP:CleanModels(tabl)
 	if (not tabl) then return end
 
@@ -550,14 +563,15 @@ Syntax: self:CreateModels( elements table ).
 Returns:   Nothing.
 Notes:  Creates the elements for whatever you give it.
 Purpose:  SWEP Construction Kit Compatibility / Basic Attachments.
-]]--
-function SWEP:CreateModels(tabl, is_vm )
+]]
+--
+function SWEP:CreateModels(tabl, is_vm)
 	if (not tabl) then return end
 
 	for k, v in pairs(tabl) do
-		if (v.type == "Model" and v.model and (not IsValid(v.curmodel) or v.curmodelname ~= v.model) and v.model ~= "" ) then
+		if (v.type == "Model" and v.model and (not IsValid(v.curmodel) or v.curmodelname ~= v.model) and v.model ~= "") then
 			v.curmodel = ClientsideModel(v.model, RENDERGROUP_VIEWMODEL)
-			TFA.RegisterClientsideModel( v.curmodel, self )
+			TFA.RegisterClientsideModel(v.curmodel, self)
 
 			if (IsValid(v.curmodel)) then
 				v.curmodel:SetPos(self:GetPos())
@@ -568,6 +582,7 @@ function SWEP:CreateModels(tabl, is_vm )
 				if v.material then
 					v.curmodel:SetMaterial(v.material or "")
 				end
+
 				if v.skin then
 					v.curmodel:SetSkin(v.skin)
 				end
@@ -584,6 +599,7 @@ function SWEP:CreateModels(tabl, is_vm )
 				matrix:Scale(v.size)
 				v.curmodel:EnableMatrix("RenderMultiply", matrix)
 				v.curmodelname = v.model
+
 				if is_vm then
 					v.view = true
 				else
@@ -628,15 +644,19 @@ Syntax: self:UpdateBonePositions( viewmodel ).
 Returns:   Nothing.
 Notes:   Updates the bones for a viewmodel.
 Purpose:  SWEP Construction Kit Compatibility / Basic Attachments.
-]]--
+]]
+--
 local bpos, bang
 local onevec = Vector(1, 1, 1)
+
 function SWEP:UpdateBonePositions(vm)
 	if not self.ViewModelBoneMods then
 		self.ViewModelBoneMods = {}
 	end
+
 	local VM_BoneMods = self:GetStat("ViewModelBoneMods", self.ViewModelBoneMods)
-	if table.Count( VM_BoneMods ) > 0 then
+
+	if table.Count(VM_BoneMods) > 0 then
 		local stat = self:GetStatus()
 
 		if not self.BlowbackBoneMods then
@@ -644,8 +664,8 @@ function SWEP:UpdateBonePositions(vm)
 		end
 
 		if (not vm:GetBoneCount()) then return end
-		local loopthrough = {}
 		local vbones = {}
+		local loopthrough
 
 		for i = 0, vm:GetBoneCount() do
 			local bonename = vm:GetBoneName(i)
@@ -721,7 +741,8 @@ Syntax: self:ResetBonePositions( viewmodel ).
 Returns:   Nothing.
 Notes:   Resets the bones for a viewmodel.
 Purpose:  SWEP Construction Kit Compatibility / Basic Attachments.
-]]--
+]]
+--
 function SWEP:ResetBonePositions(val)
 	if SERVER then
 		self:CallOnClient("ResetBonePositions", "")
@@ -729,7 +750,7 @@ function SWEP:ResetBonePositions(val)
 		return
 	end
 
-	vm = self:GetOwner():GetViewModel()
+	local vm = self:GetOwner():GetViewModel()
 	if not IsValid(vm) then return end
 	if (not vm:GetBoneCount()) then return end
 
@@ -746,18 +767,19 @@ Syntax: self:UpdateWMBonePositions( worldmodel ).
 Returns:   Nothing.
 Notes:   Updates the bones for a worldmodel.
 Purpose:  SWEP Construction Kit Compatibility / Basic Attachments.
-]]--
+]]
+--
 function SWEP:UpdateWMBonePositions(wm)
 	if not self.WorldModelBoneMods then
 		self.WorldModelBoneMods = {}
 	end
-	local WM_BoneMods = self:GetStat("WorldModelBoneMods", self.WorldModelBoneMods)
-	if table.Count( WM_BoneMods ) > 0 then
-		local stat = self:GetStatus()
 
+	local WM_BoneMods = self:GetStat("WorldModelBoneMods", self.WorldModelBoneMods)
+
+	if table.Count(WM_BoneMods) > 0 then
 		if (not wm:GetBoneCount()) then return end
-		local loopthrough = {}
 		local wbones = {}
+		local loopthrough
 
 		for i = 0, wm:GetBoneCount() do
 			local bonename = wm:GetBoneName(i)
@@ -812,14 +834,19 @@ Syntax: self:ResetWMBonePositions( worldmodel ).
 Returns:   Nothing.
 Notes:   Resets the bones for a worldmodel.
 Purpose:  SWEP Construction Kit Compatibility / Basic Attachments.
-]]--
-function SWEP:ResetWMBonePositions( wm )
+]]
+--
+function SWEP:ResetWMBonePositions(wm)
 	if SERVER then
 		self:CallOnClient("ResetWMBonePositions", "")
+
 		return
 	end
 
-	if not wm then wm = self end
+	if not wm then
+		wm = self
+	end
+
 	if not IsValid(wm) then return end
 	if (not wm:GetBoneCount()) then return end
 

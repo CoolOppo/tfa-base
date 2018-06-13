@@ -236,7 +236,7 @@ SWEP.RTCode = function(self, rt, scrw, scrh)
 				ang.y = -ang.y
 			end
 
-			for k, v in pairs(self.ScopeAngleTransforms) do
+			for _, v in pairs(self.ScopeAngleTransforms) do
 				if v[1] == "P" then
 					ang:RotateAroundAxis(ang:Right(), v[2])
 				elseif v[1] == "Y" then

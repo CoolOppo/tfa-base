@@ -67,6 +67,8 @@ function SWEP:ChooseShootAnim()
 
 	self.Owner:SetAnimation(PLAYER_ATTACK1)
 	self:SendViewModelAnim(ACT_VM_THROW)
+	local tanim = ACT_VM_THROW
+	local success = true
 
 	if game.SinglePlayer() then
 		self:CallOnClient("AnimForce", tanim)
@@ -125,7 +127,7 @@ function SWEP:PrimaryAttack()
 	if self:Clip1() > 0 and self:OwnerIsValid() and self:CanFire() then
 		self:ChoosePullAnim()
 		self:SetStatus(TFA.Enum.STATUS_SHOOTING)
-		self:SetStatusEnd( CurTime() + (self.SequenceLengthOverride[tanim] or self.OwnerViewModel:SequenceDuration()) )
+		self:SetStatusEnd( self:GetActivityLength() )
 		self:SetNW2Bool("Charging", true)
 
 		if IsFirstTimePredicted() then
