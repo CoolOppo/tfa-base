@@ -9,7 +9,7 @@ Used For: Walk Cycle
 hook.Add("PlayerFootstep", "TFAWalkcycle", function(plyv)
 	if sp and SERVER then
 		BroadcastLua("Entity(" .. plyv:EntIndex() .. ").lastFootstep = " .. CurTime())
-	else
+	elseif IsValid(ply) then
 		ply.lastFootstep = CurTime()
 	end
 end)
