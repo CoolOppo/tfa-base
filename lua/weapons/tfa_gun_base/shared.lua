@@ -560,7 +560,7 @@ function SWEP:FinishHolster()
 		return v2
 	end
 	if SERVER then
-		ent = self:GetSwapTarget()
+		local ent = self:GetSwapTarget()
 		self:CleanParticles()
 		self:Holster(ent)
 
@@ -874,7 +874,6 @@ function SWEP:IronSights()
 	if sprint_cv:GetBool() and not self.AllowSprintAttack then
 		issprinting = owent:GetVelocity():Length2D() > owent:GetRunSpeed() * 0.6 and owent:KeyDown(IN_SPEED)
 	end
-	vm = self.OwnerViewModel
 
 	if not (self.data and self:GetStat("data.ironsights") == 0 ) then
 		if CLIENT then

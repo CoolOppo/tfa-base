@@ -1,3 +1,8 @@
+--[[
+PLEASE DON TUSE THIS ANYMIRE
+PLEASe
+PLEASSSSSSSS
+]]
 DEFINE_BASECLASS("tfa_gun_base")
 SWEP.Primary.Ammo = "" -- Required for GMod legacy purposes.  Don't remove unless you want to see your sword's ammo.  Wat?
 SWEP.data = {} --Ignore this.
@@ -35,7 +40,6 @@ SWEP.Primary.ClipSize = -1
 SWEP.Primary.DefaultClip = -1
 SWEP.CanBuy = {ROLE_TRAITOR, ROLE_DETECTIVE, ROLE_INNOCENT} -- only traitors can buy
 SWEP.LimitedStock = true -- only buyable once
-SWEP.WeaponID = AMMO_SWORD
 SWEP.NoSights = false
 SWEP.IsSilent = true
 --[[Worldmodel Variables]]
@@ -221,7 +225,6 @@ function SWEP:DoImpactEffect(tr, dmg)
 
 	if (tr.HitSky == false) then
 		if (util.SharedRandom(CurTime(), 1, self.SlashPrecision, "TFMSwordDecal") < self.SlashDecals) then
-			cutangle = Angle(seq.pitch, seq.yaw, seq.roll)
 			util.Decal("ManhackCut", impactpos + impactnormal, impactpos - impactnormal)
 		end
 
@@ -253,7 +256,7 @@ function SWEP:HitThing(ent, posv, normalv, damage, tr)
 		]]
 		--
 		local bullet = {}
-		bullet.Num = num_bullets
+		bullet.Num = 1
 		bullet.Src = posv -- Source
 		bullet.Dir = normalv -- Dir of bullet
 		bullet.Spread = vector_origin -- Aim Cone
@@ -340,7 +343,6 @@ end
 
 local seq, swe
 local ft, len, strikepercent, swingprogress, sws
-local cv_ts = GetConVar("host_timescale")
 local aimoff, jitfac
 local blockseqn, ply
 local vm
@@ -376,8 +378,6 @@ function SWEP:Think2()
 	local stat = self:GetStatus()
 	if stat == TFA.Enum.STATUS_SHOOTING then
 		seq = self.Sequences[self:GetNW2Int("Slash", 1)]
-		ts = cv_ts:GetFloat()
-		ct = CurTime()
 		ft = CurTime() - self.LastTraceTime
 		len = seq.endt - seq.startt
 		strikepercent = ft / len
@@ -392,7 +392,7 @@ function SWEP:Think2()
 		if (CurTime() > sws) and CurTime() < swe and ft > len / self.SlashPrecision and (strikepercent > 0) then
 			aimoff = ply:EyeAngles()
 			--aimoff = Angle(0,0,0)
-			cutangle = Angle(seq.pitch * (swingprogress - 0.5) * seq.dir, seq.yaw * (swingprogress - 0.5) * seq.dir, seq.roll)
+			local cutangle = Angle(seq.pitch * (swingprogress - 0.5) * seq.dir, seq.yaw * (swingprogress - 0.5) * seq.dir, seq.roll)
 			jitfac = 0.5 - util.SharedRandom("TFMSwordJitter", 0, 1, CurTime())
 			aimoff:RotateAroundAxis(aimoff:Forward(), cutangle.r + self.SlashRandom.r * self.randfac + self.SlashJitter.r * jitfac) --Roll is static
 			aimoff:RotateAroundAxis(aimoff:Up(), cutangle.y + self.SlashRandom.y * self.randfac + self.SlashJitter.y * jitfac)

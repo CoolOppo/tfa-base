@@ -20,11 +20,37 @@ ENT.PredictCL = false
 ENT.UseMod = false --Experimentally modify the parent's Use func
 
 local cv_al = GetConVar("sv_tfa_arrow_lifetime")
+local nzombies
+
+local function GetBoneCenter(ent, bone)
+	local bonechildren = ent:GetChildBones(bone)
+
+	if #bonechildren <= 0 then
+		return ent:GetBonePosition(bone)
+	else
+		local bonepos = ent:GetBonePosition(bone)
+		local tmppos = bonepos
+
+		if tmppos then
+			for i = 1, #bonechildren do
+				local childpos = ent:GetBonePosition(bonechildren[i])
+
+				if childpos then
+					tmppos = (tmppos + childpos) / 2
+				end
+			end
+		else
+			return ent:GetPos()
+		end
+
+		return tmppos
+	end
+end
 
 function ENT:Initialize()
 
 	if nzombies == nil then
-		nzombies = engine.ActiveGamemode() == "nzombies"
+		nzombies = nZombies or NZ or NZombies or engine.ActiveGamemode() == "nzombies"
 	end
 
 	local mdl = self:GetModel()
@@ -157,12 +183,12 @@ function ENT:Think()
 		par.ArrowUseOld = par.ArrowUseOld or par.Use
 		par.Use = function( parent, ... )
 			print(parent)
-			for k,v in pairs( par:GetChildren() ) do
+			for _,v in pairs( par:GetChildren() ) do
 				if v.Use then v:Use(...) end
 			end
 			parent:Use( ... )
 		end
-		par:SetUseType( USE_SIMPLE )
+		par:SetUseType( SIMPLE_USE )
 	end
 	if SERVER and not self.HTE then
 		self:TargetEnt( true )

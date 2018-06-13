@@ -163,7 +163,6 @@ local traceres = {}
 local pos, ang, mdl, ski, prop
 local fwd, eang, scl, dirv
 local strikedir = Vector()
-tr = {}
 local srctbl
 SWEP.hpf = false
 SWEP.hpw = false
@@ -243,7 +242,7 @@ function SWEP:SmackEffect(trace, dmg)
 		data:SetScale(1)
 
 		if (bit.band(util.PointContents(trSplash.HitPos), CONTENTS_SLIME) ~= 0) then
-			data:SetFlags(FX_WATER_IN_SLIME)
+			data:SetFlags(1) --FX_WATER_IN_SLIME
 		end
 
 		util.Effect("watersplash", data)
@@ -535,7 +534,7 @@ function SWEP:Strike(attk, precision)
 	local fleshHits = 0
 
 	--Handle flesh
-	for k, v in ipairs(totalResults) do
+	for _, v in ipairs(totalResults) do
 		if v.Hit and IsValid(v.Entity) and TraceHitFlesh(v) and (not v.Entity.HasMeleeHit) then
 			self:ApplyDamage(v, damage, attk)
 			self:SmackEffect(v, damage)
@@ -558,7 +557,7 @@ function SWEP:Strike(attk, precision)
 	end
 
 	--Handle world
-	for k, v in ipairs(totalResults) do
+	for _, v in ipairs(totalResults) do
 		if v.Hit and (not TraceHitFlesh(v)) then
 			self:ApplyDamage(v, damage)
 
@@ -581,7 +580,7 @@ function SWEP:Strike(attk, precision)
 	end
 
 	--Handle empty + cleanup
-	for k, v in ipairs(totalResults) do
+	for _, v in ipairs(totalResults) do
 		if needsCB then
 			attk.callback(attack, self, v)
 			needsCB = false
@@ -675,7 +674,6 @@ function SWEP:PrimaryAttack()
 	if #att <= 0 then return end
 	ind = att[self:SharedRandom(1, #att, "PrimaryAttack")]
 	attack = self.Primary.Attacks[ind]
-	vm = self:GetOwner():GetViewModel()
 	--We have attack isolated, begin attack logic
 	self:PlaySwing(attack.act)
 
@@ -869,7 +867,7 @@ function SWEP:Reload(released, ovr, ...)
 
 	if (self.SequenceEnabled[ACT_VM_FIDGET] or self.InspectionActions) and self:GetStatus() == TFA.Enum.STATUS_IDLE then
 		self:SetStatus(TFA.Enum.STATUS_FIDGET)
-		succ, tanim = self:ChooseInspectAnim()
+		local _, tanim = self:ChooseInspectAnim()
 		self:SetStatusEnd(l_CT() + (self.SequenceLengthOverride[tanim] or self.OwnerViewModel:SequenceDuration()))
 	end
 end

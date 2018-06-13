@@ -20,8 +20,8 @@ function ENT:Initialize()
 		phys:SetMass(10)
 	end
 
-	for k, v in pairs(self.HitSounds) do
-		for i, o in pairs(v) do
+	for _, v in pairs(self.HitSounds) do
+		for _, o in pairs(v) do
 			util.PrecacheSound(o)
 		end
 	end

@@ -12,7 +12,7 @@ local l_mathApproach = function(a, b, delta)
 	end
 end
 
-local is, spr, ist, sprt, ft, stat, jr_targ
+local is, spr, ist, sprt, ft, jr_targ
 ft = 0.01
 SWEP.LastRatio = nil
 
@@ -20,12 +20,10 @@ function SWEP:CalculateRatios()
 	local owent = self:GetOwner()
 	if not IsValid(owent) or not owent:IsPlayer() then return end
 	ft = TFA.FrameTime()
-	stat = self:GetStatus()
 	is = self:GetIronSights()
 	spr = self:GetSprinting()
 	ist = is and 1 or 0
 	sprt = spr and 1 or 0
-	hlst = ((TFA.Enum.HolsterStatus[stat] and self.ProceduralHolsterEnabled) or (TFA.Enum.ReloadStatus[stat] and self.ProceduralReloadEnabled)) and 1 or 0
 	local adstransitionspeed
 
 	if is then

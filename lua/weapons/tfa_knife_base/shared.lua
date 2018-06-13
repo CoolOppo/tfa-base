@@ -84,12 +84,13 @@ function SWEP:SlashSound(tr)
 	end
 end
 
-function SWEP:GetSlashTrace(tr, tbl, fwd)
+function SWEP:GetSlashTrace(tbl, fwd)
 	local ow = self:GetOwner()
 	ow:LagCompensation(true)
-	tr = util.TraceLine(tbl)
 
-	if (not tr.Hit) then
+	local traceRes = util.TraceLine(tbl)
+
+	if (not traceRes.Hit) then
 		if not self.HullData.Radius then
 			self.HullData.Radius = self.HullData.hullMin:Distance(self.HullData.hullMax) / 2
 		end
@@ -98,11 +99,11 @@ function SWEP:GetSlashTrace(tr, tbl, fwd)
 		tbl.mins = -hd.hullMin
 		tbl.maxs = hd.hullMax
 		tbl.endpos = tbl.endpos - fwd * hd.Radius
-		tr = util.TraceHull(tbl)
+		traceRes = util.TraceHull(tbl)
 	end
 	ow:LagCompensation(false)
 
-	return tr
+	return traceRes
 end
 
 function SWEP:SmackDamage(tr, fwd, primary)
@@ -150,7 +151,7 @@ function SWEP:SmackEffect(tr)
 		data:SetScale(1)
 
 		if (bit.band(util.PointContents(trSplash.HitPos), CONTENTS_SLIME) ~= 0) then
-			data:SetFlags(FX_WATER_IN_SLIME)
+			data:SetFlags(1) --FX_WATER_IN_SLIME
 		end
 
 		util.Effect("watersplash", data)
@@ -187,7 +188,7 @@ function SWEP:Slash(bPrimary)
 	tracedata.endpos = gsp + fw * (bPrimary and self.Primary.Length or self.Secondary.Length)
 	tracedata.filter = ow
 
-	tr = self:GetSlashTrace(tr, tracedata, fw)
+	tr = self:GetSlashTrace(tracedata, fw)
 	rpm = self:GetStat("Primary.RPM")
 	delay = self:GetStat("Primary.Delay")
 	self:SlashSound(tr)

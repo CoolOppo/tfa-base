@@ -683,7 +683,7 @@ Purpose:  Feature
 ]]
 --
 function SWEP:CycleSafety()
-	ct = l_CT()
+	local ct = l_CT()
 	local fm = self:GetFireMode()
 	local fmt = self:GetStat("FireModes")
 

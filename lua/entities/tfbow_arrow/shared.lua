@@ -6,7 +6,7 @@ ENT.Contact = "Don't"
 ENT.Purpose = "Arrow Entity"
 ENT.Instructions = "Spawn this with a velocity, get rich"
 
-function GetBoneCenter(ent, bone)
+local function GetBoneCenter(ent, bone)
 	local bonechildren = ent:GetChildBones(bone)
 
 	if #bonechildren <= 0 then
@@ -32,7 +32,7 @@ function GetBoneCenter(ent, bone)
 end
 
 function ENT:GetClosestBonePos(ent, pos)
-	local i, count, dist, ppos
+	local i, count, dist, ppos, cbone
 	i = 1
 	count = ent:GetBoneCount()
 	cbone = 0
@@ -51,7 +51,7 @@ function ENT:GetClosestBonePos(ent, pos)
 		i = i + 1
 	end
 
-	return ppos
+	return ppos, cbone
 end
 
 local cv_al = GetConVar("sv_tfa_arrow_lifetime")
