@@ -65,7 +65,7 @@ function EFFECT:Init(data)
 		TFA.Particles.RegisterParticleThink(sparticle, TFA.Particles.FollowMuzzle)
 	end
 
-	for i = 0, 12 do
+	for _ = 0, 12 do
 		local particle = emitter:Add("particles/smokey", self.vOffset + dir * math.Rand(6, 10))
 
 		if (particle) then
@@ -87,7 +87,7 @@ function EFFECT:Init(data)
 
 	local sparkcount = 1
 
-	for i = 0, sparkcount do
+	for _ = 0, sparkcount do
 		local particle = emitter:Add("effects/yellowflare", self.Position)
 
 		if (particle) then
