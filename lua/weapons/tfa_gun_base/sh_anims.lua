@@ -555,13 +555,13 @@ function SWEP:SelectInspectAnim(pri)
 		success = false
 	end
 
-	return tanim, success
+	return success, tanim
 end
 
 function SWEP:ChooseInspectAnim()
 	if not self:VMIV() then return end
 	--self:ResetEvents()
-	tanim, success = self:SelectInspectAnim()
+	success, tanim = self:SelectInspectAnim()
 	self:SendViewModelAnim(tanim, 1)
 
 	if IsFirstTimePredicted() then
