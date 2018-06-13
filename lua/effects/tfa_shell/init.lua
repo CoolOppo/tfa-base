@@ -156,8 +156,12 @@ function EFFECT:Init(data)
 
 	if TFA.GetMZSmokeEnabled() then
 		self.PCFSmoke = CreateParticleSystem(self, self.SmokeParticle, PATTACH_POINT_FOLLOW, 1)
-		self:ComputeSmokeLighting()
-		self.PCFSmoke:StartEmission()
+		if IsValid(self.PCFSmoke) then
+			self:ComputeSmokeLighting()
+			self.PCFSmoke:StartEmission()
+		else
+			self.PCFSmoke = nil
+		end
 	end
 
 	self.setup = true

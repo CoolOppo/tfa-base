@@ -7,7 +7,7 @@ Notes:	Used to light the muzzle smoke trail, by setting its PCF Control Point 1
 Purpose:  FX
 ]]--
 function SWEP:ComputeSmokeLighting( pos, nrm, pcf )
-	if not pcf then return end
+	if not IsValid(pcf) then return end
 	local licht = render.ComputeLighting(pos, nrm)
 	local lichtFloat = math.Clamp((licht.r + licht.g + licht.b) / 3, 0, TFA.Particles.SmokeLightingClamp) / TFA.Particles.SmokeLightingClamp
 	local lichtFinal = LerpVector(lichtFloat, TFA.Particles.SmokeLightingMin, TFA.Particles.SmokeLightingMax)
