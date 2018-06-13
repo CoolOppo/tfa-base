@@ -1,3 +1,46 @@
+local smokeLightingMin = Vector(0.1, 0.1, 0.1)
+local smokeLightingMax = Vector(0.75, 0.75, 0.75)
+local smokeLightingClamp = 0.8
+local upVec = Vector(0,0,1)
+--[[
+Function Name:  ComputeSmokeLighting
+Syntax: self:ComputeSmokeLighting(pos,nrm,pcf).
+Returns:  Nothing.
+Notes:	Used to light the muzzle smoke trail, by setting its PCF Control Point 1
+Purpose:  FX
+]]--
+function SWEP:ComputeSmokeLighting( pos, nrm, pcf )
+	if not pcf then return end
+	local licht = render.ComputeLighting(pos, nrm)
+	local lichtFloat = math.Clamp((licht.r + licht.g + licht.b) / 3, 0, smokeLightingClamp) / smokeLightingClamp
+	local lichtFinal = LerpVector(lichtFloat, smokeLightingMin, smokeLightingMax)
+	pcf:SetControlPoint(1, lichtFinal)
+end
+--[[
+Function Name:  SmokePCFLighting
+Syntax: self:SmokePCFLighting().
+Returns:  Nothing.
+Notes:	Used to loop through all of our SmokePCF tables and call ComputeSmokeLighting on them
+Purpose:  FX
+]]--
+function SWEP:SmokePCFLighting()
+	local mzPos = self:GetMuzzlePos()
+	if not mzPos or not mzPos.Pos then return end
+	local pos = mzPos.Pos
+	if self.SmokePCF then
+		for _, v in pairs(self.SmokePCF) do
+			self:ComputeSmokeLighting(pos,upVec,v)
+		end
+	end
+	if not self:VMIV() then return end
+	local vm = self.OwnerViewModel
+	if vm.SmokePCF then
+		for _, v in pairs(vm.SmokePCF) do
+			self:ComputeSmokeLighting(pos,upVec,v)
+		end
+	end
+end
+
 --[[
 Function Name:  FireAnimationEvent
 Syntax: self:FireAnimationEvent( position, angle, event id, options).

@@ -1,6 +1,18 @@
 local ang
 local limit_particle_cv = GetConVar("cl_tfa_fx_muzzlesmoke_limited")
 local SMOKEDELAY = 1.5
+local upVec = Vector(0,0,1)
+
+local smokeLightingMin = Vector(0.1, 0.1, 0.1)
+local smokeLightingMax = Vector(0.75, 0.75, 0.75)
+local smokeLightingClamp = 0.8
+local function ComputeSmokeLighting(pos, nrm, pcf )
+	if not pcf then return end
+	local licht = render.ComputeLighting(pos, nrm)
+	local lichtFloat = math.Clamp((licht.r + licht.g + licht.b) / 3, 0, smokeLightingClamp) / smokeLightingClamp
+	local lichtFinal = LerpVector(lichtFloat, smokeLightingMin, smokeLightingMax)
+	pcf:SetControlPoint(1, lichtFinal)
+end
 
 function EFFECT:Init(data)
 	self.WeaponEnt = data:GetEntity()
@@ -55,11 +67,14 @@ function EFFECT:Init(data)
 			e.SmokePCF[_a]:StopEmission()
 		end
 
+		local pos = self.Position
+
 		timer.Create(tn, delay or SMOKEDELAY, 1, function()
 			if not IsValid(e) then return end
 			e.SmokePCF[_a] = CreateParticleSystem(e, sp, PATTACH_POINT_FOLLOW, a)
 
 			if IsValid(e.SmokePCF[_a]) then
+				ComputeSmokeLighting(pos, upVec, e.SmokePCF[_a])
 				e.SmokePCF[_a]:StartEmission()
 			end
 		end)

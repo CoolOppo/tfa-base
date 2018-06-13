@@ -645,6 +645,7 @@ function SWEP:PlayerThinkCL()
 	self:Think2()
 	self:CalculateViewModelOffset()
 	self:CalculateViewModelFlip()
+	self:SmokePCFLighting()
 
 	if not self.Blowback_PistolMode or self:Clip1() == -1 or self:Clip1() > 0.1 or self.Blowback_PistolMode_Disabled[ self:GetLastActivity() ] then
 		self.BlowbackCurrent = l_mathApproach(self.BlowbackCurrent, 0, self.BlowbackCurrent * ft * 15)
