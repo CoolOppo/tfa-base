@@ -127,6 +127,7 @@ if CLIENT then
 			for _, k in pairs(collectedKeys) do
 				local v = wep:GetStat("MaterialTable_V")[k]
 				if not wep.MaterialCached_V[k] then
+					print(k)
 					print(v)
 					vm:SetSubMaterial(k - 1, v)
 					wep.MaterialCached_V[k] = true
@@ -139,7 +140,6 @@ if CLIENT then
 
 			local collectedKeys = table.GetKeys(wep:GetStat("MaterialTable_W"))
 			table.Merge(collectedKeys,table.GetKeys(wep:GetStat("MaterialTable")))
-			PrintTable(collectedKeys)
 
 			if #collectedKeys >= 1 and #wep:GetMaterials() <= 1 then
 				wep:SetMaterial(wep:GetStat("MaterialTable_W")[1])
