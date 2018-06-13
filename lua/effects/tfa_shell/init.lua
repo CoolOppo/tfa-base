@@ -21,13 +21,14 @@ EFFECT.SmokeTime = {3, 3}
 EFFECT.SmokeParticle = "tfa_ins2_weapon_shell_smoke"
 local cv_eject
 local cv_life
+local upVec = Vector(0,0,1)
 local smokeLightingMin = Vector(0.1, 0.1, 0.1)
 local smokeLightingMax = Vector(0.75, 0.75, 0.75)
 local smokeLightingClamp = 0.8
 
 function EFFECT:ComputeSmokeLighting()
 	if not self.PCFSmoke then return end
-	local licht = render.ComputeLighting(self:GetPos(), self:GetAngles():Up())
+	local licht = render.ComputeLighting(self:GetPos() + upVec * 2, upVec)
 	local lichtFloat = math.Clamp((licht.r + licht.g + licht.b) / 3, 0, smokeLightingClamp) / smokeLightingClamp
 	local lichtFinal = LerpVector(lichtFloat, smokeLightingMin, smokeLightingMax)
 	self.PCFSmoke:SetControlPoint(1, lichtFinal)

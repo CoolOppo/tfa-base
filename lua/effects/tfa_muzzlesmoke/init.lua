@@ -1,8 +1,8 @@
 local ang
 local limit_particle_cv = GetConVar("cl_tfa_fx_muzzlesmoke_limited")
 local SMOKEDELAY = 1.5
-local upVec = Vector(0,0,1)
 
+local upVec = Vector(0,0,1)
 local smokeLightingMin = Vector(0.1, 0.1, 0.1)
 local smokeLightingMax = Vector(0.75, 0.75, 0.75)
 local smokeLightingClamp = 0.8
