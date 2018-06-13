@@ -1,6 +1,3 @@
-local smokeLightingMin = Vector(0.1, 0.1, 0.1)
-local smokeLightingMax = Vector(0.75, 0.75, 0.75)
-local smokeLightingClamp = 0.8
 local upVec = Vector(0,0,1)
 --[[
 Function Name:  ComputeSmokeLighting
@@ -12,8 +9,8 @@ Purpose:  FX
 function SWEP:ComputeSmokeLighting( pos, nrm, pcf )
 	if not pcf then return end
 	local licht = render.ComputeLighting(pos, nrm)
-	local lichtFloat = math.Clamp((licht.r + licht.g + licht.b) / 3, 0, smokeLightingClamp) / smokeLightingClamp
-	local lichtFinal = LerpVector(lichtFloat, smokeLightingMin, smokeLightingMax)
+	local lichtFloat = math.Clamp((licht.r + licht.g + licht.b) / 3, 0, TFA.Particles.SmokeLightingClamp) / TFA.Particles.SmokeLightingClamp
+	local lichtFinal = LerpVector(lichtFloat, TFA.Particles.SmokeLightingMin, TFA.Particles.SmokeLightingMax)
 	pcf:SetControlPoint(1, lichtFinal)
 end
 --[[

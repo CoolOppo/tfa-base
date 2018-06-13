@@ -14,6 +14,11 @@ TFA.Particles.PCFParticles["tfa_bullet_fire_tracer"] = "tfa_ballistics"
 --legacy
 TFA.Particles.PCFParticles["smoke_trail_tfa"] = "tfa_smoke"
 TFA.Particles.PCFParticles["smoke_trail_controlled"] = "tfa_smoke"
+
+TFA.Particles.SmokeLightingMin = Vector(0.15, 0.15, 0.15)
+TFA.Particles.SmokeLightingMax = Vector(0.75, 0.75, 0.75)
+TFA.Particles.SmokeLightingClamp = 1
+
 local addedparts = {}
 local cachedparts = {}
 
