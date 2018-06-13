@@ -32,6 +32,8 @@ function SWEP:CalculateRatios()
 		adstransitionspeed = 12.5 / (self:GetStat("IronSightTime") / 0.3)
 	elseif spr then
 		adstransitionspeed = 7.5
+	else
+		adstransitionspeed = 12.5
 	end
 
 	self.CrouchingRatio = l_mathApproach(self.CrouchingRatio or 0, owent:Crouching() and 1 or 0, ft / self.ToCrouchTime)
