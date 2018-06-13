@@ -56,7 +56,7 @@ function SWEP:ShootBulletInformation()
 	if not IsFirstTimePredicted() then return end
 	con, rec = self:CalculateConeRecoil()
 	local tmpranddamage = math.Rand(cv_dmg_mult_min:GetFloat(), cv_dmg_mult_max:GetFloat())
-	basedamage = self.ConDamageMultiplier * self:GetStat("Primary.Damage")
+	local basedamage = self.ConDamageMultiplier * self:GetStat("Primary.Damage")
 	dmg = basedamage * tmpranddamage
 	local ns = self:GetStat("Primary.NumShots")
 	local clip = (self:GetStat("Primary.ClipSize") == -1) and self:Ammo1() or self:Clip1()
@@ -82,7 +82,7 @@ function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet,
 
 	if self:GetStat("Primary.Projectile") then
 		if SERVER then
-			for i = 1, num_bullets do
+			for _ = 1, num_bullets do
 				local ent = ents.Create(self:GetStat("Primary.Projectile"))
 				local dir
 				local ang = self:GetOwner():EyeAngles()
@@ -184,7 +184,7 @@ function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet,
 	end
 end
 
-sp = game.SinglePlayer()
+local sp = game.SinglePlayer()
 
 function SWEP:Recoil(recoil, ifp)
 	if sp and type(recoil) == "string" then
@@ -467,13 +467,13 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon)
 	maxpen = math.min(penetration_max_cvar and (penetration_max_cvar:GetInt() - 1) or 1, weapon.Primary.MaxPenetration)
 	if self.PenetrationCount > maxpen then return end
 	local mult = weapon:GetPenetrationMultiplier(traceres.MatType)
-	penetrationoffset = traceres.Normal * math.Clamp(self.Force * mult, 0, 32)
+	local penetrationoffset = traceres.Normal * math.Clamp(self.Force * mult, 0, 32)
 	local pentrace = {}
 	pentrace.endpos = traceres.HitPos
 	pentrace.start = traceres.HitPos + penetrationoffset
 	pentrace.mask = MASK_SHOT
 	pentrace.filter = {}
-	pentraceres = util.TraceLine(pentrace)
+	local pentraceres = util.TraceLine(pentrace)
 
 	if IsValid(pentraceres.Entity) and pentraceres.Entity.IsNPC and (pentraceres.Entity:IsNPC() or pentraceres.Entity:IsPlayer()) then
 		if IsValid(ply) and ply:IsPlayer() then
@@ -552,39 +552,27 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon)
 	end
 end
 
+local RicochetChanceEnum = {
+	["glass"] = 0,
+	["plastic"] = 0.01,
+	["dirt"] = 0.01,
+	["grass"] = 0.01,
+	["sand"] = 0.01,
+	["ceramic"] = 0.15,
+	["metal"] = 0.7,
+	["default"] = 0.5
+}
+
 function SWEP.MainBullet:Ricochet(ply, traceres, dmginfo, weapon)
 	DisableOwnerDamage(ply, traceres, dmginfo)
 	if ricochet_cvar and not ricochet_cvar:GetBool() then return end
 	maxpen = math.min(penetration_max_cvar and penetration_max_cvar:GetInt() - 1 or 1, weapon.Primary.MaxPenetration)
 	if self.PenetrationCount > maxpen then return end
-	--[[
-	]]
-	--
 	local matname = weapon:GetMaterialConcise(traceres.MatType)
-	local ricochetchance = 1
+	local ricochetchance = RicochetChanceEnum[matname] or 0
 	local dir = traceres.HitPos - traceres.StartPos
 	dir:Normalize()
 	local dp = dir:Dot(traceres.HitNormal * -1)
-
-	if matname == "glass" then
-		ricochetchance = 0
-	elseif matname == "plastic" then
-		ricochetchance = 0.01
-	elseif matname == "dirt" then
-		ricochetchance = 0.01
-	elseif matname == "grass" then
-		ricochetchance = 0.01
-	elseif matname == "sand" then
-		ricochetchance = 0.01
-	elseif matname == "ceramic" then
-		ricochetchance = 0.15
-	elseif matname == "metal" then
-		ricochetchance = 0.7
-	elseif matname == "default" then
-		ricochetchance = 0.5
-	else
-		ricochetchance = 0
-	end
 
 	ricochetchance = ricochetchance * 0.5 * weapon:GetAmmoRicochetMultiplier()
 	local riccbak = ricochetchance / 0.7
@@ -626,10 +614,10 @@ local cv_doorres = GetConVar("sv_tfa_door_respawn")
 function SWEP.MainBullet:MakeDoor(ent, dmginfo)
 	local dir = dmginfo:GetDamageForce():GetNormalized()
 	local force = dir * math.max(math.sqrt(dmginfo:GetDamageForce():Length() / 1000), 1) * 1000
-	pos = ent:GetPos()
-	ang = ent:GetAngles()
-	mdl = ent:GetModel()
-	ski = ent:GetSkin()
+	local pos = ent:GetPos()
+	local ang = ent:GetAngles()
+	local mdl = ent:GetModel()
+	local ski = ent:GetSkin()
 	ent:SetNotSolid(true)
 	ent:SetNoDraw(true)
 	local prop = ents.Create("prop_physics")

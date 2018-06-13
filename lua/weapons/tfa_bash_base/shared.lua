@@ -97,24 +97,10 @@ function SWEP:AltAttack()
 	if ( stat == TFA.GetStatus("bashing") ) and self.Secondary.BashInterrupt then return end
 	if self:IsSafety() then return end
 	if self:GetHolding() then return end
-
-	--if SERVER then
 	self:SendViewModelAnim(ACT_VM_HITCENTER)
-
-	--else
-	--	self:SendWeaponAnim(ACT_VM_HITCENTER)
-	--end
 	if self:GetOwner().Vox then
 		self:GetOwner():Vox("bash", 0)
 	end
-
-	--if IsValid(wep) and wep.GetHoldType then
-	local ht = self.HoldType
-
-	if ht == "ar2" or ht == "shotgun" or ht == "crossbow" or ht == "physgun" then
-		altanim = true
-	end
-
 	self.unpredbash = true
 
 	timer.Simple(0.1, function()
@@ -141,6 +127,7 @@ end
 function SWEP:BashAnim()
 	--if IsValid(wep) and wep.GetHoldType then
 	local ht = self.DefaultHoldType or self.HoldType
+	local altanim = false
 
 	if ht == "ar2" or ht == "shotgun" or ht == "crossbow" or ht == "physgun" then
 		altanim = true

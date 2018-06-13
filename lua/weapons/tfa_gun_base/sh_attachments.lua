@@ -31,7 +31,7 @@ end
 
 
 function SWEP:BuildAttachmentCache()
-	for k, v in pairs(self.Attachments) do
+	for _, v in pairs(self.Attachments) do
 		if v.atts then
 			for l, b in pairs(v.atts) do
 				self.AttachmentCache[b] = v.sel == l
@@ -58,7 +58,7 @@ function SWEP:CanAttach(attn)
 
 		for k, v in pairs(tc) do
 			if k ~= "BaseClass" then
-				for l, b in pairs(v) do
+				for _, b in pairs(v) do
 					self.AttachmentExclusions[b] = self.AttachmentExclusions[b] or {}
 
 					if not table.HasValue(self.AttachmentExclusions[b]) then
@@ -74,7 +74,7 @@ function SWEP:CanAttach(attn)
 	if att_enabled_cv and (not att_enabled_cv:GetBool()) then return false end
 
 	if self.AttachmentExclusions[attn] then
-		for k, v in pairs(self.AttachmentExclusions[attn]) do
+		for _, v in pairs(self.AttachmentExclusions[attn]) do
 			if self:IsAttached(v) then return false end
 		end
 	end
@@ -91,7 +91,7 @@ end
 function SWEP:GetStatRecursive(srctbl, stbl, ...)
 	stbl = table.Copy(stbl)
 
-	for k, v in ipairs(stbl) do
+	for _ = 1, #stbl do
 		if #stbl > 1 then
 			if srctbl[stbl[1]] then
 				srctbl = srctbl[stbl[1]]
@@ -200,7 +200,7 @@ function SWEP:GetStat(stat, default)
 		local cs_og = cs
 		local nc = false
 
-		for k, v in pairs(self.Attachments) do
+		for _, v in pairs(self.Attachments) do
 			if v.atts and v.sel then
 				if not v.atts[v.sel] then continue end --Validity Check 1
 				if not TFA.Attachments.Atts[v.atts[v.sel]] then continue end --Validity Check 2
@@ -393,11 +393,11 @@ function SWEP:GenerateVGUIAttachmentTable()
 			while (#v.atts > max_row_atts) do
 				local t = table.Copy(v)
 
-				for j = 1, max_row_atts do
+				for _ = 1, max_row_atts do
 					table.remove(t.atts, 1)
 				end
 
-				for j = 1, #v.atts - max_row_atts do
+				for _ = 1, #v.atts - max_row_atts do
 					table.remove(v.atts)
 				end
 

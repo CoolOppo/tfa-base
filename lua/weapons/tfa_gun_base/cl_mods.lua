@@ -369,9 +369,9 @@ function SWEP:DrawWorldModel()
 		end
 	end
 
-	bone_ent = self:GetOwner() and self:GetOwner() or self
+	local bone_ent = self:GetOwner() and self:GetOwner() or self
 
-	for k, name in pairs(self.wRenderOrder or {}) do
+	for _, name in pairs(self.wRenderOrder or {}) do
 		local v = self.WElements[name]
 
 		if (not v) then
@@ -537,7 +537,7 @@ Purpose:  SWEP Construction Kit Compatibility / Basic Attachments.
 function SWEP:CleanModels(tabl)
 	if (not tabl) then return end
 
-	for k, v in pairs(tabl) do
+	for _, v in pairs(tabl) do
 		if (v.type == "Model" and v.curmodel) then
 			if v.curmodel and v.curmodel.Remove then
 				timer.Simple(0, function()
@@ -568,7 +568,7 @@ Purpose:  SWEP Construction Kit Compatibility / Basic Attachments.
 function SWEP:CreateModels(tabl, is_vm)
 	if (not tabl) then return end
 
-	for k, v in pairs(tabl) do
+	for _, v in pairs(tabl) do
 		if (v.type == "Model" and v.model and (not IsValid(v.curmodel) or v.curmodelname ~= v.model) and v.model ~= "") then
 			v.curmodel = ClientsideModel(v.model, RENDERGROUP_VIEWMODEL)
 			TFA.RegisterClientsideModel(v.curmodel, self)
@@ -622,7 +622,7 @@ function SWEP:CreateModels(tabl, is_vm)
 
 				local tocheck = {"nocull", "additive", "vertexalpha", "vertexcolor", "ignorez"}
 
-				for i, j in pairs(tocheck) do
+				for _, j in pairs(tocheck) do
 					if (v[j]) then
 						params["$" .. j] = 1
 						name = name .. "1"

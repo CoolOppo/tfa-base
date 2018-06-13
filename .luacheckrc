@@ -58,7 +58,8 @@ stds.addon.read_globals = {
 	"ACT_VM_FIDGET_EMPTY",
 	"ACT_VM_BLOWBACK",
 	"ACT_VM_FIDGET_SILENCED",
-	"ACT_VM_HOLSTER_SILENCED"
+	"ACT_VM_HOLSTER_SILENCED",
+	"AddPackAPunchName"
 }
 
 files = {
