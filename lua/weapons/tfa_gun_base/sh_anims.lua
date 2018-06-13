@@ -132,6 +132,18 @@ SWEP.BaseAnimations = {
 	["rof_is"] = {
 		["type"] = TFA.Enum.ANIMATION_ACT, --Sequence or act
 		["value"] = ACT_VM_IFIREMODE
+	},
+	["inspect"] = {
+		["type"] = TFA.Enum.ANIMATION_ACT, --Sequence or act
+		["value"] = ACT_VM_FIDGET
+	},
+	["inspect_empty"] = {
+		["type"] = TFA.Enum.ANIMATION_ACT, --Sequence or act
+		["value"] = ACT_VM_FIDGET_EMPTY
+	},
+	["inspect_silenced"] = {
+		["type"] = TFA.Enum.ANIMATION_ACT, --Sequence or act
+		["value"] = ACT_VM_FIDGET_SILENCED
 	}
 }
 
