@@ -6,8 +6,10 @@ function EFFECT:Init(data)
 	if not IsValid(self.WeaponEnt) then return end
 	self.Attachment = data:GetAttachment()
 	self.Position = self:GetTracerShootPos(data:GetOrigin(), self.WeaponEnt, self.Attachment)
+	local ownerent
 
 	if IsValid(self.WeaponEnt:GetOwner()) then
+		ownerent = self.WeaponEnt:GetOwner()
 		if self.WeaponEnt:GetOwner() == LocalPlayer() then
 			if self.WeaponEnt:GetOwner():ShouldDrawLocalPlayer() then
 				ang = self.WeaponEnt:GetOwner():EyeAngles()
@@ -23,6 +25,8 @@ function EFFECT:Init(data)
 			ang:Normalize()
 			self.Forward = ang:Forward()
 		end
+	else
+		ownerent = LocalPlayer()
 	end
 
 	self.Forward = self.Forward or data:GetNormal()
@@ -42,10 +46,6 @@ function EFFECT:Init(data)
 	local dotang = math.deg(math.acos(math.abs(dot)))
 	local halofac = math.Clamp(1 - (dotang / 90), 0, 1)
 
-	if CLIENT and not IsValid(ownerent) then
-		ownerent = LocalPlayer()
-	end
-
 	local dlight = DynamicLight(ownerent:EntIndex())
 
 	if (dlight) then
@@ -61,7 +61,7 @@ function EFFECT:Init(data)
 
 	local emitter = ParticleEmitter(self.vOffset)
 
-	for i = 0, 1 do
+	for _ = 0, 1 do
 		local particle = emitter:Add("effects/muzzleflashX_nemole", self.vOffset + FrameTime() * AddVel)
 
 		if (particle) then
@@ -104,7 +104,7 @@ function EFFECT:Init(data)
 		end
 	end
 
-	for i = 0, 12 do
+	for _ = 0, 12 do
 		local particle = emitter:Add("particles/smokey", self.vOffset + dir * math.Rand(6, 10))
 
 		if (particle) then
@@ -126,7 +126,7 @@ function EFFECT:Init(data)
 
 	local sparkcount = math.random(12, 16)
 
-	for i = 0, sparkcount do
+	for _ = 0, sparkcount do
 		local particle = emitter:Add("effects/yellowflare", self.Position)
 
 		if (particle) then

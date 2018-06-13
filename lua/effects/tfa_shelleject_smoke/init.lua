@@ -2,7 +2,6 @@ local dir
 
 function EFFECT:Init(data)
 	if not TFA.GetEJSmokeEnabled() then return end
-	self.Position = bvec
 	self.WeaponEnt = data:GetEntity()
 	if not IsValid(self.WeaponEnt) then return end
 	self.WeaponEntOG = self.WeaponEnt
@@ -67,7 +66,7 @@ function EFFECT:Init(data)
 	local emitter = ParticleEmitter(self.vOffset)
 	dir = data:GetNormal()
 
-	for i = 0, 6 do
+	for _ = 0, 6 do
 		local particle = emitter:Add("particles/smokey", self.vOffset + dir * math.Rand(2, 4))
 
 		if (particle) then

@@ -201,7 +201,7 @@ function EFFECT:Think()
 			local thicc = math.random(self.SmokeThickness[1], self.SmokeThickness[2])
 			self.Emitter:SetPos(pos)
 
-			for i = 0, thicc do
+			for _ = 0, thicc do
 				local particle = self.Emitter:Add("particles/smokey", pos)
 
 				if (particle) then

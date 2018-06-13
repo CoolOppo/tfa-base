@@ -81,7 +81,7 @@ function EFFECT:Init(data)
 		end
 	end
 
-	for i = 1, 8 do
+	for _ = 1, 8 do
 		local particle = emitter:Add("effects/scotchmuzzleflash1", self.vOffset)
 
 		if (particle) then
@@ -127,7 +127,7 @@ function EFFECT:Init(data)
 		end
 	end
 
-	for i = 0, 6 do
+	for _ = 0, 6 do
 		local particle = emitter:Add("particles/smokey", self.vOffset + dir * math.Rand(6, 10))
 
 		if (particle) then
@@ -149,7 +149,7 @@ function EFFECT:Init(data)
 
 	local sparkcount = math.random(3, 5)
 
-	for i = 0, sparkcount do
+	for _ = 0, sparkcount do
 		local particle = emitter:Add("effects/yellowflare", self.Position)
 
 		if (particle) then

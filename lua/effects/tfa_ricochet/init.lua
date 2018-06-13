@@ -19,7 +19,7 @@ function EFFECT:Init(data)
 	local emitter = ParticleEmitter(self.StartPos)
 
 	--Sparks
-	for i = 1, cv_sc:GetInt() * self.PartMult do
+	for _ = 1, cv_sc:GetInt() * self.PartMult do
 		local part = emitter:Add("effects/yellowflare", self.StartPos)
 		part:SetVelocity((self.Dir + VectorRand() * 0.5) * math.Rand(75, 185))
 		part:SetDieTime(math.Rand(0.25, 1) * self.SparkLife)

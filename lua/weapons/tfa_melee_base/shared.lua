@@ -795,7 +795,6 @@ function SWEP:SecondaryAttack()
 	if #att <= 0 then return end
 	ind = att[self:SharedRandom(1, #att, "SecondaryAttack")]
 	attack = self.Secondary.Attacks[ind]
-	vm = self:GetOwner():GetViewModel()
 	--We have attack isolated, begin attack logic
 	self:PlaySwing(attack.act)
 

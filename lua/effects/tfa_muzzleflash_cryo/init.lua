@@ -83,7 +83,7 @@ function EFFECT:Init(data)
 
 	local r = math.Rand(-10, 10) * 3.14 / 180
 
-	for i = 1, 2 do
+	for _ = 1, 2 do
 		local particle = emitter:Add("effects/scotchmuzzleflashw", self.vOffset + FrameTime() * AddVel)
 
 		if (particle) then

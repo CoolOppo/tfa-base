@@ -65,10 +65,9 @@ function EFFECT:Init(data)
 
 	-- Keep the start and end Pos - we're going to interpolate between them
 	self.Position = self:GetTracerShootPos(angpos.Pos, self.WeaponEnt, self.Attachment)
-	self.Norm = self.Dir or angpos.Ang:Forward() --angpos.Ang:Forward()
+	self.Norm = self.Dir
 	self.vOffset = self.Position
-	dir = self.Norm
-	AddVel = vector_origin
+	local dir = self.Norm
 	local dlight
 
 	if IsValid(self.WeaponEnt) then

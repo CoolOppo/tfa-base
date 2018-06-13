@@ -62,7 +62,7 @@ function ENT:Initialize()
 		if not IsValid(self.myowner) then
 			self.myowner = self:GetOwner()
 
-			if not IsValid(myowner) then
+			if not IsValid(self.myowner) then
 				self.myowner = self
 			end
 		end

@@ -217,8 +217,7 @@ function SWEP:SetupDataTables()
 end
 
 function SWEP:DoImpactEffect(tr, dmg)
-	local impactpos, impactnormal, seq
-	seq = self.Sequences[self:GetNW2Int("Slash", 1)]
+	local impactpos, impactnormal
 	impactpos = tr.HitPos
 	impactnormal = tr.HitNormal
 	self.sounds = self.sounds and self.sounds or 0

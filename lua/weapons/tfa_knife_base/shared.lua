@@ -238,7 +238,7 @@ function SWEP:SecondaryAttack()
 	tracedata.endpos = gsp + fw * self.Secondary.Length
 	tracedata.filter = ow
 
-	tr = self:GetSlashTrace(tr, tracedata, fw)
+	tr = self:GetSlashTrace(tracedata, fw)
 
 	if tr.Hit then
 		self.StabIndex = self.StabIndex or 0

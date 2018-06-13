@@ -1,5 +1,4 @@
 function EFFECT:Init(data)
-	self.Position = bvec
 	self.WeaponEnt = data:GetEntity()
 	if not IsValid(self.WeaponEnt) then return end
 	self.WeaponEntOG = self.WeaponEnt
