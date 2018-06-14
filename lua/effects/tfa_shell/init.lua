@@ -154,7 +154,7 @@ function EFFECT:Init(data)
 		self.ImpactSound = self.Shotgun and self.SoundFilesSG[math.random(1, #self.SoundFiles)] or self.SoundFiles[math.random(1, #self.SoundFiles)]
 	end
 
-	if TFA.GetMZSmokeEnabled() then
+	if TFA.GetEJSmokeEnabled() then
 		self.PCFSmoke = CreateParticleSystem(self, self.SmokeParticle, PATTACH_POINT_FOLLOW, 1)
 		if IsValid(self.PCFSmoke) then
 			self:ComputeSmokeLighting()
