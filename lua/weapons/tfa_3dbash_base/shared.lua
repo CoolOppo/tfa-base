@@ -10,6 +10,7 @@ SWEP.RTScopeFOV = 6
 SWEP.RTScopeAttachment = 3 --Anchor the scope shadow to this
 SWEP.Scoped = false
 SWEP.BoltAction = false
+SWEP.ScopeLegacyOrientation = false --used to align with eyeangles instead of vm angles
 SWEP.ScopeAngleTransforms = {}
 --{"P",1} --Pitch, 1
 --{"Y",1} --Yaw, 1
@@ -164,6 +165,7 @@ local cv_cc_a = GetConVar("cl_tfa_hud_crosshair_color_a")
 SWEP.defaultscrvec = Vector()
 
 SWEP.RTCode = function(self, rt, scrw, scrh)
+	local legacy = self.ScopeLegacyOrientation
 	local rttw = ScrW()
 	local rtth = ScrH()
 	if not self:VMIV() then return end
@@ -225,7 +227,7 @@ SWEP.RTCode = function(self, rt, scrw, scrh)
 	surface.SetDrawColor(color_white)
 	surface.DrawRect(-512, -512, 1024, 1024)
 	render.OverrideAlphaWriteEnable(true, true)
-	local ang = vm:GetAngles()
+	local ang = legacy and self:GetOwner():EyeAngles() or vm:GetAngles()
 	if self.RTScopeAttachment and self.RTScopeAttachment > 0 then
 		local AngPos = vm:GetAttachment( self.RTScopeAttachment )
 
