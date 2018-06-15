@@ -753,6 +753,7 @@ function SWEP:DrawHUDAmmo()
 	end
 
 	if not (mzpos and mzpos.Pos and not self:GetHidden() and hudenabled_cvar:GetBool()) then return end
+
 	local pos = mzpos.Pos
 	local textsize = self.textsize and self.textsize or 1
 	local pl = LocalPlayer() and LocalPlayer() or self:GetOwner()
@@ -767,6 +768,17 @@ function SWEP:DrawHUDAmmo()
 	local postoscreen = pos:ToScreen()
 	local xx = postoscreen.x
 	local yy = postoscreen.y
+
+	local v, newx, newy, newalpha = hook.Run("TFA_DrawHUDAmmo", self, xx, yy, myalpha)
+	if v ~= nil then
+		if v then
+			xx = newx or xx
+			yy = newy or yy
+			myalpha = newalpha or myalpha
+		else
+			return
+		end
+	end
 
 	if self.InspectingProgress < 0.01 and self:GetStat("Primary.Ammo") ~= "" and self:GetStat("Primary.Ammo") ~= 0 then
 		local str
@@ -884,6 +896,11 @@ function SWEP:DoDrawCrosshair(x, y)
 	local ply = LocalPlayer()
 	if not ply:IsValid() or self:GetOwner() ~= ply then return false end
 
+	local v = hook.Run("TFA_DrawCrosshair", self, x, y)
+	if v ~= nil then
+		return v
+	end
+
 	if not ply.interpposx then
 		ply.interpposx = ScrW() / 2
 	end
@@ -976,6 +993,8 @@ end
 local w, h
 
 function SWEP:DrawScopeOverlay()
+	if hook.Run("TFA_DrawScopeOverlay", self) == true then return end
+
 	local tbl = nil
 
 	if self:GetStat("Secondary.UseACOG") then
