@@ -772,3 +772,25 @@ function SWEP:SendHitMarker(ply, traceres, dmginfo)
 	net.Start("tfaHitmarker")
 	net.Send(ply)
 end
+
+local seqcache
+
+function SWEP:CheckVMSequence(seqname)
+	if not IsValid(self) then return false end
+
+	vm = self.OwnerViewModel
+	if not IsValid(vm) then return false end
+
+	local mdl = vm:GetModel()
+	if not mdl then return false end
+
+	seqcache = seqcache or {}
+	seqcache[mdl] = seqcache[mdl] or {}
+
+	if seqcache[mdl][seqname] == nil then
+		local id = vm:LookupSequence(seqname)
+		seqcache[mdl][seqname] = id >= 0
+	end
+
+	return seqcache[mdl][seqname]
+end
