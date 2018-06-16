@@ -773,7 +773,7 @@ function SWEP:SendHitMarker(ply, traceres, dmginfo)
 	net.Send(ply)
 end
 
-local seqcache
+SWEP.VMSeqCache = {}
 
 function SWEP:CheckVMSequence(seqname)
 	if not IsValid(self) then return false end
@@ -784,13 +784,11 @@ function SWEP:CheckVMSequence(seqname)
 	local mdl = vm:GetModel()
 	if not mdl then return false end
 
-	seqcache = seqcache or {}
-	seqcache[mdl] = seqcache[mdl] or {}
+	self.VMSeqCache[mdl] = self.VMSeqCache[mdl] or {}
 
-	if seqcache[mdl][seqname] == nil then
-		local id = vm:LookupSequence(seqname)
-		seqcache[mdl][seqname] = id >= 0
+	if self.VMSeqCache[mdl][seqname] == nil then
+		self.VMSeqCache[mdl][seqname] = vm:LookupSequence(seqname) >= 0
 	end
 
-	return seqcache[mdl][seqname]
+	return self.VMSeqCache[mdl][seqname]
 end
