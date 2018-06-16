@@ -775,6 +775,7 @@ end
 
 SWEP.VMSeqCache = {}
 
+local vm -- are you fucking kidding me
 function SWEP:CheckVMSequence(seqname)
 	if not IsValid(self) then return false end
 
