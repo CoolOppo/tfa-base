@@ -159,7 +159,6 @@ function SWEP:GetStatRecursive(srctbl, stbl, ...)
 
 	if istable(val) and val.functionTable then
 		local t, final, nocache
-		final = false
 		nocache = false
 		for i = 1, table.Count(val) do
 			local v = val[i]
@@ -278,8 +277,7 @@ function SWEP:GetStat(stat, default)
 		end
 
 		local cs = self:GetStatRecursive(self, stbl, istable(default) and table.Copy(default) or default)
-		local ns
-		local nc = false
+		local ns,nc
 		ns,nc = self:GetStatRecursive(self.AttachmentTableCache, stbl, cs)
 		if istable(ns) and istable(cs) then
 			cs = table.Merge(table.Copy(cs),ns)
