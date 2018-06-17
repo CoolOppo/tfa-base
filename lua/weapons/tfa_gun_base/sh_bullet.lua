@@ -141,11 +141,13 @@ function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet,
 			end
 		end
 
-		self.MainBullet.Attacker = self:GetOwner()
+		local ow = self:GetOwner()
+
+		self.MainBullet.Attacker = ow
 		self.MainBullet.Inflictor = self
 		self.MainBullet.Num = num_bullets
-		self.MainBullet.Src = self:GetOwner():GetShootPos()
-		self.MainBullet.Dir = self:GetOwner():EyeAngles():Forward()
+		self.MainBullet.Src = ow:GetShootPos()
+		self.MainBullet.Dir = (ow:EyeAngles() + ow:GetViewPunchAngles()):Forward()
 		self.MainBullet.HullSize = self:GetStat("Primary.HullSize") or 0
 		self.MainBullet.Spread.x = aimcone
 		self.MainBullet.Spread.y = aimcone
