@@ -646,8 +646,6 @@ function SWEP:DoInspectionDerma()
 
 	if not IsValid(TFA_INSPECTIONPANEL) then return end
 	if not self:OwnerIsValid() then return end
-	cam.Start3D()
-	cam.End3D()
 end
 
 local crosscol = Color(255, 255, 255, 255)
@@ -700,13 +698,10 @@ local targbool = false
 local hudhangtime_cvar = GetConVar("cl_tfa_hud_hangtime")
 local hudfade_cvar = GetConVar("cl_tfa_hud_ammodata_fadein")
 local lfm, fm = 0, 0
-local refact, succ
 SWEP.TextCol = Color(255, 255, 255, 255) --Primary text color
 SWEP.TextColContrast = Color(32, 32, 32, 255) --Secondary Text Color (used for shadow)
 
 function SWEP:DrawHUDAmmo()
-	cam.Start3D() --Workaround for vec:ToScreen()
-	cam.End3D()
 	if self:GetStat("Primary.Ammo") == "none" or self:GetStat("Primary.Ammo") == "" then return end
 	local stat = self:GetStatus()
 
@@ -724,28 +719,22 @@ function SWEP:DrawHUDAmmo()
 	targbool = (not TFA.Enum.HUDDisabledStatus[stat]) or fm ~= lfm
 	targbool = targbool or (stat == TFA.Enum.STATUS_SHOOTING and self.LastBoltShoot and CurTime() > self.LastBoltShoot + self.BoltTimerOffset)
 	targbool = targbool or (self:GetStat("PumpAction") and (stat == TFA.GetStatus("pump") or (stat == TFA.Enum.STATUS_SHOOTING and self:Clip1() == 0)))
-	refact, succ = self:SelectInspectAnim()
-
-	if self:GetLastActivity() == refact and succ then
-		targbool = true
-	end
+	targbool = targbool or (stat == TFA.GetStatus("fidget"))
 
 	targ = targbool and 1 or 0
 	lfm = fm
 
 	if targ == 1 then
 		lactive = CurTime()
-	end
-
-	if CurTime() < lactive + hudhangtime_cvar:GetFloat() then
+	elseif CurTime() < lactive + hudhangtime_cvar:GetFloat() then
 		targ = 1
-	end
-
-	if self:GetOwner():KeyDown(IN_RELOAD) then
+	elseif self:GetOwner():KeyDown(IN_RELOAD) then
 		targ = 1
 	end
 
 	self.CLAmmoProgress = math.Approach(self.CLAmmoProgress, targ, (targ - self.CLAmmoProgress) * TFA.FrameTime() * 2 / hudfade_cvar:GetFloat())
+	local myalpha = 225 * self.CLAmmoProgress
+	if myalpha <= 0 then return end
 	local mzpos = self:GetMuzzlePos()
 
 	if self.Akimbo then
@@ -758,7 +747,6 @@ function SWEP:DrawHUDAmmo()
 	local textsize = self.textsize and self.textsize or 1
 	local pl = LocalPlayer() and LocalPlayer() or self:GetOwner()
 	local ang = pl:EyeAngles() --(angpos.Ang):Up():Angle()
-	local myalpha = 225 * self.CLAmmoProgress
 	ang:RotateAroundAxis(ang:Right(), 90)
 	ang:RotateAroundAxis(ang:Up(), -90)
 	ang:RotateAroundAxis(ang:Forward(), 0)

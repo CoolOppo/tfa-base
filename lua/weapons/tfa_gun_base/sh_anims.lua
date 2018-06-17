@@ -146,17 +146,17 @@ SWEP.BaseAnimations = {
 		["value"] = ACT_VM_FIDGET_SILENCED
 	}
 }
-
 SWEP.Animations = {}
-SWEP.AnimationActivities = {}
+
 function SWEP:InitializeAnims()
 	setmetatable(self.Animations, {
-		__index = function(t, k)
-			return self.BaseAnimations[k]
-		end
+		__index = function(t, k) return self.BaseAnimations[k] end
 	})
 end
+
 function SWEP:BuildAnimActivities()
+	self.AnimationActivities = self.AnimationActivities or {}
+
 	for k, _ in pairs(self.BaseAnimations) do
 		local kvt = self:GetStat("Animations." .. k)
 
@@ -164,6 +164,7 @@ function SWEP:BuildAnimActivities()
 			self.AnimationActivities[kvt.value] = k
 		end
 	end
+
 	for k, _ in pairs(self.Animations) do
 		local kvt = self:GetStat("Animations." .. k)
 
@@ -172,11 +173,12 @@ function SWEP:BuildAnimActivities()
 		end
 	end
 end
+
 function SWEP:GetActivityEnabled(act)
 	local stat = self:GetStat("SequenceEnabled." .. act)
 	if stat then return stat end
 
-	if #self.AnimationActivities <= 0 then
+	if not self.AnimationActivities then
 		self:BuildAnimActivities()
 	end
 

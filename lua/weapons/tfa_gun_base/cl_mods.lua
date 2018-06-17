@@ -648,77 +648,95 @@ Purpose:  SWEP Construction Kit Compatibility / Basic Attachments.
 --
 local bpos, bang
 local onevec = Vector(1, 1, 1)
+local defScaleTbl = { scale = onevec }
+local getKeys = table.GetKeys
+local tableMerge = table.Merge
+
+SWEP.ChildrenScaled = {}
+function SWEP:ScaleChildBoneMods(ent,bone,cumulativeScale)
+	if self.ChildrenScaled[bone] then
+		return
+	end
+	self.ChildrenScaled[bone] = true
+	local boneid = ent:LookupBone(bone)
+	if not boneid then return end
+	local curScale = (cumulativeScale or Vector(1,1,1)) * 1
+	if self.ViewModelBoneMods[bone] then
+		curScale = curScale * self.ViewModelBoneMods[bone].scale
+	end
+	local ch = ent:GetChildBones(boneid)
+	if ch and #ch > 0 then
+		for _, boneChild in ipairs(ch) do
+			self:ScaleChildBoneMods(ent,ent:GetBoneName(boneChild),curScale)
+		end
+	end
+	if not self.ViewModelBoneMods[bone] then
+		self.ViewModelBoneMods[bone] = {
+			["pos"] = vector_origin,
+			["angle"] = angle_zero,
+			["scale"] = curScale * 1
+		}
+	else
+		self.ViewModelBoneMods[bone].scale = curScale * 1
+	end
+end
 
 function SWEP:UpdateBonePositions(vm)
-	if not self.ViewModelBoneMods then
-		self.ViewModelBoneMods = {}
-	end
-
-	local VM_BoneMods = self:GetStat("ViewModelBoneMods", self.ViewModelBoneMods)
-
-	if table.Count(VM_BoneMods) > 0 then
+	local vmbm = self:GetStat("ViewModelBoneMods")
+	if vmbm then
 		local stat = self:GetStatus()
 
 		if not self.BlowbackBoneMods then
 			self.BlowbackBoneMods = {}
+			self.BlowbackCurrent = 0
 		end
 
-		if (not vm:GetBoneCount()) then return end
-		local vbones = {}
-		local loopthrough
-
-		for i = 0, vm:GetBoneCount() do
-			local bonename = vm:GetBoneName(i)
-
-			if (VM_BoneMods[bonename]) then
-				vbones[bonename] = VM_BoneMods[bonename]
-			else
-				vbones[bonename] = {
-					scale = onevec,
-					pos = vector_origin,
-					angle = angle_zero
-				}
-			end
-
-			if self.BlowbackBoneMods[bonename] then
-				if not (self.SequenceEnabled[ACT_VM_RELOAD_EMPTY] and TFA.Enum.ReloadStatus[stat]) or not (self.Blowback_PistolMode and TFA.Enum.ReloadStatus[stat]) then
-					vbones[bonename].pos = vbones[bonename].pos + self.BlowbackBoneMods[bonename].pos * self.BlowbackCurrent
-					vbones[bonename].angle = vbones[bonename].angle + self.BlowbackBoneMods[bonename].angle * self.BlowbackCurrent
-					vbones[bonename].scale = Lerp(self.BlowbackCurrent, vbones[bonename].scale, vbones[bonename].scale * self.BlowbackBoneMods[bonename].scale)
-				else
-					self.BlowbackCurrent = math.Approach(self.BlowbackCurrent, 0, self.BlowbackCurrent * FrameTime() * 30)
+		if not self.HasSetMetaVMBM then
+			for k,v in pairs(self.ViewModelBoneMods) do
+				if v.scale and v.scale.x ~= 1 or v.scale.y ~= 1 or v.scale.z ~= 1 then
+					self:ScaleChildBoneMods(vm,k)
 				end
 			end
+			for k,v in pairs(self.BlowbackBoneMods) do
+				v.pos_og = v.pos
+				v.angle_og = v.angle
+				v.scale_og = v.scale or onevec
+			end
+			self.HasSetMetaVMBM = true
+			setmetatable(self.ViewModelBoneMods,{ __index = function(t,k)
+				if not IsValid(self) then return end
+				if not self.BlowbackBoneMods[k] then return end
+				if not ( self.SequenceEnabled[ACT_VM_RELOAD_EMPTY] and TFA.Enum.ReloadStatus[stat] and self.Blowback_PistolMode ) then
+					self.BlowbackBoneMods[k].pos = self.BlowbackBoneMods[k].pos_og * self.BlowbackCurrent
+					self.BlowbackBoneMods[k].angle = self.BlowbackBoneMods[k].angle_og * self.BlowbackCurrent
+					self.BlowbackBoneMods[k].scale = Lerp(self.BlowbackCurrent, onevec, self.BlowbackBoneMods[k].scale_og)
+					return self.BlowbackBoneMods[k]
+				end
+			end})
 		end
 
-		loopthrough = vbones
+		if not ( self.SequenceEnabled[ACT_VM_RELOAD_EMPTY] and TFA.Enum.ReloadStatus[stat] and self.Blowback_PistolMode ) then
+			self.BlowbackCurrent = math.Approach(self.BlowbackCurrent, 0, self.BlowbackCurrent * FrameTime() * 30)
+		end
 
-		for k, v in pairs(loopthrough) do
+		local keys = getKeys(self.ViewModelBoneMods)
+		tableMerge(keys, getKeys(self.BlowbackBoneMods))
+
+		for _,k in pairs(keys) do
+			local v = self:GetStat("ViewModelBoneMods." .. k)
 			local bone = vm:LookupBone(k)
-			if (not bone) or (bone == -1) then continue end
-			local s = Vector(v.scale.x, v.scale.y, v.scale.z)
-			local p = Vector(v.pos.x, v.pos.y, v.pos.z)
-			local childscale = Vector(1, 1, 1)
-			local cur = vm:GetBoneParent(bone)
+			if not bone then continue end
 
-			while (cur ~= -1) do
-				local pscale = loopthrough[vm:GetBoneName(cur)].scale
-				childscale = childscale * pscale
-				cur = vm:GetBoneParent(cur)
-			end
-
-			s = s * childscale
-
-			if vm:GetManipulateBoneScale(bone) ~= s then
-				vm:ManipulateBoneScale(bone, s)
+			if vm:GetManipulateBoneScale(bone) ~= v.scale then
+				vm:ManipulateBoneScale(bone, v.scale)
 			end
 
 			if vm:GetManipulateBoneAngles(bone) ~= v.angle then
 				vm:ManipulateBoneAngles(bone, v.angle)
 			end
 
-			if vm:GetManipulateBonePosition(bone) ~= p then
-				vm:ManipulateBonePosition(bone, p)
+			if vm:GetManipulateBonePosition(bone) ~= v.pos then
+				vm:ManipulateBonePosition(bone, v.pos)
 			end
 		end
 	elseif self.BlowbackBoneMods then
