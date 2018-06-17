@@ -701,9 +701,6 @@ function SWEP:Think2()
 	ct = l_ct()
 	stat = self:GetStatus()
 	statend = self:GetStatusEnd()
-	if stat ~= TFA.Enum.STATUS_IDLE then
-		self.NextInspectAnim = -1
-	end
 
 	if stat ~= TFA.Enum.STATUS_IDLE and ct > statend then
 		finalstat = TFA.Enum.STATUS_IDLE

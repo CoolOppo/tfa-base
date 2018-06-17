@@ -702,7 +702,6 @@ SWEP.TextCol = Color(255, 255, 255, 255) --Primary text color
 SWEP.TextColContrast = Color(32, 32, 32, 255) --Secondary Text Color (used for shadow)
 
 function SWEP:DrawHUDAmmo()
-	if self:GetStat("Primary.Ammo") == "none" or self:GetStat("Primary.Ammo") == "" then return end
 	local stat = self:GetStatus()
 
 	if self:GetStat("BoltAction") then
@@ -732,9 +731,12 @@ function SWEP:DrawHUDAmmo()
 		targ = 1
 	end
 
-	self.CLAmmoProgress = math.Approach(self.CLAmmoProgress, targ, (targ - self.CLAmmoProgress) * TFA.FrameTime() * 2 / hudfade_cvar:GetFloat())
+	self.CLAmmoProgress = math.Approach(self.CLAmmoProgress, targ, (targ - self.CLAmmoProgress) * FrameTime() * 2 / hudfade_cvar:GetFloat())
 	local myalpha = 225 * self.CLAmmoProgress
-	if myalpha <= 0 then return end
+	if myalpha < 1 then return end
+	local amn = self:GetStat("Primary.Ammo")
+	if not amn then return end
+	if amn == "none" or amn == "" then return end
 	local mzpos = self:GetMuzzlePos()
 
 	if self.Akimbo then

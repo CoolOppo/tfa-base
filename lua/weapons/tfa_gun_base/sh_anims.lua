@@ -194,8 +194,7 @@ function SWEP:GetActivityEnabled(act)
 end
 
 function SWEP:ChooseAnimation(key)
-	local keysel = key
-	local kv = self:GetStat("Animations." .. keysel)
+	local kv = self:GetStat("Animations." .. key)
 	if not kv then return 0, 0 end
 	if not kv["type"] then return 0, 0 end
 	if not kv["value"] then return 0, 0 end
@@ -303,12 +302,12 @@ end
 function SWEP:SendViewModelSeq(seq, rate, targ, blend)
 	local seqold = seq
 	local vm = self.OwnerViewModel
+	if not self:VMIV() then return false, 0 end
 
 	if type(seq) == "string" then
 		seq = vm:LookupSequence(seq) or 0
 	end
 
-	if not self:VMIV() then return end
 	local act = vm:GetSequenceActivity(seq)
 
 	if self.SequenceRateOverrideScaled[seqold] then
@@ -317,9 +316,7 @@ function SWEP:SendViewModelSeq(seq, rate, targ, blend)
 	elseif self.SequenceRateOverrideScaled[act] then
 		rate = self.SequenceRateOverrideScaled[act]
 		targ = false
-	end
-
-	if self.SequenceRateOverride[seqold] then
+	elseif self.SequenceRateOverride[seqold] then
 		rate = self.SequenceRateOverride[seqold]
 		targ = true
 	elseif self.SequenceRateOverride[act] then
@@ -338,7 +335,6 @@ function SWEP:SendViewModelSeq(seq, rate, targ, blend)
 	end
 
 	if seq < 0 then return false, act end
-	if not self:VMIV() then return false, act end
 	self:SetLastActivity(act)
 	self.LastAct = act
 	self:ResetEvents()
@@ -721,7 +717,6 @@ function SWEP:ChooseIdleAnim()
 	--end
 	if self.Idle_Mode ~= TFA.Enum.IDLE_BOTH and self.Idle_Mode ~= TFA.Enum.IDLE_ANI then return end
 	--self:ResetEvents()
-	typev, tanim = self:ChooseAnimation("idle")
 
 	if self:GetIronSights() then
 		if self.Sights_Mode == TFA.Enum.LOCOMOTION_LUA then
@@ -742,6 +737,8 @@ function SWEP:ChooseIdleAnim()
 		else --if not self:GetActivityEnabled( ACT_VM_PRIMARYATTACK_EMPTY ) then
 			typev, tanim = self:ChooseAnimation("idle")
 		end
+	else
+		typev, tanim = self:ChooseAnimation("idle")
 	end
 
 	--else
