@@ -722,7 +722,8 @@ function SWEP:UpdateBonePositions(vm)
 		tableMerge(keys, getKeys(self.BlowbackBoneMods))
 
 		for _,k in pairs(keys) do
-			local v = self:GetStat("ViewModelBoneMods." .. k)
+			local v = self:GetStat("ViewModelBoneMods." .. k) or self.ViewModelBoneMods[k]
+			if not v then return end
 			local bone = vm:LookupBone(k)
 			if not bone then continue end
 
