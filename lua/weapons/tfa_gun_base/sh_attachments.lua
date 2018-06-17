@@ -2,6 +2,7 @@ local ATT_DIMENSION = 64
 local ATT_MAX_SCREEN_RATIO = 1 / 3
 SWEP.Attachments = {} --[MDL_ATTACHMENT] = = { offset = { 0, 0 }, atts = { "sample_attachment_1", "sample_attachment_2" }, sel = 1, order = 1 } --offset will move the offset the display from the weapon attachment when using CW2.0 style attachment display --atts is a table containing the visible attachments --sel allows you to have an attachment pre-selected, and is used internally by the base to show which attachment is selected in each category. --order is the order it will appear in the TFA style attachment menu
 SWEP.AttachmentCache = {} --["att_name"] = true
+SWEP.AttachmentTableCache = {}
 SWEP.AttachmentDependencies = {} --{["si_acog"] = {"bg_rail"}}
 SWEP.AttachmentExclusions = {} --{ ["si_iron"] = {"bg_heatshield"} }
 local att_enabled_cv = GetConVar("sv_tfa_attachments_enabled")
@@ -29,6 +30,50 @@ function SWEP:RemoveUnusedAttachments()
 	end
 end
 
+local function CloneTableRecursive(source, target)
+	for k, v in pairs(source) do
+		if istable(v) then
+			if istable(target[k]) and target[k].functionTable then
+				local baseTable = target[k]
+				local t, index
+				for l,b in pairs(baseTable) do
+					if istable(b) then
+						t = b
+						index = l
+					end
+				end
+				if not t then t = {} end
+				CloneTableRecursive(v,t)
+				if index then
+					baseTable[index] = t
+				else
+					table.insert(baseTable, 1, t)
+				end
+			else
+				target[k] = istable(target[k]) and target[k] or {}
+				CloneTableRecursive(v, target[k])
+			end
+		elseif isfunction(v) then
+			local temp
+			if target[k] and not istable(target[k]) then
+				temp = target[k]
+			end
+			target[k] = target[k] or {}
+			local t = target[k]
+			t.functionTable = true
+			if temp then
+				t[#t + 1] = temp
+			end
+			t[#t + 1] = v
+		else
+			if istable(target[k]) and target[k].functionTable then
+				table.insert(target[k], 1, v)
+			else
+				target[k] = v
+			end
+		end
+	end
+end
 
 function SWEP:BuildAttachmentCache()
 	for _, v in pairs(self.Attachments) do
@@ -37,6 +82,14 @@ function SWEP:BuildAttachmentCache()
 				self.AttachmentCache[b] = v.sel == l
 			end
 		end
+	end
+	table.Empty(self.AttachmentTableCache)
+	for attName,sel  in pairs(self.AttachmentCache) do
+		if not sel then continue end
+		if not TFA.Attachments.Atts[attName] then continue end
+		local srctbl = TFA.Attachments.Atts[attName].WeaponTable
+		if not srctbl then continue end
+		CloneTableRecursive(srctbl,self.AttachmentTableCache)
 	end
 end
 
@@ -104,14 +157,38 @@ function SWEP:GetStatRecursive(srctbl, stbl, ...)
 
 	local val = srctbl[stbl[1]]
 
-	if type(val) == "function" then
-		return val(self, ...)
+	if istable(val) and val.functionTable then
+		local t, final, nocache
+		final = false
+		nocache = false
+		for i = 1, table.Count(val) do
+			local v = val[i]
+			if isfunction(v) then
+				local nct
+				if not t then
+					t, final, nct = v(self,...)
+				else
+					t, final, nct = v(self,t)
+				end
+				nocache = nocache or nct
+				if final then break end
+			elseif v then
+				t = v
+			end
+		end
+		if t then
+			return t, nocache
+		else
+			return ...
+		end
 	elseif val ~= nil then
 		return val
 	else
 		return ...
 	end
 end
+
+
 
 SWEP.StatCache_Blacklist = {
 	["ViewModelBoneMods"] = true,
@@ -129,6 +206,7 @@ SWEP.StatCache = {}
 SWEP.StatCache2 = {}
 SWEP.StatStringCache = {}
 
+--[[
 local function mtbl(t1, t2)
 	local t = table.Copy(t1)
 
@@ -138,6 +216,7 @@ local function mtbl(t1, t2)
 
 	return t
 end
+]]--
 
 function SWEP:ClearStatCache(vn)
 	if vn then
@@ -199,35 +278,11 @@ function SWEP:GetStat(stat, default)
 		end
 
 		local cs = self:GetStatRecursive(self, stbl, istable(default) and table.Copy(default) or default)
-		local cs_og = cs
 		local nc = false
-
-		for _, v in pairs(self.Attachments) do
-			if v.atts and v.sel then
-				if not v.atts[v.sel] then continue end --Validity Check 1
-				if not TFA.Attachments.Atts[v.atts[v.sel]] then continue end --Validity Check 2
-				local srctbl = TFA.Attachments.Atts[v.atts[v.sel]].WeaponTable
-				if not srctbl then continue end --Validity Check 3
-				local tstat, final, nc2 = self:GetStatRecursive(srctbl, stbl, cs)
-				nc = nc2 or nc
-
-				if tstat ~= nil then
-					if istable(tstat) and istable(cs) and (not final) then
-						cs = mtbl(cs, tstat)
-					else
-						cs = tstat
-					end
-				end
-
-				if final then break end
-			end
-		end
+		cs,nc = self:GetStatRecursive(self.AttachmentTableCache, stbl, cs)
 
 		if (not self.StatCache_Blacklist[stat]) and (not self.StatCache_Blacklist[stbl[1]]) and (not nc) and not (ccv and ccv:GetBool()) then
-			if cs ~= cs_og then
-				self.StatCache[stat] = cs
-			end
-
+			self.StatCache[stat] = cs
 			self.StatCache2[stat] = true
 		end
 
