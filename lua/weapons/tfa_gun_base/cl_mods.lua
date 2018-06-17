@@ -648,7 +648,6 @@ Purpose:  SWEP Construction Kit Compatibility / Basic Attachments.
 --
 local bpos, bang
 local onevec = Vector(1, 1, 1)
-local defScaleTbl = { scale = onevec }
 local getKeys = table.GetKeys
 local tableMerge = table.Merge
 
@@ -697,7 +696,7 @@ function SWEP:UpdateBonePositions(vm)
 					self:ScaleChildBoneMods(vm,k)
 				end
 			end
-			for k,v in pairs(self.BlowbackBoneMods) do
+			for _,v in pairs(self.BlowbackBoneMods) do
 				v.pos_og = v.pos
 				v.angle_og = v.angle
 				v.scale_og = v.scale or onevec
