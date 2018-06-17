@@ -173,6 +173,8 @@ function SWEP:ViewModelDrawn()
 				break
 			end
 
+			local aktiv = self:GetStat("VElements." .. name .. ".active")
+			if aktiv ~= nil and aktiv == false then continue end
 			if v.type == "Quad" and v.draw_func_outer then continue end
 			if (v.hide) then continue end
 			local model = v.curmodel
@@ -180,8 +182,6 @@ function SWEP:ViewModelDrawn()
 			if (not v.bone) then continue end
 			local pos, ang = self:GetBoneOrientation(self.VElements, v, vm)
 			if (not pos) then continue end
-			local aktiv = self:GetStat("VElements." .. name .. ".active")
-			if aktiv ~= nil and aktiv == false then continue end
 
 			if (v.type == "Model" and IsValid(model)) then
 				model:SetPos(pos + ang:Forward() * v.pos.x + ang:Right() * v.pos.y + ang:Up() * v.pos.z)
