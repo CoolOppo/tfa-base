@@ -278,8 +278,14 @@ function SWEP:GetStat(stat, default)
 		end
 
 		local cs = self:GetStatRecursive(self, stbl, istable(default) and table.Copy(default) or default)
+		local ns
 		local nc = false
-		cs,nc = self:GetStatRecursive(self.AttachmentTableCache, stbl, cs)
+		ns,nc = self:GetStatRecursive(self.AttachmentTableCache, stbl, cs)
+		if istable(ns) and istable(cs) then
+			cs = table.Merge(table.Copy(cs),ns)
+		else
+			cs = ns
+		end
 
 		if (not self.StatCache_Blacklist[stat]) and (not self.StatCache_Blacklist[stbl[1]]) and (not nc) and not (ccv and ccv:GetBool()) then
 			self.StatCache[stat] = cs
