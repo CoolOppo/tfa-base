@@ -150,10 +150,12 @@ if CLIENT then
 			wep:SetSubMaterial()
 
 			for _, k in pairs(collectedKeys) do
-				local v = wep:GetStat("MaterialTable_W")[k]
-				if not wep.MaterialCached_W[k] then
-					wep:SetSubMaterial(k - 1, v)
-					wep.MaterialCached_W[k] = true
+				if k ~= "BaseClass" then
+					local v = wep:GetStat("MaterialTable_W")[k]
+					if not wep.MaterialCached_W[k] then
+						wep:SetSubMaterial(k - 1, v)
+						wep.MaterialCached_W[k] = true
+					end
 				end
 			end
 		end
