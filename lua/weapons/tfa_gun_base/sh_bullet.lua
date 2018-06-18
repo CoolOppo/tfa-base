@@ -161,7 +161,7 @@ function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet,
 		self.MainBullet.TracerName = TracerName
 		self.MainBullet.PenetrationCount = 0
 		self.MainBullet.AmmoType = self:GetPrimaryAmmoType()
-		self.MainBullet.Force = damage / 6 * math.sqrt(self:GetStat("Primary.KickUp") + self:GetStat("Primary.KickDown") + self:GetStat("Primary.KickHorizontal")) * cv_forcemult:GetFloat() * self:GetAmmoForceMultiplier()
+		self.MainBullet.Force = damage / 10 * self:GetAmmoForceMultiplier()
 		self.MainBullet.Damage = damage
 		self.MainBullet.HasAppliedRange = false
 

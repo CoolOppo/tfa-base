@@ -125,12 +125,12 @@ if CLIENT then
 			table.Merge(collectedKeys,table.GetKeys(wep:GetStat("MaterialTable")))
 
 			for _, k in pairs(collectedKeys) do
-				local v = wep:GetStat("MaterialTable_V")[k]
-				if not wep.MaterialCached_V[k] then
-					print(k)
-					print(v)
-					vm:SetSubMaterial(k - 1, v)
-					wep.MaterialCached_V[k] = true
+				if k ~= "BaseClass" then
+					local v = wep:GetStat("MaterialTable_V")[k]
+					if not wep.MaterialCached_V[k] then
+						vm:SetSubMaterial(k - 1, v)
+						wep.MaterialCached_V[k] = true
+					end
 				end
 			end
 		end
