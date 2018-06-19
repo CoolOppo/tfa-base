@@ -665,7 +665,7 @@ function SWEP:ScaleChildBoneMods(ent,bone,cumulativeScale)
 		end
 	end
 	if self.ViewModelBoneMods[bone] then
-		self.ViewModelBoneMods[bone].scale = curScale * 1
+		self.ViewModelBoneMods[bone].scale = curScale
 	else
 		self.ViewModelBoneMods_Children[bone] = {
 			["pos"] = vector_origin,
@@ -716,10 +716,11 @@ function SWEP:UpdateBonePositions(vm)
 
 		local keys = getKeys(self.ViewModelBoneMods)
 		tableMerge(keys, getKeys(self.BlowbackBoneMods))
+		tableMerge(keys, getKeys(self.ViewModelBoneMods_Children))
 
 		for _,k in pairs(keys) do
 			local v = self:GetStat("ViewModelBoneMods." .. k) or self.ViewModelBoneMods[k]
-			if not v then return end
+			if not v then continue end
 			local bone = vm:LookupBone(k)
 			if not bone then continue end
 
