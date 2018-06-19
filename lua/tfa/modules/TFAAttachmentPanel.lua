@@ -3,9 +3,7 @@ if SERVER then
 	return
 end
 
-local dimensions = 64
-local padding = TFA.Attachments.UIPadding
-local spacing = 64
+local dimensions, padding
 local tooltip_mincount = 1
 
 local PANEL = {}
@@ -33,14 +31,20 @@ function PANEL:Init()
 end
 
 function PANEL:Initialize()
-	if not IsValid(self.VM) then return false end
-	if not IsValid(self.Wep) then return false end
+	if not IsValid(self.VM) or not IsValid(self.Wep) then return false end
+
 	if not self.Att then return end
+
 	self.AttachmentTable = self.Wep.Attachments[ self.VAtt ]
 	self.VGUIAttachmentTable = self.Wep.VGUIAttachments[ self.VAtt ]
+
+	dimensions = math.Round(TFA.ScaleH(TFA.Attachments.IconSize))
+	padding = math.Round(TFA.ScaleH(TFA.Attachments.UIPadding))
+
 	local attCnt = #self.VGUIAttachmentTable.atts
 	local truewidth = dimensions * attCnt + padding * ( math.max(0,attCnt-1) + 2 )
 	local finalwidth = math.max( truewidth, dimensions * tooltip_mincount + padding * ( math.max(0,tooltip_mincount-1) + 2 ) )
+
 	self:SetSize( finalwidth, dimensions + padding * 2 ) --+ tooltipheightmax + padding * 2 )
 	self:DockPadding( 0, 0, 0, 0 )
 
@@ -84,6 +88,9 @@ function PANEL:Initialize()
 end
 
 function PANEL:PopulateIcons()
+	dimensions = math.Round(TFA.ScaleH(TFA.Attachments.IconSize))
+	padding = math.Round(TFA.ScaleH(TFA.Attachments.UIPadding))
+
 	local i = 0
 
 	for k,v in ipairs( self.VGUIAttachmentTable.atts ) do
@@ -94,8 +101,9 @@ function PANEL:PopulateIcons()
 		p:SetAttachment( v[1] )
 		p:SetID( v[2] )
 
-		p:SetSize(dimensions,dimensions)
-		p:SetPos( dimensions * i + padding * ( i + 1 ), padding )
+		p:SetSize(dimensions, dimensions)
+		p:SetPos(dimensions * i + padding * ( i + 1 ), padding)
+
 		i = i + 1
 		--p:SetPos(0,0)
 		--p:DockMargin( 0,0, padding, 0 )
@@ -236,9 +244,8 @@ end
 
 -- @Deprecated
 function PANEL:Position()
-	--self:CalcVAtt()
-	self:SetPos( math.floor( self:GetParent():GetWide() - 32 - self:GetWide() ), math.max( self.VAtt - 1, 0 ) * dimensions + math.max( self.VAtt - 1, 0 ) * padding * 4 + math.max( self.VAtt - 1, 0 ) * spacing )
-	self.HAnchored = true
+	-- self:SetPos( math.floor( self:GetParent():GetWide() - 32 - self:GetWide() ), math.max( self.VAtt - 1, 0 ) * dimensions + math.max( self.VAtt - 1, 0 ) * padding * 4 + math.max( self.VAtt - 1, 0 ) * spacing )
+	-- self.HAnchored = true
 end
 
 function PANEL:Paint( w, h )

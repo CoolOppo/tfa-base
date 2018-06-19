@@ -13,6 +13,8 @@ TFA.Attachments.Colors = {
 }
 
 TFA.Attachments.UIPadding = 2
+TFA.Attachments.IconSize = 64
+TFA.Attachments.CategorySpacing = 128
 
 if SERVER then
 	util.AddNetworkString("TFA_Attachment_Set")

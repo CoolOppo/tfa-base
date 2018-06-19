@@ -2,6 +2,7 @@ local tmpsp = game.SinglePlayer()
 local gas_cl_enabled = GetConVar("cl_tfa_fx_gasblur")
 local oldshell_cl_enabled = GetConVar("cl_tfa_legacy_shells")
 
+local ScrW, ScrH = ScrW, ScrH
 local l_FT = FrameTime
 local l_mathClamp = math.Clamp
 local sv_cheats_cv = GetConVar("sv_cheats")
@@ -320,6 +321,9 @@ function TFA.PlayerCarryingTFAWeapon(ply)
 	return false, ply, nil
 end
 
+function TFA.ScaleH(num)
+	return num * (ScrH() / 1080)
+end
 
 hook.Add("Think","TFAFrameTimeThink",function()
 	ft = (SysTime() - (LastSys or SysTime())) * game.GetTimeScale()
