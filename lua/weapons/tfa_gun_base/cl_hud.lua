@@ -325,17 +325,22 @@ function SWEP:GenerateInspectionDerma()
 		makertext.Paint = TextShadowPaint
 	end
 
-	local capacitytext = contentpanel:Add("DPanel")
-	capacitytext.Text = infotextpad .. "Capacity: " .. self:GetStat("Primary.ClipSize") .. (self:CanChamber() and (self.Akimbo and " + 2" or " + 1") or "") .. " Rounds"
+	local clip = self:GetStat("Primary.ClipSize")
 
-	capacitytext.Think = function(myself)
-		myself.TextColor = TFA_INSPECTIONPANEL.SecondaryColor
+	if clip > 0 then
+		local capacitytext = contentpanel:Add("DPanel")
+		capacitytext.Text = infotextpad .. "Capacity: " .. clip .. (self:CanChamber() and (self.Akimbo and " + 2" or " + 1") or "") .. " Rounds"
+
+		capacitytext.Think = function(myself)
+			myself.TextColor = TFA_INSPECTIONPANEL.SecondaryColor
+		end
+
+		capacitytext.Font = "TFA_INSPECTION_SMALL"
+		capacitytext:Dock(TOP)
+		capacitytext:SetSize(screenwidth - lbound, 24)
+		capacitytext.Paint = TextShadowPaint
 	end
 
-	capacitytext.Font = "TFA_INSPECTION_SMALL"
-	capacitytext:Dock(TOP)
-	capacitytext:SetSize(screenwidth - lbound, 24)
-	capacitytext.Paint = TextShadowPaint
 	local an = game.GetAmmoName(self:GetPrimaryAmmoType())
 
 	if an and an ~= "" and string.len(an) > 1 then
@@ -597,11 +602,15 @@ function SWEP:GenerateInspectionDerma()
 		local scrollWide = scrollpanel:GetWide()
 		local lastTooltipPanel
 
+		local iconsize = math.Round(TFA.ScaleH(TFA.Attachments.IconSize))
+		local catspacing = math.Round(TFA.ScaleH(TFA.Attachments.CategorySpacing))
+		local padding = math.Round(TFA.ScaleH(TFA.Attachments.UIPadding))
+
 		for k, v in pairs(self.VGUIAttachments) do
 			if k ~= "BaseClass" then
 				if prevCat then
 					local isContinuing = prevCat == (v.cat or k)
-					lineY = lineY + (not isContinuing and 132 or 66)
+					lineY = lineY + (isContinuing and iconsize + padding or catspacing)
 
 					if not isContinuing then
 						lastTooltipPanel = nil
@@ -755,7 +764,9 @@ function SWEP:DrawHUDAmmo()
 	pos = pos + ang:Right() * (self.textupoffset and self.textupoffset or -2 * (textsize / 1))
 	pos = pos + ang:Up() * (self.textfwdoffset and self.textfwdoffset or 0 * (textsize / 1))
 	pos = pos + ang:Forward() * (self.textrightoffset and self.textrightoffset or -1 * (textsize / 1))
+	cam.Start3D()
 	local postoscreen = pos:ToScreen()
+	cam.End3D()
 	local xx = postoscreen.x
 	local yy = postoscreen.y
 

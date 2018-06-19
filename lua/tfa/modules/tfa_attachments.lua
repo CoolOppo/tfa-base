@@ -13,6 +13,8 @@ TFA.Attachments.Colors = {
 }
 
 TFA.Attachments.UIPadding = 2
+TFA.Attachments.IconSize = 64
+TFA.Attachments.CategorySpacing = 128
 
 if SERVER then
 	util.AddNetworkString("TFA_Attachment_Set")
@@ -104,6 +106,14 @@ end
 TFA.Attachments.Path = "tfa/att/"
 TFA_ATTACHMENT_ISUPDATING = false
 
+local function basefunc(t, k)
+	if k == "Base" then return end
+	if t.Base then
+		local bt = TFA.Attachments.Atts[t.Base]
+		if bt then return bt[k] end
+	end
+end
+
 function TFAUpdateAttachments()
 	if SERVER then
 		net.Start("TFA_Attachment_Reload")
@@ -135,9 +145,9 @@ function TFAUpdateAttachments()
 			include(v)
 		end
 
-		if ATTACHMENT.Model and type(ATTACHMENT.Model) == "string" and ATTACHMENT.Model ~= "" then
-			util.PrecacheModel(ATTACHMENT.Model)
-		end
+		setmetatable(ATTACHMENT, {
+			__index = basefunc
+		})
 
 		TFARegisterAttachment(ATTACHMENT)
 		ATTACHMENT = nil
