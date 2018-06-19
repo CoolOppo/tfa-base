@@ -1,4 +1,4 @@
-local ATT_DIMENSION = 64
+local ATT_DIMENSION
 local ATT_MAX_SCREEN_RATIO = 1 / 3
 SWEP.Attachments = {} --[MDL_ATTACHMENT] = = { offset = { 0, 0 }, atts = { "sample_attachment_1", "sample_attachment_2" }, sel = 1, order = 1 } --offset will move the offset the display from the weapon attachment when using CW2.0 style attachment display --atts is a table containing the visible attachments --sel allows you to have an attachment pre-selected, and is used internally by the base to show which attachment is selected in each category. --order is the order it will appear in the TFA style attachment menu
 SWEP.AttachmentCache = {} --["att_name"] = true
@@ -436,6 +436,7 @@ function SWEP:GenerateVGUIAttachmentTable()
 		self.VGUIAttachments[i].order = nil
 	end
 
+	ATT_DIMENSION = math.Round(TFA.ScaleH(TFA.Attachments.IconSize))
 	local max_row_atts = math.floor(ScrW() * ATT_MAX_SCREEN_RATIO / ATT_DIMENSION)
 	local i = 1
 

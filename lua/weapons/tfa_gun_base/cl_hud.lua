@@ -602,11 +602,15 @@ function SWEP:GenerateInspectionDerma()
 		local scrollWide = scrollpanel:GetWide()
 		local lastTooltipPanel
 
+		local iconsize = math.Round(TFA.ScaleH(TFA.Attachments.IconSize))
+		local catspacing = math.Round(TFA.ScaleH(TFA.Attachments.CategorySpacing))
+		local padding = math.Round(TFA.ScaleH(TFA.Attachments.UIPadding))
+
 		for k, v in pairs(self.VGUIAttachments) do
 			if k ~= "BaseClass" then
 				if prevCat then
 					local isContinuing = prevCat == (v.cat or k)
-					lineY = lineY + (not isContinuing and 132 or 66)
+					lineY = lineY + (isContinuing and iconsize + padding or catspacing)
 
 					if not isContinuing then
 						lastTooltipPanel = nil
