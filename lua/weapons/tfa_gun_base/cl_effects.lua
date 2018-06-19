@@ -166,3 +166,210 @@ function SWEP:ImpactEffectFunc(pos, normal, mattype)
 		end
 	end
 end
+
+local fmat = CreateMaterial('TFA_DOF_Material4', 'Refract', {
+	['$model'] = '1',
+	['$alpha'] = '1',
+	['$translucent'] = '1',
+	['$alphatest'] = '1',
+ 	['$normalmap'] = 'effects/flat_normal',
+ 	['$refractamount'] = '0.1',
+	['$vertexalpha'] = '1',
+	['$vertexcolor'] = '1',
+	['$translucent'] = '1',
+	['$forcerefract'] = '0',
+ 	['$bluramount'] = '1.5',
+	['$nofog'] = '1',
+})
+
+local fmat2 = CreateMaterial('TFA_DOF_Material5', 'Refract', {
+	['$model'] = '1',
+	['$alpha'] = '1',
+	['$translucent'] = '1',
+	['$alphatest'] = '1',
+ 	['$normalmap'] = 'effects/flat_normal',
+ 	['$refractamount'] = '0.1',
+	['$vertexalpha'] = '1',
+	['$vertexcolor'] = '1',
+	['$translucent'] = '1',
+	['$forcerefract'] = '0',
+ 	['$bluramount'] = '0.9',
+	['$nofog'] = '1',
+})
+
+local fmat3 = CreateMaterial('TFA_DOF_Material16', 'Refract', {
+	['$model'] = '1',
+	['$alpha'] = '1',
+	['$translucent'] = '1',
+	['$alphatest'] = '1',
+ 	['$normalmap'] = 'effects/flat_normal',
+ 	['$refractamount'] = '0.1',
+	['$vertexalpha'] = '1',
+	['$vertexcolor'] = '1',
+	['$translucent'] = '1',
+	['$forcerefract'] = '0',
+ 	['$bluramount'] = '0.8',
+	['$nofog'] = '1',
+})
+
+local white = CreateMaterial('TFA_DOF_White', 'UnlitGeneric', {
+	['$alpha'] = '0',
+	['$basetexture'] = 'models/debug/debugwhite',
+})
+
+local black = CreateMaterial('TFA_DOF_Black', 'UnlitGeneric', {
+	['$alpha'] = '1',
+	['$basetexture'] = 'models/debug/debugwhite',
+})
+
+--[[local rttex = GetRenderTarget('tfa_dof_rttexture', ScrW(), ScrH(), false)
+local rtmat = CreateMaterial('tfa_dof_rtmaterial', 'UnlitGeneric', {
+	['$alpha'] = '1',
+	['$translucent'] = '1',
+	['$basetexture'] = 'models/debug/debugwhite',
+})
+
+rtmat:SetTexture('$basetexture', rttex)]]
+
+TFA.LastRTUpdate = TFA.LastRTUpdate or CurTime()
+
+hook.Add('PreDrawViewModel', 'TFA_DrawViewModel', function(vm, plyv, self)
+	if not vm or not plyv or not self then return end
+	if not self:IsTFA() then return end
+
+	local aimingDown = self.IronSightsProgress > 0.4
+	local scoped = TFA.LastRTUpdate > CurTime()
+
+	if aimingDown and not scoped then
+		render.ClearStencil()
+		render.SetStencilEnable(true)
+		render.SetStencilTestMask(0)
+		render.SetStencilWriteMask(1)
+
+		render.SetStencilReferenceValue(1)
+
+		render.SetStencilCompareFunction(STENCIL_ALWAYS)
+		render.OverrideColorWriteEnable(true, true)
+
+		render.SetStencilZFailOperation(STENCIL_KEEP)
+		render.SetStencilPassOperation(STENCIL_REPLACE)
+		render.SetStencilFailOperation(STENCIL_KEEP)
+	end
+end)
+
+local transparent = Color(0, 0, 0, 0)
+local color_white = Color(255, 255, 255)
+local STOP = false
+
+hook.Add('PostDrawViewModel', 'TFA_DrawViewModel', function(vm, plyv, self)
+	if not self:IsTFA() then return end
+
+	local aimingDown = self.IronSightsProgress > 0.4
+	local eangles = EyeAngles()
+	local fwd = eangles:Forward()
+	local fwd2 = vm:GetAngles():Forward()
+	local scoped = TFA.LastRTUpdate > CurTime()
+
+	if aimingDown and not scoped then
+		fmat:SetFloat('$alpha', self.IronSightsProgress)
+		
+		local muzzle = vm:LookupAttachment('muzzle')
+		local muzzleflash = vm:LookupAttachment('muzzleflash')
+		local muzzledata
+		
+		if muzzle and muzzle ~= 0 then
+			muzzledata = vm:GetAttachment(muzzle)
+		elseif self.MuzzleAttachmentRaw then
+			muzzledata = vm:GetAttachment(self.MuzzleAttachmentRaw)
+		elseif muzzleflash and muzzleflash ~= 0 then
+			muzzledata = vm:GetAttachment(muzzleflash)
+		end
+		
+		local hands = plyv:GetHands()
+		local handsDrawn = false
+		
+		if IsValid(hands) then
+			render.OverrideColorWriteEnable(true, false)
+			STOP = true
+			local candraw = hook.Run('PreDrawPlayerHands', hands, vm, plyv, self)
+			STOP = false
+			
+			if candraw ~= true then
+				--render.OverrideDepthEnable(true, false)
+				hands:DrawModel()
+				--render.OverrideDepthEnable(false, false)
+			end
+			
+			render.OverrideColorWriteEnable(false, false)
+		end
+		
+		if muzzledata then
+			render.SetStencilPassOperation(STENCIL_ZERO)
+			render.SetMaterial(white)
+			render.DrawSprite(muzzledata.Pos - fwd2 * 6 + eangles:Up() * 4, 30, 30, transparent)
+			render.SetStencilPassOperation(STENCIL_REPLACE)
+		end
+		
+		local w, h = ScrW(), ScrH()
+		
+		render.SetStencilTestMask(1)
+		render.SetStencilWriteMask(2)
+		render.SetStencilCompareFunction(STENCIL_EQUAL)
+		render.SetStencilPassOperation(STENCIL_REPLACE)
+
+		render.UpdateScreenEffectTexture()
+		--render.PushRenderTarget(rttex)
+		
+		render.PushFilterMin(TEXFILTER.ANISOTROPIC)
+		render.PushFilterMag(TEXFILTER.ANISOTROPIC)
+		
+		render.SetMaterial(fmat)
+		
+		--render.DrawScreenQuad()
+		cam.Start2D()
+		surface.SetDrawColor(255, 255, 255)
+		surface.SetMaterial(fmat)
+		surface.DrawTexturedRect(0, 0, w, h)
+		cam.End2D()
+		
+		if muzzledata then
+			-- :POG:
+			local startpos = EyePos()
+			render.SetMaterial(fmat2)
+			
+			for i = 28, 2, -1 do
+				--render.SetMaterial(black)
+				render.UpdateScreenEffectTexture()
+				render.DrawSprite(muzzledata.Pos - fwd2 * i * 3, 200, 200, color_white)
+			end
+		end
+		
+		render.SetMaterial(fmat3)
+		
+		cam.Start2D()
+		surface.SetMaterial(fmat3)
+		
+		for i = 0, 32 do
+			render.UpdateScreenEffectTexture()
+			--render.DrawScreenQuadEx(0, h / 1.6 + h / 2 * i / 32, w, h / 2)
+			surface.DrawTexturedRect(0, h / 1.6 + h / 2 * i / 32, w, h / 2)
+		end
+		
+		cam.End2D()
+		
+		render.PopFilterMin()
+		render.PopFilterMag()
+		--render.PopRenderTarget()
+
+		render.SetStencilEnable(false)
+	end
+
+	self:ViewModelDrawnPost()
+end)
+
+hook.Add('PreDrawPlayerHands', 'TFA_DrawViewModel', function(hands, vm, plyv, self)
+	if STOP then return end
+	if not self:IsTFA() then return end
+
+	if self.IronSightsProgress > 0.4 then return true end
+end)
