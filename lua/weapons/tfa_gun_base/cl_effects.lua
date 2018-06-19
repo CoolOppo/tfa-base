@@ -173,45 +173,42 @@ local cl_tfa_fx_dof = GetConVar('cl_tfa_fx_dof')
 local fmat = CreateMaterial('TFA_DOF_Material4', 'Refract', {
 	['$model'] = '1',
 	['$alpha'] = '1',
-	['$translucent'] = '1',
 	['$alphatest'] = '1',
- 	['$normalmap'] = 'effects/flat_normal',
- 	['$refractamount'] = '0.1',
+	['$normalmap'] = 'effects/flat_normal',
+	['$refractamount'] = '0.1',
 	['$vertexalpha'] = '1',
 	['$vertexcolor'] = '1',
 	['$translucent'] = '1',
 	['$forcerefract'] = '0',
- 	['$bluramount'] = '1.5',
+	['$bluramount'] = '1.5',
 	['$nofog'] = '1',
 })
 
 local fmat2 = CreateMaterial('TFA_DOF_Material5', 'Refract', {
 	['$model'] = '1',
 	['$alpha'] = '1',
-	['$translucent'] = '1',
 	['$alphatest'] = '1',
- 	['$normalmap'] = 'effects/flat_normal',
- 	['$refractamount'] = '0.1',
+	['$normalmap'] = 'effects/flat_normal',
+	['$refractamount'] = '0.1',
 	['$vertexalpha'] = '1',
 	['$vertexcolor'] = '1',
 	['$translucent'] = '1',
 	['$forcerefract'] = '0',
- 	['$bluramount'] = '0.9',
+	['$bluramount'] = '0.9',
 	['$nofog'] = '1',
 })
 
 local fmat3 = CreateMaterial('TFA_DOF_Material16', 'Refract', {
 	['$model'] = '1',
 	['$alpha'] = '1',
-	['$translucent'] = '1',
 	['$alphatest'] = '1',
- 	['$normalmap'] = 'effects/flat_normal',
- 	['$refractamount'] = '0.1',
+	['$normalmap'] = 'effects/flat_normal',
+	['$refractamount'] = '0.1',
 	['$vertexalpha'] = '1',
 	['$vertexcolor'] = '1',
 	['$translucent'] = '1',
 	['$forcerefract'] = '0',
- 	['$bluramount'] = '0.8',
+	['$bluramount'] = '0.8',
 	['$nofog'] = '1',
 })
 
@@ -271,17 +268,16 @@ hook.Add('PostDrawViewModel', 'TFA_DrawViewModel', function(vm, plyv, self)
 
 	local aimingDown = self.IronSightsProgress > 0.4
 	local eangles = EyeAngles()
-	local fwd = eangles:Forward()
 	local fwd2 = vm:GetAngles():Forward()
 	local scoped = TFA.LastRTUpdate > CurTime()
 
 	if aimingDown and not scoped then
 		fmat:SetFloat('$alpha', self.IronSightsProgress)
-		
+
 		local muzzle = vm:LookupAttachment('muzzle')
 		local muzzleflash = vm:LookupAttachment('muzzleflash')
 		local muzzledata
-		
+
 		if muzzle and muzzle ~= 0 then
 			muzzledata = vm:GetAttachment(muzzle)
 		elseif self.MuzzleAttachmentRaw then
@@ -289,73 +285,71 @@ hook.Add('PostDrawViewModel', 'TFA_DrawViewModel', function(vm, plyv, self)
 		elseif muzzleflash and muzzleflash ~= 0 then
 			muzzledata = vm:GetAttachment(muzzleflash)
 		end
-		
+
 		local hands = plyv:GetHands()
-		local handsDrawn = false
-		
+
 		if IsValid(hands) then
 			render.OverrideColorWriteEnable(true, false)
 			STOP = true
 			local candraw = hook.Run('PreDrawPlayerHands', hands, vm, plyv, self)
 			STOP = false
-			
+
 			if candraw ~= true then
 				hands:DrawModel()
 			end
-			
+
 			render.OverrideColorWriteEnable(false, false)
 		end
-		
+
 		if muzzledata then
 			render.SetStencilPassOperation(STENCIL_ZERO)
 			render.SetMaterial(white)
 			render.DrawSprite(muzzledata.Pos - fwd2 * 6 + eangles:Up() * 4, 30, 30, transparent)
 			render.SetStencilPassOperation(STENCIL_REPLACE)
 		end
-		
+
 		local w, h = ScrW(), ScrH()
-		
+
 		render.SetStencilTestMask(1)
 		render.SetStencilWriteMask(2)
 		render.SetStencilCompareFunction(STENCIL_EQUAL)
 		render.SetStencilPassOperation(STENCIL_REPLACE)
 
 		render.UpdateScreenEffectTexture()
-		
+
 		render.PushFilterMin(TEXFILTER.ANISOTROPIC)
 		render.PushFilterMag(TEXFILTER.ANISOTROPIC)
-		
+
 		render.SetMaterial(fmat)
-		
+
 		cam.Start2D()
 		surface.SetDrawColor(255, 255, 255)
 		surface.SetMaterial(fmat)
 		surface.DrawTexturedRect(0, 0, w, h)
 		cam.End2D()
-		
+
 		if muzzledata then
 			-- :POG:
-			local startpos = EyePos()
 			render.SetMaterial(fmat2)
-			
+
 			for i = 28, 2, -1 do
 				render.UpdateScreenEffectTexture()
 				render.DrawSprite(muzzledata.Pos - fwd2 * i * 3, 200, 200, color_white)
 			end
 		end
-		
+
 		render.SetMaterial(fmat3)
-		
+
 		cam.Start2D()
 		surface.SetMaterial(fmat3)
-		
+
 		for i = 0, 32 do
 			render.UpdateScreenEffectTexture()
 			surface.DrawTexturedRect(0, h / 1.6 + h / 2 * i / 32, w, h / 2)
 		end
-		
+
 		cam.End2D()
-		
+
 		render.PopFilterMin()
 		render.PopFilterMag()
 		--render.PopRenderTarget()
