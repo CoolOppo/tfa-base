@@ -168,6 +168,7 @@ function SWEP:ImpactEffectFunc(pos, normal, mattype)
 end
 
 local supports
+local cl_tfa_fx_dof = GetConVar('cl_tfa_fx_dof')
 
 local fmat = CreateMaterial('TFA_DOF_Material4', 'Refract', {
 	['$model'] = '1',
@@ -234,6 +235,8 @@ hook.Add('PreDrawViewModel', 'TFA_DrawViewModel', function(vm, plyv, self)
 	end
 
 	if not supports then return end
+	cl_tfa_fx_dof = cl_tfa_fx_dof or GetConVar('cl_tfa_fx_dof')
+	if not cl_tfa_fx_dof:GetBool() then return end
 
 	local aimingDown = self.IronSightsProgress > 0.4
 	local scoped = TFA.LastRTUpdate > CurTime()
@@ -262,6 +265,9 @@ local STOP = false
 hook.Add('PostDrawViewModel', 'TFA_DrawViewModel', function(vm, plyv, self)
 	if not self:IsTFA() then return end
 	if not supports then return end
+
+	cl_tfa_fx_dof = cl_tfa_fx_dof or GetConVar('cl_tfa_fx_dof')
+	if not cl_tfa_fx_dof:GetBool() then return end
 
 	local aimingDown = self.IronSightsProgress > 0.4
 	local eangles = EyeAngles()
