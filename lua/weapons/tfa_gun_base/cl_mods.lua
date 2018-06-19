@@ -643,8 +643,11 @@ Purpose:  SWEP Construction Kit Compatibility / Basic Attachments.
 local bpos, bang
 local onevec = Vector(1, 1, 1)
 local getKeys = table.GetKeys
-local tableMerge = table.Merge
-
+local function appendTable(t, t2)
+	for i = 1, #t2 do
+		t[#t + 1] = t2[i]
+	end
+end
 SWEP.ChildrenScaled = {}
 SWEP.ViewModelBoneMods_Children = {}
 function SWEP:ScaleChildBoneMods(ent,bone,cumulativeScale)
@@ -697,10 +700,11 @@ function SWEP:UpdateBonePositions(vm)
 				v.scale_og = v.scale or onevec
 			end
 			self.HasSetMetaVMBM = true
+			self.ViewModelBoneMods["wepEnt"] = self
 			setmetatable(self.ViewModelBoneMods,{ __index = function(t,k)
 				if not IsValid(self) then return end
-				if not self.BlowbackBoneMods[k] then return end
 				if self.ViewModelBoneMods_Children[k] then return self.ViewModelBoneMods_Children[k] end
+				if not self.BlowbackBoneMods[k] then return end
 				if not ( self.SequenceEnabled[ACT_VM_RELOAD_EMPTY] and TFA.Enum.ReloadStatus[stat] and self.Blowback_PistolMode ) then
 					self.BlowbackBoneMods[k].pos = self.BlowbackBoneMods[k].pos_og * self.BlowbackCurrent
 					self.BlowbackBoneMods[k].angle = self.BlowbackBoneMods[k].angle_og * self.BlowbackCurrent
@@ -715,8 +719,8 @@ function SWEP:UpdateBonePositions(vm)
 		end
 
 		local keys = getKeys(self.ViewModelBoneMods)
-		tableMerge(keys, getKeys(self.BlowbackBoneMods))
-		tableMerge(keys, getKeys(self.ViewModelBoneMods_Children))
+		appendTable(keys, getKeys(self.BlowbackBoneMods))
+		appendTable(keys, getKeys(self.ViewModelBoneMods_Children))
 
 		for _,k in pairs(keys) do
 			local v = self:GetStat("ViewModelBoneMods." .. k) or self.ViewModelBoneMods[k]
