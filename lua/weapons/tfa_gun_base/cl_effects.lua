@@ -363,6 +363,10 @@ end)
 hook.Add('PreDrawPlayerHands', 'TFA_DrawViewModel', function(hands, vm, plyv, self)
 	if STOP then return end
 	if not self:IsTFA() then return end
+	if not supports then return end
+
+	cl_tfa_fx_dof = cl_tfa_fx_dof or GetConVar('cl_tfa_fx_dof')
+	if not cl_tfa_fx_dof:GetBool() then return end
 
 	if self.IronSightsProgress > 0.4 then return true end
 end)
