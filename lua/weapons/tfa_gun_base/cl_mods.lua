@@ -652,6 +652,7 @@ local getKeys = table.GetKeys
 local tableMerge = table.Merge
 
 SWEP.ChildrenScaled = {}
+SWEP.ViewModelBoneMods_Children = {}
 function SWEP:ScaleChildBoneMods(ent,bone,cumulativeScale)
 	if self.ChildrenScaled[bone] then
 		return
@@ -669,14 +670,14 @@ function SWEP:ScaleChildBoneMods(ent,bone,cumulativeScale)
 			self:ScaleChildBoneMods(ent,ent:GetBoneName(boneChild),curScale)
 		end
 	end
-	if not self.ViewModelBoneMods[bone] then
-		self.ViewModelBoneMods[bone] = {
+	if self.ViewModelBoneMods[bone] then
+		self.ViewModelBoneMods[bone].scale = curScale * 1
+	else
+		self.ViewModelBoneMods_Children[bone] = {
 			["pos"] = vector_origin,
 			["angle"] = angle_zero,
 			["scale"] = curScale * 1
 		}
-	else
-		self.ViewModelBoneMods[bone].scale = curScale * 1
 	end
 end
 
@@ -705,6 +706,7 @@ function SWEP:UpdateBonePositions(vm)
 			setmetatable(self.ViewModelBoneMods,{ __index = function(t,k)
 				if not IsValid(self) then return end
 				if not self.BlowbackBoneMods[k] then return end
+				if self.ViewModelBoneMods_Children[k] then return self.ViewModelBoneMods_Children[k] end
 				if not ( self.SequenceEnabled[ACT_VM_RELOAD_EMPTY] and TFA.Enum.ReloadStatus[stat] and self.Blowback_PistolMode ) then
 					self.BlowbackBoneMods[k].pos = self.BlowbackBoneMods[k].pos_og * self.BlowbackCurrent
 					self.BlowbackBoneMods[k].angle = self.BlowbackBoneMods[k].angle_og * self.BlowbackCurrent
