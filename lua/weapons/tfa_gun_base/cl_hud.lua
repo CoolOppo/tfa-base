@@ -325,17 +325,22 @@ function SWEP:GenerateInspectionDerma()
 		makertext.Paint = TextShadowPaint
 	end
 
-	local capacitytext = contentpanel:Add("DPanel")
-	capacitytext.Text = infotextpad .. "Capacity: " .. self:GetStat("Primary.ClipSize") .. (self:CanChamber() and (self.Akimbo and " + 2" or " + 1") or "") .. " Rounds"
+	local clip = self:GetStat("Primary.ClipSize")
 
-	capacitytext.Think = function(myself)
-		myself.TextColor = TFA_INSPECTIONPANEL.SecondaryColor
+	if clip > 0 then
+		local capacitytext = contentpanel:Add("DPanel")
+		capacitytext.Text = infotextpad .. "Capacity: " .. clip .. (self:CanChamber() and (self.Akimbo and " + 2" or " + 1") or "") .. " Rounds"
+
+		capacitytext.Think = function(myself)
+			myself.TextColor = TFA_INSPECTIONPANEL.SecondaryColor
+		end
+
+		capacitytext.Font = "TFA_INSPECTION_SMALL"
+		capacitytext:Dock(TOP)
+		capacitytext:SetSize(screenwidth - lbound, 24)
+		capacitytext.Paint = TextShadowPaint
 	end
 
-	capacitytext.Font = "TFA_INSPECTION_SMALL"
-	capacitytext:Dock(TOP)
-	capacitytext:SetSize(screenwidth - lbound, 24)
-	capacitytext.Paint = TextShadowPaint
 	local an = game.GetAmmoName(self:GetPrimaryAmmoType())
 
 	if an and an ~= "" and string.len(an) > 1 then
