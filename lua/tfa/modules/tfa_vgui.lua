@@ -507,6 +507,11 @@ if CLIENT then
 			Command = "cl_tfa_legacy_shells"
 		})
 
+		panel:AddControl("CheckBox", {
+			Label = "Enable Iron Sights DoF",
+			Command = "cl_tfa_fx_dof"
+		})
+
 		panel:AddControl("Slider", {
 			Label = "Ejected Shell Life",
 			Command = "cl_tfa_fx_ejectionlife",

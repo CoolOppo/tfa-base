@@ -95,6 +95,7 @@ SWEP.Bodygroups_V = nil --{
 	--[1] = 4,
 	--[2] = etc.
 --}
+SWEP.AllowIronSightsDoF = true -- whenever allow DoF effect on viewmodel when zoomed in with iron sights
 --[[WORLDMODEL]]--
 SWEP.WorldModel			= "models/your/wmodel/path/here.mdl" -- Weapon world model path
 SWEP.Bodygroups_W = nil --{

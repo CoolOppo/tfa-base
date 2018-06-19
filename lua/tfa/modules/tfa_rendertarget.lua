@@ -183,6 +183,8 @@ if CLIENT then
 			tgt = TFA_RTScreen[TFA.RTQuality()] or TFA_RTScreen[2]
 		end
 
+		TFA.LastRTUpdate = CurTime() + 0.3
+
 		render.PushRenderTarget(tgt)
 		render.Clear(0, 0, 0, 0, true, true)
 		render.Clear(0, 0, 0, 255, true, true)
