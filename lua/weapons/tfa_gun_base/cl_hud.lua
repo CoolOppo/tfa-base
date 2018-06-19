@@ -764,7 +764,9 @@ function SWEP:DrawHUDAmmo()
 	pos = pos + ang:Right() * (self.textupoffset and self.textupoffset or -2 * (textsize / 1))
 	pos = pos + ang:Up() * (self.textfwdoffset and self.textfwdoffset or 0 * (textsize / 1))
 	pos = pos + ang:Forward() * (self.textrightoffset and self.textrightoffset or -1 * (textsize / 1))
+	cam.Start3D()
 	local postoscreen = pos:ToScreen()
+	cam.End3D()
 	local xx = postoscreen.x
 	local yy = postoscreen.y
 
