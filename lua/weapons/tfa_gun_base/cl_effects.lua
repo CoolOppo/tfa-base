@@ -167,6 +167,8 @@ function SWEP:ImpactEffectFunc(pos, normal, mattype)
 	end
 end
 
+local supports
+
 local fmat = CreateMaterial('TFA_DOF_Material4', 'Refract', {
 	['$model'] = '1',
 	['$alpha'] = '1',
@@ -217,25 +219,21 @@ local white = CreateMaterial('TFA_DOF_White', 'UnlitGeneric', {
 	['$basetexture'] = 'models/debug/debugwhite',
 })
 
-local black = CreateMaterial('TFA_DOF_Black', 'UnlitGeneric', {
-	['$alpha'] = '1',
-	['$basetexture'] = 'models/debug/debugwhite',
-})
-
---[[local rttex = GetRenderTarget('tfa_dof_rttexture', ScrW(), ScrH(), false)
-local rtmat = CreateMaterial('tfa_dof_rtmaterial', 'UnlitGeneric', {
-	['$alpha'] = '1',
-	['$translucent'] = '1',
-	['$basetexture'] = 'models/debug/debugwhite',
-})
-
-rtmat:SetTexture('$basetexture', rttex)]]
-
 TFA.LastRTUpdate = TFA.LastRTUpdate or CurTime()
 
 hook.Add('PreDrawViewModel', 'TFA_DrawViewModel', function(vm, plyv, self)
 	if not vm or not plyv or not self then return end
 	if not self:IsTFA() then return end
+
+	if supports == nil then
+		supports = render.SupportsPixelShaders_1_4() and render.SupportsPixelShaders_2_0() and render.SupportsVertexShaders_2_0()
+
+		if not supports then
+			print('[TFA] Your videocard does not support pixel shaders! DoF of Iron Sights is disabled!')
+		end
+	end
+
+	if not supports then return end
 
 	local aimingDown = self.IronSightsProgress > 0.4
 	local scoped = TFA.LastRTUpdate > CurTime()
@@ -263,6 +261,7 @@ local STOP = false
 
 hook.Add('PostDrawViewModel', 'TFA_DrawViewModel', function(vm, plyv, self)
 	if not self:IsTFA() then return end
+	if not supports then return end
 
 	local aimingDown = self.IronSightsProgress > 0.4
 	local eangles = EyeAngles()
@@ -295,9 +294,7 @@ hook.Add('PostDrawViewModel', 'TFA_DrawViewModel', function(vm, plyv, self)
 			STOP = false
 			
 			if candraw ~= true then
-				--render.OverrideDepthEnable(true, false)
 				hands:DrawModel()
-				--render.OverrideDepthEnable(false, false)
 			end
 			
 			render.OverrideColorWriteEnable(false, false)
@@ -318,14 +315,12 @@ hook.Add('PostDrawViewModel', 'TFA_DrawViewModel', function(vm, plyv, self)
 		render.SetStencilPassOperation(STENCIL_REPLACE)
 
 		render.UpdateScreenEffectTexture()
-		--render.PushRenderTarget(rttex)
 		
 		render.PushFilterMin(TEXFILTER.ANISOTROPIC)
 		render.PushFilterMag(TEXFILTER.ANISOTROPIC)
 		
 		render.SetMaterial(fmat)
 		
-		--render.DrawScreenQuad()
 		cam.Start2D()
 		surface.SetDrawColor(255, 255, 255)
 		surface.SetMaterial(fmat)
@@ -338,7 +333,6 @@ hook.Add('PostDrawViewModel', 'TFA_DrawViewModel', function(vm, plyv, self)
 			render.SetMaterial(fmat2)
 			
 			for i = 28, 2, -1 do
-				--render.SetMaterial(black)
 				render.UpdateScreenEffectTexture()
 				render.DrawSprite(muzzledata.Pos - fwd2 * i * 3, 200, 200, color_white)
 			end
@@ -351,7 +345,6 @@ hook.Add('PostDrawViewModel', 'TFA_DrawViewModel', function(vm, plyv, self)
 		
 		for i = 0, 32 do
 			render.UpdateScreenEffectTexture()
-			--render.DrawScreenQuadEx(0, h / 1.6 + h / 2 * i / 32, w, h / 2)
 			surface.DrawTexturedRect(0, h / 1.6 + h / 2 * i / 32, w, h / 2)
 		end
 		
