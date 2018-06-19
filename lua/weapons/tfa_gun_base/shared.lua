@@ -145,6 +145,8 @@ SWEP.VMAng = Vector(0,0,0)
 SWEP.CameraOffset = Angle(0, 0, 0)
 SWEP.VMPos_Additive = true
 
+SWEP.AllowIronSightsDoF = true
+
 SWEP.IronAnimation = {
 	--[[
 	["in"] = {

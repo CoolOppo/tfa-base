@@ -282,12 +282,6 @@ function SWEP:ViewModelDrawnPost()
 	end
 end
 
-hook.Add("PostDrawPlayerHands", "TFAHandsDrawn", function(hands, vm, ply, wep)
-	if wep.ViewModelDrawnPost then
-		wep:ViewModelDrawnPost()
-	end
-end)
-
 SWEP.wRenderOrder = nil
 
 --[[

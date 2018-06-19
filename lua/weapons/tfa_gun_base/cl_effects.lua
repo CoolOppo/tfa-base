@@ -235,10 +235,14 @@ hook.Add('PreDrawViewModel', 'TFA_DrawViewModel', function(vm, plyv, self)
 	cl_tfa_fx_dof = cl_tfa_fx_dof or GetConVar('cl_tfa_fx_dof')
 	if not cl_tfa_fx_dof:GetBool() then return end
 
+	if not self.AllowIronSightsDoF then return end
+
 	local aimingDown = self.IronSightsProgress > 0.4
 	local scoped = TFA.LastRTUpdate > CurTime()
 
 	if aimingDown and not scoped then
+		if hook.Run('TFA_AllowDoFDraw', self, plyv, vm) == false then return end
+		self.__TFA_AimDoFFrame = FrameNumber()
 		render.ClearStencil()
 		render.SetStencilEnable(true)
 		render.SetStencilTestMask(0)
@@ -261,20 +265,31 @@ local STOP = false
 
 hook.Add('PostDrawViewModel', 'TFA_DrawViewModel', function(vm, plyv, self)
 	if not self:IsTFA() then return end
-	if not supports then return end
+	if not supports then
+		self:ViewModelDrawnPost()
+		return
+	end
 
 	cl_tfa_fx_dof = cl_tfa_fx_dof or GetConVar('cl_tfa_fx_dof')
-	if not cl_tfa_fx_dof:GetBool() then return end
+	if not cl_tfa_fx_dof:GetBool() then
+		self:ViewModelDrawnPost()
+		return
+	end
+
+	if not self.AllowIronSightsDoF then
+		self:ViewModelDrawnPost()
+		return
+	end
 
 	local aimingDown = self.IronSightsProgress > 0.4
 	local eangles = EyeAngles()
 	local fwd2 = vm:GetAngles():Forward()
 	local scoped = TFA.LastRTUpdate > CurTime()
 
-	if aimingDown and not scoped then
+	if aimingDown and not scoped and self.__TFA_AimDoFFrame == FrameNumber() then
 		fmat:SetFloat('$alpha', self.IronSightsProgress)
 
-		local muzzle = vm:LookupAttachment('muzzle')
+		local muzzle = hook.Run('TFA_GetDoFMuzzleAttachmentID', self, plyv, vm) or vm:LookupAttachment('muzzle')
 		local muzzleflash = vm:LookupAttachment('muzzleflash')
 		local muzzledata
 
@@ -367,6 +382,8 @@ hook.Add('PreDrawPlayerHands', 'TFA_DrawViewModel', function(hands, vm, plyv, se
 
 	cl_tfa_fx_dof = cl_tfa_fx_dof or GetConVar('cl_tfa_fx_dof')
 	if not cl_tfa_fx_dof:GetBool() then return end
+
+	if not self.AllowIronSightsDoF then return end
 
 	if self.IronSightsProgress > 0.4 then return true end
 end)
