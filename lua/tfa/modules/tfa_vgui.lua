@@ -514,6 +514,11 @@ if CLIENT then
 			Command = "cl_tfa_fx_ads_dof_enabled"
 		})
 
+		panel:AddControl("CheckBox", {
+			Label = "Enable true DoF",
+			Command = "cl_tfa_fx_ads_dof_hd"
+		})
+
 		panel:AddControl("Slider", {
 			Label = "Ejected Shell Life",
 			Command = "cl_tfa_fx_ejectionlife",
