@@ -463,7 +463,8 @@ if CLIENT then
 			cl_tfa_inspection_bokeh = "0",
 			cl_tfa_fx_ejectionlife = "15",
 			cl_tfa_legacy_shells = "0",
-			cl_tfa_fx_dof = "0"
+			cl_tfa_fx_ads_dof_enabled = "1",
+			cl_tfa_fx_ads_dof_hd = "0"
 		}
 
 		panel:AddControl("ComboBox", tfaOptionPerf)
@@ -510,7 +511,7 @@ if CLIENT then
 
 		panel:AddControl("CheckBox", {
 			Label = "Enable Iron Sights DoF",
-			Command = "cl_tfa_fx_dof"
+			Command = "cl_tfa_fx_ads_dof_enabled"
 		})
 
 		panel:AddControl("Slider", {

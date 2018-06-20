@@ -1,7 +1,7 @@
 if SERVER then return end
 local supports
-local cl_tfa_fx_dof = GetConVar("cl_tfa_fx_dof")
-
+local cl_tfa_fx_dof = GetConVar("cl_tfa_fx_ads_dof_enabled")
+local cl_tfa_fx_dof_hd = GetConVar("cl_tfa_fx_ads_dof_hd")
 local fmat = CreateMaterial("TFA_DOF_Material4", "Refract", {
 	["$model"] = "1",
 	["$alpha"] = "1",
@@ -90,6 +90,37 @@ local transparent = Color(0, 0, 0, 0)
 local color_white = Color(255, 255, 255)
 local STOP = false
 
+local function DrawDOF(muzzledata,fwd2)
+	local w, h = ScrW(), ScrH()
+	render.SetMaterial(fmat)
+	cam.Start2D()
+	surface.SetDrawColor(255, 255, 255)
+	surface.SetMaterial(fmat)
+	surface.DrawTexturedRect(0, 0, w, h)
+	cam.End2D()
+
+	if muzzledata then
+		-- :POG:
+		render.SetMaterial(fmat2)
+
+		for i = 28, 2, -1 do
+			render.UpdateScreenEffectTexture()
+			render.DrawSprite(muzzledata.Pos - fwd2 * i * 3, 200, 200, color_white)
+		end
+	end
+
+	render.SetMaterial(fmat3)
+	cam.Start2D()
+	surface.SetMaterial(fmat3)
+
+	for i = 0, 32 do
+		render.UpdateScreenEffectTexture()
+		surface.DrawTexturedRect(0, h / 1.6 + h / 2 * i / 32, w, h / 2)
+	end
+
+	cam.End2D()
+end
+
 hook.Add("PostDrawViewModel", "TFA_DrawViewModel", function(vm, plyv, wep)
 	if not wep:IsTFA() then return end
 
@@ -98,7 +129,8 @@ hook.Add("PostDrawViewModel", "TFA_DrawViewModel", function(vm, plyv, wep)
 		return
 	end
 
-	cl_tfa_fx_dof = cl_tfa_fx_dof or GetConVar("cl_tfa_fx_dof")
+	cl_tfa_fx_dof = cl_tfa_fx_dof or GetConVar("cl_tfa_fx_ads_dof_enabled")
+	cl_tfa_fx_dof_hd = cl_tfa_fx_dof_hd or GetConVar("cl_tfa_fx_ads_dof_hd")
 
 	if not cl_tfa_fx_dof:GetBool() then
 		wep:ViewModelDrawnPost()
@@ -150,7 +182,6 @@ hook.Add("PostDrawViewModel", "TFA_DrawViewModel", function(vm, plyv, wep)
 			render.SetStencilPassOperation(STENCIL_REPLACE)
 		end
 
-		local w, h = ScrW(), ScrH()
 		render.SetStencilTestMask(1)
 		render.SetStencilWriteMask(2)
 		render.SetStencilCompareFunction(STENCIL_EQUAL)
@@ -158,33 +189,11 @@ hook.Add("PostDrawViewModel", "TFA_DrawViewModel", function(vm, plyv, wep)
 		render.UpdateScreenEffectTexture()
 		render.PushFilterMin(TEXFILTER.ANISOTROPIC)
 		render.PushFilterMag(TEXFILTER.ANISOTROPIC)
-		render.SetMaterial(fmat)
-		cam.Start2D()
-		surface.SetDrawColor(255, 255, 255)
-		surface.SetMaterial(fmat)
-		surface.DrawTexturedRect(0, 0, w, h)
-		cam.End2D()
-
-		if muzzledata then
-			-- :POG:
-			render.SetMaterial(fmat2)
-
-			for i = 28, 2, -1 do
-				render.UpdateScreenEffectTexture()
-				render.DrawSprite(muzzledata.Pos - fwd2 * i * 3, 200, 200, color_white)
-			end
+		if cl_tfa_fx_dof_hd and cl_tfa_fx_dof_hd:GetBool() then
+			DrawDOF(muzzledata,fwd2)
+		else
+			DrawToyTown(3,ScrH() * 2 / 3 )
 		end
-
-		render.SetMaterial(fmat3)
-		cam.Start2D()
-		surface.SetMaterial(fmat3)
-
-		for i = 0, 32 do
-			render.UpdateScreenEffectTexture()
-			surface.DrawTexturedRect(0, h / 1.6 + h / 2 * i / 32, w, h / 2)
-		end
-
-		cam.End2D()
 		render.PopFilterMin()
 		render.PopFilterMag()
 		--render.PopRenderTarget()

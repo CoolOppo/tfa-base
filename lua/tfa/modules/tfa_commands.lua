@@ -457,8 +457,12 @@ if CLIENT then
 		CreateClientConVar("cl_tfa_fx_impact_ricochet_sparklife", 2, true, true)
 	end
 
-	if GetConVar("cl_tfa_fx_dof") == nil then
-		CreateClientConVar("cl_tfa_fx_dof", 0, true, true, "Enable iron sights DoF (Depth of Field)")
+	if GetConVar("cl_tfa_fx_ads_dof_enabled") == nil then
+		CreateClientConVar("cl_tfa_fx_ads_dof_enabled", 1, true, true, "Enable iron sights DoF (Depth of Field)")
+	end
+
+	if GetConVar("cl_tfa_fx_ads_dof_hd") == nil then
+		CreateClientConVar("cl_tfa_fx_ads_dof_hd", 0, true, true, "Enable better quality for DoF")
 	end
 
 	--viewbob
