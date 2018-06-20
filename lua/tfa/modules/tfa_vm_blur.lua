@@ -1,57 +1,57 @@
 if SERVER then return end
 local supports
-local cl_tfa_fx_dof = GetConVar('cl_tfa_fx_dof')
+local cl_tfa_fx_dof = GetConVar("cl_tfa_fx_dof")
 
-local fmat = CreateMaterial('TFA_DOF_Material4', 'Refract', {
-	['$model'] = '1',
-	['$alpha'] = '1',
-	['$alphatest'] = '1',
-	['$normalmap'] = 'effects/flat_normal',
-	['$refractamount'] = '0.1',
-	['$vertexalpha'] = '1',
-	['$vertexcolor'] = '1',
-	['$translucent'] = '1',
-	['$forcerefract'] = '0',
-	['$bluramount'] = '1.5',
-	['$nofog'] = '1'
+local fmat = CreateMaterial("TFA_DOF_Material4", "Refract", {
+	["$model"] = "1",
+	["$alpha"] = "1",
+	["$alphatest"] = "1",
+	["$normalmap"] = "effects/flat_normal",
+	["$refractamount"] = "0.1",
+	["$vertexalpha"] = "1",
+	["$vertexcolor"] = "1",
+	["$translucent"] = "1",
+	["$forcerefract"] = "0",
+	["$bluramount"] = "1.5",
+	["$nofog"] = "1"
 })
 
-local fmat2 = CreateMaterial('TFA_DOF_Material5', 'Refract', {
-	['$model'] = '1',
-	['$alpha'] = '1',
-	['$alphatest'] = '1',
-	['$normalmap'] = 'effects/flat_normal',
-	['$refractamount'] = '0.1',
-	['$vertexalpha'] = '1',
-	['$vertexcolor'] = '1',
-	['$translucent'] = '1',
-	['$forcerefract'] = '0',
-	['$bluramount'] = '0.9',
-	['$nofog'] = '1'
+local fmat2 = CreateMaterial("TFA_DOF_Material5", "Refract", {
+	["$model"] = "1",
+	["$alpha"] = "1",
+	["$alphatest"] = "1",
+	["$normalmap"] = "effects/flat_normal",
+	["$refractamount"] = "0.1",
+	["$vertexalpha"] = "1",
+	["$vertexcolor"] = "1",
+	["$translucent"] = "1",
+	["$forcerefract"] = "0",
+	["$bluramount"] = "0.9",
+	["$nofog"] = "1"
 })
 
-local fmat3 = CreateMaterial('TFA_DOF_Material16', 'Refract', {
-	['$model'] = '1',
-	['$alpha'] = '1',
-	['$alphatest'] = '1',
-	['$normalmap'] = 'effects/flat_normal',
-	['$refractamount'] = '0.1',
-	['$vertexalpha'] = '1',
-	['$vertexcolor'] = '1',
-	['$translucent'] = '1',
-	['$forcerefract'] = '0',
-	['$bluramount'] = '0.8',
-	['$nofog'] = '1'
+local fmat3 = CreateMaterial("TFA_DOF_Material16", "Refract", {
+	["$model"] = "1",
+	["$alpha"] = "1",
+	["$alphatest"] = "1",
+	["$normalmap"] = "effects/flat_normal",
+	["$refractamount"] = "0.1",
+	["$vertexalpha"] = "1",
+	["$vertexcolor"] = "1",
+	["$translucent"] = "1",
+	["$forcerefract"] = "0",
+	["$bluramount"] = "0.8",
+	["$nofog"] = "1"
 })
 
-local white = CreateMaterial('TFA_DOF_White', 'UnlitGeneric', {
-	['$alpha'] = '0',
-	['$basetexture'] = 'models/debug/debugwhite'
+local white = CreateMaterial("TFA_DOF_White", "UnlitGeneric", {
+	["$alpha"] = "0",
+	["$basetexture"] = "models/debug/debugwhite"
 })
 
-TFA.LastRTUpdate = TFA.LastRTUpdate or CurTime()
+TFA.LastRTUpdate = TFA.LastRTUpdate or UnPredictedCurTime()
 
-hook.Add('PreDrawViewModel', 'TFA_DrawViewModel', function(vm, plyv, wep)
+hook.Add("PreDrawViewModel", "TFA_DrawViewModel", function(vm, plyv, wep)
 	if not vm or not plyv or not wep then return end
 	if not wep:IsTFA() then return end
 
@@ -59,19 +59,19 @@ hook.Add('PreDrawViewModel', 'TFA_DrawViewModel', function(vm, plyv, wep)
 		supports = render.SupportsPixelShaders_1_4() and render.SupportsPixelShaders_2_0() and render.SupportsVertexShaders_2_0()
 
 		if not supports then
-			print('[TFA] Your videocard does not support pixel shaders! DoF of Iron Sights is disabled!')
+			print("[TFA] Your videocard does not support pixel shaders! DoF of Iron Sights is disabled!")
 		end
 	end
 
 	if not supports then return end
-	cl_tfa_fx_dof = cl_tfa_fx_dof or GetConVar('cl_tfa_fx_dof')
+	cl_tfa_fx_dof = cl_tfa_fx_dof or GetConVar("cl_tfa_fx_dof")
 	if not cl_tfa_fx_dof:GetBool() then return end
 	if not wep.AllowIronSightsDoF then return end
 	local aimingDown = wep.IronSightsProgress > 0.4
-	local scoped = TFA.LastRTUpdate > CurTime()
+	local scoped = TFA.LastRTUpdate > UnPredictedCurTime()
 
 	if aimingDown and not scoped then
-		if hook.Run('TFA_AllowDoFDraw', wep, plyv, vm) == false then return end
+		if hook.Run("TFA_AllowDoFDraw", wep, plyv, vm) == false then return end
 		wep.__TFA_AimDoFFrame = FrameNumber()
 		render.ClearStencil()
 		render.SetStencilEnable(true)
@@ -90,38 +90,41 @@ local transparent = Color(0, 0, 0, 0)
 local color_white = Color(255, 255, 255)
 local STOP = false
 
-hook.Add('PostDrawViewModel', 'TFA_DrawViewModel', function(vm, plyv, wep)
+hook.Add("PostDrawViewModel", "TFA_DrawViewModel", function(vm, plyv, wep)
 	if not wep:IsTFA() then return end
 
 	if not supports then
-		wep:ViewModelDrawnPost()
-
+		if not wep.UseHands then
+			wep:ViewModelDrawnPost()
+		end
 		return
 	end
 
-	cl_tfa_fx_dof = cl_tfa_fx_dof or GetConVar('cl_tfa_fx_dof')
+	cl_tfa_fx_dof = cl_tfa_fx_dof or GetConVar("cl_tfa_fx_dof")
 
 	if not cl_tfa_fx_dof:GetBool() then
-		wep:ViewModelDrawnPost()
-
+		if not wep.UseHands then
+			wep:ViewModelDrawnPost()
+		end
 		return
 	end
 
 	if not wep.AllowIronSightsDoF then
-		wep:ViewModelDrawnPost()
-
+		if not wep.UseHands then
+			wep:ViewModelDrawnPost()
+		end
 		return
 	end
 
 	local aimingDown = wep.IronSightsProgress > 0.4
 	local eangles = EyeAngles()
 	local fwd2 = vm:GetAngles():Forward()
-	local scoped = TFA.LastRTUpdate > CurTime()
+	local scoped = TFA.LastRTUpdate > UnPredictedCurTime()
 
 	if aimingDown and not scoped and wep.__TFA_AimDoFFrame == FrameNumber() then
-		fmat:SetFloat('$alpha', wep.IronSightsProgress)
-		local muzzle = hook.Run('TFA_GetDoFMuzzleAttachmentID', wep, plyv, vm) or vm:LookupAttachment('muzzle')
-		local muzzleflash = vm:LookupAttachment('muzzleflash')
+		fmat:SetFloat("$alpha", wep.IronSightsProgress)
+		local muzzle = hook.Run("TFA_GetDoFMuzzleAttachmentID", wep, plyv, vm) or vm:LookupAttachment("muzzle")
+		local muzzleflash = vm:LookupAttachment("muzzleflash")
 		local muzzledata
 
 		if muzzle and muzzle ~= 0 then
@@ -137,9 +140,8 @@ hook.Add('PostDrawViewModel', 'TFA_DrawViewModel', function(vm, plyv, wep)
 		if IsValid(hands) then
 			render.OverrideColorWriteEnable(true, false)
 			STOP = true
-			local candraw = hook.Run('PreDrawPlayerHands', hands, vm, plyv, wep)
+			local candraw = hook.Run("PreDrawPlayerHands", hands, vm, plyv, wep)
 			STOP = false
-
 			if candraw ~= true then
 				hands:DrawModel()
 			end
@@ -198,12 +200,13 @@ hook.Add('PostDrawViewModel', 'TFA_DrawViewModel', function(vm, plyv, wep)
 	wep:ViewModelDrawnPost()
 end)
 
-hook.Add('PreDrawPlayerHands', 'TFA_DrawViewModel', function(hands, vm, plyv, wep)
+hook.Add("PreDrawPlayerHands", "TFA_DrawViewModel", function(hands, vm, plyv, wep)
 	if STOP then return end
 	if not wep:IsTFA() then return end
 	if not supports then return end
-	cl_tfa_fx_dof = cl_tfa_fx_dof or GetConVar('cl_tfa_fx_dof')
+	cl_tfa_fx_dof = cl_tfa_fx_dof or GetConVar("cl_tfa_fx_dof")
 	if not cl_tfa_fx_dof:GetBool() then return end
 	if not wep.AllowIronSightsDoF then return end
+	if TFA.LastRTUpdate > UnPredictedCurTime() then return end
 	if wep.IronSightsProgress > 0.4 then return true end
 end)
