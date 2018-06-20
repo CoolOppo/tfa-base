@@ -458,7 +458,7 @@ if CLIENT then
 	end
 
 	if GetConVar("cl_tfa_fx_dof") == nil then
-		CreateClientConVar("cl_tfa_fx_dof", 1, true, true, "Enable iron sights DoF (Depth of Field)")
+		CreateClientConVar("cl_tfa_fx_dof", 0, true, true, "Enable iron sights DoF (Depth of Field)")
 	end
 
 	--viewbob

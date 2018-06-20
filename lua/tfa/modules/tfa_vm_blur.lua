@@ -94,25 +94,19 @@ hook.Add("PostDrawViewModel", "TFA_DrawViewModel", function(vm, plyv, wep)
 	if not wep:IsTFA() then return end
 
 	if not supports then
-		if not wep.UseHands then
-			wep:ViewModelDrawnPost()
-		end
+		wep:ViewModelDrawnPost()
 		return
 	end
 
 	cl_tfa_fx_dof = cl_tfa_fx_dof or GetConVar("cl_tfa_fx_dof")
 
 	if not cl_tfa_fx_dof:GetBool() then
-		if not wep.UseHands then
-			wep:ViewModelDrawnPost()
-		end
+		wep:ViewModelDrawnPost()
 		return
 	end
 
 	if not wep.AllowIronSightsDoF then
-		if not wep.UseHands then
-			wep:ViewModelDrawnPost()
-		end
+		wep:ViewModelDrawnPost()
 		return
 	end
 

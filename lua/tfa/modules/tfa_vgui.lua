@@ -459,10 +459,11 @@ if CLIENT then
 			cl_tfa_fx_impact_ricochet_sparklife = "2",
 			cl_tfa_fx_gasblur = "1",
 			cl_tfa_fx_muzzlesmoke = "1",
-			cl_tfa_fx_muzzlesmoke_limited = "0",
+			cl_tfa_fx_muzzlesmoke_limited = "1",
 			cl_tfa_inspection_bokeh = "0",
 			cl_tfa_fx_ejectionlife = "15",
-			cl_tfa_legacy_shells = "0"
+			cl_tfa_legacy_shells = "0",
+			cl_tfa_fx_dof = "0"
 		}
 
 		panel:AddControl("ComboBox", tfaOptionPerf)
