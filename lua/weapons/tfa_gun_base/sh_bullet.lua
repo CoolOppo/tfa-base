@@ -171,6 +171,9 @@ function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet,
 
 		self.MainBullet.Callback = function(a, b, c)
 			if IsValid(self) then
+				if c:GetDamage() > 1 then
+					c:SetDamagePosition(b.HitPos)
+				end
 				c:SetInflictor(self)
 
 				if self.MainBullet.Callback2 then
@@ -476,33 +479,34 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon)
 	pentrace.mask = MASK_SHOT
 	pentrace.filter = {}
 	local pentraceres = util.TraceLine(pentrace)
+	local bul = table.Copy(self)
 
 	if IsValid(pentraceres.Entity) and pentraceres.Entity.IsNPC and (pentraceres.Entity:IsNPC() or pentraceres.Entity:IsPlayer()) then
 		if IsValid(ply) and ply:IsPlayer() then
-			self.Dir = self.Attacker:EyeAngles():Forward()
+			bul.Dir = self.Attacker:EyeAngles():Forward()
 		end
 
-		self.Src = traceres.HitPos + self.Dir * (pentraceres.Entity:OBBMaxs() - pentraceres.Entity:OBBMins()):Length2D()
-		pentraceres.HitPos = self.Src
-		pentraceres.Normal = self.Dir
+		bul.Src = traceres.HitPos + bul.Dir * (pentraceres.Entity:OBBMaxs() - pentraceres.Entity:OBBMins()):Length2D()
+		pentraceres.HitPos = bul.Src
+		pentraceres.Normal = bul.Dir
 		--debugoverlay.Sphere( self.Src, 5, 5, color_white, true)
 	else
 		if (pentraceres.StartSolid or pentraceres.Fraction >= 1.0 or pentraceres.Fraction <= 0.0) then return end
-		self.Src = pentraceres.HitPos
+		bul.Src = pentraceres.HitPos
 	end
 
-	if (self.Num or 0) <= 1 then
-		self.Spread = Vector(0, 0, 0)
+	if (bul.Num or 0) <= 1 then
+		bul.Spread = Vector(0, 0, 0)
 	end
 
-	self.Tracer = 0 --weapon.TracerName and 0 or 1
-	self.TracerName = ""
+	bul.Tracer = 0 --weapon.TracerName and 0 or 1
+	bul.TracerName = ""
 	rngfac = math.pow(pentraceres.HitPos:Distance(traceres.HitPos) / penetrationoffset:Length(), 2)
 	mfac = math.pow(mult / 10, 0.35)
-	self.Force = Lerp(rngfac, self.Force, self.Force * mfac)
-	self.Damage = Lerp(rngfac, self.Damage, self.Damage * mfac)
+	bul.Force = Lerp(rngfac, bul.Force, bul.Force * mfac)
+	bul.Damage = Lerp(rngfac, bul.Damage, bul.Damage * mfac)
 	--self.Spread = self.Spread / math.sqrt(mfac)
-	self.PenetrationCount = self.PenetrationCount + 1
+	bul.PenetrationCount = bul.PenetrationCount + 1
 	--self.HullSize = 0
 	decalbul.Dir = -traceres.Normal * 64
 
@@ -525,21 +529,21 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon)
 
 	--else
 	local fx = EffectData()
-	fx:SetOrigin(self.Src)
-	fx:SetNormal(self.Dir)
+	fx:SetOrigin(bul.Src)
+	fx:SetNormal(bul.Dir)
 
 	if IsValid(ply) then
 		fx:SetNormal(ply:EyeAngles():Forward())
 	end
 
-	fx:SetMagnitude((self.PenetrationCount + 1) * 1000)
+	fx:SetMagnitude((bul.PenetrationCount + 1) * 1000)
 	fx:SetEntity(weapon)
 
 	if IsValid(pentraceres.Entity) and pentraceres.Entity.EntIndex then
 		fx:SetScale(pentraceres.Entity:EntIndex())
 	end
 
-	fx:SetRadius(self.Damage / 32)
+	fx:SetRadius(bul.Damage / 32)
 	util.Effect("tfa_penetrate", fx)
 
 	--end
@@ -550,7 +554,7 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon)
 			end
 		end)
 
-		BallisticFirebullet(ply, self, true)
+		BallisticFirebullet(ply, bul, true)
 	end
 end
 

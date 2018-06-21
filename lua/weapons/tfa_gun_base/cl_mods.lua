@@ -325,16 +325,14 @@ function SWEP:DrawWorldModel()
 					self:SetRenderAngles(ang)
 					--if self.Offset.Scale and ( !self.MyModelScale or ( self.Offset and self.MyModelScale!=self.Offset.Scale ) ) then
 					self:SetModelScale(self.Offset.Scale or 1, 0)
-					self.MyModelScale = self.Offset.Scale
 					--end
 				end
 			else
 				self:SetRenderOrigin(nil)
 				self:SetRenderAngles(nil)
 
-				if not self.MyModelScale or self.MyModelScale ~= 1 then
-					self:SetModelScale(1, 0)
-					self.MyModelScale = 1
+				if self.Offset and self.Offset.Scale then
+					self:SetModelScale(self.Offset.Scale, 0)
 				end
 			end
 		end
