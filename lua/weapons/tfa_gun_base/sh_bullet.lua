@@ -304,10 +304,9 @@ SWEP.PenetrationMaterials = {
 	[MAT_FOLIAGE] = 6.5
 }
 
-local mat
 local fac
 
-function SWEP:GetPenetrationMultiplier(matt)
+function SWEP:GetPenetrationMultiplier(mat)
 	fac = self.PenetrationMaterials[mat or MAT_DEFAULT] or self.PenetrationMaterials[MAT_DEFAULT]
 
 	return fac * (self:GetStat("Primary.PenetrationMultiplier") and self:GetStat("Primary.PenetrationMultiplier") or 1)
@@ -457,12 +456,16 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon)
 	bul.Tracer = 0 --weapon.TracerName and 0 or 1
 	bul.TracerName = ""
 	mfac = pentraceres.HitPos:Distance(traceres.HitPos) / penetrationoffset:Length()
+	bul.Num = self.Num
 	bul.Force = self.Force * mfac
 	bul.Damage = self.Damage * mfac
 	bul.Penetrate = self.Penetrate
 	bul.HandleDoor = self.HandleDoor
 	bul.Ricochet = self.Ricochet
+	bul.Spread = self.Spread / mfac
 	bul.Wep = weapon
+	bul.Tracer = 0
+	bul.TracerName = ""
 	bul.Callback = function(a, b, c)
 		bul:Penetrate(a, b, c, bul.Wep)
 	end
@@ -533,12 +536,11 @@ function SWEP.MainBullet:Ricochet(ply, traceres, dmginfo, weapon)
 	local dir = traceres.HitPos - traceres.StartPos
 	dir:Normalize()
 	local dp = dir:Dot(traceres.HitNormal * -1)
-	ricochetchance = ricochetchance * 0.5 * weapon:GetAmmoRicochetMultiplier()
+	ricochetchance = ricochetchance * weapon:GetAmmoRicochetMultiplier()
 	local riccbak = ricochetchance / 0.7
 	local ricothreshold = 0.6
-	ricochetchance = math.Clamp(ricochetchance + ricochetchance * math.Clamp(1 - (dp + ricothreshold), 0, 1) * 0.5, 0, 1)
-
-	if dp <= ricothreshold and math.Rand(0, 1) < ricochetchance then
+	ricochetchance = math.Clamp(ricochetchance * ( 1 + math.Clamp(1 - (dp + ricothreshold), 0, 1) ), 0, 1)
+	if dp <= ricochetchance and math.Rand(0, 1) < ricochetchance then
 		self.Damage = self.Damage * 0.5
 		self.Force = self.Force * 0.5
 		self.Num = 1
