@@ -8,20 +8,15 @@ local function DisableOwnerDamage(a, b, c)
 	end
 end
 
-local function DirectDamage(a, b, c)
-	if c then
-		c:SetDamageType(DMG_DIRECT)
-	end
-end
-
 local ballistics_distcv = GetConVar("sv_tfa_ballistics_mindist")
 
 local function BallisticFirebullet(ply, bul, ovr)
 	local wep = ply:GetActiveWeapon()
 
 	if TFA.Ballistics and TFA.Ballistics:ShouldUse(wep) then
-		if ballistics_distcv:GetInt() == -1 or ply:GetEyeTrace().HitPos:Distance(ply:GetShootPos()) > ( ballistics_distcv:GetFloat() * TFA.Ballistics.UnitScale ) then
+		if ballistics_distcv:GetInt() == -1 or ply:GetEyeTrace().HitPos:Distance(ply:GetShootPos()) > (ballistics_distcv:GetFloat() * TFA.Ballistics.UnitScale) then
 			bul.SmokeParticle = bul.SmokeParticle or wep.BulletTracer or wep.TracerBallistic or wep.BallisticTracer or wep.BallisticsTracer
+
 			if ovr then
 				TFA.Ballistics:FireBullets(wep, bul, angle_zero, true)
 			else
@@ -142,7 +137,6 @@ function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet,
 		end
 
 		local ow = self:GetOwner()
-
 		self.MainBullet.Attacker = ow
 		self.MainBullet.Inflictor = self
 		self.MainBullet.Num = num_bullets
@@ -171,9 +165,6 @@ function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet,
 
 		self.MainBullet.Callback = function(a, b, c)
 			if IsValid(self) then
-				if c:GetDamage() > 1 then
-					c:SetDamagePosition(b.HitPos)
-				end
 				c:SetInflictor(self)
 
 				if self.MainBullet.Callback2 then
@@ -291,44 +282,6 @@ function SWEP:GetAmmoForceMultiplier()
 end
 
 --[[
-Function Name:  GetMaterialConcise
-Syntax: self:GetMaterialConcise( ).
-Returns:  The string material name.
-Notes:	Always lowercase.
-Purpose:  Utility
-]]
---
-local matnamec = {
-	[MAT_GLASS] = "glass",
-	[MAT_GRATE] = "metal",
-	[MAT_METAL] = "metal",
-	[MAT_VENT] = "metal",
-	[MAT_COMPUTER] = "metal",
-	[MAT_CLIP] = "metal",
-	[MAT_FLESH] = "flesh",
-	[MAT_ALIENFLESH] = "flesh",
-	[MAT_ANTLION] = "flesh",
-	[MAT_FOLIAGE] = "foliage",
-	[MAT_DIRT] = "dirt",
-	[MAT_GRASS or MAT_DIRT] = "dirt",
-	[MAT_EGGSHELL] = "plastic",
-	[MAT_PLASTIC] = "plastic",
-	[MAT_TILE] = "ceramic",
-	[MAT_CONCRETE] = "ceramic",
-	[MAT_WOOD] = "wood",
-	[MAT_SAND] = "sand",
-	[MAT_SNOW or 0] = "snow",
-	[MAT_SLOSH] = "slime",
-	[MAT_WARPSHIELD] = "energy",
-	[89] = "glass",
-	[-1] = "default"
-}
-
-function SWEP:GetMaterialConcise(mat)
-	return matnamec[mat] or matnamec[-1]
-end
-
---[[
 Function Name:  GetPenetrationMultiplier
 Syntax: self:GetPenetrationMultiplier( concise material name).
 Returns:  The multilier for how much you can penetrate through a material.
@@ -336,27 +289,26 @@ Notes:	Should be used with GetMaterialConcise.
 Purpose:  Utility
 ]]
 --
-local matfacs = {
-	["metal"] = 2.5, --Since most is aluminum and stuff
-	["wood"] = 8,
-	["plastic"] = 5,
-	["flesh"] = 8,
-	["ceramic"] = 1.0,
-	["glass"] = 10,
-	["energy"] = 0.05,
-	["sand"] = 0.7,
-	["slime"] = 0.7,
-	["dirt"] = 2.0, --This is plaster, not dirt, in most cases.
-	["foliage"] = 6.5,
-	["default"] = 4
+SWEP.PenetrationMaterials = {
+	[MAT_DEFAULT] = 4,
+	[MAT_VENT] = 2.5, --Since most is aluminum and stuff
+	[MAT_METAL] = 2.5, --Since most is aluminum and stuff
+	[MAT_WOOD] = 8,
+	[MAT_PLASTIC] = 5,
+	[MAT_FLESH] = 8,
+	[MAT_CONCRETE] = 1.0,
+	[MAT_GLASS] = 10,
+	[MAT_SAND] = 0.7,
+	[MAT_SLOSH] = 0.7,
+	[MAT_DIRT] = 2.0, --This is plaster, not dirt, in most cases.
+	[MAT_FOLIAGE] = 6.5
 }
 
 local mat
 local fac
 
 function SWEP:GetPenetrationMultiplier(matt)
-	mat = isstring(matt) and matt or self:GetMaterialConcise(matt)
-	fac = matfacs[mat or "default"] or 4
+	fac = self.PenetrationMaterials[mat or MAT_DEFAULT] or self.PenetrationMaterials[MAT_DEFAULT]
 
 	return fac * (self:GetStat("Primary.PenetrationMultiplier") and self:GetStat("Primary.PenetrationMultiplier") or 1)
 end
@@ -375,7 +327,6 @@ local penetration_cvar = GetConVar("sv_tfa_bullet_penetration")
 local ricochet_cvar = GetConVar("sv_tfa_bullet_ricochet")
 local cv_rangemod = GetConVar("sv_tfa_range_modifier")
 local cv_decalbul = GetConVar("sv_tfa_fx_penetration_decal")
-local rngfac
 local mfac
 local atype
 
@@ -384,6 +335,8 @@ function SWEP:SetBulletTracerName(nm)
 end
 
 function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon)
+	--debugoverlay.Sphere( self.Src, 5, 5, color_white, true)
+	DisableOwnerDamage(ply, traceres, dmginfo)
 	if self.TracerName and self.TracerName ~= "" then
 		weapon.BulletTracerName = self.TracerName
 
@@ -392,7 +345,6 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon)
 		end
 	end
 
-	DisableOwnerDamage(ply, traceres, dmginfo)
 	if not IsValid(weapon) then return end
 	local hitent = traceres.Entity
 	self:HandleDoor(ply, traceres, dmginfo, weapon)
@@ -479,20 +431,23 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon)
 	pentrace.mask = MASK_SHOT
 	pentrace.filter = {}
 	local pentraceres = util.TraceLine(pentrace)
-	local bul = table.Copy(self)
+	if (pentraceres.StartSolid or pentraceres.Fraction >= 1.0 or pentraceres.Fraction <= 0.0) then return end
+	local bul = {}
+	bul.PenetrationCount = self.PenetrationCount + 1
 
 	if IsValid(pentraceres.Entity) and pentraceres.Entity.IsNPC and (pentraceres.Entity:IsNPC() or pentraceres.Entity:IsPlayer()) then
 		if IsValid(ply) and ply:IsPlayer() then
-			bul.Dir = self.Attacker:EyeAngles():Forward()
+			bul.Dir = ply:EyeAngles():Forward()
+		else
+			bul.Dir = self.Dir
 		end
 
 		bul.Src = traceres.HitPos + bul.Dir * (pentraceres.Entity:OBBMaxs() - pentraceres.Entity:OBBMins()):Length2D()
 		pentraceres.HitPos = bul.Src
 		pentraceres.Normal = bul.Dir
-		--debugoverlay.Sphere( self.Src, 5, 5, color_white, true)
 	else
-		if (pentraceres.StartSolid or pentraceres.Fraction >= 1.0 or pentraceres.Fraction <= 0.0) then return end
 		bul.Src = pentraceres.HitPos
+		bul.Dir = self.Dir
 	end
 
 	if (bul.Num or 0) <= 1 then
@@ -501,17 +456,21 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon)
 
 	bul.Tracer = 0 --weapon.TracerName and 0 or 1
 	bul.TracerName = ""
-	rngfac = math.pow(pentraceres.HitPos:Distance(traceres.HitPos) / penetrationoffset:Length(), 2)
-	mfac = math.pow(mult / 10, 0.35)
-	bul.Force = Lerp(rngfac, bul.Force, bul.Force * mfac)
-	bul.Damage = Lerp(rngfac, bul.Damage, bul.Damage * mfac)
-	--self.Spread = self.Spread / math.sqrt(mfac)
-	bul.PenetrationCount = bul.PenetrationCount + 1
-	--self.HullSize = 0
+	mfac = pentraceres.HitPos:Distance(traceres.HitPos) / penetrationoffset:Length()
+	bul.Force = self.Force * mfac
+	bul.Damage = self.Damage * mfac
+	bul.Penetrate = self.Penetrate
+	bul.HandleDoor = self.HandleDoor
+	bul.Ricochet = self.Ricochet
+	bul.Wep = weapon
+	bul.Callback = function(a, b, c)
+		bul:Penetrate(a, b, c, bul.Wep)
+	end
+
 	decalbul.Dir = -traceres.Normal * 64
 
 	if IsValid(ply) and ply:IsPlayer() then
-		decalbul.Dir = self.Attacker:EyeAngles():Forward() * (-64)
+		decalbul.Dir = ply:EyeAngles():Forward() * (-64)
 	end
 
 	decalbul.Src = pentraceres.HitPos - decalbul.Dir * 4
@@ -519,11 +478,9 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon)
 	decalbul.Force = 0.1
 	decalbul.Tracer = 0
 	decalbul.TracerName = ""
-	decalbul.Callback = DirectDamage
+	decalbul.Callback = DisableOwnerDamage
 
 	if self.PenetrationCount <= 1 and IsValid(weapon) then
-		--	local tmpres = util.QuickTrace( pentraceres.HitPos or traceres.HitPos, self.Dir * 9999999, pentraceres.Entity )
-		--	weapon:PCFTracer( self, tmpres.HitPos or traceres.HitPos, true )
 		weapon:PCFTracer(self, pentraceres.HitPos or traceres.HitPos, true)
 	end
 
@@ -551,35 +508,31 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon)
 		timer.Simple(0, function()
 			if IsValid(ply) and cv_decalbul:GetBool() then
 				ply:FireBullets(decalbul)
+				BallisticFirebullet(ply, bul, true)
 			end
 		end)
-
-		BallisticFirebullet(ply, bul, true)
 	end
 end
 
 local RicochetChanceEnum = {
-	["glass"] = 0,
-	["plastic"] = 0.01,
-	["dirt"] = 0.01,
-	["grass"] = 0.01,
-	["sand"] = 0.01,
-	["ceramic"] = 0.15,
-	["metal"] = 0.7,
-	["default"] = 0.5
+	[MAT_GLASS] = 0,
+	[MAT_PLASTIC] = 0.01,
+	[MAT_DIRT] = 0.01,
+	[MAT_GRASS] = 0.01,
+	[MAT_SAND] = 0.01,
+	[MAT_CONCRETE] = 0.15,
+	[MAT_METAL] = 0.7,
+	[MAT_DEFAULT] = 0.5
 }
 
 function SWEP.MainBullet:Ricochet(ply, traceres, dmginfo, weapon)
-	DisableOwnerDamage(ply, traceres, dmginfo)
 	if ricochet_cvar and not ricochet_cvar:GetBool() then return end
 	maxpen = math.min(penetration_max_cvar and penetration_max_cvar:GetInt() - 1 or 1, weapon.Primary.MaxPenetration)
 	if self.PenetrationCount > maxpen then return end
-	local matname = weapon:GetMaterialConcise(traceres.MatType)
-	local ricochetchance = RicochetChanceEnum[matname] or 0
+	local ricochetchance = RicochetChanceEnum[traceres.MatType] or RicochetChanceEnum[MAT_DEFAULT]
 	local dir = traceres.HitPos - traceres.StartPos
 	dir:Normalize()
 	local dp = dir:Dot(traceres.HitNormal * -1)
-
 	ricochetchance = ricochetchance * 0.5 * weapon:GetAmmoRicochetMultiplier()
 	local riccbak = ricochetchance / 0.7
 	local ricothreshold = 0.6

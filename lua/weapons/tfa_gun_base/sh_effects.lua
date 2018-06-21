@@ -248,9 +248,14 @@ Notes:	Used for the impact effect.  Should be used with GetMaterialConcise.
 Purpose:  Utility
 ]]
 --
+local DustEffects = {
+	[MAT_DIRT] = true,
+	[MAT_CONCRETE] = true,
+	[MAT_PLASTIC] = true,
+	[MAT_WOOD] = true
+}
 function SWEP:CanDustEffect(matv)
-	local n = self:GetMaterialConcise(matv)
-	if n == "energy" or n == "dirt" or n == "ceramic" or n == "plastic" or n == "wood" then return true end
+	if DustEffects[matv] then return true end
 
 	return false
 end
@@ -263,9 +268,13 @@ Notes:	Used for the impact effect.  Should be used with GetMaterialConcise.
 Purpose:  Utility
 ]]
 --
+local SparkEffects = {
+	[MAT_METAL] = true,
+	[MAT_GRATE] = true,
+	[MAT_VENT] = true
+}
 function SWEP:CanSparkEffect(matv)
-	local n = self:GetMaterialConcise(matv)
-	if n == "default" or n == "metal" then return true end
+	if SparkEffects[matv] then return true end
 
 	return false
 end
