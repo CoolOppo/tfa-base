@@ -721,7 +721,7 @@ function SWEP:UpdateBonePositions(vm)
 		appendTable(keys, getKeys(self.ViewModelBoneMods_Children))
 
 		for _,k in pairs(keys) do
-			local v = self:GetStat("ViewModelBoneMods." .. k)
+			local v = self:GetStat("ViewModelBoneMods." .. k,self.ViewModelBoneMods[k])
 			if not v then continue end
 			local bone = vm:LookupBone(k)
 			if not bone then continue end
