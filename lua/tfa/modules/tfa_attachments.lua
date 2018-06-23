@@ -84,6 +84,10 @@ if CLIENT then
 end
 
 function TFARegisterAttachment(att)
+	if att.ID and att.ID ~= "base" then
+		att.Base = att.Base or "base"
+	end
+
 	TFA.Attachments.Atts[att.ID or att.Name] = att
 end
 
@@ -99,12 +103,19 @@ local function basefunc(t, k)
 	end
 end
 
+local inheritanceCached = {}
+
 local function patchInheritance(t, basetbl)
 	if not basetbl and t.Base then
 		basetbl = TFA.Attachments.Atts[t.Base]
+
+		if basetbl and istable(basetbl) and basetbl.ID and not inheritanceCached[basetbl.ID] then
+			inheritanceCached[basetbl.ID] = true
+			patchInheritance(basetbl)
+		end
 	end
 
-	if not basetbl then return end
+	if not (basetbl and istable(basetbl)) then return end
 
 	for k, v in pairs(t) do
 		local baseT = basetbl[k]
@@ -113,8 +124,9 @@ local function patchInheritance(t, basetbl)
 			patchInheritance(v, baseT)
 		end
 	end
-	for k,v in pairs(basetbl) do
-		if rawget(t,k) == nil then
+
+	for k, v in pairs(basetbl) do
+		if rawget(t, k) == nil then
 			t[k] = v
 		end
 	end
@@ -144,11 +156,10 @@ function TFAUpdateAttachments()
 		ATTACHMENT = {}
 
 		setmetatable(ATTACHMENT, {
-			__index = basefunc,
-			__newindex = cacheKeys
+			__index = basefunc
 		})
 
-		ATTACHMENT.ID = string.Replace(id, ".lua", "")
+		ATTACHMENT.ID = string.lower(string.Replace(id, ".lua", ""))
 
 		if SERVER then
 			AddCSLuaFile(v)
@@ -163,9 +174,6 @@ function TFAUpdateAttachments()
 
 	for k, v in pairs(TFA.Attachments.Atts) do
 		patchInheritance(v)
-		if k == "ins2_si_mx4" then
-			PrintTable(v)
-		end
 	end
 
 	ProtectedCall(function()
