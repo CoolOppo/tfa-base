@@ -172,7 +172,7 @@ function TFAUpdateAttachments()
 		ATTACHMENT = nil
 	end
 
-	for k, v in pairs(TFA.Attachments.Atts) do
+	for _, v in pairs(TFA.Attachments.Atts) do
 		patchInheritance(v)
 	end
 
