@@ -48,14 +48,19 @@ function SWEP:DrawLaser( is_vm )
 		traceres = util.QuickTrace( self:GetOwner():GetShootPos(), angpos.Ang:Forward() * 999999, self:GetOwner())
 		dot_sz = math.Rand( self.LaserDotMin or 1.5, self.LaserDotMax or 2 )
 
+		render.OverrideDepthEnable(true, true)
 		render.SetMaterial(laserdot)
 		render.DrawQuadEasy(traceres.HitPos, traceres.HitNormal, dot_sz, dot_sz, col, 0)
 		render.SetMaterial(lasernoise)
 		render.DrawQuadEasy(traceres.HitPos, traceres.HitNormal, dot_sz / 2 * math.Rand( 0.7, 1.3 ), dot_sz / 2 * math.Rand( 0.7, 1.3 ) , col, math.random(-180,180))
+
 		if self.laserpos_old and trails_enabled_cv:GetBool() then
 			render.SetMaterial(laserline)
 			render.DrawBeam(self.laserpos_old, traceres.HitPos, dot_sz / 2, 0.2, 1, col )
 		end
+
+		render.OverrideDepthEnable(false, true)
+
 		self.laserpos_old = traceres.HitPos
 	else
 		att = self:GetStat("LaserSightAttachmentWorld")
@@ -78,11 +83,13 @@ function SWEP:DrawLaser( is_vm )
 		traceres = util.QuickTrace( angpos.Pos, angpos.Ang:Forward() * 999999, self:GetOwner())
 		dot_sz = math.Rand( self.LaserDotMin or 2, self.LaserDotMax or 4 )
 
+		render.OverrideDepthEnable(true, true)
 		render.SetMaterial(laserlinetp)
 		render.SetColorModulation(1,1,1)
 		render.DrawBeam( angpos.Pos, traceres.HitPos, self.LaserBeamWidth or 0.25, 0, 8, col)
 		render.SetMaterial(laserdot)
 		render.DrawQuadEasy(traceres.HitPos, traceres.HitNormal, dot_sz, dot_sz, col, 0)
+		render.OverrideDepthEnable(false, true)
 	end
 end
 
@@ -120,17 +127,11 @@ function SWEP:GetViewModelFinalFOV()
 	local flFOVOffset = fov_default - fov
 	local fov_vm = self.ViewModelFOV - flFOVOffset
 
-	local aspectRatio = GetScreenAspectRatio() * 0.75	 -- (4/3)
+	local aspectRatio = GetScreenAspectRatio() * 0.75    -- (4/3)
 	--local final_fov = ScaleFOVByWidthRatio( fov,  aspectRatio )
 	local final_fovViewmodel = ScaleFOVByWidthRatio( fov_vm, aspectRatio )
 	return final_fovViewmodel
 end
-
-hook.Add("PostDrawViewModel","TFA_LaserSight",function(vm,plyv,wep)
-	if wep:IsTFA() then
-		wep:DrawLaser(true)
-	end
-end)
 
 hook.Add("PostPlayerDraw","TFA_LaserSight",function( plyv )
 	local wep = plyv:GetActiveWeapon()
