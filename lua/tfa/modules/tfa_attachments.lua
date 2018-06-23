@@ -84,22 +84,6 @@ if CLIENT then
 end
 
 function TFARegisterAttachment(att)
-	local base
-
-	if att.Base then
-		base = TFA.Attachments.Atts[att.Base]
-	else
-		base = TFA.Attachments.Atts["base"]
-	end
-
-	if base then
-		for k, v in pairs(base) do
-			if not att[k] then
-				att[k] = v
-			end
-		end
-	end
-
 	TFA.Attachments.Atts[att.ID or att.Name] = att
 end
 
@@ -108,9 +92,31 @@ TFA_ATTACHMENT_ISUPDATING = false
 
 local function basefunc(t, k)
 	if k == "Base" then return end
+
 	if t.Base then
 		local bt = TFA.Attachments.Atts[t.Base]
 		if bt then return bt[k] end
+	end
+end
+
+local function patchInheritance(t, basetbl)
+	if not basetbl and t.Base then
+		basetbl = TFA.Attachments.Atts[t.Base]
+	end
+
+	if not basetbl then return end
+
+	for k, v in pairs(t) do
+		local baseT = basetbl[k]
+
+		if istable(v) and baseT then
+			patchInheritance(v, baseT)
+		end
+	end
+	for k,v in pairs(basetbl) do
+		if rawget(t,k) == nil then
+			t[k] = v
+		end
 	end
 end
 
@@ -136,6 +142,12 @@ function TFAUpdateAttachments()
 		local id = v
 		v = TFA.Attachments.Path .. v
 		ATTACHMENT = {}
+
+		setmetatable(ATTACHMENT, {
+			__index = basefunc,
+			__newindex = cacheKeys
+		})
+
 		ATTACHMENT.ID = string.Replace(id, ".lua", "")
 
 		if SERVER then
@@ -145,12 +157,15 @@ function TFAUpdateAttachments()
 			include(v)
 		end
 
-		setmetatable(ATTACHMENT, {
-			__index = basefunc
-		})
-
 		TFARegisterAttachment(ATTACHMENT)
 		ATTACHMENT = nil
+	end
+
+	for k, v in pairs(TFA.Attachments.Atts) do
+		patchInheritance(v)
+		if k == "ins2_si_mx4" then
+			PrintTable(v)
+		end
 	end
 
 	ProtectedCall(function()
