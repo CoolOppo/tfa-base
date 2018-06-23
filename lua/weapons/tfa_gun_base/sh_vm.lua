@@ -61,6 +61,43 @@ function SWEP:CalculateViewModelFlip()
 	end
 end
 
+SWEP.WeaponLength = 0
+function SWEP:UpdateWeaponLength()
+	if not self:VMIV() then return end
+	local vm = self.OwnerViewModel
+	local mzpos = self:GetMuzzlePos()
+	if not mzpos then return end
+	if not mzpos.Pos then return end
+	local mzVec = vm:WorldToLocal(mzpos.Pos)
+	self.WeaponLength = math.abs(mzVec.x)
+end
+
+SWEP.NearWallVector = Vector(0.1,-0.5,-0.2):GetNormalized() * 0.5
+SWEP.NearWallVectorADS = Vector(0,-0.1,0)
+
+function SWEP:CalculateNearWall(p, a)
+	if not self:OwnerIsValid() then return p, a end
+	local sp = self:GetOwner():GetShootPos()
+	local ea = self:GetOwner():EyeAngles()
+	local et = self:GetOwner():GetEyeTrace()
+	local dist = et.HitPos:Distance(sp)
+	if self.WeaponLength and self.WeaponLength > dist then
+		local nw_offset_vec = self:GetIronSights() and self.NearWallVectorADS or self.NearWallVector
+		local off = self.WeaponLength - dist
+		p = p + nw_offset_vec * off / 2
+		local posCompensated = sp * 1
+		posCompensated:Add(ea:Right() * nw_offset_vec.x * off / 2 * (self.ViewModelFlip and -1 or 1))
+		posCompensated:Add(ea:Forward() * nw_offset_vec.y * off / 2)
+		posCompensated:Add(ea:Up() * nw_offset_vec.z * off / 2)
+		local angleComp = (et.HitPos-posCompensated):Angle()
+		a.x = a.x - math.AngleDifference(angleComp.p,ea.p) / 2
+		a.y = a.y + math.AngleDifference(angleComp.y,ea.y) / 2
+	else
+		self:UpdateWeaponLength()
+	end
+	return p, a
+end
+
 local target_pos, target_ang, adstransitionspeed, hls
 local flip_vec = Vector(-1, 1, 1)
 local flip_ang = Vector(1, -1, -1)
@@ -177,6 +214,7 @@ function SWEP:CalculateViewModelOffset()
 		target_ang = self:GetStat("InspectAng") * 1
 		adstransitionspeed = 10
 	end
+	target_pos, target_ang = self:CalculateNearWall(target_pos, target_ang)
 
 	vm_offset_pos.x = math.Approach(vm_offset_pos.x, target_pos.x, (target_pos.x - vm_offset_pos.x) * ft * adstransitionspeed)
 	vm_offset_pos.y = math.Approach(vm_offset_pos.y, target_pos.y, (target_pos.y - vm_offset_pos.y) * ft * adstransitionspeed)
