@@ -692,8 +692,18 @@ function SWEP:ScaleChildBoneMods(ent,bone,cumulativeScale)
 	end
 end
 
+local vmbm_old_count = 0
+
 function SWEP:UpdateBonePositions(vm)
 	local vmbm = self:GetStat("ViewModelBoneMods")
+	local vmbm_count = 0
+	if vmbm then
+		vmbm_count = table.Count(vmbm)
+	end
+	if vmbm_old_count ~= vmbm_count then
+		self:ResetBonePositions()
+	end
+	vmbm_old_count = vmbm_count
 	if vmbm then
 		local stat = self:GetStatus()
 
@@ -732,12 +742,13 @@ function SWEP:UpdateBonePositions(vm)
 			self.BlowbackCurrent = math.Approach(self.BlowbackCurrent, 0, self.BlowbackCurrent * FrameTime() * 30)
 		end
 
-		local keys = getKeys(self:GetStat("ViewModelBoneMods") or self.ViewModelBoneMods)
+		local keys = getKeys(vmbm)
 		appendTable(keys, getKeys(self:GetStat("BlowbackBoneMods") or self.BlowbackBoneMods))
 		appendTable(keys, getKeys(self.ViewModelBoneMods_Children))
 
 		for _,k in pairs(keys) do
-			local v = self:GetStat("ViewModelBoneMods." .. k,self.ViewModelBoneMods[k])
+			if k == "wepEnt" then continue end
+			local v = self:GetStat("ViewModelBoneMods." .. k) or vmbm[k]
 			if not v then continue end
 			local bone = vm:LookupBone(k)
 			if not bone then continue end
