@@ -752,7 +752,7 @@ function SWEP:UpdateBonePositions(vm)
 
 		for _,k in pairs(keys) do
 			if k == "wepEnt" then continue end
-			local v = self:GetStat("ViewModelBoneMods." .. k) or vmbm[k]
+			local v = vmbm[k] or self:GetStat("ViewModelBoneMods." .. k)
 			if not v then continue end
 			local bone = vm:LookupBone(k)
 			if not bone then continue end
