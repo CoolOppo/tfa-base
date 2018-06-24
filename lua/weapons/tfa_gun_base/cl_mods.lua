@@ -194,14 +194,16 @@ function SWEP:ViewModelDrawn()
 					render.SuppressEngineLighting(true)
 				end
 
-				if (v.material == "") then
+				local material = self:GetStat("VElements." .. name .. ".material")
+				if (not material or material == "") then
 					model:SetMaterial("")
-				elseif (model:GetMaterial() ~= v.material) then
-					model:SetMaterial(v.material)
+				elseif (model:GetMaterial() ~= material) then
+					model:SetMaterial(material)
 				end
 
-				if (v.skin and v.skin ~= model:GetSkin()) then
-					model:SetSkin(v.skin)
+				local skin = self:GetStat("VElements." .. name .. ".skin")
+				if (skin and skin ~= model:GetSkin()) then
+					model:SetSkin(skin)
 				end
 
 				if v.bonemerge then
@@ -416,14 +418,16 @@ function SWEP:DrawWorldModel()
 			matrix:Scale(v.size)
 			model:EnableMatrix("RenderMultiply", matrix)
 
-			if (v.material == "") then
+			local material = self:GetStat("WElements." .. name .. ".material")
+			if (not material or material == "") then
 				model:SetMaterial("")
-			elseif (model:GetMaterial() ~= v.material) then
-				model:SetMaterial(v.material)
+			elseif (model:GetMaterial() ~= material) then
+				model:SetMaterial(material)
 			end
 
-			if (v.skin and v.skin ~= model:GetSkin()) then
-				model:SetSkin(v.skin)
+			local skin = self:GetStat("WElements." .. name .. ".skin")
+			if (skin and skin ~= model:GetSkin()) then
+				model:SetSkin(skin)
 			end
 
 			if (v.bodygroup) then
