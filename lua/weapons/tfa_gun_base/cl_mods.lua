@@ -732,8 +732,8 @@ function SWEP:UpdateBonePositions(vm)
 			self.BlowbackCurrent = math.Approach(self.BlowbackCurrent, 0, self.BlowbackCurrent * FrameTime() * 30)
 		end
 
-		local keys = getKeys(self.ViewModelBoneMods)
-		appendTable(keys, getKeys(self.BlowbackBoneMods))
+		local keys = getKeys(self:GetStat("ViewModelBoneMods") or self.ViewModelBoneMods)
+		appendTable(keys, getKeys(self:GetStat("BlowbackBoneMods") or self.BlowbackBoneMods))
 		appendTable(keys, getKeys(self.ViewModelBoneMods_Children))
 
 		for _,k in pairs(keys) do
