@@ -305,8 +305,8 @@ function SWEP:GetViewModelPosition(pos, ang)
 	if not IsValid(self:GetOwner()) then return end
 
 	--[[if GetViewEntity().EyeAngles and GetViewEntity()==self:GetOwner() then
-		ang = GetViewEntity():EyeAngles()
-	end]]
+        ang = GetViewEntity():EyeAngles()
+    end]]
 	-- NO!
 	if not viewpunch_cv then
 		viewpunch_cv = GetConVar("cl_tfa_viewmodel_viewpunch")
@@ -374,6 +374,14 @@ function SWEP:GetViewModelPosition(pos, ang)
 		pos:Add(ang:Right() * bbvec.x * self.BlowbackCurrentRoot)
 		pos:Add(ang:Forward() * bbvec.y * self.BlowbackCurrentRoot)
 		pos:Add(ang:Up() * bbvec.z * self.BlowbackCurrentRoot)
+		local bbang = self:GetStat("BlowbackAngle") or Angle(0, 0, 0)
+		ang:RotateAroundAxis(ang:Right(), bbang.x * self.BlowbackCurrentRoot)
+		ang:RotateAroundAxis(ang:Up(), bbang.y * self.BlowbackCurrentRoot)
+		ang:RotateAroundAxis(ang:Forward(), bbang.z * self.BlowbackCurrentRoot)
+		bbang = self.BlowbackRandomAngle * (1 - math.max(0, self.IronSightsProgress) * .8)
+		ang:RotateAroundAxis(ang:Right(), bbang.x * self.BlowbackCurrentRoot)
+		ang:RotateAroundAxis(ang:Up(), bbang.y * self.BlowbackCurrentRoot)
+		ang:RotateAroundAxis(ang:Forward(), bbang.z * self.BlowbackCurrentRoot)
 		--end
 	end
 

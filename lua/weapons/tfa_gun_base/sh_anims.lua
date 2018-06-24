@@ -146,6 +146,7 @@ SWEP.BaseAnimations = {
 		["value"] = ACT_VM_FIDGET_SILENCED
 	}
 }
+
 SWEP.Animations = {}
 
 function SWEP:InitializeAnims()
@@ -535,7 +536,6 @@ Notes:  Requires autodetection or otherwise the list of valid anims.
 Purpose:  Animation / Utility
 ]]
 --
-
 function SWEP:SelectInspectAnim(pri)
 	tanim = ACT_VM_FIDGET
 	success = true
@@ -577,7 +577,6 @@ Notes:  Requires autodetection or otherwise the list of valid anims.
 Purpose:  Animation / Utility
 ]]
 --
-
 function SWEP:ChooseHolsterAnim()
 	if not self:VMIV() then return end
 
@@ -716,8 +715,8 @@ function SWEP:ChooseIdleAnim()
 	--	return
 	--end
 	if self.Idle_Mode ~= TFA.Enum.IDLE_BOTH and self.Idle_Mode ~= TFA.Enum.IDLE_ANI then return end
-	--self:ResetEvents()
 
+	--self:ResetEvents()
 	if self:GetIronSights() then
 		if self.Sights_Mode == TFA.Enum.LOCOMOTION_LUA then
 			return self:ChooseFlatAnim()
@@ -858,6 +857,7 @@ function SWEP:BlowbackFull()
 	if IsValid(self) then
 		self.BlowbackCurrent = 1
 		self.BlowbackCurrentRoot = 1
+		self.BlowbackRandomAngle = Angle(math.Rand(.1, .2), math.Rand(-.5, .5), math.Rand(-1, 1))
 	end
 end
 
@@ -945,6 +945,7 @@ Purpose:  Animation / Utility
 --
 function SWEP:ChooseROFAnim()
 	if not self:VMIV() then return end
+
 	--self:ResetEvents()
 	if self:GetIronSights() and self:GetActivityEnabled(ACT_VM_IFIREMODE) then
 		typev, tanim = self:ChooseAnimation("rof_is")
