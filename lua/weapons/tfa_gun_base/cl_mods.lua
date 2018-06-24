@@ -293,6 +293,22 @@ Purpose:  SWEP Construction Kit Compatibility / Basic Attachments.
 ]]
 --
 function SWEP:DrawWorldModel()
+	if self:GetStat("MaterialTable_W") and not self.MaterialCached_W then
+		self.MaterialCached_W = {}
+		self:SetSubMaterial()
+		local collectedKeys = table.GetKeys(self:GetStat("MaterialTable_W"))
+		table.Merge(collectedKeys, table.GetKeys(self:GetStat("MaterialTable")))
+
+		for _, k in pairs(collectedKeys) do
+			if (k == "BaseClass") then continue end
+			local v = self:GetStat("MaterialTable_W")[k]
+
+			if not self.MaterialCached_W[k] then
+				self:SetSubMaterial(k - 1, v)
+				self.MaterialCached_W[k] = true
+			end
+		end
+	end
 	local ply = self:GetOwner()
 
 	if IsValid(ply) and ply.SetupBones then

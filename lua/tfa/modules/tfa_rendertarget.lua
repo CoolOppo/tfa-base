@@ -69,7 +69,6 @@ if CLIENT then
 
 			if IsValid(oldWep) then
 				oldWep.MaterialCached_V = nil
-				oldWep.MaterialCached_W = nil
 			end
 
 			oldWep = wep
@@ -103,7 +102,6 @@ if CLIENT then
 		if not wep.MaterialCached then
 			wep.MaterialCached = true
 			wep.MaterialCached_V = nil
-			wep.MaterialCached_W = nil
 		end
 
 		local skinStat = wep:GetStat("Skin")
@@ -130,23 +128,6 @@ if CLIENT then
 
 				if not wep.MaterialCached_V[k] then
 					vm:SetSubMaterial(k - 1, v)
-					wep.MaterialCached_V[k] = true
-				end
-			end
-		end
-
-		if wep:GetStat("MaterialTable_W") and not wep.MaterialCached_W then
-			wep.MaterialCached_W = {}
-			wep:SetSubMaterial()
-			local collectedKeys = table.GetKeys(wep:GetStat("MaterialTable_W"))
-			table.Merge(collectedKeys, table.GetKeys(wep:GetStat("MaterialTable")))
-
-			for _, k in pairs(collectedKeys) do
-				if (k == "BaseClass") then continue end
-				local v = wep:GetStat("MaterialTable_W")[k]
-
-				if not wep.MaterialCached_V[k] then
-					wep:SetSubMaterial(k - 1, v)
 					wep.MaterialCached_V[k] = true
 				end
 			end
