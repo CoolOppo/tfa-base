@@ -112,6 +112,7 @@ if CLIENT then
 			if vm:GetSkin() ~= skinStat then
 				vm:SetSkin(wep:GetStat("Skin"))
 			end
+
 			if wep:GetSkin() ~= skinStat then
 				wep:SetSkin(wep:GetStat("Skin"))
 			end
@@ -120,42 +121,33 @@ if CLIENT then
 		if wep:GetStat("MaterialTable_V") and not wep.MaterialCached_V then
 			wep.MaterialCached_V = {}
 			vm:SetSubMaterial()
-
 			local collectedKeys = table.GetKeys(wep:GetStat("MaterialTable_V"))
-			table.Merge(collectedKeys,table.GetKeys(wep:GetStat("MaterialTable")))
+			table.Merge(collectedKeys, table.GetKeys(wep:GetStat("MaterialTable")))
 
 			for _, k in pairs(collectedKeys) do
-				if k ~= "BaseClass" then
-					local v = wep:GetStat("MaterialTable_V")[k]
-					if not wep.MaterialCached_V[k] then
-						vm:SetSubMaterial(k - 1, v)
-						wep.MaterialCached_V[k] = true
-					end
+				if (k == "BaseClass") then continue end
+				local v = wep:GetStat("MaterialTable_V")[k]
+
+				if not wep.MaterialCached_V[k] then
+					vm:SetSubMaterial(k - 1, v)
+					wep.MaterialCached_V[k] = true
 				end
 			end
 		end
 
 		if wep:GetStat("MaterialTable_W") and not wep.MaterialCached_W then
 			wep.MaterialCached_W = {}
-
-			local collectedKeys = table.GetKeys(wep:GetStat("MaterialTable_W"))
-			table.Merge(collectedKeys,table.GetKeys(wep:GetStat("MaterialTable")))
-
-			if #collectedKeys >= 1 and #wep:GetMaterials() <= 1 then
-				wep:SetMaterial(wep:GetStat("MaterialTable_W")[1])
-			else
-				wep:SetMaterial("")
-			end
-
 			wep:SetSubMaterial()
+			local collectedKeys = table.GetKeys(wep:GetStat("MaterialTable_W"))
+			table.Merge(collectedKeys, table.GetKeys(wep:GetStat("MaterialTable")))
 
 			for _, k in pairs(collectedKeys) do
-				if k ~= "BaseClass" then
-					local v = wep:GetStat("MaterialTable_W")[k]
-					if not wep.MaterialCached_W[k] then
-						wep:SetSubMaterial(k - 1, v)
-						wep.MaterialCached_W[k] = true
-					end
+				if (k == "BaseClass") then continue end
+				local v = wep:GetStat("MaterialTable_W")[k]
+
+				if not wep.MaterialCached_V[k] then
+					wep:SetSubMaterial(k - 1, v)
+					wep.MaterialCached_V[k] = true
 				end
 			end
 		end
@@ -184,7 +176,6 @@ if CLIENT then
 		end
 
 		TFA.LastRTUpdate = UnPredictedCurTime() + 0.01
-
 		render.PushRenderTarget(tgt)
 		render.Clear(0, 0, 0, 0, true, true)
 		render.Clear(0, 0, 0, 255, true, true)
