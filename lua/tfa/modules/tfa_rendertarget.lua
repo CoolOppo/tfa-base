@@ -97,11 +97,12 @@ if CLIENT then
 			return
 		end
 
-		if not IsValid(wep) or not wep.IsTFAWeapon then return end
+		if not IsValid(wep) or not wep:IsTFA() then return end
 
 		if not wep.MaterialCached then
 			wep.MaterialCached = true
 			wep.MaterialCached_V = nil
+			wep.MaterialCached_W = nil
 		end
 
 		local skinStat = wep:GetStat("Skin")
