@@ -133,14 +133,29 @@ function SWEP:CanAttach(attn)
 	end
 
 	if self.AttachmentDependencies[attn] then
-		for k, v in pairs(self.AttachmentDependencies[attn]) do
-			if k ~= "BaseClass" and (not self:IsAttached(v)) then return false end
+		local t = self.AttachmentDependencies[attn]
+
+		if isstring(t) then
+			if t ~= "BaseClass" and not self:IsAttached(t) then return false end
+		elseif istable(t) then
+			t.type = t.type or "OR"
+
+			if t.type == "AND" then
+				for k, v in pairs(self.AttachmentDependencies[attn]) do
+					if k ~= "BaseClass" and k ~= "type" and not self:IsAttached(v) then return false end
+				end
+			else
+				local cnt = 0
+				for k, v in pairs(self.AttachmentDependencies[attn]) do
+					if k ~= "BaseClass" and k ~= "type" and self:IsAttached(v) then cnt = cnt + 1 end
+				end
+				if cnt == 0 then return false end
+			end
 		end
 	end
 
 	return true
 end
-
 function SWEP:GetStatRecursive(srctbl, stbl, ...)
 	stbl = table.Copy(stbl)
 
