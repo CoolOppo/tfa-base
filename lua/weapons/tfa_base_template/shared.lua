@@ -288,8 +288,8 @@ SWEP.Attachments = {
 	--[ORDER] = = { atts = { "si_eotech" }, sel = 0 }
 	--sel allows you to have an attachment pre-selected, and is used internally by the base to show which attachment is selected in each category.
 }
-SWEP.AttachmentDependencies = {}--{["si_acog"] = {"bg_rail"}}
-SWEP.AttachmentExclusions = {}--{ ["si_iron"] = {"bg_heatshield"} }
+SWEP.AttachmentDependencies = {} --{["si_acog"] = {"bg_rail", ["type"] = "OR"}}--type could also be AND to require multiple
+SWEP.AttachmentExclusions = {} --{ ["si_iron"] = { [1] = "bg_heatshield"} }
 --[[MISC INFO FOR MODELERS]]--
 --[[
 
