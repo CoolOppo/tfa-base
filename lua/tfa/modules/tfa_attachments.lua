@@ -83,7 +83,14 @@ if CLIENT then
 	end)
 end
 
-function TFARegisterAttachment(att)
+function TFA.Attachments.Register(id, att)
+	if istable(id) then
+		att = id
+		id = att.ID
+	end
+
+	att.ID = att.ID or id
+
 	if att.ID and att.ID ~= "base" then
 		att.Base = att.Base or "base"
 	end
@@ -91,6 +98,7 @@ function TFARegisterAttachment(att)
 	TFA.Attachments.Atts[att.ID or att.Name] = att
 end
 
+TFARegisterAttachment = TFA.Attachments.Register
 TFA.Attachments.Path = "tfa/att/"
 TFA_ATTACHMENT_ISUPDATING = false
 
@@ -168,17 +176,17 @@ function TFAUpdateAttachments()
 			include(v)
 		end
 
-		TFARegisterAttachment(ATTACHMENT)
+		TFA.Attachments.Register(ATTACHMENT)
 		ATTACHMENT = nil
-	end
-
-	for _, v in pairs(TFA.Attachments.Atts) do
-		patchInheritance(v)
 	end
 
 	ProtectedCall(function()
 		hook.Run("TFAAttachmentsLoaded")
 	end)
+
+	for _, v in pairs(TFA.Attachments.Atts) do
+		patchInheritance(v)
+	end
 
 	TFA_ATTACHMENT_ISUPDATING = false
 end
