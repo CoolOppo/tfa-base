@@ -515,24 +515,26 @@ Returns:  True/False to allow holster.  Useful for animations.
 Purpose:  Standard SWEP Function
 ]]
 function SWEP:Holster(target)
-	local v = hook.Run("TFA_PreHolster",self)
-	if v ~= nil then
-		return v
-	end
-	if self.Owner:IsNPC() then
-		return
+	local v = hook.Run("TFA_PreHolster", self)
+	if v ~= nil then return v end
+	if self.Owner:IsNPC() then return end
+
+	if not IsValid(target) then
+		self.InspectingProgress = 0
+
+		return true
 	end
 
-	if not IsValid(target) then return true end
 	if not IsValid(self) then return end
 	ct = l_CT()
 	stat = self:GetStatus()
 
 	if not TFA.Enum.HolsterStatus[stat] then
-		if stat == TFA.GetStatus("reloading_wait") and self:Clip1() <= self:GetStat("Primary.ClipSize") and ( not self:GetStat("DisableChambering") ) and ( not self:GetStat("Shotgun") ) then
+		if stat == TFA.GetStatus("reloading_wait") and self:Clip1() <= self:GetStat("Primary.ClipSize") and (not self:GetStat("DisableChambering")) and (not self:GetStat("Shotgun")) then
 			self:ResetFirstDeploy()
+
 			if game.SinglePlayer() then
-				self:CallOnClient("ResetFirstDeploy","")
+				self:CallOnClient("ResetFirstDeploy", "")
 			end
 		end
 
@@ -543,25 +545,27 @@ function SWEP:Holster(target)
 		end
 
 		self:SetStatus(TFA.Enum.STATUS_HOLSTER)
+
 		if success then
-			self:SetStatusEnd( ct + self:GetActivityLength( tanim ) )
+			self:SetStatusEnd(ct + self:GetActivityLength(tanim))
 		else
-			self:SetStatusEnd( ct + self:GetStat("ProceduralHolsterTime") / self:NZAnimationSpeed( ACT_VM_HOLSTER ) )
+			self:SetStatusEnd(ct + self:GetStat("ProceduralHolsterTime") / self:NZAnimationSpeed(ACT_VM_HOLSTER))
 		end
+
 		return false
 	elseif stat == TFA.Enum.STATUS_HOLSTER_READY or stat == TFA.Enum.STATUS_HOLSTER_FINAL then
+		self.InspectingProgress = 0
+
 		return true
 	end
 end
 
 function SWEP:FinishHolster()
-	local v2 = hook.Run("TFA_Holster",self)
-	if self.Owner:IsNPC() then
-		return
-	end
-	if v2 ~= nil then
-		return v2
-	end
+	local v2 = hook.Run("TFA_Holster", self)
+	self.InspectingProgress = 0
+	if self.Owner:IsNPC() then return end
+	if v2 ~= nil then return v2 end
+
 	if SERVER then
 		local ent = self:GetSwapTarget()
 		self:CleanParticles()
