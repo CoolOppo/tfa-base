@@ -525,7 +525,8 @@ local RicochetChanceEnum = {
 	[MAT_SAND] = 0.01,
 	[MAT_CONCRETE] = 0.15,
 	[MAT_METAL] = 0.7,
-	[MAT_DEFAULT] = 0.5
+	[MAT_DEFAULT] = 0.5,
+	[MAT_FLESH] = 0.0
 }
 
 function SWEP.MainBullet:Ricochet(ply, traceres, dmginfo, weapon)
@@ -541,29 +542,33 @@ function SWEP.MainBullet:Ricochet(ply, traceres, dmginfo, weapon)
 	local ricothreshold = 0.6
 	ricochetchance = math.Clamp(ricochetchance * ( 1 + math.Clamp(1 - (dp + ricothreshold), 0, 1) ), 0, 1)
 	if dp <= ricochetchance and math.Rand(0, 1) < ricochetchance then
-		self.Damage = self.Damage * 0.5
-		self.Force = self.Force * 0.5
-		self.Num = 1
-		self.Spread = vector_origin
-		self.Src = traceres.HitPos
-		self.Dir = ((2 * traceres.HitNormal * dp) + traceres.Normal) + (VectorRand() * 0.02)
-		self.Tracer = 0
+		local ric = {}
+		ric.Ricochet = self.Ricochet
+		ric.Penetrate = self.Penetrate
+		ric.MakeDoor = self.MakeDoor
+		ric.Damage = self.Damage * 0.5
+		ric.Force = self.Force * 0.5
+		ric.Num = 1
+		ric.Spread = vector_origin
+		ric.Tracer = 0
+		ric.Src = traceres.HitPos
+		ric.Dir = ((2 * traceres.HitNormal * dp) + traceres.Normal) + (VectorRand() * 0.02)
+		ric.PenetrationCount = self.PenetrationCount + 1
 
 		if TFA.GetRicochetEnabled() then
 			local fx = EffectData()
-			fx:SetOrigin(self.Src)
-			fx:SetNormal(self.Dir)
+			fx:SetOrigin(ric.Src)
+			fx:SetNormal(ric.Dir)
 			fx:SetMagnitude(riccbak)
 			util.Effect("tfa_ricochet", fx)
 		end
 
 		timer.Simple(0, function()
 			if IsValid(ply) then
-				BallisticFirebullet(ply, self, true)
+				BallisticFirebullet(ply, ric, true)
 			end
 		end)
 
-		self.PenetrationCount = self.PenetrationCount + 1
 
 		return true
 	end
