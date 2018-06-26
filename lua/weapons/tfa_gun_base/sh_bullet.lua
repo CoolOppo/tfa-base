@@ -460,6 +460,7 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon)
 	bul.Force = self.Force * mfac
 	bul.Damage = self.Damage * mfac
 	bul.Penetrate = self.Penetrate
+	bul.MakeDoor = self.MakeDoor
 	bul.HandleDoor = self.HandleDoor
 	bul.Ricochet = self.Ricochet
 	bul.Spread = self.Spread / mfac
@@ -546,6 +547,7 @@ function SWEP.MainBullet:Ricochet(ply, traceres, dmginfo, weapon)
 		ric.Ricochet = self.Ricochet
 		ric.Penetrate = self.Penetrate
 		ric.MakeDoor = self.MakeDoor
+		ric.HandleDoor = self.HandleDoor
 		ric.Damage = self.Damage * 0.5
 		ric.Force = self.Force * 0.5
 		ric.Num = 1
