@@ -183,8 +183,8 @@ SWEP.SprintHoldTypeOverride = "" --This variable overrides the sprint holdtype, 
 
 SWEP.StatusLengthOverride = {} --Changes the status delay of a given animation; only used on reloads.  Otherwise, use SequenceLengthOverride or one of the others
 SWEP.SequenceLengthOverride = {} --Changes both the status delay and the nextprimaryfire of a given animation
-SWEP.SequenceRateOverride = {} --Like above but changes animation length to a target
-SWEP.SequenceRateOverrideScaled = {} --Like above but scales animation length rather than being absolute
+SWEP.SequenceTimeOverride = {} --Like above but changes animation length to a target
+SWEP.SequenceRateOverride = {} --Like above but scales animation length rather than being absolute
 
 SWEP.ProceduralHoslterEnabled = nil
 SWEP.ProceduralHolsterTime = 0.3

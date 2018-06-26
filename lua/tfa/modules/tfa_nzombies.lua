@@ -20,8 +20,48 @@ if nzombies then
 	cv_melee_basefactor = CreateConVar("sv_tfa_nz_melee_multiplier", "0.65", {FCVAR_SERVER_CAN_EXECUTE, FCVAR_REPLICATED}, "Base damage scale for TFA Melees.")
 	cv_melee_berserkscale = CreateConVar("sv_tfa_nz_melee_immunity", "0.67", {FCVAR_SERVER_CAN_EXECUTE, FCVAR_REPLICATED}, "Take X% damage from zombies while you're melee.")
 	--cv_melee_juggscale = CreateConVar("sv_tfa_nz_melee_juggernaut", "1.5", {FCVAR_SERVER_CAN_EXECUTE, FCVAR_REPLICATED}, "Do X% damage to zombies while you're jug.")
+	hook.Add("TFA_AnimationRate","NZBase",function(wep,act,rate)
+		if wep:OwnerIsValid() and wep:GetOwner().HasPerk and wep:GetOwner():HasPerk("speed") and wep.SpeedColaActivities[ ani ] then
+			rate = rate * wep.SpeedColaFactor
+		end
+		if wep:OwnerIsValid() and wep:GetOwner().HasPerk and wep:GetOwner():HasPerk("dtap") and wep.DTapActivities[ ani ] then
+			rate = rate * wep.DTapSpeed
+		end
+		if wep:OwnerIsValid() and wep:GetOwner().HasPerk and wep:GetOwner():HasPerk("dtap2") and wep.DTapActivities[ ani ] then
+			rate = rate * wep.DTap2Speed
+		end
+		return rate
+	end)
+	hook.Add("TFA_Deploy","NZBase",function(wep)
+		local pap = wep:GetPaP()
+		wep.OldPaP = pap
+		local spd2 = wep:OwnerIsValid() and wep:GetOwner().HasPerk and wep:GetOwner():HasPerk("speed")
+		if pap and pap ~= wep.OldPaP then
+			if AddPackAPunchName and wep.NZPaPName and not wep.HasAddedNZName then
+				AddPackAPunchName( wep.ClassName, wep.NZPaPName )
+				wep.HasAddedNZName = true
+			end
+			if wep.NZPaPName and wep:GetPaP() then
+				wep.PrintName = wep.NZPaPName
+				wep:SetNW2String("PrintName",wep.NZPaPName)
+			end
+			local pn = wep:GetNW2String("PrintName")
+			if pn and pn ~= "" then
+				wep.PrintName = pn
+			end
+			wep:ClearStatCache()
+			timer.Simple(0.1,function()
+				if IsValid(wep) then
+					wep:ClearStatCache()
+				end
+			end)
+		end
+		if spd2 ~= wep.OldSpCola then
+			wep:ClearStatCache()
+		end
+		wep.OldSpCola = spd2
+	end)
 end
-
 --[[
 local function SpreadFix()
 

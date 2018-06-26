@@ -7,9 +7,6 @@ SWEP.data = {}
 SWEP.data.ironsights = 0
 SWEP.Primary.Directional = false
 SWEP.Primary.Attacks = {}
-SWEP.IsMelee = true
-SWEP.Precision = 9 --Traces to use per attack
-local l_CT = CurTime
 --[[{
 {
 ["act"] = ACT_VM_HITLEFT, -- Animation; ACT_VM_THINGY, ideally something unique per-sequence
@@ -61,6 +58,9 @@ SWEP.Secondary.Attacks = {
 }
 ]]
 --
+SWEP.IsMelee = true
+SWEP.Precision = 9 --Traces to use per attack
+local l_CT = CurTime
 SWEP.Primary.MaxCombo = 3 --Max amount of times you'll attack by simply holding down the mouse; -1 to unlimit
 SWEP.Secondary.MaxCombo = 3 --Max amount of times you'll attack by simply holding down the mouse; -1 to unlimit
 SWEP.CanBlock = false
@@ -147,8 +147,27 @@ function SWEP:Deploy()
 	self:SetVPTime(-1)
 	self.up_hat = false
 	self:SetComboCount(0)
+	self:AddNZAnimations()
 
 	return BaseClass.Deploy(self)
+end
+
+function SWEP:AddNZAnimations()
+	if self.Primary.Attacks then
+		for k, v in pairs(self.Primary.Attacks) do
+			if v.act then
+				self.DTapActivities[v.act] = true
+			end
+		end
+	end
+
+	if self.Secondary.Attacks then
+		for k, v in pairs(self.Secondary.Attacks) do
+			if v.act then
+				self.DTapActivities[v.act] = true
+			end
+		end
+	end
 end
 
 function SWEP:CanInterruptShooting()
@@ -592,12 +611,12 @@ function SWEP:Strike(attk, precision)
 	end
 
 	if attack.kickback and (hitFlesh or hitWorld) then
-		self:SendViewModelAnim(attack.kickback, self:NZAnimationSpeed(ACT_VM_PRIMARYATTACK))
+		self:SendViewModelAnim(attack.kickback)
 	end
 end
 
 function SWEP:PlaySwing(act)
-	self:SendViewModelAnim(act, self:NZAnimationSpeed(ACT_VM_PRIMARYATTACK))
+	self:SendViewModelAnim(act)
 
 	return true, act
 end
@@ -689,8 +708,8 @@ function SWEP:PrimaryAttack()
 		self:GetOwner():ViewPunch(attack.viewpunch)
 	elseif attack.snd_delay then
 		if IsFirstTimePredicted() then
-			self.AttackSoundTime = CurTime() + attack.snd_delay * self:GetAnimationRate(ACT_VM_PRIMARYATTACK)
-			self.VoxSoundTime = CurTime() + attack.snd_delay * self:GetAnimationRate(ACT_VM_PRIMARYATTACK)
+			self.AttackSoundTime = CurTime() + attack.snd_delay / self:GetAnimationRate(attack.act)
+			self.VoxSoundTime = CurTime() + attack.snd_delay / self:GetAnimationRate(attack.act)
 		end
 
 		--[[
@@ -709,15 +728,15 @@ function SWEP:PrimaryAttack()
 		self:SetVPPitch(attack.viewpunch.p)
 		self:SetVPYaw(attack.viewpunch.y)
 		self:SetVPRoll(attack.viewpunch.r)
-		self:SetVPTime(CurTime() + attack.snd_delay * self:GetAnimationRate(ACT_VM_PRIMARYATTACK))
+		self:SetVPTime(CurTime() + attack.snd_delay / self:GetAnimationRate(attack.act))
 		self:GetOwner():ViewPunch(-Angle(attack.viewpunch.p / 2, attack.viewpunch.y / 2, attack.viewpunch.r / 2))
 	end
 
 	self.up_hat = false
 	self:SetStatus(TFA.Enum.STATUS_SHOOTING)
 	self:SetMelAttackID(ind)
-	self:SetStatusEnd(CurTime() + attack.delay)
-	self:SetNextPrimaryFire(CurTime() + attack["end"])
+	self:SetStatusEnd(CurTime() + attack.delay / self:GetAnimationRate(attack.act))
+	self:SetNextPrimaryFire(CurTime() + attack["end"] / self:GetAnimationRate(attack.act))
 	self:GetOwner():SetAnimation(PLAYER_ATTACK1)
 	self:SetComboCount(self:GetComboCount() + 1)
 end
@@ -810,8 +829,8 @@ function SWEP:SecondaryAttack()
 		self:GetOwner():ViewPunch(attack.viewpunch)
 	elseif attack.snd_delay then
 		if IsFirstTimePredicted() then
-			self.AttackSoundTime = CurTime() + attack.snd_delay * self:GetAnimationRate(ACT_VM_PRIMARYATTACK)
-			self.VoxSoundTime = CurTime() + attack.snd_delay * self:GetAnimationRate(ACT_VM_PRIMARYATTACK)
+			self.AttackSoundTime = CurTime() + attack.snd_delay / self:GetAnimationRate(attack.act)
+			self.VoxSoundTime = CurTime() + attack.snd_delay / self:GetAnimationRate(attack.act)
 		end
 
 		--[[
@@ -830,15 +849,15 @@ function SWEP:SecondaryAttack()
 		self:SetVPPitch(attack.viewpunch.p)
 		self:SetVPYaw(attack.viewpunch.y)
 		self:SetVPRoll(attack.viewpunch.r)
-		self:SetVPTime(CurTime() + attack.snd_delay * self:GetAnimationRate(ACT_VM_PRIMARYATTACK))
+		self:SetVPTime(CurTime() + attack.snd_delay / self:GetAnimationRate(attack.act))
 		self:GetOwner():ViewPunch(-Angle(attack.viewpunch.p / 2, attack.viewpunch.y / 2, attack.viewpunch.r / 2))
 	end
 
 	self.up_hat = false
 	self:SetStatus(TFA.Enum.STATUS_SHOOTING)
 	self:SetMelAttackID(-ind)
-	self:SetStatusEnd(CurTime() + attack.delay)
-	self:SetNextPrimaryFire(CurTime() + attack["end"])
+	self:SetStatusEnd(CurTime() + attack.delay / self:GetAnimationRate(attack.act))
+	self:SetNextPrimaryFire(CurTime() + attack["end"] / self:GetAnimationRate(attack.act))
 	self:GetOwner():SetAnimation(PLAYER_ATTACK1)
 	self:SetComboCount(self:GetComboCount() + 1)
 end
@@ -867,7 +886,7 @@ function SWEP:Reload(released, ovr, ...)
 	if (self.SequenceEnabled[ACT_VM_FIDGET] or self.InspectionActions) and self:GetStatus() == TFA.Enum.STATUS_IDLE then
 		self:SetStatus(TFA.Enum.STATUS_FIDGET)
 		local _, tanim = self:ChooseInspectAnim()
-		self:SetStatusEnd(l_CT() + (self.SequenceLengthOverride[tanim] or self.OwnerViewModel:SequenceDuration()))
+		self:SetStatusEnd(l_CT() + self:GetActivityLength(tanim))
 	end
 end
 

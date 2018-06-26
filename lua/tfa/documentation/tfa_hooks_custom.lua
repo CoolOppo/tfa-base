@@ -37,6 +37,13 @@ TFA_TranslateFOV(wepom,fov) --return a value to modify the fov with your own stu
 TFA_PreInitAttachments(wepom) --modify attachments here
 TFA_PostInitAttachments(wepom) --runs before building attachment cache
 TFA_FinalInitAttachments(wepom) --final attachment init hook
+--animation
+TFA_AnimationRate(wep,act,rate) --return modified rate value here
+--effects
+TFA_MakeShell(wep) --return something to cancel making a shell.  runs predicted
+TFA_EjectionSmoke(wep) --return something to cancel making an effect.  runs predicted
+TFA_MuzzleSmoke(wep) --return something to cancel making an effect.  runs predicted
+TFA_MuzzleFlash(wep) --return something to cancel making an effect.  runs predicted
 --ironsights
 TFA_IronSightSounds(wepom) --called when we actually play a sound; return to prevent this
 --HUD

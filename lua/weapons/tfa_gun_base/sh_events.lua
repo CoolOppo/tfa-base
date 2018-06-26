@@ -45,7 +45,7 @@ function SWEP:ProcessEvents()
 
 	if not evtbl then return end
 	for _, v in pairs(evtbl) do
-		if v.called or l_CT() < self.EventTimer + v.time * self:GetAnimationRate( self.LastAct or self:GetLastActivity() ) then continue end
+		if v.called or l_CT() < self.EventTimer + v.time / self:GetAnimationRate( self.LastAct or self:GetLastActivity() ) then continue end
 		v.called = true
 
 		if v.client == nil then

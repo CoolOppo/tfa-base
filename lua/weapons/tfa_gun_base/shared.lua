@@ -80,8 +80,8 @@ SWEP.SmokeParticle = nil --Smoke particle (ID within the PCF), defaults to somet
 
 SWEP.StatusLengthOverride = {} --Changes the status delay of a given animation; only used on reloads.  Otherwise, use SequenceLengthOverride or one of the others
 SWEP.SequenceLengthOverride = {} --Changes both the status delay and the nextprimaryfire of a given animation
-SWEP.SequenceRateOverride = {} --Like above but changes animation length to a target
-SWEP.SequenceRateOverrideScaled = {} --Like above but scales animation length rather than being absolute
+SWEP.SequenceTimeOverride = {} --Like above but changes animation length to a target
+SWEP.SequenceRateOverride = {} --Like above but scales animation length rather than being absolute
 
 SWEP.BlowbackEnabled = false --Enable Blowback?
 SWEP.BlowbackVector = Vector(0, -1, 0) --Vector to move bone <or root> relative to bone <or view> orientation.
@@ -327,7 +327,6 @@ Purpose:  Standard SWEP Function
 ]]
 sp = game.SinglePlayer()
 
-local nzombies = string.lower( engine.ActiveGamemode() or "" ) == "nzombies"
 local PistolHoldTypes = {
 	["pistol"] = true,
 	["357"] = true,
@@ -375,10 +374,6 @@ function SWEP:Initialize()
 
 	if self:GetStat("Skin") and isnumber(self:GetStat("Skin")) then
 		self:SetSkin(self:GetStat("Skin"))
-	end
-
-	if nzombies then
-		self:NZDeploy()
 	end
 
 	if SERVER and self.Owner:IsNPC() then
@@ -494,9 +489,6 @@ function SWEP:Deploy()
 		self.OwnerViewModel:SetSkin(self:GetStat("Skin"))
 		self:SetSkin(self:GetStat("Skin"))
 	end
-	if nzombies then
-		self:NZDeploy()
-	end
 
 	self:InitAttachments()
 	local v = hook.Run("TFA_Deploy",self)
@@ -549,7 +541,7 @@ function SWEP:Holster(target)
 		if success then
 			self:SetStatusEnd(ct + self:GetActivityLength(tanim))
 		else
-			self:SetStatusEnd(ct + self:GetStat("ProceduralHolsterTime") / self:NZAnimationSpeed(ACT_VM_HOLSTER))
+			self:SetStatusEnd(ct + self:GetStat("ProceduralHolsterTime") / self:GetAnimationRate(ACT_VM_HOLSTER))
 		end
 
 		return false
@@ -745,7 +737,7 @@ function SWEP:Think2()
 			lact = self:GetLastActivity()
 			if self:GetActivityLength(lact,true) < self:GetActivityLength(lact,false) - 0.01 then
 				sht = self:GetStat("ShellTime")
-				if sht then sht = sht / self:NZAnimationSpeed(ACT_VM_RELOAD) end
+				if sht then sht = sht / self:GetAnimationRate(ACT_VM_RELOAD) end
 				waittime = ( sht or self:GetActivityLength( lact , false ) ) -  self:GetActivityLength( lact , true )
 			else
 				waittime = 0
@@ -1304,7 +1296,7 @@ function SWEP:SecondaryAttack()
 end
 
 function SWEP:GetLegacyReloads()
-	return legacy_reloads_cv:GetBool() --nzombies or legacy_reloads_cv:GetBool()
+	return legacy_reloads_cv:GetBool()
 end
 
 function SWEP:Reload(released)
@@ -1450,7 +1442,7 @@ function SWEP:LoadShell( )
 		self:SetStatusEnd(ct + self:GetActivityLength( tanim, true ) )
 	else
 		sht = self:GetStat("ShellTime")
-		if sht then sht = sht / self:NZAnimationSpeed(ACT_VM_RELOAD) end
+		if sht then sht = sht / self:GetAnimationRate(ACT_VM_RELOAD) end
 		self:SetStatusEnd(ct + ( sht or self:GetActivityLength( tanim, true ) ) )
 	end
 	return TFA.Enum.STATUS_RELOADING_SHOTGUN_LOOP

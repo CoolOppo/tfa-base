@@ -40,7 +40,7 @@ function SWEP:MakeShellBridge(ifp)
 
 	if ifp then
 		if self.LuaShellEjectDelay > 0 then
-			self.LuaShellRequestTime = CurTime() + self.LuaShellEjectDelay / self:NZAnimationSpeed(ACT_VM_PRIMARYATTACK)
+			self.LuaShellRequestTime = CurTime() + self.LuaShellEjectDelay / self:GetAnimationRate(ACT_VM_PRIMARYATTACK)
 		else
 			self:MakeShell()
 		end
@@ -50,6 +50,10 @@ end
 SWEP.ShellEffectOverride = nil
 
 function SWEP:MakeShell()
+	local retVal = hook.Run("TFA_MakeShell",self)
+	if retVal ~= nil then
+		return retVal
+	end
 	if self:GetStat("ShellEffectOverride") then
 		shelltype = self:GetStat("ShellEffectOverride")
 	elseif TFA.GetLegacyShellsEnabled() then
@@ -129,6 +133,10 @@ Purpose:  FX
 ]]
 --
 function SWEP:EjectionSmoke(ovrr)
+	local retVal = hook.Run("TFA_EjectionSmoke",self)
+	if retVal ~= nil then
+		return retVal
+	end
 	if TFA.GetEJSmokeEnabled() and (self:GetStat("EjectionSmokeEnabled") or ovrr) then
 		local vm = self:IsFirstPerson() and self.OwnerViewModel or self
 
@@ -173,6 +181,10 @@ Purpose:  FX
 ]]
 --
 function SWEP:MuzzleSmoke(spv)
+	local retVal = hook.Run("TFA_MuzzleSmoke",self)
+	if retVal ~= nil then
+		return retVal
+	end
 	if self.SmokeParticle == nil then
 		self.SmokeParticle = self.SmokeParticles[self.DefaultHoldType or self.HoldType]
 	end
@@ -190,6 +202,10 @@ function SWEP:MuzzleSmoke(spv)
 end
 
 function SWEP:MuzzleFlashCustom(spv)
+	local retVal = hook.Run("TFA_MuzzleFlash",self)
+	if retVal ~= nil then
+		return retVal
+	end
 	local att = self:GetMuzzleAttachment()
 	fx = EffectData()
 	fx:SetOrigin(self:GetOwner():GetShootPos())

@@ -28,58 +28,6 @@ SWEP.DTapSpeed = 1 / 0.8
 SWEP.DTap2Speed = 1 / 0.8
 
 local nzombies
-local spd
-
-function SWEP:NZAnimationSpeed( ani )
-	if nzombies == nil then
-		nzombies = engine.ActiveGamemode() == "nzombies"
-	end
-	spd = 1
-	--if not nzombies then return spd end
-	if self:OwnerIsValid() and self:GetOwner().HasPerk and self:GetOwner():HasPerk("speed") and self.SpeedColaActivities[ ani ] then
-		spd = spd * self.SpeedColaFactor
-	end
-	if self:OwnerIsValid() and self:GetOwner().HasPerk and self:GetOwner():HasPerk("dtap") and self.DTapActivities[ ani ] then
-		spd = spd * self.DTapSpeed
-	end
-	if self:OwnerIsValid() and self:GetOwner().HasPerk and self:GetOwner():HasPerk("dtap2") and self.DTapActivities[ ani ] then
-		spd = spd * self.DTap2Speed
-	end
-	return spd
-end
-
-function SWEP:NZDeploy()
-	if nzombies == nil then
-	   nzombies = engine.ActiveGamemode() == "nzombies"
-	end
-	local pap = self:GetPaP()
-	self.OldPaP = pap
-	local spd2 = self:OwnerIsValid() and self:GetOwner().HasPerk and self:GetOwner():HasPerk("speed")
-	if pap and pap ~= self.OldPaP then
-		if AddPackAPunchName and self.NZPaPName and not self.HasAddedNZName then
-			AddPackAPunchName( self.ClassName, self.NZPaPName )
-			self.HasAddedNZName = true
-		end
-		if self.NZPaPName and self:GetPaP() then
-			self.PrintName = self.NZPaPName
-			self:SetNW2String("PrintName",self.NZPaPName)
-		end
-		local pn = self:GetNW2String("PrintName")
-		if pn and pn ~= "" then
-			self.PrintName = pn
-		end
-		self:ClearStatCache()
-		timer.Simple(0.1,function()
-			if IsValid(self) then
-				self:ClearStatCache()
-			end
-		end)
-	end
-	if spd2 ~= self.OldSpCola then
-		self:ClearStatCache()
-	end
-	self.OldSpCola = spd2
-end
 
 local count, upperclamp
 

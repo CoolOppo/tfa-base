@@ -203,18 +203,27 @@ function SWEP:ChooseAnimation(key)
 	return kv["type"], kv["value"]
 end
 
+local sqto, sqro
+function SWEP:GetAnimationRate( ani )
+	local rate = 1
+	if ani < 0 then return 0 end
+	local nm = self.OwnerViewModel:GetSequenceName(self.OwnerViewModel:SelectWeightedSequence(ani))
+	sqto = self:GetStat("SequenceTimeOverride." .. nm) or self:GetStat("SequenceTimeOverride." .. (ani or "0"))
+	sqro = self:GetStat("SequenceRateOverride." .. nm) or self:GetStat("SequenceRateOverride." .. (ani or "0"))
+	if sqro then
+		rate = rate * sqro
+	elseif sqto then
+		local t = self:GetActivityLengthRaw(ani,false)
+		if t then
+			rate = rate * t / sqto
+		end
+	end
+	rate = hook.Run("TFA_AnimationRate",self,ani,rate) or rate
+	return rate
+end
+
 function SWEP:SendViewModelAnim(act, rate, targ, blend)
 	local vm = self.OwnerViewModel
-
-	if self.SequenceRateOverrideScaled[act] then
-		rate = self.SequenceRateOverrideScaled[act]
-		targ = false
-	end
-
-	if self.SequenceRateOverride[act] then
-		rate = self.SequenceRateOverride[act]
-		targ = true
-	end
 
 	if rate and not targ then
 		rate = math.max(rate, 0.0001)
@@ -225,9 +234,9 @@ function SWEP:SendViewModelAnim(act, rate, targ, blend)
 	end
 
 	if targ then
-		rate = rate / self:NZAnimationSpeed(act)
+		rate = rate / self:GetAnimationRate(act)
 	else
-		rate = rate * self:NZAnimationSpeed(act)
+		rate = rate * self:GetAnimationRate(act)
 	end
 
 	if act < 0 then return false, act end
@@ -311,17 +320,17 @@ function SWEP:SendViewModelSeq(seq, rate, targ, blend)
 
 	local act = vm:GetSequenceActivity(seq)
 
-	if self.SequenceRateOverrideScaled[seqold] then
-		rate = self.SequenceRateOverrideScaled[seqold]
-		targ = false
-	elseif self.SequenceRateOverrideScaled[act] then
-		rate = self.SequenceRateOverrideScaled[act]
-		targ = false
-	elseif self.SequenceRateOverride[seqold] then
+	if self.SequenceRateOverride[seqold] then
 		rate = self.SequenceRateOverride[seqold]
-		targ = true
+		targ = false
 	elseif self.SequenceRateOverride[act] then
 		rate = self.SequenceRateOverride[act]
+		targ = false
+	elseif self.SequenceTimeOverride[seqold] then
+		rate = self.SequenceTimeOverride[seqold]
+		targ = true
+	elseif self.SequenceTimeOverride[act] then
+		rate = self.SequenceTimeOverride[act]
 		targ = true
 	end
 
@@ -330,9 +339,9 @@ function SWEP:SendViewModelSeq(seq, rate, targ, blend)
 	end
 
 	if targ then
-		rate = rate / self:NZAnimationSpeed(act)
+		rate = rate / self:GetAnimationRate(act)
 	else
-		rate = rate * self:NZAnimationSpeed(act)
+		rate = rate * self:GetAnimationRate(act)
 	end
 
 	if seq < 0 then return false, act end

@@ -107,8 +107,9 @@ local rlcv = GetConVar("sv_tfa_reloads_enabled")
 local holding_result_cached = false
 local last_held_check = -1
 local sp = game.SinglePlayer()
-local sqlen
+local sqlen, slo, sqlo
 local nm
+
 --[[
 local sqind
 
@@ -124,21 +125,9 @@ function SWEP:TranslateSequenceActivityTable( tbl )
 end
 ]]
 --
-local slo, sqlo, sqro, sqros
-
 --, seq )
-function SWEP:GetActivityLength(tanim, status)
+function SWEP:GetActivityLengthRaw(tanim, status)
 	if not self:VMIV() then return 0 end
-	--[[
-	if not self.HasCachedIDs then
-		self:TranslateSequenceActivityTable( self.StatusLengthOverride )
-		self:TranslateSequenceActivityTable( self.SequenceLengthOverride )
-		self:TranslateSequenceActivityTable( self.SequenceRateOverride )
-		self:TranslateSequenceActivityTable( self.SequenceRateOverrideScaled )
-		self.HasCachedIDs = true
-	end
-	]]
-	--
 	tanim = tanim or self:GetLastActivity()
 	if tanim < 0 then return 0 end
 	nm = self.OwnerViewModel:GetSequenceName(self.OwnerViewModel:SelectWeightedSequence(tanim))
@@ -149,43 +138,22 @@ function SWEP:GetActivityLength(tanim, status)
 		sqlen = self.OwnerViewModel:SequenceDuration(self.OwnerViewModel:SelectWeightedSequenceSeeded(math.max(tanim or 1, 1), self:GetSeed()))
 	end
 
-	slo = self.StatusLengthOverride[nm] or self.StatusLengthOverride[tanim]
-	sqlo = self.SequenceLengthOverride[nm] or self.SequenceLengthOverride[tanim]
-	sqro = self.SequenceRateOverride[nm] or self.SequenceRateOverride[tanim]
-	sqros = self:GetStat("SequenceRateOverrideScaled." .. nm) or self:GetStat("SequenceRateOverrideScaled." .. (tanim or "0"))
+	slo = self:GetStat("StatusLengthOverride." .. nm) or self:GetStat("StatusLengthOverride." .. (tanim or "0"))
+	sqlo = self:GetStat("SequenceLengthOverride." .. nm) or self:GetStat("SequenceLengthOverride." .. (tanim or "0"))
 
-	--[[
-	slo = self:GetStat("StatusLengthOverride." .. nm ) or self:GetStat("StatusLengthOverride." .. act )
-	sqlo = self:GetStat("SequenceLengthOverride." .. nm ) or self:GetStat("SequenceLengthOverride." .. act )
-	sqro = self:GetStat("SequenceRateOverride." .. nm ) or self:GetStat("SequenceRateOverride." .. act )
-	sqros = self:GetStat("SequenceRateOverrideScaled." .. nm ) or self:GetStat("SequenceRateOverrideScaled." .. act )
-	]]
-	--
 	if status and slo then
 		sqlen = slo
 	elseif sqlo then
 		sqlen = sqlo
-	elseif sqro then
-		sqlen = sqro
-	elseif sqros then
-		sqlen = sqlen / sqros
 	end
-
-	sqlen = sqlen / self:NZAnimationSpeed(tanim)
 
 	return sqlen
 end
 
-function SWEP:GetAnimationRate(tanim)
-	sqlen = 1
-
-	if self.SequenceRateOverride[tanim] then
-		sqlen = self.SequenceRateOverride[tanim]
-	elseif self.SequenceRateOverrideScaled[tanim] then
-		sqlen = sqlen / self.SequenceRateOverrideScaled[tanim]
-	end
-
-	sqlen = sqlen / self:NZAnimationSpeed(tanim)
+function SWEP:GetActivityLength(tanim, status)
+	if not self:VMIV() then return 0 end
+	sqlen = self:GetActivityLengthRaw(tanim, status)
+	sqlen = sqlen / self:GetAnimationRate(tanim)
 
 	return sqlen
 end
@@ -553,7 +521,6 @@ end
 
 function SWEP:GetMuzzlePos(ignorepos)
 	fp = self:IsFirstPerson()
-
 	local vm = self.OwnerViewModel
 
 	if not IsValid(vm) then
@@ -663,12 +630,14 @@ function SWEP:CycleFireMode()
 
 	self:SetFireMode(fm)
 	local a = self:ChooseROFAnim()
+
 	if a then
 		self:SetNextPrimaryFire(l_CT() + self:GetActivityLength())
 	else
 		self:EmitSound("Weapon_AR2.Empty")
 		self:SetNextPrimaryFire(l_CT() + math.max(self:GetFireDelay(), 0.25))
 	end
+
 	self.BurstCount = 0
 	self:SetStatus(TFA.GetStatus("firemode"))
 	self:SetStatusEnd(self:GetNextPrimaryFire())
@@ -768,23 +737,19 @@ local penetration_hitmarker_cvar = GetConVar("sv_tfa_penetration_hitmarker")
 function SWEP:SendHitMarker(ply, traceres, dmginfo)
 	if not SERVER or not penetration_hitmarker_cvar:GetBool() then return end
 	if not IsValid(ply) or not ply:IsPlayer() then return end
-
 	net.Start("tfaHitmarker")
 	net.Send(ply)
 end
 
 SWEP.VMSeqCache = {}
-
 local vm -- are you fucking kidding me
+
 function SWEP:CheckVMSequence(seqname)
 	if not IsValid(self) then return false end
-
 	vm = self.OwnerViewModel
 	if not IsValid(vm) then return false end
-
 	local mdl = vm:GetModel()
 	if not mdl then return false end
-
 	self.VMSeqCache[mdl] = self.VMSeqCache[mdl] or {}
 
 	if self.VMSeqCache[mdl][seqname] == nil then
