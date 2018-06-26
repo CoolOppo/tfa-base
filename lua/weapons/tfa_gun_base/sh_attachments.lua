@@ -312,9 +312,9 @@ function SWEP:GetStat(stat, default)
 	end
 end
 
-function SWEP:SetTFAAttachment(cat, id, nw)
+function SWEP:SetTFAAttachment(cat, id, nw, force)
 	if (not self.Attachments[cat]) then return false end
-	if SERVER and (not self:CanAttach(self.Attachments[cat].atts[id] or "")) then return false end
+	if SERVER and not (self:CanAttach(self.Attachments[cat].atts[id] or "") or force) then return false end
 
 	if id ~= self.Attachments[cat].sel then
 		local att_old = TFA.Attachments.Atts[self.Attachments[cat].atts[self.Attachments[cat].sel] or -1]

@@ -21,13 +21,13 @@ if nzombies then
 	cv_melee_berserkscale = CreateConVar("sv_tfa_nz_melee_immunity", "0.67", {FCVAR_SERVER_CAN_EXECUTE, FCVAR_REPLICATED}, "Take X% damage from zombies while you're melee.")
 	--cv_melee_juggscale = CreateConVar("sv_tfa_nz_melee_juggernaut", "1.5", {FCVAR_SERVER_CAN_EXECUTE, FCVAR_REPLICATED}, "Do X% damage to zombies while you're jug.")
 	hook.Add("TFA_AnimationRate","NZBase",function(wep,act,rate)
-		if wep:OwnerIsValid() and wep:GetOwner().HasPerk and wep:GetOwner():HasPerk("speed") and wep.SpeedColaActivities[ ani ] then
+		if wep:OwnerIsValid() and wep:GetOwner().HasPerk and wep:GetOwner():HasPerk("speed") and wep.SpeedColaActivities[ act ] then
 			rate = rate * wep.SpeedColaFactor
 		end
-		if wep:OwnerIsValid() and wep:GetOwner().HasPerk and wep:GetOwner():HasPerk("dtap") and wep.DTapActivities[ ani ] then
+		if wep:OwnerIsValid() and wep:GetOwner().HasPerk and wep:GetOwner():HasPerk("dtap") and wep.DTapActivities[ act ] then
 			rate = rate * wep.DTapSpeed
 		end
-		if wep:OwnerIsValid() and wep:GetOwner().HasPerk and wep:GetOwner():HasPerk("dtap2") and wep.DTapActivities[ ani ] then
+		if wep:OwnerIsValid() and wep:GetOwner().HasPerk and wep:GetOwner():HasPerk("dtap2") and wep.DTapActivities[ act ] then
 			rate = rate * wep.DTap2Speed
 		end
 		return rate

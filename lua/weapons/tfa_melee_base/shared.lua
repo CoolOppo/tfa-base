@@ -154,7 +154,7 @@ end
 
 function SWEP:AddNZAnimations()
 	if self.Primary.Attacks then
-		for k, v in pairs(self.Primary.Attacks) do
+		for _, v in pairs(self.Primary.Attacks) do
 			if v.act then
 				self.DTapActivities[v.act] = true
 			end
@@ -162,7 +162,7 @@ function SWEP:AddNZAnimations()
 	end
 
 	if self.Secondary.Attacks then
-		for k, v in pairs(self.Secondary.Attacks) do
+		for _, v in pairs(self.Secondary.Attacks) do
 			if v.act then
 				self.DTapActivities[v.act] = true
 			end
