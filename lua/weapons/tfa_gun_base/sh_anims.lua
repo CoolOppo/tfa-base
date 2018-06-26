@@ -206,6 +206,7 @@ end
 local sqto, sqro
 function SWEP:GetAnimationRate( ani )
 	local rate = 1
+	if not ani then return end
 	if ani < 0 then return 0 end
 	local nm = self.OwnerViewModel:GetSequenceName(self.OwnerViewModel:SelectWeightedSequence(ani))
 	sqto = self:GetStat("SequenceTimeOverride." .. nm) or self:GetStat("SequenceTimeOverride." .. (ani or "0"))
