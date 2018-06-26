@@ -36,14 +36,20 @@ local function CloneTableRecursive(source, target)
 			if istable(target[k]) and target[k].functionTable then
 				local baseTable = target[k]
 				local t, index
-				for l,b in pairs(baseTable) do
+
+				for l, b in pairs(baseTable) do
 					if istable(b) then
 						t = b
 						index = l
 					end
 				end
-				if not t then t = {} end
-				CloneTableRecursive(v,t)
+
+				if not t then
+					t = {}
+				end
+
+				CloneTableRecursive(v, t)
+
 				if index then
 					baseTable[index] = t
 				else
@@ -55,15 +61,19 @@ local function CloneTableRecursive(source, target)
 			end
 		elseif isfunction(v) then
 			local temp
+
 			if target[k] and not istable(target[k]) then
 				temp = target[k]
 			end
+
 			target[k] = target[k] or {}
 			local t = target[k]
 			t.functionTable = true
+
 			if temp then
 				t[#t + 1] = temp
 			end
+
 			t[#t + 1] = v
 		else
 			if istable(target[k]) and target[k].functionTable then
@@ -76,20 +86,22 @@ local function CloneTableRecursive(source, target)
 end
 
 function SWEP:BuildAttachmentCache()
-	for _, v in pairs(self.Attachments) do
+	for k, v in pairs(self.Attachments) do
 		if v.atts then
 			for l, b in pairs(v.atts) do
-				self.AttachmentCache[b] = v.sel == l
+				self.AttachmentCache[b] = (v.sel == l) and k or false
 			end
 		end
 	end
+
 	table.Empty(self.AttachmentTableCache)
-	for attName,sel  in pairs(self.AttachmentCache) do
+
+	for attName, sel in pairs(self.AttachmentCache) do
 		if not sel then continue end
 		if not TFA.Attachments.Atts[attName] then continue end
 		local srctbl = TFA.Attachments.Atts[attName].WeaponTable
 		if not srctbl then continue end
-		CloneTableRecursive(srctbl,self.AttachmentTableCache)
+		CloneTableRecursive(srctbl, self.AttachmentTableCache)
 	end
 end
 
@@ -146,9 +158,13 @@ function SWEP:CanAttach(attn)
 				end
 			else
 				local cnt = 0
+
 				for k, v in pairs(self.AttachmentDependencies[attn]) do
-					if k ~= "BaseClass" and k ~= "type" and self:IsAttached(v) then cnt = cnt + 1 end
+					if k ~= "BaseClass" and k ~= "type" and self:IsAttached(v) then
+						cnt = cnt + 1
+					end
 				end
+
 				if cnt == 0 then return false end
 			end
 		end
@@ -156,6 +172,7 @@ function SWEP:CanAttach(attn)
 
 	return true
 end
+
 function SWEP:GetStatRecursive(srctbl, stbl, ...)
 	stbl = table.Copy(stbl)
 
@@ -175,21 +192,26 @@ function SWEP:GetStatRecursive(srctbl, stbl, ...)
 	if istable(val) and val.functionTable then
 		local t, final, nocache
 		nocache = false
+
 		for i = 1, table.Count(val) do
 			local v = val[i]
+
 			if isfunction(v) then
 				local nct
+
 				if not t then
-					t, final, nct = v(self,...)
+					t, final, nct = v(self, ...)
 				else
-					t, final, nct = v(self,t)
+					t, final, nct = v(self, t)
 				end
+
 				nocache = nocache or nct
 				if final then break end
 			elseif v then
 				t = v
 			end
 		end
+
 		if t then
 			return t, nocache
 		else
@@ -201,8 +223,6 @@ function SWEP:GetStatRecursive(srctbl, stbl, ...)
 		return ...
 	end
 end
-
-
 
 SWEP.StatCache_Blacklist = {
 	["ViewModelBoneMods"] = true,
@@ -230,8 +250,8 @@ local function mtbl(t1, t2)
 
 	return t
 end
-]]--
-
+]]
+--
 function SWEP:ClearStatCache(vn)
 	if vn then
 		self.StatCache[vn] = nil
@@ -292,10 +312,11 @@ function SWEP:GetStat(stat, default)
 		end
 
 		local cs = self:GetStatRecursive(self, stbl, istable(default) and table.Copy(default) or default)
-		local ns,nc
-		ns,nc = self:GetStatRecursive(self.AttachmentTableCache, stbl, cs)
+		local ns, nc
+		ns, nc = self:GetStatRecursive(self.AttachmentTableCache, stbl, cs)
+
 		if istable(ns) and istable(cs) then
-			cs = table.Merge(table.Copy(cs),ns)
+			cs = table.Merge(table.Copy(cs), ns)
 		else
 			cs = ns
 		end
@@ -312,9 +333,56 @@ function SWEP:GetStat(stat, default)
 	end
 end
 
+local ATTACHMENT_SORTING_DEPENDENCIES = false
+function SWEP:ForceAttachmentReqs(cat, id)
+	local attn = self.Attachments[cat].atts[id] or ""
+	if not ATTACHMENT_SORTING_DEPENDENCIES then
+		ATTACHMENT_SORTING_DEPENDENCIES = true
+		local related = {}
+
+		for k, v in pairs(self.AttachmentDependencies) do
+			if istable(v) then
+				for _, b in pairs(v) do
+					if k == attn or b == attn then
+						related[b] = true
+					end
+				end
+			elseif isstring(v) then
+				if k == attn or v == attn then
+					related[v] = true
+				end
+			end
+		end
+
+		for k, v in pairs(self.AttachmentExclusions) do
+			if istable(v) then
+				for _, b in pairs(v) do
+					if k == attn or b == attn then
+						related[b] = true
+					end
+				end
+			elseif isstring(v) then
+				if k == attn or v == attn then
+					related[v] = true
+				end
+			end
+		end
+
+		for k, v in pairs(self.AttachmentCache) do
+			if v and v ~= cat and related[k] and not self:CanAttach(k) then
+				self:SetTFAAttachment(v, 0, true, true)
+			end
+		end
+
+		ATTACHMENT_SORTING_DEPENDENCIES = false
+	end
+end
+
+
 function SWEP:SetTFAAttachment(cat, id, nw, force)
 	if (not self.Attachments[cat]) then return false end
-	if SERVER and not (self:CanAttach(self.Attachments[cat].atts[id] or "") or force) then return false end
+	local attn = self.Attachments[cat].atts[id] or ""
+	if SERVER and id > 0 and not (self:CanAttach(attn) or force) then return false end
 
 	if id ~= self.Attachments[cat].sel then
 		local att_old = TFA.Attachments.Atts[self.Attachments[cat].atts[self.Attachments[cat].sel] or -1]
@@ -339,6 +407,7 @@ function SWEP:SetTFAAttachment(cat, id, nw, force)
 	end
 
 	self:BuildAttachmentCache()
+	self:ForceAttachmentReqs(cat,id)
 
 	if nw then
 		net.Start("TFA_Attachment_Set")
