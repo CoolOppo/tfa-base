@@ -433,6 +433,7 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon)
 	if (pentraceres.StartSolid or pentraceres.Fraction >= 1.0 or pentraceres.Fraction <= 0.0) then return end
 	local bul = {}
 	bul.PenetrationCount = self.PenetrationCount + 1
+	self.PenetrationCount = self.PenetrationCount + 1
 
 	if IsValid(pentraceres.Entity) and pentraceres.Entity.IsNPC and (pentraceres.Entity:IsNPC() or pentraceres.Entity:IsPlayer()) then
 		if IsValid(ply) and ply:IsPlayer() then
@@ -556,6 +557,7 @@ function SWEP.MainBullet:Ricochet(ply, traceres, dmginfo, weapon)
 		ric.Src = traceres.HitPos
 		ric.Dir = ((2 * traceres.HitNormal * dp) + traceres.Normal) + (VectorRand() * 0.02)
 		ric.PenetrationCount = self.PenetrationCount + 1
+		self.PenetrationCount = self.PenetrationCount + 1
 
 		if TFA.GetRicochetEnabled() then
 			local fx = EffectData()
