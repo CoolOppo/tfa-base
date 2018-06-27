@@ -52,13 +52,17 @@ end
 
 IncludeClass("bullet")
 --cvar code
-local cv_enabled = CreateConVar("sv_tfa_ballistics_enabled", "0", {FCVAR_REPLICATED, FCVAR_ARCHIVE}, "Enable TFA Ballistics?")
-local cv_bulletlife = CreateConVar("sv_tfa_ballistics_bullet_life", 10, {FCVAR_REPLICATED, FCVAR_ARCHIVE}, "Time to process bullets before removing.")
-local cv_res_air = CreateConVar("sv_tfa_ballistics_bullet_damping_air", 1, {FCVAR_REPLICATED, FCVAR_ARCHIVE}, "Air resistance, which makes bullets arc faster.")
-local cv_res_water = CreateConVar("sv_tfa_ballistics_bullet_damping_water", 3, {FCVAR_REPLICATED, FCVAR_ARCHIVE}, "Water resistance, which makes bullets arc faster in water.")
-local cv_vel = CreateConVar("sv_tfa_ballistics_bullet_velocity", 1, {FCVAR_REPLICATED, FCVAR_ARCHIVE}, "Global velocity multiplier for TFA ballistics bullets.")
-local cv_substep = CreateConVar("sv_tfa_ballistics_substeps", 1, {FCVAR_REPLICATED, FCVAR_ARCHIVE}, "Substeps for ballistics; more is more precise, at the cost of performance.")
-CreateConVar("sv_tfa_ballistics_mindist", -1, {FCVAR_REPLICATED, FCVAR_ARCHIVE}, "Minimum distance to activate; -1 for always.")
+local function CreateReplConVar(cvarname, cvarvalue, description, ...)
+	return CreateConVar(cvarname, cvarvalue, CLIENT and {FCVAR_REPLICATED} or {FCVAR_REPLICATED, FCVAR_ARCHIVE, FCVAR_NOTIFY}, description, ...)
+end -- replicated only on clients, archive/notify on server
+
+local cv_enabled = CreateReplConVar("sv_tfa_ballistics_enabled", "0", {FCVAR_REPLICATED, FCVAR_ARCHIVE}, "Enable TFA Ballistics?")
+local cv_bulletlife = CreateReplConVar("sv_tfa_ballistics_bullet_life", 10, {FCVAR_REPLICATED, FCVAR_ARCHIVE}, "Time to process bullets before removing.")
+local cv_res_air = CreateReplConVar("sv_tfa_ballistics_bullet_damping_air", 1, {FCVAR_REPLICATED, FCVAR_ARCHIVE}, "Air resistance, which makes bullets arc faster.")
+local cv_res_water = CreateReplConVar("sv_tfa_ballistics_bullet_damping_water", 3, {FCVAR_REPLICATED, FCVAR_ARCHIVE}, "Water resistance, which makes bullets arc faster in water.")
+local cv_vel = CreateReplConVar("sv_tfa_ballistics_bullet_velocity", 1, {FCVAR_REPLICATED, FCVAR_ARCHIVE}, "Global velocity multiplier for TFA ballistics bullets.")
+local cv_substep = CreateReplConVar("sv_tfa_ballistics_substeps", 1, {FCVAR_REPLICATED, FCVAR_ARCHIVE}, "Substeps for ballistics; more is more precise, at the cost of performance.")
+CreateReplConVar("sv_tfa_ballistics_mindist", -1, {FCVAR_REPLICATED, FCVAR_ARCHIVE}, "Minimum distance to activate; -1 for always.")
 
 local function updateCVars()
 	TFA.Ballistics.BulletLife = cv_bulletlife:GetFloat()
