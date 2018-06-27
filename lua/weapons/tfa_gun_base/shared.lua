@@ -1166,6 +1166,7 @@ end
 local npc_ar2_damage_cv = GetConVar("sk_npc_dmg_ar2")
 
 function SWEP:PrimaryAttack()
+	self:PrePrimaryAttack()
 	if self.Owner:IsNPC() then
 		if self:Clip1() <= 0 then
 			if SERVER then
@@ -1279,20 +1280,37 @@ function SWEP:PrimaryAttack()
 			self:SetShotgunCancel(true)
 		end
 	end
+	self:PostPrimaryAttack()
 	hook.Run("TFA_PostPrimaryAttack",self)
 end
+
+function SWEP:PrePrimaryAttack()
+end
+
+function SWEP:PostPrimaryAttack()
+end
+
 function SWEP:CanSecondaryAttack()
 end
 
 function SWEP:SecondaryAttack()
+	self:PreSecondaryAttack()
 	if hook.Run("TFA_SecondaryAttack",self) then return end
 	if self.Owner:IsNPC() then
 		return
 	end
 	if self.data and self:GetStat("data.ironsights") == 0 and self.AltAttack then
 		self:AltAttack()
+		self:PostSecondaryAttack()
 		return
 	end
+	self:PostSecondaryAttack()
+end
+
+function SWEP:PreSecondaryAttack()
+end
+
+function SWEP:PostSecondaryAttack()
 end
 
 function SWEP:GetLegacyReloads()
@@ -1300,6 +1318,7 @@ function SWEP:GetLegacyReloads()
 end
 
 function SWEP:Reload(released)
+	self:PreReload(released)
 	if hook.Run("TFA_PreReload",self,released) then return end
 	if self.Owner:IsNPC() then
 		return
@@ -1360,7 +1379,14 @@ function SWEP:Reload(released)
 			self:CheckAmmo()
 		end
 	end
+	self:PostReload(released)
 	hook.Run("TFA_PostReload",self)
+end
+
+function SWEP:PreReload(released)
+end
+
+function SWEP:PostReload(released)
 end
 
 function SWEP:Reload2(released)

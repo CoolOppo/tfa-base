@@ -1,6 +1,7 @@
 EFFECT.Velocity = {120, 160}
 EFFECT.VelocityRand = {-15, 40}
-EFFECT.VelocityRandAngle = 12.5
+EFFECT.VelocityAngle = Vector(1,1,10)
+EFFECT.VelocityRandAngle = Vector(10,10,5)
 
 EFFECT.ShellPresets = {
 	["sniper"] = {"models/hdweapons/rifleshell.mdl", math.pow(0.487 / 1.236636, 1 / 3), 90}, --1.236636 is shell diameter, then divide base diameter into that for 7.62x54mm
@@ -143,7 +144,9 @@ function EFFECT:Init(data)
 		physObj:SetMass(5)
 		physObj:SetMaterial("gmod_silent")
 		physObj:SetVelocity(velocity)
-		physObj:AddAngleVelocity(VectorRand() * velocity:Length() * self.VelocityRandAngle)
+		local localVel = velocity:Length() * self.WeaponEnt:WorldToLocalAngles(velocity:Angle()):Forward()
+		physObj:AddAngleVelocity(localVel.y * self.VelocityAngle)
+		physObj:AddAngleVelocity(VectorRand() * velocity:Length() * self.VelocityRandAngle * 0.5)
 	end
 
 	local ss = self.WeaponEntOG:GetStat("ShellSound") or self.WeaponEntOG:GetStat("LuaShellSound")
