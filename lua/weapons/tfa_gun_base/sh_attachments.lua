@@ -334,8 +334,7 @@ function SWEP:GetStat(stat, default)
 end
 
 local ATTACHMENT_SORTING_DEPENDENCIES = false
-function SWEP:ForceAttachmentReqs(cat, id)
-	local attn = self.Attachments[cat].atts[id] or ""
+function SWEP:ForceAttachmentReqs(attn)
 	if not ATTACHMENT_SORTING_DEPENDENCIES then
 		ATTACHMENT_SORTING_DEPENDENCIES = true
 		local related = {}
@@ -343,13 +342,17 @@ function SWEP:ForceAttachmentReqs(cat, id)
 		for k, v in pairs(self.AttachmentDependencies) do
 			if istable(v) then
 				for _, b in pairs(v) do
-					if k == attn or b == attn then
+					if k == attn then
 						related[b] = true
+					elseif b == attn then
+						related[k] = true
 					end
 				end
 			elseif isstring(v) then
-				if k == attn or v == attn then
+				if k == attn then
 					related[v] = true
+				elseif v == attn then
+					related[k] = true
 				end
 			end
 		end
@@ -357,19 +360,23 @@ function SWEP:ForceAttachmentReqs(cat, id)
 		for k, v in pairs(self.AttachmentExclusions) do
 			if istable(v) then
 				for _, b in pairs(v) do
-					if k == attn or b == attn then
+					if k == attn then
 						related[b] = true
+					elseif b == attn then
+						related[k] = true
 					end
 				end
 			elseif isstring(v) then
-				if k == attn or v == attn then
+				if k == attn then
 					related[v] = true
+				elseif v == attn then
+					related[k] = true
 				end
 			end
 		end
 
 		for k, v in pairs(self.AttachmentCache) do
-			if v and v ~= cat and related[k] and not self:CanAttach(k) then
+			if v and related[k] and not self:CanAttach(k) then
 				self:SetTFAAttachment(v, 0, true, true)
 			end
 		end
@@ -378,10 +385,10 @@ function SWEP:ForceAttachmentReqs(cat, id)
 	end
 end
 
-
 function SWEP:SetTFAAttachment(cat, id, nw, force)
 	if (not self.Attachments[cat]) then return false end
 	local attn = self.Attachments[cat].atts[id] or ""
+	local attn_old = self.Attachments[cat].atts[self.Attachments[cat].sel or -1] or ""
 	if SERVER and id > 0 and not (self:CanAttach(attn) or force) then return false end
 
 	if id ~= self.Attachments[cat].sel then
@@ -407,7 +414,11 @@ function SWEP:SetTFAAttachment(cat, id, nw, force)
 	end
 
 	self:BuildAttachmentCache()
-	self:ForceAttachmentReqs(cat,id)
+	if id > 0 then
+		self:ForceAttachmentReqs(attn)
+	else
+		self:ForceAttachmentReqs(attn_old)
+	end
 
 	if nw then
 		net.Start("TFA_Attachment_Set")
