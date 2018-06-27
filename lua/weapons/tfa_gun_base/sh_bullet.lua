@@ -431,6 +431,8 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon)
 	pentrace.filter = {}
 	local pentraceres = util.TraceLine(pentrace)
 	if (pentraceres.StartSolid or pentraceres.Fraction >= 1.0 or pentraceres.Fraction <= 0.0) then return end
+	mfac = math.min(pentraceres.HitPos:Distance(traceres.HitPos) / penetrationoffset:Length(),1)
+	if mfac < 0.1 then return end
 	local bul = {}
 	bul.PenetrationCount = self.PenetrationCount + 1
 	self.PenetrationCount = self.PenetrationCount + 1
@@ -456,7 +458,6 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon)
 
 	bul.Tracer = 0 --weapon.TracerName and 0 or 1
 	bul.TracerName = ""
-	mfac = pentraceres.HitPos:Distance(traceres.HitPos) / penetrationoffset:Length()
 	bul.Num = self.Num
 	bul.Force = self.Force * mfac
 	bul.Damage = self.Damage * mfac

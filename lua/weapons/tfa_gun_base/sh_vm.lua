@@ -68,6 +68,7 @@ function SWEP:UpdateWeaponLength()
 	local mzpos = self:GetMuzzlePos()
 	if not mzpos then return end
 	if not mzpos.Pos then return end
+	if GetViewEntity and GetViewEntity() ~= self:GetOwner() then return end
 	local mzVec = vm:WorldToLocal(mzpos.Pos)
 	self.WeaponLength = math.abs(mzVec.x)
 end
