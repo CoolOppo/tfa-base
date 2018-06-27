@@ -37,6 +37,8 @@ TFA_TranslateFOV(wepom,fov) --return a value to modify the fov with your own stu
 TFA_PreInitAttachments(wepom) --modify attachments here
 TFA_PostInitAttachments(wepom) --runs before building attachment cache
 TFA_FinalInitAttachments(wepom) --final attachment init hook
+TFA_PreCanAttach(wepom) --can we attach a thingy?  called before exclusions/dependencies
+TFA_CanAttach(wepom) --can we attach a thingy?  called after exclusions/dependencies
 --animation
 TFA_AnimationRate(wep,act,rate) --return modified rate value here
 --effects

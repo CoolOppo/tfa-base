@@ -118,6 +118,10 @@ end
 local tc
 
 function SWEP:CanAttach(attn)
+	local retVal = hook.Run("TFA_PreCanAttach",self,attn)
+	if retVal ~= nil then
+		return retVal
+	end
 	if not self.HasBuiltMutualExclusions then
 		tc = table.Copy(self.AttachmentExclusions)
 
@@ -168,6 +172,10 @@ function SWEP:CanAttach(attn)
 				if cnt == 0 then return false end
 			end
 		end
+	end
+	local retVal2 = hook.Run("TFA_CanAttach",self,attn)
+	if retVal2 ~= nil then
+		return retVal2
 	end
 
 	return true
