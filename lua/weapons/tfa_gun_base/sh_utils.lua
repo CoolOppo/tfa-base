@@ -620,6 +620,11 @@ Purpose:  Feature
 --
 local l_CT = CurTime
 
+SWEP.FireModesAutomatic = {
+	["Automatic"] = true,
+	["Auto"] = true,
+}
+
 function SWEP:CycleFireMode()
 	local fm = self:GetFireMode()
 	fm = fm + 1
@@ -641,6 +646,8 @@ function SWEP:CycleFireMode()
 	self.BurstCount = 0
 	self:SetStatus(TFA.GetStatus("firemode"))
 	self:SetStatusEnd(self:GetNextPrimaryFire())
+
+	self.Primary.Automatic = self:GetStat("FireModesAutomatic." .. self:GetStat("FireModes." .. fm)) ~= nil
 end
 
 --[[
@@ -678,8 +685,6 @@ Notes: Processes fire mode changing and whether the swep is auto or not.
 Purpose:  Feature
 ]]
 --
-local fm
-
 function SWEP:ProcessFireMode()
 	if self:OwnerIsValid() and self:GetOwner():KeyPressed(IN_RELOAD) and self:GetOwner():KeyDown(IN_USE) and self:GetStatus() == TFA.Enum.STATUS_IDLE and (SERVER or not sp) then
 		if self:GetStat("SelectiveFire") and not self:GetOwner():KeyDown(IN_SPEED) then
@@ -687,14 +692,6 @@ function SWEP:ProcessFireMode()
 		elseif self:GetOwner():KeyDown(IN_SPEED) then
 			self:CycleSafety()
 		end
-	end
-
-	local fmt = self:GetStat("FireModes")
-	local _fm = fmt[self:GetFireMode()]
-
-	if not fm or fm ~= _fm then
-		fm = _fm
-		self.Primary.Automatic = fm == "Automatic" or fm == "Auto"
 	end
 end
 
