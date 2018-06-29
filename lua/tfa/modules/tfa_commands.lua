@@ -404,6 +404,14 @@ if CLIENT then
 		CreateClientConVar("cl_tfa_hud_hitmarker_color_a", 200, true, false)
 	end
 
+	if GetConVar("cl_tfa_hud_hitmarker_3d_all") == nil then
+		CreateClientConVar("cl_tfa_hud_hitmarker_3d_all", 0, true, true)
+	end
+
+	if GetConVar("cl_tfa_hud_hitmarker_3d_shotguns") == nil then
+		CreateClientConVar("cl_tfa_hud_hitmarker_3d_shotguns", 1, true, true)
+	end
+
 	--Other stuff
 	if GetConVar("cl_tfa_hud_ammodata_fadein") == nil then
 		CreateClientConVar("cl_tfa_hud_ammodata_fadein", 0.2, true, false)

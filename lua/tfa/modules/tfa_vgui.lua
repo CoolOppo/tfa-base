@@ -585,6 +585,8 @@ if CLIENT then
 			cl_tfa_hud_crosshair_outline_width = "1",
 			cl_tfa_hud_crosshair_dot = "0",
 			cl_tfa_hud_hitmarker_enabled = "1",
+			cl_tfa_hud_hitmarker_3d_all = "0",
+			cl_tfa_hud_hitmarker_3d_shotguns = "1",
 			cl_tfa_hud_hitmarker_solidtime = "0.1",
 			cl_tfa_hud_hitmarker_fadetime = "0.3",
 			cl_tfa_hud_hitmarker_scale = "1",
@@ -616,6 +618,8 @@ if CLIENT then
 			cl_tfa_hud_crosshair_outline_width = "1",
 			cl_tfa_hud_crosshair_dot = "0",
 			cl_tfa_hud_hitmarker_enabled = "1",
+			cl_tfa_hud_hitmarker_3d_all = "0",
+			cl_tfa_hud_hitmarker_3d_shotguns = "1",
 			cl_tfa_hud_hitmarker_solidtime = "0.1",
 			cl_tfa_hud_hitmarker_fadetime = "0.3",
 			cl_tfa_hud_hitmarker_scale = "1",
@@ -647,6 +651,8 @@ if CLIENT then
 			cl_tfa_hud_crosshair_outline_width = "1",
 			cl_tfa_hud_crosshair_dot = "0",
 			cl_tfa_hud_hitmarker_enabled = "0",
+			cl_tfa_hud_hitmarker_3d_all = "0",
+			cl_tfa_hud_hitmarker_3d_shotguns = "0",
 			cl_tfa_hud_hitmarker_solidtime = "0.1",
 			cl_tfa_hud_hitmarker_fadetime = "0.3",
 			cl_tfa_hud_hitmarker_scale = "1",
@@ -678,6 +684,8 @@ if CLIENT then
 			cl_tfa_hud_crosshair_outline_width = "1",
 			cl_tfa_hud_crosshair_dot = "0",
 			cl_tfa_hud_hitmarker_enabled = "1",
+			cl_tfa_hud_hitmarker_3d_all = "0",
+			cl_tfa_hud_hitmarker_3d_shotguns = "0",
 			cl_tfa_hud_hitmarker_solidtime = "0.1",
 			cl_tfa_hud_hitmarker_fadetime = "0.3",
 			cl_tfa_hud_hitmarker_scale = "1",
@@ -709,6 +717,8 @@ if CLIENT then
 			cl_tfa_hud_crosshair_outline_width = "0",
 			cl_tfa_hud_crosshair_dot = "1",
 			cl_tfa_hud_hitmarker_enabled = "0",
+			cl_tfa_hud_hitmarker_3d_all = "0",
+			cl_tfa_hud_hitmarker_3d_shotguns = "0",
 			cl_tfa_hud_hitmarker_solidtime = "0.1",
 			cl_tfa_hud_hitmarker_fadetime = "0.3",
 			cl_tfa_hud_hitmarker_scale = "1",
@@ -740,6 +750,8 @@ if CLIENT then
 			cl_tfa_hud_crosshair_outline_width = "0",
 			cl_tfa_hud_crosshair_dot = "1",
 			cl_tfa_hud_hitmarker_enabled = "1",
+			cl_tfa_hud_hitmarker_3d_all = "0",
+			cl_tfa_hud_hitmarker_3d_shotguns = "1",
 			cl_tfa_hud_hitmarker_solidtime = "0.1",
 			cl_tfa_hud_hitmarker_fadetime = "0.3",
 			cl_tfa_hud_hitmarker_scale = "1",
@@ -859,6 +871,16 @@ if CLIENT then
 		panel:AddControl("CheckBox", {
 			Label = "Enable Hitmarker",
 			Command = "cl_tfa_hud_hitmarker_enabled"
+		})
+
+		panel:AddControl("CheckBox", {
+			Label = "3D Hitmarker For All Weapons",
+			Command = "cl_tfa_hud_hitmarker_3d_all"
+		})
+
+		panel:AddControl("CheckBox", {
+			Label = "3D Hitmarker For Shotguns",
+			Command = "cl_tfa_hud_hitmarker_3d_shotguns"
 		})
 
 		panel:AddControl("Slider", {

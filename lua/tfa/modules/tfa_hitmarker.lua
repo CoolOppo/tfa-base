@@ -1,71 +1,111 @@
 if SERVER then
 	util.AddNetworkString("tfaHitmarker")
+	util.AddNetworkString("tfaHitmarker3D")
+
+	return
 end
 
-if CLIENT then
-	local lasthitmarkertime = -1
-	local enabledcvar, solidtimecvar, fadetimecvar, scalecvar
-	local rcvar, gcvar, bcvar, acvar
-	local c = Color(255, 255, 255, 255)
-	local spr
+local ScrW, ScrH = ScrW, ScrH
 
-	net.Receive("tfaHitmarker", function()
-		lasthitmarkertime = CurTime()
-	end)
+local markers = {}
 
-	hook.Add("HUDPaint", "tfaDrawHitmarker", function()
-		if not enabledcvar then
-			enabledcvar = GetConVar("cl_tfa_hud_hitmarker_enabled")
+local enabledcvar, solidtimecvar, fadetimecvar, scalecvar
+local rcvar, gcvar, bcvar, acvar
+local pos, sprh
+local c = Color(255, 255, 255, 255)
+local spr
+
+net.Receive("tfaHitmarker", function()
+	if not enabledcvar:GetBool() then return end
+
+	local marker = {}
+	marker.time = CurTime()
+
+	table.insert(markers, marker)
+end)
+
+net.Receive("tfaHitmarker3D", function()
+	if not enabledcvar:GetBool() then return end
+
+	local marker = {}
+	marker.pos = net.ReadVector()
+	marker.time = CurTime()
+
+	table.insert(markers, marker)
+end)
+
+hook.Add("HUDPaint", "tfaDrawHitmarker", function()
+	if not enabledcvar then
+		enabledcvar = GetConVar("cl_tfa_hud_hitmarker_enabled")
+	end
+
+	if not enabledcvar:GetBool() then return end
+
+	if not spr then
+		spr = Material("vgui/tfa_hitmarker.png", "smooth")
+	end
+
+	if not solidtimecvar then
+		solidtimecvar = GetConVar("cl_tfa_hud_hitmarker_solidtime")
+	end
+
+	if not fadetimecvar then
+		fadetimecvar = GetConVar("cl_tfa_hud_hitmarker_fadetime")
+	end
+
+	if not scalecvar then
+		scalecvar = GetConVar("cl_tfa_hud_hitmarker_scale")
+	end
+
+	if not rcvar then
+		rcvar = GetConVar("cl_tfa_hud_hitmarker_color_r")
+	end
+
+	if not gcvar then
+		gcvar = GetConVar("cl_tfa_hud_hitmarker_color_g")
+	end
+
+	if not bcvar then
+		bcvar = GetConVar("cl_tfa_hud_hitmarker_color_b")
+	end
+
+	if not acvar then
+		acvar = GetConVar("cl_tfa_hud_hitmarker_color_a")
+	end
+
+	local solidtime = solidtimecvar:GetFloat()
+	local fadetime = math.max(fadetimecvar:GetFloat(), 0.001)
+
+	c.r = rcvar:GetFloat()
+	c.g = gcvar:GetFloat()
+	c.b = bcvar:GetFloat()
+
+	w, h = ScrW(), ScrH()
+	sprh = math.floor((h / 1080) * 64 * scalecvar:GetFloat())
+
+	for k, v in pairs(markers) do
+		if not v.time then
+			markers[k] = nil
+			continue
 		end
 
-		if enabledcvar and enabledcvar:GetBool() then
-			if not spr then
-				spr = Material("scope/hitmarker")
+		local alpha = math.Clamp(v.time - CurTime() + solidtime + fadetime, 0, fadetime) / fadetime
+		c.a = acvar:GetFloat() * alpha
+
+		if alpha > 0 then
+			pos = {x = w * .5, y = h * .5}
+
+			if v.pos then
+				pos = v.pos:ToScreen()
 			end
 
-			if not solidtimecvar then
-				solidtimecvar = GetConVar("cl_tfa_hud_hitmarker_solidtime")
-			end
+			if pos.visible == false then continue end
 
-			if not fadetimecvar then
-				fadetimecvar = GetConVar("cl_tfa_hud_hitmarker_fadetime")
-			end
-
-			if not scalecvar then
-				scalecvar = GetConVar("cl_tfa_hud_hitmarker_scale")
-			end
-
-			if not rcvar then
-				rcvar = GetConVar("cl_tfa_hud_hitmarker_color_r")
-			end
-
-			if not gcvar then
-				gcvar = GetConVar("cl_tfa_hud_hitmarker_color_g")
-			end
-
-			if not bcvar then
-				bcvar = GetConVar("cl_tfa_hud_hitmarker_color_b")
-			end
-
-			if not acvar then
-				acvar = GetConVar("cl_tfa_hud_hitmarker_color_a")
-			end
-
-			local solidtime = solidtimecvar:GetFloat()
-			local fadetime = math.max(fadetimecvar:GetFloat(), 0.001)
-			local s = 0.025 * scalecvar:GetFloat()
-			c.r = rcvar:GetFloat()
-			c.g = gcvar:GetFloat()
-			c.b = bcvar:GetFloat()
-			local alpha = math.Clamp(lasthitmarkertime - CurTime() + solidtime + fadetime, 0, fadetime) / fadetime
-			c.a = acvar:GetFloat() * alpha
-			if alpha > 0 then
-				local w, h = ScrW(), ScrH()
-				local sprw, sprh = h * s, h * s
-				surface.SetDrawColor(c)
-				surface.SetMaterial(spr)
-				surface.DrawTexturedRect(w / 2 - sprw / 2, h / 2 - sprh / 2, sprw, sprh)
-			end
+			surface.SetDrawColor(c)
+			surface.SetMaterial(spr)
+			surface.DrawTexturedRect(pos.x - sprh * .5, pos.y - sprh * .5, sprh, sprh)
+		else
+			markers[k] = nil
 		end
-	end)
-end
+	end
+end)
