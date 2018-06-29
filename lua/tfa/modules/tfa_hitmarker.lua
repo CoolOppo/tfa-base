@@ -11,7 +11,7 @@ local markers = {}
 
 local enabledcvar, solidtimecvar, fadetimecvar, scalecvar
 local rcvar, gcvar, bcvar, acvar
-local pos, sprh
+local w, h, pos, sprh
 local c = Color(255, 255, 255, 255)
 local spr
 
