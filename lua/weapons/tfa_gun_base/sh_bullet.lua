@@ -361,7 +361,7 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon)
 	atype = weapon:GetStat("Primary.DamageType")
 	dmginfo:SetDamageType(atype)
 
-	if SERVER and IsValid(ply) and ply:IsPlayer() and IsValid(hitent) and (hitent:IsPlayer() or hitent:IsNPC()) then
+	if SERVER and IsValid(ply) and ply:IsPlayer() and IsValid(hitent) and (hitent:IsPlayer() or hitent:IsNPC() or type(hitent) == "NextBot") then
 		weapon:SendHitMarker(ply, traceres, dmginfo)
 	end
 
