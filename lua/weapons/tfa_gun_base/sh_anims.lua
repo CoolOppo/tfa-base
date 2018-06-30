@@ -204,24 +204,31 @@ function SWEP:ChooseAnimation(key)
 end
 
 local sqto, sqro
-function SWEP:GetAnimationRate( ani )
+
+function SWEP:GetAnimationRate(ani)
 	local rate = 1
 	if not ani or ani < 0 or not self:VMIV() then return rate end
 	local nm = self.OwnerViewModel:GetSequenceName(self.OwnerViewModel:SelectWeightedSequence(ani))
-	sqto = self:GetStat("SequenceTimeOverride." .. nm) or self:GetStat("SequenceTimeOverride." .. (ani or "0"))
-	sqro = self:GetStat("SequenceRateOverride." .. nm) or self:GetStat("SequenceRateOverride." .. (ani or "0"))
-	if sqro then
-		rate = rate * sqro
-	elseif sqto then
-		local t = self:GetActivityLengthRaw(ani,false)
-		if t then
-			rate = rate * t / sqto
+
+	if IsValid(self) then
+		sqto = self:GetStat("SequenceTimeOverride." .. nm) or self:GetStat("SequenceTimeOverride." .. (ani or "0"))
+		sqro = self:GetStat("SequenceRateOverride." .. nm) or self:GetStat("SequenceRateOverride." .. (ani or "0"))
+
+		if sqro then
+			rate = rate * sqro
+		elseif sqto then
+			local t = self:GetActivityLengthRaw(ani, false)
+
+			if t then
+				rate = rate * t / sqto
+			end
 		end
 	end
-	rate = hook.Run("TFA_AnimationRate",self,ani,rate) or rate
+
+	rate = hook.Run("TFA_AnimationRate", self, ani, rate) or rate
+
 	return rate
 end
-
 function SWEP:SendViewModelAnim(act, rate, targ, blend)
 	local vm = self.OwnerViewModel
 
