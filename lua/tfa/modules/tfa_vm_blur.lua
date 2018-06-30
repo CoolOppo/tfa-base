@@ -1,7 +1,6 @@
 if SERVER then return end
 local supports
-local cl_tfa_fx_dof = GetConVar("cl_tfa_fx_ads_dof_enabled")
-local cl_tfa_fx_dof_hd = GetConVar("cl_tfa_fx_ads_dof_hd")
+local cl_tfa_fx_dof, cl_tfa_fx_dof_hd
 local fmat = CreateMaterial("TFA_DOF_Material4", "Refract", {
 	["$model"] = "1",
 	["$alpha"] = "1",
@@ -64,8 +63,12 @@ hook.Add("PreDrawViewModel", "TFA_DrawViewModel", function(vm, plyv, wep)
 	end
 
 	if not supports then return end
-	cl_tfa_fx_dof = cl_tfa_fx_dof or GetConVar("cl_tfa_fx_dof")
-	if not cl_tfa_fx_dof:GetBool() then return end
+
+	if not cl_tfa_fx_dof then
+		cl_tfa_fx_dof = GetConVar("cl_tfa_fx_ads_dof_enabled")
+	end
+
+	if not cl_tfa_fx_dof or not cl_tfa_fx_dof:GetBool() then return end
 	if not wep.AllowIronSightsDoF then return end
 	local aimingDown = wep.IronSightsProgress > 0.4
 	local scoped = TFA.LastRTUpdate > UnPredictedCurTime()
@@ -130,10 +133,15 @@ hook.Add("PostDrawViewModel", "TFA_DrawViewModel", function(vm, plyv, wep)
 		return
 	end
 
-	cl_tfa_fx_dof = cl_tfa_fx_dof or GetConVar("cl_tfa_fx_ads_dof_enabled")
-	cl_tfa_fx_dof_hd = cl_tfa_fx_dof_hd or GetConVar("cl_tfa_fx_ads_dof_hd")
+	if not cl_tfa_fx_dof then
+		cl_tfa_fx_dof = GetConVar("cl_tfa_fx_ads_dof_enabled")
+	end
 
-	if not cl_tfa_fx_dof:GetBool() then
+	if not cl_tfa_fx_dof_hd then
+		cl_tfa_fx_dof_hd = GetConVar("cl_tfa_fx_ads_dof_hd")
+	end
+
+	if not cl_tfa_fx_dof or not cl_tfa_fx_dof:GetBool() then
 		wep:DrawLaser(true)
 		wep:ViewModelDrawnPost()
 		return
@@ -211,8 +219,12 @@ hook.Add("PreDrawPlayerHands", "TFA_DrawViewModel", function(hands, vm, plyv, we
 	if STOP then return end
 	if not wep:IsTFA() then return end
 	if not supports then return end
-	cl_tfa_fx_dof = cl_tfa_fx_dof or GetConVar("cl_tfa_fx_dof")
-	if not cl_tfa_fx_dof:GetBool() then return end
+
+	if not cl_tfa_fx_dof then
+		cl_tfa_fx_dof = GetConVar("cl_tfa_fx_ads_dof_enabled")
+	end
+
+	if not cl_tfa_fx_dof or not cl_tfa_fx_dof:GetBool() then return end
 	if not wep.AllowIronSightsDoF then return end
 	if TFA.LastRTUpdate > UnPredictedCurTime() then return end
 	if wep.IronSightsProgress > 0.4 then return true end
