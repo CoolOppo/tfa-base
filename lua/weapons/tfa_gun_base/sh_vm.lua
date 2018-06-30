@@ -304,11 +304,7 @@ local viewpunch_cv, viewpunch_val
 function SWEP:GetViewModelPosition(pos, ang)
 	if self.Owner:IsNPC() then return end
 	if not IsValid(self:GetOwner()) then return end
-
-	--[[if GetViewEntity().EyeAngles and GetViewEntity()==self:GetOwner() then
-        ang = GetViewEntity():EyeAngles()
-    end]]
-	-- NO!
+	if not pos or not ang then return end
 	if not viewpunch_cv then
 		viewpunch_cv = GetConVar("cl_tfa_viewmodel_viewpunch")
 	end
@@ -334,12 +330,6 @@ function SWEP:GetViewModelPosition(pos, ang)
 		intensityWalk = 0
 	end
 
-	--Start viewbob code
-	if not ang then
-		ang = EyeAngles()
-	end
-
-	--ang:RotateAroundAxis(ang:Forward(), -Qerp(self.IronSightsProgress and self.IronSightsProgress or 0, qerp1, 0))
 	--End viewbob code
 	if not self.ogviewmodelfov then
 		self.ogviewmodelfov = self.ViewModelFOV
@@ -362,20 +352,18 @@ function SWEP:GetViewModelPosition(pos, ang)
 	ang:RotateAroundAxis(ang:Right(), vm_offset_ang.p)
 	ang:RotateAroundAxis(ang:Up(), vm_offset_ang.y)
 	ang:RotateAroundAxis(ang:Forward(), vm_offset_ang.r)
-	self.IronSightsProgress = self.IronSightsProgress * 1
-	--print(self.IronSightsProgress)
 	ang:RotateAroundAxis(ang:Forward(), -7.5 * (1 - math.abs(0.5 - self.IronSightsProgress) * 2) * (self:GetIronSights() and 1 or 0.5) * (self.ViewModelFlip and 1 or -1))
 	pos:Add(ang:Right() * vm_offset_pos.x)
 	pos:Add(ang:Forward() * vm_offset_pos.y)
 	pos:Add(ang:Up() * vm_offset_pos.z)
 
-	if self.BlowbackEnabled and self.BlowbackCurrentRoot > 0.01 then
+	if self:GetStat("BlowbackEnabled") and self.BlowbackCurrentRoot > 0.01 then
 		--if !(  self.Blowback_PistolMode and !( self:Clip1()==-1 or self:Clip1()>0 ) ) then
 		bbvec = self:GetStat("BlowbackVector")
 		pos:Add(ang:Right() * bbvec.x * self.BlowbackCurrentRoot)
 		pos:Add(ang:Forward() * bbvec.y * self.BlowbackCurrentRoot)
 		pos:Add(ang:Up() * bbvec.z * self.BlowbackCurrentRoot)
-		local bbang = self:GetStat("BlowbackAngle") or Angle(0, 0, 0)
+		local bbang = self:GetStat("BlowbackAngle") or angle_zero
 		ang:RotateAroundAxis(ang:Right(), bbang.x * self.BlowbackCurrentRoot)
 		ang:RotateAroundAxis(ang:Up(), bbang.y * self.BlowbackCurrentRoot)
 		ang:RotateAroundAxis(ang:Forward(), bbang.z * self.BlowbackCurrentRoot)

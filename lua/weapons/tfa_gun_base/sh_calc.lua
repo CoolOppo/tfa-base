@@ -16,7 +16,7 @@ local is, spr, ist, sprt, ft, jr_targ
 ft = 0.01
 SWEP.LastRatio = nil
 
-function SWEP:CalculateRatios()
+function SWEP:CalculateRatios(forced)
 	local owent = self:GetOwner()
 	if not IsValid(owent) or not owent:IsPlayer() then return end
 	ft = TFA.FrameTime()
@@ -34,6 +34,7 @@ function SWEP:CalculateRatios()
 		adstransitionspeed = 12.5
 	end
 
+	if not ( IsFirstTimePredicted() or forced ) then return end
 	self.CrouchingRatio = l_mathApproach(self.CrouchingRatio or 0, owent:Crouching() and 1 or 0, ft / self.ToCrouchTime)
 	self.SpreadRatio = l_mathClamp(self.SpreadRatio - self:GetStat("Primary.SpreadRecovery") * ft, 1, self:GetStat("Primary.SpreadMultiplierMax"))
 	self.IronSightsProgress = l_mathApproach(self.IronSightsProgress, ist, (ist - self.IronSightsProgress) * ft * adstransitionspeed)

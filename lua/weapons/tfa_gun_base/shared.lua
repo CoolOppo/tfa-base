@@ -292,9 +292,8 @@ local l_CT = CurTime
 local l_ct = CurTime
 --[[Frequently Reused Local Vars]]
 local stat, statend --Weapon status
-local ct, ft --Curtime, frametime, real frametime
-ft = 0.01
-local sp --Singleplayer
+local ct, ft  = 0, 0.01--Curtime, frametime, real frametime
+local sp = game.SinglePlayer() --Singleplayer
 
 --[[
 Function Name:  SetupDataTables
@@ -325,7 +324,6 @@ Notes:   Called after actual SWEP code, but before deploy, and only once.
 Returns:  Nothing.  Sets the intial values for the SWEP when it's created.
 Purpose:  Standard SWEP Function
 ]]
-sp = game.SinglePlayer()
 
 local PistolHoldTypes = {
 	["pistol"] = true,
@@ -525,7 +523,7 @@ function SWEP:Holster(target)
 		if stat == TFA.GetStatus("reloading_wait") and self:Clip1() <= self:GetStat("Primary.ClipSize") and (not self:GetStat("DisableChambering")) and (not self:GetStat("Shotgun")) then
 			self:ResetFirstDeploy()
 
-			if game.SinglePlayer() then
+			if sp then
 				self:CallOnClient("ResetFirstDeploy", "")
 			end
 		end
@@ -639,18 +637,21 @@ function SWEP:PlayerThinkCL()
 	end
 	ft = TFA.FrameTime()
 	if not self:NullifyOIV() then return end
-	self:CalculateRatios()
 	self:OwnerIsValid()
-	self:Think2()
 	self:CalculateViewModelOffset()
 	self:CalculateViewModelFlip()
 	self:SmokePCFLighting()
-
-	if not self.Blowback_PistolMode or self:Clip1() == -1 or self:Clip1() > 0.1 or self.Blowback_PistolMode_Disabled[ self:GetLastActivity() ] then
-		self.BlowbackCurrent = l_mathApproach(self.BlowbackCurrent, 0, self.BlowbackCurrent * ft * 15)
+	self:CalculateRatios(true)
+	if sp then
+		self:Think2()
 	end
+	if self:GetStat("BlowbackEnabled") then
+		if not self.Blowback_PistolMode or self:Clip1() == -1 or self:Clip1() > 0.1 or self.Blowback_PistolMode_Disabled[ self:GetLastActivity() ] then
+			self.BlowbackCurrent = l_mathApproach(self.BlowbackCurrent, 0, self.BlowbackCurrent * ft * 15)
+		end
 
-	self.BlowbackCurrentRoot = l_mathApproach(self.BlowbackCurrentRoot, 0, self.BlowbackCurrentRoot * ft * 15)
+		self.BlowbackCurrentRoot = l_mathApproach(self.BlowbackCurrentRoot, 0, self.BlowbackCurrentRoot * ft * 15)
+	end
 end
 
 local is, spr, waittime, sht, lact
@@ -688,7 +689,7 @@ function SWEP:Think2()
 		self.Idle_Mode_Old = self.Idle_Mode
 		self.Idle_Mode = TFA.Enum.IDLE_BOTH
 		self:ChooseIdleAnim()
-		if game.SinglePlayer() then
+		if sp then
 			self:CallOnClient("ChooseIdleAnim","")
 		end
 		self.Idle_Mode = self.Idle_Mode_Old
@@ -1055,7 +1056,7 @@ function SWEP:GetIronSights( ignorestatus )
 		self.is_cached = issighting
 
 		--[[
-		if (self.is_cached_old ~= issighting) and not ( game.SinglePlayer() and CLIENT ) then
+		if (self.is_cached_old ~= issighting) and not ( sp and CLIENT ) then
 			if (issighting == false) then--and ((CLIENT and IsFirstTimePredicted()) or (SERVER and sp)) then
 				self:EmitSound(self.IronOutSound or "TFA.IronOut")
 			elseif issighting == true then--and ((CLIENT and IsFirstTimePredicted()) or (SERVER and sp)) then
@@ -1235,7 +1236,7 @@ function SWEP:PrimaryAttack()
 	self:ToggleAkimbo()
 	local _, tanim = self:ChooseShootAnim()
 
-	if (not game.SinglePlayer()) or (not self:IsFirstPerson()) then
+	if (not sp) or (not self:IsFirstPerson()) then
 		self:GetOwner():SetAnimation(PLAYER_ATTACK1)
 	end
 
@@ -1368,7 +1369,7 @@ function SWEP:Reload(released)
 					self:SetNextPrimaryFire(ct + self:GetActivityLength( tanim, false ) )
 				end
 			end
-			if ( not game.SinglePlayer() ) or ( not self:IsFirstPerson() ) then
+			if ( not sp ) or ( not self:IsFirstPerson() ) then
 				self:GetOwner():SetAnimation(PLAYER_RELOAD)
 			end
 			if self:GetStat("Primary.ReloadSound") and IsFirstTimePredicted() then
@@ -1433,7 +1434,7 @@ function SWEP:Reload2(released)
 					self:SetNextPrimaryFire(ct + self:GetActivityLength( tanim, false ) )
 				end
 			end
-			if ( not game.SinglePlayer() ) or ( not self:IsFirstPerson() ) then
+			if ( not sp ) or ( not self:IsFirstPerson() ) then
 				self:GetOwner():SetAnimation(PLAYER_RELOAD)
 			end
 			if self:GetStat("Secondary.ReloadSound") and IsFirstTimePredicted() then
