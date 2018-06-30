@@ -79,12 +79,15 @@ end
 
 --Sensitivity
 
-local ss, fov_og, resrat
+local ss, fov_og, resrat, fov_cv
 
+fov_cv = GetConVar("fov_desired")
 function TFA.CalculateSensitivtyScale( fov_target, fov_src, screenscale )
 	if not LocalPlayer():IsValid() then return 1 end
 	resrat = ScrW() / ScrH()
-	fov_og = fov_src or TFADUSKFOV or LocalPlayer():GetFOV()
+	isCalculating = true
+	fov_og = fov_src or TFADUSKFOV or fov_cv:GetFloat()
+	isCalculating = false
 	ss = screenscale or 1
 	return math.atan( resrat * math.tan(math.rad( fov_target / 2  ) ) ) / math.atan( resrat * math.tan( math.rad( fov_og / 2) ) ) / ss
 end

@@ -1544,7 +1544,7 @@ function SWEP:AdjustMouseSensitivity()
 
 		if sensitivity_fov_cvar:GetBool() then
 			fovv = self:GetStat("Secondary.IronFOV") or 70
-			sensval = sensval * TFA.CalculateSensitivtyScale( fovv )
+			sensval = sensval * TFA.CalculateSensitivtyScale( fovv, nil, 1 )
 		else
 			sensval = sensval
 		end
@@ -1570,7 +1570,8 @@ function SWEP:TranslateFOV(fov)
 	if self.Owner:IsNPC() then
 		return
 	end
-	if hook.Run("TFA_PreTranslateFOV",self,fov) then return end
+	local retVal = hook.Run("TFA_PreTranslateFOV",self,fov)
+	if retVal then return retVal end
 	self:CorrectScopeFOV()
 	nfov = l_Lerp(self.IronSightsProgress, fov, fov * math.min( self:GetStat("Secondary.IronFOV") / 90,1))
 	local ret = l_Lerp(self.SprintProgress, nfov, nfov + self.SprintFOVOffset)
