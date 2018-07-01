@@ -444,6 +444,34 @@ function SWEP:SetTFAAttachment(cat, id, nw, force)
 	return true
 end
 
+function SWEP:Attach(attname)
+	if not attname or not IsValid(self) then return false end
+
+	if self.AttachmentCache[attname] == nil then return false end
+
+	for cat, tbl in pairs(self.Attachments) do
+		local atts = tbl.atts
+
+		for id, att in ipairs(atts) do
+			if att == attname then
+				return self:SetTFAAttachment(cat, id, true, false)
+			end
+		end
+	end
+
+	return false
+end
+
+function SWEP:Detach(attname)
+	if not attname or not IsValid(self) then return false end
+
+	local cat = self.AttachmentCache[attname]
+
+	if not cat then return false end
+
+	return self:SetTFAAttachment(cat, 0, true, false)
+end
+
 local attachments_sorted_alphabetically = GetConVar("sv_tfa_attachments_alphabetical")
 
 function SWEP:InitAttachments()
