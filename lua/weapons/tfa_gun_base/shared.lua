@@ -443,10 +443,6 @@ function SWEP:Deploy()
 
 	if IsValid(self:GetOwner()) and IsValid(self:GetOwner():GetViewModel()) then
 		self.OwnerViewModel = self:GetOwner():GetViewModel()
-
-		if engine.ActiveGamemode() == "terrortown" then -- why
-			self.OwnerViewModel:SetModel(self.ViewModel)
-		end
 	end
 
 	ct = l_CT()
