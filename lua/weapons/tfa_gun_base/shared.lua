@@ -440,9 +440,13 @@ Purpose:  Standard SWEP Function
 
 function SWEP:Deploy()
 	hook.Run("TFA_PreDeploy",self)
-	if engine.ActiveGamemode() == "terrortown" and IsValid(self:GetOwner()) and IsValid(self:GetOwner():GetViewModel()) then
+
+	if IsValid(self:GetOwner()) and IsValid(self:GetOwner():GetViewModel()) then
 		self.OwnerViewModel = self:GetOwner():GetViewModel()
-		self.OwnerViewModel:SetModel(self.ViewModel)
+
+		if engine.ActiveGamemode() == "terrortown" then -- why
+			self.OwnerViewModel:SetModel(self.ViewModel)
+		end
 	end
 
 	ct = l_CT()
