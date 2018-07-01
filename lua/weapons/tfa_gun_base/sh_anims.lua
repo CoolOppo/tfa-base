@@ -207,7 +207,7 @@ local sqto, sqro
 
 function SWEP:GetAnimationRate(ani)
 	local rate = 1
-	if not ani or ani < 0 or not self:VMIV() then return rate end
+	if not ani or ani < 0 or not self:VMIV() or not IsValid(self.OwnerViewModel) then return rate end
 	local nm = self.OwnerViewModel:GetSequenceName(self.OwnerViewModel:SelectWeightedSequence(ani))
 
 	if IsValid(self) then
