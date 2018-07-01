@@ -446,13 +446,14 @@ function SWEP:Deploy()
 	end
 
 	ct = l_CT()
-	self:VMIV()
+
 	if not self:VMIV() then
 		print("Invalid VM on owner: ")
 		print(self:GetOwner())
 
 		return
 	end
+
 	if not self.HasDetectedValidAnimations then
 		self:CacheAnimations()
 	end
