@@ -1,5 +1,6 @@
 local ATT_DIMENSION
 local ATT_MAX_SCREEN_RATIO = 1 / 3
+local tableCopy = table.Copy
 SWEP.Attachments = {} --[MDL_ATTACHMENT] = = { offset = { 0, 0 }, atts = { "sample_attachment_1", "sample_attachment_2" }, sel = 1, order = 1 } --offset will move the offset the display from the weapon attachment when using CW2.0 style attachment display --atts is a table containing the visible attachments --sel allows you to have an attachment pre-selected, and is used internally by the base to show which attachment is selected in each category. --order is the order it will appear in the TFA style attachment menu
 SWEP.AttachmentCache = {} --["att_name"] = true
 SWEP.AttachmentTableCache = {}
@@ -20,7 +21,7 @@ function SWEP:RemoveUnusedAttachments()
 				end
 			end
 
-			v.atts = table.Copy(t)
+			v.atts = tableCopy(t)
 		end
 
 		if #v.atts <= 0 then
@@ -118,12 +119,11 @@ end
 local tc
 
 function SWEP:CanAttach(attn)
-	local retVal = hook.Run("TFA_PreCanAttach",self,attn)
-	if retVal ~= nil then
-		return retVal
-	end
+	local retVal = hook.Run("TFA_PreCanAttach", self, attn)
+	if retVal ~= nil then return retVal end
+
 	if not self.HasBuiltMutualExclusions then
-		tc = table.Copy(self.AttachmentExclusions)
+		tc = tableCopy(self.AttachmentExclusions)
 
 		for k, v in pairs(tc) do
 			if k ~= "BaseClass" then
@@ -173,16 +173,15 @@ function SWEP:CanAttach(attn)
 			end
 		end
 	end
-	local retVal2 = hook.Run("TFA_CanAttach",self,attn)
-	if retVal2 ~= nil then
-		return retVal2
-	end
+
+	local retVal2 = hook.Run("TFA_CanAttach", self, attn)
+	if retVal2 ~= nil then return retVal2 end
 
 	return true
 end
 
 function SWEP:GetStatRecursive(srctbl, stbl, ...)
-	stbl = table.Copy(stbl)
+	stbl = tableCopy(stbl)
 
 	for _ = 1, #stbl do
 		if #stbl > 1 then
@@ -209,6 +208,8 @@ function SWEP:GetStatRecursive(srctbl, stbl, ...)
 
 				if not t then
 					t, final, nct = v(self, ...)
+				elseif istable(t) then
+					t, final, nct = v(self, tableCopy(t))
 				else
 					t, final, nct = v(self, t)
 				end
@@ -250,7 +251,7 @@ SWEP.StatStringCache = {}
 
 --[[
 local function mtbl(t1, t2)
-	local t = table.Copy(t1)
+	local t = tableCopy(t1)
 
 	for k, v in pairs(t2) do
 		t[k] = v
@@ -297,7 +298,7 @@ function SWEP:GetStat(stat, default)
 				self.StatCache[stat] = retval
 				finalReturn = retval
 			else
-				finalReturn = istable(default) and table.Copy(default) or default
+				finalReturn = istable(default) and tableCopy(default) or default
 			end
 		end
 
@@ -307,7 +308,7 @@ function SWEP:GetStat(stat, default)
 	else
 		if not self:OwnerIsValid() then
 			if IsValid(self) then
-				local finalReturn = self:GetStatRecursive(self, stbl, istable(default) and table.Copy(default) or default)
+				local finalReturn = self:GetStatRecursive(self, stbl, istable(default) and tableCopy(default) or default)
 				hook.Run("TFA_GetStat", stat, finalReturn)
 
 				return finalReturn
@@ -319,12 +320,12 @@ function SWEP:GetStat(stat, default)
 			return finalReturn
 		end
 
-		local cs = self:GetStatRecursive(self, stbl, istable(default) and table.Copy(default) or default)
+		local cs = self:GetStatRecursive(self, stbl, istable(default) and tableCopy(default) or default)
 		local ns, nc
 		ns, nc = self:GetStatRecursive(self.AttachmentTableCache, stbl, cs)
 
 		if istable(ns) and istable(cs) then
-			cs = table.Merge(table.Copy(cs), ns)
+			cs = table.Merge(tableCopy(cs), ns)
 		else
 			cs = ns
 		end
@@ -342,6 +343,7 @@ function SWEP:GetStat(stat, default)
 end
 
 local ATTACHMENT_SORTING_DEPENDENCIES = false
+
 function SWEP:ForceAttachmentReqs(attn)
 	if not ATTACHMENT_SORTING_DEPENDENCIES then
 		ATTACHMENT_SORTING_DEPENDENCIES = true
@@ -422,6 +424,7 @@ function SWEP:SetTFAAttachment(cat, id, nw, force)
 	end
 
 	self:BuildAttachmentCache()
+
 	if id > 0 then
 		self:ForceAttachmentReqs(attn)
 	else
@@ -446,16 +449,13 @@ end
 
 function SWEP:Attach(attname)
 	if not attname or not IsValid(self) then return false end
-
 	if self.AttachmentCache[attname] == nil then return false end
 
 	for cat, tbl in pairs(self.Attachments) do
 		local atts = tbl.atts
 
 		for id, att in ipairs(atts) do
-			if att == attname then
-				return self:SetTFAAttachment(cat, id, true, false)
-			end
+			if att == attname then return self:SetTFAAttachment(cat, id, true, false) end
 		end
 	end
 
@@ -464,9 +464,7 @@ end
 
 function SWEP:Detach(attname)
 	if not attname or not IsValid(self) then return false end
-
 	local cat = self.AttachmentCache[attname]
-
 	if not cat then return false end
 
 	return self:SetTFAAttachment(cat, 0, true, false)
@@ -561,7 +559,7 @@ function SWEP:GenerateVGUIAttachmentTable()
 
 	for i, k in ipairs(keyz) do
 		local v = self.Attachments[k]
-		self.VGUIAttachments[i] = table.Copy(v)
+		self.VGUIAttachments[i] = tableCopy(v)
 		self.VGUIAttachments[i].cat = k
 		self.VGUIAttachments[i].offset = nil
 		self.VGUIAttachments[i].order = nil
@@ -584,7 +582,7 @@ function SWEP:GenerateVGUIAttachmentTable()
 
 		if (#v.atts > max_row_atts) then
 			while (#v.atts > max_row_atts) do
-				local t = table.Copy(v)
+				local t = tableCopy(v)
 
 				for _ = 1, max_row_atts do
 					table.remove(t.atts, 1)
