@@ -231,7 +231,15 @@ function SWEP:NullifyOIV()
 end
 
 function SWEP:VMIV()
-	return IsValid(self.OwnerViewModel) and self.OwnerViewModel or false
+	if not IsValid(self.OwnerViewModel) then
+		if IsValid(self:GetOwner()) and self:GetOwner().GetViewModel then
+			self.OwnerViewModel = self:GetOwner():GetViewModel()
+		end
+
+		return false
+	else
+		return self.OwnerViewModel
+	end
 end
 
 function SWEP:CanChamber()
