@@ -41,7 +41,7 @@ function SWEP:ProcessEvents()
 	if sp then
 		self.LastAct = self:GetLastActivity()
 	end
-	local evtbl = self.EventTable[ self.LastAct or self:GetLastActivity() ]
+	local evtbl = self.EventTable[ self.LastAct or self:GetLastActivity() ] or self.EventTable[ self.OwnerViewModel:GetSequenceName(self.OwnerViewModel:GetSequence()) ]
 
 	if not evtbl then return end
 	for _, v in pairs(evtbl) do
