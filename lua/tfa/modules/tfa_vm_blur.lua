@@ -180,7 +180,15 @@ hook.Add("PostDrawViewModel", "TFA_DrawViewModel", function(vm, plyv, wep)
 			local candraw = hook.Run("PreDrawPlayerHands", hands, vm, plyv, wep)
 			STOP = false
 			if candraw ~= true then
+				if wep.ViewModelFlip then
+					render.CullMode(MATERIAL_CULLMODE_CW)
+				end
+
 				hands:DrawModel()
+
+				if wep.ViewModelFlip then
+					render.CullMode(MATERIAL_CULLMODE_CCW)
+				end
 			end
 
 			render.OverrideColorWriteEnable(false, false)
