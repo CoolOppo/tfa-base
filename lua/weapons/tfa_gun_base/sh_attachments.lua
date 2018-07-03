@@ -67,7 +67,7 @@ local function CloneTableRecursive(source, target)
 				temp = target[k]
 			end
 
-			target[k] = target[k] or {}
+			target[k] = istable(target[k]) and target[k] or {}
 			local t = target[k]
 			t.functionTable = true
 
