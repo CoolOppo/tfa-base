@@ -1342,6 +1342,7 @@ function SWEP:Reload(released)
 	elseif TFA.Enum.ReadyStatus[stat] or ( stat == TFA.Enum.STATUS_SHOOTING and self:CanInterruptShooting() ) then
 		if self:Clip1() < self:GetPrimaryClipSize() then
 			if hook.Run("TFA_Reload",self) then return end
+			self:SetBurstCount(0)
 			if self.Shotgun then
 				local _, tanim = self:ChooseShotgunReloadAnim()
 				if self.ShotgunEmptyAnim  then
