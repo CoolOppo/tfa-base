@@ -54,12 +54,12 @@ function SWEP:DrawLaser( is_vm )
 		render.SetMaterial(lasernoise)
 		render.DrawQuadEasy(traceres.HitPos, traceres.HitNormal, dot_sz / 2 * math.Rand( 0.7, 1.3 ), dot_sz / 2 * math.Rand( 0.7, 1.3 ) , col, math.random(-180,180))
 
+		render.OverrideDepthEnable(false, true)
+
 		if self.laserpos_old and trails_enabled_cv:GetBool() then
 			render.SetMaterial(laserline)
 			render.DrawBeam(self.laserpos_old, traceres.HitPos, dot_sz / 2, 0.2, 1, col )
 		end
-
-		render.OverrideDepthEnable(false, true)
 
 		self.laserpos_old = traceres.HitPos
 	else
@@ -86,7 +86,9 @@ function SWEP:DrawLaser( is_vm )
 		render.OverrideDepthEnable(true, true)
 		render.SetMaterial(laserlinetp)
 		render.SetColorModulation(1,1,1)
+		render.OverrideDepthEnable(false, true)
 		render.DrawBeam( angpos.Pos, traceres.HitPos, self.LaserBeamWidth or 0.25, 0, 8, col)
+		render.OverrideDepthEnable(true, true)
 		render.SetMaterial(laserdot)
 		render.DrawQuadEasy(traceres.HitPos, traceres.HitNormal, dot_sz, dot_sz, col, 0)
 		render.OverrideDepthEnable(false, true)
