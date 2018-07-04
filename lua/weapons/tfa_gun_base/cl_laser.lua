@@ -83,15 +83,11 @@ function SWEP:DrawLaser( is_vm )
 		traceres = util.QuickTrace( angpos.Pos, angpos.Ang:Forward() * 999999, self:GetOwner())
 		dot_sz = math.Rand( self.LaserDotMin or 2, self.LaserDotMax or 4 )
 
-		render.OverrideDepthEnable(true, true)
 		render.SetMaterial(laserlinetp)
 		render.SetColorModulation(1,1,1)
-		render.OverrideDepthEnable(false, true)
 		render.DrawBeam( angpos.Pos, traceres.HitPos, self.LaserBeamWidth or 0.25, 0, 8, col)
-		render.OverrideDepthEnable(true, true)
 		render.SetMaterial(laserdot)
 		render.DrawQuadEasy(traceres.HitPos, traceres.HitNormal, dot_sz, dot_sz, col, 0)
-		render.OverrideDepthEnable(false, true)
 	end
 end
 
