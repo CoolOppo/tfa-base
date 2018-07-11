@@ -135,9 +135,9 @@ function SWEP:CalculateBob(pos, ang, breathIntensity, walkIntensity, runIntensit
 			pos:Add(ri * math.sin(self.ti * rate_y) * scale_y * 0.1 * runIntensity * flip_v * 0.33)
 			pos:Add(fw * math.sin(self.ti * rate_y) * scale_y * 0.1 * runIntensity * 0.33)
 			ang:RotateAroundAxis(ang:Up(), math.sin(self.ti * rate_y) * scale_y * runIntensity * flip_v * 0.5)
-			pos:Add(ri * math.sin(self.ti * rate_r) * scale_r * 0.1 * runIntensity * flip_v * 0.66)
-			pos:Add(up * math.sin(self.ti * rate_r) * scale_r * 0.1 * runIntensity * 1)
-			ang:RotateAroundAxis(ang:Forward(), math.sin(self.ti * rate_r) * scale_r * runIntensity * flip_v * 0.66)
+			pos:Add(ri * math.sin(self.ti * rate_r) * scale_r * 0.1 * runIntensity * flip_v * 0.5)
+			pos:Add(up * math.sin(self.ti * rate_r) * scale_r * 0.1 * runIntensity * 0.7)
+			ang:RotateAroundAxis(ang:Forward(), math.sin(self.ti * rate_r) * scale_r * runIntensity * flip_v * 0.5)
 		end
 	end
 

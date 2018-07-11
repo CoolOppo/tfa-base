@@ -313,72 +313,15 @@ end
 --local viewpunch_cv, viewpunch_val
 
 function SWEP:GetViewModelPosition(pos, ang)
-	if self.pos_cached and self.ang_cached and pos and ang then
-		ang:RotateAroundAxis(ang:Right(), self.ang_cached.p)
-		ang:RotateAroundAxis(ang:Up(), self.ang_cached.y)
-		ang:RotateAroundAxis(ang:Forward(), self.ang_cached.r)
-		pos:Add(ang:Right() * self.pos_cached.x)
-		pos:Add(ang:Forward() * self.pos_cached.y)
-		pos:Add(ang:Up() * self.pos_cached.z)
-		return self:Sway(pos, ang)
-	else
+	if not self.pos_cached then
 		return pos, ang
 	end
-	--[[
-	if self.Owner:IsNPC() then return end
-	if not IsValid(self:GetOwner()) then return end
-	if not pos or not ang then return end
-	if not viewpunch_cv then
-		viewpunch_cv = GetConVar("cl_tfa_viewmodel_viewpunch")
-	end
-
-	if not viewpunch_val then
-		viewpunch_val = (1 - viewpunch_cv:GetInt())
-	else
-		local targ = math.Clamp((1 - viewpunch_cv:GetInt()) * (1 - (self.IronSightsProgress or 0)), 0, 1)
-		viewpunch_val = math.Approach(viewpunch_val, targ, (targ - viewpunch_val) * TFA.FrameTime() * 10)
-	end
-
-	local vpa = self:GetOwner():GetViewPunchAngles()
-	ang:RotateAroundAxis(ang:Right(), vpa.p * viewpunch_val)
-	ang:RotateAroundAxis(ang:Up(), -vpa.y * viewpunch_val)
-	ang:RotateAroundAxis(ang:Forward(), -vpa.r * viewpunch_val)
-
-	--Bobscale
-	if self.Sprint_Mode == TFA.Enum.LOCOMOTION_ANI then
-		self.SprintBobMult = 0
-	end
-
-	if (self.Idle_Mode ~= TFA.Enum.IDLE_LUA and self.Idle_Mode ~= TFA.Enum.IDLE_BOTH) then
-		intensityWalk = 0
-	end
-
-	--End viewbob code
-	if not self.ogviewmodelfov then
-		self.ogviewmodelfov = self.ViewModelFOV
-	end
-
-	vmfov = l_Lerp(self.IronSightsProgress, self.ogviewmodelfov * fovmod_mult:GetFloat(), self.ogviewmodelfov)
-	vmfov = l_Lerp(self.IronSightsProgress, vmfov + fovmod_add:GetFloat(), vmfov)
-	self.ViewModelFOV = vmfov
-
-	if self:GetStat("VMPos_Additive") then
-		pos:Add(ang:Right() * self.VMPos.x)
-		pos:Add(ang:Forward() * self.VMPos.y)
-		pos:Add(ang:Up() * self.VMPos.z)
-		ang:RotateAroundAxis(ang:Right(), self.VMAng.x)
-		ang:RotateAroundAxis(ang:Up(), self.VMAng.y)
-		ang:RotateAroundAxis(ang:Forward(), self.VMAng.z)
-	end
-
-	pos, ang = self:Sway(pos, ang)
-	ang:RotateAroundAxis(ang:Right(), vm_offset_ang.p)
-	ang:RotateAroundAxis(ang:Up(), vm_offset_ang.y)
-	ang:RotateAroundAxis(ang:Forward(), vm_offset_ang.r)
-	ang:RotateAroundAxis(ang:Forward(), -7.5 * (1 - math.abs(0.5 - self.IronSightsProgress) * 2) * (self:GetIronSights() and 1 or 0.5) * (self.ViewModelFlip and 1 or -1))
-	pos:Add(ang:Right() * vm_offset_pos.x)
-	pos:Add(ang:Forward() * vm_offset_pos.y)
-	pos:Add(ang:Up() * vm_offset_pos.z)
+	ang:RotateAroundAxis(ang:Right(), self.ang_cached.p)
+	ang:RotateAroundAxis(ang:Up(), self.ang_cached.y)
+	ang:RotateAroundAxis(ang:Forward(), self.ang_cached.r)
+	pos:Add(ang:Right() * self.pos_cached.x)
+	pos:Add(ang:Forward() * self.pos_cached.y)
+	pos:Add(ang:Up() * self.pos_cached.z)
 
 	if self:GetStat("BlowbackEnabled") and self.BlowbackCurrentRoot > 0.01 then
 		--if !(  self.Blowback_PistolMode and !( self:Clip1()==-1 or self:Clip1()>0 ) ) then
@@ -401,6 +344,5 @@ function SWEP:GetViewModelPosition(pos, ang)
 		pos = pos - ang:Up() * 5
 	end
 
-	return pos, ang
-	]]--
+	return self:Sway(pos, ang)
 end

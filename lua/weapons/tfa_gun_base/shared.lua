@@ -366,6 +366,10 @@ function SWEP:Initialize()
 	self:PathStatsTable("Secondary")
 	self:ClearStatCache()
 
+	if self.Sprint_Mode == TFA.Enum.LOCOMOTION_ANI then
+		self.SprintBobMult = 0
+	end
+
 	if not self.IronSightsMoveSpeed then
 		self.IronSightsMoveSpeed = self.MoveSpeed * 0.8
 	end
