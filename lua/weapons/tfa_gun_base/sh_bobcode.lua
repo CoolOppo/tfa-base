@@ -81,8 +81,8 @@ function SWEP:CalculateBob(pos, ang, breathIntensity, walkIntensity, runIntensit
 	walkIntensity = walkIntensitySmooth * gunbob_intensity * 1.5
 	runIntensity = runIntensity * gunbob_intensity * 1.5
 	--breathing
-	pos:Add(ri * math.cos(self.ti * walkRate / 2) * flip_v * breathIntensity * 0.6)
-	pos:Add(up * math.sin(self.ti * walkRate) * breathIntensity * 0.3)
+	pos:Add(riLocal * math.cos(self.ti * walkRate / 2) * flip_v * breathIntensity * 0.6)
+	pos:Add(upLocal * math.sin(self.ti * walkRate) * breathIntensity * 0.3)
 	--walk anims, danny method because i just can't
 	self.walkTI = (self.walkTI or 0) + delta * 160 / 60 * self:GetOwner():GetVelocity():Length2D() / self:GetOwner():GetWalkSpeed()
 	WalkPos.x = Lerp(delta * 5 * rateScaleFac, WalkPos.x, -math.sin(self.ti * walkRate * 0.5) * gunbob_intensity * walkIntensity)
