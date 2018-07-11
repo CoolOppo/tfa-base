@@ -62,6 +62,7 @@ function SWEP:CalculateViewModelFlip()
 end
 
 SWEP.WeaponLength = 0
+
 function SWEP:UpdateWeaponLength()
 	if not self:VMIV() then return end
 	local vm = self.OwnerViewModel
@@ -73,8 +74,8 @@ function SWEP:UpdateWeaponLength()
 	self.WeaponLength = math.abs(mzVec.x)
 end
 
-SWEP.NearWallVector = Vector(0.1,-0.5,-0.2):GetNormalized() * 0.5
-SWEP.NearWallVectorADS = Vector(0,-0.1,0)
+SWEP.NearWallVector = Vector(0.1, -0.5, -0.2):GetNormalized() * 0.5
+SWEP.NearWallVectorADS = Vector(0, -0.1, 0)
 
 function SWEP:CalculateNearWall(p, a)
 	if not self:OwnerIsValid() then return p, a end
@@ -82,6 +83,7 @@ function SWEP:CalculateNearWall(p, a)
 	local ea = self:GetOwner():EyeAngles()
 	local et = self:GetOwner():GetEyeTrace()
 	local dist = et.HitPos:Distance(sp)
+
 	if self.WeaponLength and self.WeaponLength > dist then
 		local nw_offset_vec = self:GetIronSights() and self.NearWallVectorADS or self.NearWallVector
 		local off = self.WeaponLength - dist
@@ -90,12 +92,13 @@ function SWEP:CalculateNearWall(p, a)
 		posCompensated:Add(ea:Right() * nw_offset_vec.x * off / 2 * (self.ViewModelFlip and -1 or 1))
 		posCompensated:Add(ea:Forward() * nw_offset_vec.y * off / 2)
 		posCompensated:Add(ea:Up() * nw_offset_vec.z * off / 2)
-		local angleComp = (et.HitPos-posCompensated):Angle()
-		a.x = a.x - math.AngleDifference(angleComp.p,ea.p) / 2
-		a.y = a.y + math.AngleDifference(angleComp.y,ea.y) / 2
+		local angleComp = (et.HitPos - posCompensated):Angle()
+		a.x = a.x - math.AngleDifference(angleComp.p, ea.p) / 2
+		a.y = a.y + math.AngleDifference(angleComp.y, ea.y) / 2
 	else
 		self:UpdateWeaponLength()
 	end
+
 	return p, a
 end
 
@@ -103,7 +106,7 @@ local target_pos, target_ang, adstransitionspeed, hls
 local flip_vec = Vector(-1, 1, 1)
 local flip_ang = Vector(1, -1, -1)
 local cl_tfa_viewmodel_offset_x
-local cl_tfa_viewmodel_offset_y, cl_tfa_viewmodel_offset_z, cl_tfa_viewmodel_centered, fovmod_add, fovmod_mult
+local cl_tfa_viewmodel_offset_y, cl_tfa_viewmodel_offset_z, cl_tfa_viewmodel_centered
 local intensityWalk, intensityRun, intensityBreath
 
 if CLIENT then
@@ -214,6 +217,7 @@ function SWEP:CalculateViewModelOffset(delta)
 		target_ang = self:GetStat("InspectAng") * 1
 		adstransitionspeed = 10
 	end
+
 	target_pos, target_ang = self:CalculateNearWall(target_pos, target_ang)
 
 	if self.VMPos_Additive then
@@ -227,13 +231,33 @@ function SWEP:CalculateViewModelOffset(delta)
 
 	target_ang.z = target_ang.z + -7.5 * (1 - math.abs(0.5 - self.IronSightsProgress) * 2) * (self:GetIronSights() and 1 or 0.5) * (self.ViewModelFlip and 1 or -1)
 
+	if self:GetHidden() then
+		target_pos.z = target_pos.z - 5
+	end
+
+	if self:GetStat("BlowbackEnabled") and self.BlowbackCurrentRoot > 0.01 then
+		local bbvec = self:GetStat("BlowbackVector")
+		target_pos = target_pos + bbvec * self.BlowbackCurrentRoot
+		local bbang = self:GetStat("BlowbackAngle") or angle_zero
+		bbvec = bbvec * 1
+		bbvec.x = bbang.p
+		bbvec.y = bbang.y
+		bbvec.z = bbang.r
+		target_ang = target_ang + bbvec * self.BlowbackCurrentRoot
+		bbang = self.BlowbackRandomAngle * (1 - math.max(0, self.IronSightsProgress) * .8)
+		bbvec.x = bbang.p
+		bbvec.y = bbang.y
+		bbvec.z = bbang.r
+		target_ang = target_ang + bbvec * self.BlowbackCurrentRoot
+		adstransitionspeed = adstransitionspeed + 15 * math.pow(self.BlowbackCurrentRoot,2)
+	end
+
 	vm_offset_pos.x = math.Approach(vm_offset_pos.x, target_pos.x, (target_pos.x - vm_offset_pos.x) * delta * adstransitionspeed)
 	vm_offset_pos.y = math.Approach(vm_offset_pos.y, target_pos.y, (target_pos.y - vm_offset_pos.y) * delta * adstransitionspeed)
 	vm_offset_pos.z = math.Approach(vm_offset_pos.z, target_pos.z, (target_pos.z - vm_offset_pos.z) * delta * adstransitionspeed)
 	vm_offset_ang.p = math.ApproachAngle(vm_offset_ang.p, target_ang.x, math.AngleDifference(target_ang.x, vm_offset_ang.p) * delta * adstransitionspeed)
 	vm_offset_ang.y = math.ApproachAngle(vm_offset_ang.y, target_ang.y, math.AngleDifference(target_ang.y, vm_offset_ang.y) * delta * adstransitionspeed)
 	vm_offset_ang.r = math.ApproachAngle(vm_offset_ang.r, target_ang.z, math.AngleDifference(target_ang.z, vm_offset_ang.r) * delta * adstransitionspeed)
-
 	intensityWalk = math.min(self:GetOwner():GetVelocity():Length2D() / self:GetOwner():GetWalkSpeed(), 1)
 	intensityBreath = l_Lerp(self.IronSightsProgress, self:GetStat("BreathScale", 0.2), self:GetStat("IronBobMultWalk", 0.5) * intensityWalk)
 	intensityWalk = intensityWalk * (1 - self.IronSightsProgress)
@@ -241,7 +265,6 @@ function SWEP:CalculateViewModelOffset(delta)
 	local velocity = math.max(self:GetOwner():GetVelocity():Length2D() * self:AirWalkScale() - self:GetOwner():GetVelocity().z * 0.5, 0)
 	local rate = math.min(math.max(0.15, math.sqrt(velocity / self:GetOwner():GetRunSpeed()) * 1.75), self:GetSprinting() and 5 or 3)
 	self.pos_cached, self.ang_cached = self:CalculateBob(vm_offset_pos * 1, vm_offset_ang * 1, math.max(intensityBreath - intensityWalk - intensityRun, 0), math.max(intensityWalk - intensityRun, 0), intensityRun, rate, delta)
-
 	--self.pos_cached, self.ang_cached = vm_offset_pos, vm_offset_ang
 end
 
@@ -305,44 +328,19 @@ end
 
 --local vmfov
 --local bbvec
-
 function SWEP:AirWalkScale()
 	return (self:OwnerIsValid() and self:GetOwner():IsOnGround()) and 1 or 0.2
 end
 
 --local viewpunch_cv, viewpunch_val
-
 function SWEP:GetViewModelPosition(pos, ang)
-	if not self.pos_cached then
-		return pos, ang
-	end
+	if not self.pos_cached then return pos, ang end
 	ang:RotateAroundAxis(ang:Right(), self.ang_cached.p)
 	ang:RotateAroundAxis(ang:Up(), self.ang_cached.y)
 	ang:RotateAroundAxis(ang:Forward(), self.ang_cached.r)
 	pos:Add(ang:Right() * self.pos_cached.x)
 	pos:Add(ang:Forward() * self.pos_cached.y)
 	pos:Add(ang:Up() * self.pos_cached.z)
-
-	if self:GetStat("BlowbackEnabled") and self.BlowbackCurrentRoot > 0.01 then
-		--if !(  self.Blowback_PistolMode and !( self:Clip1()==-1 or self:Clip1()>0 ) ) then
-		bbvec = self:GetStat("BlowbackVector")
-		pos:Add(ang:Right() * bbvec.x * self.BlowbackCurrentRoot)
-		pos:Add(ang:Forward() * bbvec.y * self.BlowbackCurrentRoot)
-		pos:Add(ang:Up() * bbvec.z * self.BlowbackCurrentRoot)
-		local bbang = self:GetStat("BlowbackAngle") or angle_zero
-		ang:RotateAroundAxis(ang:Right(), bbang.x * self.BlowbackCurrentRoot)
-		ang:RotateAroundAxis(ang:Up(), bbang.y * self.BlowbackCurrentRoot)
-		ang:RotateAroundAxis(ang:Forward(), bbang.z * self.BlowbackCurrentRoot)
-		bbang = self.BlowbackRandomAngle * (1 - math.max(0, self.IronSightsProgress) * .8)
-		ang:RotateAroundAxis(ang:Right(), bbang.x * self.BlowbackCurrentRoot)
-		ang:RotateAroundAxis(ang:Up(), bbang.y * self.BlowbackCurrentRoot)
-		ang:RotateAroundAxis(ang:Forward(), bbang.z * self.BlowbackCurrentRoot)
-		--end
-	end
-
-	if self:GetHidden() then
-		pos = pos - ang:Up() * 5
-	end
 
 	return self:Sway(pos, ang)
 end
