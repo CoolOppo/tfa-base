@@ -718,8 +718,10 @@ function SWEP:UpdateBonePositions(vm)
 
 		if not self.HasSetMetaVMBM then
 			for k,v in pairs(self.ViewModelBoneMods) do
-				if v.scale and v.scale.x ~= 1 or v.scale.y ~= 1 or v.scale.z ~= 1 then
-					self:ScaleChildBoneMods(vm,k)
+				local scale = v.scale
+
+				if scale and scale.x ~= 1 or scale.y ~= 1 or scale.z ~= 1 then
+					self:ScaleChildBoneMods(vm, k)
 				end
 			end
 			for _,v in pairs(self.BlowbackBoneMods) do
