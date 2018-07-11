@@ -229,6 +229,10 @@ end
 
 --Clientside Convars
 if CLIENT then
+	if GetConVar("cl_tfa_viewbob_intensity") == nil then
+		CreateClientConVar("cl_tfa_viewbob_intensity", 1, true, false, "View bob intensity multiplier")
+	end
+
 	if GetConVar("cl_tfa_gunbob_intensity") == nil then
 		CreateClientConVar("cl_tfa_gunbob_intensity", 1, true, false, "Gun bob intensity multiplier")
 	end
