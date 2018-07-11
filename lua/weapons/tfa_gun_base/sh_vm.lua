@@ -26,14 +26,14 @@ end
 --
 local vm_offset_pos = Vector()
 local vm_offset_ang = Angle()
-local l_FT = FrameTime
-local ft = 0.01
 --local fps_max_cvar = GetConVar("fps_max")
-local righthanded, shouldflip, cl_vm_flip_cv
+local righthanded, shouldflip, cl_vm_flip_cv, fovmod_add, fovmod_mult
 
 function SWEP:CalculateViewModelFlip()
 	if CLIENT and not cl_vm_flip_cv then
 		cl_vm_flip_cv = GetConVar("cl_tfa_viewmodel_flip")
+		fovmod_add = GetConVar("cl_tfa_viewmodel_offset_fov")
+		fovmod_mult = GetConVar("cl_tfa_viewmodel_multiplier_fov")
 	end
 
 	if self.ViewModelFlipDefault == nil then
@@ -59,6 +59,9 @@ function SWEP:CalculateViewModelFlip()
 	if self.ViewModelFlip ~= shouldflip then
 		self.ViewModelFlip = shouldflip
 	end
+
+	self.ViewModelFOV_OG = self.ViewModelFOV_OG or self.ViewModelFOV
+	self.ViewModelFOV = self.ViewModelFOV_OG * fovmod_mult:GetFloat() + fovmod_add:GetFloat()
 end
 
 SWEP.WeaponLength = 0
@@ -114,14 +117,13 @@ if CLIENT then
 	cl_tfa_viewmodel_offset_y = GetConVar("cl_tfa_viewmodel_offset_y")
 	cl_tfa_viewmodel_offset_z = GetConVar("cl_tfa_viewmodel_offset_z")
 	cl_tfa_viewmodel_centered = GetConVar("cl_tfa_viewmodel_centered")
-	fovmod_add = GetConVar("cl_tfa_viewmodel_offset_fov")
-	fovmod_mult = GetConVar("cl_tfa_viewmodel_multiplier_fov")
 end
 
 target_pos = Vector()
 target_ang = Vector()
 local centered_sprintpos = Vector(0, -1, 1)
 local centered_sprintang = Vector(-15, 0, 0)
+local vmviewpunch_cv
 
 function SWEP:CalculateViewModelOffset(delta)
 	ft = delta
@@ -249,7 +251,16 @@ function SWEP:CalculateViewModelOffset(delta)
 		bbvec.y = bbang.y
 		bbvec.z = bbang.r
 		target_ang = target_ang + bbvec * self.BlowbackCurrentRoot
-		adstransitionspeed = adstransitionspeed + 15 * math.pow(self.BlowbackCurrentRoot,2)
+		adstransitionspeed = adstransitionspeed + 15 * math.pow(self.BlowbackCurrentRoot, 2)
+	end
+
+	if vmviewpunch_cv and not vmviewpunch_cv:GetBool() then
+		local vpa = self:GetOwner():GetViewPunchAngles()
+		target_ang.x = target_ang.x + vpa.p
+		target_ang.y = target_ang.y + vpa.y
+		target_ang.z = target_ang.z + vpa.r
+	elseif not vmviewpunch_cv then
+		vmviewpunch_cv = GetConVar("cl_tfa_viewmodel_viewpunch")
 	end
 
 	vm_offset_pos.x = math.Approach(vm_offset_pos.x, target_pos.x, (target_pos.x - vm_offset_pos.x) * delta * adstransitionspeed)
@@ -258,14 +269,15 @@ function SWEP:CalculateViewModelOffset(delta)
 	vm_offset_ang.p = math.ApproachAngle(vm_offset_ang.p, target_ang.x, math.AngleDifference(target_ang.x, vm_offset_ang.p) * delta * adstransitionspeed)
 	vm_offset_ang.y = math.ApproachAngle(vm_offset_ang.y, target_ang.y, math.AngleDifference(target_ang.y, vm_offset_ang.y) * delta * adstransitionspeed)
 	vm_offset_ang.r = math.ApproachAngle(vm_offset_ang.r, target_ang.z, math.AngleDifference(target_ang.z, vm_offset_ang.r) * delta * adstransitionspeed)
+
 	intensityWalk = math.min(self:GetOwner():GetVelocity():Length2D() / self:GetOwner():GetWalkSpeed(), 1)
 	intensityBreath = l_Lerp(self.IronSightsProgress, self:GetStat("BreathScale", 0.2), self:GetStat("IronBobMultWalk", 0.5) * intensityWalk)
 	intensityWalk = intensityWalk * (1 - self.IronSightsProgress)
 	intensityRun = l_Lerp(self.SprintProgress, 0, self.SprintBobMult)
 	local velocity = math.max(self:GetOwner():GetVelocity():Length2D() * self:AirWalkScale() - self:GetOwner():GetVelocity().z * 0.5, 0)
 	local rate = math.min(math.max(0.15, math.sqrt(velocity / self:GetOwner():GetRunSpeed()) * 1.75), self:GetSprinting() and 5 or 3)
+
 	self.pos_cached, self.ang_cached = self:CalculateBob(vm_offset_pos * 1, vm_offset_ang * 1, math.max(intensityBreath - intensityWalk - intensityRun, 0), math.max(intensityWalk - intensityRun, 0), intensityRun, rate, delta)
-	--self.pos_cached, self.ang_cached = vm_offset_pos, vm_offset_ang
 end
 
 --[[
@@ -332,7 +344,6 @@ function SWEP:AirWalkScale()
 	return (self:OwnerIsValid() and self:GetOwner():IsOnGround()) and 1 or 0.2
 end
 
---local viewpunch_cv, viewpunch_val
 function SWEP:GetViewModelPosition(pos, ang)
 	if not self.pos_cached then return pos, ang end
 	ang:RotateAroundAxis(ang:Right(), self.ang_cached.p)
