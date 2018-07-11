@@ -120,9 +120,8 @@ target_ang = Vector()
 local centered_sprintpos = Vector(0, -1, 1)
 local centered_sprintang = Vector(-15, 0, 0)
 
-function SWEP:CalculateViewModelOffset()
-	ft = TFA.FrameTime()
-	if self.Owner:IsNPC() then return end
+function SWEP:CalculateViewModelOffset(delta)
+	ft = delta
 
 	if self:GetStat("VMPos_Additive") then
 		target_pos:Zero()
@@ -217,13 +216,33 @@ function SWEP:CalculateViewModelOffset()
 	end
 	target_pos, target_ang = self:CalculateNearWall(target_pos, target_ang)
 
-	vm_offset_pos.x = math.Approach(vm_offset_pos.x, target_pos.x, (target_pos.x - vm_offset_pos.x) * ft * adstransitionspeed)
-	vm_offset_pos.y = math.Approach(vm_offset_pos.y, target_pos.y, (target_pos.y - vm_offset_pos.y) * ft * adstransitionspeed)
-	vm_offset_pos.z = math.Approach(vm_offset_pos.z, target_pos.z, (target_pos.z - vm_offset_pos.z) * ft * adstransitionspeed)
-	vm_offset_ang.p = math.ApproachAngle(vm_offset_ang.p, target_ang.x, math.AngleDifference(target_ang.x, vm_offset_ang.p) * ft * adstransitionspeed)
-	vm_offset_ang.y = math.ApproachAngle(vm_offset_ang.y, target_ang.y, math.AngleDifference(target_ang.y, vm_offset_ang.y) * ft * adstransitionspeed)
-	vm_offset_ang.r = math.ApproachAngle(vm_offset_ang.r, target_ang.z, math.AngleDifference(target_ang.z, vm_offset_ang.r) * ft * adstransitionspeed)
-	self:Sway(self:GetOwner():GetShootPos(), self:GetOwner():EyeAngles(), true)
+	if self.VMPos_Additive then
+		target_pos.x = target_pos.x + self.VMPos.x
+		target_pos.y = target_pos.y + self.VMPos.y
+		target_pos.z = target_pos.z + self.VMPos.z
+		target_ang.x = target_ang.x + self.VMAng.x
+		target_ang.y = target_ang.y + self.VMAng.y
+		target_ang.z = target_ang.z + self.VMAng.z
+	end
+
+	target_ang.z = target_ang.z + -7.5 * (1 - math.abs(0.5 - self.IronSightsProgress) * 2) * (self:GetIronSights() and 1 or 0.5) * (self.ViewModelFlip and 1 or -1)
+
+	vm_offset_pos.x = math.Approach(vm_offset_pos.x, target_pos.x, (target_pos.x - vm_offset_pos.x) * delta * adstransitionspeed)
+	vm_offset_pos.y = math.Approach(vm_offset_pos.y, target_pos.y, (target_pos.y - vm_offset_pos.y) * delta * adstransitionspeed)
+	vm_offset_pos.z = math.Approach(vm_offset_pos.z, target_pos.z, (target_pos.z - vm_offset_pos.z) * delta * adstransitionspeed)
+	vm_offset_ang.p = math.ApproachAngle(vm_offset_ang.p, target_ang.x, math.AngleDifference(target_ang.x, vm_offset_ang.p) * delta * adstransitionspeed)
+	vm_offset_ang.y = math.ApproachAngle(vm_offset_ang.y, target_ang.y, math.AngleDifference(target_ang.y, vm_offset_ang.y) * delta * adstransitionspeed)
+	vm_offset_ang.r = math.ApproachAngle(vm_offset_ang.r, target_ang.z, math.AngleDifference(target_ang.z, vm_offset_ang.r) * delta * adstransitionspeed)
+
+	intensityWalk = math.min(self:GetOwner():GetVelocity():Length2D() / self:GetOwner():GetWalkSpeed(), 1)
+	intensityBreath = l_Lerp(self.IronSightsProgress, self:GetStat("BreathScale", 0.2), self:GetStat("IronBobMultWalk", 0.5) * intensityWalk)
+	intensityWalk = intensityWalk * (1 - self.IronSightsProgress)
+	intensityRun = l_Lerp(self.SprintProgress, 0, self.SprintBobMult)
+	local velocity = math.max(self:GetOwner():GetVelocity():Length2D() * self:AirWalkScale() - self:GetOwner():GetVelocity().z * 0.5, 0)
+	local rate = math.min(math.max(0.15, math.sqrt(velocity / self:GetOwner():GetRunSpeed()) * 1.75), self:GetSprinting() and 5 or 3)
+	self.pos_cached, self.ang_cached = self:CalculateBob(vm_offset_pos * 1, vm_offset_ang * 1, math.max(intensityBreath - intensityWalk - intensityRun, 0), math.max(intensityWalk - intensityRun, 0), intensityRun, rate, delta)
+
+	--self.pos_cached, self.ang_cached = vm_offset_pos, vm_offset_ang
 end
 
 --[[
@@ -238,9 +257,8 @@ local rft, eyeAngles, viewPunch, oldEyeAngles, delta, motion, counterMotion, com
 --swayRate = 10
 local gunswaycvar = GetConVar("cl_tfa_gunbob_intensity")
 
-function SWEP:Sway(pos, ang, doCalc)
+function SWEP:Sway(pos, ang, ftv)
 	--sanity check
-	if self.Owner:IsNPC() then return end
 	if not self:OwnerIsValid() then return pos, ang end
 	--convar
 	fac = gunswaycvar:GetFloat() * 3 * ((1 - (self.IronSightsProgress or 0)) * 0.85 + 0.15)
@@ -250,18 +268,18 @@ function SWEP:Sway(pos, ang, doCalc)
 	motion = motion or Angle()
 	counterMotion = counterMotion or Angle()
 	compensation = compensation or Angle()
-	--grab eye angles
-	eyeAngles = self:GetOwner():EyeAngles()
-	viewPunch = self:GetOwner():GetViewPunchAngles()
-	eyeAngles.p = eyeAngles.p - viewPunch.p
-	eyeAngles.y = eyeAngles.y - viewPunch.y
-	oldEyeAngles = oldEyeAngles or eyeAngles
-	--calculate delta
-	rft = math.Clamp(l_FT(), 0.001, 1 / 20)
-	wiggleFactor = (1 - self:GetStat("MoveSpeed")) / 0.6 + 0.15
-	swayRate = math.pow(self:GetStat("MoveSpeed"), 1.5) * 10
 
-	if doCalc then
+	if ftv then
+		--grab eye angles
+		eyeAngles = self:GetOwner():EyeAngles()
+		viewPunch = self:GetOwner():GetViewPunchAngles()
+		eyeAngles.p = eyeAngles.p - viewPunch.p
+		eyeAngles.y = eyeAngles.y - viewPunch.y
+		oldEyeAngles = oldEyeAngles or eyeAngles
+		--calculate delta
+		wiggleFactor = (1 - self:GetStat("MoveSpeed")) / 0.6 + 0.15
+		swayRate = math.pow(self:GetStat("MoveSpeed"), 1.5) * 10
+		rft = math.Clamp(ftv, 0.001, 1 / 20)
 		local clampFac = 1.1 - math.min((math.abs(motion.p) + math.abs(motion.y) + math.abs(motion.r)) / 20, 1)
 		delta.p = math.AngleDifference(eyeAngles.p, oldEyeAngles.p) / rft / 120 * clampFac
 		delta.y = math.AngleDifference(eyeAngles.y, oldEyeAngles.y) / rft / 120 * clampFac
@@ -281,27 +299,32 @@ function SWEP:Sway(pos, ang, doCalc)
 	ang:RotateAroundAxis(ang:Right(), motion.p * fac)
 	ang:RotateAroundAxis(ang:Up(), -motion.y * 0.66 * fac * flipFactor)
 	ang:RotateAroundAxis(ang:Forward(), counterMotion.r * 0.5 * fac * flipFactor)
-	intensityWalk = math.min(self:GetOwner():GetVelocity():Length2D() / self:GetOwner():GetWalkSpeed(), 1)
-	intensityBreath = l_Lerp(self.IronSightsProgress, self:GetStat("BreathScale", 0.2), self:GetStat("IronBobMultWalk", 0.5) * intensityWalk)
-	intensityWalk = intensityWalk * (1 - self.IronSightsProgress)
-	intensityRun = l_Lerp(self.SprintProgress, 0, self.SprintBobMult)
-	local velocity = math.max(self:GetOwner():GetVelocity():Length2D() * self:AirWalkScale() - self:GetOwner():GetVelocity().z * 0.5, 0)
-	local rate = math.min(math.max(0.15, math.sqrt(velocity / self:GetOwner():GetRunSpeed()) * 1.75), self:GetSprinting() and 5 or 3)
-	pos, ang = self:CalculateBob(pos, ang, math.max(intensityBreath - intensityWalk - intensityRun, 0), math.max(intensityWalk - intensityRun, 0), intensityRun, rate, doCalc)
 
 	return pos, ang
 end
 
-local vmfov
-local bbvec
+--local vmfov
+--local bbvec
 
 function SWEP:AirWalkScale()
 	return (self:OwnerIsValid() and self:GetOwner():IsOnGround()) and 1 or 0.2
 end
 
-local viewpunch_cv, viewpunch_val
+--local viewpunch_cv, viewpunch_val
 
 function SWEP:GetViewModelPosition(pos, ang)
+	if self.pos_cached and self.ang_cached and pos and ang then
+		ang:RotateAroundAxis(ang:Right(), self.ang_cached.p)
+		ang:RotateAroundAxis(ang:Up(), self.ang_cached.y)
+		ang:RotateAroundAxis(ang:Forward(), self.ang_cached.r)
+		pos:Add(ang:Right() * self.pos_cached.x)
+		pos:Add(ang:Forward() * self.pos_cached.y)
+		pos:Add(ang:Up() * self.pos_cached.z)
+		return self:Sway(pos, ang)
+	else
+		return pos, ang
+	end
+	--[[
 	if self.Owner:IsNPC() then return end
 	if not IsValid(self:GetOwner()) then return end
 	if not pos or not ang then return end
@@ -379,4 +402,5 @@ function SWEP:GetViewModelPosition(pos, ang)
 	end
 
 	return pos, ang
+	]]--
 end

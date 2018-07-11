@@ -639,8 +639,6 @@ function SWEP:PlayerThinkCL()
 	ft = TFA.FrameTime()
 	if not self:NullifyOIV() then return end
 	self:OwnerIsValid()
-	self:CalculateViewModelOffset()
-	self:CalculateViewModelFlip()
 	self:SmokePCFLighting()
 	self:CalculateRatios(true)
 	if sp then

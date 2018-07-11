@@ -113,35 +113,3 @@ function SWEP:CalculateConeRecoil()
 
 	return ccon, crec
 end
-
-local righthanded, shouldflip, cl_vm_flip_cv
-
-function SWEP:CalculateViewModelFlip()
-	if CLIENT and not cl_vm_flip_cv then
-		cl_vm_flip_cv = GetConVar("cl_tfa_viewmodel_flip")
-	end
-
-	if self.ViewModelFlipDefault == nil then
-		self.ViewModelFlipDefault = self.ViewModelFlip
-	end
-
-	righthanded = true
-
-	if SERVER and self:GetOwner():GetInfoNum("cl_tfa_viewmodel_flip", 0) == 1 then
-		righthanded = false
-	end
-
-	if CLIENT and cl_vm_flip_cv:GetBool() then
-		righthanded = false
-	end
-
-	shouldflip = self.ViewModelFlipDefault
-
-	if not righthanded then
-		shouldflip = not self.ViewModelFlipDefault
-	end
-
-	if self.ViewModelFlip ~= shouldflip then
-		self.ViewModelFlip = shouldflip
-	end
-end

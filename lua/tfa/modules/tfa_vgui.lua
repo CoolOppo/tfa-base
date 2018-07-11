@@ -350,7 +350,6 @@ if CLIENT then
 			cl_tfa_viewbob_animated = "0",
 			cl_tfa_gunbob_intensity = "1",
 			cl_tfa_viewmodel_viewpunch = "1",
-			cl_tfa_viewbob_intensity = "1",
 			cl_tfa_viewmodel_offset_x = "0",
 			cl_tfa_viewmodel_offset_y = "0",
 			cl_tfa_viewmodel_offset_z = "0",
@@ -376,14 +375,6 @@ if CLIENT then
 		panel:AddControl("Slider", {
 			Label = "Gun Bob Intensity",
 			Command = "cl_tfa_gunbob_intensity",
-			Type = "Float",
-			Min = "0",
-			Max = "2"
-		})
-
-		panel:AddControl("Slider", {
-			Label = "View Bob Intensity",
-			Command = "cl_tfa_viewbob_intensity",
 			Type = "Float",
 			Min = "0",
 			Max = "2"

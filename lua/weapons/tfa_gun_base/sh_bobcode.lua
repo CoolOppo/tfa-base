@@ -30,15 +30,14 @@ local xVelocity, xVelocitySmooth, rightVec = 0, 0, Vector()
 local flatVec = Vector(1, 1, 0)
 local WalkPos = Vector()
 local WalkPosLagged = Vector()
-local sv_cheats_cv = GetConVar("sv_cheats")
-local host_timescale_cv = GetConVar("host_timescale")
 local gunbob_intensity_cvar = GetConVar("cl_tfa_gunbob_intensity")
 local gunbob_intensity = 0
 SWEP.VMOffsetWalk = Vector(0.5, -0.5, -0.5)
 SWEP.footstepTotal = 0
 SWEP.footstepTotalTarget = 0
+local upVec, riVec, fwVec = Vector(0, 0, 1), Vector(1, 0, 0), Vector(0, 1, 0)
 
-function SWEP:CalculateBob(pos, ang, breathIntensity, walkIntensity, runIntensity, rate, doIt)
+function SWEP:CalculateBob(pos, ang, breathIntensity, walkIntensity, runIntensity, rate, ftv)
 	if not self:OwnerIsValid() then return end
 	rate = math.min(rate or 0.5, rate_clamp)
 	gunbob_intensity = gunbob_intensity_cvar:GetFloat()
@@ -46,10 +45,10 @@ function SWEP:CalculateBob(pos, ang, breathIntensity, walkIntensity, runIntensit
 	local up = ang:Up()
 	local ri = ang:Right()
 	local fw = ang:Forward()
-	local delta = FrameTime() * (doIt and 1 or 0) --math.min( SysTime() - self.LastCalcBob, FrameTime() )
-	--if sv_cheats_cv:GetBool() then
-	--	delta = delta * host_timescale_cv:GetFloat()
-	--end
+	local upLocal = upVec
+	local riLocal = riVec
+	local fwLocal = fwVec
+	local delta = ftv
 	local flip_v = self.ViewModelFlip and -1 or 1
 	--delta = delta * game.GetTimeScale()
 	--self.LastCalcBob = SysTime()
@@ -90,9 +89,9 @@ function SWEP:CalculateBob(pos, ang, breathIntensity, walkIntensity, runIntensit
 	WalkPos.y = Lerp(delta * 5 * rateScaleFac, WalkPos.y, math.sin(self.ti * walkRate) / 1.5 * gunbob_intensity * walkIntensity)
 	WalkPosLagged.x = Lerp(delta * 5 * rateScaleFac, WalkPosLagged.x, -math.sin((self.ti * walkRate * 0.5) + math.pi / 3) * gunbob_intensity * walkIntensity)
 	WalkPosLagged.y = Lerp(delta * 5 * rateScaleFac, WalkPosLagged.y, math.sin(self.ti * walkRate + math.pi / 3) / 1.5 * gunbob_intensity * walkIntensity)
-	pos:Add(WalkPos.x * 0.33 * ri)
-	pos:Add(WalkPos.y * 0.25 * up)
-	ang:RotateAroundAxis(ri, WalkPosLagged.y)
+	pos:Add(WalkPos.x * 0.33 * riLocal)
+	pos:Add(WalkPos.y * 0.25 * upLocal)
+	ang:RotateAroundAxis(ri, -WalkPosLagged.y)
 	ang:RotateAroundAxis(up, WalkPosLagged.x)
 	ang:RotateAroundAxis(fw, WalkPos.x)
 	--constant offset
@@ -119,74 +118,28 @@ function SWEP:CalculateBob(pos, ang, breathIntensity, walkIntensity, runIntensit
 	if self.SprintProgress > 0.005 then
 		if self.SprintStyle == 1 then
 			local intensity3 = math.max(runIntensity - 0.3, 0) / (1 - 0.3)
-			ang:RotateAroundAxis(ang:Forward(), math.sin(self.ti * pist_rate) * pist_scale * intensity3 * 0.33)
-			ang:RotateAroundAxis(ang:Forward(), math.sin(self.ti * pist_rate) * pist_scale * intensity3 * 0.33 * 0.1)
-			pos:Add(ang:Right() * math.sin(self.ti * pist_rate) * pist_scale * 0.15 * intensity3 * 0.33)
-			pos:Add(ang:Up() * math.sin(self.ti * pist_rate * 2 + math.pi) * pist_scale * -0.1 * intensity3 * 0.33)
+			ang:RotateAroundAxis(up, math.sin(self.ti * pist_rate) * pist_scale * intensity3 * 0.33 * 0.6)
+			ang:RotateAroundAxis(ri, math.sin(self.ti * pist_rate) * pist_scale * intensity3 * 0.33 * 0.25)
+			ang:RotateAroundAxis(fw, math.sin(self.ti * pist_rate) * pist_scale * intensity3 * 0.33 * 0.25)
+			pos:Add(fwLocal * math.sin(self.ti * pist_rate) * pist_scale * 0.1 * intensity3 * 0.33)
+			pos:Add(fwLocal * math.sin(self.ti * pist_rate * 2 + math.pi) * pist_scale * -0.1 * intensity3 * 0.5)
+			pos:Add(riLocal * math.sin(self.ti * pist_rate) * pist_scale * 0.15 * intensity3 * 0.33 * 1)
 		else
-			pos:Add(up * math.sin(self.ti * rate_up) * scale_up * runIntensity * 0.33)
+			pos:Add(-up * math.sin(self.ti * rate_up) * scale_up * runIntensity * 0.33)
 			pos:Add(ri * math.sin(self.ti * rate_right) * scale_right * runIntensity * flip_v * 0.33)
-			pos:Add(ea:Forward() * math.max(math.sin(self.ti * rate_forward_view), 0) * scale_forward_view * runIntensity * 0.33)
-			pos:Add(ea:Right() * math.sin(self.ti * rate_right_view) * scale_right_view * runIntensity * flip_v * 0.33)
+			pos:Add(fwLocal * math.max(math.sin(self.ti * rate_forward_view), 0) * scale_forward_view * runIntensity * 0.33)
+			pos:Add(riLocal * math.sin(self.ti * rate_right_view) * scale_right_view * runIntensity * flip_v * 0.33)
 			ang:RotateAroundAxis(ri, math.sin(self.ti * rate_p) * scale_p * runIntensity * 0.33)
-			pos:Add(-up * math.sin(self.ti * rate_p) * scale_p * 0.1 * runIntensity * 0.33)
+			pos:Add(up * math.sin(self.ti * rate_p) * scale_p * 0.1 * runIntensity * 0.33)
 			pos:Add(-fw * math.sin(self.ti * rate_p) * scale_p * 0.1 * runIntensity * 0.33)
-			ang:RotateAroundAxis(ang:Up(), math.sin(self.ti * rate_y) * scale_y * runIntensity * flip_v * 0.33)
 			pos:Add(ri * math.sin(self.ti * rate_y) * scale_y * 0.1 * runIntensity * flip_v * 0.33)
 			pos:Add(fw * math.sin(self.ti * rate_y) * scale_y * 0.1 * runIntensity * 0.33)
-			ang:RotateAroundAxis(ang:Forward(), math.sin(self.ti * rate_r) * scale_r * runIntensity * flip_v * 0.33)
-			pos:Add(ri * math.sin(self.ti * rate_r) * scale_r * 0.1 * runIntensity * flip_v * 0.33)
-			pos:Add(-up * math.sin(self.ti * rate_r) * scale_r * 0.1 * runIntensity * 0.33)
+			ang:RotateAroundAxis(ang:Up(), math.sin(self.ti * rate_y) * scale_y * runIntensity * flip_v * 0.5)
+			pos:Add(ri * math.sin(self.ti * rate_r) * scale_r * 0.1 * runIntensity * flip_v * 0.66)
+			pos:Add(up * math.sin(self.ti * rate_r) * scale_r * 0.1 * runIntensity * 1)
+			ang:RotateAroundAxis(ang:Forward(), math.sin(self.ti * rate_r) * scale_r * runIntensity * flip_v * 0.66)
 		end
 	end
-
-	return pos, ang
-end
-
-SWEP.BobEyeFocus = 512
-
-function SWEP:CalculateViewBob(pos, ang, runIntensity, compensate)
-	if not self:OwnerIsValid() then return end
-	local up = ang:Up()
-	local ri = ang:Right()
-	local opos = pos * 1
-	local ldist = self:GetOwner():GetEyeTraceNoCursor().HitPos:Distance(pos)
-	local delta = math.min(SysTime() - self.LastCalcViewBob, FrameTime(), 1 / 30)
-
-	if sv_cheats_cv:GetBool() then
-		delta = delta * host_timescale_cv:GetFloat()
-	end
-
-	delta = delta * game.GetTimeScale()
-	self.LastCalcViewBob = SysTime()
-	local rate = self.bobRateCached or 0
-	self.tiView = self.tiView + delta * rate
-
-	if ldist <= 0 then
-		local e = self:GetOwner():GetEyeTraceNoCursor().Entity
-
-		if not (IsValid(e) and not e:IsWorld()) then
-			e = nil
-		end
-
-		ldist = util.QuickTrace(pos, ang:Forward() * 999999, {self:GetOwner(), e}).HitPos:Distance(pos)
-	end
-
-	self.BobEyeFocus = math.Approach(self.BobEyeFocus, ldist, (ldist - self.BobEyeFocus) * delta * 10)
-	pos:Add(up * math.sin((self.tiView + 0.5) * rate_up) * scale_up * runIntensity * -7)
-	pos:Add(ri * math.sin((self.tiView + 0.5) * rate_right) * scale_right * runIntensity * -7)
-	--ang = ang + vpa
-	local tpos = opos + self.BobEyeFocus * ang:Forward()
-	local oang = ang * 1
-	local nang = (tpos - pos):GetNormalized():Angle()
-	ang:Normalize()
-	nang:Normalize()
-	local vfac = math.Clamp(1 - math.pow(math.abs(oang.p) / 90, 3), 0, 1) * (math.Clamp(ldist / 196, 0, 1) * 0.7 + 0.3) * compensate
-	ang.y = ang.y - math.Clamp(math.AngleDifference(ang.y, nang.y), -2, 2) * vfac
-	ang.p = ang.p - math.Clamp(math.AngleDifference(ang.p, nang.p), -2, 2) * vfac
-	--ang:Normalize()
-	--ang.r = oang.r
-	--print(ang)
 
 	return pos, ang
 end
