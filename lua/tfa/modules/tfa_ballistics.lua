@@ -101,7 +101,7 @@ function TFA.Ballistics.Bullets:Add(bulletStruct, originalBulletData)
 	b.bul = CopyTable(originalBulletData or b.bul)
 	self[TFA.Ballistics.BulletCount] = b
 
-	if SERVER then
+	if SERVER and cv_ts:GetFloat() > 0.99 then
 		b:Update(FrameTime())
 	end
 

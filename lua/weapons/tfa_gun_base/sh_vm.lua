@@ -277,7 +277,7 @@ function SWEP:CalculateViewModelOffset(delta)
 	local velocity = math.max(self:GetOwner():GetVelocity():Length2D() * self:AirWalkScale() - self:GetOwner():GetVelocity().z * 0.5, 0)
 	local rate = math.min(math.max(0.15, math.sqrt(velocity / self:GetOwner():GetRunSpeed()) * 1.75), self:GetSprinting() and 5 or 3)
 
-	self.pos_cached, self.ang_cached = self:CalculateBob(vm_offset_pos * 1, vm_offset_ang * 1, math.max(intensityBreath - intensityWalk - intensityRun, 0), math.max(intensityWalk - intensityRun, 0), intensityRun, rate, delta)
+	self.pos_cached, self.ang_cached = self:WalkBob(vm_offset_pos * 1, vm_offset_ang * 1, math.max(intensityBreath - intensityWalk - intensityRun, 0), math.max(intensityWalk - intensityRun, 0), rate, delta)
 end
 
 --[[
@@ -352,6 +352,6 @@ function SWEP:GetViewModelPosition(pos, ang)
 	pos:Add(ang:Right() * self.pos_cached.x)
 	pos:Add(ang:Forward() * self.pos_cached.y)
 	pos:Add(ang:Up() * self.pos_cached.z)
-
-	return self:Sway(pos, ang)
+	pos, ang = self:Sway(pos, ang)
+	return self:SprintBob(pos, ang, l_Lerp(self.SprintProgress, 0, self.SprintBobMult))
 end
