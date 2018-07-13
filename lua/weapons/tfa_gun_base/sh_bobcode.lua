@@ -130,7 +130,7 @@ function SWEP:SprintBob(pos, ang, intensity)
 		if self.SprintStyle == 1 then
 			local intensity3 = math.max(intensity - 0.3, 0) / (1 - 0.3)
 			ang:RotateAroundAxis(ang:Up(), math.sin(self.ti * pist_rate) * pist_scale * intensity3 * 0.33 * 0.75)
-			ang:RotateAroundAxis(ang:Forward(), math.sin(self.ti * pist_rate) * pist_scale * intensity3 * 0.33 * -0.5)
+			ang:RotateAroundAxis(ang:Forward(), math.sin(self.ti * pist_rate) * pist_scale * intensity3 * 0.33 * -0.25)
 			pos:Add(ang:Forward() * math.sin(self.ti * pist_rate * 2 + math.pi) * pist_scale * -0.1 * intensity3 * 0.4)
 			pos:Add(ang:Right() * math.sin(self.ti * pist_rate) * pist_scale * 0.15 * intensity3 * 0.33 * 0.2)
 		else
