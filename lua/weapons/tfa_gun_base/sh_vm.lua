@@ -78,7 +78,7 @@ function SWEP:UpdateWeaponLength()
 end
 
 SWEP.NearWallVector = Vector(0.1, -0.5, -0.2):GetNormalized() * 0.5
-SWEP.NearWallVectorADS = Vector(0, -0.1, 0)
+SWEP.NearWallVectorADS = Vector(0, 0, 0)
 
 function SWEP:CalculateNearWall(p, a)
 	if not self:OwnerIsValid() then return p, a end
