@@ -27,7 +27,7 @@ end
 local vm_offset_pos = Vector()
 local vm_offset_ang = Angle()
 --local fps_max_cvar = GetConVar("fps_max")
-local righthanded, shouldflip, cl_vm_flip_cv, fovmod_add, fovmod_mult
+local righthanded, shouldflip, cl_vm_flip_cv, cl_vm_nearwall, fovmod_add, fovmod_mult
 
 function SWEP:CalculateViewModelFlip()
 	if CLIENT and not cl_vm_flip_cv then
@@ -82,6 +82,13 @@ SWEP.NearWallVectorADS = Vector(0, -0.1, 0)
 
 function SWEP:CalculateNearWall(p, a)
 	if not self:OwnerIsValid() then return p, a end
+
+	if not cl_vm_nearwall then
+		cl_vm_nearwall = GetConVar("cl_tfa_viewmodel_nearwall")
+	end
+
+	if not cl_vm_nearwall or not cl_vm_nearwall:GetBool() then return p, a end
+
 	local sp = self:GetOwner():GetShootPos()
 	local ea = self:GetOwner():EyeAngles()
 	local et = self:GetOwner():GetEyeTrace()

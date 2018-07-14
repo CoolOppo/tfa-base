@@ -357,6 +357,7 @@ if CLIENT then
 			cl_tfa_viewmodel_offset_fov = "0",
 			cl_tfa_viewmodel_flip = "0",
 			cl_tfa_viewmodel_centered = "0",
+			cl_tfa_viewmodel_nearwall = "1",
 			cl_tfa_laser_trails = "1"
 		}
 
@@ -424,6 +425,11 @@ if CLIENT then
 		panel:AddControl("CheckBox", {
 			Label = "Centered Viewmodel",
 			Command = "cl_tfa_viewmodel_centered"
+		})
+
+		panel:AddControl("CheckBox", {
+			Label = "Near Wall Viewmodel Offset",
+			Command = "cl_tfa_viewmodel_nearwall"
 		})
 
 		panel:AddControl("CheckBox", {

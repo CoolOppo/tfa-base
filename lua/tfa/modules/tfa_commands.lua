@@ -508,6 +508,10 @@ if CLIENT then
 		CreateClientConVar("cl_tfa_viewmodel_centered", 0, true, false)
 	end
 
+	if GetConVar("cl_tfa_viewmodel_nearwall") == nil then
+		CreateClientConVar("cl_tfa_viewmodel_nearwall", 1, true, false)
+	end
+
 	if GetConVar("cl_tfa_debug_crosshair") == nil then
 		CreateClientConVar("cl_tfa_debug_crosshair", 0, false, false, "Debug crosshair (Admin only)")
 	end
