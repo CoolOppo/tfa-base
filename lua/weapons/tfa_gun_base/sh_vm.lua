@@ -133,8 +133,6 @@ local centered_sprintang = Vector(-15, 0, 0)
 local vmviewpunch_cv
 
 function SWEP:CalculateViewModelOffset(delta)
-	ft = delta
-
 	if self:GetStat("VMPos_Additive") then
 		target_pos:Zero()
 		target_ang:Zero()

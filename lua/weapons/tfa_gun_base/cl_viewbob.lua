@@ -59,8 +59,6 @@ function SWEP:CalcView(ply, pos, ang, fov)
 	local viewbobintensity = viewbob_intensity_cvar:GetFloat() * 0.5
 	local holprog = TFA.Enum.HolsterStatus[self:GetStatus()] and 1 or 0
 	self.ViewHolProg = math.Approach(self.ViewHolProg, holprog, ftv / 5)
-	oldpostmp = pos * 1
-	oldangtmp = ang * 1
 
 	if self.CameraAngCache and viewbob_animated_cvar:GetBool() then
 		self.CameraAttachmentScale = self.CameraAttachmentScale or 1
@@ -132,15 +130,6 @@ function SWEP:CalcView(ply, pos, ang, fov)
 		ang:RotateAroundAxis(ang:Up(), l_Lerp(progress, 0, self.ProceduralViewOffset.y / 2) * ints)
 		ang:RotateAroundAxis(ang:Forward(), Lerp(progress, 0, self.ProceduralViewOffset.r / 3) * ints)
 	end
-
-	--[[
-	if self.Idle_Mode == TFA.Enum.IDLE_LUA or self.Idle_Mode == TFA.Enum.IDLE_BOTH then
-		local bsc = l_Lerp(self.IronSightsProgress, l_Lerp(math.min(self:GetOwner():GetVelocity():Length() / self:GetOwner():GetWalkSpeed(), 1), 0, 1), l_Lerp(math.min(self:GetOwner():GetVelocity():Length() / self:GetOwner():GetWalkSpeed(), 1), self:GetStat("IronBobMult") / 4, self:GetStat("IronBobMultWalk") / 4))
-		bsc = l_Lerp(self.SprintProgress, bsc, self.SprintViewBobMult)
-		pos, ang = self:CalculateViewBob(pos, ang, viewbobintensity * bsc, (1 - self.SprintProgress) * 0.6 + 0.4)
-		if not ang or not pos then return oldangtmp, oldpostmp end
-	end
-	]]--
 
 	return pos, LerpAngle(math.pow(self.ViewHolProg, 2), ang, oldangtmp), fov
 end
