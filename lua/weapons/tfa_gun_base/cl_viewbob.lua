@@ -60,6 +60,8 @@ function SWEP:CalcView(ply, pos, ang, fov)
 	local holprog = TFA.Enum.HolsterStatus[self:GetStatus()] and 1 or 0
 	self.ViewHolProg = math.Approach(self.ViewHolProg, holprog, ftv / 5)
 
+	oldangtmp = ang * 1
+
 	if self.CameraAngCache and viewbob_animated_cvar:GetBool() then
 		self.CameraAttachmentScale = self.CameraAttachmentScale or 1
 		ang:RotateAroundAxis(ang:Right(), (self.CameraAngCache.p + self.CameraOffset.p) * viewbobintensity * 5 * self.CameraAttachmentScale)
