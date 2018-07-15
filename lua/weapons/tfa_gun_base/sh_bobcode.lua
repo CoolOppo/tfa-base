@@ -117,9 +117,9 @@ function SWEP:WalkBob(pos, ang, breathIntensity, walkIntensity, rate, ftv)
 end
 
 function SWEP:SprintBob(pos, ang, intensity)
-	if not gunbob_intensity then return pos, ang end
+	if not IsValid(self:GetOwner()) or not gunbob_intensity then return pos, ang end
 	local flip_v = self.ViewModelFlip and -1 or 1
-	local ea = self.Owner:EyeAngles()
+	local ea = self:GetOwner():EyeAngles()
 	local up = ang:Up()
 	local ri = ang:Right()
 	local fw = ang:Forward()
