@@ -133,6 +133,22 @@ SWEP.BaseAnimations = {
 		["type"] = TFA.Enum.ANIMATION_ACT, --Sequence or act
 		["value"] = ACT_VM_IFIREMODE
 	},
+	["bash"] = {
+		["type"] = TFA.Enum.ANIMATION_ACT, --Sequence or act
+		["value"] = ACT_VM_HITCENTER
+	},
+	["bash_silenced"] = {
+		["type"] = TFA.Enum.ANIMATION_ACT, --Sequence or act
+		["value"] = ACT_VM_HITCENTER2
+	},
+	["bash_empty"] = {
+		["type"] = TFA.Enum.ANIMATION_ACT, --Sequence or act
+		["value"] = ACT_VM_MISSCENTER
+	},
+	["bash_empty_silenced"] = {
+		["type"] = TFA.Enum.ANIMATION_ACT, --Sequence or act
+		["value"] = ACT_VM_MISSCENTER2
+	},
 	["inspect"] = {
 		["type"] = TFA.Enum.ANIMATION_ACT, --Sequence or act
 		["value"] = ACT_VM_FIDGET
@@ -974,6 +990,49 @@ function SWEP:ChooseROFAnim()
 		local _
 		_, tanim = nil, nil
 
+		return success, tanim
+	end
+
+	if typev ~= TFA.Enum.ANIMATION_SEQ then
+		return self:SendViewModelAnim(tanim)
+	else
+		return self:SendViewModelSeq(tanim)
+	end
+end
+
+--[[
+Function Name:  ChooseBashAnim
+Syntax: self:ChooseBashAnim().
+Returns:  Could we successfully find an animation?  Which action?
+Notes:  Requires autodetection or otherwise the list of valid anims.  Called when we bash.
+Purpose:  Animation / Utility
+]]
+--
+function SWEP:ChooseBashAnim()
+	if not self:VMIV() then return end
+
+	typev, tanim = nil, nil
+	success = false
+
+	local isempty = self:GetStat("Primary.ClipSize") > 0 and self:Clip1() == 0
+
+	if self:GetSilenced() then
+		if self:GetActivityEnabled(ACT_VM_MISSCENTER2) and isempty then
+			typev, tanim = self:ChooseAnimation("bash_empty_silenced")
+			success = true
+		elseif self:GetActivityEnabled(ACT_VM_HITCENTER2) then
+			typev, tanim = self:ChooseAnimation("bash_silenced")
+			success = true
+		end
+	elseif self:GetActivityEnabled(ACT_VM_MISSCENTER) and isempty then
+		typev, tanim = self:ChooseAnimation("bash_empty")
+		success = true
+	elseif self:GetActivityEnabled(ACT_VM_HITCENTER) then
+		typev, tanim = self:ChooseAnimation("bash")
+		success = true
+	end
+
+	if not success then
 		return success, tanim
 	end
 

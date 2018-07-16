@@ -94,10 +94,13 @@ function SWEP:AltAttack()
 	if l_CT() < self:GetNextSecondaryFire() then return end
 	local stat = self:GetStatus()
 	if ( not TFA.Enum.ReadyStatus[stat] ) and not self.Secondary.BashInterrupt then return end
-	if ( stat == TFA.GetStatus("bashing") ) and self.Secondary.BashInterrupt then return end
+	if ( stat == TFA.Enum.STATUS_BASHING ) and self.Secondary.BashInterrupt then return end
 	if self:IsSafety() then return end
 	if self:GetHolding() then return end
-	self:SendViewModelAnim(ACT_VM_HITCENTER)
+	local enabled, act = self:ChooseBashAnim()
+
+	if not enabled then return end
+
 	if self:GetOwner().Vox then
 		self:GetOwner():Vox("bash", 0)
 	end
@@ -112,14 +115,14 @@ function SWEP:AltAttack()
 	if game.SinglePlayer() and SERVER then self:CallOnClient("BashAnim","") end
 
 	self.tmptoggle = not self.tmptoggle
-	self:SetNextPrimaryFire(l_CT() + (self:GetStat("Secondary.BashEnd") or self:GetActivityLength(ACT_VM_HITCENTER, false) ) )
-	self:SetNextSecondaryFire(l_CT() + (self:GetStat("Secondary.BashEnd") or self:GetActivityLength(ACT_VM_HITCENTER, true) ) )
+	self:SetNextPrimaryFire(l_CT() + (self:GetStat("Secondary.BashEnd") or self:GetActivityLength(act, false) ) )
+	self:SetNextSecondaryFire(l_CT() + (self:GetStat("Secondary.BashEnd") or self:GetActivityLength(act, true) ) )
 
 	if IsFirstTimePredicted() then
 		self:EmitSound(self:GetStat("Secondary.BashSound"))
 	end
 	self:SetStatus(TFA.Enum.STATUS_BASHING)
-	self:SetStatusEnd( l_CT() + (self:GetStat("Secondary.BashEnd") or self:GetActivityLength(ACT_VM_HITCENTER, true) ) )
+	self:SetStatusEnd( l_CT() + (self:GetStat("Secondary.BashEnd") or self:GetActivityLength(act, true) ) )
 
 	self:SetNW2Float("BashTTime", l_CT() + self:GetStat("Secondary.BashDelay"))
 end
@@ -222,20 +225,8 @@ function SWEP:SecondaryAttack()
 	BaseClass.SecondaryAttack(self)
 end
 
-local bash, vm, seq, actid
-
 function SWEP:GetBashing()
-	if not self:OwnerIsValid() then return false end
+	if not self:VMIV() then return false end
 
-	if not IsValid(vm) or not vm.GetSequence then
-		vm = self.OwnerViewModel
-
-		return false
-	end
-
-	seq = vm:GetSequence()
-	actid = vm:GetSequenceActivity(seq)
-	bash = ((actid == ACT_VM_HITCENTER) and vm:GetCycle() > 0 and vm:GetCycle() < 0.65) or self.unpredbash
-
-	return bash
+	return ((stat == TFA.Enum.STATUS_BASHING) and vm:GetCycle() > 0 and vm:GetCycle() < 0.65) or self.unpredbash
 end
