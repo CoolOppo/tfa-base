@@ -226,9 +226,9 @@ function SWEP:SecondaryAttack()
 end
 
 function SWEP:GetBashing()
-	if not self:VMIV() or not IsValid(wep.OwnerViewModel) then return false end
+	if not self:VMIV() or not IsValid(self.OwnerViewModel) then return false end
 
 	local stat = self:GetStatus()
 
-	return ((stat == TFA.Enum.STATUS_BASHING) and wep.OwnerViewModel:GetCycle() > 0 and wep.OwnerViewModel:GetCycle() < 0.65) or self.unpredbash
+	return ((stat == TFA.Enum.STATUS_BASHING) and self.OwnerViewModel:GetCycle() > 0 and self.OwnerViewModel:GetCycle() < 0.65) or self.unpredbash
 end
