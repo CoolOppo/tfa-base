@@ -59,7 +59,7 @@ function ENT:Explode()
 	util.Effect("Explosion", effectdata)
 	self.Damage = self.mydamage or self.Damage
 	util.BlastDamage(self.Inflictor, self:GetOwner(), self:GetPos(), math.pow( self.Damage / 100,0.75) * 200, self.Damage )
-	
+
 	local shake = ents.Create("env_shake")
 	local shakeDuration = self.Damage / 200
 
