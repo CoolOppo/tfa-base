@@ -5,11 +5,12 @@ local laserline
 local laserlinetp
 local laserdot
 local lasernoise
-local laserFOV = 0.7
+local laserFOV = 1.5
 local angpos
 local traceres
 
-SWEP.LaserDistance = 16 * 40 -- default 40 feet
+SWEP.LaserDistance = 12 * 50 -- default 50 feet
+SWEP.LaserDistanceVisual = 12 * 4 --default 4 feet
 
 local function IsHolstering(wep)
 	if IsValid(wep) and TFA.Enum.HolsterStatus[wep:GetStatus()] then return true end
@@ -27,7 +28,7 @@ function SWEP:DrawLaser(is_vm)
 	end
 
 	if not laserdot then
-		laserdot = Material(self.LaserDot or "effects/flashlight001")
+		laserdot = Material(self.LaserDot or "effects/tfalaserdot")
 	end
 
 	if not lasernoise then
@@ -159,7 +160,6 @@ function SWEP:DrawLaser(is_vm)
 		local lamp = ply.TFALaserDot
 
 		if IsValid(lamp) then
-			self.laserpos_old = traceres.HitPos
 			local ang = angpos.Ang
 			ang:RotateAroundAxis(ang:Forward(), math.Rand(-180, 180))
 			lamp:SetPos(angpos.Pos)
@@ -170,7 +170,7 @@ function SWEP:DrawLaser(is_vm)
 		end
 
 		traceres = util.QuickTrace(angpos.Pos, angpos.Ang:Forward() * self.LaserDistance, self:GetOwner())
-		local hpos = traceres.StartPos + angpos.Ang:Forward() * math.min(traceres.HitPos:Distance(angpos.Pos), self.LaserDistance / 2)
+		local hpos = traceres.StartPos + angpos.Ang:Forward() * math.min(traceres.HitPos:Distance(angpos.Pos), self.LaserDistanceVisual )
 		dot_sz = math.Rand(self.LaserDotMin or 2, self.LaserDotMax or 4)
 		render.SetMaterial(laserlinetp)
 		render.SetColorModulation(1, 1, 1)
