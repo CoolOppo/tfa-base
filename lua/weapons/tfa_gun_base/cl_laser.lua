@@ -8,8 +8,8 @@ local lasernoise
 local laserFOV = 0.7
 local angpos
 local traceres
-local dot_sz
-SWEP.LaserDistance = 16 * 30
+
+SWEP.LaserDistance = 16 * 40 -- default 40 feet
 
 local function IsHolstering(wep)
 	if IsValid(wep) and TFA.Enum.HolsterStatus[wep:GetStatus()] then return true end
@@ -92,7 +92,7 @@ function SWEP:DrawLaser(is_vm)
 			local lamp = ProjectedTexture()
 			ply.TFALaserDot = lamp
 			lamp:SetTexture(laserdot:GetString("$basetexture"))
-			lamp:SetFarZ(self.LaserDistance) -- How far the light should shine; 30 ft
+			lamp:SetFarZ(self.LaserDistance) -- How far the light should shine
 			lamp:SetFOV(laserFOV)
 			lamp:SetPos(angpos.Pos)
 			lamp:SetAngles(angpos.Ang)
@@ -164,7 +164,7 @@ function SWEP:DrawLaser(is_vm)
 			local lamp = ProjectedTexture()
 			ply.TFALaserDot = lamp
 			lamp:SetTexture(laserdot:GetString("$basetexture"))
-			lamp:SetFarZ(self.LaserDistance) -- How far the light should shine; 30 ft
+			lamp:SetFarZ(self.LaserDistance) -- How far the light should shine
 			lamp:SetFOV(laserFOV)
 			lamp:SetPos(angpos.Pos)
 			lamp:SetAngles(angpos.Ang)
