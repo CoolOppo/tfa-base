@@ -53,7 +53,7 @@ function EFFECT:Init(data)
 	local dlight = DynamicLight(ownerent:EntIndex())
 
 	if (dlight) then
-		dlight.pos = epos + ownerent:EyeAngles():Forward() * self.vOffset:Distance(epos) --self.vOffset - ownerent:EyeAngles():Right() * 5 + 1.05 * ownerent:GetVelocity() * FrameTime()
+		dlight.pos = epos + ownerent:EyeAngles():Forward() * self.vOffset:Distance(epos) * 0.7 --self.vOffset - ownerent:EyeAngles():Right() * 5 + 1.05 * ownerent:GetVelocity() * FrameTime()
 		dlight.r = self.Color.r
 		dlight.g = self.Color.g
 		dlight.b = self.Color.b
@@ -63,7 +63,7 @@ function EFFECT:Init(data)
 		dlight.dietime = CurTime() + self.Life
 	end
 
-	self.Dist = self.vOffset:Distance(epos)
+	self.Dist = self.vOffset:Distance(epos) * 0.7
 	self.DLight = dlight
 	self.DieTime = CurTime() + self.Life
 	self.OwnerEnt = ownerent
