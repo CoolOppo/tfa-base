@@ -2,9 +2,7 @@ local att
 local col = Color(255, 0, 0, 255)
 local pc
 local laserline
-local laserlinetp
 local laserdot
-local lasernoise
 local laserFOV = 1.5
 local angpos
 local traceres
@@ -20,19 +18,11 @@ end
 
 function SWEP:DrawLaser(is_vm)
 	if not laserline then
-		laserline = Material(self.LaserLine or "effects/spark_noz")
-	end
-
-	if not laserlinetp then
-		laserlinetp = Material(self.LaserLine or "cable/smoke")
+		laserline = Material(self.LaserLine or "cable/smoke")
 	end
 
 	if not laserdot then
 		laserdot = Material(self.LaserDot or "effects/tfalaserdot")
-	end
-
-	if not lasernoise then
-		lasernoise = Material(self.LaserNoise or "effects/splash1")
 	end
 
 	local ow = self:GetOwner()
@@ -77,16 +67,7 @@ function SWEP:DrawLaser(is_vm)
 		local wsProjAng = select(2, LocalToWorld(vector_origin, localProjAng, vector_origin, EyeAngles())) --reprojection for trace angle
 		traceres = util.QuickTrace(self:GetOwner():GetShootPos(), wsProjAng:Forward() * 999999, self:GetOwner())
 		dot_sz = math.Rand(self.LaserDotMin or 1.5, self.LaserDotMax or 2)
-		--[[
-		render.OverrideDepthEnable(true, true)
-		render.SetMaterial(laserdot)
-		render.DrawQuadEasy(traceres.HitPos, traceres.HitNormal, dot_sz, dot_sz, col, 0)
-		render.SetMaterial(lasernoise)
-		render.DrawQuadEasy(traceres.HitPos, traceres.HitNormal, dot_sz / 2 * math.Rand( 0.7, 1.3 ), dot_sz / 2 * math.Rand( 0.7, 1.3 ) , col, math.random(-180,180))
 
-		render.OverrideDepthEnable(false, true)
-		]]
-		--
 		local ply = self:GetOwner()
 
 		if not IsValid(ply.TFALaserDot) and not IsHolstering(self) then
@@ -172,7 +153,7 @@ function SWEP:DrawLaser(is_vm)
 		traceres = util.QuickTrace(angpos.Pos, angpos.Ang:Forward() * self.LaserDistance, self:GetOwner())
 		local hpos = traceres.StartPos + angpos.Ang:Forward() * math.min(traceres.HitPos:Distance(angpos.Pos), self.LaserDistanceVisual )
 		dot_sz = math.Rand(self.LaserDotMin or 2, self.LaserDotMax or 4)
-		render.SetMaterial(laserlinetp)
+		render.SetMaterial(laserline)
 		render.SetColorModulation(1, 1, 1)
 		render.StartBeam(2)
 		col.r = math.sqrt(col.r / 255) * 255
