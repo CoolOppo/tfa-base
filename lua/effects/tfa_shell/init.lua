@@ -157,16 +157,6 @@ function EFFECT:Init(data)
 		self.ImpactSound = self.Shotgun and self.SoundFilesSG[math.random(1, #self.SoundFiles)] or self.SoundFiles[math.random(1, #self.SoundFiles)]
 	end
 
-	if TFA.GetEJSmokeEnabled() then
-		self.PCFSmoke = CreateParticleSystem(self, self.SmokeParticle, PATTACH_POINT_FOLLOW, 1)
-		if IsValid(self.PCFSmoke) then
-			self:ComputeSmokeLighting()
-			self.PCFSmoke:StartEmission()
-		else
-			self.PCFSmoke = nil
-		end
-	end
-
 	self.setup = true
 end
 
@@ -196,6 +186,16 @@ end
 
 function EFFECT:PhysicsCollide(data)
 	if self:WaterLevel() > 0 then return end
+
+	if TFA.GetEJSmokeEnabled() and not self.PCFSmoke and CurTime() < self.SmokeDeath then
+		self.PCFSmoke = CreateParticleSystem(self, self.SmokeParticle, PATTACH_POINT_FOLLOW, 1)
+		if IsValid(self.PCFSmoke) then
+			self:ComputeSmokeLighting()
+			self.PCFSmoke:StartEmission()
+		else
+			self.PCFSmoke = nil
+		end
+	end
 
 	if data.Speed > 60 then
 		self:BounceSound()
