@@ -43,8 +43,6 @@ function ENT:Think()
 	return true
 end
 
-local effectdata, shake
-
 function ENT:Explode()
 	if not IsValid(self:GetOwner()) then
 		self:Remove()
@@ -54,23 +52,28 @@ function ENT:Explode()
 
 	if not self.Inflictor or not self.Inflictor:IsValid() then self.Inflictor = self end
 
-	effectdata = EffectData()
+	local effectdata = EffectData()
+
 	effectdata:SetOrigin(self:GetPos())
 	util.Effect("HelicopterMegaBomb", effectdata)
 	util.Effect("Explosion", effectdata)
 	self.Damage = self.mydamage or self.Damage
 	util.BlastDamage(self.Inflictor, self:GetOwner(), self:GetPos(), math.pow( self.Damage / 100,0.75) * 200, self.Damage )
-	shake = ents.Create("env_shake")
+
+	local shake = ents.Create("env_shake")
+	local shakeDuration = self.Damage / 200
+
 	shake:SetOwner(self:GetOwner())
 	shake:SetPos(self:GetPos())
 	shake:SetKeyValue("amplitude", tostring(self.Damage * 20)) -- Power of the shake
 	shake:SetKeyValue("radius", tostring( math.pow( self.Damage / 100,0.75) * 400) ) -- Radius of the shake
-	shake:SetKeyValue("duration", tostring( self.Damage / 200 )) -- Time of shake
+	shake:SetKeyValue("duration", tostring( shakeDuration )) -- Time of shake
 	shake:SetKeyValue("frequency", "255") -- How har should the screenshake be
 	shake:SetKeyValue("spawnflags", "4") -- Spawnflags(In Air)
 	shake:Spawn()
 	shake:Activate()
 	shake:Fire("StartShake", "", 0)
+	shake:Fire("Kill", "", shakeDuration) -- Remove the entity
 	self:EmitSound("weapons/explode" .. math.random(3, 5) .. ".wav", self.Pos, 100, 100)
 	self:Remove()
 end
