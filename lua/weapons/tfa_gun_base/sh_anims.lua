@@ -1016,11 +1016,11 @@ function SWEP:ChooseBashAnim()
 
 	local isempty = self:GetStat("Primary.ClipSize") > 0 and self:Clip1() == 0
 
-	if self:GetSilenced() then
+	if self:GetSilenced() and self:GetActivityEnabled(ACT_VM_HITCENTER2) then
 		if self:GetActivityEnabled(ACT_VM_MISSCENTER2) and isempty then
 			typev, tanim = self:ChooseAnimation("bash_empty_silenced")
 			success = true
-		elseif self:GetActivityEnabled(ACT_VM_HITCENTER2) then
+		else
 			typev, tanim = self:ChooseAnimation("bash_silenced")
 			success = true
 		end
