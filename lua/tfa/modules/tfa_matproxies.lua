@@ -70,9 +70,9 @@ matproxy.Add({
 			c = owner:GetNWVector("TFALaserColor") or cvec
 		end
 
-		cvec.x = c.r / 255
-		cvec.y = c.g / 255
-		cvec.z = c.b / 255
+		cvec.x = math.sqrt(c.r / 255) --sqrt for gamma
+		cvec.y = math.sqrt(c.g / 255)
+		cvec.z = math.sqrt(c.b / 255)
 		mat:SetVector(self.ResultTo, cvec)
 	end
 })

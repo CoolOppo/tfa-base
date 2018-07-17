@@ -140,24 +140,6 @@ function SWEP:DrawLaser(is_vm)
 			return
 		end
 
-		--[[
-		if not TFA.Enum.ReloadStatus[ self:GetStatus() ] and not TFA.Enum.HolsterStatus[ self:GetStatus() ] and self:GetStatus() ~= TFA.GetStatus("draw") then
-			traceres = util.QuickTrace( self:GetOwner():GetShootPos(), ( self:GetOwner():EyeAngles() + self:GetOwner():GetViewPunchAngles() ) :Forward() * 999999, self:GetOwner())
-		else
-			traceres = util.QuickTrace( angpos.Pos, angpos.Ang:Forward() * 999999, self:GetOwner())
-		end
-		]]
-		--
-		traceres = util.QuickTrace(angpos.Pos, angpos.Ang:Forward() * self.LaserDistance, self:GetOwner())
-		local hpos = traceres.StartPos + angpos.Ang:Forward() * math.min(traceres.HitPos:Distance(angpos.Pos), self.LaserDistance / 2)
-		dot_sz = math.Rand(self.LaserDotMin or 2, self.LaserDotMax or 4)
-		render.SetMaterial(laserlinetp)
-		render.SetColorModulation(1, 1, 1)
-		render.StartBeam(2)
-		render.AddBeam(angpos.Pos, self.LaserBeamWidth or 0.25, 0, col)
-		col.a = 0
-		render.AddBeam(hpos, 0, 0, col)
-		render.EndBeam()
 		local ply = self:GetOwner()
 
 		if not IsValid(ply.TFALaserDot) and not IsHolstering(self) then
@@ -186,6 +168,20 @@ function SWEP:DrawLaser(is_vm)
 			lamp:SetFOV(laserFOV * math.Rand(0.9, 1.1))
 			lamp:Update()
 		end
+
+		traceres = util.QuickTrace(angpos.Pos, angpos.Ang:Forward() * self.LaserDistance, self:GetOwner())
+		local hpos = traceres.StartPos + angpos.Ang:Forward() * math.min(traceres.HitPos:Distance(angpos.Pos), self.LaserDistance / 2)
+		dot_sz = math.Rand(self.LaserDotMin or 2, self.LaserDotMax or 4)
+		render.SetMaterial(laserlinetp)
+		render.SetColorModulation(1, 1, 1)
+		render.StartBeam(2)
+		col.r = math.sqrt(col.r / 255) * 255
+		col.g = math.sqrt(col.g / 255) * 255
+		col.b = math.sqrt(col.b / 255) * 255
+		render.AddBeam(angpos.Pos, self.LaserBeamWidth or 0.25, 0, col)
+		col.a = 0
+		render.AddBeam(hpos, 0, 0, col)
+		render.EndBeam()
 	end
 end
 
