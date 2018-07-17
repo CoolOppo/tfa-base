@@ -47,7 +47,7 @@ function EFFECT:Init(data)
 		dlight.g = 200
 		dlight.b = 255
 		dlight.Brightness = 4.0
-		dlight.size = 128
+		dlight.size = self.FlashSize * 96
 		dlight.DieTime = CurTime() + 0.03
 	end
 

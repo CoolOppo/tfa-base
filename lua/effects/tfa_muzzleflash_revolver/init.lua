@@ -59,7 +59,7 @@ function EFFECT:Init(data)
 		dlight.b = self.Color.b
 		dlight.brightness = 4.5
 		dlight.decay = 200 / self.Life
-		dlight.size = 128
+		dlight.size = self.FlashSize * 96
 		dlight.dietime = CurTime() + self.Life
 	end
 
