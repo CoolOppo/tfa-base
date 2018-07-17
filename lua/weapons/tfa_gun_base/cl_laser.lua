@@ -66,7 +66,6 @@ function SWEP:DrawLaser(is_vm)
 		localProjAng.y = localProjAng.y * self:GetOwner():GetFOV() / self.ViewModelFOV
 		local wsProjAng = select(2, LocalToWorld(vector_origin, localProjAng, vector_origin, EyeAngles())) --reprojection for trace angle
 		traceres = util.QuickTrace(self:GetOwner():GetShootPos(), wsProjAng:Forward() * 999999, self:GetOwner())
-		dot_sz = math.Rand(self.LaserDotMin or 1.5, self.LaserDotMax or 2)
 
 		local ply = self:GetOwner()
 
@@ -152,7 +151,6 @@ function SWEP:DrawLaser(is_vm)
 
 		traceres = util.QuickTrace(angpos.Pos, angpos.Ang:Forward() * self.LaserDistance, self:GetOwner())
 		local hpos = traceres.StartPos + angpos.Ang:Forward() * math.min(traceres.HitPos:Distance(angpos.Pos), self.LaserDistanceVisual )
-		dot_sz = math.Rand(self.LaserDotMin or 2, self.LaserDotMax or 4)
 		render.SetMaterial(laserline)
 		render.SetColorModulation(1, 1, 1)
 		render.StartBeam(2)

@@ -8,8 +8,8 @@
    {
       "AnimatedTexture"
       {
-         "animatedtexturevar" $basetexture 
-         "animatedtextureframenumvar" $frame 
+         "animatedtexturevar" $basetexture
+         "animatedtextureframenumvar" $frame
          "animatedtextureframerate" 30
       }
    }
