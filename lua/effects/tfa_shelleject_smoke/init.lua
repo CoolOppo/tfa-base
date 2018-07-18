@@ -1,4 +1,16 @@
-local dir
+EFFECT.SmokeParticle = "tfa_ins2_shell_eject"
+local upVec = Vector(0, 0, 1)
+
+function EFFECT:ComputeSmokeLighting(part, pos)
+	if not IsValid(part) then return end
+	local licht = render.ComputeLighting(pos + upVec * 2, upVec)
+	local lichtFloat = math.Clamp((licht.r + licht.g + licht.b) / 3, 0, TFA.Particles.SmokeLightingClamp) / TFA.Particles.SmokeLightingClamp
+	local lichtFinal = LerpVector(lichtFloat, TFA.Particles.SmokeLightingMin, TFA.Particles.SmokeLightingMax)
+	lichtFinal.x = math.sqrt(math.Clamp(lichtFinal.x-0.2,0,0.8)) / 0.8
+	lichtFinal.y = math.sqrt(math.Clamp(lichtFinal.y-0.2,0,0.8)) / 0.8
+	lichtFinal.z = math.sqrt(math.Clamp(lichtFinal.z-0.2,0,0.8)) / 0.8
+	part:SetControlPoint(1, lichtFinal)
+end
 
 function EFFECT:Init(data)
 	if not TFA.GetEJSmokeEnabled() then return end
@@ -50,64 +62,20 @@ function EFFECT:Init(data)
 		}
 	end
 
-	if self.Flipped then
-		local tmpang = (dir or angpos.Ang:Forward()):Angle()
-		local localang = self.WeaponEnt:WorldToLocalAngles(tmpang)
-		localang.y = localang.y + 180
-		localang = self.WeaponEnt:LocalToWorldAngles(localang)
-		--localang:RotateAroundAxis(localang:Up(),180)
-		--tmpang:RotateAroundAxis(tmpang:Up(),180)
-		dir = localang:Forward()
-	end
+	local PCFSmoke = CreateParticleSystem(self.WeaponEnt, self.SmokeParticle, PATTACH_POINT_FOLLOW, self.Attachment)
 
-	-- Keep the start and end Pos - we're going to interpolate between them
-	self.vOffset = self:GetTracerShootPos(angpos.Pos, self.WeaponEnt, self.Attachment)
-	dir = dir or angpos.Ang:Forward() --angpos.Ang:Forward()
-	local emitter = ParticleEmitter(self.vOffset)
-	dir = data:GetNormal()
+	if IsValid(PCFSmoke) then
+		self:ComputeSmokeLighting(PCFSmoke, angpos.Pos)
+		PCFSmoke:StartEmission()
 
-	for _ = 0, 6 do
-		local particle = emitter:Add("particles/smokey", self.vOffset + dir * math.Rand(2, 4))
-
-		if (particle) then
-			particle:SetVelocity(VectorRand() * 5 + dir * math.Rand(7, 10))
-			particle:SetLifeTime(0)
-			particle:SetDieTime(math.Rand(0.6, 0.7))
-			particle:SetStartAlpha(math.Rand(6, 10))
-			particle:SetEndAlpha(0)
-			particle:SetStartSize(math.Rand(2, 3))
-			particle:SetEndSize(math.Rand(6, 8))
-			particle:SetRoll(math.rad(math.Rand(0, 360)))
-			particle:SetRollDelta(math.Rand(-0.8, 0.8))
-			particle:SetLighting(true)
-			particle:SetAirResistance(20)
-			particle:SetGravity(Vector(0, 0, 30))
-			particle:SetColor(255, 255, 255)
-		end
-	end
-
-	if TFA.GetGasEnabled() then
-		for i = 0, 1 do
-			local particle = emitter:Add("sprites/heatwave", self.vOffset + (dir * i))
-
-			if (particle) then
-				particle:SetVelocity((dir * 25 * i) + VectorRand() * 5)
-				particle:SetLifeTime(0)
-				particle:SetDieTime(math.Rand(0.05, 0.15))
-				particle:SetStartAlpha(math.Rand(200, 225))
-				particle:SetEndAlpha(0)
-				particle:SetStartSize(math.Rand(1, 3))
-				particle:SetEndSize(math.Rand(8, 10))
-				particle:SetRoll(math.Rand(0, 360))
-				particle:SetRollDelta(math.Rand(-2, 2))
-				particle:SetAirResistance(5)
-				particle:SetGravity(Vector(0, 0, 40))
-				particle:SetColor(255, 255, 255)
+		timer.Simple(0.2, function()
+			if IsValid(PCFSmoke) then
+				PCFSmoke:StopEmissionAndDestroyImmediately()
 			end
-		end
+		end)
+	else
+		PCFSmoke = nil
 	end
-
-	emitter:Finish()
 end
 
 function EFFECT:Think()
