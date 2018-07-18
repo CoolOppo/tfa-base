@@ -300,3 +300,13 @@ if CLIENT then
 		end
 	end)
 end
+
+--[[
+Hook: InitPostEntity
+Function: Fixed some playermodel maker's poor coding practices
+Used For:  Removing offending hands render hook
+]]
+--
+hook.Add("InitPostEntity", "tfa_unfuckthehands", function()
+	hook.Remove("PostDrawViewModel", "Set player hand skin")
+end)
