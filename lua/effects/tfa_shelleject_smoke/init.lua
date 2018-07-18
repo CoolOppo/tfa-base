@@ -18,7 +18,6 @@ function EFFECT:Init(data)
 	if not IsValid(self.WeaponEnt) then return end
 	self.WeaponEntOG = self.WeaponEnt
 	self.Attachment = data:GetAttachment()
-	dir = data:GetNormal()
 	local owent = self.WeaponEnt:GetOwner()
 
 	if not IsValid(owent) then
@@ -73,8 +72,6 @@ function EFFECT:Init(data)
 				PCFSmoke:StopEmissionAndDestroyImmediately()
 			end
 		end)
-	else
-		PCFSmoke = nil
 	end
 end
 
