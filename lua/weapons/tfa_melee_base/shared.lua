@@ -300,7 +300,9 @@ function SWEP:MakeDoor(ent, dmginfo)
 	prop:Spawn()
 	prop:SetVelocity(dmginfo:GetDamageForce() * 48)
 	prop:GetPhysicsObject():ApplyForceOffset(dmginfo:GetDamageForce() * 48, dmginfo:GetDamagePosition())
-	prop:SetPhysicsAttacker(dmginfo:GetAttacker())
+	if IsValid(dmginfo:GetAttacker()) then
+		prop:SetPhysicsAttacker(dmginfo:GetAttacker())
+	end
 	prop:EmitSound("physics/wood/wood_furniture_break" .. tostring(math.random(1, 2)) .. ".wav", 110, math.random(90, 110))
 end
 

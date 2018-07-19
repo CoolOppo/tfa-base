@@ -146,12 +146,6 @@ function SWEP:GetCapabilities()
 		self.IsMelee = true
 	end
 
-	if self.IsMelee or self.IsKnife then
-		return CAP_WEAPON_MELEE_ATTACK1
-	else
-		return bit.bor(CAP_WEAPON_RANGE_ATTACK1, CAP_INNATE_RANGE_ATTACK1)
-	end
-
 	if SERVER and not self.HasSetOwnerCapabilities then
 		if self.IsMelee or self.IsKnife then
 			self.Owner:CapabilitiesRemove(CAP_WEAPON_RANGE_ATTACK1)
@@ -160,5 +154,11 @@ function SWEP:GetCapabilities()
 		end
 
 		self.HasSetOwnerCapabilities = true
+	end
+
+	if self.IsMelee or self.IsKnife then
+		return CAP_WEAPON_MELEE_ATTACK1
+	else
+		return bit.bor(CAP_WEAPON_RANGE_ATTACK1, CAP_INNATE_RANGE_ATTACK1)
 	end
 end

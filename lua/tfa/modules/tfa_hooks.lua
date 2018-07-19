@@ -34,18 +34,17 @@ Function: Weapon Logic
 Used For: NPC weapon "think" logic
 ]]
 --
-
 if SERVER then
 	hook.Add("Tick", "NPCTickTFA", function()
 		local t = ents.GetAll()
-		for k,v in pairs(t) do
+
+		for _k, v in pairs(t) do
 			if v.ThinkNPC and v.IsTFA and v:IsTFA() and IsValid(v:GetOwner()) and v:GetOwner():IsNPC() then
 				v:ThinkNPC()
 			end
 		end
 	end)
 end
-
 --[[
 Hook: Tick
 Function: Inspection mouse support
