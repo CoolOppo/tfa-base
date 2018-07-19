@@ -338,6 +338,26 @@ function SWEP:BurstDoor(ent, dmginfo)
 	end
 end
 
+function SWEP:ThinkNPC()
+	local ow = self:GetOwner()
+	if ow:IsCurrentSchedule(SCHED_CHASE_ENEMY) then return end
+	if ow:IsCurrentSchedule(SCHED_MELEE_ATTACK1) then return end
+	if not self.Range then
+		local t = table.Random( self.Primary.Attacks )
+		if t and t.range then
+			self.Range = t.src:Length() + t.dir:Length()
+		else
+			self.Range = 80
+		end
+	end
+	local en = ow:GetEnemy()
+	if IsValid(en) and en:GetPos():Distance(self:GetPos()) <= self.Range and CurTime() > self:GetNextPrimaryFire() then
+		self:PrimaryAttack()
+	else
+		self:GetOwner():SetSchedule( SCHED_CHASE_ENEMY )
+	end
+end
+
 function SWEP:Think2()
 	if not self:VMIV() then return end
 
@@ -483,6 +503,7 @@ function SWEP:Strike(attk, precision)
 	local hitWorld, hitFlesh, needsCB
 	local distance, direction, maxhull
 	local ow = self:GetOwner()
+	if not IsValid(ow) then return end
 	distance = attk.len
 	direction = attk.dir
 	maxhull = attk.hull
@@ -625,6 +646,27 @@ local lvec, ply, targ
 lvec = Vector()
 
 function SWEP:PrimaryAttack()
+	local ow = self:GetOwner()
+	if IsValid(ow) and ow:IsNPC() then
+		local keys = table.GetKeys(self.Primary.Attacks)
+		table.RemoveByValue(keys,"BaseClass")
+		local attk = self.Primary.Attacks[table.Random(keys)]
+		local owv = self:GetOwner()
+		timer.Simple(0.5, function()
+			if IsValid(self) and IsValid(owv) and owv:IsCurrentSchedule(SCHED_MELEE_ATTACK1) then
+				attack = attk
+				self:Strike(attk,5)
+			end
+		end)
+		self:SetNextPrimaryFire(CurTime() + attk["end"] or 1)
+		timer.Simple(self:GetNextPrimaryFire() - CurTime(), function()
+			if IsValid(owv) then
+				owv:ClearSchedule()
+			end
+		end)
+		self:GetOwner():SetSchedule(SCHED_MELEE_ATTACK1)
+		return
+	end
 	if self:GetSprinting() and not self.AllowSprintAttack then return end
 	if self:IsSafety() then return end
 	if not self:VMIV() then return end

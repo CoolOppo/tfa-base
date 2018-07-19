@@ -1,6 +1,6 @@
 --[[Define Modules]]
 SWEP.SV_MODULES = {}
-SWEP.SH_MODULES = {"sh_anims.lua", "sh_autodetection.lua", "sh_utils.lua", "sh_attachments.lua", "sh_bullet.lua", "sh_effects.lua", "sh_bobcode.lua", "sh_calc.lua", "sh_akimbo.lua", "sh_events.lua", "sh_nzombies.lua", "sh_ttt.lua", "sh_vm.lua", "sh_skins.lua" }
+SWEP.SH_MODULES = {"sh_ai_translations.lua", "sh_anims.lua", "sh_autodetection.lua", "sh_utils.lua", "sh_attachments.lua", "sh_bullet.lua", "sh_effects.lua", "sh_bobcode.lua", "sh_calc.lua", "sh_akimbo.lua", "sh_events.lua", "sh_nzombies.lua", "sh_ttt.lua", "sh_vm.lua", "sh_skins.lua" }
 SWEP.ClSIDE_MODULES = { "cl_effects.lua", "cl_viewbob.lua", "cl_hud.lua", "cl_mods.lua", "cl_laser.lua" }
 SWEP.Category = "" --The category.  Please, just choose something generic or something I've already done if you plan on only doing like one swep.
 SWEP.Author = "TheForgottenArchitect"
@@ -330,6 +330,11 @@ local PistolHoldTypes = {
 	["357"] = true,
 	["revolver"] = true
 }
+local MeleeHoldTypes = {
+	["melee"] = true,
+	["melee2"] = true,
+	["knife"] = true
+}
 
 function SWEP:Initialize()
 	hook.Run("TFA_PreInitialize",self)
@@ -380,10 +385,20 @@ function SWEP:Initialize()
 
 	if SERVER and self.Owner:IsNPC() then
 		local seq = self.Owner:LookupSequence("shootp1")
-		if self.Owner:GetSequenceName(seq) == "shootp1" and PistolHoldTypes[self.DefaultHoldType or self.HoldType] then
-			self:SetWeaponHoldType("pistol")
+		if MeleeHoldTypes[self.DefaultHoldType or self.HoldType] then
+			if self.Owner:GetSequenceName(seq) == "shootp1" then
+				self:SetWeaponHoldType("melee2")
+			else
+				self:SetWeaponHoldType("melee")
+			end
+		elseif PistolHoldTypes[self.DefaultHoldType or self.HoldType] then
+			if self.Owner:GetSequenceName(seq) == "shootp1" then
+				self:SetWeaponHoldType("pistol")
+			else
+				self:SetWeaponHoldType("smg")
+			end
 		else
-			self:SetWeaponHoldType("ar2")
+			self:SetWeaponHoldType(self.DefaultHoldType or self.HoldType)
 		end
 		if self.Owner:GetClass() == "npc_citizen" then
 			self.Owner:Fire( "DisableWeaponPickup" )
