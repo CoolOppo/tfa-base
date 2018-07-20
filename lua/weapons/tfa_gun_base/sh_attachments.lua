@@ -174,6 +174,10 @@ function SWEP:CanAttach(attn)
 		end
 	end
 
+	local atTable = TFA.Attachments.Atts[attn]
+	if not atTable then return false end
+	if not atTable:CanAttach(self) then return false end
+
 	local retVal2 = hook.Run("TFA_CanAttach", self, attn)
 	if retVal2 ~= nil then return retVal2 end
 
