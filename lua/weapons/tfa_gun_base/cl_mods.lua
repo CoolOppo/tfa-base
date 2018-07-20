@@ -718,6 +718,8 @@ function SWEP:UpdateBonePositions(vm)
 
 		if not self.HasSetMetaVMBM then
 			for k,v in pairs(self.ViewModelBoneMods) do
+				if (k == "BaseClass") then continue end -- do not name your bones like this pls
+
 				local scale = v.scale
 
 				if scale and scale.x ~= 1 or scale.y ~= 1 or scale.z ~= 1 then
@@ -848,6 +850,8 @@ function SWEP:UpdateWMBonePositions(wm)
 		loopthrough = wbones
 
 		for k, v in pairs(loopthrough) do
+			if (k == "BaseClass") then continue end
+
 			local bone = wm:LookupBone(k)
 			if (not bone) or (bone == -1) then continue end
 			local s = Vector(v.scale.x, v.scale.y, v.scale.z)
