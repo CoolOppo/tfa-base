@@ -192,14 +192,6 @@ Used For:  Predicted bashing
 local cv_lr = GetConVar("sv_tfa_reloads_legacy")
 
 local function KP_Bash(plyv, key)
-	if (key == IN_ZOOM) then
-		wep = plyv:GetActiveWeapon()
-
-		if IsValid(wep) and wep.AltAttack then
-			wep:AltAttack()
-		end
-	end
-
 	if (key == IN_RELOAD) then
 		plyv.HasTFAAmmoChek = false
 		plyv.LastReloadPressed = CurTime()
@@ -238,29 +230,23 @@ end
 
 hook.Add("PlayerTick", "TFABase_KD", KD_AmmoCheck)
 
-function TFA.ProcessBashZoom(plyv, wepv)
-	if not IsValid(wepv) then
-		plyv:SetCanZoom(true)
+local function SC_PBZ(plyv, ucmd)
+	if IsFirstTimePredicted() and ucmd:KeyDown(IN_ZOOM) then
+		local wepv = plyv:GetActiveWeapon()
 
-		return
-	end
+		if IsValid(wepv) and wepv.AltAttack then
+			wepv:AltAttack()
 
-	if wepv.AltAttack then
-		plyv:SetCanZoom(false)
-	else
-		plyv:SetCanZoom(true)
-	end
-end
+			if SERVER then
+				wepv:CallOnClient("AltAttack", "")
+			end
 
-local function PSW_PBZ(plyv, owv, nwv)
-	timer.Simple(0, function()
-		if IsValid(plyv) then
-			TFA.ProcessBashZoom(plyv, plyv:GetActiveWeapon())
+			ucmd:RemoveKey(IN_ZOOM)
 		end
-	end)
+	end
 end
 
-hook.Add("PlayerSwitchWeapon", "TFABashFixZoom", PSW_PBZ)
+hook.Add("StartCommand", "TFABashZoom", SC_PBZ)
 
 --[[
 Hook: PlayerSpawn

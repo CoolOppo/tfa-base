@@ -87,6 +87,7 @@ function SWEP:HandleDoor(slashtrace)
 end
 
 local l_CT = CurTime
+local sp = game.SinglePlayer()
 
 function SWEP:AltAttack()
 	if self:GetStat("Secondary.CanBash") == false then return end
@@ -111,16 +112,16 @@ function SWEP:AltAttack()
 			self.unpredbash = false
 		end
 	end)
+
 	self:BashAnim()
-	if game.SinglePlayer() and SERVER then self:CallOnClient("BashAnim","") end
+	if sp and SERVER then self:CallOnClient("BashAnim","") end
 
 	self.tmptoggle = not self.tmptoggle
 	self:SetNextPrimaryFire(l_CT() + (self:GetStat("Secondary.BashEnd") or self:GetActivityLength(act, false) ) )
 	self:SetNextSecondaryFire(l_CT() + (self:GetStat("Secondary.BashEnd") or self:GetActivityLength(act, true) ) )
 
-	if IsFirstTimePredicted() then
-		self:EmitSound(self:GetStat("Secondary.BashSound"))
-	end
+	self:EmitSoundNet(self:GetStat("Secondary.BashSound"))
+
 	self:SetStatus(TFA.Enum.STATUS_BASHING)
 	self:SetStatusEnd( l_CT() + (self:GetStat("Secondary.BashEnd") or self:GetActivityLength(act, true) ) )
 
@@ -159,7 +160,7 @@ function SWEP:Think2()
 
 		if slashtrace.Hit then
 			self:HandleDoor(slashtrace)
-			if not ( game.SinglePlayer() and CLIENT ) then
+			if not ( sp and CLIENT ) then
 				self:EmitSound((slashtrace.MatType == MAT_FLESH or slashtrace.MatType == MAT_ALIENFLESH) and self:GetStat("Secondary.BashHitSound_Flesh") or self:GetStat("Secondary.BashHitSound"))
 			end
 

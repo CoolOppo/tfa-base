@@ -1628,18 +1628,22 @@ function SWEP:ToggleInspect()
 end
 
 function SWEP:EmitSoundNet(sound)
-	if SERVER and not sp then
-		local filter = RecipientFilter()
-		filter:AddPAS(self:GetPos())
-		if IsValid(self:GetOwner()) then
-			filter:RemovePlayer(self:GetOwner())
-		end
+	if CLIENT or sp then
+		if sp and not IsFirstTimePredicted() then return end
 
-		net.Start("tfaSoundEvent")
-		net.WriteEntity(self)
-		net.WriteString(sound)
-		net.Send(filter)
-	else
 		self:EmitSound(sound)
+
+		return
 	end
+
+	local filter = RecipientFilter()
+	filter:AddPAS(self:GetPos())
+	if IsValid(self:GetOwner()) then
+		filter:RemovePlayer(self:GetOwner())
+	end
+
+	net.Start("tfaSoundEvent")
+	net.WriteEntity(self)
+	net.WriteString(sound)
+	net.Send(filter)
 end
