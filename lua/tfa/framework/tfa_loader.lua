@@ -3,13 +3,12 @@ if SERVER then AddCSLuaFile() end
 TFA = TFA or {}
 
 local do_load = true
-local version = 4.410
-local version_string = "4.4.1.0"
+local version = 4.420
+local version_string = "4.4.2.0"
 local changelog = [[
-	* Entire base linted
-	* Fewer global variables
-	* TFA attachment table moved to TFA.Attachments.Atts -- this will need an update to autopatching mods
-	* * Patch: New smoke effects on muzzles and shells, which should hopefully eat less fps and look better
+	* New laser dots
+	* Better ejection effects
+	* AI melee support
 ]]
 
 local function testFunc()
