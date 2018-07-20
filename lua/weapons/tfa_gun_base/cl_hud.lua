@@ -622,7 +622,6 @@ function SWEP:GenerateInspectionDerma()
 				testpanel:SetParent(scrollpanel)
 				testpanel:SetContentPanel(scrollpanel)
 				i = i + 1
-				testpanel:SetViewModel(self.OwnerViewModel)
 				testpanel:SetWeapon(self)
 				testpanel:SetAttachment(k)
 				testpanel:SetCategory(v.cat or k)

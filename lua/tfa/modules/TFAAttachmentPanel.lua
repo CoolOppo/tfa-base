@@ -9,7 +9,6 @@ local tooltip_mincount = 1
 local PANEL = {}
 
 PANEL.HasInitialized = false
-PANEL.VM = nil
 PANEL.Wep = nil
 PANEL.Att = nil
 PANEL.x = -1
@@ -20,7 +19,6 @@ PANEL.VAtt = 0
 
 function PANEL:Init()
 	self.HasInitialized = false
-	self.VM = nil
 	self.Wep = nil
 	self.Att = nil
 	self.x = -1
@@ -31,7 +29,7 @@ function PANEL:Init()
 end
 
 function PANEL:Initialize()
-	if not IsValid(self.VM) or not IsValid(self.Wep) then return false end
+	if not IsValid(self.Wep) then return false end
 
 	if not self.Att then return end
 
@@ -214,12 +212,6 @@ function PANEL:SetContentPanel( p )
 	end
 end
 
-function PANEL:SetViewModel( vm )
-	if IsValid(vm) then
-		self.VM = vm
-	end
-end
-
 function PANEL:SetWeapon( wepv )
 	if IsValid(wepv) then
 		self.Wep = wepv
@@ -250,12 +242,18 @@ end
 
 function PANEL:Paint( w, h )
 	if not self.HasInitialized then return false end
-	if not IsValid(self.VM) then self:Remove() end
-	if ( not IsValid(self.Wep) ) or ( not IsValid(self.Wep:GetOwner()) ) or ( not self.Wep:GetOwner():IsPlayer() ) then
-		gui.EnableScreenClicker(false)
+
+	if not IsValid(self.Wep)
+		or not IsValid(self.Wep:GetOwner())
+		or not self.Wep:GetOwner():IsPlayer()
+		or self.Wep:GetOwner():GetActiveWeapon() ~= self.Wep
+		or (self.Wep.InspectingProgress or 0) < 0.01 then
+		if IsValid(self.ToolTip) then
+			self.ToolTip:Remove()
+		end
+
 		self:Remove()
 	end
-	if ( self.Wep.InspectingProgress or 0 ) < 0.01 then	self:Remove() end
 end
 
 vgui.Register( "TFAAttachmentPanel", PANEL, "Panel" )
