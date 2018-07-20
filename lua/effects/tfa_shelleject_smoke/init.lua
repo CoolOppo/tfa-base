@@ -69,7 +69,7 @@ function EFFECT:Init(data)
 
 		timer.Simple(0.2, function()
 			if IsValid(PCFSmoke) then
-				PCFsmoke:StopEmission(false,true)
+				PCFSmoke:StopEmission(false,true)
 			end
 		end)
 	end
