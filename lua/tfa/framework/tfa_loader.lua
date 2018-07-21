@@ -3,12 +3,13 @@ if SERVER then AddCSLuaFile() end
 TFA = TFA or {}
 
 local do_load = true
-local version = 4.420
-local version_string = "4.4.2.0"
+local version = 4.421
+local version_string = "4.4.2.1"
 local changelog = [[
 	* New laser dots
 	* Better ejection effects
 	* AI melee support
+	* * Changelog can be toggled off with sv_tfa_changelog
 ]]
 
 local function testFunc()

@@ -1,6 +1,7 @@
 if CLIENT then
 	local TFA_DISPLAY_CHANGELOG = false
 	local changes = TFA_BASE_VERSION_CHANGES or ""
+	local cvar_changelog
 
 	if not file.Exists("tfa_base_version.txt", "DATA") then
 		local f = file.Open("tfa_base_version.txt", "w", "DATA")
@@ -27,7 +28,10 @@ if CLIENT then
 
 	hook.Add("HUDPaint", "TFA_DISPLAY_CHANGELOG", function()
 		if LocalPlayer():IsValid() then
-			if TFA_DISPLAY_CHANGELOG then
+			if not cvar_changelog then
+				cvar_changelog = GetConVar("sv_tfa_changelog")
+			end
+			if TFA_DISPLAY_CHANGELOG and cvar_changelog:GetBool() then
 				chat.AddText("Updated to TFA Base Version: ")
 				chat.AddText(TFA_BASE_VERSION_STRING)
 				chat.AddText(changes)

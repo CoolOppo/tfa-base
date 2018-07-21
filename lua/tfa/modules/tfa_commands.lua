@@ -4,6 +4,10 @@ end -- replicated only on clients, archive/notify on server
 
 --Serverside Convars
 
+if GetConVar("sv_tfa_changelog") == nil then
+	CreateReplConVar("sv_tfa_changelog", "1", "Enable changelog?")
+end
+
 if GetConVar("sv_tfa_soundscale") == nil then
 	CreateReplConVar("sv_tfa_soundscale", "1", "Scale sound pitch in accordance to timescale?")
 end
