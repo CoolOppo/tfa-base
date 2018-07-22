@@ -367,13 +367,10 @@ function SWEP:Initialize()
 	self:IconFix()
 	self:CreateFireModes()
 	self:FixAkimbo()
+	self:FixSprintAnimBob()
 	self:PathStatsTable("Primary")
 	self:PathStatsTable("Secondary")
 	self:ClearStatCache()
-
-	if self.Sprint_Mode == TFA.Enum.LOCOMOTION_ANI then
-		self.SprintBobMult = 0
-	end
 
 	if not self.IronSightsMoveSpeed then
 		self.IronSightsMoveSpeed = self.MoveSpeed * 0.8
@@ -1098,6 +1095,13 @@ function SWEP:GetIronSights( ignorestatus )
 	end
 
 	return self.is_cached
+end
+
+function SWEP:GetIronSightsDirect()
+	if self.is_cached then
+		return true
+	end
+	return false
 end
 
 SWEP.is_sndcache_old = false

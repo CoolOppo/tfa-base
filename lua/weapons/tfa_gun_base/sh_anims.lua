@@ -439,7 +439,7 @@ function SWEP:PlayAnimation(data)
 			tval = data.value_sil or tval
 		end
 
-		if self:GetIronSights() then
+		if self:GetIronSightsDirect() then
 			tval = data.value_is or tval
 
 			if self:Clip1() <= 0 and self.Primary.ClipSize >= 0 then
@@ -469,6 +469,26 @@ function SWEP:PlayAnimation(data)
 
 		if self:Clip1() == 1 and self.Primary.ClipSize >= 0 then
 			tval = data.value_last or tval
+		end
+
+		if self:GetSilenced() then
+			tval = data.value_sil or tval
+		end
+
+		if self:GetIronSightsDirect() then
+			tval = data.value_is or tval
+
+			if self:Clip1() <= 0 and self.Primary.ClipSize >= 0 then
+				tval = data.value_is_empty or tval
+			end
+
+			if self:Clip1() == 1 and self.Primary.ClipSize >= 0 then
+				tval = data.value_is_last or tval
+			end
+
+			if self:GetSilenced() then
+				tval = data.value_is_sil or tval
+			end
 		end
 
 		if type(tval) == "string" then
