@@ -64,9 +64,9 @@ function SWEP:CalcView(ply, pos, ang, fov)
 
 	if self.CameraAngCache and viewbob_animated_cvar:GetBool() then
 		self.CameraAttachmentScale = self.CameraAttachmentScale or 1
-		ang:RotateAroundAxis(ang:Right(), (self.CameraAngCache.p + self.CameraOffset.p) * viewbobintensity * 5 * self.CameraAttachmentScale)
-		ang:RotateAroundAxis(ang:Up(), (self.CameraAngCache.y + self.CameraOffset.y) * viewbobintensity * 5 * self.CameraAttachmentScale)
-		ang:RotateAroundAxis(ang:Forward(), (self.CameraAngCache.r + self.CameraOffset.r) * viewbobintensity * 3 * self.CameraAttachmentScale)
+		ang:RotateAroundAxis(ang:Right(), (self.CameraAngCache.p + self.CameraOffset.p) * viewbobintensity * self.CameraAttachmentScale)
+		ang:RotateAroundAxis(ang:Up(), (self.CameraAngCache.y + self.CameraOffset.y) * viewbobintensity * self.CameraAttachmentScale)
+		ang:RotateAroundAxis(ang:Forward(), (self.CameraAngCache.r + self.CameraOffset.r) * viewbobintensity * self.CameraAttachmentScale)
 		-- - self.MZReferenceAngle--WorldToLocal( angpos.Pos, angpos.Ang, angpos.Pos, oldangtmp + self.MZReferenceAngle )
 		--* progress )
 		--self.ProceduralViewOffset.p = l_mathApproach(self.ProceduralViewOffset.p, 0 , l_mathClamp( procedural_pitchrestorefac - math.min( math.abs( self.ProceduralViewOffset.p ), procedural_pitchrestorefac ) ,1,procedural_pitchrestorefac)*ftv/5 )

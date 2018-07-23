@@ -102,7 +102,7 @@ function SWEP:ViewModelDrawn()
 		if angpos and angpos.Ang then
 			local angv = angpos.Ang
 			local off = vm:WorldToLocalAngles(angv)
-			local spd = 10
+			local spd = 15
 			local cycl = vm:GetCycle()
 			local dissipatestart = 0
 			self.CameraAngCache = self.CameraAngCache or off
