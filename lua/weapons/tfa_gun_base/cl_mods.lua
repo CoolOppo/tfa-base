@@ -388,7 +388,6 @@ function SWEP:DrawWorldModel()
 		end
 	end
 
-	local bone_ent = self:GetOwner() and self:GetOwner() or self
 
 	for _, name in pairs(self.wRenderOrder or {}) do
 		local v = self.WElements[name]
@@ -403,6 +402,7 @@ function SWEP:DrawWorldModel()
 		if aktiv ~= nil and aktiv == false then continue end
 		local pos, ang
 
+		local bone_ent = (IsValid(self:GetOwner()) and self:GetOwner():LookupBone(v.bone or "ValveBiped.Bip01_R_Hand")) and self:GetOwner() or self
 		if (v.bone) then
 			pos, ang = self:GetBoneOrientation(self.WElements, v, bone_ent)
 		else
@@ -517,7 +517,7 @@ function SWEP:GetBoneOrientation(basetabl, tabl, ent, bone_override)
 			v.curmodel:SetupBones()
 
 			if tabl.bone == nil or tabl.bone == "" then
-				pos, ang = self:GetBoneOrientation(basetabl, v, v.curmodel, 0)
+				pos, ang = self:GetBoneOrientation(basetabl, v, v.curmodel, "ValveBiped.Bip01_R_Hand")
 			else
 				pos, ang = self:GetBoneOrientation(basetabl, v, v.curmodel, tabl.bone)
 			end
@@ -528,7 +528,7 @@ function SWEP:GetBoneOrientation(basetabl, tabl, ent, bone_override)
 		if isnumber(bone_override) then
 			bone = bone_override
 		else
-			bone = ent:LookupBone(bone_override or tabl.bone)
+			bone = ent:LookupBone(bone_override or tabl.bone) or 0
 		end
 
 		if (not bone) or (bone == -1) then return end
