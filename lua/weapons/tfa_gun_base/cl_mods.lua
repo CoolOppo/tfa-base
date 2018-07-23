@@ -181,14 +181,16 @@ function SWEP:ViewModelDrawn()
 			local sprite = v.spritemat
 			if (not v.bone) then continue end
 			local pos, ang = self:GetBoneOrientation(self.VElements, v, vm)
-			if (not pos) then continue end
+			if not pos and not v.bonemerge then continue end
 
 			if (v.type == "Model" and IsValid(model)) then
-				model:SetPos(pos + ang:Forward() * v.pos.x + ang:Right() * v.pos.y + ang:Up() * v.pos.z)
-				ang:RotateAroundAxis(ang:Up(), v.angle.y)
-				ang:RotateAroundAxis(ang:Right(), v.angle.p)
-				ang:RotateAroundAxis(ang:Forward(), v.angle.r)
-				model:SetAngles(ang)
+				if not v.bonemerge then
+					model:SetPos(pos + ang:Forward() * v.pos.x + ang:Right() * v.pos.y + ang:Up() * v.pos.z)
+					ang:RotateAroundAxis(ang:Up(), v.angle.y)
+					ang:RotateAroundAxis(ang:Right(), v.angle.p)
+					ang:RotateAroundAxis(ang:Forward(), v.angle.r)
+					model:SetAngles(ang)
+				end
 
 				if (v.surpresslightning) then
 					render.SuppressEngineLighting(true)
@@ -207,14 +209,21 @@ function SWEP:ViewModelDrawn()
 				end
 
 				if v.bonemerge then
-					model:SetParent(self.OwnerViewModel or self)
+					if v.rel and self.VElements[v.rel] and IsValid(self.VElements[v.rel].curmodel) then
+						v.parModel = self.VElements[v.rel].curmodel
+					else
+						v.parModel = self.OwnerViewModel or self
+					end
+					if model:GetParent() ~= v.parModel then
+						model:SetParent(v.parModel)
+					end
 
 					if not model:IsEffectActive(EF_BONEMERGE) then
-						v.curmodel:AddEffects(EF_BONEMERGE)
-						v.curmodel:AddEffects(EF_BONEMERGE_FASTCULL)
-						v.curmodel:SetMoveType(MOVETYPE_NONE)
-						v.curmodel:SetPos(Vector(0, 0, 0))
-						v.curmodel:SetAngles(Angle(0, 0, 0))
+						model:AddEffects(EF_BONEMERGE)
+						model:AddEffects(EF_BONEMERGE_FASTCULL)
+						model:SetMoveType(MOVETYPE_NONE)
+						model:SetLocalPos(vector_origin)
+						model:SetLocalAngles(angle_zero)
 					end
 				elseif model:IsEffectActive(EF_BONEMERGE) then
 					model:RemoveEffects(EF_BONEMERGE)
@@ -400,7 +409,7 @@ function SWEP:DrawWorldModel()
 			pos, ang = self:GetBoneOrientation(self.WElements, v, bone_ent, "ValveBiped.Bip01_R_Hand")
 		end
 
-		if (not pos) then continue end
+		if not pos and not v.bonemerge then continue end
 		local model = v.curmodel
 		local sprite = v.spritemat
 
@@ -446,10 +455,19 @@ function SWEP:DrawWorldModel()
 			render.SetBlend(v.color.a / 255)
 
 			if v.bonemerge then
-				model:SetParent(self)
+				if v.rel and self.WElements[v.rel] and IsValid(self.WElements[v.rel].curmodel) and self.WElements[v.rel].bone ~= "oof" then
+					v.parModel = self.WElements[v.rel].curmodel
+				else
+					v.parModel = self
+				end
+				if model:GetParent() ~= v.parModel then
+					model:SetParent(v.parModel)
+				end
 
 				if not model:IsEffectActive(EF_BONEMERGE) then
 					model:AddEffects(EF_BONEMERGE)
+					model:SetLocalPos(vector_origin)
+					model:SetLocalAngles(angle_zero)
 				end
 			elseif model:IsEffectActive(EF_BONEMERGE) then
 				model:RemoveEffects(EF_BONEMERGE)
@@ -495,7 +513,7 @@ function SWEP:GetBoneOrientation(basetabl, tabl, ent, bone_override)
 		local v = basetabl[tabl.rel]
 		if (not v) then return end
 
-		if v.bonemerge and v.curmodel and ent ~= v.curmodel then
+		if v.curmodel and ent ~= v.curmodel then
 			v.curmodel:SetupBones()
 
 			if tabl.bone == nil or tabl.bone == "" then
@@ -505,15 +523,6 @@ function SWEP:GetBoneOrientation(basetabl, tabl, ent, bone_override)
 			end
 
 			if (not pos) then return end
-		else
-			--As clavus states in his original code, don't make your elements named the same as a bone, because recursion.
-			pos, ang = self:GetBoneOrientation(basetabl, v, ent)
-			if (not pos) then return end
-			pos = pos + ang:Forward() * v.pos.x + ang:Right() * v.pos.y + ang:Up() * v.pos.z
-			ang:RotateAroundAxis(ang:Up(), v.angle.y)
-			ang:RotateAroundAxis(ang:Right(), v.angle.p)
-			ang:RotateAroundAxis(ang:Forward(), v.angle.r)
-			-- For mirrored viewmodels.  You might think to scale negatively on X, but this isn't the case.
 		end
 	else
 		if isnumber(bone_override) then
