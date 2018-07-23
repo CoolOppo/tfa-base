@@ -187,6 +187,9 @@ function SWEP:CalculateViewModelOffset(delta)
 		if cl_tfa_viewmodel_centered and cl_tfa_viewmodel_centered:GetBool() then
 			target_pos = target_pos + centered_sprintpos
 			target_ang = target_ang + centered_sprintang
+		elseif self:IsSafety() and self:GetStat("SafetyPos") then
+			target_pos = self:GetStat("SafetyPos") * 1
+			target_ang = self:GetStat("SafetyAng") * 1
 		else
 			target_pos = self:GetStat("RunSightsPos") * 1
 			target_ang = self:GetStat("RunSightsAng") * 1
