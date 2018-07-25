@@ -71,7 +71,7 @@ function SWEP:MakeShell()
 			fx = EffectData()
 			local attid = vm:LookupAttachment(self:GetStat("ShellAttachment"))
 
-			if self.Akimbo then
+			if self:GetStat("Akimbo") then
 				attid = 3 + self.AnimCycle
 			end
 

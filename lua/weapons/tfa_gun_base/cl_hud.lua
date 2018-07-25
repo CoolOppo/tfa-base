@@ -329,7 +329,7 @@ function SWEP:GenerateInspectionDerma()
 
 	if clip > 0 then
 		local capacitytext = contentpanel:Add("DPanel")
-		capacitytext.Text = infotextpad .. "Capacity: " .. clip .. (self:CanChamber() and (self.Akimbo and " + 2" or " + 1") or "") .. " Rounds"
+		capacitytext.Text = infotextpad .. "Capacity: " .. clip .. (self:CanChamber() and (self:GetStat("Akimbo") and " + 2" or " + 1") or "") .. " Rounds"
 
 		capacitytext.Think = function(myself)
 			myself.TextColor = TFA_INSPECTIONPANEL.SecondaryColor
@@ -747,7 +747,7 @@ function SWEP:DrawHUDAmmo()
 	if amn == "none" or amn == "" then return end
 	local mzpos = self:GetMuzzlePos()
 
-	if self.Akimbo then
+	if self:GetStat("Akimbo") then
 		self.MuzzleAttachmentRaw = self.MuzzleAttachmentRaw2 or 1
 	end
 
@@ -784,7 +784,7 @@ function SWEP:DrawHUDAmmo()
 		local str
 
 		if self:GetStat("Primary.ClipSize") and self:GetStat("Primary.ClipSize") ~= -1 then
-			if self.Akimbo then
+			if self:GetStat("Akimbo") then
 				str = string.upper("MAG: " .. math.ceil(self:Clip1() / 2))
 
 				if (self:Clip1() > self:GetStat("Primary.ClipSize")) then
@@ -822,7 +822,7 @@ function SWEP:DrawHUDAmmo()
 		xx = xx - TFA.Fonts.SleekHeightSmall / 3
 		local angpos2
 
-		if self.Akimbo then
+		if self:GetStat("Akimbo") then
 			angpos2 = self:GetOwner():ShouldDrawLocalPlayer() and self:GetAttachment(2) or self.OwnerViewModel:GetAttachment(2)
 		else
 			angpos2 = self:GetOwner():ShouldDrawLocalPlayer() and self:GetAttachment(self.MuzzleAttachmentRaw or self:LookupAttachment(self.MuzzleAttachment)) or self:GetOwner():GetViewModel():GetAttachment(self.MuzzleAttachmentRaw or self:GetOwner():GetViewModel():LookupAttachment(self.MuzzleAttachment))
@@ -832,7 +832,7 @@ function SWEP:DrawHUDAmmo()
 			local pos2 = angpos2.Pos
 			local ts2 = pos2:ToScreen()
 
-			if self.Akimbo then
+			if self:GetStat("Akimbo") then
 				xx, yy = ts2.x, ts2.y
 
 				if self:GetStat("Primary.ClipSize") and self:GetStat("Primary.ClipSize") ~= -1 then
@@ -865,7 +865,7 @@ function SWEP:DrawHUDAmmo()
 			end
 		end
 
-		if self:GetStat("Secondary.Ammo") and self:GetStat("Secondary.Ammo") ~= "" and self:GetStat("Secondary.Ammo") ~= "none" and self:GetStat("Secondary.Ammo") ~= 0 and not self.Akimbo then
+		if self:GetStat("Secondary.Ammo") and self:GetStat("Secondary.Ammo") ~= "" and self:GetStat("Secondary.Ammo") ~= "none" and self:GetStat("Secondary.Ammo") ~= 0 and not self:GetStat("Akimbo") then
 			if self:GetStat("Secondary.ClipSize") and self:GetStat("Secondary.ClipSize") ~= -1 then
 				str = (self:Clip2() > self:GetStat("Secondary.ClipSize")) and string.upper("ALT-MAG: " .. self:GetStat("Secondary.ClipSize") .. " + " .. (self:Clip2() - self:GetStat("Primary.ClipSize"))) or string.upper("ALT-MAG: " .. self:Clip2())
 				draw.DrawText(str, "TFASleekSmall", xx + 1, yy + 1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)

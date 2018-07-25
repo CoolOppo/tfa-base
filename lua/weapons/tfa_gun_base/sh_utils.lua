@@ -256,7 +256,7 @@ function SWEP:GetPrimaryClipSize(calc)
 	local targetclip = self:GetStat("Primary.ClipSize")
 
 	if self:CanChamber() and not (calc and self:Clip1() <= 0) then
-		targetclip = targetclip + (self.Akimbo and 2 or 1)
+		targetclip = targetclip + (self:GetStat("Akimbo") and 2 or 1)
 	end
 
 	return math.max(targetclip, -1)
@@ -507,7 +507,7 @@ function SWEP:GetMuzzleAttachment()
 	local vmod = self.OwnerViewModel
 	local att = math.max(1, self.MuzzleAttachmentRaw or (sp and vmod or self):LookupAttachment(self.MuzzleAttachment))
 
-	if self.Akimbo then
+	if self:GetStat("Akimbo") then
 		if sp and CLIENT then
 			self.GetNW2Int = self.GetNW2Int or self.GetNWInt
 			att = 1 + self:GetNW2Int("AnimCycle")

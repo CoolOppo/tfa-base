@@ -1,7 +1,7 @@
 SWEP.AnimCycle = SWEP.ViewModelFlip and 0 or 1
 
 function SWEP:FixAkimbo()
-	if self.Akimbo and self.Secondary.ClipSize > 0 then
+	if self:GetStat("Akimbo") and self.Secondary.ClipSize > 0 then
 		self.Primary.ClipSize = self.Primary.ClipSize + self.Secondary.ClipSize
 		self.Secondary.ClipSize = -1
 		self.Primary.RPM = self.Primary.RPM * 2
@@ -20,7 +20,7 @@ function SWEP:FixAkimbo()
 end
 
 function SWEP:ToggleAkimbo(arg1)
-	if self.Akimbo and (IsFirstTimePredicted() or (arg1 and arg1 == "asdf")) then
+	if self:GetStat("Akimbo") and (IsFirstTimePredicted() or (arg1 and arg1 == "asdf")) then
 		self.AnimCycle = 1 - self.AnimCycle
 	end
 

@@ -873,7 +873,7 @@ function SWEP:ChooseShootAnim(ifp)
 			typev, tanim = self:ChooseAnimation("shoot1_last")
 		elseif self:Clip1() == 0 and self:GetActivityEnabled(ACT_VM_DRYFIRE) and not self.ForceDryFireOff then
 			typev, tanim = self:ChooseAnimation("shoot1_empty")
-		elseif self.Akimbo and self:GetActivityEnabled(ACT_VM_SECONDARYATTACK) and ((self.AnimCycle == 0 and not self.Akimbo_Inverted) or (self.AnimCycle == 1 and self.Akimbo_Inverted)) then
+		elseif self:GetStat("Akimbo") and self:GetActivityEnabled(ACT_VM_SECONDARYATTACK) and ((self.AnimCycle == 0 and not self.Akimbo_Inverted) or (self.AnimCycle == 1 and self.Akimbo_Inverted)) then
 			typev, tanim = self:ChooseAnimation("shoot2")
 		elseif self:GetIronSights() and self:GetActivityEnabled(ACT_VM_PRIMARYATTACK_1) then
 			typev, tanim = self:ChooseAnimation("shoot1_is")
