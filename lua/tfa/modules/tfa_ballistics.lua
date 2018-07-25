@@ -196,7 +196,7 @@ function TFA.Ballistics:FireBullets(wep, b, angIn, bulletOverride)
 		if angIn then
 			ang = angIn
 		else
-			ang = wep:GetOwner():EyeAngles()
+			ang = wep:GetOwner():EyeAngles() + wep:GetOwner():GetViewPunchAngles()
 			local ac = b.Spread
 			sharedRandomSeed = ("Ballistics" .. tostring(CurTime()))
 			ang:RotateAroundAxis(ang:Up(), util.SharedRandom(sharedRandomSeed, -ac.x * 45, ac.x * 45, 0 + i))
