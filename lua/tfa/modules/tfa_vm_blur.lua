@@ -174,7 +174,7 @@ hook.Add("PostDrawViewModel", "TFA_DrawViewModel", function(vm, plyv, wep)
 
 		local hands = plyv:GetHands()
 
-		if IsValid(hands) then
+		if IsValid(hands) and wep.UseHands then
 			render.OverrideColorWriteEnable(true, false)
 			STOP = true
 			local candraw = hook.Run("PreDrawPlayerHands", hands, vm, plyv, wep)

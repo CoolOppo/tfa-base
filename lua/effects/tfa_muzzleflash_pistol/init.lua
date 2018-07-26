@@ -283,7 +283,7 @@ function EFFECT:Init(data)
 				pa.ranvel.x = Lerp(ft, pa.ranvel.x, math.Rand(-4, 4))
 				pa.ranvel.y = Lerp(ft, pa.ranvel.y, math.Rand(-4, 4))
 				pa.ranvel.z = Lerp(ft, pa.ranvel.z, math.Rand(-4, 4))
-				pa:SetVelocity(pa:GetVelocity() + pa.ranvel * 2 * sl)
+				pa:SetVelocity(pa:GetVelocity() + pa.ranvel * 2 * sl * FrameTime() * 60)
 				pa:SetNextThink(CurTime())
 			end)
 
