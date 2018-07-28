@@ -598,7 +598,7 @@ function SWEP:SelectInspectAnim(pri)
 	elseif self:GetActivityEnabled(ACT_VM_FIDGET_EMPTY) and self.Primary.ClipSize > 0 and math.Round(self:Clip1()) == 0 then
 		typev, tanim = self:ChooseAnimation("inspect_empty")
 	elseif self.InspectionActions then
-		typev, tanim = self.InspectionActions[self:SharedRandom(1, #self.InspectionActions, "Inspect")]
+		tanim = self.InspectionActions[self:SharedRandom(1, #self.InspectionActions, "Inspect")]
 	elseif self:GetActivityEnabled(ACT_VM_FIDGET) then
 		typev, tanim = self:ChooseAnimation("inspect")
 	else
@@ -617,10 +617,6 @@ function SWEP:ChooseInspectAnim()
 		return self:SendViewModelAnim(tanim)
 	else
 		return self:SendViewModelSeq(tanim)
-	end
-
-	if IsFirstTimePredicted() then
-		self.lastidlefidget = true
 	end
 
 	return success, tanim
