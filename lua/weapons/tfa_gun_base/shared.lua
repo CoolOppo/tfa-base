@@ -1613,6 +1613,10 @@ function SWEP:TranslateFOV(fov)
 	self:CorrectScopeFOV()
 	nfov = l_Lerp(self.IronSightsProgress, fov, fov * math.min( self:GetStat("Secondary.IronFOV") / 90,1))
 	local ret = l_Lerp(self.SprintProgress, nfov, nfov + self.SprintFOVOffset)
+	if self:OwnerIsValid() then
+		local vpa = self:GetOwner():GetViewPunchAngles()
+		ret = ret + math.abs(vpa.p) / 4 + math.abs(vpa.y) / 4 + math.abs(vpa.r) / 4
+	end
 	ret = hook.Run("TFA_TranslateFOV",self,ret) or ret
 	return ret
 end
