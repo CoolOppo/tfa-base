@@ -613,13 +613,12 @@ function SWEP:ChooseInspectAnim()
 	if not self:VMIV() then return end
 	--self:ResetEvents()
 	success, typev, tanim = self:SelectInspectAnim()
+
 	if typev ~= TFA.Enum.ANIMATION_SEQ then
 		return self:SendViewModelAnim(tanim)
 	else
 		return self:SendViewModelSeq(tanim)
 	end
-
-	return success, tanim
 end
 
 --[[
