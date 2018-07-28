@@ -589,30 +589,35 @@ Purpose:  Animation / Utility
 ]]
 --
 function SWEP:SelectInspectAnim(pri)
+	typev = TFA.Enum.ANIMATION_ACT
 	tanim = ACT_VM_FIDGET
 	success = true
 
 	if self:GetActivityEnabled(ACT_VM_FIDGET_SILENCED) and self:GetSilenced() then
-		tanim = self:ChooseAnimation("inspect_silenced")
+		typev, tanim = self:ChooseAnimation("inspect_silenced")
 	elseif self:GetActivityEnabled(ACT_VM_FIDGET_EMPTY) and self.Primary.ClipSize > 0 and math.Round(self:Clip1()) == 0 then
-		tanim = self:ChooseAnimation("inspect_empty")
+		typev, tanim = self:ChooseAnimation("inspect_empty")
 	elseif self.InspectionActions then
-		tanim = self.InspectionActions[self:SharedRandom(1, #self.InspectionActions, "Inspect")]
+		typev, tanim = self.InspectionActions[self:SharedRandom(1, #self.InspectionActions, "Inspect")]
 	elseif self:GetActivityEnabled(ACT_VM_FIDGET) then
-		tanim = self:ChooseAnimation("inspect")
+		typev, tanim = self:ChooseAnimation("inspect")
 	else
-		tanim = self:ChooseAnimation("idle")
+		typev, tanim = self:ChooseAnimation("idle")
 		success = false
 	end
 
-	return success, tanim
+	return success, typev, tanim
 end
 
 function SWEP:ChooseInspectAnim()
 	if not self:VMIV() then return end
 	--self:ResetEvents()
-	success, tanim = self:SelectInspectAnim()
-	self:SendViewModelAnim(tanim, 1)
+	success, typev, tanim = self:SelectInspectAnim()
+	if typev ~= TFA.Enum.ANIMATION_SEQ then
+		return self:SendViewModelAnim(tanim)
+	else
+		return self:SendViewModelSeq(tanim)
+	end
 
 	if IsFirstTimePredicted() then
 		self.lastidlefidget = true

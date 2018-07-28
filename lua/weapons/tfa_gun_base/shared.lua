@@ -1537,7 +1537,7 @@ function SWEP:CheckAmmo()
 	--end
 	local _, tanim = self:SelectInspectAnim()
 
-	if (self.SequenceEnabled[ACT_VM_FIDGET] or self.InspectionActions) and self:GetStatus() == TFA.Enum.STATUS_IDLE then--and CurTime() > self.NextInspectAnim then
+	if (self:GetActivityEnabled(ACT_VM_FIDGET) or self.InspectionActions) and self:GetStatus() == TFA.Enum.STATUS_IDLE then--and CurTime() > self.NextInspectAnim then
 		self:ChooseInspectAnim()
 		self:SetStatus(TFA.GetStatus("fidget"))
 		self:SetStatusEnd( l_CT() + self:GetActivityLength( tanim ) )
