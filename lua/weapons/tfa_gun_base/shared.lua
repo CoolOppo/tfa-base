@@ -18,6 +18,7 @@ SWEP.IsTFAWeapon = true
 SWEP.Shotgun = false
 SWEP.ShotgunEmptyAnim = false
 SWEP.ShotgunEmptyAnim_Shell = true
+SWEP.ShotgunStartAnimShell = false --shotgun start anim inserts shell
 SWEP.ShellTime = nil
 
 SWEP.data = {}
@@ -1377,13 +1378,15 @@ function SWEP:Reload(released)
 			self:SetBurstCount(0)
 			if self.Shotgun then
 				local _, tanim = self:ChooseShotgunReloadAnim()
-				if self.ShotgunEmptyAnim  then
+				if self:GetStat("ShotgunStartAnimShell") then
+					self:SetStatus(TFA.Enum.STATUS_RELOADING_SHOTGUN_START_SHELL)
+				elseif self.ShotgunEmptyAnim then
 					local _, tg = self:ChooseAnimation( "reload_empty" )
 					local action = tanim
 					if type(tg) == "string" and tonumber(tanim) and tonumber(tanim) > 0 then
 						action = self.OwnerViewModel:GetSequenceName( self.OwnerViewModel:SelectWeightedSequenceSeeded( tanim, self:GetSeed() ) )
 					end
-					if action == tg and self.ShotgunEmptyAnim_Shell then
+					if action == tg and self:GetStat("ShotgunEmptyAnim_Shell") then
 						self:SetStatus(TFA.Enum.STATUS_RELOADING_SHOTGUN_START_SHELL)
 					else
 						self:SetStatus(TFA.Enum.STATUS_RELOADING_SHOTGUN_START)

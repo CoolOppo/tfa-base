@@ -148,6 +148,7 @@ end
 SWEP.Shotgun = false --Enable shotgun style reloading.
 SWEP.ShotgunEmptyAnim = false --Enable emtpy reloads on shotguns?
 SWEP.ShotgunEmptyAnim_Shell = true --Enable insertion of a shell directly into the chamber on empty reload?
+SWEP.ShotgunStartAnimShell = false --shotgun start anim inserts shell
 SWEP.ShellTime = .35 -- For shotguns, how long it takes to insert a shell.
 --[[SPRINTING]]--
 SWEP.RunSightsPos = Vector(0, 0, 0) --Change this, using SWEP Creation Kit preferably
