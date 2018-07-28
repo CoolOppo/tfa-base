@@ -59,23 +59,25 @@ local function bashcallback(a, b, c, wep, pain)
 end
 
 function SWEP:HandleDoor(slashtrace)
-	if CLIENT then return end
+	if CLIENT or not IsValid(slashtrace.Entity) then return end
 
 	if slashtrace.Entity:GetClass() == "func_door_rotating" or slashtrace.Entity:GetClass() == "prop_door_rotating" then
-		local ply = self:GetOwner()
-		ply:EmitSound("ambient/materials/door_hit1.wav", 100, math.random(80, 120))
-		ply.oldname = ply:GetName()
-		ply:SetName("bashingpl" .. ply:EntIndex())
+		slashtrace.Entity:EmitSound("ambient/materials/door_hit1.wav", 100, math.random(80, 120))
+
+		local newname = "TFABash" .. self:EntIndex()
+		self.PreBashName = self:GetName()
+		self:SetName(newname)
+
 		slashtrace.Entity:SetKeyValue("Speed", "500")
 		slashtrace.Entity:SetKeyValue("Open Direction", "Both directions")
 		slashtrace.Entity:SetKeyValue("opendir", "0")
 		slashtrace.Entity:Fire("unlock", "", .01)
-		slashtrace.Entity:Fire("openawayfrom", "bashingpl" .. ply:EntIndex(), .01)
+		slashtrace.Entity:Fire("openawayfrom", newname, .01)
 
 		timer.Simple(0.02, function()
-			if IsValid(ply) then
-				ply:SetName(ply.oldname)
-			end
+			if not IsValid(self) or self:GetName() ~= newname then return end
+
+			self:SetName(self.PreBashName)
 		end)
 
 		timer.Simple(0.3, function()
