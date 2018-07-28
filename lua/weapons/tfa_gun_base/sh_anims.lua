@@ -593,15 +593,15 @@ function SWEP:SelectInspectAnim(pri)
 	success = true
 
 	if self:GetActivityEnabled(ACT_VM_FIDGET_SILENCED) and self:GetSilenced() then
-		tanim = ACT_VM_FIDGET_SILENCED
+		tanim = self:ChooseAnimation("inspect_silenced")
 	elseif self:GetActivityEnabled(ACT_VM_FIDGET_EMPTY) and self.Primary.ClipSize > 0 and math.Round(self:Clip1()) == 0 then
-		tanim = ACT_VM_FIDGET_EMPTY
+		tanim = self:ChooseAnimation("inspect_empty")
 	elseif self.InspectionActions then
 		tanim = self.InspectionActions[self:SharedRandom(1, #self.InspectionActions, "Inspect")]
 	elseif self:GetActivityEnabled(ACT_VM_FIDGET) then
-		tanim = ACT_VM_FIDGET
+		tanim = self:ChooseAnimation("inspect")
 	else
-		tanim = ACT_VM_IDLE
+		tanim = self:ChooseAnimation("idle")
 		success = false
 	end
 
