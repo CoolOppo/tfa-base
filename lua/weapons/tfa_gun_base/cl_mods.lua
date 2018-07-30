@@ -509,11 +509,11 @@ function SWEP:GetBoneOrientation(basetabl, tabl, ent, bone_override)
 	local bone, pos, ang
 	if not IsValid(ent) then return Vector(0, 0, 0), Angle(0, 0, 0) end
 
-	if (tabl.rel and tabl.rel ~= "") then
+	if tabl.rel and tabl.rel ~= "" then
 		local v = basetabl[tabl.rel]
 		if (not v) then return end
 
-		if v.curmodel and ent ~= v.curmodel then
+		if v.curmodel and ent ~= v.curmodel and v.curmodel:LookupBone(bone_override or tabl.bone or "ValveBiped.Bip01_R_Hand") then
 			v.curmodel:SetupBones()
 
 			if tabl.bone == nil or tabl.bone == "" then
@@ -522,31 +522,34 @@ function SWEP:GetBoneOrientation(basetabl, tabl, ent, bone_override)
 				pos, ang = self:GetBoneOrientation(basetabl, v, v.curmodel, tabl.bone)
 			end
 
-			if (not pos) then return end
+			if (not pos) then
+				return vector_origin, angle_zero
+			else
+				return pos, ang
+			end
 		end
+	end
+
+	if isnumber(bone_override) then
+		bone = bone_override
 	else
-		if isnumber(bone_override) then
-			bone = bone_override
-		else
-			bone = ent:LookupBone(bone_override or tabl.bone) or 0
-		end
+		bone = ent:LookupBone(bone_override or tabl.bone) or 0
+	end
 
-		if (not bone) or (bone == -1) then return end
-		pos, ang = Vector(0, 0, 0), Angle(0, 0, 0)
-		local m = ent:GetBoneMatrix(bone)
+	if (not bone) or (bone == -1) then return end
+	pos, ang = Vector(0, 0, 0), Angle(0, 0, 0)
+	local m = ent:GetBoneMatrix(bone)
 
-		if (m) then
-			pos, ang = m:GetTranslation(), m:GetAngles()
-		end
+	if (m) then
+		pos, ang = m:GetTranslation(), m:GetAngles()
+	end
 
-		if (IsValid(self:GetOwner()) and self:GetOwner():IsPlayer() and ent == self:GetOwner():GetViewModel() and self.ViewModelFlip) then
-			ang.r = -ang.r
-		end
+	if (IsValid(self:GetOwner()) and self:GetOwner():IsPlayer() and ent == self:GetOwner():GetViewModel() and self.ViewModelFlip) then
+		ang.r = -ang.r
 	end
 
 	return pos, ang
 end
-
 --[[
 Function Name:  CleanModels
 Syntax: self:CleanModels( elements table ).
