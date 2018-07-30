@@ -1,3 +1,5 @@
+local l_CT = CurTime
+
 local CMIX_MULT = 1
 local c1t = {}
 local c2t = {}
@@ -715,7 +717,7 @@ function SWEP:DrawHUDAmmo()
 	if self:GetStat("BoltAction") then
 		if stat == TFA.Enum.STATUS_SHOOTING then
 			if not self.LastBoltShoot then
-				self.LastBoltShoot = CurTime()
+				self.LastBoltShoot = l_CT()
 			end
 		elseif self.LastBoltShoot then
 			self.LastBoltShoot = nil
@@ -724,7 +726,7 @@ function SWEP:DrawHUDAmmo()
 
 	fm = self:GetFireMode()
 	targbool = (not TFA.Enum.HUDDisabledStatus[stat]) or fm ~= lfm
-	targbool = targbool or (stat == TFA.Enum.STATUS_SHOOTING and self.LastBoltShoot and CurTime() > self.LastBoltShoot + self.BoltTimerOffset)
+	targbool = targbool or (stat == TFA.Enum.STATUS_SHOOTING and self.LastBoltShoot and l_CT() > self.LastBoltShoot + self.BoltTimerOffset)
 	targbool = targbool or (self:GetStat("PumpAction") and (stat == TFA.GetStatus("pump") or (stat == TFA.Enum.STATUS_SHOOTING and self:Clip1() == 0)))
 	targbool = targbool or (stat == TFA.GetStatus("fidget"))
 
@@ -732,8 +734,8 @@ function SWEP:DrawHUDAmmo()
 	lfm = fm
 
 	if targ == 1 then
-		lactive = CurTime()
-	elseif CurTime() < lactive + hudhangtime_cvar:GetFloat() then
+		lactive = l_CT()
+	elseif l_CT() < lactive + hudhangtime_cvar:GetFloat() then
 		targ = 1
 	elseif self:GetOwner():KeyDown(IN_RELOAD) then
 		targ = 1
@@ -1103,4 +1105,37 @@ function SWEP:DrawScopeOverlay()
 			surface.DrawTexturedRect(w / 2 - dimension / 2, (h - dimension) / 2, dimension, dimension)
 		end
 	end
+end
+
+local fsin, icon
+local matcache = {}
+function SWEP:DrawWeaponSelection(x, y, wide, tall, alpha)
+	surface.SetDrawColor(255, 255, 255, alpha)
+
+	icon = self:GetStat("WepSelectIcon_Override") or self.WepSelectIcon
+
+	if not icon then
+		self:IconFix()
+		return
+	end
+
+	if type(icon) == "IMaterial" then
+		surface.SetMaterial(icon)
+	elseif type(icon) == "string" then
+		matcache[icon] = matcache[icon] or Material(icon, "smooth noclamp")
+		surface.SetMaterial(matcache[icon])
+	else
+		surface.SetTexture(icon)
+	end
+
+	fsin = self.BounceWeaponIcon and math.sin( l_CT() * 10 ) * 5 or 0
+
+	-- Borders
+	y = y + 10
+	x = x + 10
+	wide = wide - 20
+
+	surface.DrawTexturedRect(x + fsin, y - fsin, wide - fsin * 2, wide / 2 + fsin)
+
+	self:PrintWeaponInfo(x + wide + 20, y + tall * 0.95, alpha)
 end
