@@ -65,7 +65,7 @@ hook.Add("PreDrawViewModel", "TFA_DrawViewModel", function(vm, plyv, wep)
 	if not supports then return end
 
 	if not cl_tfa_fx_dof then
-		cl_tfa_fx_dof = GetConVar("cl_tfa_fx_ads_dof_enabled")
+		cl_tfa_fx_dof = GetConVar("cl_tfa_fx_ads_dof")
 	end
 
 	if not cl_tfa_fx_dof or not cl_tfa_fx_dof:GetBool() then return end
@@ -134,7 +134,7 @@ hook.Add("PostDrawViewModel", "TFA_DrawViewModel", function(vm, plyv, wep)
 	end
 
 	if not cl_tfa_fx_dof then
-		cl_tfa_fx_dof = GetConVar("cl_tfa_fx_ads_dof_enabled")
+		cl_tfa_fx_dof = GetConVar("cl_tfa_fx_ads_dof")
 	end
 
 	if not cl_tfa_fx_dof_hd then
@@ -229,7 +229,7 @@ hook.Add("PreDrawPlayerHands", "TFA_DrawViewModel", function(hands, vm, plyv, we
 	if not supports then return end
 
 	if not cl_tfa_fx_dof then
-		cl_tfa_fx_dof = GetConVar("cl_tfa_fx_ads_dof_enabled")
+		cl_tfa_fx_dof = GetConVar("cl_tfa_fx_ads_dof")
 	end
 
 	if not cl_tfa_fx_dof or not cl_tfa_fx_dof:GetBool() then return end
