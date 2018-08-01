@@ -522,9 +522,18 @@ function SWEP:GetBoneOrientation(basetabl, tabl, ent, bone_override)
 				pos, ang = self:GetBoneOrientation(basetabl, v, v.curmodel, tabl.bone)
 			end
 
-			if (not pos) then
-				return vector_origin, angle_zero
-			else
+			if pos and ang then return pos, ang end
+		else
+			--As clavus states in his original code, don't make your elements named the same as a bone, because recursion.
+			pos, ang = self:GetBoneOrientation(basetabl, v, ent)
+
+			if pos and ang then
+				pos = pos + ang:Forward() * v.pos.x + ang:Right() * v.pos.y + ang:Up() * v.pos.z
+				ang:RotateAroundAxis(ang:Up(), v.angle.y)
+				ang:RotateAroundAxis(ang:Right(), v.angle.p)
+				ang:RotateAroundAxis(ang:Forward(), v.angle.r)
+				-- For mirrored viewmodels.  You might think to scale negatively on X, but this isn't the case.
+
 				return pos, ang
 			end
 		end
