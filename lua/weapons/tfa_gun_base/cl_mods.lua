@@ -509,19 +509,14 @@ function SWEP:GetBoneOrientation(basetabl, tabl, ent, bone_override)
 	local bone, pos, ang
 	if not IsValid(ent) then return Vector(0, 0, 0), Angle(0, 0, 0) end
 
-	if tabl.rel and tabl.rel ~= "" then
+	if tabl.rel and tabl.rel ~= "" and not tabl.bonemerge then
 		local v = basetabl[tabl.rel]
 		if (not v) then return end
+		local boneName = bone_override or tabl.bone
 
-		if v.curmodel and ent ~= v.curmodel and v.curmodel:LookupBone(bone_override or tabl.bone or "ValveBiped.Bip01_R_Hand") then
+		if v.curmodel and ent ~= v.curmodel and (v.bonemerge or (boneName and boneName ~= "" and v.curmodel:LookupBone(boneName))) then
 			v.curmodel:SetupBones()
-
-			if tabl.bone == nil or tabl.bone == "" then
-				pos, ang = self:GetBoneOrientation(basetabl, v, v.curmodel, "ValveBiped.Bip01_R_Hand")
-			else
-				pos, ang = self:GetBoneOrientation(basetabl, v, v.curmodel, tabl.bone)
-			end
-
+			pos, ang = self:GetBoneOrientation(basetabl, v, v.curmodel, boneName)
 			if pos and ang then return pos, ang end
 		else
 			--As clavus states in his original code, don't make your elements named the same as a bone, because recursion.
