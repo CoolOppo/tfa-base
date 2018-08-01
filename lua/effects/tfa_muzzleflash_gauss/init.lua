@@ -84,7 +84,7 @@ function EFFECT:Init(data)
 		dlight.g = 200
 		dlight.b = 255
 		dlight.Brightness = 4.0
-		dlight.size = self.FlashSize * 96
+		dlight.size = 96
 		dlight.decay = 1000
 		dlight.DieTime = CurTime() + fadeouttime
 	end
