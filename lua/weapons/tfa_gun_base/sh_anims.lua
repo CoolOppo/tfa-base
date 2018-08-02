@@ -588,10 +588,9 @@ Notes:  Requires autodetection or otherwise the list of valid anims.
 Purpose:  Animation / Utility
 ]]
 --
-function SWEP:SelectInspectAnim(pri)
-	typev = TFA.Enum.ANIMATION_ACT
-	tanim = ACT_VM_FIDGET
-	success = true
+
+function SWEP:ChooseInspectAnim()
+	if not self:VMIV() then return end
 
 	if self:GetActivityEnabled(ACT_VM_FIDGET_SILENCED) and self:GetSilenced() then
 		typev, tanim = self:ChooseAnimation("inspect_silenced")
@@ -605,14 +604,6 @@ function SWEP:SelectInspectAnim(pri)
 		typev, tanim = self:ChooseAnimation("idle")
 		success = false
 	end
-
-	return success, typev, tanim
-end
-
-function SWEP:ChooseInspectAnim()
-	if not self:VMIV() then return end
-	--self:ResetEvents()
-	success, typev, tanim = self:SelectInspectAnim()
 
 	if typev ~= TFA.Enum.ANIMATION_SEQ then
 		return self:SendViewModelAnim(tanim)
