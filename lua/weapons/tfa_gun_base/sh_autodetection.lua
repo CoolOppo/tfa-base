@@ -429,9 +429,18 @@ function SWEP:GetType()
 	if self.Type then return self.Type end
 	local at = string.lower(self.Primary.Ammo or "")
 	local ht = string.lower((self.DefaultHoldType or self.HoldType) or "")
-	local rpm = self.Primary.RPM or 600
+	local rpm = self.Primary.RPM_Displayed or self.Primary.RPM or 600
 
-	if self.Shotgun or at == "buckshot" then
+	if self.Primary.ProjectileEntity or self.ProjectileEntity then
+		if (self.ProjectileVelocity or self.Primary.ProjectileVelocity) > 400 then
+			self.Type = "Launcher"
+		else
+			self.Type = "Grenade"
+		end
+		return
+	end
+
+	if at == "buckshot" then
 		self.Type = "Shotgun"
 
 		return self:GetType()
@@ -443,7 +452,7 @@ function SWEP:GetType()
 		return self:GetType()
 	end
 
-	if self.SMG or (at == "smg1" and (ht == "smg" or ht == "pistol")) then
+	if self.SMG or (at == "smg1" and (ht == "smg" or ht == "pistol" or ht == "357")) then
 		self.Type = "Sub-Machine Gun"
 
 		return self:GetType()
@@ -456,8 +465,8 @@ function SWEP:GetType()
 	end
 
 	--Detect Sniper Type
-	if (self.Scoped or self.Scoped_3D) and rpm < 600 then
-		if rpm > 180 then
+	if ( (self.Scoped or self.Scoped_3D) and rpm < 600 ) or at == "sniperpenetratedround" then
+		if rpm > 180 and (self.Primary.Automatic or self.Primary.SelectiveFire) then
 			self.Type = "Designated Marksman Rifle"
 
 			return self:GetType()
@@ -470,13 +479,11 @@ function SWEP:GetType()
 
 	--Detect based on holdtype
 	if ht == "pistol" then
-		self.Type = "Pistol"
-
-		return self:GetType()
-	end
-
-	if ht == "revolver" then
-		self.Type = "Revolver"
+		if self.Primary.Automatic then
+			self.Type = "Machine Pistol"
+		else
+			self.Type = "Pistol"
+		end
 
 		return self:GetType()
 	end
@@ -503,12 +510,16 @@ function SWEP:GetType()
 
 	--If it's using rifle ammo, it's a rifle or a carbine
 	if at == "ar2" then
-		if ht == "ar2" or ht == "shotgun" then
-			self.Type = "Rifle"
+		if self.Primary.ClipSize >= 60 then
+			self.Type = "Light Machine Gun"
+
+			return self:GetType()
+		elseif ht == "rpg" or ht == "revolver" then
+			self.Type = "Carbine"
 
 			return self:GetType()
 		else
-			self.Type = "Carbine"
+			self.Type = "Rifle"
 
 			return self:GetType()
 		end
