@@ -401,7 +401,7 @@ function SWEP:CacheAnimations()
 				if s and s > 0 then
 					self.SequenceEnabled[v] = true
 					self.SequenceLength[v] = vm:SequenceDuration(s)
-					self.ActCache[seq] = v
+					self.ActCache[s] = v
 				else
 					self.SequenceEnabled[v] = false
 					self.SequenceLength[v] = 0.0
