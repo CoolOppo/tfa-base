@@ -163,7 +163,9 @@ if CLIENT then
 		render.Clear(0, 0, 0, 255, true, true)
 		TFA.DrawingRenderTarget = true
 		render.CullMode(MATERIAL_CULLMODE_CCW)
-		wep:RTCode(TFA_RTMat, w, h)
+		ProtectedCall(function()
+			wep:RTCode(TFA_RTMat, w, h)
+		end)
 		TFA.DrawingRenderTarget = false
 		render.PopRenderTarget()
 		render.SetScissorRect(0, 0, ScrW(), ScrH(), false)

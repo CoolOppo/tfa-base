@@ -204,6 +204,7 @@ SWEP.FirstDeployEnabled = nil--Force first deploy enabled
 --[[Dont edit under this unless you know what u r doing]]
 
 SWEP.IronSightsProgress = 0
+SWEP.CLIronSightsProgress = 0
 SWEP.SprintProgress = 0
 SWEP.SpreadRatio = 0
 SWEP.CrouchingRatio = 0
