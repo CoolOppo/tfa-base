@@ -56,9 +56,9 @@ function SWEP:DrawFlashlight(is_vm)
 		if not IsValid(ply.TFAFlashlightGun) and not IsHolstering(self) then
 			local lamp = ProjectedTexture()
 			ply.TFAFlashlightGun = lamp
-			lamp:SetTexture(flashlightdot:GetString("$basetexture"))
+			lamp:SetTexture(self.FlashlightDotMaterial:GetString("$basetexture"))
 			lamp:SetFarZ(self:GetStat("FlashlightDistance")) -- How far the light should shine
-			lamp:SetFOV(self:GetStat(FlashlightFOV))
+			lamp:SetFOV(self:GetStat("FlashlightFOV"))
 			lamp:SetPos(angpos.Pos)
 			lamp:SetAngles(angpos.Ang)
 			lamp:SetBrightness(self:GetStat("FlashlightBrightness") * (0.9  + 0.1 * math.max(math.sin(CurTime() * 120), math.cos(CurTime() * 40))))
@@ -108,7 +108,7 @@ function SWEP:DrawFlashlight(is_vm)
 			ply.TFAFlashlightGun = lamp
 			lamp:SetTexture(flashlightdot:GetString("$basetexture"))
 			lamp:SetFarZ(self:GetStat("FlashlightDistance")) -- How far the light should shine
-			lamp:SetFOV(self:GetStat(FlashlightFOV))
+			lamp:SetFOV(self:GetStat("FlashlightFOV"))
 			lamp:SetPos(angpos.Pos)
 			lamp:SetAngles(angpos.Ang)
 			lamp:SetBrightness(self:GetStat("FlashlightBrightness") * (0.9  + 0.1 * math.max(math.sin(CurTime() * 120), math.cos(CurTime() * 40))))
