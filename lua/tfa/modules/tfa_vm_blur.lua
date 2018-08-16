@@ -128,8 +128,7 @@ hook.Add("PostDrawViewModel", "TFA_DrawViewModel", function(vm, plyv, wep)
 	if not wep:IsTFA() then return end
 
 	if not supports then
-		wep:DrawLaser(true)
-		wep:DrawFlashLight(true)
+		wep:UpdateProjectedTextures(true)
 		wep:ViewModelDrawnPost()
 		return
 	end
@@ -143,15 +142,13 @@ hook.Add("PostDrawViewModel", "TFA_DrawViewModel", function(vm, plyv, wep)
 	end
 
 	if not cl_tfa_fx_dof or not cl_tfa_fx_dof:GetBool() then
-		wep:DrawLaser(true)
-		wep:DrawFlashLight(true)
+		wep:UpdateProjectedTextures(true)
 		wep:ViewModelDrawnPost()
 		return
 	end
 
 	if not wep.AllowIronSightsDoF then
-		wep:DrawLaser(true)
-		wep:DrawFlashLight(true)
+		wep:UpdateProjectedTextures(true)
 		wep:ViewModelDrawnPost()
 		return
 	end
@@ -223,7 +220,7 @@ hook.Add("PostDrawViewModel", "TFA_DrawViewModel", function(vm, plyv, wep)
 	end
 
 	wep:DrawLaser(true)
-	wep:DrawFlashLight(true)
+	wep:DrawFlashlight(true)
 	wep:ViewModelDrawnPost()
 end)
 

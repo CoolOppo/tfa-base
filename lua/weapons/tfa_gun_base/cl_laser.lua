@@ -26,6 +26,7 @@ function SWEP:DrawLaser(is_vm)
 	end
 
 	local ow = self:GetOwner()
+	if not IsValid(ow) then return end
 	local f = ow.GetNW2Vector or ow.GetNWVector
 	pc = f(ow, "TFALaserColor", vector_origin)
 	col.r = pc.x
@@ -171,11 +172,3 @@ function SWEP:CleanLaser()
 		ply.TFALaserDot:Remove()
 	end
 end
-
-hook.Add("PostPlayerDraw", "TFA_LaserSight", function(plyv)
-	local wep = plyv:GetActiveWeapon()
-
-	if IsValid(wep) and wep:IsTFA() and (plyv ~= LocalPlayer() or not wep:IsFirstPerson()) then
-		wep:DrawLaser(false)
-	end
-end)

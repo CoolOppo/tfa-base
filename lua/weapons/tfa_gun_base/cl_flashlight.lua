@@ -1,10 +1,9 @@
 local att
-local flashlightdot
-local flashlightFOV = 60
 local angpos
-local traceres
-SWEP.FlashLightDistance = 12 * 50 -- default 50 feet
-SWEP.FlashLightAttachment = 1
+SWEP.FlashlightDistance = 12 * 50 -- default 50 feet
+SWEP.FlashlightAttachment = 0
+SWEP.FlashlightBrightness = 1
+SWEP.FlashlightFOV = 60
 
 local function IsHolstering(wep)
 	if IsValid(wep) and TFA.Enum.HolsterStatus[wep:GetStatus()] then return true end
@@ -12,22 +11,24 @@ local function IsHolstering(wep)
 	return false
 end
 
-function SWEP:DrawFlashLight(is_vm)
-	if not flashlightdot then
-		flashlightdot = Material(self.FlashLightMaterial or "effects/flashlight001")
+function SWEP:DrawFlashlight(is_vm)
+	if not self.FlashlightDotMaterial then
+		self.FlashlightDotMaterial = Material(self:GetStat("FlashlightMaterial") or "effects/flashlight001")
 	end
+
+	if not IsValid(self:GetOwner()) then return end
 
 	if is_vm then
 		if not self:VMIV() then
-			self:CleanFlashLight()
+			self:CleanFlashlight()
 
 			return
 		end
 
-		att = self:GetStat("FlashLightAttachment")
+		att = self:GetStat("FlashlightAttachment")
 
 		if (not att) or att <= 0 then
-			self:CleanFlashLight()
+			self:CleanFlashlight()
 
 			return
 		end
@@ -35,12 +36,12 @@ function SWEP:DrawFlashLight(is_vm)
 		angpos = self.OwnerViewModel:GetAttachment(att)
 
 		if not angpos then
-			self:CleanFlashLight()
+			self:CleanFlashlight()
 
 			return
 		end
 
-		if self.FlashLightISMovement and self.CLIronSightsProgress > 0 then
+		if self.FlashlightISMovement and self.CLIronSightsProgress > 0 then
 			local isang = self:GetStat("IronSightsAng")
 			angpos.Ang:RotateAroundAxis(angpos.Ang:Right(), isang.y * (self.ViewModelFlip and -1 or 1) * self.CLIronSightsProgress)
 			angpos.Ang:RotateAroundAxis(angpos.Ang:Up(), -isang.x * self.CLIronSightsProgress)
@@ -49,45 +50,41 @@ function SWEP:DrawFlashLight(is_vm)
 		local localProjAng = select(2, WorldToLocal(vector_origin, angpos.Ang, vector_origin, EyeAngles()))
 		localProjAng.p = localProjAng.p * self:GetOwner():GetFOV() / self.ViewModelFOV
 		localProjAng.y = localProjAng.y * self:GetOwner():GetFOV() / self.ViewModelFOV
-		local wsProjAng = select(2, LocalToWorld(vector_origin, localProjAng, vector_origin, EyeAngles())) --reprojection for trace angle
-		traceres = util.QuickTrace(self:GetOwner():GetShootPos(), wsProjAng:Forward() * 999999, self:GetOwner())
+		local wsProjAng = select(2, LocalToWorld(vector_origin, localProjAng, vector_origin, EyeAngles())) --reprojection for view angle
 		local ply = self:GetOwner()
 
-		if not IsValid(ply.TFAFlashLightGun) and not IsHolstering(self) then
+		if not IsValid(ply.TFAFlashlightGun) and not IsHolstering(self) then
 			local lamp = ProjectedTexture()
-			ply.TFAFlashLightGun = lamp
+			ply.TFAFlashlightGun = lamp
 			lamp:SetTexture(flashlightdot:GetString("$basetexture"))
-			lamp:SetFarZ(self.FlashLightDistance) -- How far the light should shine
-			lamp:SetFOV(flashlightFOV)
+			lamp:SetFarZ(self:GetStat("FlashlightDistance")) -- How far the light should shine
+			lamp:SetFOV(self:GetStat(FlashlightFOV))
 			lamp:SetPos(angpos.Pos)
 			lamp:SetAngles(angpos.Ang)
-			lamp:SetBrightness(1.4 + 0.1 * math.max(math.sin(CurTime() * 120), math.cos(CurTime() * 40)))
+			lamp:SetBrightness(self:GetStat("FlashlightBrightness") * (0.9  + 0.1 * math.max(math.sin(CurTime() * 120), math.cos(CurTime() * 40))))
 			lamp:SetNearZ(1)
 			lamp:SetColor(color_white)
 			lamp:SetEnableShadows(true)
 			lamp:Update()
 		end
 
-		local lamp = ply.TFAFlashLightGun
+		local lamp = ply.TFAFlashlightGun
 
 		if IsValid(lamp) then
-			local lamppos = EyePos() + EyeAngles():Up() * 4
-			local ang = (traceres.HitPos - lamppos):Angle()
-			self.flashlightpos_old = traceres.HitPos
-			lamp:SetPos(lamppos)
-			lamp:SetAngles(ang)
+			lamp:SetPos(angpos.Pos)
+			lamp:SetAngles(wsProjAng)
 			lamp:SetBrightness(1.4 + 0.1 * math.max(math.sin(CurTime() * 120), math.cos(CurTime() * 40)))
 			lamp:Update()
 		end
 	else
-		att = self:GetStat("FlashLightAttachmentWorld")
+		att = self:GetStat("FlashlightAttachmentWorld")
 
 		if (not att) or att <= 0 then
-			att = self:GetStat("FlashLightAttachment")
+			att = self:GetStat("FlashlightAttachment")
 		end
 
 		if (not att) or att <= 0 then
-			self:CleanFlashLight()
+			self:CleanFlashlight()
 
 			return
 		end
@@ -99,53 +96,45 @@ function SWEP:DrawFlashLight(is_vm)
 		end
 
 		if not angpos then
-			self:CleanFlashLight()
+			self:CleanFlashlight()
 
 			return
 		end
 
 		local ply = self:GetOwner()
 
-		if not IsValid(ply.TFAFlashLightGun) and not IsHolstering(self) then
+		if not IsValid(ply.TFAFlashlightGun) and not IsHolstering(self) then
 			local lamp = ProjectedTexture()
-			ply.TFAFlashLightGun = lamp
+			ply.TFAFlashlightGun = lamp
 			lamp:SetTexture(flashlightdot:GetString("$basetexture"))
-			lamp:SetFarZ(self.FlashLightDistance) -- How far the light should shine
-			lamp:SetFOV(flashlightFOV)
+			lamp:SetFarZ(self:GetStat("FlashlightDistance")) -- How far the light should shine
+			lamp:SetFOV(self:GetStat(FlashlightFOV))
 			lamp:SetPos(angpos.Pos)
 			lamp:SetAngles(angpos.Ang)
-			lamp:SetBrightness(1.4 + 0.1 * math.max(math.sin(CurTime() * 120), math.cos(CurTime() * 40)))
+			lamp:SetBrightness(self:GetStat("FlashlightBrightness") * (0.9  + 0.1 * math.max(math.sin(CurTime() * 120), math.cos(CurTime() * 40))))
 			lamp:SetNearZ(1)
 			lamp:SetColor(color_white)
 			lamp:SetEnableShadows(false)
 			lamp:Update()
 		end
 
-		local lamp = ply.TFAFlashLightGun
+		local lamp = ply.TFAFlashlightGun
 
 		if IsValid(lamp) then
 			local lamppos = angpos.Pos
 			local ang = angpos.Ang
 			lamp:SetPos(lamppos)
 			lamp:SetAngles(ang)
-			lamp:SetBrightness(1.4 + 0.1 * math.max(math.sin(CurTime() * 120), math.cos(CurTime() * 40)))
+			lamp:SetBrightness(self:GetStat("FlashlightBrightness") * (0.9  + 0.1 * math.max(math.sin(CurTime() * 120), math.cos(CurTime() * 40))))
 			lamp:Update()
 		end
 	end
 end
 
-function SWEP:CleanFlashLight()
+function SWEP:CleanFlashlight()
 	local ply = self:GetOwner()
 
-	if IsValid(ply) and IsValid(ply.TFAFlashLightGun) then
-		ply.TFAFlashLightGun:Remove()
+	if IsValid(ply) and IsValid(ply.TFAFlashlightGun) then
+		ply.TFAFlashlightGun:Remove()
 	end
 end
-
-hook.Add("PostPlayerDraw", "TFA_FlashLight", function(plyv)
-	local wep = plyv:GetActiveWeapon()
-
-	if IsValid(wep) and wep:IsTFA() and (plyv ~= LocalPlayer() or not wep:IsFirstPerson()) then
-		wep:DrawFlashLight(false)
-	end
-end)

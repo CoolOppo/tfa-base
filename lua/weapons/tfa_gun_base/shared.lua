@@ -571,10 +571,6 @@ end
 
 function SWEP:FinishHolster()
 	self:CleanParticles()
-	if self.CleanLaser then
-		self:CleanLaser()
-		self:CleanFlashLight()
-	end
 	local v2 = hook.Run("TFA_Holster", self)
 	self.InspectingProgress = 0
 	if self.Owner:IsNPC() then return end
@@ -599,9 +595,7 @@ Returns:  Nil.
 Purpose:  Standard SWEP Function
 ]]
 function SWEP:OnRemove()
-	if self.CleanLaser then
-		self:CleanLaser()
-		self:CleanFlashLight()
+	if self.CleanParticles then
 		self:CleanParticles()
 	end
 	return hook.Run("TFA_OnRemove",self)
@@ -615,9 +609,7 @@ Returns:  Nil.
 Purpose:  Standard SWEP Function
 ]]
 function SWEP:OnDrop()
-	if self.CleanLaser then
-		self:CleanLaser()
-		self:CleanFlashLight()
+	if self.CleanParticles then
 		self:CleanParticles()
 	end
 	return hook.Run("TFA_OnDrop",self)

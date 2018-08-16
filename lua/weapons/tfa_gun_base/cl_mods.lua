@@ -35,6 +35,20 @@ function SWEP:InitMods()
 end
 
 --[[
+Function Name:  UpdateProjectedTextures
+Syntax: self:UpdateProjectedTextures().  Automatically called already.
+Returns:  Nothing.
+Notes:  This takes care of our flashlight and laser.
+Purpose:  SWEP Construction Kit Compatibility / Basic Attachments.
+]]
+--
+
+function SWEP:UpdateProjectedTextures(view)
+	self:DrawLaser(view)
+	self:DrawFlashlight(view)
+end
+
+--[[
 Function Name:  ViewModelDrawn
 Syntax: self:ViewModelDrawn().  Automatically called already.
 Returns:  Nothing.
@@ -377,6 +391,11 @@ function SWEP:DrawWorldModel()
 	end
 
 	self:UpdateWMBonePositions(self)
+
+	if IsValid(self) and self:IsTFA() and (self:GetOwner() ~= LocalPlayer() or not self:IsFirstPerson()) then
+		self:UpdateProjectedTextures(false)
+	end
+
 	if not self.WElements then return end
 	self:CreateModels(self.WElements)
 
