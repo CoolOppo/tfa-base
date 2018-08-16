@@ -1,7 +1,7 @@
 --[[Define Modules]]
 SWEP.SV_MODULES = {}
 SWEP.SH_MODULES = {"sh_ai_translations.lua", "sh_anims.lua", "sh_autodetection.lua", "sh_utils.lua", "sh_attachments.lua", "sh_bullet.lua", "sh_effects.lua", "sh_bobcode.lua", "sh_calc.lua", "sh_akimbo.lua", "sh_events.lua", "sh_nzombies.lua", "sh_ttt.lua", "sh_vm.lua", "sh_skins.lua" }
-SWEP.ClSIDE_MODULES = { "cl_effects.lua", "cl_viewbob.lua", "cl_hud.lua", "cl_mods.lua", "cl_laser.lua" }
+SWEP.ClSIDE_MODULES = { "cl_effects.lua", "cl_viewbob.lua", "cl_hud.lua", "cl_mods.lua", "cl_laser.lua", "cl_fov.lua", "cl_flashlight.lua" }
 SWEP.Category = "" --The category.  Please, just choose something generic or something I've already done if you plan on only doing like one swep.
 SWEP.Author = "TheForgottenArchitect"
 SWEP.Contact = "theforgottenarchitect"
@@ -572,6 +572,7 @@ function SWEP:FinishHolster()
 	self:CleanParticles()
 	if self.CleanLaser then
 		self:CleanLaser()
+		self:CleanFlashLight()
 	end
 	local v2 = hook.Run("TFA_Holster", self)
 	self.InspectingProgress = 0
@@ -599,6 +600,7 @@ Purpose:  Standard SWEP Function
 function SWEP:OnRemove()
 	if self.CleanLaser then
 		self:CleanLaser()
+		self:CleanFlashLight()
 		self:CleanParticles()
 	end
 	return hook.Run("TFA_OnRemove",self)
@@ -614,6 +616,7 @@ Purpose:  Standard SWEP Function
 function SWEP:OnDrop()
 	if self.CleanLaser then
 		self:CleanLaser()
+		self:CleanFlashLight()
 		self:CleanParticles()
 	end
 	return hook.Run("TFA_OnDrop",self)
