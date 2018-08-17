@@ -231,7 +231,11 @@ end
 hook.Add("PlayerTick", "TFABase_KD", KD_AmmoCheck)
 
 local function SC_PBZ(plyv, ucmd)
-	if IsFirstTimePredicted() and ucmd:KeyDown(IN_ZOOM) then
+	if not IsFirstTimePredicted() then return end
+
+	plyv:TFA_SetZoomKeyDown(ucmd:KeyDown(IN_ZOOM))
+
+	if ucmd:KeyDown(IN_ZOOM) then
 		local wepv = plyv:GetActiveWeapon()
 
 		if IsValid(wepv) and wepv.AltAttack then

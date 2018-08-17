@@ -376,7 +376,7 @@ function SWEP:Think2()
 	if self.CanBlock then
 		local stat = self:GetStatus()
 
-		if self:GetOwner():KeyDown(IN_ZOOM) and TFA.Enum.ReadyStatus[stat] and not self:GetOwner():KeyDown(IN_USE) then
+		if self:GetOwner():TFA_ZoomKeyDown() and TFA.Enum.ReadyStatus[stat] and not self:GetOwner():KeyDown(IN_USE) then
 			self:SetStatus(TFA.GetStatus("blocking"))
 
 			if self.BlockAnimation["in"] then
@@ -387,7 +387,7 @@ function SWEP:Think2()
 
 			self:SetStatusEnd(math.huge)
 			self.BlockStart = CurTime()
-		elseif stat == TFA.GetStatus("blocking") and not self:GetOwner():KeyDown(IN_ZOOM) then
+		elseif stat == TFA.GetStatus("blocking") and not self:GetOwner():TFA_ZoomKeyDown() then
 			local _, tanim
 			self:SetStatus(TFA.GetStatus("blocking_end"))
 
