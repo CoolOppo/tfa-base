@@ -7,6 +7,8 @@ ENT.Instructions = ""
 ENT.DoNotDuplicate = true
 ENT.DisableDuplicator = true
 
+local sp = game.SinglePlayer()
+
 function ENT:EmitSoundNet(sound)
 	if CLIENT or sp then
 		if sp and not IsFirstTimePredicted() then return end
