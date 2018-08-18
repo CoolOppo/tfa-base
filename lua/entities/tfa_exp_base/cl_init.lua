@@ -7,5 +7,3 @@ end
 function ENT:IsTranslucent()
 	return true
 end
-
-
