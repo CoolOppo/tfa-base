@@ -268,7 +268,7 @@ function SWEP:GenerateInspectionDerma()
 	titletext:SetSize(screenwidth - lbound, spacing)
 	titletext.Paint = TextShadowPaint
 	local typetext = contentpanel:Add("DPanel")
-	typetext.Text = self:GetType()
+	typetext.Text = self:GetStat("Type_Displayed") or self:GetType()
 
 	typetext.Think = function(myself)
 		myself.TextColor = TFA_INSPECTIONPANEL.PrimaryColor
