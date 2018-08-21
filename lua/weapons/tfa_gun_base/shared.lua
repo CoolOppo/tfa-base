@@ -624,6 +624,8 @@ Purpose:  Standard SWEP Function
 ]]
 function SWEP:Think()
 	if self.Owner:IsNPC() and SERVER then
+		if self.ThinkNPC then self:ThinkNPC() end
+
 		if self.Owner:GetClass() == "npc_combine_s" then
 			if self.Owner:GetActivity() == 16 then
 				self:PrimaryAttack()
