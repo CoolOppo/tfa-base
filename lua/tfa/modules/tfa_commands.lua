@@ -528,30 +528,40 @@ if CLIENT then
 		CreateClientConVar("cl_tfa_debug_cache", 0, false, false, "Disable stat caching (may cause heavy performance impact!)")
 	end
 
+	local function UpdateColorCVars()
+		RunConsoleCommand("sv_tfa_apply_player_colors")
+	end
+
 	--Reticule Color
 	if GetConVar("cl_tfa_reticule_color_r") == nil then
 		CreateClientConVar("cl_tfa_reticule_color_r", 255, true, true)
+		cvars.AddChangeCallback("cl_tfa_reticule_color_r", UpdateColorCVars, "TFANetworkPlayerColors")
 	end
 
 	if GetConVar("cl_tfa_reticule_color_g") == nil then
 		CreateClientConVar("cl_tfa_reticule_color_g", 100, true, true)
+		cvars.AddChangeCallback("cl_tfa_reticule_color_g", UpdateColorCVars, "TFANetworkPlayerColors")
 	end
 
 	if GetConVar("cl_tfa_reticule_color_b") == nil then
 		CreateClientConVar("cl_tfa_reticule_color_b", 0, true, true)
+		cvars.AddChangeCallback("cl_tfa_reticule_color_b", UpdateColorCVars, "TFANetworkPlayerColors")
 	end
 
 	--Laser Color
 	if GetConVar("cl_tfa_laser_color_r") == nil then
 		CreateClientConVar("cl_tfa_laser_color_r", 255, true, true)
+		cvars.AddChangeCallback("cl_tfa_laser_color_r", UpdateColorCVars, "TFANetworkPlayerColors")
 	end
 
 	if GetConVar("cl_tfa_laser_color_g") == nil then
 		CreateClientConVar("cl_tfa_laser_color_g", 0, true, true)
+		cvars.AddChangeCallback("cl_tfa_laser_color_g", UpdateColorCVars, "TFANetworkPlayerColors")
 	end
 
 	if GetConVar("cl_tfa_laser_color_b") == nil then
 		CreateClientConVar("cl_tfa_laser_color_b", 0, true, true)
+		cvars.AddChangeCallback("cl_tfa_laser_color_b", UpdateColorCVars, "TFANetworkPlayerColors")
 	end
 
 end

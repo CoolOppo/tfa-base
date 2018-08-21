@@ -1,20 +1,23 @@
 local nvec = Vector()
 
-if SERVER then
-	hook.Add("Tick", "NetworkTFAColors", function()
-		for _, v in pairs(player.GetAll()) do
-			local f = v.SetNW2Vector or v.SetNWVector
-			nvec.x = v:GetInfoNum("cl_tfa_laser_color_r", 255)
-			nvec.y = v:GetInfoNum("cl_tfa_laser_color_g", 0)
-			nvec.z = v:GetInfoNum("cl_tfa_laser_color_b", 0)
-			f(v, "TFALaserColor", nvec)
-			nvec.x = v:GetInfoNum("cl_tfa_reticule_color_r", 255)
-			nvec.y = v:GetInfoNum("cl_tfa_reticule_color_g", 0)
-			nvec.z = v:GetInfoNum("cl_tfa_reticule_color_b", 0)
-			f(v, "TFAReticuleColor", nvec)
-		end
-	end)
+local function SetPlayerColors(ply)
+	if not IsValid(ply) then return end
+
+	local _SetNWVector = ply.SetNW2Vector or ply.SetNWVector
+
+	nvec.x = ply:GetInfoNum("cl_tfa_laser_color_r", 255)
+	nvec.y = ply:GetInfoNum("cl_tfa_laser_color_g", 0)
+	nvec.z = ply:GetInfoNum("cl_tfa_laser_color_b", 0)
+	_SetNWVector(ply, "TFALaserColor", nvec)
+
+	nvec.x = ply:GetInfoNum("cl_tfa_reticule_color_r", 255)
+	nvec.y = ply:GetInfoNum("cl_tfa_reticule_color_g", 0)
+	nvec.z = ply:GetInfoNum("cl_tfa_reticule_color_b", 0)
+	_SetNWVector(ply, "TFAReticuleColor", nvec)
 end
+
+hook.Add("PlayerSpawn", "TFANetworkColors_Spawn", SetPlayerColors)
+concommand.Add("sv_tfa_apply_player_colors", SetPlayerColors)
 
 if not matproxy then return end
 
