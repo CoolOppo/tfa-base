@@ -46,6 +46,11 @@ SWEP.DisableBurstFire = false --Only auto/single?
 SWEP.OnlyBurstFire = false --No auto, only burst/single?
 SWEP.DefaultFireMode = "" --Default to auto or whatev
 SWEP.FireModeName = nil --Change to a text value to override it
+SWEP.FireSoundAffectedByClipSize = true -- Whenever adjuct pitch (and proably other properties) of fire sound based on current clip / maxclip
+-- This is always false when either:
+-- Weapon has no primary clip
+-- Weapon's clip is smaller than 4 rounds
+-- Weapon is a shotgun
 --Ammo Related
 SWEP.Primary.ClipSize = 0 -- This is the size of a clip
 SWEP.Primary.DefaultClip = 0 -- This is the number of bullets the gun gives you, counting a clip as defined directly above.

@@ -27,6 +27,8 @@ SWEP.data.ironsights = 1
 SWEP.MoveSpeed = 1
 SWEP.IronSightsMoveSpeed = nil
 
+SWEP.FireSoundAffectedByClipSize = true
+
 SWEP.Primary.Damage = -1
 SWEP.Primary.DamageTypeHandled = true --true will handle damagetype in base
 SWEP.Primary.NumShots = 1
@@ -1198,6 +1200,32 @@ function SWEP:CanPrimaryAttack( )
 end
 local npc_ar2_damage_cv = GetConVar("sk_npc_dmg_ar2")
 
+function SWEP:EmitGunfireSound(soundscript)
+	if not self.FireSoundAffectedByClipSize or self.PumpAction then
+		return self:EmitSound(soundscript)
+	end
+
+	local clip1, maxclip1 = self:Clip1(), self:GetMaxClip1()
+
+	if maxclip1 <= 4 or maxclip1 >= 70 then
+		return self:EmitSound(soundscript)
+	end
+
+	if clip1 <= 0 then
+		return self:EmitSound(soundscript)
+	end
+
+	local mult = clip1 / maxclip1
+	if mult >= 0.4 or mult <= 0 then return self:EmitSound(soundscript) end
+
+	local pitch = 1 + 0.02 / mult
+
+	self.GonnaAdjuctPitch = true
+	self.RequiredPitch = pitch
+
+	return self:EmitSound(soundscript)
+end
+
 function SWEP:PrimaryAttack()
 	self:PrePrimaryAttack()
 	if self.Owner:IsNPC() then
@@ -1227,7 +1255,7 @@ function SWEP:PrimaryAttack()
 			if not IsValid(self) then return end
 			if not IsValid(self.Owner) then return end
 			if not self:GetOwner().GetShootPos then return end
-			self:EmitSound(self.Primary.Sound)
+			self:EmitGunfireSound(self.Primary.Sound)
 			self:TakePrimaryAmmo(1)
 			local damage_to_do = self.Primary.Damage * npc_ar2_damage_cv:GetFloat() / 16
 			local bullet = {}
@@ -1274,9 +1302,9 @@ function SWEP:PrimaryAttack()
 
 	if self:GetStat("Primary.Sound") and IsFirstTimePredicted() and not (sp and CLIENT) then
 		if self:GetStat("Primary.SilencedSound") and self:GetSilenced() then
-			self:EmitSound(self:GetStat("Primary.SilencedSound"))
+			self:EmitGunfireSound(self:GetStat("Primary.SilencedSound"))
 		else
-			self:EmitSound(self:GetStat("Primary.Sound"))
+			self:EmitGunfireSound(self:GetStat("Primary.Sound"))
 		end
 	end
 
