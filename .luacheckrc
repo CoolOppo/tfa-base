@@ -19,6 +19,7 @@ stds.addon.globals = {
 	"TFA_SCOPE_SCOPESCALE",
 	"TFA_SCOPE_RETICLESCALE",
 	"TFA_SCOPE_DOTSCALE",
+	"TFA_ENABLE_JAMMING_BY_DEFAULT",
 	"TFARegisterAttachment",
 	"TFAUpdateAttachments",
 	"TFA_ATTACHMENT_ISUPDATING",
