@@ -756,13 +756,20 @@ function SWEP:Think2()
 			finalstat = TFA.Enum.STATUS_HOLSTER_FINAL
 			self:SetStatusEnd(ct + 0.6)
 		elseif stat == TFA.Enum.STATUS_RELOADING_SHOTGUN_START_SHELL then--Shotgun Reloading from empty
-			self:TakePrimaryAmmo(1,true)
-			self:TakePrimaryAmmo(-1)
+			if not self:IsJammed() then
+				self:TakePrimaryAmmo(1, true)
+				self:TakePrimaryAmmo(-1)
+			end
+
 			if self:Ammo1() <= 0 or self:Clip1() >= self:GetPrimaryClipSize() or self:GetShotgunCancel() then
 				finalstat = TFA.Enum.STATUS_RELOADING_SHOTGUN_END
 				local _,tanim = self:ChooseShotgunPumpAnim()
 				self:SetStatusEnd(ct + self:GetActivityLength( tanim ))
 				self:SetShotgunCancel( false )
+
+				if not self:GetShotgunCancel() then
+					self:SetJammed(false)
+				end
 			else
 				waittime = self:GetActivityLength( self:GetLastActivity(), false ) - self:GetActivityLength( self:GetLastActivity(), true )
 				if waittime > 0.01 then
@@ -771,6 +778,8 @@ function SWEP:Think2()
 				else
 					finalstat = self:LoadShell()
 				end
+
+				self:SetJammed(false)
 				--finalstat = self:LoadShell()
 				--self:SetStatusEnd( self:GetNextPrimaryFire() )
 			end
@@ -1435,7 +1444,7 @@ function SWEP:Reload(released)
 			self:DoPump()
 		end
 	elseif TFA.Enum.ReadyStatus[stat] or ( stat == TFA.Enum.STATUS_SHOOTING and self:CanInterruptShooting() ) or self:IsJammed() then
-		if self:Clip1() < self:GetPrimaryClipSize() then
+		if self:Clip1() < self:GetPrimaryClipSize() or self:IsJammed() then
 			if hook.Run("TFA_Reload",self) then return end
 			self:SetBurstCount(0)
 

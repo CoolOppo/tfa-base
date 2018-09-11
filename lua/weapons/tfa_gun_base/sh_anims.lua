@@ -714,7 +714,7 @@ function SWEP:ChooseShotgunReloadAnim()
 
 	if self:GetActivityEnabled(ACT_VM_RELOAD_SILENCED) and self:GetSilenced() then
 		typev, tanim = self:ChooseAnimation("reload_silenced")
-	elseif self:GetActivityEnabled(ACT_VM_RELOAD_EMPTY) and self.ShotgunEmptyAnim and self:Clip1() == 0 then
+	elseif self:GetActivityEnabled(ACT_VM_RELOAD_EMPTY) and self.ShotgunEmptyAnim and (self:Clip1() == 0 or self:IsJammed()) then
 		typev, tanim = self:ChooseAnimation("reload_empty")
 	elseif self.SequenceEnabled[ACT_SHOTGUN_RELOAD_START] then
 		typev, tanim = self:ChooseAnimation("reload_shotgun_start")

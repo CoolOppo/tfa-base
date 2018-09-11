@@ -75,6 +75,12 @@ SWEP.JamChance = 0.04
 SWEP.JamFactor = 0.09
 ]]
 
+--[[
+-- Pump-action shotgun
+SWEP.JamChance = 0.15
+SWEP.JamFactor = 0.25
+]]
+
 SWEP.FiresUnderwater = false
 --Miscelaneous Sounds
 SWEP.IronInSound = nil --Sound to play when ironsighting in?  nil for default
