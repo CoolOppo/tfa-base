@@ -57,6 +57,21 @@ SWEP.Primary.RangeFalloff = -1--0.5
 SWEP.Primary.PenetrationMultiplier = 1
 SWEP.Primary.DryFireDelay = nil
 
+local sv_tfa_jamming = GetConVar('sv_tfa_jamming')
+local sv_tfa_jamming_mult = GetConVar('sv_tfa_jamming_mult')
+local sv_tfa_jamming_factor = GetConVar('sv_tfa_jamming_factor')
+local sv_tfa_jamming_factor_inc = GetConVar('sv_tfa_jamming_factor_inc')
+
+-- RP owners always like realism, so this feature might be something they like. Enable it for them!
+SWEP.CanJam = string.find(engine.ActiveGamemode(), 'rp') or
+	string.find(engine.ActiveGamemode(), 'roleplay') or
+	string.find(engine.ActiveGamemode(), 'nutscript') or
+	string.find(engine.ActiveGamemode(), 'serious') or
+	TFA_ENABLE_JAMMING_BY_DEFAULT
+
+SWEP.JamChance = 0.04
+SWEP.JamFactor = 0.06
+
 SWEP.BoltAction = false --Unscope/sight after you shoot?
 SWEP.BoltAction_Forced = false
 SWEP.Scoped = false --Draw a scope overlay?
@@ -311,8 +326,10 @@ function SWEP:SetupDataTables()
 	self:NetworkVar("Bool", 1, "Sprinting")
 	self:NetworkVar("Bool", 2, "Silenced")
 	self:NetworkVar("Bool", 3, "ShotgunCancel")
+	self:NetworkVar("Bool", 19, "Jammed")
 	self:NetworkVar("Float", 0, "StatusEnd")
 	self:NetworkVar("Float", 1, "NextIdleAnim")
+	self:NetworkVar("Float", 19, "JamFactor")
 	self:NetworkVar("Int", 0, "Status")
 	self:NetworkVar("Int", 1, "FireMode")
 	self:NetworkVar("Int", 2, "LastActivity")
@@ -1164,13 +1181,16 @@ function SWEP:CanPrimaryAttack( )
 	if self:GetStat("Primary.ClipSize") <= 0 and self:Ammo1() < self:GetStat("Primary.AmmoConsumption") then
 		return false
 	end
+
 	if self:GetSprinting() and not self.AllowSprintAttack then
 		return false
 	end
+
 	if self:GetPrimaryClipSize(true) > 0 and self:Clip1() < self:GetStat("Primary.AmmoConsumption") then
 		if self:GetOwner():KeyPressed(IN_ATTACK) then
 			self:ChooseDryFireAnim()
 		end
+
 		if not self.HasPlayedEmptyClick then
 			self:EmitSound("Weapon_Pistol.Empty2")
 
@@ -1180,8 +1200,10 @@ function SWEP:CanPrimaryAttack( )
 
 			self.HasPlayedEmptyClick = true
 		end
+
 		return false
 	end
+
 	if self.FiresUnderwater == false and self:GetOwner():WaterLevel() >= 3 then
 		self:SetNextPrimaryFire(l_CT() + 0.5)
 		self:EmitSound("Weapon_AR2.Empty")
@@ -1191,17 +1213,19 @@ function SWEP:CanPrimaryAttack( )
 	self.HasPlayedEmptyClick = false
 
 	if CurTime() < self:GetNextPrimaryFire() then return false end
+
 	local v2 = hook.Run("TFA_CanPrimaryAttack",self)
+
 	if v2 ~= nil then
 		return v2
 	end
 
-	return true
+	return not self:CheckJammed()
 end
 local npc_ar2_damage_cv = GetConVar("sk_npc_dmg_ar2")
 
 function SWEP:EmitGunfireSound(soundscript)
-	if not self.FireSoundAffectedByClipSize or self.PumpAction then
+	if not self.FireSoundAffectedByClipSize or self.Shotgun then
 		return self:EmitSound(soundscript)
 	end
 
@@ -1315,6 +1339,7 @@ function SWEP:PrimaryAttack()
 	end
 
 	self:ShootBulletInformation()
+	self:UpdateJamFactor()
 	local _, CurrentRecoil = self:CalculateConeRecoil()
 	self:Recoil(CurrentRecoil, IsFirstTimePredicted())
 
@@ -1341,6 +1366,11 @@ function SWEP:PrimaryAttack()
 			self:SetShotgunCancel(true)
 		end
 	end
+
+	if IsFirstTimePredicted() then
+		self:RollJamChance()
+	end
+
 	self:PostPrimaryAttack()
 	hook.Run("TFA_PostPrimaryAttack",self)
 end
@@ -1381,14 +1411,20 @@ end
 function SWEP:Reload(released)
 	self:PreReload(released)
 	if hook.Run("TFA_PreReload",self,released) then return end
+
 	if self.Owner:IsNPC() then
 		return
 	end
+
 	if not self:VMIV() then return end
-	if self:Ammo1() <= 0 then return end
-	if self:GetStat("Primary.ClipSize") < 0 then return end
+
+	if not self:IsJammed() then
+		if self:Ammo1() <= 0 then return end
+		if self:GetStat("Primary.ClipSize") < 0 then return end
+	end
+
 	if ( not released ) and ( not self:GetLegacyReloads() ) then return end
-	if self:GetLegacyReloads() and not  dryfire_cvar:GetBool() and not self:GetOwner():KeyDown(IN_RELOAD) then return end
+	if self:GetLegacyReloads() and not dryfire_cvar:GetBool() and not self:GetOwner():KeyDown(IN_RELOAD) then return end
 	if self:GetOwner():KeyDown(IN_USE) then return end
 
 	ct = l_CT()
@@ -1398,10 +1434,11 @@ function SWEP:Reload(released)
 		if stat == TFA.Enum.STATUS_IDLE then
 			self:DoPump()
 		end
-	elseif TFA.Enum.ReadyStatus[stat] or ( stat == TFA.Enum.STATUS_SHOOTING and self:CanInterruptShooting() ) then
+	elseif TFA.Enum.ReadyStatus[stat] or ( stat == TFA.Enum.STATUS_SHOOTING and self:CanInterruptShooting() ) or self:IsJammed() then
 		if self:Clip1() < self:GetPrimaryClipSize() then
 			if hook.Run("TFA_Reload",self) then return end
 			self:SetBurstCount(0)
+
 			if self.Shotgun then
 				local _, tanim = self:ChooseShotgunReloadAnim()
 				if self:GetStat("ShotgunStartAnimShell") then
@@ -1432,12 +1469,15 @@ function SWEP:Reload(released)
 					self:SetNextPrimaryFire(ct + self:GetActivityLength( tanim, false ) )
 				end
 			end
+
 			if ( not sp ) or ( not self:IsFirstPerson() ) then
 				self:GetOwner():SetAnimation(PLAYER_RELOAD)
 			end
+
 			if self:GetStat("Primary.ReloadSound") and IsFirstTimePredicted() then
 				self:EmitSound(self:GetStat("Primary.ReloadSound"))
 			end
+
 			self:SetNextPrimaryFire( -1 )
 		elseif released or self:GetOwner():KeyPressed(IN_RELOAD) then--if self:GetOwner():KeyPressed(IN_RELOAD) or not self:GetLegacyReloads() then
 			self:CheckAmmo()
@@ -1540,14 +1580,17 @@ end
 
 function SWEP:CompleteReload()
 	if hook.Run("TFA_CompleteReload",self) then return end
+
 	if self.Owner:IsNPC() then
 		return
 	end
-	local maxclip = self:GetPrimaryClipSize( true )
+
+	local maxclip = self:GetPrimaryClipSizeForReload(true)
 	local curclip = self:Clip1()
 	local amounttoreplace = math.min(maxclip - curclip, self:Ammo1())
 	self:TakePrimaryAmmo(amounttoreplace * -1)
 	self:TakePrimaryAmmo(amounttoreplace, true)
+	self:SetJammed(false)
 end
 
 
@@ -1682,4 +1725,55 @@ function SWEP:EmitSoundNet(sound)
 	net.WriteEntity(self)
 	net.WriteString(sound)
 	net.Send(filter)
+end
+
+function SWEP:CanBeJammed()
+	return self.CanJam and self:GetMaxClip1() > 0 and sv_tfa_jamming:GetBool()
+end
+
+function SWEP:UpdateJamFactor()
+	if not self:CanBeJammed() then return self end
+	self:SetJamFactor(math.min(100, self:GetJamFactor() + self.JamFactor * sv_tfa_jamming_factor_inc:GetFloat()))
+	return self
+end
+
+function SWEP:IsJammed()
+	if not self:CanBeJammed() then return false end
+	return self:GetJammed()
+end
+
+function SWEP:NotifyJam()
+	local ply = self:GetOwner()
+
+	if IsValid(ply) and ply:IsPlayer() and IsFirstTimePredicted() and (not ply._TFA_LastJamMessage or ply._TFA_LastJamMessage < RealTime()) then
+		ply:PrintMessage(HUD_PRINTCENTER, 'Your weapon jammed. You need to reload it.')
+		ply._TFA_LastJamMessage = RealTime() + 4
+	end
+end
+
+function SWEP:CheckJammed()
+	if not self:IsJammed() then return false end
+	self:NotifyJam()
+	return true
+end
+
+function SWEP:RollJamChance()
+	if not self:CanBeJammed() then return false end
+	if self:IsJammed() then return true end
+	local chance = self:GetJamChance()
+	local roll = util.SharedRandom('tfa_base_jam', math.max(0.002711997795105, math.pow(chance, 1.19)), 1, CurTime())
+	--print(chance, roll)
+
+	if roll <= chance * sv_tfa_jamming_mult:GetFloat() then
+		self:SetJammed(true)
+		self:NotifyJam()
+		return true
+	end
+
+	return false
+end
+
+function SWEP:GetJamChance()
+	if not self:CanBeJammed() then return 0 end
+	return self:GetJamFactor() * sv_tfa_jamming_factor:GetFloat() * (self.JamChance / 100)
 end

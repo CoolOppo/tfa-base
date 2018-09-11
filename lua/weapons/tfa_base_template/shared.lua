@@ -33,6 +33,48 @@ SWEP.Primary.RPM_Semi = nil -- RPM for semi-automatic or burst fire.  This is in
 SWEP.Primary.RPM_Burst = nil -- RPM for burst fire, overrides semi.  This is in Rounds Per Minute / RPM
 SWEP.Primary.DryFireDelay = nil --How long you have to wait after firing your last shot before a dryfire animation can play.  Leave nil for full empty attack length.  Can also use SWEP.StatusLength[ ACT_VM_BLABLA ]
 SWEP.Primary.BurstDelay = nil -- Delay between bursts, leave nil to autocalculate
+
+SWEP.CanJam = true -- whenever weapon cam jam
+SWEP.JamChance = 0.04 -- the (maximal) chance the weapon will jam. Newly spawned weapon will never jam on first shot for example.
+-- Default value is 0.04 (4%)
+-- Maxmial value is 1, means weapon will always jam when factor become 100
+-- Also remember that there is a minimal factor before weapon can jam
+-- This number is not treated "as-is" but as basic value that needs to be concluded as chance
+-- You don't really need to cry over it and trying to balance it, TFA Base will do the job for you
+-- (TFA Base will calculate the best value between 0 and JamChance based on current JamFactor of the weapon)
+SWEP.JamFactor = 0.06 -- How to increase jam factor after each shot.
+-- When factor reach 100 it will mean that on each shot there will be SWEP.Primary.JamChance chance to jam
+-- When factor reach 50 it will mean that on each shot there will be SWEP.Primary.JamChance / 2 chance to jam
+-- and so on
+-- Default value is 0.06, means weapon will jam with SWEP.Primary.JamChance chance right after 1666 shots
+
+-- These settings are good for Assault Rifles, however, not good for anything else.
+-- Suggested stats:
+
+--[[
+-- Pistols
+SWEP.JamChance = 0.04
+SWEP.JamFactor = 0.14
+]]
+
+--[[
+-- Revolvers
+SWEP.JamChance = 0.02
+SWEP.JamFactor = 0.35
+]]
+
+--[[
+-- Miniguns
+SWEP.JamChance = 0.03
+SWEP.JamFactor = 0.01
+]]
+
+--[[
+-- Submachine gun
+SWEP.JamChance = 0.04
+SWEP.JamFactor = 0.09
+]]
+
 SWEP.FiresUnderwater = false
 --Miscelaneous Sounds
 SWEP.IronInSound = nil --Sound to play when ironsighting in?  nil for default

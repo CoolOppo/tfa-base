@@ -262,6 +262,16 @@ function SWEP:GetPrimaryClipSize(calc)
 	return math.max(targetclip, -1)
 end
 
+function SWEP:GetPrimaryClipSizeForReload(calc)
+	local targetclip = self:GetStat("Primary.ClipSize")
+
+	if self:CanChamber() and not (calc and self:Clip1() <= 0) and not self:IsJammed() then
+		targetclip = targetclip + (self:GetStat("Akimbo") and 2 or 1)
+	end
+
+	return math.max(targetclip, -1)
+end
+
 function SWEP:GetSecondaryClipSize(calc)
 	local targetclip = self:GetStat("Secondary.ClipSize")
 

@@ -231,6 +231,22 @@ if GetConVar("sv_tfa_attachments_alphabetical") == nil then
 	CreateReplConVar("sv_tfa_attachments_alphabetical", "0", "Override weapon attachment order to be alphabetical.")
 end
 
+if GetConVar("sv_tfa_jamming") == nil then
+	CreateReplConVar("sv_tfa_jamming", "1", "Enable jamming mechanics?")
+end
+
+if GetConVar("sv_tfa_jamming_mult") == nil then
+	CreateReplConVar("sv_tfa_jamming_mult", "1", "Multiply jam chance by this value. You really should modify sv_tfa_jamming_factor_inc rather than this.")
+end
+
+if GetConVar("sv_tfa_jamming_factor") == nil then
+	CreateReplConVar("sv_tfa_jamming_factor", "1", "Multiply jam factor by this value")
+end
+
+if GetConVar("sv_tfa_jamming_factor_inc") == nil then
+	CreateReplConVar("sv_tfa_jamming_factor_inc", "1", "Multiply jam factor gain by this value")
+end
+
 --Clientside Convars
 if CLIENT then
 	if GetConVar("cl_tfa_viewbob_intensity") == nil then

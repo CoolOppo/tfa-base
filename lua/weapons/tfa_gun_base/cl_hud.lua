@@ -378,6 +378,33 @@ function SWEP:GenerateInspectionDerma()
 	statspanel:SetSize(screenwidth - lbound, 144)
 	statspanel.Paint = function() end
 	statspanel:Dock(BOTTOM)
+
+	-- Condition
+
+	if self:CanBeJammed() then
+		local conditionpanel = statspanel:Add("DPanel")
+		conditionpanel:SetSize(400, 24)
+
+		conditionpanel.Think = function(myself)
+			if not IsValid(self) then return end
+			myself.Bars = math.Clamp(10 - math.ceil(self:GetJamFactor() / 10), 0, 10)
+		end
+
+		conditionpanel.Paint = PanelPaintBars
+		conditionpanel:Dock(TOP)
+		local conditiontext = conditionpanel:Add("DPanel")
+
+		conditiontext.Think = function(myself)
+			myself.TextColor = TFA_INSPECTIONPANEL.SecondaryColor
+			myself.Text = 'Condition:'
+		end
+
+		conditiontext.Font = "TFA_INSPECTION_SMALL"
+		conditiontext:Dock(LEFT)
+		conditiontext:SetSize(screenwidth - lbound, 24)
+		conditiontext.Paint = TextShadowPaint
+	end
+
 	--Accuracy
 	local accuracypanel = statspanel:Add("DPanel")
 	accuracypanel:SetSize(400, 24)
@@ -818,6 +845,11 @@ function SWEP:DrawHUDAmmo()
 		end
 
 		str = string.upper(self:GetFireModeName() .. (#self:GetStat("FireModes") > 2 and " | +" or ""))
+
+		if self:IsJammed() then
+			str = str .. '\nWeapon is jammed!'
+		end
+
 		draw.DrawText(str, "TFASleekSmall", xx + 1, yy + 1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
 		draw.DrawText(str, "TFASleekSmall", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT)
 		yy = yy + TFA.Fonts.SleekHeightSmall
