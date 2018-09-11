@@ -1740,9 +1740,14 @@ function SWEP:CanBeJammed()
 	return self.CanJam and self:GetMaxClip1() > 0 and sv_tfa_jamming:GetBool()
 end
 
+-- Use this to increase/decrease factor added based on ammunition/weather conditions/etc
+function SWEP:GrabJamFactorMult()
+	return 1
+end
+
 function SWEP:UpdateJamFactor()
 	if not self:CanBeJammed() then return self end
-	self:SetJamFactor(math.min(100, self:GetJamFactor() + self.JamFactor * sv_tfa_jamming_factor_inc:GetFloat()))
+	self:SetJamFactor(math.min(100, self:GetJamFactor() + self.JamFactor * sv_tfa_jamming_factor_inc:GetFloat() * self:GrabJamFactorMult()))
 	return self
 end
 
@@ -1782,7 +1787,11 @@ function SWEP:RollJamChance()
 	return false
 end
 
+function SWEP:GrabJamChanceMult()
+	return 1
+end
+
 function SWEP:GetJamChance()
 	if not self:CanBeJammed() then return 0 end
-	return self:GetJamFactor() * sv_tfa_jamming_factor:GetFloat() * (self.JamChance / 100)
+	return self:GetJamFactor() * sv_tfa_jamming_factor:GetFloat() * (self.JamChance / 100) * self:GrabJamChanceMult()
 end
