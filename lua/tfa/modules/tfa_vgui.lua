@@ -48,6 +48,10 @@ if CLIENT then
 			sv_tfa_reloads_enabled = "1",
 			sv_tfa_cmenu = "1",
 			sv_tfa_penetration_limit = "2",
+			sv_tfa_jamming = "1",
+			sv_tfa_jamming_mult = "1",
+			sv_tfa_jamming_factor = "1",
+			sv_tfa_jamming_factor_inc = "1",
 			sv_tfa_door_respawn = "-1"
 		}
 
@@ -105,6 +109,11 @@ if CLIENT then
 		})
 
 		panel:AddControl("CheckBox", {
+			Label = "If weapon support jamming, allow to jam",
+			Command = "sv_tfa_jamming"
+		})
+
+		panel:AddControl("CheckBox", {
 			Label = "Enable Legacy-Style Reloading",
 			Command = "sv_tfa_reloads_legacy"
 		})
@@ -124,6 +133,10 @@ if CLIENT then
 			Min = "-1",
 			Max = "120"
 		})
+
+		panel:NumSlider("Jam chance multiplier", "sv_tfa_jamming_mult", 0.01, 10, 2)
+		panel:NumSlider("Jam factor multiplier", "sv_tfa_jamming_factor", 0.01, 10, 2)
+		panel:NumSlider("Jam factor increase multiplier", "sv_tfa_jamming_factor_inc", 0.01, 10, 2)
 
 		panel:AddControl("Slider", {
 			Label = "Impact Force Multiplier",

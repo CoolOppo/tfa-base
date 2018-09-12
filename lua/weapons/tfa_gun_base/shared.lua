@@ -1229,7 +1229,25 @@ function SWEP:CanPrimaryAttack( )
 		return v2
 	end
 
-	return not self:CheckJammed()
+	if self:CheckJammed() then
+		if IsFirstTimePredicted() then
+			self:EmitSound('Default.ClipEmpty_Rifle')
+		end
+
+		local typev, tanim = self:ChooseAnimation("shoot1_empty")
+
+		if typev ~= TFA.Enum.ANIMATION_SEQ then
+			self:SendViewModelAnim(tanim)
+		else
+			self:SendViewModelSeq(tanim)
+		end
+
+		self:SetNextPrimaryFire(CurTime() + 1)
+
+		return false
+	end
+
+	return true
 end
 local npc_ar2_damage_cv = GetConVar("sk_npc_dmg_ar2")
 

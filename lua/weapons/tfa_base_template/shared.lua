@@ -53,13 +53,13 @@ SWEP.JamFactor = 0.06 -- How to increase jam factor after each shot.
 
 --[[
 -- Pistols
-SWEP.JamChance = 0.04
+SWEP.JamChance = 0.20
 SWEP.JamFactor = 0.14
 ]]
 
 --[[
 -- Revolvers
-SWEP.JamChance = 0.02
+SWEP.JamChance = 0.30
 SWEP.JamFactor = 0.35
 ]]
 
