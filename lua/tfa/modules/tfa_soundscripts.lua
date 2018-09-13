@@ -10,6 +10,15 @@ sound.Add({
 })
 
 sound.Add({
+	name = "TFA.NearlyEmpty",
+	channel = CHAN_USER_BASE + 14,
+	volume = 1,
+	pitch = 100,
+	level = 65,
+	sound = "weapons/tfa/lowammo.wav"
+})
+
+sound.Add({
 	name = "Weapon_Bow.boltpull",
 	channel = CHAN_USER_BASE + 11,
 	volume = 1.0,

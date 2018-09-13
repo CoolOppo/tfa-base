@@ -1268,14 +1268,16 @@ function SWEP:EmitGunfireSound(soundscript)
 	end
 
 	local mult = clip1 / maxclip1
-	if mult >= 0.4 or mult <= 0 then return self:EmitSound(soundscript) end
+	if mult >= 0.3 or mult <= 0 then return self:EmitSound(soundscript) end
 
-	local pitch = 1 + math.min(0.02 / mult, 0.2)
+	local pitch = 0.8 + math.min(0.02 / mult, 0.4)
+
+	self:EmitSound(soundscript)
 
 	self.GonnaAdjuctPitch = true
 	self.RequiredPitch = pitch
 
-	return self:EmitSound(soundscript)
+	return self:EmitSound("TFA.NearlyEmpty")
 end
 
 function SWEP:PrimaryAttack()
