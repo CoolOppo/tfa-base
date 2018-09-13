@@ -1,20 +1,20 @@
-SWEP.Base				= "tfa_gun_base"
-SWEP.Category				= "TFA Template" --The category.  Please, just choose something generic or something I've already done if you plan on only doing like one swep..
+SWEP.Base               = "tfa_gun_base"
+SWEP.Category               = "TFA Template" --The category.  Please, just choose something generic or something I've already done if you plan on only doing like one swep..
 SWEP.Manufacturer = nil --Gun Manufactrer (e.g. Hoeckler and Koch )
-SWEP.Author				= "" --Author Tooltip
-SWEP.Contact				= "" --Contact Info Tooltip
-SWEP.Purpose				= "" --Purpose Tooltip
-SWEP.Instructions				= "" --Instructions Tooltip
-SWEP.Spawnable				= false --Can you, as a normal user, spawn this?
-SWEP.AdminSpawnable			= false --Can an adminstrator spawn this?  Does not tie into your admin mod necessarily, unless its coded to allow for GMod's default ranks somewhere in its code.  Evolve and ULX should work, but try to use weapon restriction rather than these.
-SWEP.DrawCrosshair			= true		-- Draw the crosshair?
+SWEP.Author             = "" --Author Tooltip
+SWEP.Contact                = "" --Contact Info Tooltip
+SWEP.Purpose                = "" --Purpose Tooltip
+SWEP.Instructions               = "" --Instructions Tooltip
+SWEP.Spawnable              = false --Can you, as a normal user, spawn this?
+SWEP.AdminSpawnable         = false --Can an adminstrator spawn this?  Does not tie into your admin mod necessarily, unless its coded to allow for GMod's default ranks somewhere in its code.  Evolve and ULX should work, but try to use weapon restriction rather than these.
+SWEP.DrawCrosshair          = true      -- Draw the crosshair?
 SWEP.DrawCrosshairIS = false --Draw the crosshair in ironsights?
-SWEP.PrintName				= "TFA Base Template"		-- Weapon name (Shown on HUD)
-SWEP.Slot				= 2				-- Slot in the weapon selection menu.  Subtract 1, as this starts at 0.
-SWEP.SlotPos				= 73			-- Position in the slot
-SWEP.AutoSwitchTo			= true		-- Auto switch to if we pick it up
-SWEP.AutoSwitchFrom			= true		-- Auto switch from if you pick up a better weapon
-SWEP.Weight				= 30			-- This controls how "good" the weapon is for autopickup.
+SWEP.PrintName              = "TFA Base Template"       -- Weapon name (Shown on HUD)
+SWEP.Slot               = 2             -- Slot in the weapon selection menu.  Subtract 1, as this starts at 0.
+SWEP.SlotPos                = 73            -- Position in the slot
+SWEP.AutoSwitchTo           = true      -- Auto switch to if we pick it up
+SWEP.AutoSwitchFrom         = true      -- Auto switch from if you pick up a better weapon
+SWEP.Weight             = 30            -- This controls how "good" the weapon is for autopickup.
 
 --[[WEAPON HANDLING]]--
 SWEP.Primary.Sound = Sound("") -- This is the sound of the weapon, when you shoot.
@@ -59,8 +59,8 @@ SWEP.JamFactor = 0.14
 
 --[[
 -- Revolvers
-SWEP.JamChance = 0.30
-SWEP.JamFactor = 0.35
+SWEP.JamChance = 0.17
+SWEP.JamFactor = 0.50
 ]]
 
 --[[
@@ -76,9 +76,21 @@ SWEP.JamFactor = 0.09
 ]]
 
 --[[
--- Pump-action shotgun
+-- Auto shotguns
 SWEP.JamChance = 0.15
-SWEP.JamFactor = 0.25
+SWEP.JamFactor = 0.2
+]]
+
+--[[
+-- Pump-action shotguns
+SWEP.JamChance = 0.25
+SWEP.JamFactor = 0.3
+]]
+
+--[[
+-- Sniper rifle
+SWEP.JamChance = 0.17
+SWEP.JamFactor = 0.35
 ]]
 
 SWEP.FiresUnderwater = false
@@ -134,9 +146,9 @@ SWEP.ProjectileEntity = nil --Entity to shoot
 SWEP.ProjectileVelocity = 0 --Entity to shoot's velocity
 SWEP.ProjectileModel = nil --Entity to shoot's model
 --[[VIEWMODEL]]--
-SWEP.ViewModel			= "models/your/path/here.mdl" --Viewmodel path
-SWEP.ViewModelFOV			= 65		-- This controls how big the viewmodel looks.  Less is more.
-SWEP.ViewModelFlip			= false		-- Set this to true for CSS models, or false for everything else (with a righthanded viewmodel.)
+SWEP.ViewModel          = "models/your/path/here.mdl" --Viewmodel path
+SWEP.ViewModelFOV           = 65        -- This controls how big the viewmodel looks.  Less is more.
+SWEP.ViewModelFlip          = false     -- Set this to true for CSS models, or false for everything else (with a righthanded viewmodel.)
 SWEP.UseHands = false --Use gmod c_arms system.
 SWEP.VMPos = Vector(0,0,0) --The viewmodel positional offset, constantly.  Subtract this from any other modifications to viewmodel position.
 SWEP.VMAng = Vector(0,0,0) --The viewmodel angular offset, constantly.   Subtract this from any other modifications to viewmodel angle.
@@ -150,7 +162,7 @@ SWEP.Bodygroups_V = nil --{
 --}
 SWEP.AllowIronSightsDoF = true -- whenever allow DoF effect on viewmodel when zoomed in with iron sights
 --[[WORLDMODEL]]--
-SWEP.WorldModel			= "models/your/wmodel/path/here.mdl" -- Weapon world model path
+SWEP.WorldModel         = "models/your/wmodel/path/here.mdl" -- Weapon world model path
 SWEP.Bodygroups_W = nil --{
 --[0] = 1,
 --[1] = 4,
@@ -299,8 +311,8 @@ SWEP.SprintAnimation = {
 }
 --[[EFFECTS]]--
 --Attachments
-SWEP.MuzzleAttachment			= "1" 		-- Should be "1" for CSS models or "muzzle" for hl2 models
-SWEP.ShellAttachment			= "2" 		-- Should be "2" for CSS models or "shell" for hl2 models
+SWEP.MuzzleAttachment           = "1"       -- Should be "1" for CSS models or "muzzle" for hl2 models
+SWEP.ShellAttachment            = "2"       -- Should be "2" for CSS models or "shell" for hl2 models
 SWEP.MuzzleFlashEnabled = true --Enable muzzle flash
 SWEP.MuzzleAttachmentRaw = nil --This will override whatever string you gave.  This is the raw attachment number.  This is overridden or created when a gun makes a muzzle event.
 SWEP.AutoDetectMuzzleAttachment = false --For multi-barrel weapons, detect the proper attachment?
@@ -314,8 +326,8 @@ SWEP.LuaShellModel = nil --The model to use for ejected shells
 SWEP.LuaShellScale = nil --The model scale to use for ejected shells
 SWEP.LuaShellYaw = nil --The model yaw rotation ( relative ) to use for ejected shells
 --Tracer Stuff
-SWEP.TracerName 		= nil 	--Change to a string of your tracer name.  Can be custom. There is a nice example at https://github.com/garrynewman/garrysmod/blob/master/garrysmod/gamemodes/base/entities/effects/tooltracer.lua
-SWEP.TracerCount 		= 3 	--0 disables, otherwise, 1 in X chance
+SWEP.TracerName         = nil   --Change to a string of your tracer name.  Can be custom. There is a nice example at https://github.com/garrynewman/garrysmod/blob/master/garrysmod/gamemodes/base/entities/effects/tooltracer.lua
+SWEP.TracerCount        = 3     --0 disables, otherwise, 1 in X chance
 --Impact Effects
 SWEP.ImpactEffect = nil--Impact Effect
 SWEP.ImpactDecal = nil--Impact Decal
@@ -323,10 +335,10 @@ SWEP.ImpactDecal = nil--Impact Decal
 SWEP.EventTable = {} --Event Table, used for custom events when an action is played.  This can even do stuff like playing a pump animation after shooting.
 --example:
 --SWEP.EventTable = {
---	[ACT_VM_RELOAD] = {
---		{ ["time"] = 0.1, ["type"] = "lua", ["value"] = function( wep, viewmodel ) end, ["client"] = true, ["server"] = true},
---		{ ["time"] = 0.1, ["type"] = "sound", ["value"] = Sound("x") }
---	}
+--  [ACT_VM_RELOAD] = {
+--      { ["time"] = 0.1, ["type"] = "lua", ["value"] = function( wep, viewmodel ) end, ["client"] = true, ["server"] = true},
+--      { ["time"] = 0.1, ["type"] = "sound", ["value"] = Sound("x") }
+--  }
 --}
 --[[RENDER TARGET]]--
 SWEP.RTMaterialOverride = nil -- Take the material you want out of print(LocalPlayer():GetViewModel():GetMaterials()), subtract 1 from its index, and set it to this.

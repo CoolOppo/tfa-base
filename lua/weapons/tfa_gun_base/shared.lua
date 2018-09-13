@@ -63,11 +63,12 @@ local sv_tfa_jamming_factor = GetConVar('sv_tfa_jamming_factor')
 local sv_tfa_jamming_factor_inc = GetConVar('sv_tfa_jamming_factor_inc')
 
 -- RP owners always like realism, so this feature might be something they like. Enable it for them!
-SWEP.CanJam = string.find(engine.ActiveGamemode(), 'rp') or
+TFA_AUTOJAMMING_ENABLED = string.find(engine.ActiveGamemode(), 'rp') or
 	string.find(engine.ActiveGamemode(), 'roleplay') or
 	string.find(engine.ActiveGamemode(), 'nutscript') or
 	string.find(engine.ActiveGamemode(), 'serious') or
 	TFA_ENABLE_JAMMING_BY_DEFAULT
+SWEP.CanJam = TFA_AUTOJAMMING_ENABLED
 
 SWEP.JamChance = 0.04
 SWEP.JamFactor = 0.06
@@ -516,7 +517,7 @@ function SWEP:Deploy()
 	self.ProceduralHolsterEnabled = 0
 	if self.Inspecting then
 		--if gui then
-		--	gui.EnableScreenClicker(false)
+		--  gui.EnableScreenClicker(false)
 		--end
 		self.Inspecting = false
 	end
@@ -986,7 +987,7 @@ function SWEP:IronSights()
 
 	if ( issighting or issprinting or stat ~= TFA.Enum.STATUS_IDLE ) and self.Inspecting then
 		--if gui then
-		--	gui.EnableScreenClicker(false)
+		--  gui.EnableScreenClicker(false)
 		--end
 		self.Inspecting = false
 	end
@@ -1629,7 +1630,7 @@ function SWEP:CheckAmmo()
 	if self:GetIronSights() or self:GetSprinting() then return end
 
 	--if self.NextInspectAnim == nil then
-	--	self.NextInspectAnim = -1
+	--  self.NextInspectAnim = -1
 	--end
 
 	if (self:GetActivityEnabled(ACT_VM_FIDGET) or self.InspectionActions) and self:GetStatus() == TFA.Enum.STATUS_IDLE then--and CurTime() > self.NextInspectAnim then
@@ -1727,9 +1728,9 @@ function SWEP:ToggleInspect()
 	if self:GetSprinting() or self:GetIronSights() or self:GetStatus() ~= TFA.Enum.STATUS_IDLE then return end
 	self.Inspecting = not self.Inspecting
 	--if self.Inspecting then
-	--	gui.EnableScreenClicker(true)
+	--  gui.EnableScreenClicker(true)
 	--else
-	--	gui.EnableScreenClicker(false)
+	--  gui.EnableScreenClicker(false)
 	--end
 end
 
