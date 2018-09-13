@@ -247,6 +247,10 @@ if GetConVar("sv_tfa_jamming_factor_inc") == nil then
 	CreateReplConVar("sv_tfa_jamming_factor_inc", "1", "Multiply jam factor gain by this value")
 end
 
+if GetConVar("sv_tfa_nearlyempty") == nil then
+	CreateReplConVar("sv_tfa_nearlyempty", "1", "Enable nearly-empty sounds")
+end
+
 --Clientside Convars
 if CLIENT then
 	if GetConVar("cl_tfa_viewbob_intensity") == nil then

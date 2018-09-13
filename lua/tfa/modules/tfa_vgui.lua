@@ -114,6 +114,11 @@ if CLIENT then
 		})
 
 		panel:AddControl("CheckBox", {
+			Label = "Enable nearly-empty sounds",
+			Command = "sv_tfa_nearlyempty"
+		})
+
+		panel:AddControl("CheckBox", {
 			Label = "Enable Legacy-Style Reloading",
 			Command = "sv_tfa_reloads_legacy"
 		})

@@ -1252,6 +1252,8 @@ function SWEP:CanPrimaryAttack( )
 end
 local npc_ar2_damage_cv = GetConVar("sk_npc_dmg_ar2")
 
+local sv_tfa_nearlyempty = GetConVar("sv_tfa_nearlyempty")
+
 function SWEP:EmitGunfireSound(soundscript)
 	if not self.FireSoundAffectedByClipSize or self.Shotgun then
 		return self:EmitSound(soundscript)
@@ -1274,10 +1276,12 @@ function SWEP:EmitGunfireSound(soundscript)
 
 	self:EmitSound(soundscript)
 
+	if not sv_tfa_nearlyempty:GetBool() then return end
+
 	self.GonnaAdjuctPitch = true
 	self.RequiredPitch = pitch
 
-	return self:EmitSound("TFA.NearlyEmpty")
+	self:EmitSound("TFA.NearlyEmpty")
 end
 
 function SWEP:PrimaryAttack()
