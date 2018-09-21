@@ -106,15 +106,39 @@ Purpose:  Used to manage our Derma.
 local TFA_INSPECTIONPANEL
 local spacing = 64
 
+local cv_bars_exp = GetConVar("cl_tfa_exp_inspection_newbars") or CreateClientConVar("cl_tfa_exp_inspection_newbars", 0, true, true, "Enable new stat bars in the Inspection menu? (Experimental)")
+
 local function PanelPaintBars(myself, w, h)
+	if not myself.Bar or type(myself.Bar) ~= "number" then return end
+	myself.Bar = math.Clamp(myself.Bar, 0, 1)
+
 	w = w * 0 + 400--trick linter into letting me replace the argument lol
+
 	local xx, ww, blockw, padw
 	xx = w * 0.7
 	ww = w - xx
+
+	local bgcol = ColorAlpha(TFA_INSPECTIONPANEL.BackgroundColor or color_white, (TFA_INSPECTIONPANEL.Alpha or 0) / 2)
+
+	if cv_bars_exp and cv_bars_exp:GetBool() then
+		draw.RoundedBox(4, xx + 1, 1, ww - 2, h - 2, bgcol)
+
+		local w1, h1 = myself:LocalToScreen(xx + 2, 2)
+		local w2, h2 = myself:LocalToScreen(xx - 2 + ww * myself.Bar, h - 2)
+
+		render.SetScissorRect(w1, h1, w2, h2, true)
+		draw.RoundedBox(4, xx + 2, 2, ww - 4, h - 4, TFA_INSPECTIONPANEL.SecondaryColor or color_white)
+		render.SetScissorRect(0, 0, 0, 0, false)
+
+		return
+	end
+
 	blockw = math.floor(ww / 15)
 	padw = math.floor(ww / 10)
-	surface.SetDrawColor(ColorAlpha(TFA_INSPECTIONPANEL.BackgroundColor or color_white, (TFA_INSPECTIONPANEL.Alpha or 0) / 2))
 
+	myself.Bars = math.Clamp(math.Round(myself.Bar * 10), 0, 10)
+
+	surface.SetDrawColor(bgcol)
 	for _ = 0, 9 do
 		surface.DrawRect(xx, 2, blockw, h - 5)
 		xx = math.floor(xx + padw)
@@ -385,9 +409,11 @@ function SWEP:GenerateInspectionDerma()
 		local conditionpanel = statspanel:Add("DPanel")
 		conditionpanel:SetSize(400, 24)
 
+		local condition = 1 - self:GetJamFactor() * .01
+
 		conditionpanel.Think = function(myself)
 			if not IsValid(self) then return end
-			myself.Bars = math.Clamp(10 - math.ceil(self:GetJamFactor() / 10), 0, 10)
+			myself.Bar = condition
 		end
 
 		conditionpanel.Paint = PanelPaintBars
@@ -396,7 +422,7 @@ function SWEP:GenerateInspectionDerma()
 
 		conditiontext.Think = function(myself)
 			myself.TextColor = TFA_INSPECTIONPANEL.SecondaryColor
-			myself.Text = 'Condition:'
+			myself.Text = "Condition: " .. math.Clamp(math.Round(condition * 100), 0, 100) .. "%"
 		end
 
 		conditiontext.Font = "TFA_INSPECTION_SMALL"
@@ -426,7 +452,7 @@ function SWEP:GenerateInspectionDerma()
 			accval = spread
 		end
 
-		myself.Bars = math.Clamp(10 - math.Round(accval / waccval * 10), 0, 10)
+		myself.Bar = 1 - accval / waccval
 	end
 
 	accuracypanel.Paint = PanelPaintBars
@@ -457,7 +483,7 @@ function SWEP:GenerateInspectionDerma()
 	fireratepanel.Think = function(myself)
 		if not IsValid(self) then return end
 		local rpmstat = self:GetStat("Primary.RPM_Displayed") or self:GetStat("Primary.RPM")
-		myself.Bars = math.Clamp(math.Round(rpmstat / bestrpm * 10), 0, 10)
+		myself.Bar = rpmstat / bestrpm
 	end
 
 	fireratepanel.Paint = PanelPaintBars
@@ -482,7 +508,7 @@ function SWEP:GenerateInspectionDerma()
 
 	mobilitypanel.Think = function(myself)
 		if not IsValid(self) then return end
-		myself.Bars = math.Clamp(math.Round((self:GetStat("MoveSpeed") - worstmove) / (1 - worstmove) * 10), 0, 10)
+		myself.Bar = (self:GetStat("MoveSpeed") - worstmove) / (1 - worstmove)
 	end
 
 	mobilitypanel.Paint = PanelPaintBars
@@ -505,7 +531,7 @@ function SWEP:GenerateInspectionDerma()
 
 	damagepanel.Think = function(myself)
 		if not IsValid(self) then return end
-		myself.Bars = math.Clamp(math.Round((self:GetStat("Primary.Damage") * math.Round(self:GetStat("Primary.NumShots") * 0.75)) / bestdamage * 10), 0, 10)
+		myself.Bar = (self:GetStat("Primary.Damage") * math.Round(self:GetStat("Primary.NumShots") * 0.75)) / bestdamage
 	end
 
 	damagepanel.Paint = PanelPaintBars
@@ -534,7 +560,7 @@ function SWEP:GenerateInspectionDerma()
 
 	rangepanel.Think = function(myself)
 		if not IsValid(self) then return end
-		myself.Bars = math.Clamp(math.Round(self:GetStat("Primary.Range") / bestrange * 10), 0, 10)
+		myself.Bar = self:GetStat("Primary.Range") / bestrange
 	end
 
 	rangepanel.Paint = PanelPaintBars
@@ -558,7 +584,7 @@ function SWEP:GenerateInspectionDerma()
 
 	stabilitypanel.Think = function(myself)
 		if not IsValid(self) then return end
-		myself.Bars = math.Clamp(math.Round((1 - math.abs(self:GetStat("Primary.KickUp") + self:GetStat("Primary.KickDown")) / 2 / worstrecoil) * 10), 0, 10)
+		myself.Bar = (1 - math.abs(self:GetStat("Primary.KickUp") + self:GetStat("Primary.KickDown")) / 2 / worstrecoil)
 	end
 
 	stabilitypanel.Paint = PanelPaintBars
