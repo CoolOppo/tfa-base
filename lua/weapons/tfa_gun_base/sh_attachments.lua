@@ -600,7 +600,7 @@ function SWEP:GenerateVGUIAttachmentTable()
 	end
 end
 
-local bgt
+local bgt = {}
 SWEP.Bodygroups_V = {}
 SWEP.Bodygroups_W = {}
 
@@ -623,8 +623,14 @@ function SWEP:ProcessBodygroups()
 		bgt = self:GetStat("Bodygroups_V", self.Bodygroups_V)
 
 		for k, v in pairs(bgt) do
+			if type(v) == "table" then continue end -- BASECLASS OUT
+
 			if type(k) == "string" then
-				k = tonumber(k)
+				local _k = self.OwnerViewModel:FindBodygroupByName(k)
+
+				k = _k >= 0 and _k or tonumber(k)
+			elseif bgt[self.OwnerViewModel:GetBodygroupName(k)] then
+				continue -- bodygroup names have the priority over indexes
 			end
 
 			if k and self.OwnerViewModel:GetBodygroup(k) ~= v then
@@ -636,8 +642,14 @@ function SWEP:ProcessBodygroups()
 	bgt = self:GetStat("Bodygroups_W", self.Bodygroups_W)
 
 	for k, v in pairs(bgt) do
+		if type(v) == "table" then continue end -- BASECLASS OUT
+
 		if type(k) == "string" then
-			k = tonumber(k)
+			local _k = self:FindBodygroupByName(k)
+
+			k = _k >= 0 and _k or tonumber(k)
+		elseif bgt[self:GetBodygroupName(k)] then
+			continue -- bodygroup names have the priority over indexes
 		end
 
 		if k and self:GetBodygroup(k) ~= v then
