@@ -623,6 +623,8 @@ function SWEP:ProcessBodygroups()
 		bgt = self:GetStat("Bodygroups_V", self.Bodygroups_V)
 
 		for k, v in pairs(bgt) do
+			v = self:GetStat("Bodygroups_V." .. k, v)
+
 			if type(v) == "table" then continue end -- BASECLASS OUT
 
 			if type(k) == "string" then
@@ -642,6 +644,8 @@ function SWEP:ProcessBodygroups()
 	bgt = self:GetStat("Bodygroups_W", self.Bodygroups_W)
 
 	for k, v in pairs(bgt) do
+		v = self:GetStat("Bodygroups_W." .. k, v)
+
 		if type(v) == "table" then continue end -- BASECLASS OUT
 
 		if type(k) == "string" then
