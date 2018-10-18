@@ -52,6 +52,18 @@ function PANEL:GetSelected()
 end
 
 function PANEL:AttachSound( attached )
+	if self.Attachment and TFA.Attachments.Atts[self.Attachment] then
+		local att = TFA.Attachments.Atts[self.Attachment]
+
+		local snd = attached and att.AttachSound or att.DetachSound
+
+		if snd and IsValid(self.Wep) then
+			self.Wep:EmitSound(snd)
+
+			return
+		end
+	end
+
 	chat.PlaySound()
 end
 
