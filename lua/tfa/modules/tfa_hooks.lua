@@ -300,3 +300,24 @@ Used For:  Removing offending hands render hook
 hook.Add("InitPostEntity", "tfa_unfuckthehands", function()
 	hook.Remove("PostDrawViewModel", "Set player hand skin")
 end)
+
+--[[
+Hook: PlayerSwitchFlashlight
+Function: Flashlight toggle
+Used For: Switching flashlight on weapon and blocking HEV flashlight
+]]
+--
+hook.Add("PlayerSwitchFlashlight", "YURIE_TACINT_ToggleFlashLight", function(plyv, toEnable)
+	if CLIENT then return end -- this is serverside hook GO AWAY
+
+	if not IsValid(plyv) or not toEnable then return end -- allow disabling HEV flashlight
+
+	local wepv = plyv:GetActiveWeapon()
+
+	if IsValid(wepv) and wepv.IsTFAWeapon and wepv:GetStat("FlashlightAttachment", 0) > 0 then
+		wepv:SetFlashlightEnabled(not wepv:GetFlashlightEnabled())
+		wepv:EmitSound(wepv:GetFlashlightEnabled() and "HL2Player.FlashLightOn" or "HL2Player.FlashLightOff")
+
+		return false
+	end
+end)

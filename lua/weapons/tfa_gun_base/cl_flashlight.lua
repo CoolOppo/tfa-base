@@ -18,6 +18,12 @@ function SWEP:DrawFlashlight(is_vm)
 
 	if not IsValid(self:GetOwner()) then return end
 
+	if not self:GetFlashlightEnabled() then
+		self:CleanFlashlight()
+
+		return
+	end
+
 	if is_vm then
 		if not self:VMIV() then
 			self:CleanFlashlight()
