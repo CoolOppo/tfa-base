@@ -307,7 +307,7 @@ Function: Flashlight toggle
 Used For: Switching flashlight on weapon and blocking HEV flashlight
 ]]
 --
-hook.Add("PlayerSwitchFlashlight", "YURIE_TACINT_ToggleFlashLight", function(plyv, toEnable)
+hook.Add("PlayerSwitchFlashlight", "tfa_toggleflashlight", function(plyv, toEnable)
 	if CLIENT then return end -- this is serverside hook GO AWAY
 
 	if not IsValid(plyv) or not toEnable then return end -- allow disabling HEV flashlight
