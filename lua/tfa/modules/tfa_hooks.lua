@@ -315,8 +315,7 @@ hook.Add("PlayerSwitchFlashlight", "tfa_toggleflashlight", function(plyv, toEnab
 	local wepv = plyv:GetActiveWeapon()
 
 	if IsValid(wepv) and wepv.IsTFAWeapon and wepv:GetStat("FlashlightAttachment", 0) > 0 then
-		wepv:SetFlashlightEnabled(not wepv:GetFlashlightEnabled())
-		wepv:EmitSound(wepv:GetFlashlightEnabled() and "HL2Player.FlashLightOn" or "HL2Player.FlashLightOff")
+		wepv:ToggleFlashlight()
 
 		return false
 	end

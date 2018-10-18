@@ -484,6 +484,14 @@ function SWEP:Deploy()
 		self.OwnerViewModel = self:GetOwner():GetViewModel()
 	end
 
+	if SERVER and self:GetStat("FlashlightAttachment", 0) > 0 and IsValid(self:GetOwner()) and self:GetOwner():IsPlayer() and self:GetOwner():FlashlightIsOn() then
+		if not self:GetFlashlightEnabled() then
+			self:ToggleFlashlight(true)
+		end
+
+		self:GetOwner():Flashlight(false)
+	end
+
 	ct = l_CT()
 
 	if not self:VMIV() then
@@ -1820,4 +1828,13 @@ end
 function SWEP:GetJamChance()
 	if not self:CanBeJammed() then return 0 end
 	return self:GetJamFactor() * sv_tfa_jamming_factor:GetFloat() * (self.JamChance / 100) * self:GrabJamChanceMult()
+end
+
+function SWEP:ToggleFlashlight(toState)
+	if toState == nil then
+		toState = not self:GetFlashlightEnabled()
+	end
+
+	self:SetFlashlightEnabled(toState)
+	self:EmitSound(toState and "HL2Player.FlashLightOn" or "HL2Player.FlashLightOff")
 end
