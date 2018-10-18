@@ -1424,7 +1424,7 @@ function SWEP:SecondaryAttack()
 	if self.Owner:IsNPC() then
 		return
 	end
-	if self.data and self:GetStat("data.ironsights") == 0 and self.AltAttack then
+	if self:GetStat("data.ironsights", 0) == 0 and self.AltAttack then
 		self:AltAttack()
 		self:PostSecondaryAttack()
 		return

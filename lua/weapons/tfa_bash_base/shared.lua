@@ -220,7 +220,7 @@ function SWEP:Think2()
 end
 
 function SWEP:SecondaryAttack()
-	if self.data and self.data.ironsights == 0 then
+	if self:GetStat("data.ironsights", 0) == 0 then
 		self:AltAttack()
 		return
 	end
