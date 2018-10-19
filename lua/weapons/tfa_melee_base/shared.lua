@@ -10,6 +10,7 @@ SWEP.Primary.Attacks = {}
 --[[{
 {
 ["act"] = ACT_VM_HITLEFT, -- Animation; ACT_VM_THINGY, ideally something unique per-sequence
+["len"] = 8 * 4.5, -- Trace distance
 ["src"] = Vector(20,10,0), -- Trace source; X ( +right, -left ), Y ( +forward, -back ), Z ( +up, -down )
 ["dir"] = Vector(-40,30,0), -- Trace direction/length; X ( +right, -left ), Y ( +forward, -back ), Z ( +up, -down )
 ["dmg"] = 60, --Damage
@@ -25,6 +26,7 @@ SWEP.Primary.Attacks = {}
 },
 {
 ["act"] = ACT_VM_HITRIGHT, -- Animation; ACT_VM_THINGY, ideally something unique per-sequence
+["len"] = 8 * 4.5, -- Trace distance
 ["src"] = Vector(-10,10,0), -- Trace source; X ( +right, -left ), Y ( +forward, -back ), Z ( +up, -down )
 ["dir"] = Vector(40,30,0), -- Trace direction/length; X ( +right, -left ), Y ( +forward, -back ), Z ( +up, -down )
 ["dmg"] = 60, --Damage
