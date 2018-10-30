@@ -933,7 +933,7 @@ function SWEP:IronSights()
 	self.is_old = self:GetIronSightsRaw()
 	self.spr_old = self:GetSprinting()
 	if sprint_cv:GetBool() and not self:GetStat("AllowSprintAttack", false) then
-		issprinting = owent:GetVelocity():Length2D() > owent:GetRunSpeed() * 0.6 and owent:KeyDown(IN_SPEED)
+		issprinting = owent:GetVelocity():Length2D() > owent:GetRunSpeed() * 0.6 and owent:IsSprinting() and owent:OnGround()
 	end
 
 	if not (self.data and self:GetStat("data.ironsights") == 0 ) then
