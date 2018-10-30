@@ -440,7 +440,7 @@ function SWEP:ChooseIdleAnim(...)
 end
 
 function SWEP:StrikeThink()
-	if self:GetSprinting() and not self.AllowSprintAttack then
+	if self:GetSprinting() and not self:GetStat("AllowSprintAttack", false) then
 		self:SetComboCount(0)
 		--return
 	end
@@ -671,7 +671,7 @@ function SWEP:PrimaryAttack()
 		self:GetOwner():SetSchedule(SCHED_MELEE_ATTACK1)
 		return
 	end
-	if self:GetSprinting() and not self.AllowSprintAttack then return end
+	if self:GetSprinting() and not self:GetStat("AllowSprintAttack", false) then return end
 	if self:IsSafety() then return end
 	if not self:VMIV() then return end
 	if CurTime() <= self:GetNextPrimaryFire() then return end
@@ -788,7 +788,7 @@ function SWEP:PrimaryAttack()
 end
 
 function SWEP:SecondaryAttack()
-	if self:GetSprinting() and not self.AllowSprintAttack then return end
+	if self:GetSprinting() and not self:GetStat("AllowSprintAttack", false) then return end
 	if self:IsSafety() then return end
 	if not self:VMIV() then return end
 	if CurTime() <= self:GetNextPrimaryFire() then return end
