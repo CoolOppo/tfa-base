@@ -7,11 +7,11 @@ local langstrings = {
 		["thank_2"] = ", for joining TFA Mod News!  You are member #"
 	},
 	["fr"] = {
-		["nag_1"] = "Chère ",
-		["nag_2"] = ", S'il vous plaît prendre un moment pour rejoindre TFA Mod Nouvelles. Nous serions honorés de vous avoir comme",
-		["nag_3"] = "th membre. Dès que vous vous inscrivez, vous arrêtez de voir ce message. Vous verrez cela un maximum de 5 fois; c'est #",
+		["nag_1"] = "Cher(chère) ",
+		["nag_2"] = ", veuillez prendre un moment pour vous inscrire aux actualités de TFA. Nous serions honorés de vous avoir en tant que ",
+		["nag_3"] = "ème membre.  Dès que vous vous inscrirez, vous ne verrez plus ce message. Vous verrez ceci un maximum de 5 fois ; c'est #",
 		["thank_1"] = "Merci, ",
-		["thank_2"] = ", pour rejoindre TFA Mod Nouvelles! Vous êtes membre #"
+		["thank_2"] = ", pour avoir rejoint les actualités de TFA ! Vous êtes membre #"
 	},
 	["ru"] = {
 		["nag_1"] = "Уважаемый (ая) ",
