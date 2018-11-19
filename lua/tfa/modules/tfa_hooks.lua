@@ -244,7 +244,6 @@ Used For:  Fixes incendiary bullets post-respawn
 hook.Add("PlayerSpawn", "TFAExtinguishQOL", function(plyv)
 	if IsValid(plyv) and plyv:IsOnFire() then
 		plyv:Extinguish()
-		TFA.ProcessBashZoom(plyv, plyv:GetActiveWeapon())
 	end
 end)
 
