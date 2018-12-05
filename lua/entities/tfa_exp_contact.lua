@@ -1,3 +1,5 @@
+AddCSLuaFile()
+
 ENT.Base = "tfa_exp_base"
 ENT.PrintName = "Contact Explosive"
 
