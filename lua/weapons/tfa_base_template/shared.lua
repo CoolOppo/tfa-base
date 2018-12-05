@@ -104,6 +104,7 @@ SWEP.Silenced = false --Silenced by default?
 SWEP.SelectiveFire = false --Allow selecting your firemode?
 SWEP.DisableBurstFire = false --Only auto/single?
 SWEP.OnlyBurstFire = false --No auto, only burst/single?
+SWEP.BurstFireCount = nil -- Burst fire count override (autocalculated by the clip size if nil)
 SWEP.DefaultFireMode = "" --Default to auto or whatev
 SWEP.FireModeName = nil --Change to a text value to override it
 SWEP.FireSoundAffectedByClipSize = true -- Whenever adjuct pitch (and proably other properties) of fire sound based on current clip / maxclip
