@@ -430,26 +430,27 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon)
 	pentrace.mask = MASK_SHOT
 	pentrace.filter = {}
 	local pentraceres = util.TraceLine(pentrace)
-	if (pentraceres.StartSolid or pentraceres.Fraction >= 1.0 or pentraceres.Fraction <= 0.0) then return end
+	if (pentraceres.StartSolid or pentraceres.Fraction >= 1.0 or pentraceres.Fraction <= 0.0) and (pentraceres.Entity == traceres.Entity) then return end
 	local bul = {}
 	bul.PenetrationCount = self.PenetrationCount + 1
 	self.PenetrationCount = self.PenetrationCount + 1
 
 	if IsValid(pentraceres.Entity) and pentraceres.Entity.IsNPC and (pentraceres.Entity:IsNPC() or pentraceres.Entity:IsPlayer()) then
 		if IsValid(ply) and ply:IsPlayer() then
-			bul.Dir = ply:EyeAngles():Forward()
+			bul.Dir = ply:EyeAngles():Forward() * (pentraceres.StartSolid and -1 or 1)
 		else
 			bul.Dir = self.Dir
 		end
 
-		bul.Src = traceres.HitPos + bul.Dir * math.max((pentraceres.Entity:OBBMaxs() - pentraceres.Entity:OBBMins()):Length2D(), pentraceres.HitPos:Distance(traceres.HitPos))
+		bul.Src = (pentraceres.StartSolid and pentraceres.start or pentraceres.HitPos) -- + bul.Dir * math.max((pentraceres.Entity:OBBMaxs() - pentraceres.Entity:OBBMins()):Length2D(), pentraceres.HitPos:Distance(traceres.HitPos))
 		pentraceres.HitPos = bul.Src
 		pentraceres.Normal = bul.Dir
 	else
 		bul.Src = pentraceres.HitPos
 		bul.Dir = self.Dir
 	end
-	mfac = math.min(pentraceres.HitPos:Distance(traceres.HitPos) / penetrationoffset:Length(),1)
+	mfac = math.sqrt(math.min(pentraceres.HitPos:Distance(traceres.HitPos) / penetrationoffset:Length(),1))
+
 	if mfac < 0.1 then return end
 
 	if (bul.Num or 0) <= 1 then

@@ -186,7 +186,9 @@ function TFA.Ballistics:FireBullets(wep, b, angIn, bulletOverride)
 		vel = TFA.Ballistics:AutoDetectVelocity(dmg) * TFA.Ballistics.UnitScale
 	end
 
-	vel = vel * (TFA.Ballistics.VelocityMultiplier or 1)
+	if not CLIENT and game.SinglePlayer() then
+		vel = vel * (TFA.Ballistics.VelocityMultiplier or 1)
+	end
 	local oldNum = b.Num
 	b.Num = 1
 
