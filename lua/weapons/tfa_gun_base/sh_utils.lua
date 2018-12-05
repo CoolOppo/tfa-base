@@ -551,6 +551,12 @@ function SWEP:GetMuzzlePos(ignorepos)
 end
 
 function SWEP:FindEvenBurstNumber()
+	local burstOverride = self:GetStat("BurstFireCount")
+
+	if burstOverride then
+		return burstOverride
+	end
+
 	if (self:GetStat("Primary.ClipSize") % 3 == 0) then
 		return 3
 	elseif (self:GetStat("Primary.ClipSize") % 2 == 0) then
