@@ -85,7 +85,7 @@ function SWEP:MakeShell()
 				fx:SetScale(1)
 				fx:SetOrigin(angpos.Pos)
 				fx:SetNormal(angpos.Ang:Forward())
-				util.Effect(shelltype, fx)
+				TFA.Effects.Create(shelltype, fx)
 			end
 		end
 	end
@@ -166,7 +166,7 @@ function SWEP:EjectionSmoke(ovrr)
 				fx:SetOrigin(angpos.Pos)
 				fx:SetAttachment(att)
 				fx:SetNormal(angpos.Ang:Forward())
-				util.Effect("tfa_shelleject_smoke", fx)
+				TFA.Effects.Create("tfa_shelleject_smoke", fx)
 			end
 		end
 	end
@@ -197,7 +197,7 @@ function SWEP:MuzzleSmoke(spv)
 		fx:SetNormal(self:GetOwner():EyeAngles():Forward())
 		fx:SetEntity(self)
 		fx:SetAttachment(att)
-		util.Effect("tfa_muzzlesmoke", fx)
+		TFA.Effects.Create("tfa_muzzlesmoke", fx)
 	end
 end
 
@@ -215,9 +215,9 @@ function SWEP:MuzzleFlashCustom(spv)
 	local mzsil = self:GetStat("MuzzleFlashEffectSilenced")
 
 	if (self:GetSilenced() and mzsil and mzsil ~= "") then
-		util.Effect(mzsil, fx)
+		TFA.Effects.Create(mzsil, fx)
 	else
-		util.Effect(self:GetStat("MuzzleFlashEffect", self.MuzzleFlashEffect or ""), fx)
+		TFA.Effects.Create(self:GetStat("MuzzleFlashEffect", self.MuzzleFlashEffect or ""), fx)
 	end
 end
 

@@ -404,14 +404,14 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon)
 			fx:SetNormal(traceres.HitNormal)
 
 			if weapon.Primary.ImpactEffect then
-				util.Effect(weapon.Primary.ImpactEffect, fx)
+				TFA.Effects.Create(weapon.Primary.ImpactEffect, fx)
 			elseif tmpdmg > 90 then
-				util.Effect("HelicopterMegaBomb", fx)
-				util.Effect("Explosion", fx)
+				TFA.Effects.Create("HelicopterMegaBomb", fx)
+				TFA.Effects.Create("Explosion", fx)
 			elseif tmpdmg > 45 then
-				util.Effect("cball_explode", fx)
+				TFA.Effects.Create("cball_explode", fx)
 			else
-				util.Effect("MuzzleEffect", fx)
+				TFA.Effects.Create("MuzzleEffect", fx)
 			end
 
 			dmginfo:ScaleDamage(0.15)
@@ -507,7 +507,7 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon)
 	end
 
 	fx:SetRadius(bul.Damage / 32)
-	util.Effect("tfa_penetrate", fx)
+	TFA.Effects.Create("tfa_penetrate", fx)
 
 	--end
 	if IsValid(ply) then
@@ -565,7 +565,7 @@ function SWEP.MainBullet:Ricochet(ply, traceres, dmginfo, weapon)
 			fx:SetOrigin(ric.Src)
 			fx:SetNormal(ric.Dir)
 			fx:SetMagnitude(riccbak)
-			util.Effect("tfa_ricochet", fx)
+			TFA.Effects.Create("tfa_ricochet", fx)
 		end
 
 		timer.Simple(0, function()

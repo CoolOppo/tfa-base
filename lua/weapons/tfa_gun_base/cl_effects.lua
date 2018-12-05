@@ -145,11 +145,11 @@ function SWEP:ImpactEffectFunc(pos, normal, mattype)
 		fx:SetNormal(normal)
 
 		if self:CanDustEffect(mattype) then
-			util.Effect("tfa_dust_impact", fx)
+			TFA.Effects.Create("tfa_dust_impact", fx)
 		end
 
 		if self:CanSparkEffect(mattype) then
-			util.Effect("tfa_metal_impact", fx)
+			TFA.Effects.Create("tfa_metal_impact", fx)
 		end
 
 		local scal = math.sqrt(self:GetStat("Primary.Damage") / 30)
@@ -159,10 +159,10 @@ function SWEP:ImpactEffectFunc(pos, normal, mattype)
 		fx:SetEntity(self:GetOwner())
 		fx:SetMagnitude(mattype or 0)
 		fx:SetScale( scal )
-		util.Effect("tfa_bullet_impact", fx)
+		TFA.Effects.Create("tfa_bullet_impact", fx)
 
 		if self.ImpactEffect then
-			util.Effect(self.ImpactEffect, fx)
+			TFA.Effects.Create(self.ImpactEffect, fx)
 		end
 	end
 end
