@@ -628,6 +628,7 @@ function SWEP:CreateModels(tabl, is_vm)
 				v.curmodel:SetPos(self:GetPos())
 				v.curmodel:SetAngles(self:GetAngles())
 				v.curmodel:SetParent(self)
+				v.curmodel:SetOwner(self)
 				v.curmodel:SetNoDraw(true)
 
 				if v.material then
