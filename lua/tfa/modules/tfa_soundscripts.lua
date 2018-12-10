@@ -1,21 +1,8 @@
-if SERVER then
-	AddCSLuaFile()
-end
-
 sound.Add({
 	name = "Weapon_Bow.1",
 	channel = CHAN_STATIC,
 	volume = 1.0,
 	sound = {"weapons/tfbow/fire1.wav", "weapons/tfbow/fire2.wav", "weapons/tfbow/fire3.wav"}
-})
-
-sound.Add({
-	name = "TFA.NearlyEmpty",
-	channel = CHAN_USER_BASE + 14,
-	volume = 1,
-	pitch = 100,
-	level = 65,
-	sound = "weapons/tfa/lowammo.wav"
 })
 
 sound.Add({
@@ -26,8 +13,17 @@ sound.Add({
 })
 
 sound.Add({
+	name = "TFA.NearlyEmpty",
+	channel = CHAN_USER_BASE + 15,
+	volume = 1,
+	pitch = 100,
+	level = 65,
+	sound = "weapons/tfa/lowammo.wav"
+})
+
+sound.Add({
 	name = "TFA.Bash",
-	channel = CHAN_USER_BASE + 13,
+	channel = CHAN_USER_BASE + 14,
 	volume = 1.0,
 	sound = {"weapons/tfa/bash1.wav", "weapons/tfa/bash2.wav"},
 	pitch = {97, 103}
@@ -35,7 +31,7 @@ sound.Add({
 
 sound.Add({
 	name = "TFA.BashWall",
-	channel = CHAN_USER_BASE + 13,
+	channel = CHAN_USER_BASE + 14,
 	volume = 1.0,
 	sound = "weapons/melee/rifle_swing_hit_world.wav",
 	pitch = {97, 103}
@@ -43,7 +39,7 @@ sound.Add({
 
 sound.Add({
 	name = "TFA.BashFlesh",
-	channel = CHAN_USER_BASE + 13,
+	channel = CHAN_USER_BASE + 14,
 	volume = 1.0,
 	sound = {"weapons/melee/rifle_swing_hit_infected7.wav", "weapons/melee/rifle_swing_hit_infected8.wav", "weapons/melee/rifle_swing_hit_infected9.wav", "weapons/melee/rifle_swing_hit_infected10.wav", "weapons/melee/rifle_swing_hit_infected11.wav", "weapons/melee/rifle_swing_hit_infected12.wav"},
 	pitch = {97, 103}
