@@ -471,6 +471,8 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon)
 	bul.Tracer = 0
 	bul.TracerName = ""
 	bul.Callback = function(a, b, c)
+		c:SetInflictor(bul.Wep)
+
 		bul:Penetrate(a, b, c, bul.Wep)
 	end
 
