@@ -41,6 +41,8 @@ end
 local function bashcallback(a, b, c, wep, pain)
 	if not IsValid(wep) then return end
 
+	c:SetInflictor(wep)
+
 	if c then
 		c:SetDamageType(wep:GetStat("Secondary.BashDamageType"))
 	end
