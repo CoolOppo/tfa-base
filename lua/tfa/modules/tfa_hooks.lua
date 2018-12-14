@@ -1,5 +1,4 @@
-local ply, wep, sp
-sp = game.SinglePlayer()
+local sp = game.SinglePlayer()
 
 --[[
 Hook: PlayerFootstep
@@ -9,8 +8,8 @@ Used For: Walk Cycle
 hook.Add("PlayerFootstep", "TFAWalkcycle", function(plyv)
 	if sp and SERVER then
 		BroadcastLua("Entity(" .. plyv:EntIndex() .. ").lastFootstep = " .. CurTime())
-	elseif IsValid(ply) then
-		ply.lastFootstep = CurTime()
+	elseif IsValid(plyv) then
+		plyv.lastFootstep = CurTime()
 	end
 end)
 
@@ -21,10 +20,10 @@ Used For: Main weapon "think" logic
 ]]
 --
 hook.Add("PlayerPostThink", "PlayerTickTFA", function(plyv)
-	wep = plyv:GetActiveWeapon() or wep
+	local wepv = plyv:GetActiveWeapon()
 
-	if IsValid(wep) and wep.PlayerThink and wep.IsTFAWeapon then
-		wep:PlayerThink(plyv)
+	if IsValid(wepv) and wepv.PlayerThink and wepv.IsTFAWeapon then
+		wepv:PlayerThink(plyv)
 	end
 end)
 
@@ -79,21 +78,18 @@ Used For: Per-frame weapon "think" logic
 ]]
 --
 hook.Add("PreRender", "prerender_tfabase", function()
-	if not IsValid(ply) then
-		ply = LocalPlayer()
+	local plyv = LocalPlayer()
+	if not IsValid(plyv) then return end
 
-		return
-	end
+	local wepv = plyv:GetActiveWeapon()
 
-	wep = ply:GetActiveWeapon() or wep
-
-	if IsValid(wep) and wep.IsTFAWeapon and wep.PlayerThinkCL then
-		wep:PlayerThinkCL(ply)
+	if IsValid(wepv) and wepv.IsTFAWeapon and wepv.PlayerThinkCL then
+		wepv:PlayerThinkCL(plyv)
 	end
 
 	if sp and CLIENT then
 		net.Start("tfaSDLP")
-		net.WriteBool(ply:ShouldDrawLocalPlayer())
+		net.WriteBool(plyv:ShouldDrawLocalPlayer())
 		net.SendToServer()
 	end
 end)
@@ -134,7 +130,7 @@ local function TFAContextBlock()
 	if GetViewEntity() ~= plyv then return end
 	local wepv = plyv:GetActiveWeapon()
 	if not IsValid(wepv) then return end
-	if GetInspectionKey() == TFA.BindToKey(input.LookupBinding("+menu_context", true) or "c", KEY_C) and wepv.ToggleInspect and cv_cm:GetBool() and not ply:KeyDown(IN_USE) then return false end
+	if GetInspectionKey() == TFA.BindToKey(input.LookupBinding("+menu_context", true) or "c", KEY_C) and wepv.ToggleInspect and cv_cm:GetBool() and not plyv:KeyDown(IN_USE) then return false end
 end
 
 hook.Add("ContextMenuOpen", "TFAContextBlock", TFAContextBlock)
@@ -188,9 +184,9 @@ local function KR_Reload(plyv, key)
 	if key == IN_RELOAD and cv_lr and (not cv_lr:GetBool()) and (not plyv:KeyDown(IN_USE)) and CurTime() <= (plyv.LastReloadPressed or CurTime()) + reload_threshold then
 		plyv.LastReloadPressed = nil
 		plyv.HasTFAAmmoChek = false
-		wep = plyv:GetActiveWeapon()
+		local wepv = plyv:GetActiveWeapon()
 
-		if IsValid(wep) and wep.IsTFAWeapon then
+		if IsValid(wepv) and wepv.IsTFAWeapon then
 			plyv:GetActiveWeapon():Reload(true)
 		end
 	end
@@ -202,9 +198,9 @@ local function KD_AmmoCheck(plyv)
 	if plyv.HasTFAAmmoChek then return end
 
 	if plyv:KeyDown(IN_RELOAD) and (not plyv:KeyDown(IN_USE)) and CurTime() > (plyv.LastReloadPressed or CurTime()) + reload_threshold then
-		wep = plyv:GetActiveWeapon()
+		local wepv = plyv:GetActiveWeapon()
 
-		if IsValid(wep) and wep.IsTFAWeapon then
+		if IsValid(wepv) and wepv.IsTFAWeapon then
 			plyv.HasTFAAmmoChek = true
 			plyv:GetActiveWeapon():CheckAmmo()
 		end
@@ -253,15 +249,14 @@ Function: Modify movement speed
 Used For:  Weapon slowdown, ironsights slowdown
 ]]
 --
-local sumwep
 local speedmult
 
 hook.Add("SetupMove", "tfa_setupmove", function(plyv, movedata, commanddata)
-	sumwep = plyv:GetActiveWeapon() or wep
+	local wepv = plyv:GetActiveWeapon()
 
-	if IsValid(sumwep) and sumwep.IsTFAWeapon then
-		sumwep.IronSightsProgress = sumwep.IronSightsProgress or 0
-		speedmult = Lerp(sumwep.IronSightsProgress, sumwep:GetStat("MoveSpeed"), sumwep:GetStat("IronSightsMoveSpeed"))
+	if IsValid(wepv) and wepv.IsTFAWeapon then
+		wepv.IronSightsProgress = wepv.IronSightsProgress or 0
+		speedmult = Lerp(wepv.IronSightsProgress, wepv:GetStat("MoveSpeed"), wepv:GetStat("IronSightsMoveSpeed"))
 		movedata:SetMaxClientSpeed(movedata:GetMaxClientSpeed() * speedmult)
 		commanddata:SetForwardMove(commanddata:GetForwardMove() * speedmult)
 		commanddata:SetSideMove(commanddata:GetSideMove() * speedmult)
