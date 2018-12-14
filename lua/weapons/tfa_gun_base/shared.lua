@@ -652,70 +652,56 @@ Notes:  This is blank.
 Purpose:  Standard SWEP Function
 ]]
 function SWEP:Think()
-	if self.Owner:IsNPC() and SERVER then
-		if self.ThinkNPC then self:ThinkNPC() end
+	if self:OwnerIsValid() and self:GetOwner():IsNPC() then
+		if SERVER then
+			if self.ThinkNPC then self:ThinkNPC() end
 
-		if self.Owner:GetClass() == "npc_combine_s" then
-			if self.Owner:GetActivity() == 16 then
-				self:PrimaryAttack()
+			if self.Owner:GetClass() == "npc_combine_s" then
+				if self.Owner:GetActivity() == 16 then
+					self:PrimaryAttack()
+				end
+			else
+				if self.Owner:GetActivity() == 11 then
+					self:PrimaryAttack()
+				end
 			end
-		else
-			if self.Owner:GetActivity() == 11 then
-				self:PrimaryAttack()
+		end
+
+		return
+	end
+
+	ft = TFA.FrameTime()
+
+	if not self:NullifyOIV() then return end
+
+	self:Think2()
+
+	self:CalculateRatios(CLIENT)
+
+	if CLIENT then
+		self:SmokePCFLighting()
+
+		if self:GetStat("BlowbackEnabled") then
+			if not self.Blowback_PistolMode or self:Clip1() == -1 or self:Clip1() > 0.1 or self.Blowback_PistolMode_Disabled[ self:GetLastActivity() ] then
+				self.BlowbackCurrent = l_mathApproach(self.BlowbackCurrent, 0, self.BlowbackCurrent * ft * 15)
 			end
+
+			self.BlowbackCurrentRoot = l_mathApproach(self.BlowbackCurrentRoot, 0, self.BlowbackCurrentRoot * ft * 15)
 		end
 	end
 end
+
 --[[
 Function Name:  Think2
-Syntax: self:Think2().  Called from PlayerThink.
+Syntax: self:Think2().  Called from Think.
 Returns:  Nothing.
-Notes:  Essential for calling other important functions.  This is called from PlayerThink.  It's used because SWEP:Think() isn't always called.
+Notes:  Essential for calling other important functions.
 Purpose:  Standard SWEP Function
 ]]
-local finalstat
-
-function SWEP:PlayerThink(plyv)
-	if self:GetOwner():IsNPC() then
-		return
-	end
-	ft = TFA.FrameTime()
-	if not self:NullifyOIV() then return end
-	self:Think2()
-	if SERVER then
-		self:CalculateRatios()
-	end
-end
-
-function SWEP:PlayerThinkCL()
-	if self.Owner:IsNPC() then
-		return
-	end
-	ft = TFA.FrameTime()
-	if not self:NullifyOIV() then return end
-	self:OwnerIsValid()
-	self:SmokePCFLighting()
-	self:CalculateRatios(true)
-	if sp then
-		self:Think2()
-	end
-	if self:GetStat("BlowbackEnabled") then
-		if not self.Blowback_PistolMode or self:Clip1() == -1 or self:Clip1() > 0.1 or self.Blowback_PistolMode_Disabled[ self:GetLastActivity() ] then
-			self.BlowbackCurrent = l_mathApproach(self.BlowbackCurrent, 0, self.BlowbackCurrent * ft * 15)
-		end
-
-		self.BlowbackCurrentRoot = l_mathApproach(self.BlowbackCurrentRoot, 0, self.BlowbackCurrentRoot * ft * 15)
-	end
-end
-
-local is, spr, waittime, sht, lact
+local CT, is, spr, waittime, sht, lact, finalstat
 
 function SWEP:Think2()
-	if self.Owner:IsNPC() then
-		return
-	end
-
-	local CT = CurTime()
+	CT = CurTime()
 
 	if self.LuaShellRequestTime > 0 and CT > self.LuaShellRequestTime then
 		self.LuaShellRequestTime = -1

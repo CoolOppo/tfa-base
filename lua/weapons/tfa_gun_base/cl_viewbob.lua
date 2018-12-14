@@ -55,7 +55,7 @@ function SWEP:CalcView(ply, pos, ang, fov)
 	local vm = ply:GetViewModel()
 	if not IsValid(vm) then return end
 	if not CLIENT then return end
-	local ftv = math.max(FrameTime(), 0.001)
+	local ftv = math.max(TFA.FrameTime(), 0.001)
 	local viewbobintensity = viewbob_intensity_cvar:GetFloat() * 0.5
 	local holprog = TFA.Enum.HolsterStatus[self:GetStatus()] and 1 or 0
 	self.ViewHolProg = math.Approach(self.ViewHolProg, holprog, ftv / 5)
