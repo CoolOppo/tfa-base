@@ -1214,7 +1214,13 @@ function SWEP:CanPrimaryAttack( )
 
 	if self:GetPrimaryClipSize(true) > 0 and self:Clip1() < self:GetStat("Primary.AmmoConsumption") then
 		if self:GetOwner():KeyPressed(IN_ATTACK) then
-			self:ChooseDryFireAnim()
+			local enabled, act = self:ChooseDryFireAnim()
+
+			if enabled then
+				self:SetNextPrimaryFire(l_CT() + self:GetStat("Primary.DryFireDelay", self:GetActivityLength(act, true)))
+
+				return false
+			end
 		end
 
 		if not self.HasPlayedEmptyClick then
