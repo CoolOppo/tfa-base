@@ -68,7 +68,8 @@ TFA_AUTOJAMMING_ENABLED = string.find(engine.ActiveGamemode(), 'rp') or
 	string.find(engine.ActiveGamemode(), 'nutscript') or
 	string.find(engine.ActiveGamemode(), 'serious') or
 	TFA_ENABLE_JAMMING_BY_DEFAULT
-SWEP.CanJam = TFA_AUTOJAMMING_ENABLED
+
+SWEP.CanJam = tobool(TFA_AUTOJAMMING_ENABLED)
 
 SWEP.JamChance = 0.04
 SWEP.JamFactor = 0.06
