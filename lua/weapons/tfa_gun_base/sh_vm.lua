@@ -301,7 +301,7 @@ function SWEP:CalculateViewModelOffset(delta)
 
 	intensityWalk = math.min(self:GetOwner():GetVelocity():Length2D() / self:GetOwner():GetWalkSpeed(), 1)
 	intensityBreath = l_Lerp(self.IronSightsProgress, self:GetStat("BreathScale", 0.2), self:GetStat("IronBobMultWalk", 0.5) * intensityWalk)
-	intensityWalk = intensityWalk * (1 - self.IronSightsProgress)
+	intensityWalk = intensityWalk * (1 - self.IronSightsProgress) * (1 - self.WalkProgress)
 	intensityRun = l_Lerp(self.SprintProgress, 0, self.SprintBobMult)
 	local velocity = math.max(self:GetOwner():GetVelocity():Length2D() * self:AirWalkScale() - self:GetOwner():GetVelocity().z * 0.5, 0)
 	local rate = math.min(math.max(0.15, math.sqrt(velocity / self:GetOwner():GetRunSpeed()) * 1.75), self:GetSprinting() and 5 or 3)

@@ -33,7 +33,7 @@ local l_mathApproach = function(a, b, delta)
 	end
 end
 
-local is, spr, ist, sprt, ft, jr_targ
+local is, spr, walk, ist, sprt, walkt, ft, jr_targ
 ft = 0.01
 SWEP.LastRatio = nil
 
@@ -43,13 +43,15 @@ function SWEP:CalculateRatios(forced)
 	ft = TFA.FrameTime()
 	is = self:GetIronSights()
 	spr = self:GetSprinting()
+	walk = self:GetWalking()
 	ist = is and 1 or 0
 	sprt = spr and 1 or 0
+	walkt = walk and 1 or 0
 	local adstransitionspeed
 
 	if is then
 		adstransitionspeed = 12.5 / (self:GetStat("IronSightTime") / 0.3)
-	elseif spr then
+	elseif spr or walk then
 		adstransitionspeed = 7.5
 	else
 		adstransitionspeed = 12.5
@@ -60,6 +62,7 @@ function SWEP:CalculateRatios(forced)
 	self.SpreadRatio = l_mathClamp(self.SpreadRatio - self:GetStat("Primary.SpreadRecovery") * ft, 1, self:GetStat("Primary.SpreadMultiplierMax"))
 	self.IronSightsProgress = l_mathApproach(self.IronSightsProgress, ist, (ist - self.IronSightsProgress) * ft * adstransitionspeed)
 	self.SprintProgress = l_mathApproach(self.SprintProgress, sprt, (sprt - self.SprintProgress) * ft * adstransitionspeed)
+	self.WalkProgress = l_mathApproach(self.WalkProgress, walkt, (walkt - self.WalkProgress) * ft * adstransitionspeed)
 	self.ProceduralHolsterProgress = l_mathApproach(self.ProceduralHolsterProgress, sprt, (sprt - self.SprintProgress) * ft * self.ProceduralHolsterTime * 15)
 	self.InspectingProgress = l_mathApproach(self.InspectingProgress, self.Inspecting and 1 or 0, ((self.Inspecting and 1 or 0) - self.InspectingProgress) * ft * 10)
 	self.CLIronSightsProgress = self.IronSightsProgress --compatibility

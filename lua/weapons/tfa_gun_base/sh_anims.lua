@@ -523,15 +523,15 @@ end
 local success, tanim, typev
 --[[
 Function Name:  Locomote
-Syntax: self:Locomote( flip ironsights, new is, flip sprint, new sprint).
+Syntax: self:Locomote( flip ironsights, new is, flip sprint, new sprint, flip walk, new walk).
 Returns:
 Notes:
 Purpose:  Animation / Utility
 ]]
 local tldata
 
-function SWEP:Locomote(flipis, is, flipsp, spr)
-	if not (flipis or flipsp) then return end
+function SWEP:Locomote(flipis, is, flipsp, spr, flipwalk, walk)
+	if not (flipis or flipsp or flipwalk) then return end
 	if not (self:GetStatus() == TFA.Enum.STATUS_IDLE or (self:GetStatus() == TFA.Enum.STATUS_SHOOTING and self:CanInterruptShooting())) then return end
 	tldata = nil
 
@@ -548,6 +548,14 @@ function SWEP:Locomote(flipis, is, flipsp, spr)
 			tldata = self:GetStat("SprintAnimation.in") or tldata
 		elseif self:GetStat("SprintAnimation.out") and not flipis and not spr then
 			tldata = self:GetStat("SprintAnimation.out") or tldata
+		end
+	end
+
+	if flipwalk then
+		if walk and self:GetStat("WalkAnimation.in") then
+			tldata = self:GetStat("WalkAnimation.in") or tldata
+		elseif self:GetStat("WalkAnimation.out") and (not flipis and not flipsp) and not walk then
+			tldata = self:GetStat("WalkAnimation.out") or tldata
 		end
 	end
 
@@ -789,6 +797,8 @@ function SWEP:ChooseIdleAnim()
 		end
 	elseif self:GetSprinting() and self.Sprint_Mode ~= TFA.Enum.LOCOMOTION_LUA then
 		return self:ChooseSprintAnim()
+	elseif self:GetWalking() and self.Walk_Mode ~= TFA.Enum.LOCOMOTION_LUA then
+		return self:ChooseWalkAnim()
 	end
 
 	if self:GetActivityEnabled(ACT_VM_IDLE_SILENCED) and self:GetSilenced() then
@@ -848,6 +858,10 @@ end
 
 function SWEP:ChooseSprintAnim()
 	return self:PlayAnimation(self:GetStat("SprintAnimation.loop"))
+end
+
+function SWEP:ChooseWalkAnim()
+	return self:PlayAnimation(self:GetStat("WalkAnimation.loop"))
 end
 
 --[[

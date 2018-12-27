@@ -315,3 +315,21 @@ hook.Add("PlayerSwitchFlashlight", "tfa_toggleflashlight", function(plyv, toEnab
 		return false
 	end
 end)
+
+--[[
+Hook: SetupMove
+Function: Update players NW2 variable
+User For: Walking animation NW2 var
+]]
+--
+hook.Add("SetupMove", "tfa_checkforplayerwalking", function(plyv, mvdatav, cmdv)
+	if not IsValid(plyv) or not mvdatav then return end
+
+	if mvdatav:GetForwardSpeed() ~= 0 or mvdatav:GetSideSpeed() ~= 0 then
+		if not plyv:GetNW2Bool("TFA_IsWalking") then
+			plyv:SetNW2Bool("TFA_IsWalking", true)
+		end
+	elseif plyv:GetNW2Bool("TFA_IsWalking") then
+		plyv:SetNW2Bool("TFA_IsWalking", false)
+	end
+end)

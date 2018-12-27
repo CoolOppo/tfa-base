@@ -160,6 +160,7 @@ SWEP.Secondary.DefaultClip = 0
 
 SWEP.Sights_Mode = TFA.Enum.LOCOMOTION_LUA -- ANI = mdl, HYBRID = lua but continue idle, Lua = stop mdl animation
 SWEP.Sprint_Mode = TFA.Enum.LOCOMOTION_LUA -- ANI = mdl, HYBRID = ani + lua, Lua = lua only
+SWEP.Walk_Mode = TFA.Enum.LOCOMOTION_LUA -- ANI = mdl, HYBRID = ani + lua, Lua = lua only
 SWEP.SprintFOVOffset = 5
 SWEP.Idle_Mode = TFA.Enum.IDLE_BOTH --TFA.Enum.IDLE_DISABLED = no idle, TFA.Enum.IDLE_LUA = lua idle, TFA.Enum.IDLE_ANI = mdl idle, TFA.Enum.IDLE_BOTH = TFA.Enum.IDLE_ANI + TFA.Enum.IDLE_LUA
 SWEP.Idle_Blend = 0.25 --Start an idle this far early into the end of a transition
@@ -246,6 +247,7 @@ SWEP.FirstDeployEnabled = nil--Force first deploy enabled
 SWEP.IronSightsProgress = 0
 SWEP.CLIronSightsProgress = 0
 SWEP.SprintProgress = 0
+SWEP.WalkProgress = 0
 SWEP.SpreadRatio = 0
 SWEP.CrouchingRatio = 0
 SWEP.SmokeParticles = {
@@ -349,6 +351,7 @@ function SWEP:SetupDataTables()
 	self:NetworkVar("Bool", 1, "Sprinting")
 	self:NetworkVar("Bool", 2, "Silenced")
 	self:NetworkVar("Bool", 3, "ShotgunCancel")
+	self:NetworkVar("Bool", 4, "Walking")
 	self:NetworkVar("Bool", 18, "FlashlightEnabled")
 	self:NetworkVar("Bool", 19, "Jammed")
 	self:NetworkVar("Float", 0, "StatusEnd")
@@ -906,9 +909,10 @@ function SWEP:Think2()
 	end
 end
 
-local issighting, issprinting = false, false
+local issighting, issprinting, iswalking = false, false, false
 SWEP.spr_old = false
 SWEP.is_old = false
+SWEP.walk_old = false
 local issighting_tmp
 local ironsights_toggle_cvar, ironsights_resight_cvar
 local ironsights_cv = GetConVar("sv_tfa_ironsights_enabled")
@@ -938,8 +942,10 @@ function SWEP:IronSights()
 
 	issighting = false
 	issprinting = false
+	iswalking = false
 	self.is_old = self:GetIronSightsRaw()
 	self.spr_old = self:GetSprinting()
+	self.walk_old = self:GetWalking()
 	if sprint_cv:GetBool() and not self:GetStat("AllowSprintAttack", false) then
 		issprinting = owent:GetVelocity():Length2D() > owent:GetRunSpeed() * 0.6 and owent:IsSprinting() and owent:OnGround()
 	end
@@ -1045,18 +1051,19 @@ function SWEP:IronSights()
 		self:SetNextIdleAnim(-1)
 	end
 
+	iswalking = owent:GetVelocity():Length2D() > 0 and owent:GetNW2Bool("TFA_IsWalking") and owent:OnGround() and not owent:Crouching() and not issprinting
 
 	local smi = ( self.Sights_Mode == TFA.Enum.LOCOMOTION_ANI ) and self.is_old_final ~= issighting
 	local spi = ( self.Sprint_Mode == TFA.Enum.LOCOMOTION_HYBRID or self.Sprint_Mode == TFA.Enum.LOCOMOTION_ANI ) and self.spr_old ~= issprinting
+	local wmi = ( self.Walk_Mode == TFA.Enum.LOCOMOTION_HYBRID or self.Walk_Mode == TFA.Enum.LOCOMOTION_ANI ) and self.walk_old ~= iswalking
 
-	if ( smi or spi ) and ( self:GetStatus() == TFA.Enum.STATUS_IDLE or ( self:GetStatus() == TFA.Enum.STATUS_SHOOTING and self:CanInterruptShooting() ) ) and not self:GetShotgunCancel() then
-		--self:SetNextIdleAnim(-1)
+	if ( smi or spi or wmi ) and ( self:GetStatus() == TFA.Enum.STATUS_IDLE or ( self:GetStatus() == TFA.Enum.STATUS_SHOOTING and self:CanInterruptShooting() ) ) and not self:GetShotgunCancel() then
 		local toggle_is = self.is_old ~= issighting
 		if issighting and self.spr_old ~= issprinting then
 			toggle_is = true
 		end
-		local success,_ = self:Locomote(toggle_is and (self.Sights_Mode == TFA.Enum.LOCOMOTION_ANI or self.Sights_Mode == TFA.Enum.LOCOMOTION_HYBRID ), issighting, (self.spr_old ~= issprinting) and (self.Sprint_Mode == TFA.Enum.LOCOMOTION_ANI or self.Sprint_Mode == TFA.Enum.LOCOMOTION_HYBRID ), issprinting)
-		if ( not success ) and ( ( toggle_is and smi ) or ( (self.spr_old ~= issprinting) and spi ) ) then
+		local success,_ = self:Locomote(toggle_is and (self.Sights_Mode ~= TFA.Enum.LOCOMOTION_LUA), issighting, spi, issprinting, wmi, iswalking)
+		if ( not success ) and ( ( toggle_is and smi ) or spi or wmi ) then
 			self:SetNextIdleAnim(-1)
 		end
 	end
@@ -1065,9 +1072,13 @@ function SWEP:IronSights()
 		self:SetSprinting(issprinting)
 	end
 
+	if (self.walk_old ~= iswalking) then
+		self:SetWalking(iswalking)
+	end
+
 	self.is_old_final = issighting
 
-	return issighting_tmp, issprinting
+	return issighting_tmp, issprinting, iswalking
 end
 
 SWEP.is_cached = nil

@@ -281,6 +281,7 @@ SWEP.ProceduralHolsterAng = Vector(-40, -30, 10)
 
 SWEP.Sights_Mode = TFA.Enum.LOCOMOTION_LUA -- ANI = mdl, HYBRID = lua but continue idle, Lua = stop mdl animation
 SWEP.Sprint_Mode = TFA.Enum.LOCOMOTION_LUA -- ANI = mdl, HYBRID = ani + lua, Lua = lua only
+SWEP.Walk_Mode = TFA.Enum.LOCOMOTION_LUA -- ANI = mdl, HYBRID = ani + lua, Lua = lua only
 SWEP.Idle_Mode = TFA.Enum.IDLE_BOTH --TFA.Enum.IDLE_DISABLED = no idle, TFA.Enum.IDLE_LUA = lua idle, TFA.Enum.IDLE_ANI = mdl idle, TFA.Enum.IDLE_BOTH = TFA.Enum.IDLE_ANI + TFA.Enum.IDLE_LUA
 SWEP.Idle_Blend = 0.25 --Start an idle this far early into the end of a transition
 SWEP.Idle_Smooth = 0.05 --Start an idle this far early into the end of another animation
@@ -328,6 +329,27 @@ SWEP.SprintAnimation = {
 		["type"] = TFA.Enum.ANIMATION_SEQ, --Sequence or act
 		["value"] = "Sprint_to_Idle", --Number for act, String/Number for sequence
 		["value_empty"] = "Sprint_to_Idle_Empty",
+		["transition"] = true
+	} --Outward transition
+}
+
+SWEP.WalkAnimation = {
+	["in"] = {
+		["type"] = TFA.Enum.ANIMATION_SEQ, --Sequence or act
+		["value"] = "Idle_to_Walk", --Number for act, String/Number for sequence
+		["value_empty"] = "Idle_to_Walk_Empty",
+		["transition"] = true
+	}, --Inward transition
+	["loop"] = {
+		["type"] = TFA.Enum.ANIMATION_SEQ, --Sequence or act
+		["value"] = "Walk", --Number for act, String/Number for sequence
+		["value_empty"] = "Walk_Empty",
+		["is_idle"] = true
+	},--looping animation
+	["out"] = {
+		["type"] = TFA.Enum.ANIMATION_SEQ, --Sequence or act
+		["value"] = "Walk_to_Idle", --Number for act, String/Number for sequence
+		["value_empty"] = "Walk_to_Idle_Empty",
 		["transition"] = true
 	} --Outward transition
 }
