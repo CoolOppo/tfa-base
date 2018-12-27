@@ -1051,7 +1051,7 @@ function SWEP:IronSights()
 		self:SetNextIdleAnim(-1)
 	end
 
-	iswalking = owent:GetVelocity():Length2D() > (owent:GetWalkSpeed() * self:GetStat("MoveSpeed", 1) * .75) and owent:GetNW2Bool("TFA_IsWalking") and owent:OnGround() and not owent:Crouching() and not issprinting
+	iswalking = owent:GetVelocity():Length2D() > (owent:GetWalkSpeed() * self:GetStat("MoveSpeed", 1) * .75) and owent:GetNW2Bool("TFA_IsWalking") and owent:OnGround() and not issprinting
 
 	local smi = ( self.Sights_Mode == TFA.Enum.LOCOMOTION_ANI ) and self.is_old_final ~= issighting
 	local spi = ( self.Sprint_Mode == TFA.Enum.LOCOMOTION_HYBRID or self.Sprint_Mode == TFA.Enum.LOCOMOTION_ANI ) and self.spr_old ~= issprinting
