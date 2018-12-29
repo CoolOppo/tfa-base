@@ -299,9 +299,9 @@ function SWEP:CalculateViewModelOffset(delta)
 	vm_offset_ang.y = math.ApproachAngle(vm_offset_ang.y, target_ang.y, math.AngleDifference(target_ang.y, vm_offset_ang.y) * delta * adstransitionspeed)
 	vm_offset_ang.r = math.ApproachAngle(vm_offset_ang.r, target_ang.z, math.AngleDifference(target_ang.z, vm_offset_ang.r) * delta * adstransitionspeed)
 
-	intensityWalk = math.min(self:GetOwner():GetVelocity():Length2D() / self:GetOwner():GetWalkSpeed(), 1)
+	intensityWalk = math.min(self:GetOwner():GetVelocity():Length2D() / self:GetOwner():GetWalkSpeed(), 1) * self.WalkBobMult
 	intensityBreath = l_Lerp(self.IronSightsProgress, self:GetStat("BreathScale", 0.2), self:GetStat("IronBobMultWalk", 0.5) * intensityWalk)
-	intensityWalk = intensityWalk * (1 - self.IronSightsProgress) * (1 - self.WalkProgress)
+	intensityWalk = intensityWalk * (1 - self.IronSightsProgress)
 	intensityRun = l_Lerp(self.SprintProgress, 0, self.SprintBobMult)
 	local velocity = math.max(self:GetOwner():GetVelocity():Length2D() * self:AirWalkScale() - self:GetOwner():GetVelocity().z * 0.5, 0)
 	local rate = math.min(math.max(0.15, math.sqrt(velocity / self:GetOwner():GetRunSpeed()) * 1.75), self:GetSprinting() and 5 or 3)

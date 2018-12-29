@@ -25,6 +25,12 @@ function SWEP:FixSprintAnimBob()
 	end
 end
 
+function SWEP:FixWalkAnimBob()
+	if self.Walk_Mode == TFA.Enum.LOCOMOTION_ANI then
+		self.WalkBobMult = 0
+	end
+end
+
 function SWEP:PatchAmmoTypeAccessors()
 	self.GetPrimaryAmmoTypeOld = self.GetPrimaryAmmoTypeOld or self.GetPrimaryAmmoType
 	self.GetPrimaryAmmoType = function(myself, ...) return myself.GetPrimaryAmmoTypeC(myself, ...) end
