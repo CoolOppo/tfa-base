@@ -724,7 +724,7 @@ Returns:  Nothing.
 Notes:  Essential for calling other important functions.
 Purpose:  Standard SWEP Function
 ]]
-local CT, is, spr, waittime, sht, lact, finalstat
+local CT, is, spr, wlk, waittime, sht, lact, finalstat
 
 function SWEP:Think2()
 	CT = CurTime()
@@ -749,7 +749,7 @@ function SWEP:Think2()
 	self:ProcessHoldType()
 	self:ReloadCV()
 	self:IronSightSounds()
-	is, spr = self:IronSights()
+	is, spr, wlk = self:IronSights()
 	if stat == TFA.Enum.STATUS_FIDGET and is then
 		self:SetStatusEnd(0)
 		self.Idle_Mode_Old = self.Idle_Mode
@@ -870,11 +870,12 @@ function SWEP:Think2()
 
 		local smi = self.Sights_Mode == TFA.Enum.LOCOMOTION_ANI
 		local spi = self.Sprint_Mode == TFA.Enum.LOCOMOTION_HYBRID or self.Sprint_Mode == TFA.Enum.LOCOMOTION_ANI
+		local wmi = self.Walk_Mode == TFA.Enum.LOCOMOTION_HYBRID or self.Walk_Mode == TFA.Enum.LOCOMOTION_ANI
 
 		if ( not TFA.Enum.ReadyStatus[stat] ) and stat ~= TFA.GetStatus("shooting") and stat ~= TFA.GetStatus("pump") and finalstat == TFA.Enum.STATUS_IDLE and ( smi or spi ) then
 			is = self:GetIronSights( true )
-			if ( is and smi ) or ( spr and spi ) then
-				local success,_ = self:Locomote(is and smi, is, spr and spi, spr)
+			if ( is and smi ) or ( spr and spi ) or ( wlk and wmi ) then
+				local success,_ = self:Locomote(is and smi, is, spr and spi, spr, wlk and wmi, wlk)
 				if success == false then
 					self:SetNextIdleAnim(-1)
 				else
