@@ -23,7 +23,7 @@ AddCSLuaFile()
 
 -- AI Options
 hook.Add("PopulateMenuBar", "NPCOptions_MenuBar_TFA", function(menubarV)
-	local m = menubarV:AddOrGetMenu("NPCs")
+	local m = menubarV:AddOrGetMenu("#menubar.npcs")
 	local wpns = m:AddSubMenu("TFA Weapon Override")
 	wpns:SetDeleteSelf(false)
 	local weaponCats = {}
