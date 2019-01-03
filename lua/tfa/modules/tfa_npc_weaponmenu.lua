@@ -23,7 +23,8 @@ AddCSLuaFile()
 
 -- AI Options
 hook.Add("PopulateMenuBar", "NPCOptions_MenuBar_TFA", function(menubarV)
-	local m = menubarV:AddOrGetMenu("#menubar.npcs")
+	local menuName = language.GetPhrase("menubar.npcs") == "menubar.npcs" and "NPCs" or "#menubar.npcs" -- chromium branch nonsense
+	local m = menubarV:AddOrGetMenu(menuName)
 	local wpns = m:AddSubMenu("TFA Weapon Override")
 	wpns:SetDeleteSelf(false)
 	local weaponCats = {}
