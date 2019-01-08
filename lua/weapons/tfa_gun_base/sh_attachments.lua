@@ -27,6 +27,7 @@ SWEP.AttachmentCache = {} --["att_name"] = true
 SWEP.AttachmentTableCache = {}
 SWEP.AttachmentDependencies = {} --{["si_acog"] = {"bg_rail"}}
 SWEP.AttachmentExclusions = {} --{ ["si_iron"] = {"bg_heatshield"} }
+SWEP.AttachmentTableOverride = {}
 local att_enabled_cv = GetConVar("sv_tfa_attachments_enabled")
 
 function SWEP:RemoveUnusedAttachments()
@@ -121,9 +122,15 @@ function SWEP:BuildAttachmentCache()
 	for attName, sel in pairs(self.AttachmentCache) do
 		if not sel then continue end
 		if not TFA.Attachments.Atts[attName] then continue end
+
 		local srctbl = TFA.Attachments.Atts[attName].WeaponTable
-		if not srctbl then continue end
-		CloneTableRecursive(srctbl, self.AttachmentTableCache)
+		if type(srctbl) == "table" then
+			CloneTableRecursive(srctbl, self.AttachmentTableCache)
+		end
+
+		if type(self.AttachmentTableOverride[attName]) == "table" then
+			CloneTableRecursive(self.AttachmentTableOverride[attName], self.AttachmentTableCache)
+		end
 	end
 end
 

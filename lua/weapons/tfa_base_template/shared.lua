@@ -400,6 +400,17 @@ SWEP.Attachments = {
 }
 SWEP.AttachmentDependencies = {} --{["si_acog"] = {"bg_rail", ["type"] = "OR"}}--type could also be AND to require multiple
 SWEP.AttachmentExclusions = {} --{ ["si_iron"] = { [1] = "bg_heatshield"} }
+SWEP.AttachmentTableOverride = {} --[[{ -- overrides WeaponTable for attachments
+	["ins2_ub_laser"] = { -- attachment id, root of WeaponTable override
+		["VElements"] = {
+			["laser_rail"] = {
+				["active"] = true
+			},
+		},
+	}
+}]]
+
+
 --[[MISC INFO FOR MODELERS]]--
 --[[
 
