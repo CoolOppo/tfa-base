@@ -490,7 +490,21 @@ function SWEP:PathStatsTable(statID)
 	hook.Run("TFA_PathStatsTable",self)
 end
 
+function SWEP:NPCWeaponThinkHook()
+	if not self:GetOwner():IsNPC() then
+		hook.Remove("TFA_NPCWeaponThink", self)
+
+		return
+	end
+
+	self:Think()
+end
+
 function SWEP:Equip( ... )
+	if self:GetOwner():IsNPC() then
+		hook.Add("TFA_NPCWeaponThink", self, self.NPCWeaponThinkHook)
+	end
+
 	self.OwnerViewModel = nil
 	self:EquipTTT(  ... )
 end
@@ -682,17 +696,23 @@ function SWEP:Think()
 		if SERVER then
 			if self.ThinkNPC then self:ThinkNPC() end
 
-			if self.Owner:GetClass() == "npc_combine_s" then
-				if self.Owner:GetActivity() == 16 then
+			if self:GetOwner():GetClass() == "npc_combine_s" then
+				if self:GetOwner():GetActivity() == 16 then
 					self:PrimaryAttack()
 				end
 			else
-				if self.Owner:GetActivity() == 11 then
+				if self:GetOwner():GetActivity() == 11 then
 					self:PrimaryAttack()
 				end
 			end
 		end
 
+		return
+	end
+end
+
+function SWEP:PlayerThink(plyv)
+	if self:GetOwner():IsNPC() then
 		return
 	end
 
@@ -702,18 +722,33 @@ function SWEP:Think()
 
 	self:Think2()
 
-	self:CalculateRatios(CLIENT)
+	if SERVER then
+		self:CalculateRatios()
+	end
+end
 
-	if CLIENT then
-		self:SmokePCFLighting()
+function SWEP:PlayerThinkCL(plyv)
+	if self:GetOwner():IsNPC() then
+		return
+	end
 
-		if self:GetStat("BlowbackEnabled") then
-			if not self.Blowback_PistolMode or self:Clip1() == -1 or self:Clip1() > 0.1 or self.Blowback_PistolMode_Disabled[ self:GetLastActivity() ] then
-				self.BlowbackCurrent = l_mathApproach(self.BlowbackCurrent, 0, self.BlowbackCurrent * ft * 15)
-			end
+	ft = TFA.FrameTime()
 
-			self.BlowbackCurrentRoot = l_mathApproach(self.BlowbackCurrentRoot, 0, self.BlowbackCurrentRoot * ft * 15)
+	if not self:NullifyOIV() then return end
+
+	self:SmokePCFLighting()
+	self:CalculateRatios(true)
+
+	if sp then
+		self:Think2()
+	end
+
+	if self:GetStat("BlowbackEnabled") then
+		if not self.Blowback_PistolMode or self:Clip1() == -1 or self:Clip1() > 0.1 or self.Blowback_PistolMode_Disabled[ self:GetLastActivity() ] then
+			self.BlowbackCurrent = l_mathApproach(self.BlowbackCurrent, 0, self.BlowbackCurrent * ft * 15)
 		end
+
+		self.BlowbackCurrentRoot = l_mathApproach(self.BlowbackCurrentRoot, 0, self.BlowbackCurrentRoot * ft * 15)
 	end
 end
 

@@ -35,6 +35,30 @@ hook.Add("PlayerFootstep", "TFAWalkcycle", function(plyv)
 end)
 
 --[[
+Hook: PlayerPostThink
+Function: Weapon Logic
+Used For: Main weapon "think" logic
+]]
+--
+hook.Add("PlayerPostThink", "PlayerTickTFA", function(plyv)
+	local wepv = plyv:GetActiveWeapon()
+
+	if IsValid(wepv) and wepv.PlayerThink and wepv.IsTFAWeapon then
+		wepv:PlayerThink(plyv)
+	end
+end)
+
+--[[
+Hook: Think
+Function: Weapon Logic for NPC
+User For: Calling SWEP:Think for NPCs manually
+]]
+--
+hook.Add("Think", "NPCTickTFA", function()
+	hook.Run("TFA_NPCWeaponThink")
+end)
+
+--[[
 Hook: Tick
 Function: Inspection mouse support
 Used For: Enables and disables screen clicker
@@ -87,6 +111,12 @@ Used For: Per-frame weapon "think" logic
 hook.Add("PreRender", "prerender_tfabase", function()
 	local plyv = LocalPlayer()
 	if not IsValid(plyv) then return end
+
+	local wepv = plyv:GetActiveWeapon()
+
+	if IsValid(wepv) and wepv.IsTFAWeapon and wepv.PlayerThinkCL then
+		wepv:PlayerThinkCL(plyv)
+	end
 
 	if sp and CLIENT then
 		net.Start("tfaSDLP")
