@@ -56,11 +56,21 @@ hook.Add("PopulateMenuBar", "NPCOptions_MenuBar_TFA", function(menubarV)
 	end
 end)
 
---I'm not trying to "Trick you" garry see: -- Check if this is a valid entity from the list, or the user is trying to fool us.
-hook.Add("PlayerSpawnedNPC", "TFAForceWeaponNPC", function(ply, ent)
-	local cv = GetConVar("gmod_npcweapon")
+if SERVER then
+	local npcWepList = list.GetForEdit("NPCUsableWeapons")
 
-	if ent.Give and cv and cv:GetString():sub(1, 3) == "tfa" then
-		ent:Give(cv:GetString())
-	end
-end)
+	hook.Add("PlayerSpawnNPC", "TFACheckNPCWeapon", function(plyv, npcclassv, wepclassv)
+		if type(wepclassv) ~= "string" or wepclassv == "" then return end
+
+		if not npcWepList[wepclassv] then -- do not copy the table
+			local wep = weapons.GetStored(wepclassv)
+
+			if wep and (wep.Spawnable and not wep.AdminOnly) and weapons.IsBasedOn(wep.ClassName, "tfa_gun_base") then
+				npcWepList[wepclassv] = {
+					["class"] = wep.ClassName,
+					["title"] = wep.PrintName or wep.ClassName
+				}
+			end
+		end
+	end)
+end
