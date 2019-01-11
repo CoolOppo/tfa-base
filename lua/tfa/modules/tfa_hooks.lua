@@ -54,9 +54,11 @@ Function: Weapon Logic for NPC
 User For: Calling SWEP:Think for NPCs manually
 ]]
 --
-hook.Add("Think", "NPCTickTFA", function()
-	hook.Run("TFA_NPCWeaponThink")
-end)
+if SERVER then
+	hook.Add("Think", "NPCTickTFA", function()
+		hook.Run("TFA_NPCWeaponThink")
+	end)
+end
 
 --[[
 Hook: Tick
