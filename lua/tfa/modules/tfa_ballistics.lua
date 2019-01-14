@@ -173,12 +173,20 @@ function TFA.Ballistics:AutoDetectVelocity(damage)
 end
 
 function TFA.Ballistics:ShouldUse(wep)
-	if wep.UseBallistics == nil then
-		if wep:IsTFA() and wep:GetStat("TracerPCF") then return false end
+	if not IsValid(wep) or not wep:IsTFA() then
+		return false
+	end
+
+	local shouldUse = wep:GetStat("UseBallistics")
+
+	if shouldUse == nil then
+		if wep:GetStat("TracerPCF") then
+			return false
+		end
 
 		return self.Enabled
 	else
-		return wep.UseBallistics
+		return shouldUse
 	end
 end
 
