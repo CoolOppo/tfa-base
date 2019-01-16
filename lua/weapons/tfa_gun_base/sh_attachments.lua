@@ -689,3 +689,19 @@ function SWEP:ProcessBodygroups()
 		end
 	end
 end
+
+function SWEP:CallAttFunc(funcName, ...)
+	for attName, sel in pairs(self.AttachmentCache or {}) do
+		if not sel then continue end
+
+		local att = TFA.Attachments.Atts[attName]
+		if not att then continue end
+
+		local attFunc = att[funcName]
+		if attFunc and type(attFunc) == "function" then
+			return attFunc(att, self, ...)
+		end
+	end
+
+	return nil
+end

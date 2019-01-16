@@ -315,6 +315,8 @@ function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet,
 			self.MainBullet.Callback2(a, b, c)
 		end
 
+		self:CallAttFunc("CustomBulletCallback", a, b, c)
+
 		if SERVER and IsValid(a) and a:IsPlayer() and IsValid(b.Entity) and (b.Entity:IsPlayer() or b.Entity:IsNPC() or type(b.Entity) == "NextBot") then
 			self:SendHitMarker(a, b, c)
 		end

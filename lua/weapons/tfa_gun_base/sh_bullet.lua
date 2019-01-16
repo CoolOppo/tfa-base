@@ -192,6 +192,8 @@ function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet,
 					self.MainBullet.Callback2(a, b, c)
 				end
 
+				self:CallAttFunc("CustomBulletCallback", a, b, c)
+
 				self.MainBullet:Penetrate(a, b, c, self)
 				self:PCFTracer(self.MainBullet, b.HitPos or vector_origin)
 			end
