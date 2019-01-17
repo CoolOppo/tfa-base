@@ -699,7 +699,11 @@ function SWEP:CallAttFunc(funcName, ...)
 
 		local attFunc = att[funcName]
 		if attFunc and type(attFunc) == "function" then
-			return attFunc(att, self, ...)
+			local _ret1, _ret2, _ret3, _ret4, _ret5, _ret6, _ret7, _ret8, _ret9, _ret10 = attFunc(att, self, ...)
+
+			if _ret1 ~= nil then
+				return _ret1, _ret2, _ret3, _ret4, _ret5, _ret6, _ret7, _ret8, _ret9, _ret10
+			end
 		end
 	end
 
