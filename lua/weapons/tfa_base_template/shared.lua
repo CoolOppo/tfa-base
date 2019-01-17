@@ -353,6 +353,16 @@ SWEP.WalkAnimation = {
 		["transition"] = true
 	} --Outward transition
 }
+
+--[[
+SWEP.PumpAction = { -- Pump/bolt animations
+	["type"] = TFA.Enum.ANIMATION_ACT, -- Sequence or act
+	["value"] = ACT_VM_PULLBACK_HIGH, -- Number for act, String/Number for sequence
+	["value_empty"] = ACT_VM_PULLBACK, -- Last shot pump
+	["value_is"] = ACT_VM_PULLBACK_LOW, -- ADS pump
+}
+]]--
+
 --[[EFFECTS]]--
 --Attachments
 SWEP.MuzzleAttachment           = "1"       -- Should be "1" for CSS models or "muzzle" for hl2 models

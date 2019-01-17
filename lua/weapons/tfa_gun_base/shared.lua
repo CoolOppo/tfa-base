@@ -556,7 +556,7 @@ function SWEP:Deploy()
 	self:SetStatusEnd(ct + len )
 	self:SetNextPrimaryFire( ct + len )
 	self:SetIronSightsRaw(false)
-	if not self.PumpAction then
+	if not self:GetStat("PumpAction") then
 		self:SetShotgunCancel( false )
 	end
 	self:SetBurstCount(0)
@@ -888,9 +888,9 @@ function SWEP:Think2()
 			end
 		elseif stat == TFA.GetStatus("reloading_shotgun_end") and self.Shotgun then
 			self:SetShotgunCancel( false )
-		elseif self.PumpAction and stat == TFA.GetStatus("pump") then
+		elseif self:GetStat("PumpAction") and stat == TFA.GetStatus("pump") then
 			self:SetShotgunCancel( false )
-		elseif stat == TFA.GetStatus("shooting") and self.PumpAction then
+		elseif stat == TFA.GetStatus("shooting") and self:GetStat("PumpAction") then
 			if self:Clip1() == 0 and self:GetStat("PumpAction").value_empty then
 				--finalstat = TFA.GetStatus("pump_ready")
 				self:SetShotgunCancel( true )
@@ -932,7 +932,7 @@ function SWEP:Think2()
 	end
 
 	if stat == TFA.Enum.STATUS_IDLE and self:GetShotgunCancel() then
-		if self.PumpAction then
+		if self:GetStat("PumpAction") then
 			if CT > self:GetNextPrimaryFire() and not self:GetOwner():KeyDown(IN_ATTACK) then
 				self:DoPump()
 			end
@@ -1419,7 +1419,7 @@ function SWEP:PrimaryAttack()
 		self:SetBurstCount(math.max(1, self:GetBurstCount() + 1))
 	end
 
-	if self.PumpAction and self:GetShotgunCancel() then return end
+	if self:GetStat("PumpAction") and self:GetShotgunCancel() then return end
 	self:SetStatus(TFA.Enum.STATUS_SHOOTING)
 	self:SetStatusEnd(self:GetNextPrimaryFire())
 	self:ToggleAkimbo()
@@ -1535,7 +1535,7 @@ function SWEP:Reload(released)
 	ct = l_CT()
 	stat = self:GetStatus()
 
-	if self.PumpAction and self:GetShotgunCancel() then
+	if self:GetStat("PumpAction") and self:GetShotgunCancel() then
 		if stat == TFA.Enum.STATUS_IDLE then
 			self:DoPump()
 		end
@@ -1612,7 +1612,7 @@ function SWEP:Reload2(released)
 	ct = l_CT()
 	stat = self:GetStatus()
 
-	if self.PumpAction and self:GetShotgunCancel() then
+	if self:GetStat("PumpAction") and self:GetShotgunCancel() then
 		if stat == TFA.Enum.STATUS_IDLE then
 			self:DoPump()
 		end
