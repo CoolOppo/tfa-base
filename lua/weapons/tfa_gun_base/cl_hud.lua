@@ -120,7 +120,7 @@ end
 Function Name:  DoInspectionDerma
 Syntax: self:DoInspectionDerma( ).
 Returns:  Nothing.
-Notes:	Used to manage our Derma.
+Notes:  Used to manage our Derma.
 Purpose:  Used to manage our Derma.
 ]]
 --
@@ -755,7 +755,7 @@ local cgapscale_cvar = GetConVar("cl_tfa_hud_crosshair_gap_scale")
 Function Name:  DrawHUD
 Syntax: self:DrawHUD( ).
 Returns:  Nothing.
-Notes:	Used to draw the HUD.  Can you read?
+Notes:  Used to draw the HUD.  Can you read?
 Purpose:  HUD
 ]]
 --
@@ -968,8 +968,13 @@ end
 function SWEP:DoDrawCrosshair(x, y)
 	if not self.DrawCrosshairDefault then return true end
 	if self:GetHolding() then return true end
-	if not crosscustomenable_cvar:GetBool() then return math.min(1 - self.IronSightsProgress, 1 - self.SprintProgress, 1 - self.InspectingProgress) <= 0.5 end
+
 	local stat = self:GetStatus()
+
+	if not crosscustomenable_cvar:GetBool() then
+		return TFA.Enum.ReloadStatus[stat] or math.min(1 - self.IronSightsProgress, 1 - self.SprintProgress, 1 - self.InspectingProgress) <= 0.5
+	end
+
 	self.clrelp = self.clrelp or 0
 	self.clrelp = math.Approach(self.clrelp, TFA.Enum.ReloadStatus[stat] and 0 or 1, ((TFA.Enum.ReloadStatus[stat] and 0 or 1) - self.clrelp) * FrameTime() * 15)
 	local crossa = crossa_cvar:GetFloat() * math.pow(math.min(1 - ((self.IronSightsProgress and not self.DrawCrosshairIS) and self.IronSightsProgress or 0), 1 - self.SprintProgress, 1 - self.InspectingProgress, self.clrelp), 2)
@@ -978,6 +983,7 @@ function SWEP:DoDrawCrosshair(x, y)
 	if not ply:IsValid() or self:GetOwner() ~= ply then return false end
 
 	local v = hook.Run("TFA_DrawCrosshair", self, x, y)
+
 	if v ~= nil then
 		return v
 	end
