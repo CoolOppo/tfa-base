@@ -921,7 +921,7 @@ function SWEP:ChooseShootAnim(ifp)
 			self:BlowbackFull(ifp)
 		end
 
-		if ifp or game.SinglePlayer() then
+		if self.Blowback_Shell_Enabled and (ifp or game.SinglePlayer()) then
 			self:EventShell()
 		end
 
