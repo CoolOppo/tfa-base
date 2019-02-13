@@ -386,15 +386,17 @@ function SWEP:TakeSecondaryAmmo(num, pool)
 end
 
 function SWEP:GetFireDelay()
+	local result = self:GetStat("Primary.Delay") or 0.1
+
 	if self:GetMaxBurst() > 1 and self:GetStat("Primary.RPM_Burst") and self:GetStat("Primary.RPM_Burst") > 0 then
-		return 60 / self:GetStat("Primary.RPM_Burst")
+		result = 60 / self:GetStat("Primary.RPM_Burst")
 	elseif self:GetStat("Primary.RPM_Semi") and not self.Primary.Automatic and self:GetStat("Primary.RPM_Semi") and self:GetStat("Primary.RPM_Semi") > 0 then
-		return 60 / self:GetStat("Primary.RPM_Semi")
+		result = 60 / self:GetStat("Primary.RPM_Semi")
 	elseif self:GetStat("Primary.RPM") and self:GetStat("Primary.RPM") > 0 then
-		return 60 / self:GetStat("Primary.RPM")
-	else
-		return self:GetStat("Primary.Delay") or 0.1
+		result = 60 / self:GetStat("Primary.RPM")
 	end
+
+	return result * TFA.TickrateMultiplier
 end
 
 function SWEP:GetBurstDelay(bur)
