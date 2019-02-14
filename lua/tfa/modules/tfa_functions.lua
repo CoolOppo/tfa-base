@@ -362,5 +362,3 @@ hook.Add("Think","TFAFrameTimeThink",function()
 
 	LastSys = SysTime()
 end)
-
-TFA.TickrateMultiplier = math.Round(engine.TickInterval() * 1000) / 15
