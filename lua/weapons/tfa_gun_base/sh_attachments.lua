@@ -548,6 +548,12 @@ function SWEP:InitAttachments()
 			local vsel = v.sel
 			v.sel = nil
 
+			if type(vsel) == "string" then
+				vsel = table.KeyFromValue(v.atts, vsel) or tonumber(vsel)
+
+				if not vsel then continue end
+			end
+
 			timer.Simple(0, function()
 				if IsValid(self) and self.SetTFAAttachment then
 					self:SetTFAAttachment(k, vsel, false)
