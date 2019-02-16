@@ -27,6 +27,7 @@ end
 
 function SWEP:FixWalkAnimBob()
 	if self.Walk_Mode == TFA.Enum.LOCOMOTION_ANI then
+		self.WalkBobMult_Iron = self.WalkBobMult
 		self.WalkBobMult = 0
 	end
 end

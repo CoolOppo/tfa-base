@@ -299,7 +299,14 @@ function SWEP:CalculateViewModelOffset(delta)
 	vm_offset_ang.y = math.ApproachAngle(vm_offset_ang.y, target_ang.y, math.AngleDifference(target_ang.y, vm_offset_ang.y) * delta * adstransitionspeed)
 	vm_offset_ang.r = math.ApproachAngle(vm_offset_ang.r, target_ang.z, math.AngleDifference(target_ang.z, vm_offset_ang.r) * delta * adstransitionspeed)
 
-	intensityWalk = math.min(self:GetOwner():GetVelocity():Length2D() / self:GetOwner():GetWalkSpeed(), 1) * self.WalkBobMult
+	intensityWalk = math.min(self:GetOwner():GetVelocity():Length2D() / self:GetOwner():GetWalkSpeed(), 1)
+
+	if self.WalkBobMult_Iron and self.IronSightsProgress > 0.01 then
+		intensityWalk = intensityWalk * self.WalkBobMult_Iron * self.IronSightsProgress
+	else
+		intensityWalk = intensityWalk * self.WalkBobMult
+	end
+
 	intensityBreath = l_Lerp(self.IronSightsProgress, self:GetStat("BreathScale", 0.2), self:GetStat("IronBobMultWalk", 0.5) * intensityWalk)
 	intensityWalk = intensityWalk * (1 - self.IronSightsProgress)
 	intensityRun = l_Lerp(self.SprintProgress, 0, self.SprintBobMult)
