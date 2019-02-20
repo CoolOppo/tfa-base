@@ -420,7 +420,7 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon)
 		if dmginfo:IsDamageType(DMG_BLAST) and weapon.Primary.DamageTypeHandled and traceres.Hit and not traceres.HitSky then
 			local tmpdmg = dmginfo:GetDamage()
 			dmginfo:SetDamageForce(dmginfo:GetDamageForce() / 2)
-			util.BlastDamageInfo(dmginfo, traceres.HitPos, tmpdmg / 2)
+			util.BlastDamageInfo(dmginfo, traceres.HitPos, weapon:GetStat("Primary.BlastRadius") or (tmpdmg / 2)  )
 			--util.BlastDamage(weapon, weapon:GetOwner(), traceres.HitPos, tmpdmg / 2, tmpdmg)
 			local fx = EffectData()
 			fx:SetOrigin(traceres.HitPos)
