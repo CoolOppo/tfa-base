@@ -817,21 +817,33 @@ function SWEP:UpdateBonePositions(vm)
 
 		for _,k in pairs(keys) do
 			if k == "wepEnt" then continue end
+
 			local v = vmbm[k] or self:GetStat("ViewModelBoneMods." .. k)
 			if not v then continue end
+
+			local vscale, vangle, vpos = v.scale, v.angle, v.pos
+
 			local bone = vm:LookupBone(k)
 			if not bone then continue end
 
-			if vm:GetManipulateBoneScale(bone) ~= v.scale then
-				vm:ManipulateBoneScale(bone, v.scale)
+			local b = self:GetStat("BlowbackBoneMods." .. k)
+
+			if b then
+				vscale = Lerp(self.BlowbackCurrent, vscale, vscale * b.scale)
+				vangle = vangle + b.angle * self.BlowbackCurrent
+				vpos = vpos + b.pos * self.BlowbackCurrent
 			end
 
-			if vm:GetManipulateBoneAngles(bone) ~= v.angle then
-				vm:ManipulateBoneAngles(bone, v.angle)
+			if vm:GetManipulateBoneScale(bone) ~= vscale then
+				vm:ManipulateBoneScale(bone, vscale)
 			end
 
-			if vm:GetManipulateBonePosition(bone) ~= v.pos then
-				vm:ManipulateBonePosition(bone, v.pos)
+			if vm:GetManipulateBoneAngles(bone) ~= vangle then
+				vm:ManipulateBoneAngles(bone, vangle)
+			end
+
+			if vm:GetManipulateBonePosition(bone) ~= vpos then
+				vm:ManipulateBonePosition(bone, vpos)
 			end
 		end
 	elseif self.BlowbackBoneMods then
