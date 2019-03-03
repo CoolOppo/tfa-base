@@ -113,18 +113,26 @@ end
 
 --Ammo
 
-local AmmoTypes = {}
+local AmmoTypesByName = {}
+local AmmoTypesAdded = {}
 
-function TFA.AddAmmo( id, name )
-	if AmmoTypes[name] then return AmmoTypes[name] end
-	AmmoTypes[name] = id
+function TFA.AddAmmo(id, name)
+	if not AmmoTypesAdded[id] then
+		AmmoTypesAdded[id] = true
 
-	game.AddAmmoType( {
-		name  = id
-	})
+		game.AddAmmoType({
+			name = id
+		})
+	end
 
-	if language then
-		language.Add( id .. "_ammo", name )
+	if name and language then
+		language.Add(id .. "_ammo", name)
+	end
+
+	if name then
+		AmmoTypesByName[name] = AmmoTypesByName[name] or id
+
+		return AmmoTypesByName[name]
 	end
 
 	return id
