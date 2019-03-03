@@ -20,7 +20,6 @@
 -- SOFTWARE.
 
 ENT.Type = "anim"
-ENT.Base = "base_gmodentity"
 ENT.PrintName = "TFBow Arrow"
 ENT.Author = "TheForgottenArchitect"
 ENT.Contact = "Don't"
