@@ -68,6 +68,10 @@ function EFFECT:Init(data)
 			self.Attachment = 2
 		end
 
+		if self.WeaponEntOG:GetStat("Akimbo") then
+			self.Attachment = 3 + (game.SinglePlayer() and self.WeaponEntOG:GetNW2Int("AnimCycle", 1) or self.WeaponEntOG.AnimCycle)
+		end
+
 		if self.WeaponEntOG.ShellAttachmentRaw then
 			self.Attachment = self.WeaponEntOG.ShellAttachmentRaw
 		end
