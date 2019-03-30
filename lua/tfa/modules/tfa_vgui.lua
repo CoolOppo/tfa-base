@@ -1,4 +1,3 @@
-
 -- Copyright (c) 2018 TFA Base Devs
 
 -- Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -100,7 +99,7 @@ if CLIENT then
 		})
 
 		panel:AddControl("CheckBox", {
-			Label = "Enable Modern-Stlye Sprinting",
+			Label = "Enable Modern-Style Sprinting",
 			Command = "sv_tfa_sprint_enabled"
 		})
 
