@@ -413,131 +413,132 @@ function SWEP:DrawWorldModel()
 
 	self:UpdateWMBonePositions(self)
 
-	if IsValid(self) and self:IsTFA() and (self:GetOwner() ~= LocalPlayer() or not self:IsFirstPerson()) then
-		self:UpdateProjectedTextures(false)
-	end
+	if self.WElements then
+		self:CreateModels(self.WElements)
 
-	if not self.WElements then return end
-	self:CreateModels(self.WElements)
+		if (not self.wRenderOrder) then
+			self.wRenderOrder = {}
 
-	if (not self.wRenderOrder) then
-		self.wRenderOrder = {}
-
-		for k, v in pairs(self.WElements) do
-			if (v.type == "Model") then
-				table.insert(self.wRenderOrder, 1, k)
-			elseif (v.type == "Sprite" or v.type == "Quad") then
-				table.insert(self.wRenderOrder, k)
+			for k, v in pairs(self.WElements) do
+				if (v.type == "Model") then
+					table.insert(self.wRenderOrder, 1, k)
+				elseif (v.type == "Sprite" or v.type == "Quad") then
+					table.insert(self.wRenderOrder, k)
+				end
 			end
 		end
-	end
 
 
-	for _, name in pairs(self.wRenderOrder or {}) do
-		local v = self.WElements[name]
+		for _, name in pairs(self.wRenderOrder or {}) do
+			local v = self.WElements[name]
 
-		if (not v) then
-			self.wRenderOrder = nil
-			break
-		end
+			if (not v) then
+				self.wRenderOrder = nil
+				break
+			end
 
-		if (v.hide) then continue end
-		local aktiv = self:GetStat("WElements." .. name .. ".active")
-		if aktiv ~= nil and aktiv == false then continue end
-		local pos, ang
+			if (v.hide) then continue end
+			local aktiv = self:GetStat("WElements." .. name .. ".active")
+			if aktiv ~= nil and aktiv == false then continue end
+			local pos, ang
 
-		local bone_ent = (IsValid(self:GetOwner()) and self:GetOwner():LookupBone(v.bone or "ValveBiped.Bip01_R_Hand")) and self:GetOwner() or self
-		if (v.bone) then
-			pos, ang = self:GetBoneOrientation(self.WElements, v, bone_ent)
-		else
-			pos, ang = self:GetBoneOrientation(self.WElements, v, bone_ent, "ValveBiped.Bip01_R_Hand")
-		end
+			local bone_ent = (IsValid(self:GetOwner()) and self:GetOwner():LookupBone(v.bone or "ValveBiped.Bip01_R_Hand")) and self:GetOwner() or self
+			if (v.bone) then
+				pos, ang = self:GetBoneOrientation(self.WElements, v, bone_ent)
+			else
+				pos, ang = self:GetBoneOrientation(self.WElements, v, bone_ent, "ValveBiped.Bip01_R_Hand")
+			end
 
-		if not pos and not v.bonemerge then continue end
-		local model = v.curmodel
-		local sprite = v.spritemat
+			if not pos and not v.bonemerge then continue end
+			local model = v.curmodel
+			local sprite = v.spritemat
 
-		if (v.type == "Model" and IsValid(model)) then
-			if not v.bonemerge then
-				model:SetPos(pos + ang:Forward() * v.pos.x + ang:Right() * v.pos.y + ang:Up() * v.pos.z)
+			if (v.type == "Model" and IsValid(model)) then
+				if not v.bonemerge then
+					model:SetPos(pos + ang:Forward() * v.pos.x + ang:Right() * v.pos.y + ang:Up() * v.pos.z)
+					ang:RotateAroundAxis(ang:Up(), v.angle.y)
+					ang:RotateAroundAxis(ang:Right(), v.angle.p)
+					ang:RotateAroundAxis(ang:Forward(), v.angle.r)
+					model:SetAngles(ang)
+				end
+
+				-- //model:SetModelScale(v.size)
+				local matrix = Matrix()
+				matrix:Scale(v.size)
+				model:EnableMatrix("RenderMultiply", matrix)
+
+				local material = self:GetStat("WElements." .. name .. ".material")
+				if (not material or material == "") then
+					model:SetMaterial("")
+				elseif (model:GetMaterial() ~= material) then
+					model:SetMaterial(material)
+				end
+
+				local skin = self:GetStat("WElements." .. name .. ".skin")
+				if (skin and skin ~= model:GetSkin()) then
+					model:SetSkin(skin)
+				end
+
+				if (v.bodygroup) then
+					for l, n in pairs(v.bodygroup) do
+						if (model:GetBodygroup(l) ~= n) then
+							model:SetBodygroup(l, n)
+						end
+					end
+				end
+
+				if (v.surpresslightning) then
+					render.SuppressEngineLighting(true)
+				end
+
+				render.SetColorModulation(v.color.r / 255, v.color.g / 255, v.color.b / 255)
+				render.SetBlend(v.color.a / 255)
+
+				if v.bonemerge then
+					if v.rel and self.WElements[v.rel] and IsValid(self.WElements[v.rel].curmodel) and self.WElements[v.rel].bone ~= "oof" then
+						v.parModel = self.WElements[v.rel].curmodel
+					else
+						v.parModel = self
+					end
+					if model:GetParent() ~= v.parModel then
+						model:SetParent(v.parModel)
+					end
+
+					if not model:IsEffectActive(EF_BONEMERGE) then
+						model:AddEffects(EF_BONEMERGE)
+						model:SetLocalPos(vector_origin)
+						model:SetLocalAngles(angle_zero)
+					end
+				elseif model:IsEffectActive(EF_BONEMERGE) then
+					model:RemoveEffects(EF_BONEMERGE)
+					model:SetParent(nil)
+				end
+
+				model:DrawModel()
+				render.SetBlend(1)
+				render.SetColorModulation(1, 1, 1)
+
+				if (v.surpresslightning) then
+					render.SuppressEngineLighting(false)
+				end
+			elseif (v.type == "Sprite" and sprite) then
+				local drawpos = pos + ang:Forward() * v.pos.x + ang:Right() * v.pos.y + ang:Up() * v.pos.z
+				render.SetMaterial(sprite)
+				render.DrawSprite(drawpos, v.size.x, v.size.y, v.color)
+			elseif (v.type == "Quad" and v.draw_func) then
+				local drawpos = pos + ang:Forward() * v.pos.x + ang:Right() * v.pos.y + ang:Up() * v.pos.z
 				ang:RotateAroundAxis(ang:Up(), v.angle.y)
 				ang:RotateAroundAxis(ang:Right(), v.angle.p)
 				ang:RotateAroundAxis(ang:Forward(), v.angle.r)
-				model:SetAngles(ang)
+				cam.Start3D2D(drawpos, ang, v.size)
+				v.draw_func(self)
+				cam.End3D2D()
 			end
-
-			-- //model:SetModelScale(v.size)
-			local matrix = Matrix()
-			matrix:Scale(v.size)
-			model:EnableMatrix("RenderMultiply", matrix)
-
-			local material = self:GetStat("WElements." .. name .. ".material")
-			if (not material or material == "") then
-				model:SetMaterial("")
-			elseif (model:GetMaterial() ~= material) then
-				model:SetMaterial(material)
-			end
-
-			local skin = self:GetStat("WElements." .. name .. ".skin")
-			if (skin and skin ~= model:GetSkin()) then
-				model:SetSkin(skin)
-			end
-
-			if (v.bodygroup) then
-				for l, n in pairs(v.bodygroup) do
-					if (model:GetBodygroup(l) ~= n) then
-						model:SetBodygroup(l, n)
-					end
-				end
-			end
-
-			if (v.surpresslightning) then
-				render.SuppressEngineLighting(true)
-			end
-
-			render.SetColorModulation(v.color.r / 255, v.color.g / 255, v.color.b / 255)
-			render.SetBlend(v.color.a / 255)
-
-			if v.bonemerge then
-				if v.rel and self.WElements[v.rel] and IsValid(self.WElements[v.rel].curmodel) and self.WElements[v.rel].bone ~= "oof" then
-					v.parModel = self.WElements[v.rel].curmodel
-				else
-					v.parModel = self
-				end
-				if model:GetParent() ~= v.parModel then
-					model:SetParent(v.parModel)
-				end
-
-				if not model:IsEffectActive(EF_BONEMERGE) then
-					model:AddEffects(EF_BONEMERGE)
-					model:SetLocalPos(vector_origin)
-					model:SetLocalAngles(angle_zero)
-				end
-			elseif model:IsEffectActive(EF_BONEMERGE) then
-				model:RemoveEffects(EF_BONEMERGE)
-				model:SetParent(nil)
-			end
-
-			model:DrawModel()
-			render.SetBlend(1)
-			render.SetColorModulation(1, 1, 1)
-
-			if (v.surpresslightning) then
-				render.SuppressEngineLighting(false)
-			end
-		elseif (v.type == "Sprite" and sprite) then
-			local drawpos = pos + ang:Forward() * v.pos.x + ang:Right() * v.pos.y + ang:Up() * v.pos.z
-			render.SetMaterial(sprite)
-			render.DrawSprite(drawpos, v.size.x, v.size.y, v.color)
-		elseif (v.type == "Quad" and v.draw_func) then
-			local drawpos = pos + ang:Forward() * v.pos.x + ang:Right() * v.pos.y + ang:Up() * v.pos.z
-			ang:RotateAroundAxis(ang:Up(), v.angle.y)
-			ang:RotateAroundAxis(ang:Right(), v.angle.p)
-			ang:RotateAroundAxis(ang:Forward(), v.angle.r)
-			cam.Start3D2D(drawpos, ang, v.size)
-			v.draw_func(self)
-			cam.End3D2D()
 		end
+	end
+
+	if IsValid(self) and self:IsTFA() and (self:GetOwner() ~= LocalPlayer() or not self:IsFirstPerson()) then
+		self:UpdateProjectedTextures(false)
 	end
 end
 
