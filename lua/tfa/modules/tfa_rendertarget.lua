@@ -155,7 +155,7 @@ if CLIENT then
 			end
 		end
 
-		if not wep:GetStat("RTMaterialOverride") or not wep.RTCode then return end
+		if not wep:GetStat("RTDrawEnabled") and not wep:GetStat("RTMaterialOverride") and not wep.RTCode then return end
 		oldVmModel = vm:GetModel()
 		local w, h = ScrW(), ScrH()
 
@@ -179,24 +179,34 @@ if CLIENT then
 		end
 
 		TFA.LastRTUpdate = UnPredictedCurTime() + 0.01
+
 		render.PushRenderTarget(tgt)
-		render.Clear(0, 0, 0, 0, true, true)
 		render.Clear(0, 0, 0, 255, true, true)
+
 		TFA.DrawingRenderTarget = true
 		render.CullMode(MATERIAL_CULLMODE_CCW)
 		ProtectedCall(function()
-			wep:RTCode(TFA_RTMat, w, h)
+			if wep.RTCode then
+				wep:RTCode(TFA_RTMat, w, h)
+			end
+
+			if wep:GetStat("RTDrawEnabled") then
+				wep:CallAttFunc("RTCode", TFA_RTMat, w, h)
+			end
 		end)
 		TFA.DrawingRenderTarget = false
+
+		render.SetScissorRect(0, 0, 0, 0, false)
 		render.PopRenderTarget()
-		render.SetScissorRect(0, 0, ScrW(), ScrH(), false)
 
 		if old_bt ~= tgt then
 			TFA_RTMat:SetTexture("$basetexture", tgt)
 			old_bt = tgt
 		end
 
-		wep:GetOwner():GetViewModel():SetSubMaterial(wep:GetStat("RTMaterialOverride"), "!tfa_rtmaterial")
+		if wep:GetStat("RTMaterialOverride", -1) >= 0 then
+			wep:GetOwner():GetViewModel():SetSubMaterial(wep:GetStat("RTMaterialOverride"), "!tfa_rtmaterial")
+		end
 	end
 
 	hook.Add("PreRender", "TFASCREENS", function()
