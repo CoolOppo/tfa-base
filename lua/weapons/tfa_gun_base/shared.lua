@@ -1043,6 +1043,11 @@ function SWEP:IronSights()
 		issprinting = false
 	end
 
+	if issighting and owent:InVehicle() and not owent:GetAllowWeaponsInVehicle() then
+		issighting = false
+		self:SetIronSightsRaw(false)
+	end
+
 	self.is_cached = nil
 
 	if ( issighting or issprinting or stat ~= TFA.Enum.STATUS_IDLE ) and self.Inspecting then

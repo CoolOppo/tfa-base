@@ -159,10 +159,14 @@ end
 
 local function TFAContextBlock()
 	local plyv = LocalPlayer()
-	if not plyv:IsValid() then return end
-	if GetViewEntity() ~= plyv then return end
+
+	if not plyv:IsValid() or GetViewEntity() ~= plyv then return end
+
+	if plyv:InVehicle() and not plyv:GetAllowWeaponsInVehicle() then return end
+
 	local wepv = plyv:GetActiveWeapon()
 	if not IsValid(wepv) then return end
+
 	if GetInspectionKey() == TFA.BindToKey(input.LookupBinding("+menu_context", true) or "c", KEY_C) and wepv.ToggleInspect and cv_cm:GetBool() and not plyv:KeyDown(IN_USE) then return false end
 end
 
@@ -173,11 +177,14 @@ if CLIENT then
 
 	local function TFAKPThink()
 		local plyv = LocalPlayer()
-		if not plyv:IsValid() then return end
-		if GetViewEntity() ~= plyv then return end
+
+		if not plyv:IsValid() or GetViewEntity() ~= plyv then return end
+
+		if plyv:InVehicle() and not plyv:GetAllowWeaponsInVehicle() then return end
+
 		local wepv = plyv:GetActiveWeapon()
-		if not IsValid(wepv) then return end
-		if not wepv.ToggleInspect then return end
+		if not IsValid(wepv) or not wepv.ToggleInspect then return end
+
 		local key = GetInspectionKey()
 		local kd = input.IsKeyDown(key)
 
@@ -244,6 +251,8 @@ hook.Add("PlayerTick", "TFABase_KD", KD_AmmoCheck)
 
 local function SC_PBZ(plyv, ucmd)
 	if not IsFirstTimePredicted() then return end
+
+	if plyv:InVehicle() and not plyv:GetAllowWeaponsInVehicle() then return end
 
 	plyv:TFA_SetZoomKeyDown(ucmd:KeyDown(IN_ZOOM))
 
