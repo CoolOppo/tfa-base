@@ -24,13 +24,22 @@ if SERVER then AddCSLuaFile() end
 TFA = TFA or {}
 
 local do_load = true
-local version = 4.421
-local version_string = "4.4.2.1"
+local version = 4.5
+local version_string = "4.5.0.0"
 local changelog = [[
-	* New laser dots
-	* Better ejection effects
-	* AI melee support
-	* * Changelog can be toggled off with sv_tfa_changelog
+	+ Weapons can now have a working flashlight
+	* Changed laser dot to appear as projected texture
+	+ Added attachment callbacks
+	+ Safety position is now separated from sprint one
+	* Melee blocking works again
+	* Base explosives now properly damage helicopters and gunships
+	+ Added jamming mechanics
+	+ Added CS:GO-like low ammo sound effect
+	+ Added bodygroup names support
+	+ Attachments can now have their own attach/detach sound
+	+ Added walk animations support (similar to sprint animations)
+	* Bonemods are now working properly with blowback enabled
+	* Fixed laser drawing behing worldmodel
 ]]
 
 local function testFunc()
