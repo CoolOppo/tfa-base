@@ -1018,7 +1018,7 @@ function SWEP:DoDrawCrosshair(x, y)
 	end
 
 	local crossr, crossg, crossb, crosslen, crosshairwidth, drawdot, teamcol
-	local targent = util.QuickTrace(ply:GetShootPos(), ply:EyeAngles():Forward() * 999999999, self.selftbl).Entity
+	local targent = util.QuickTrace(ply:GetShootPos(), ply:EyeAngles():Forward() * 0x10000, self.selftbl).Entity
 	teamcol = GetTeamColor(targent)
 	crossr = crossr_cvar:GetFloat()
 	crossg = crossg_cvar:GetFloat()
