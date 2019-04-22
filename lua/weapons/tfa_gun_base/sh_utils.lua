@@ -563,13 +563,7 @@ function SWEP:GetMuzzlePos(ignorepos)
 	local obj = self:GetStat("MuzzleAttachmentMod") or self.MuzzleAttachmentRaw or vm:LookupAttachment(self.MuzzleAttachment)
 
 	if type(obj) == "string" then
-		local cast = tonumber(obj)
-
-		if cast then
-			obj = cast
-		else
-			obj = vm:LookupAttachment(cast) or 1
-		end
+		obj = tonumber(obj) or vm:LookupAttachment(obj)
 	end
 
 	local muzzlepos
