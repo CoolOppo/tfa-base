@@ -600,10 +600,10 @@ function SWEP:Strike(attk, precision)
 
 	--Handle flesh
 	for _, v in ipairs(totalResults) do
-		if v.Hit and IsValid(v.Entity) and TraceHitFlesh(v) and (not v.Entity.HasMeleeHit) then
+		if v.Hit and IsValid(v.Entity) and TraceHitFlesh(v) and (not v.Entity.TFA_HasMeleeHit) then
 			self:ApplyDamage(v, damage, attk)
 			self:SmackEffect(v, damage)
-			v.Entity.HasMeleeHit = true
+			v.Entity.TFA_HasMeleeHit = true
 			fleshHits = fleshHits + 1
 			if fleshHits >= (attk.maxhits or 3) then break end
 
@@ -623,8 +623,9 @@ function SWEP:Strike(attk, precision)
 
 	--Handle world
 	for _, v in ipairs(totalResults) do
-		if v.Hit and (not TraceHitFlesh(v)) then
-			self:ApplyDamage(v, damage)
+		if v.Hit and (not TraceHitFlesh(v)) and (not v.Entity.TFA_HasMeleeHit) then
+			self:ApplyDamage(v, damage, attk)
+			v.Entity.TFA_HasMeleeHit = true
 
 			if not hitWorld then
 				self:SmackEffect(v, damage)
@@ -652,7 +653,7 @@ function SWEP:Strike(attk, precision)
 		end
 
 		if IsValid(v.Entity) then
-			v.Entity.HasMeleeHit = false
+			v.Entity.TFA_HasMeleeHit = false
 		end
 	end
 
