@@ -1,4 +1,3 @@
-
 -- Copyright (c) 2018 TFA Base Devs
 
 -- Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -212,6 +211,7 @@ local lim_up_vec = Vector(1, 1, 0.05)
 
 function SWEP:ApplyForce(ent, force, posv)
 	if not IsValid(ent) or not ent.GetPhysicsObjectNum then return end
+	if hook.Run("TFAMeleeApplyForce", trace.Entity) ~= false then return end
 
 	if ent.GetRagdollEntity and IsValid(ent:GetRagdollEntity()) and ent ~= ent:GetRagdollEntity() then
 		ent = ent:GetRagdollEntity()
