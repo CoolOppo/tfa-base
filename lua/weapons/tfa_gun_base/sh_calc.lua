@@ -58,7 +58,7 @@ function SWEP:CalculateRatios(forced)
 	end
 
 	if not ( IsFirstTimePredicted() or forced ) then return end
-	self.CrouchingRatio = l_mathApproach(self.CrouchingRatio or 0, owent:Crouching() and 1 or 0, ft / self.ToCrouchTime)
+	self.CrouchingRatio = l_mathApproach(self.CrouchingRatio or 0, (owent:Crouching() and owent:OnGround()) and 1 or 0, ft / self.ToCrouchTime)
 	self.SpreadRatio = l_mathClamp(self.SpreadRatio - self:GetStat("Primary.SpreadRecovery") * ft, 1, self:GetStat("Primary.SpreadMultiplierMax"))
 	self.IronSightsProgress = l_mathApproach(self.IronSightsProgress, ist, (ist - self.IronSightsProgress) * ft * adstransitionspeed)
 	self.SprintProgress = l_mathApproach(self.SprintProgress, sprt, (sprt - self.SprintProgress) * ft * adstransitionspeed)
