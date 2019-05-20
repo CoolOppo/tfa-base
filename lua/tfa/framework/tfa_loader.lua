@@ -40,7 +40,7 @@ local changelog = [[
 	+ Added walk animations support (similar to sprint animations)
 	* Bonemods are now working properly with blowback enabled
 	* Fixed laser drawing behing worldmodel
-	+ Looped gunfire sound support added
+	+ Looped gunfire sound support added (Experimental)
 ]]
 
 local function testFunc()
