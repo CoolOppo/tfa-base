@@ -948,7 +948,7 @@ function SWEP:Think2()
 		self:ChooseIdleAnim()
 	end
 
-	if self:GetNextLoopSoundCheck() >= 0 and ct > self:GetNextLoopSoundCheck() and (not self.Primary.Automatic or self:GetOwner():IsPlayer() and not self:GetOwner():KeyDown(IN_ATTACK)) then
+	if self:GetNextLoopSoundCheck() >= 0 and ct > self:GetNextLoopSoundCheck() and ((self:GetStat("Primary.ClipSize") <= 0 and self:Ammo1() < self:GetStat("Primary.AmmoConsumption")) or (self:GetPrimaryClipSize(true) > 0 and self:Clip1() < self:GetStat("Primary.AmmoConsumption")) or not self.Primary.Automatic or self:GetOwner():IsPlayer() and not self:GetOwner():KeyDown(IN_ATTACK)) then
 		self:SetNextLoopSoundCheck(-1)
 
 		local tgtSound = self:GetSilenced() and self:GetStat("Primary.LoopSoundSilenced", self:GetStat("Primary.LoopSound")) or self:GetStat("Primary.LoopSound")
