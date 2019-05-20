@@ -948,7 +948,7 @@ function SWEP:Think2()
 		self:ChooseIdleAnim()
 	end
 
-	if self:GetNextLoopSoundCheck() >= 0 and ct > self:GetNextLoopSoundCheck() and ((self:GetStat("Primary.ClipSize") <= 0 and self:Ammo1() < self:GetStat("Primary.AmmoConsumption")) or (self:GetPrimaryClipSize(true) > 0 and self:Clip1() < self:GetStat("Primary.AmmoConsumption")) or not self.Primary.Automatic or self:GetOwner():IsPlayer() and not self:GetOwner():KeyDown(IN_ATTACK)) then
+	if self:GetNextLoopSoundCheck() >= 0 and ct >= self:GetNextLoopSoundCheck() and ((self:GetStat("Primary.ClipSize") <= 0 and self:Ammo1() < self:GetStat("Primary.AmmoConsumption")) or (self:GetPrimaryClipSize(true) > 0 and self:Clip1() < self:GetStat("Primary.AmmoConsumption")) or not self.Primary.Automatic or self:GetOwner():IsPlayer() and not self:GetOwner():KeyDown(IN_ATTACK)) then
 		self:SetNextLoopSoundCheck(-1)
 
 		local tgtSound = self:GetSilenced() and self:GetStat("Primary.LoopSoundSilenced", self:GetStat("Primary.LoopSound")) or self:GetStat("Primary.LoopSound")
@@ -1347,13 +1347,13 @@ local npc_ar2_damage_cv = GetConVar("sk_npc_dmg_ar2")
 local sv_tfa_nearlyempty = GetConVar("sv_tfa_nearlyempty")
 
 function SWEP:EmitGunfireLoop()
-	local tgtSound = self:GetSilenced() and self:GetStat("Primary.LoopSoundSilenced", self:GetStat("Primary.LoopSound")) or self:GetStat("Primary.LoopSound")
-
 	if self:GetNextLoopSoundCheck() < 0 then
-		self:EmitSound(tgtSound)
+		local tgtSound = self:GetSilenced() and self:GetStat("Primary.LoopSoundSilenced", self:GetStat("Primary.LoopSound")) or self:GetStat("Primary.LoopSound")
 
-		self:SetNextLoopSoundCheck(CurTime() + self:GetFireDelay())
+		self:EmitSound(tgtSound)
 	end
+
+	self:SetNextLoopSoundCheck(CurTime() + self:GetFireDelay())
 
 	if not sv_tfa_nearlyempty:GetBool() then return end
 
