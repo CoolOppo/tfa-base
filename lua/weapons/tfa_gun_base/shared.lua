@@ -356,6 +356,7 @@ function SWEP:SetupDataTables()
 	self:NetworkVar("Bool", 19, "Jammed")
 	self:NetworkVar("Float", 0, "StatusEnd")
 	self:NetworkVar("Float", 1, "NextIdleAnim")
+	self:NetworkVar("Float", 18, "NextLoopSoundCheck")
 	self:NetworkVar("Float", 19, "JamFactor")
 	self:NetworkVar("Int", 0, "Status")
 	self:NetworkVar("Int", 1, "FireMode")
@@ -428,6 +429,8 @@ function SWEP:Initialize()
 	if self:GetStat("Skin") and isnumber(self:GetStat("Skin")) then
 		self:SetSkin(self:GetStat("Skin"))
 	end
+
+	self:SetNextLoopSoundCheck(-1)
 
 	if SERVER and self.Owner:IsNPC() then
 		local seq = self.Owner:LookupSequence("shootp1")
@@ -944,6 +947,19 @@ function SWEP:Think2()
 	if TFA.Enum.ReadyStatus[stat] and ct > self:GetNextIdleAnim() then
 		self:ChooseIdleAnim()
 	end
+
+	if self:GetNextLoopSoundCheck() >= 0 and ct > self:GetNextLoopSoundCheck() and (not self.Primary.Automatic or self:GetOwner():IsPlayer() and not self:GetOwner():KeyDown(IN_ATTACK)) then
+		self:SetNextLoopSoundCheck(-1)
+
+		local tgtSound = self:GetSilenced() and self:GetStat("Primary.LoopSoundSilenced", self:GetStat("Primary.LoopSound")) or self:GetStat("Primary.LoopSound")
+		self:StopSound(tgtSound)
+
+		tgtSound = self:GetSilenced() and self:GetStat("Primary.LoopSoundTailSilenced", self:GetStat("Primary.LoopSoundTail")) or self:GetStat("Primary.LoopSoundTail")
+
+		if tgtSound then
+			self:EmitSound(tgtSound)
+		end
+	end
 end
 
 local issighting, issprinting, iswalking = false, false, false
@@ -1330,6 +1346,34 @@ local npc_ar2_damage_cv = GetConVar("sk_npc_dmg_ar2")
 
 local sv_tfa_nearlyempty = GetConVar("sv_tfa_nearlyempty")
 
+function SWEP:EmitGunfireLoop()
+	local tgtSound = self:GetSilenced() and self:GetStat("Primary.LoopSoundSilenced", self:GetStat("Primary.LoopSound")) or self:GetStat("Primary.LoopSound")
+
+	if self:GetNextLoopSoundCheck() < 0 then
+		self:EmitSound(tgtSound)
+
+		self:SetNextLoopSoundCheck(CurTime() + self:GetFireDelay())
+	end
+
+	if not sv_tfa_nearlyempty:GetBool() then return end
+
+	if not self.FireSoundAffectedByClipSize or self.Shotgun then return end
+
+	local clip1, maxclip1 = self:Clip1(), self:GetMaxClip1()
+
+	if maxclip1 <= 4 or maxclip1 >= 70 or clip1 <= 0 then return end
+
+	local mult = clip1 / maxclip1
+	if mult >= 0.3 or mult <= 0 then return end
+
+	local pitch = 0.8 + math.min(0.02 / mult, 0.4)
+
+	self.GonnaAdjuctPitch = true
+	self.RequiredPitch = pitch
+
+	self:EmitSound("TFA.NearlyEmpty")
+end
+
 function SWEP:EmitGunfireSound(soundscript)
 	if not self.FireSoundAffectedByClipSize or self.Shotgun then
 		return self:EmitSound(soundscript)
@@ -1435,7 +1479,9 @@ function SWEP:PrimaryAttack()
 	end
 
 	if self:GetStat("Primary.Sound") and IsFirstTimePredicted() and not (sp and CLIENT) then
-		if self:GetStat("Primary.SilencedSound") and self:GetSilenced() then
+		if self:GetOwner():IsPlayer() and self:GetStat("Primary.LoopSound") and (not self:GetStat("Primary.LoopSoundAutoOnly", false) or self.Primary.Automatic) then
+			self:EmitGunfireLoop()
+		elseif self:GetStat("Primary.SilencedSound") and self:GetSilenced() then
 			self:EmitGunfireSound(self:GetStat("Primary.SilencedSound"))
 		else
 			self:EmitGunfireSound(self:GetStat("Primary.Sound"))

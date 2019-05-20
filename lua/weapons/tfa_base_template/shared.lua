@@ -55,6 +55,12 @@ SWEP.Primary.RPM_Burst = nil -- RPM for burst fire, overrides semi.  This is in 
 SWEP.Primary.DryFireDelay = nil --How long you have to wait after firing your last shot before a dryfire animation can play.  Leave nil for full empty attack length.  Can also use SWEP.StatusLength[ ACT_VM_BLABLA ]
 SWEP.Primary.BurstDelay = nil -- Delay between bursts, leave nil to autocalculate
 
+SWEP.Primary.LoopSound = nil -- Looped fire sound, unsilenced
+SWEP.Primary.LoopSoundSilenced = nil -- Looped fire sound, silenced
+SWEP.Primary.LoopSoundTail = nil -- Loop end/tail sound, unsilenced
+SWEP.Primary.LoopSoundTailSilenced = nil -- Loop end/tail sound, silenced
+SWEP.Primary.LoopSoundAutoOnly = false -- Play loop sound for full-auto only? Fallbacks to Primary.Sound for semi/burst if true
+
 SWEP.CanJam = true -- whenever weapon cam jam
 SWEP.JamChance = 0.04 -- the (maximal) chance the weapon will jam. Newly spawned weapon will never jam on first shot for example.
 -- Default value is 0.04 (4%)
