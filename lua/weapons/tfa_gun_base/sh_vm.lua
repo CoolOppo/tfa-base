@@ -112,8 +112,12 @@ function SWEP:CalculateNearWall(p, a)
 
 	local sp = self:GetOwner():GetShootPos()
 	local ea = self:GetOwner():EyeAngles()
-	local et = self:GetOwner():GetEyeTrace()
+	local et = util.QuickTrace(sp,ea:Forward()*128,{self,self:GetOwner()})--self:GetOwner():GetEyeTrace()
 	local dist = et.HitPos:Distance(sp)
+	if dist<1 then
+		et=util.QuickTrace(sp,ea:Forward()*128,{self,self:GetOwner(),et.Entity})
+		dist = et.HitPos:Distance(sp)
+	end
 
 	if self.WeaponLength and self.WeaponLength > dist then
 		local nw_offset_vec = self:GetIronSights() and self.NearWallVectorADS or self.NearWallVector
