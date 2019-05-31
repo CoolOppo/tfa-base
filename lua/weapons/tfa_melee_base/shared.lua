@@ -525,7 +525,7 @@ end
 local red = Color(255, 0, 0, 255)
 
 function SWEP:Strike(attk, precision)
-	local hitWorld, hitFlesh, needsCB
+	local hitWorld, hitNonWorld, hitFlesh, needsCB
 	local distance, direction, maxhull
 	local ow = self:GetOwner()
 	if not IsValid(ow) then return end
@@ -548,6 +548,7 @@ function SWEP:Strike(attk, precision)
 	end
 
 	hitWorld = false
+	hitNonWorld = false
 	hitFlesh = false
 
 	if attk.callback then
@@ -621,13 +622,13 @@ function SWEP:Strike(attk, precision)
 		--debugoverlay.Sphere( v.HitPos, 5, 5, color_white )
 	end
 
-	--Handle world
+	--Handle non-world
 	for _, v in ipairs(totalResults) do
 		if v.Hit and (not TraceHitFlesh(v)) and (not v.Entity.TFA_HasMeleeHit) then
 			self:ApplyDamage(v, damage, attk)
 			v.Entity.TFA_HasMeleeHit = true
 
-			if not hitWorld then
+			if not hitNonWorld then
 				self:SmackEffect(v, damage)
 
 				if attk.hitworld and not hitFlesh then
@@ -640,7 +641,27 @@ function SWEP:Strike(attk, precision)
 				end
 
 				self:BurstDoor(v.Entity, damage)
+				hitNonWorld = true
+			end
+		end
+	end
+
+	-- Handle world
+	if not hitNonWorld and not hitFlesh then
+		for _, v in ipairs(totalResults) do
+			if v.Hit and v.HitWorld and not hitWorld then
 				hitWorld = true
+
+				if attk.hitworld then
+					self:EmitSoundNet(attk.hitworld)
+				end
+
+				self:SmackEffect(v, damage)
+
+				if attk.callback and needsCB then
+					attk.callback(attack, self, v)
+					needsCB = false
+				end
 			end
 		end
 	end
@@ -657,7 +678,7 @@ function SWEP:Strike(attk, precision)
 		end
 	end
 
-	if attack.kickback and (hitFlesh or hitWorld) then
+	if attack.kickback and (hitFlesh or hitNonWorld or hitWorld) then
 		self:SendViewModelAnim(attack.kickback)
 	end
 end
