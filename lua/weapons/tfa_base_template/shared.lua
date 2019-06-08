@@ -280,7 +280,7 @@ SWEP.SequenceLengthOverride = {} --Changes both the status delay and the nextpri
 SWEP.SequenceTimeOverride = {} --Like above but changes animation length to a target
 SWEP.SequenceRateOverride = {} --Like above but scales animation length rather than being absolute
 
-SWEP.ProceduralHoslterEnabled = nil
+SWEP.ProceduralHolsterEnabled = nil
 SWEP.ProceduralHolsterTime = 0.3
 SWEP.ProceduralHolsterPos = Vector(3, 0, -5)
 SWEP.ProceduralHolsterAng = Vector(-40, -30, 10)

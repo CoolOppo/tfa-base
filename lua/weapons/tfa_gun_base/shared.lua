@@ -132,7 +132,7 @@ SWEP.BlowbackBoneMods = nil --Viewmodel bone mods via SWEP Creation Kit
 SWEP.Blowback_Only_Iron = true --Only do blowback on ironsights
 SWEP.Blowback_PistolMode = false --Do we recover from blowback when empty?
 
-SWEP.ProceduralHoslterEnabled = nil
+SWEP.ProceduralHolsterEnabled = nil
 SWEP.ProceduralHolsterTime = 0.3
 SWEP.ProceduralHolsterPos = Vector(3, 0, -5)
 SWEP.ProceduralHolsterAng = Vector(-40, -30, 10)
@@ -566,7 +566,7 @@ function SWEP:Deploy()
 	self.IronSightsProgress = 0
 	self.SprintProgress = 0
 	self.InspectingProgress = 0
-	self.ProceduralHolsterEnabled = 0
+	self.ProceduralHolsterProgress = 0
 	if self.Inspecting then
 		--if gui then
 		--  gui.EnableScreenClicker(false)
