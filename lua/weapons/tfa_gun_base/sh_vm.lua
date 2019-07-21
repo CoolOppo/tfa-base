@@ -119,9 +119,12 @@ function SWEP:CalculateNearWall(p, a)
 		dist = et.HitPos:Distance(sp)
 	end
 
-	if self.WeaponLength and self.WeaponLength > dist then
-		local nw_offset_vec = self:GetIronSights() and self.NearWallVectorADS or self.NearWallVector
-		local off = self.WeaponLength - dist
+	self:UpdateWeaponLength()
+
+	local nw_offset_vec = self:GetIronSights() and self.NearWallVectorADS or self.NearWallVector
+	local off = self.WeaponLength - dist
+
+	if off > 0 then
 		p = p + nw_offset_vec * off / 2
 		local posCompensated = sp * 1
 		posCompensated:Add(ea:Right() * nw_offset_vec.x * off / 2 * (self.ViewModelFlip and -1 or 1))
@@ -130,8 +133,6 @@ function SWEP:CalculateNearWall(p, a)
 		local angleComp = (et.HitPos - posCompensated):Angle()
 		a.x = a.x - math.AngleDifference(angleComp.p, ea.p) / 2
 		a.y = a.y + math.AngleDifference(angleComp.y, ea.y) / 2
-	else
-		self:UpdateWeaponLength()
 	end
 
 	return p, a
