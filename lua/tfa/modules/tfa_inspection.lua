@@ -48,8 +48,13 @@ if CLIENT then
 		render.DrawScreenQuad()
 	end
 
+	local cv_dxlevel = GetConVar("mat_dxlevel")
+
 	local function Render()
 		tfablurintensity = 0
+
+		if cv_dxlevel:GetInt() < 90 then return end
+
 		local ply = LocalPlayer()
 		if not IsValid(ply) then return end
 		local wep = ply:GetActiveWeapon()
