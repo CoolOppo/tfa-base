@@ -39,6 +39,13 @@ if CLIENT then
 	language.Add("tfabaltra.sm", "1 - Smokey")
 	language.Add("tfabaltra.re", "2 - Bright Red")
 
+	language.Add("tfahudpreset.cross", "Cross")
+	language.Add("tfahudpreset.crysis2", "Crysis 2")
+	language.Add("tfahudpreset.dot", "Dot (Minimalist)")
+	language.Add("tfahudpreset.hl2", "Half-Life 2")
+	language.Add("tfahudpreset.hl2plus", "Half-Life 2 Enhanced")
+	language.Add("tfahudpreset.rockstar", "Rockstar (GTA V / Max Payne 3)")
+
 	local function tfaOptionServer(panel)
 		--Here are whatever default categories you want.
 		local tfaOptionSV = {
@@ -607,7 +614,7 @@ if CLIENT then
 			Folder = "TFA SWEP Settings HUD"
 		}
 
-		tfaTBLOptionHUD.Options["#Default"] = {
+		tfaTBLOptionHUD.Options["#preset.default"] = {
 			cl_tfa_hud_crosshair_enable_custom = "1",
 			cl_tfa_hud_crosshair_color_r = "225",
 			cl_tfa_hud_crosshair_color_g = "225",
@@ -628,6 +635,7 @@ if CLIENT then
 			cl_tfa_hud_crosshair_outline_enabled = "1",
 			cl_tfa_hud_crosshair_outline_width = "1",
 			cl_tfa_hud_crosshair_dot = "0",
+			cl_tfa_hud_crosshair_triangular = "0",
 			cl_tfa_hud_hitmarker_enabled = "1",
 			cl_tfa_hud_hitmarker_3d_all = "0",
 			cl_tfa_hud_hitmarker_3d_shotguns = "1",
@@ -640,7 +648,7 @@ if CLIENT then
 			cl_tfa_hud_hitmarker_color_a = "225"
 		}
 
-		tfaTBLOptionHUD.Options["Cross"] = {
+		tfaTBLOptionHUD.Options["#tfahudpreset.cross"] = {
 			cl_tfa_hud_crosshair_enable_custom = "1",
 			cl_tfa_hud_crosshair_color_r = "255",
 			cl_tfa_hud_crosshair_color_g = "255",
@@ -661,6 +669,7 @@ if CLIENT then
 			cl_tfa_hud_crosshair_outline_enabled = "1",
 			cl_tfa_hud_crosshair_outline_width = "1",
 			cl_tfa_hud_crosshair_dot = "0",
+			cl_tfa_hud_crosshair_triangular = "0",
 			cl_tfa_hud_hitmarker_enabled = "1",
 			cl_tfa_hud_hitmarker_3d_all = "0",
 			cl_tfa_hud_hitmarker_3d_shotguns = "1",
@@ -673,7 +682,7 @@ if CLIENT then
 			cl_tfa_hud_hitmarker_color_a = "225"
 		}
 
-		tfaTBLOptionHUD.Options["Dot/Minimalist"] = {
+		tfaTBLOptionHUD.Options["#tfahudpreset.dot"] = {
 			cl_tfa_hud_crosshair_enable_custom = "1",
 			cl_tfa_hud_crosshair_color_r = "72",
 			cl_tfa_hud_crosshair_color_g = "72",
@@ -694,6 +703,7 @@ if CLIENT then
 			cl_tfa_hud_crosshair_outline_enabled = "1",
 			cl_tfa_hud_crosshair_outline_width = "1",
 			cl_tfa_hud_crosshair_dot = "0",
+			cl_tfa_hud_crosshair_triangular = "0",
 			cl_tfa_hud_hitmarker_enabled = "0",
 			cl_tfa_hud_hitmarker_3d_all = "0",
 			cl_tfa_hud_hitmarker_3d_shotguns = "0",
@@ -706,7 +716,7 @@ if CLIENT then
 			cl_tfa_hud_hitmarker_color_a = "225"
 		}
 
-		tfaTBLOptionHUD.Options["Rockstar/GTAV/MP3"] = {
+		tfaTBLOptionHUD.Options["#tfahudpreset.rockstar"] = {
 			cl_tfa_hud_crosshair_enable_custom = "1",
 			cl_tfa_hud_crosshair_color_r = "225",
 			cl_tfa_hud_crosshair_color_g = "225",
@@ -727,6 +737,7 @@ if CLIENT then
 			cl_tfa_hud_crosshair_outline_enabled = "1",
 			cl_tfa_hud_crosshair_outline_width = "1",
 			cl_tfa_hud_crosshair_dot = "0",
+			cl_tfa_hud_crosshair_triangular = "0",
 			cl_tfa_hud_hitmarker_enabled = "1",
 			cl_tfa_hud_hitmarker_3d_all = "0",
 			cl_tfa_hud_hitmarker_3d_shotguns = "0",
@@ -739,7 +750,7 @@ if CLIENT then
 			cl_tfa_hud_hitmarker_color_a = "8"
 		}
 
-		tfaTBLOptionHUD.Options["Half Life 2"] = {
+		tfaTBLOptionHUD.Options["#tfahudpreset.hl2"] = {
 			cl_tfa_hud_crosshair_enable_custom = "0",
 			cl_tfa_hud_crosshair_color_r = "255",
 			cl_tfa_hud_crosshair_color_g = "255",
@@ -760,6 +771,7 @@ if CLIENT then
 			cl_tfa_hud_crosshair_outline_enabled = "0",
 			cl_tfa_hud_crosshair_outline_width = "0",
 			cl_tfa_hud_crosshair_dot = "1",
+			cl_tfa_hud_crosshair_triangular = "0",
 			cl_tfa_hud_hitmarker_enabled = "0",
 			cl_tfa_hud_hitmarker_3d_all = "0",
 			cl_tfa_hud_hitmarker_3d_shotguns = "0",
@@ -772,7 +784,7 @@ if CLIENT then
 			cl_tfa_hud_hitmarker_color_a = "225"
 		}
 
-		tfaTBLOptionHUD.Options["Half Life 2 Enhanced"] = {
+		tfaTBLOptionHUD.Options["#tfahudpreset.hl2plus"] = {
 			cl_tfa_hud_crosshair_enable_custom = "1",
 			cl_tfa_hud_crosshair_color_r = "255",
 			cl_tfa_hud_crosshair_color_g = "255",
@@ -793,6 +805,7 @@ if CLIENT then
 			cl_tfa_hud_crosshair_outline_enabled = "0",
 			cl_tfa_hud_crosshair_outline_width = "0",
 			cl_tfa_hud_crosshair_dot = "1",
+			cl_tfa_hud_crosshair_triangular = "0",
 			cl_tfa_hud_hitmarker_enabled = "1",
 			cl_tfa_hud_hitmarker_3d_all = "0",
 			cl_tfa_hud_hitmarker_3d_shotguns = "1",
@@ -803,6 +816,40 @@ if CLIENT then
 			cl_tfa_hud_hitmarker_color_g = "225",
 			cl_tfa_hud_hitmarker_color_b = "225",
 			cl_tfa_hud_hitmarker_color_a = "225"
+		}
+
+		tfaTBLOptionHUD.Options["#tfahudpreset.crysis2"] = {
+			cl_tfa_hud_crosshair_enable_custom = "1",
+			cl_tfa_hud_crosshair_color_r = "231",
+			cl_tfa_hud_crosshair_color_g = "255",
+			cl_tfa_hud_crosshair_color_b = "255",
+			cl_tfa_hud_crosshair_color_a = "255",
+			cl_tfa_hud_crosshair_color_team = "0",
+			cl_tfa_hud_crosshair_outline_color_r = "0",
+			cl_tfa_hud_crosshair_outline_color_g = "0",
+			cl_tfa_hud_crosshair_outline_color_b = "0",
+			cl_tfa_hud_crosshair_outline_color_a = "0",
+			cl_tfa_hud_enabled = "1",
+			cl_tfa_hud_ammodata_fadein = "0.2",
+			cl_tfa_hud_hangtime = "1",
+			cl_tfa_hud_crosshair_length_use_pixels = "0",
+			cl_tfa_hud_crosshair_length = "1",
+			cl_tfa_hud_crosshair_width = "2",
+			cl_tfa_hud_crosshair_gap_scale = "1",
+			cl_tfa_hud_crosshair_outline_enabled = "0",
+			cl_tfa_hud_crosshair_outline_width = "0",
+			cl_tfa_hud_crosshair_dot = "0",
+			cl_tfa_hud_crosshair_triangular = "1",
+			cl_tfa_hud_hitmarker_enabled = "1",
+			cl_tfa_hud_hitmarker_3d_all = "0",
+			cl_tfa_hud_hitmarker_3d_shotguns = "1",
+			cl_tfa_hud_hitmarker_solidtime = "0.1",
+			cl_tfa_hud_hitmarker_fadetime = "0.3",
+			cl_tfa_hud_hitmarker_scale = "1.5",
+			cl_tfa_hud_hitmarker_color_r = "231",
+			cl_tfa_hud_hitmarker_color_g = "255",
+			cl_tfa_hud_hitmarker_color_b = "255",
+			cl_tfa_hud_hitmarker_color_a = "255"
 		}
 
 		panel:AddControl("ComboBox", tfaTBLOptionHUD)
@@ -841,6 +888,11 @@ if CLIENT then
 		panel:AddControl("CheckBox", {
 			Label = "Use Crosshair Dot",
 			Command = "cl_tfa_hud_crosshair_dot"
+		})
+
+		panel:AddControl("CheckBox", {
+			Label = "Use Triangular Crosshair",
+			Command = "cl_tfa_hud_crosshair_triangular"
 		})
 
 		panel:AddControl("CheckBox", {

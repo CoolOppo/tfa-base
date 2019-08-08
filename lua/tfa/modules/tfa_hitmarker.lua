@@ -30,11 +30,16 @@ local ScrW, ScrH = ScrW, ScrH
 
 local markers = {}
 
-local enabledcvar, solidtimecvar, fadetimecvar, scalecvar
+local enabledcvar = GetConVar("cl_tfa_hud_hitmarker_enabled")
+local solidtimecvar = GetConVar("cl_tfa_hud_hitmarker_solidtime")
+local fadetimecvar = GetConVar("cl_tfa_hud_hitmarker_fadetime")
+local scalecvar = GetConVar("cl_tfa_hud_hitmarker_scale")
+local tricross_cvar = GetConVar("cl_tfa_hud_crosshair_triangular")
+
 local rcvar, gcvar, bcvar, acvar
+
 local w, h, pos, sprh
 local c = Color(255, 255, 255, 255)
-local spr
 
 net.Receive("tfaHitmarker", function()
 	if not enabledcvar:GetBool() then return end
@@ -55,28 +60,11 @@ net.Receive("tfaHitmarker3D", function()
 	table.insert(markers, marker)
 end)
 
+local mat_regular = Material("vgui/tfa_hitmarker.png", "smooth mips")
+local mat_triang = Material("vgui/tfa_hitmarker_triang.png", "smooth mips")
+
 hook.Add("HUDPaint", "tfaDrawHitmarker", function()
-	if not enabledcvar then
-		enabledcvar = GetConVar("cl_tfa_hud_hitmarker_enabled")
-	end
-
 	if not enabledcvar:GetBool() then return end
-
-	if not spr then
-		spr = Material("vgui/tfa_hitmarker.png", "smooth")
-	end
-
-	if not solidtimecvar then
-		solidtimecvar = GetConVar("cl_tfa_hud_hitmarker_solidtime")
-	end
-
-	if not fadetimecvar then
-		fadetimecvar = GetConVar("cl_tfa_hud_hitmarker_fadetime")
-	end
-
-	if not scalecvar then
-		scalecvar = GetConVar("cl_tfa_hud_hitmarker_scale")
-	end
 
 	if not rcvar then
 		rcvar = GetConVar("cl_tfa_hud_hitmarker_color_r")
@@ -123,7 +111,7 @@ hook.Add("HUDPaint", "tfaDrawHitmarker", function()
 			if pos.visible == false then continue end
 
 			surface.SetDrawColor(c)
-			surface.SetMaterial(spr)
+			surface.SetMaterial(tricross_cvar:GetBool() and mat_triang or mat_regular)
 			surface.DrawTexturedRect(pos.x - sprh * .5, pos.y - sprh * .5, sprh, sprh)
 		else
 			markers[k] = nil

@@ -750,6 +750,7 @@ local outb_cvar = GetConVar("cl_tfa_hud_crosshair_outline_color_b")
 local outlinewidth_cvar = GetConVar("cl_tfa_hud_crosshair_outline_width")
 local hudenabled_cvar = GetConVar("cl_tfa_hud_enabled")
 local cgapscale_cvar = GetConVar("cl_tfa_hud_crosshair_gap_scale")
+local tricross_cvar = GetConVar("cl_tfa_hud_crosshair_triangular")
 
 --[[
 Function Name:  DrawHUD
@@ -1045,6 +1046,18 @@ function SWEP:DoDrawCrosshair(x, y)
 		length = gap + crosslen * 100
 	end
 
+	local lmatrix, rmatrix
+
+	if tricross_cvar:GetBool() then
+		lmatrix = Matrix()
+		lmatrix:SetTranslation(Vector(x - gap, y + gap, 0))
+		lmatrix:SetAngles(Angle(0, -135, 0))
+
+		rmatrix = Matrix()
+		rmatrix:SetTranslation(Vector(x + gap, y + gap, 0))
+		rmatrix:SetAngles(Angle(0, 135, 0))
+	end
+
 	--Outline
 	if outline_enabled_cvar:GetBool() then
 		local outr, outg, outb, outlinewidth
@@ -1053,10 +1066,31 @@ function SWEP:DoDrawCrosshair(x, y)
 		outb = outb_cvar:GetFloat()
 		outlinewidth = outlinewidth_cvar:GetFloat()
 		surface.SetDrawColor(outr, outg, outb, outa)
-		surface.DrawRect(math.Round(x - length - outlinewidth) - crosshairwidth / 2, math.Round(y - outlinewidth) - crosshairwidth / 2, math.Round(length - gap + outlinewidth * 2) + crosshairwidth, math.Round(outlinewidth * 2) + crosshairwidth) -- Left
-		surface.DrawRect(math.Round(x + gap - outlinewidth) - crosshairwidth / 2, math.Round(y - outlinewidth) - crosshairwidth / 2, math.Round(length - gap + outlinewidth * 2) + crosshairwidth, math.Round(outlinewidth * 2) + crosshairwidth) -- Right
 		surface.DrawRect(math.Round(x - outlinewidth) - crosshairwidth / 2, math.Round(y - length - outlinewidth) - crosshairwidth / 2, math.Round(outlinewidth * 2) + crosshairwidth, math.Round(length - gap + outlinewidth * 2) + crosshairwidth) -- Top
-		surface.DrawRect(math.Round(x - outlinewidth) - crosshairwidth / 2, math.Round(y + gap - outlinewidth) - crosshairwidth / 2, math.Round(outlinewidth * 2) + crosshairwidth, math.Round(length - gap + outlinewidth * 2) + crosshairwidth) -- Bottom
+
+		if tricross_cvar:GetBool() then
+			local ourlinew, outlinel = math.Round(outlinewidth * 2) + crosshairwidth, math.Round(length - gap) + outlinewidth + crosshairwidth
+
+			render.PushFilterMag(TEXFILTER.ANISOTROPIC)
+			render.PushFilterMin(TEXFILTER.ANISOTROPIC)
+			surface.DisableClipping(true)
+
+			cam.PushModelMatrix(lmatrix)
+			surface.DrawRect(-ourlinew * .5, -outlinel, ourlinew, outlinel + outlinewidth)
+			cam.PopModelMatrix()
+
+			cam.PushModelMatrix(rmatrix)
+			surface.DrawRect(-ourlinew * .5, -outlinel, ourlinew, outlinel + outlinewidth)
+			cam.PopModelMatrix()
+
+			surface.DisableClipping(false)
+			render.PopFilterMag()
+			render.PopFilterMin()
+		else
+			surface.DrawRect(math.Round(x - length - outlinewidth) - crosshairwidth / 2, math.Round(y - outlinewidth) - crosshairwidth / 2, math.Round(length - gap + outlinewidth * 2) + crosshairwidth, math.Round(outlinewidth * 2) + crosshairwidth) -- Left
+			surface.DrawRect(math.Round(x + gap - outlinewidth) - crosshairwidth / 2, math.Round(y - outlinewidth) - crosshairwidth / 2, math.Round(length - gap + outlinewidth * 2) + crosshairwidth, math.Round(outlinewidth * 2) + crosshairwidth) -- Right
+			surface.DrawRect(math.Round(x - outlinewidth) - crosshairwidth / 2, math.Round(y + gap - outlinewidth) - crosshairwidth / 2, math.Round(outlinewidth * 2) + crosshairwidth, math.Round(length - gap + outlinewidth * 2) + crosshairwidth) -- Bottom
+		end
 
 		if drawdot then
 			surface.DrawRect(math.Round(x - outlinewidth) - crosshairwidth / 2, math.Round(y - outlinewidth) - crosshairwidth / 2, math.Round(outlinewidth * 2) + crosshairwidth, math.Round(outlinewidth * 2) + crosshairwidth) --Dot
@@ -1065,10 +1099,31 @@ function SWEP:DoDrawCrosshair(x, y)
 
 	--Main Crosshair
 	surface.SetDrawColor(crossr, crossg, crossb, crossa)
-	surface.DrawRect(math.Round(x - length) - crosshairwidth / 2, math.Round(y) - crosshairwidth / 2, math.Round(length - gap) + crosshairwidth, crosshairwidth) -- Left
-	surface.DrawRect(math.Round(x + gap) - crosshairwidth / 2, math.Round(y) - crosshairwidth / 2, math.Round(length - gap) + crosshairwidth, crosshairwidth) -- Right
 	surface.DrawRect(math.Round(x) - crosshairwidth / 2, math.Round(y - length) - crosshairwidth / 2, crosshairwidth, math.Round(length - gap) + crosshairwidth) -- Top
-	surface.DrawRect(math.Round(x) - crosshairwidth / 2, math.Round(y + gap) - crosshairwidth / 2, crosshairwidth, math.Round(length - gap) + crosshairwidth) -- Bottom
+
+	if tricross_cvar:GetBool() then
+		local xhl = math.Round(length - gap) + crosshairwidth
+
+		render.PushFilterMag(TEXFILTER.ANISOTROPIC)
+		render.PushFilterMin(TEXFILTER.ANISOTROPIC)
+		surface.DisableClipping(true)
+
+		cam.PushModelMatrix(lmatrix)
+		surface.DrawRect(-crosshairwidth * .5, -xhl, crosshairwidth, xhl)
+		cam.PopModelMatrix()
+
+		cam.PushModelMatrix(rmatrix)
+		surface.DrawRect(-crosshairwidth * .5, -xhl, crosshairwidth, xhl)
+		cam.PopModelMatrix()
+
+		surface.DisableClipping(false)
+		render.PopFilterMag()
+		render.PopFilterMin()
+	else
+		surface.DrawRect(math.Round(x - length) - crosshairwidth / 2, math.Round(y) - crosshairwidth / 2, math.Round(length - gap) + crosshairwidth, crosshairwidth) -- Left
+		surface.DrawRect(math.Round(x + gap) - crosshairwidth / 2, math.Round(y) - crosshairwidth / 2, math.Round(length - gap) + crosshairwidth, crosshairwidth) -- Right
+		surface.DrawRect(math.Round(x) - crosshairwidth / 2, math.Round(y + gap) - crosshairwidth / 2, crosshairwidth, math.Round(length - gap) + crosshairwidth) -- Bottom
+	end
 
 	if drawdot then
 		surface.DrawRect(math.Round(x) - crosshairwidth / 2, math.Round(y) - crosshairwidth / 2, crosshairwidth, crosshairwidth) --dot

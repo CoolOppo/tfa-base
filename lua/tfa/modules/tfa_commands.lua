@@ -417,6 +417,10 @@ if CLIENT then
 		CreateClientConVar("cl_tfa_hud_crosshair_outline_enabled", 1, true, false, "Enable crosshair outline?")
 	end
 
+	if GetConVar("cl_tfa_hud_crosshair_triangular") == nil then
+		CreateClientConVar("cl_tfa_hud_crosshair_triangular", 0, true, false, "Enable triangular Crysis-like crosshair?")
+	end
+
 	if GetConVar("cl_tfa_hud_hitmarker_enabled") == nil then
 		CreateClientConVar("cl_tfa_hud_hitmarker_enabled", 1, true, false, "Enable hit marker?")
 	end
