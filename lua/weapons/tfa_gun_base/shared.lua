@@ -993,9 +993,11 @@ function SWEP:IronSights()
 		if not ironsights_cv:GetBool() then
 			self.data.ironsights_default = self.data.ironsights_default or self.data.ironsights
 			self.data.ironsights = 0
+			self:ClearStatCache("data.ironsights")
 		elseif self.data.ironsights_default == 1 and self:GetStat("data.ironsights") == 0 then
 			self.data.ironsights = 1
 			self.data.ironsights_default = 0
+			self:ClearStatCache("data.ironsights")
 		end
 	end
 	ct = l_CT()
