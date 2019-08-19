@@ -232,9 +232,19 @@ if GetConVar("sv_tfa_fx_penetration_decal") == nil then
 	CreateReplConVar("sv_tfa_fx_penetration_decal", "1", "Enable decals on the other side of a penetrated object?")
 end
 
-if GetConVar("sv_tfa_ironsights_enabled") == nil then
-	CreateReplConVar("sv_tfa_ironsights_enabled", "1", "Enable ironsights? Disabling this still allows scopes.")
+local cv_ironsights = GetConVar("sv_tfa_ironsights_enabled")
+
+if cv_ironsights == nil then
+	cv_ironsights = CreateReplConVar("sv_tfa_ironsights_enabled", "1", "Enable ironsights? Disabling this still allows scopes.")
 end
+
+hook.Add("TFA_GetStat", "TFA_IronsightsConVarToggle", function(wep, stat, val)
+	if not IsValid(wep) or stat ~= "data.ironsights" then return end
+
+	if not cv_ironsights:GetBool() and not wep:GetStat("Scoped") and not wep:GetStat("Scoped_3D") then
+		return 0
+	end
+end)
 
 if GetConVar("sv_tfa_sprint_enabled") == nil then
 	CreateReplConVar("sv_tfa_sprint_enabled", "1", "Enable sprinting? Disabling this allows shooting while IN_SPEED.")

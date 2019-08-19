@@ -978,7 +978,6 @@ SWEP.is_old = false
 SWEP.walk_old = false
 local issighting_tmp
 local ironsights_toggle_cvar, ironsights_resight_cvar
-local ironsights_cv = GetConVar("sv_tfa_ironsights_enabled")
 local sprint_cv = GetConVar("sv_tfa_sprint_enabled")
 if CLIENT then
 	ironsights_resight_cvar = GetConVar("cl_tfa_ironsights_resight")
@@ -989,17 +988,7 @@ function SWEP:IronSights()
 	if self.Owner:IsNPC() then
 		return
 	end
-	if not self:GetStat("Scoped") and not self:GetStat("Scoped_3D") then
-		if not ironsights_cv:GetBool() then
-			self.data.ironsights_default = self.data.ironsights_default or self.data.ironsights
-			self.data.ironsights = 0
-			self:ClearStatCache("data.ironsights")
-		elseif self.data.ironsights_default == 1 and self:GetStat("data.ironsights") == 0 then
-			self.data.ironsights = 1
-			self.data.ironsights_default = 0
-			self:ClearStatCache("data.ironsights")
-		end
-	end
+
 	ct = l_CT()
 	stat = self:GetStatus()
 	local owent = self:GetOwner()
