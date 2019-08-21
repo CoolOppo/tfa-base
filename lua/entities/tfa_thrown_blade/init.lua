@@ -81,6 +81,7 @@ end
 function ENT:PhysicsCollide(data, phys)
 	timer.Simple(0,function()
 		if not IsValid(self) then return end
+		local owner = self:GetOwner()
 		self:SetOwner(nil)
 		local fwdang = self:GetAngles()
 		local fwdvec
@@ -107,7 +108,7 @@ function ENT:PhysicsCollide(data, phys)
 			local att = self:GetPhysicsAttacker()
 
 			if not IsValid(att) then
-				att = self:GetOwner()
+				att = owner
 			end
 
 			if not IsValid(att) then
