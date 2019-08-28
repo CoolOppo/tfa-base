@@ -24,23 +24,13 @@ if SERVER then AddCSLuaFile() end
 TFA = TFA or {}
 
 local do_load = true
-local version = 4.5
-local version_string = "4.5.0.0"
+local version = 4.501
+local version_string = "4.5.0.1"
 local changelog = [[
-	+ Weapons can now have a working flashlight
-	* Changed laser dot to appear as projected texture
-	+ Added attachment callbacks
-	+ Safety position is now separated from sprint one
-	* Melee blocking works again
-	* Base explosives now properly damage helicopters and gunships
-	+ Added jamming mechanics
-	+ Added CS:GO-like low ammo sound effect
-	+ Added bodygroup names support
-	+ Attachments can now have their own attach/detach sound
-	+ Added walk animations support (similar to sprint animations)
-	* Bonemods are now working properly with blowback enabled
-	* Fixed laser drawing behing worldmodel
-	+ Looped gunfire sound support added (Experimental)
+	* Inspection VGUI now doesn't block the screen with mat_dxlevel < 90
+	* Ironsights convar now works properly again
+	+ Base explosives now can have custom bounce sound (ENT.BounceSound)
+	+ Crysis-like triangular crosshair, can be enabled in the "HUD / Crosshair" section
 ]]
 
 local function testFunc()
