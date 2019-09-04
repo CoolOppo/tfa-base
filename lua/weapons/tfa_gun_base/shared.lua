@@ -1004,34 +1004,23 @@ function SWEP:IronSights()
 		issprinting = owent:GetVelocity():Length2D() > owent:GetRunSpeed() * 0.6 and owent:IsSprinting() and owent:OnGround()
 	end
 
-	if not (self.data and self:GetStat("data.ironsights") == 0 ) then
-		if CLIENT then
-			if not ironsights_toggle_cvar:GetBool() then
-				if owent:KeyDown(IN_ATTACK2) then
-					issighting = true
-				end
-			else
-				issighting = self:GetIronSightsRaw()
-
-				if owent:KeyPressed(IN_ATTACK2) then
-					issighting = not issighting
-					self:SetIronSightsRaw(issighting)
-				end
+	if (SERVER or not sp) and self:GetStat("data.ironsights") ~= 0 then
+		if (CLIENT and not ironsights_toggle_cvar:GetBool()) or owent:GetInfoNum("cl_tfa_ironsights_toggle", 0) == 0 then
+			if owent:KeyDown(IN_ATTACK2) then
+				issighting = true
 			end
 		else
-			if owent:GetInfoNum("cl_tfa_ironsights_toggle", 0) == 0 then
-				if owent:KeyDown(IN_ATTACK2) then
-					issighting = true
-				end
-			else
-				issighting = self:GetIronSightsRaw()
+			issighting = self:GetIronSightsRaw()
 
-				if owent:KeyPressed(IN_ATTACK2) then
-					issighting = not issighting
-					self:SetIronSightsRaw(issighting)
-				end
+			if owent:KeyPressed(IN_ATTACK2) then
+				issighting = not issighting
+				self:SetIronSightsRaw(issighting)
 			end
 		end
+	end
+
+	if CLIENT and sp then
+		issighting = self:GetIronSightsRaw()
 	end
 
 	if ( ( CLIENT and ironsights_toggle_cvar:GetBool() ) or ( SERVER and owent:GetInfoNum("cl_tfa_ironsights_toggle", 0) == 1 ) ) and not ( ( CLIENT and ironsights_resight_cvar:GetBool() ) or ( SERVER and owent:GetInfoNum("cl_tfa_ironsights_resight", 0) == 1 ) ) then
