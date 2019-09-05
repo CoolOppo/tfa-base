@@ -339,7 +339,7 @@ function SWEP:GetStat(stat, default)
 		if not self:OwnerIsValid() then
 			if IsValid(self) then
 				local finalReturn = self:GetStatRecursive(self, stbl, istable(default) and tableCopy(default) or default)
-				hook.Run("TFA_GetStat", stat, finalReturn)
+				finalReturn = hook.Run("TFA_GetStat", self, stat, finalReturn) or finalReturn
 
 				return finalReturn
 			end
