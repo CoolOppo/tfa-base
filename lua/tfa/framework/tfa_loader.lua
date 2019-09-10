@@ -24,13 +24,10 @@ if SERVER then AddCSLuaFile() end
 TFA = TFA or {}
 
 local do_load = true
-local version = 4.501
-local version_string = "4.5.0.1"
+local version = 4.502
+local version_string = "4.5.0.2"
 local changelog = [[
-	* Inspection VGUI now doesn't block the screen with mat_dxlevel < 90
-	* Ironsights convar now works properly again
-	+ Base explosives now can have custom bounce sound (ENT.BounceSound)
-	+ Crysis-like triangular crosshair, can be enabled in the "HUD / Crosshair" section
+	* Fixed the bug with first spawned weapon after map load not working
 ]]
 
 local function testFunc()
