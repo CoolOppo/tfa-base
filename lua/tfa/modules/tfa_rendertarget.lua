@@ -119,7 +119,6 @@ if CLIENT then
 		end
 
 		if not wep:GetStat("RTDrawEnabled") and not wep:GetStat("RTMaterialOverride") and not wep.RTCode then return end
-		oldVmModel = vm:GetModel()
 		local w, h = ScrW(), ScrH()
 
 		if not TFA_RTScreen then
