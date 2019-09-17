@@ -636,6 +636,7 @@ function SWEP:Holster(target)
 		return false
 	elseif stat == TFA.Enum.STATUS_HOLSTER_READY or stat == TFA.Enum.STATUS_HOLSTER_FINAL then
 		self.InspectingProgress = 0
+		self:ResetViewModelModifications()
 
 		return true
 	end
@@ -670,6 +671,11 @@ function SWEP:OnRemove()
 	if self.CleanParticles then
 		self:CleanParticles()
 	end
+
+	if self.ResetViewModelModifications then
+		self:ResetViewModelModifications()
+	end
+
 	return hook.Run("TFA_OnRemove",self)
 end
 
@@ -684,7 +690,18 @@ function SWEP:OnDrop()
 	if self.CleanParticles then
 		self:CleanParticles()
 	end
+
+	-- if self.ResetViewModelModifications then
+	-- 	self:ResetViewModelModifications()
+	-- end
+
 	return hook.Run("TFA_OnDrop",self)
+end
+
+function SWEP:OwnerChanged() -- TODO: sometimes not called after switching weapon ???
+	if not IsValid(self:GetOwner()) and self.ResetViewModelModifications then
+		self:ResetViewModelModifications()
+	end
 end
 
 --[[

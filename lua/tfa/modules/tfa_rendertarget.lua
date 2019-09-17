@@ -19,18 +19,7 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
-local onevec = Vector(1, 1, 1)
-
-local function RBP(vm)
-	local bc = vm:GetBoneCount()
-	if not bc or bc <= 0 then return end
-
-	for i = 0, bc do
-		vm:ManipulateBoneScale(i, onevec)
-		vm:ManipulateBoneAngles(i, angle_zero)
-		vm:ManipulateBonePosition(i, vector_origin)
-	end
-end
+local sp = game.SinglePlayer()
 
 hook.Add("PlayerSwitchWeapon", "TFA_Bodygroups_PSW", function(ply, oldwep, wep)
 	if not IsValid(wep) then return end
@@ -39,6 +28,7 @@ hook.Add("PlayerSwitchWeapon", "TFA_Bodygroups_PSW", function(ply, oldwep, wep)
 		if IsValid(ply) and ply:GetActiveWeapon() == wep then
 			local vm = ply:GetViewModel()
 			if not IsValid(vm) then return end
+
 			local bgcount = #(vm:GetBodyGroups() or {})
 			local bgt = wep.Bodygroups_V or wep.Bodygroups or {}
 
@@ -48,6 +38,14 @@ hook.Add("PlayerSwitchWeapon", "TFA_Bodygroups_PSW", function(ply, oldwep, wep)
 
 			for i = 0, bgcount - 1 do
 				vm:SetBodygroup(i, bgt[i] or 0)
+			end
+
+			if wep.ClearMaterialCache then
+				wep:ClearMaterialCache()
+
+				if sp then
+					wep:CallOnClient("ClearMaterialCache")
+				end
 			end
 		end
 	end)
@@ -62,8 +60,6 @@ if CLIENT then
 
 	local TFA_RTMat = CreateMaterial("tfa_rtmaterial", "UnLitGeneric", props) --Material("models/weapons/TFA/shared/optic")
 	local TFA_RTScreen, TFA_RTScreenO
-	local oldVmModel = ""
-	local oldWep = nil
 	local tgt
 	local old_bt
 	local ply, vm, wep
@@ -84,39 +80,6 @@ if CLIENT then
 		end
 
 		wep = ply:GetActiveWeapon()
-
-		if oldVmModel ~= vm:GetModel() or (wep ~= oldWep) then
-			old_bt = nil
-
-			if IsValid(oldWep) then
-				oldWep.MaterialCached_V = nil
-			end
-
-			oldWep = wep
-			RBP(vm)
-			vm:SetSkin(0)
-			local matcount = #(vm:GetMaterials() or {})
-
-			for i = 0, matcount do
-				vm:SetSubMaterial(i, "")
-			end
-
-			local bgcount = #(vm:GetBodyGroups() or {})
-			local bgt = wep.Bodygroups_V or wep.Bodygroups or {}
-
-			if wep.GetStat then
-				bgt = wep:GetStat("Bodygroups_V", bgt)
-			end
-
-			for i = 0, bgcount - 1 do
-				vm:SetBodygroup(i, bgt[i] or 0)
-			end
-
-			oldVmModel = vm:GetModel()
-			oldWep = wep
-
-			return
-		end
 
 		if not IsValid(wep) or not wep:IsTFA() then return end
 

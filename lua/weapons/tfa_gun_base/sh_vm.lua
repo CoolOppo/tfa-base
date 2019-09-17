@@ -396,3 +396,36 @@ function SWEP:GetViewModelPosition(pos, ang)
 	pos, ang = self:Sway(pos, ang)
 	return self:SprintBob(pos, ang, l_Lerp(self.SprintProgress, 0, self.SprintBobMult))
 end
+
+local onevec = Vector(1, 1, 1)
+
+local function RBP(vm)
+	local bc = vm:GetBoneCount()
+	if not bc or bc <= 0 then return end
+
+	for i = 0, bc do
+		vm:ManipulateBoneScale(i, onevec)
+		vm:ManipulateBoneAngles(i, angle_zero)
+		vm:ManipulateBonePosition(i, vector_origin)
+	end
+end
+
+function SWEP:ResetViewModelModifications()
+	if not self:VMIV() then return end
+
+	local vm = self.OwnerViewModel
+
+	RBP(vm)
+
+	vm:SetSkin(0)
+
+	local matcount = #(vm:GetMaterials() or {})
+
+	for i = 0, matcount do
+		vm:SetSubMaterial(i, "")
+	end
+
+	for i = 0, #(vm:GetBodyGroups() or {}) - 1 do
+		vm:SetBodygroup(i, 0)
+	end
+end
