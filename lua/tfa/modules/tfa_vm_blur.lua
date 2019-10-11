@@ -92,7 +92,7 @@ hook.Add("PreDrawViewModel", "TFA_DrawViewModel", function(vm, plyv, wep)
 	if not cl_tfa_fx_dof or not cl_tfa_fx_dof:GetBool() then return end
 	if not wep.AllowIronSightsDoF then return end
 	local aimingDown = wep.IronSightsProgress > 0.4
-	local scoped = TFA.LastRTUpdate > UnPredictedCurTime()
+	local scoped = TFA.LastRTUpdate > UnPredictedCurTime() or wep:GetStat("Scoped")
 
 	if aimingDown and not scoped then
 		if hook.Run("TFA_AllowDoFDraw", wep, plyv, vm) == false then return end
