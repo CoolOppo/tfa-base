@@ -24,10 +24,12 @@ if SERVER then AddCSLuaFile() end
 TFA = TFA or {}
 
 local do_load = true
-local version = 4.502
-local version_string = "4.5.0.2"
+local version = 4.503
+local version_string = "4.5.0.3"
 local changelog = [[
-	* Fixed the bug with first spawned weapon after map load not working
+	* Fixed resetting viewmodel skin after switching weapon
+	* Fixed Ironsights DoF blurring whole screen for 2D-scoped weapons
+	* Fixed ballistics ConVars (dev branch is now safe to use again)
 ]]
 
 local function testFunc()
