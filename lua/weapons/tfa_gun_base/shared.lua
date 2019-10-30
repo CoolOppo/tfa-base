@@ -971,6 +971,7 @@ function SWEP:Think2()
 			and (
 				(self:GetStat("Primary.ClipSize") <= 0 and self:Ammo1() < self:GetStat("Primary.AmmoConsumption"))
 				or (self:GetPrimaryClipSize(true) > 0 and self:Clip1() < self:GetStat("Primary.AmmoConsumption"))
+				or (self:GetSprinting() and not self:GetStat("AllowSprintAttack", false))
 				or not self.Primary.Automatic or self:GetOwner():IsPlayer() and not self:GetOwner():KeyDown(IN_ATTACK)
 			)
 		) then
