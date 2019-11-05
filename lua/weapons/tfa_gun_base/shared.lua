@@ -1355,8 +1355,14 @@ local npc_ar2_damage_cv = GetConVar("sk_npc_dmg_ar2")
 local sv_tfa_nearlyempty = GetConVar("sv_tfa_nearlyempty")
 
 function SWEP:EmitGunfireLoop()
-	if self:GetNextLoopSoundCheck() < 0 then
-		local tgtSound = self:GetSilenced() and self:GetStat("Primary.LoopSoundSilenced", self:GetStat("Primary.LoopSound")) or self:GetStat("Primary.LoopSound")
+	local tgtSound = self:GetSilenced() and self:GetStat("Primary.LoopSoundSilenced", self:GetStat("Primary.LoopSound")) or self:GetStat("Primary.LoopSound")
+
+	if self:GetNextLoopSoundCheck() < 0 or (CurTime() >= self:GetNextLoopSoundCheck() and self.LastLoopSound ~= tgtSound) then
+		if self.LastLoopSound ~= nil then
+			self:StopSound(self.LastLoopSound)
+		end
+
+		self.LastLoopSound = tgtSound
 
 		self:EmitSound(tgtSound)
 	end
