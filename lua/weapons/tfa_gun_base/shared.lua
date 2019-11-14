@@ -1957,11 +1957,14 @@ function SWEP:GetJamChance()
 	return self:GetJamFactor() * sv_tfa_jamming_factor:GetFloat() * (self.JamChance / 100) * self:GrabJamChanceMult()
 end
 
+SWEP.FlashlightSoundToggleOn = Sound("HL2Player.FlashLightOn")
+SWEP.FlashlightSoundToggleOff = Sound("HL2Player.FlashLightOff")
+
 function SWEP:ToggleFlashlight(toState)
 	if toState == nil then
 		toState = not self:GetFlashlightEnabled()
 	end
 
 	self:SetFlashlightEnabled(toState)
-	self:EmitSound(toState and "HL2Player.FlashLightOn" or "HL2Player.FlashLightOff")
+	self:EmitSoundNet(self:GetStat("FlashlightSoundToggle" .. (toState and "On" or "Off")))
 end
