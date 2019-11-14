@@ -350,7 +350,7 @@ hook.Add("PlayerSwitchFlashlight", "tfa_toggleflashlight", function(plyv, toEnab
 
 	local wepv = plyv:GetActiveWeapon()
 
-	if IsValid(wepv) and wepv.IsTFAWeapon and wepv:GetStat("FlashlightAttachment", 0) > 0 then
+	if IsValid(wepv) and wepv.IsTFAWeapon and (wepv:GetStat("FlashlightAttachmentName") ~= nil or wepv:GetStat("FlashlightAttachment", 0) > 0) then
 		wepv:ToggleFlashlight()
 
 		return false

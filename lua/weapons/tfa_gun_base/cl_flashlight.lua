@@ -19,8 +19,7 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
-local att
-local angpos
+local att, angpos, attname, elemname, targetent
 SWEP.FlashlightDistance = 12 * 50 -- default 50 feet
 SWEP.FlashlightAttachment = 0
 SWEP.FlashlightBrightness = 1
@@ -52,7 +51,21 @@ function SWEP:DrawFlashlight(is_vm)
 			return
 		end
 
+		targetent = self.OwnerViewModel
+
+		elemname = self:GetStat("Flashlight_VElement", self:GetStat("Flashlight_Element"))
+
+		if elemname and self.VElements[elemname] and IsValid(self.VElements[elemname].curmodel) then
+			targetent = self.VElements[elemname].curmodel
+		end
+
 		att = self:GetStat("FlashlightAttachment")
+
+		attname = self:GetStat("FlashlightAttachmentName")
+
+		if attname then
+			att = targetent:LookupAttachment(attname)
+		end
 
 		if (not att) or att <= 0 then
 			self:CleanFlashlight()
@@ -60,7 +73,7 @@ function SWEP:DrawFlashlight(is_vm)
 			return
 		end
 
-		angpos = self.OwnerViewModel:GetAttachment(att)
+		angpos = targetent:GetAttachment(att)
 
 		if not angpos then
 			self:CleanFlashlight()
@@ -104,10 +117,20 @@ function SWEP:DrawFlashlight(is_vm)
 			lamp:Update()
 		end
 	else
-		att = self:GetStat("FlashlightAttachmentWorld")
+		targetent = self
 
-		if (not att) or att <= 0 then
-			att = self:GetStat("FlashlightAttachment")
+		elemname = self:GetStat("Flashlight_WElement", self:GetStat("Flashlight_Element"))
+
+		if elemname and self.WElements[elemname] and IsValid(self.WElements[elemname].curmodel) then
+			targetent = self.WElements[elemname].curmodel
+		end
+
+		att = self:GetStat("FlashlightAttachmentWorld", self:GetStat("FlashlightAttachment"))
+
+		attname = self:GetStat("FlashlightAttachmentNameWorld", self:GetStat("FlashlightAttachmentName"))
+
+		if attname then
+			att = targetent:LookupAttachment(attname)
 		end
 
 		if (not att) or att <= 0 then
@@ -116,10 +139,10 @@ function SWEP:DrawFlashlight(is_vm)
 			return
 		end
 
-		angpos = self:GetAttachment(att)
+		angpos = targetent:GetAttachment(att)
 
 		if not angpos then
-			angpos = self:GetAttachment(1)
+			angpos = targetent:GetAttachment(1)
 		end
 
 		if not angpos then

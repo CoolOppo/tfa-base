@@ -19,13 +19,12 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
-local att
+local att, angpos, attname, elemname, targetent
 local col = Color(255, 0, 0, 255)
 local pc
 local laserline
 local laserdot
 local laserFOV = 1.5
-local angpos
 local traceres
 
 SWEP.LaserDistance = 12 * 50 -- default 50 feet
@@ -61,7 +60,21 @@ function SWEP:DrawLaser(is_vm)
 			return
 		end
 
+		targetent = self.OwnerViewModel
+
+		elemname = self:GetStat("LaserSight_VElement", self:GetStat("LaserSight_Element"))
+
+		if elemname and self.VElements[elemname] and IsValid(self.VElements[elemname].curmodel) then
+			targetent = self.VElements[elemname].curmodel
+		end
+
 		att = self:GetStat("LaserSightAttachment")
+
+		attname = self:GetStat("LaserSightAttachmentName")
+
+		if attname then
+			att = targetent:LookupAttachment(attname)
+		end
 
 		if (not att) or att <= 0 then
 			self:CleanLaser()
@@ -69,7 +82,7 @@ function SWEP:DrawLaser(is_vm)
 			return
 		end
 
-		angpos = self.OwnerViewModel:GetAttachment(att)
+		angpos = targetent:GetAttachment(att)
 
 		if not angpos then
 			self:CleanLaser()
@@ -119,10 +132,20 @@ function SWEP:DrawLaser(is_vm)
 			lamp:Update()
 		end
 	else
-		att = self:GetStat("LaserSightAttachmentWorld")
+		targetent = self
 
-		if (not att) or att <= 0 then
-			att = self:GetStat("LaserSightAttachment")
+		elemname = self:GetStat("LaserSight_WElement", self:GetStat("LaserSight_Element"))
+
+		if elemname and self.WElements[elemname] and IsValid(self.WElements[elemname].curmodel) then
+			targetent = self.WElements[elemname].curmodel
+		end
+
+		att = self:GetStat("LaserSightAttachmentWorld", self:GetStat("LaserSightAttachment"))
+
+		attname = self:GetStat("LaserSightAttachmentWorldName", self:GetStat("LaserSightAttachmentName"))
+
+		if attname then
+			att = targetent:LookupAttachment(attname)
 		end
 
 		if (not att) or att <= 0 then
@@ -131,10 +154,10 @@ function SWEP:DrawLaser(is_vm)
 			return
 		end
 
-		angpos = self:GetAttachment(att)
+		angpos = targetent:GetAttachment(att)
 
 		if not angpos then
-			angpos = self:GetAttachment(1)
+			angpos = targetent:GetAttachment(1)
 		end
 
 		if not angpos then
