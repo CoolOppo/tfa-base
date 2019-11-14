@@ -191,58 +191,46 @@ function TFA.PatchSound( path, kind )
 	return kindstr .. pathv
 end
 
+function TFA.AddSound( name, channel, volume, level, pitch, wave, char )
+	char = char or ""
+
+	local SoundData = {
+		name = name,
+		channel = channel or CHAN_AUTO,
+		volume = volume or 1,
+		level = level or 75,
+		pitch = pitch or 100
+	}
+
+	if char ~= "" then
+		if type(wave) == "string" then
+			wave = TFA.PatchSound(wave, char)
+		elseif type(wave) == "table" then
+			local patchWave = table.Copy(wave)
+
+			for k, v in pairs(patchWave) do
+				patchWave[k] = TFA.PatchSound(v, char)
+			end
+
+			wave = patchWave
+		end
+	end
+
+	SoundData.sound = wave
+
+	sound.Add(SoundData)
+end
+
 function TFA.AddFireSound( id, path, wrap, kindv )
 	kindv = kindv or ")"
-	if isstring(path) then
-		sound.Add({
-			name = id,
-			channel = wrap and SoundChannels.shootwrap or SoundChannels.shoot,
-			volume = 1.0,
-			level = 120,
-			pitch = { 97, 103 },
-			sound = TFA.PatchSound( path, kindv )
-		})
-	elseif istable(path) then
-		local tb = table.Copy( path )
-		for k,v in pairs(tb) do
-			tb[k] = TFA.PatchSound( v, kindv )
-		end
-		sound.Add({
-			name = id,
-			channel = wrap and SoundChannels.shootwrap or SoundChannels.shoot,
-			volume = 1.0,
-			level = 120,
-			pitch = { 97, 103 },
-			sound = tb
-		})
-	end
+
+	TFA.AddSound(id, wrap and SoundChannels.shootwrap or SoundChannels.shoot, 1, 120, {97, 103}, path, kindv)
 end
 
 function TFA.AddWeaponSound( id, path, kindv )
 	kindv = kindv or ")"
-	if isstring(path) then
-		sound.Add({
-			name = id,
-			channel = SoundChannels.misc,
-			volume = 1.0,
-			level = 80,
-			pitch = { 97, 103 },
-			sound = TFA.PatchSound( path, kindv )
-		})
-	elseif istable(path) then
-		local tb = table.Copy( path )
-		for k,v in pairs(tb) do
-			tb[k] = TFA.PatchSound( v, kindv )
-		end
-		sound.Add({
-			name = id,
-			channel = SoundChannels.misc,
-			volume = 1.0,
-			level = 80,
-			pitch = { 97, 103 },
-			sound = tb
-		})
-	end
+
+	TFA.AddSound(id, SoundChannels.misc, 1, 80, {97, 103}, path, kindv)
 end
 
 --Frametime
