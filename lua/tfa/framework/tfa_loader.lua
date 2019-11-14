@@ -24,12 +24,12 @@ if SERVER then AddCSLuaFile() end
 TFA = TFA or {}
 
 local do_load = true
-local version = 4.503
-local version_string = "4.5.0.3"
+local version = 4.51
+local version_string = "4.5.1.0"
 local changelog = [[
-	* Fixed resetting viewmodel skin after switching weapon
-	* Fixed Ironsights DoF blurring whole screen for 2D-scoped weapons
-	* Fixed ballistics ConVars (dev branch is now safe to use again)
+	* Flashlights rework: added support for QC attachments of SCK elements and custom on/off sounds
+	* Added TFA.AddSound function (simple wrapper for sound.Add)
+	* Looping fire sound now updates correctly if changed while playing
 ]]
 
 local function testFunc()
