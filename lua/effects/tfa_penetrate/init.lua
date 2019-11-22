@@ -75,7 +75,7 @@ function EFFECT:Init(data)
 		fx:SetEntity(self.WeaponEnt)
 		fx:SetMagnitude(1)
 		util.Effect(tn, fx)
-		self:Remove()
+		SafeRemoveEntityDelayed(self, 0)
 		--Sparks
 		--Impact
 
