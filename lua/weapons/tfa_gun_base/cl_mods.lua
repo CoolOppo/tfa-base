@@ -187,6 +187,8 @@ function SWEP:ViewModelDrawn()
 		--self.VElements = self:GetStat("VElements")
 		self:CreateModels(self.VElements, true)
 
+		self.SCKMaterialCached_V = self.SCKMaterialCached_V or {}
+
 		if (not self.vRenderOrder) then
 			-- // we build a render order because sprites need to be drawn after models
 			self.vRenderOrder = {}
@@ -243,8 +245,8 @@ function SWEP:ViewModelDrawn()
 					model:SetSkin(skin)
 				end
 
-				if not self.SCKMaterialCached_V then
-					self.SCKMaterialCached_V = true
+				if not self.SCKMaterialCached_V[name] then
+					self.SCKMaterialCached_V[name] = true
 
 					local materialtable = self:GetStat("VElements." .. name .. ".materials", {})
 
@@ -428,6 +430,8 @@ function SWEP:DrawWorldModel()
 	if self.WElements then
 		self:CreateModels(self.WElements)
 
+		self.SCKMaterialCached_W = self.SCKMaterialCached_W or {}
+
 		if (not self.wRenderOrder) then
 			self.wRenderOrder = {}
 
@@ -491,8 +495,8 @@ function SWEP:DrawWorldModel()
 					model:SetSkin(skin)
 				end
 
-				if not self.SCKMaterialCached_W then
-					self.SCKMaterialCached_W = true
+				if not self.SCKMaterialCached_W[name] then
+					self.SCKMaterialCached_W[name] = true
 
 					local materialtable = self:GetStat("WElements." .. name .. ".materials", {})
 
