@@ -243,6 +243,18 @@ function SWEP:ViewModelDrawn()
 					model:SetSkin(skin)
 				end
 
+				if not self.SCKMaterialCached_V then
+					self.SCKMaterialCached_V = true
+
+					local materialtable = self:GetStat("VElements." .. name .. ".materials", {})
+
+					local entmats = table.GetKeys(model:GetMaterials())
+
+					for _, k in ipairs(entmats) do
+						model:SetSubMaterial(k - 1, materialtable[k] or "")
+					end
+				end
+
 				if v.bonemerge then
 					if v.rel and self.VElements[v.rel] and IsValid(self.VElements[v.rel].curmodel) then
 						v.parModel = self.VElements[v.rel].curmodel
@@ -477,6 +489,18 @@ function SWEP:DrawWorldModel()
 				local skin = self:GetStat("WElements." .. name .. ".skin")
 				if (skin and skin ~= model:GetSkin()) then
 					model:SetSkin(skin)
+				end
+
+				if not self.SCKMaterialCached_W then
+					self.SCKMaterialCached_W = true
+
+					local materialtable = self:GetStat("WElements." .. name .. ".materials", {})
+
+					local entmats = table.GetKeys(model:GetMaterials())
+
+					for _, k in ipairs(entmats) do
+						model:SetSubMaterial(k - 1, materialtable[k] or "")
+					end
 				end
 
 				if (v.bodygroup) then

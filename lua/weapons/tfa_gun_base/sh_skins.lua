@@ -43,13 +43,17 @@ function SWEP:ClearMaterialCache(view, world)
 		self.MaterialCached_V = nil
 		self.MaterialCached_W = nil
 		self.MaterialCached = nil
+		self.SCKMaterialCached_V = nil
+		self.SCKMaterialCached_W = nil
 	else
 		if view then
 			self.MaterialCached_V = nil
+			self.SCKMaterialCached_V = nil
 		end
 
 		if world then
 			self.MaterialCached_W = nil
+			self.SCKMaterialCached_W = nil
 		end
 	end
 	self:ClearStatCache()
