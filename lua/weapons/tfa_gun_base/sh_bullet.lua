@@ -55,7 +55,7 @@ end
 Function Name:  ShootBulletInformation
 Syntax: self:ShootBulletInformation( ).
 Returns:   Nothing.
-Notes:	Used to generate a self.MainBullet table which is then sent to self:ShootBullet, and also to call shooteffects.
+Notes:  Used to generate a self.MainBullet table which is then sent to self:ShootBullet, and also to call shooteffects.
 Purpose:  Bullet
 ]]
 --
@@ -84,7 +84,7 @@ end
 Function Name:  ShootBullet
 Syntax: self:ShootBullet(damage, recoil, number of bullets, spray cone, disable ricochet, override the generated self.MainBullet table with this value if you send it).
 Returns:   Nothing.
-Notes:	Used to shoot a self.MainBullet.
+Notes:  Used to shoot a self.MainBullet.
 Purpose:  Bullet
 ]]
 --
@@ -235,7 +235,7 @@ end
 Function Name:  GetAmmoRicochetMultiplier
 Syntax: self:GetAmmoRicochetMultiplier( ).
 Returns:  The ricochet multiplier for our ammotype.  More is more chance to ricochet.
-Notes:	Only compatible with default ammo types, unless you/I mod that.  BMG ammotype is detected based on name and category.
+Notes:  Only compatible with default ammo types, unless you/I mod that.  BMG ammotype is detected based on name and category.
 Purpose:  Utility
 ]]
 --
@@ -267,7 +267,7 @@ end
 Function Name:  GetMaterialConcise
 Syntax: self:GetMaterialConcise( ).
 Returns:  The string material name.
-Notes:	Always lowercase.
+Notes:  Always lowercase.
 Purpose:  Utility
 ]]
 --
@@ -308,7 +308,7 @@ end
 Function Name:  GetPenetrationMultiplier
 Syntax: self:GetPenetrationMultiplier( concise material name).
 Returns:  The multilier for how much you can penetrate through a material.
-Notes:	Should be used with GetMaterialConcise.
+Notes:  Should be used with GetMaterialConcise.
 Purpose:  Utility
 ]]
 --
@@ -494,9 +494,13 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon)
 	bul.Tracer = 0
 	bul.TracerName = ""
 	bul.Callback = function(a, b, c)
-		c:SetInflictor(bul.Wep)
+		c:SetInflictor(IsValid(bul.Wep) and bul.Wep or IsValid(ply) and ply or Entity(0))
 
-		bul:Penetrate(a, b, c, bul.Wep)
+		-- TODO: User died while bullet make penetration
+		-- handle further penetrations even when user is dead
+		if IsValid(bul.Wep) then
+			bul:Penetrate(a, b, c, bul.Wep)
+		end
 	end
 
 	decalbul.Dir = -traceres.Normal * 64
