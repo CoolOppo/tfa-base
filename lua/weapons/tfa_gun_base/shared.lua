@@ -1968,3 +1968,9 @@ function SWEP:ToggleFlashlight(toState)
 	self:SetFlashlightEnabled(toState)
 	self:EmitSoundNet(self:GetStat("FlashlightSoundToggle" .. (toState and "On" or "Off")))
 end
+
+-- source engine save load
+function SWEP:OnRestore()
+	self.HasInitialized = false
+	self.HasInitAttachments = false
+end
