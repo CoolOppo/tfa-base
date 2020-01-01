@@ -1,4 +1,3 @@
-
 -- Copyright (c) 2018-2019 TFA Base Devs
 
 -- Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -20,7 +19,7 @@
 -- SOFTWARE.
 
 hook.Add("PreDrawOpaqueRenderables", "tfaweaponspredrawopaque", function()
-	for _, v in pairs(player.GetAll()) do
+	for _, v in ipairs(player.GetAll()) do
 		local wep = v:GetActiveWeapon()
 
 		if IsValid(wep) and wep.PreDrawOpaqueRenderables then
