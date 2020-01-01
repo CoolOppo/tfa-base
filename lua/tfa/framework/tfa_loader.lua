@@ -24,12 +24,10 @@ if SERVER then AddCSLuaFile() end
 TFA = TFA or {}
 
 local do_load = true
-local version = 4.51
-local version_string = "4.5.1.0"
+local version = 4.511
+local version_string = "4.5.1.1"
 local changelog = [[
-	* Flashlights rework: added support for QC attachments of SCK elements and custom on/off sounds
-	* Added TFA.AddSound function (simple wrapper for sound.Add)
-	* Looping fire sound now updates correctly if changed while playing
+	* Fixed bugs with level transition and for bullets fired after player's death
 ]]
 
 local function testFunc()
