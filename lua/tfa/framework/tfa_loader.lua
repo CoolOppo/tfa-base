@@ -28,6 +28,7 @@ local version = 4.511
 local version_string = "4.5.1.1"
 local changelog = [[
 	* Fixed bugs with level transition and for bullets fired after player's death
+	* Fixed looped fire sounds not working properly in P2P/listen servers
 ]]
 
 local function testFunc()

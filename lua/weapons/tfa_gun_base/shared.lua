@@ -1358,7 +1358,7 @@ function SWEP:EmitGunfireLoop()
 	local tgtSound = self:GetSilenced() and self:GetStat("Primary.LoopSoundSilenced", self:GetStat("Primary.LoopSound")) or self:GetStat("Primary.LoopSound")
 
 	if self:GetNextLoopSoundCheck() < 0 or (CurTime() >= self:GetNextLoopSoundCheck() and self.LastLoopSound ~= tgtSound) then
-		if self.LastLoopSound ~= nil then
+		if self.LastLoopSound ~= tgtSound and self.LastLoopSound ~= nil then
 			self:StopSound(self.LastLoopSound)
 		end
 
