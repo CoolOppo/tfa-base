@@ -804,6 +804,7 @@ function SWEP:Think2()
 	self:ProcessHoldType()
 	self:ReloadCV()
 	self:IronSightSounds()
+	self:ProcessLoopSound()
 	is, spr, wlk = self:IronSights()
 	if stat == TFA.Enum.STATUS_FIDGET and is then
 		self:SetStatusEnd(0)
@@ -963,30 +964,6 @@ function SWEP:Think2()
 
 	if TFA.Enum.ReadyStatus[stat] and ct > self:GetNextIdleAnim() then
 		self:ChooseIdleAnim()
-	end
-
-	if (SERVER or not sp) and (
-			self:GetNextLoopSoundCheck() >= 0
-			and ct >= self:GetNextLoopSoundCheck()
-			and (
-				(self:GetStat("Primary.ClipSize") <= 0 and self:Ammo1() < self:GetStat("Primary.AmmoConsumption"))
-				or (self:GetPrimaryClipSize(true) > 0 and self:Clip1() < self:GetStat("Primary.AmmoConsumption"))
-				or (self:GetSprinting() and not self:GetStat("AllowSprintAttack", false))
-				or not self.Primary.Automatic or self:GetOwner():IsPlayer() and not self:GetOwner():KeyDown(IN_ATTACK)
-			)
-		) then
-
-		self:SetNextLoopSoundCheck(-1)
-
-		local tgtSound = self:GetSilenced() and self:GetStat("Primary.LoopSoundSilenced", self:GetStat("Primary.LoopSound")) or self:GetStat("Primary.LoopSound")
-
-		self:StopSound(tgtSound)
-
-		tgtSound = self:GetSilenced() and self:GetStat("Primary.LoopSoundTailSilenced", self:GetStat("Primary.LoopSoundTail")) or self:GetStat("Primary.LoopSoundTail")
-
-		if tgtSound then
-			self:EmitSound(tgtSound)
-		end
 	end
 end
 
@@ -1973,4 +1950,25 @@ end
 function SWEP:OnRestore()
 	self.HasInitialized = false
 	self.HasInitAttachments = false
+end
+
+function SWEP:ProcessLoopSound()
+	if (SERVER or not sp) and (
+			self:GetNextLoopSoundCheck() >= 0
+			and ct > self:GetNextLoopSoundCheck()
+			and self:GetStatus() ~= TFA.Enum.STATUS_SHOOTING
+		) then
+
+		self:SetNextLoopSoundCheck(-1)
+
+		local tgtSound = self:GetSilenced() and self:GetStat("Primary.LoopSoundSilenced", self:GetStat("Primary.LoopSound")) or self:GetStat("Primary.LoopSound")
+
+		self:StopSound(tgtSound)
+
+		tgtSound = self:GetSilenced() and self:GetStat("Primary.LoopSoundTailSilenced", self:GetStat("Primary.LoopSoundTail")) or self:GetStat("Primary.LoopSoundTail")
+
+		if tgtSound then
+			self:EmitSound(tgtSound)
+		end
+	end
 end
