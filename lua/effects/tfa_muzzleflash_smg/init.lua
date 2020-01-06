@@ -19,13 +19,13 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
-EFFECT.Life = 0.15
+EFFECT.Life = 0.075
 EFFECT.XFlashSize = 1
 EFFECT.FlashSize = 1
 EFFECT.SmokeSize = 1
 EFFECT.SparkSize = 1
 EFFECT.HeatSize = 1
-EFFECT.Color = Color(255, 192, 64)
+EFFECT.Color = Color(255, 225, 128)
 EFFECT.ColorSprites = false
 local AddVel = Vector()
 local ang
@@ -74,7 +74,7 @@ function EFFECT:Init(data)
 	local dlight = DynamicLight(ownerent:EntIndex())
 
 	if (dlight) then
-		dlight.pos = epos + ownerent:EyeAngles():Forward() * self.vOffset:Distance(epos) * 0.7 --self.vOffset - ownerent:EyeAngles():Right() * 5 + 1.05 * ownerent:GetVelocity() * FrameTime()
+		dlight.pos = epos + ownerent:EyeAngles():Forward() * self.vOffset:Distance(epos) --self.vOffset - ownerent:EyeAngles():Right() * 5 + 1.05 * ownerent:GetVelocity() * FrameTime()
 		dlight.r = self.Color.r
 		dlight.g = self.Color.g
 		dlight.b = self.Color.b
@@ -84,7 +84,7 @@ function EFFECT:Init(data)
 		dlight.dietime = CurTime() + self.Life
 	end
 
-	self.Dist = self.vOffset:Distance(epos) * 0.7
+	self.Dist = self.vOffset:Distance(epos)
 	self.DLight = dlight
 	self.DieTime = CurTime() + self.Life
 	self.OwnerEnt = ownerent
@@ -109,7 +109,7 @@ function EFFECT:Init(data)
 			--particle:SetStartSize( 8 * (halofac*0.8+0.2), 0, 1)
 			--particle:SetEndSize( 0 )
 			particle:SetStartSize(3 * (halofac * 0.8 + 0.2) * self.XFlashSize)
-			particle:SetEndSize(8 * (halofac * 0.8 + 0.2) * self.XFlashSize)
+			particle:SetEndSize(15 * (halofac * 0.8 + 0.2) * self.XFlashSize)
 			local r = math.Rand(-10, 10) * 3.14 / 180
 			particle:SetRoll(r)
 			particle:SetRollDelta(r / 5)
@@ -138,7 +138,7 @@ function EFFECT:Init(data)
 			particle:SetStartAlpha(math.Rand(200, 255))
 			particle:SetEndAlpha(0)
 			particle:SetStartSize(2 * (halofac * 0.8 + 0.2) * 0.3 * self.FlashSize)
-			particle:SetEndSize(4 * (halofac * 0.8 + 0.2) * 0.3 * self.FlashSize)
+			particle:SetEndSize(6 * (halofac * 0.8 + 0.2) * 0.3 * self.FlashSize)
 			local r = math.Rand(-10, 10) * 3.14 / 180
 			particle:SetRoll(r)
 			particle:SetRollDelta(r / 5)
@@ -160,18 +160,19 @@ function EFFECT:Init(data)
 	local flashCount = math.Round(self.FlashSize * 8)
 
 	for i = 1, flashCount do
-		local particle = emitter:Add(self.ColorSprites and "effects/scotchmuzzleflashw" or "effects/scotchmuzzleflash4", self.vOffset + dir * 0.4 * i + FrameTime() * AddVel)
+		local particle = emitter:Add(self.ColorSprites and "effects/scotchmuzzleflashw" or "effects/scotchmuzzleflash4", self.vOffset + FrameTime() * AddVel)
 
 		if (particle) then
-			particle:SetVelocity(dir * 48 * (0.2 + (i / flashCount) * 0.8) * self.FlashSize)
+			particle:SetVelocity(dir * 300 * (0.2 + (i / flashCount) * 0.8) * self.FlashSize)
 			particle:SetLifeTime(0)
 			particle:SetDieTime(self.Life * 0.75)
 			particle:SetStartAlpha(math.Rand(128, 255))
 			particle:SetEndAlpha(0)
 			--particle:SetStartSize( 7.5 * (halofac*0.8+0.2), 0, 1)
 			--particle:SetEndSize( 0 )
-			particle:SetStartSize(1 * math.Rand(1, 1.5) * (1 + (flashCount - i) * (1 / flashCount * 0.9)) * self.FlashSize)
-			particle:SetEndSize(5 * math.Rand(0.75, 1) * (1 + (flashCount - i) * (1 / flashCount * 0.9)) * self.FlashSize)
+			local szsc = 1 + (flashCount - i) * math.pow(1 / flashCount * 0.9,0.8)
+			particle:SetStartSize(1.25 * math.Rand(1, 1.5) * szsc * self.FlashSize)
+			particle:SetEndSize(6 * math.Rand(0.75, 1) * szsc * self.FlashSize)
 			particle:SetRoll(math.rad(math.Rand(0, 360)))
 			particle:SetRollDelta(math.rad(math.Rand(15, 30)) * sval)
 
@@ -194,13 +195,13 @@ function EFFECT:Init(data)
 		if (particle) then
 			particle:SetVelocity(dir * 6 * self.FlashSize + 1.05 * AddVel)
 			particle:SetLifeTime(0)
-			particle:SetDieTime(self.Life * 2)
+			particle:SetDieTime(self.Life * 1)
 			particle:SetStartAlpha(math.Rand(40, 140))
 			particle:SetEndAlpha(0)
 			--particle:SetStartSize( 7.5 * (halofac*0.8+0.2), 0, 1)
 			--particle:SetEndSize( 0 )
-			particle:SetStartSize(1 * math.Rand(1, 1.5) * self.FlashSize)
-			particle:SetEndSize(14 * math.Rand(0.5, 1) * self.FlashSize)
+			particle:SetStartSize(2 * math.Rand(1, 1.5) * self.FlashSize)
+			particle:SetEndSize(20 * math.Rand(0.5, 1) * self.FlashSize)
 			particle:SetRoll(math.rad(math.Rand(0, 360)))
 			particle:SetRollDelta(math.rad(math.Rand(30, 60)) * sval)
 
@@ -251,41 +252,42 @@ function EFFECT:Init(data)
 	local smokeCount = math.ceil(self.SmokeSize * 6)
 
 	for _ = 0, smokeCount do
-		local particle = emitter:Add("particles/smokey", self.vOffset + dir * math.Rand(6, 10))
+		local particle = emitter:Add("particles/smokey", self.vOffset + dir * math.Rand(3, 14))
 
 		if (particle) then
-			particle:SetVelocity(VectorRand() * 10 * self.SmokeSize + dir * math.Rand(15, 20) * self.SmokeSize + 1.05 * AddVel)
-			particle:SetLifeTime(0)
-			particle:SetDieTime(math.Rand(0.6, 0.7) * self.Life * 5)
-			particle:SetStartAlpha(math.Rand(6, 10))
+			particle:SetVelocity(VectorRand() * 10 * self.SmokeSize + dir * math.Rand(35, 50) * self.SmokeSize + 1.05 * AddVel)
+			particle:SetDieTime(math.Rand(0.6, 1) * self.Life * 6)
+			particle:SetStartAlpha(math.Rand(12, 24))
 			particle:SetEndAlpha(0)
 			particle:SetStartSize(math.Rand(5, 7) * self.SmokeSize)
-			particle:SetEndSize(math.Rand(12, 14) * self.SmokeSize)
+			particle:SetEndSize(math.Rand(15, 20) * self.SmokeSize)
 			particle:SetRoll(math.rad(math.Rand(0, 360)))
 			particle:SetRollDelta(math.Rand(-0.8, 0.8))
 			particle:SetLighting(true)
-			particle:SetAirResistance(10)
+			particle:SetAirResistance(20)
 			particle:SetGravity(Vector(0, 0, 60))
 			particle:SetColor(255, 255, 255)
 		end
 	end
 
-	local sparkcount = math.Round(math.random(2, 4) * self.SparkSize)
+	local sparkcount = math.Round(math.random(8, 12) * self.SparkSize)
 
 	for _ = 0, sparkcount do
 		local particle = emitter:Add("effects/yellowflare", self.Position)
 
 		if (particle) then
-			particle:SetVelocity((VectorRand() + Vector(0, 0, 0.3)) * 20 * Vector(0.8, 0.8, 0.6) * self.SparkSize + dir * math.Rand(45, 60) * 1 * self.SparkSize + 1.15 * AddVel)
+			particle:SetVelocity( VectorRand() * 30 * self.SparkSize)
+			particle:SetVelocity(particle:GetVelocity() + 1.15 * AddVel )
+			particle:SetVelocity( particle:GetVelocity() + dir * math.Rand(80, 100) * (1-math.abs(math.max(particle:GetVelocity():GetNormalized():Dot(-dir),0))) * self.SparkSize )
 			particle:SetLifeTime(0)
-			particle:SetDieTime(math.Rand(self.Life / 2, self.Life))
+			particle:SetDieTime(self.Life * math.Rand(0.9,1.1))
 			particle:SetStartAlpha(255)
 			particle:SetEndAlpha(0)
-			particle:SetStartSize(0.5)
-			particle:SetEndSize(1.0)
+			particle:SetStartSize(0.6)
+			particle:SetEndSize(1)
 			particle:SetRoll(math.rad(math.Rand(0, 360)))
 			particle:SetGravity(vector_origin)
-			particle:SetAirResistance(0)
+			particle:SetAirResistance(1)
 			particle:SetStartLength(0.1)
 			particle:SetEndLength(0.05)
 
@@ -299,12 +301,11 @@ function EFFECT:Init(data)
 			local sl = self.SparkSize
 
 			particle:SetThinkFunction(function(pa)
-				pa.ranvel = pa.ranvel or VectorRand() * 4
-				local ft = math.min(FrameTime() * 15, 1)
-				pa.ranvel.x = Lerp(ft, pa.ranvel.x, math.Rand(-4, 4))
-				pa.ranvel.y = Lerp(ft, pa.ranvel.y, math.Rand(-4, 4))
-				pa.ranvel.z = Lerp(ft, pa.ranvel.z, math.Rand(-4, 4))
-				pa:SetVelocity(pa:GetVelocity() + pa.ranvel * 2 * sl * FrameTime() * 100)
+				math.randomseed(SysTime())
+				local spd = pa:GetVelocity():Length()*12
+				pa.ranvel = pa.ranvel or VectorRand() * spd
+				pa.ranvel:Add(VectorRand() * spd * math.sqrt(FrameTime()))
+				pa:SetVelocity(pa:GetVelocity() + pa.ranvel * sl * FrameTime() )
 				pa:SetNextThink(CurTime())
 			end)
 
@@ -313,23 +314,21 @@ function EFFECT:Init(data)
 	end
 
 	if TFA.GetGasEnabled() then
-		for i = 0, 1 do
-			local particle = emitter:Add("sprites/heatwave", self.vOffset + (dir * i))
+		local particle = emitter:Add("sprites/heatwave", self.vOffset + dir*2)
 
-			if (particle) then
-				particle:SetVelocity((dir * 25 * i) * self.HeatSize + 1.05 * AddVel)
-				particle:SetLifeTime(0)
-				particle:SetDieTime(self.Life)
-				particle:SetStartAlpha(math.Rand(200, 225))
-				particle:SetEndAlpha(0)
-				particle:SetStartSize(math.Rand(3, 5) * self.HeatSize)
-				particle:SetEndSize(math.Rand(8, 10) * self.HeatSize)
-				particle:SetRoll(math.Rand(0, 360))
-				particle:SetRollDelta(math.Rand(-2, 2))
-				particle:SetAirResistance(5)
-				particle:SetGravity(Vector(0, 0, 40))
-				particle:SetColor(255, 255, 255)
-			end
+		if (particle) then
+			particle:SetVelocity(dir * 25 * self.HeatSize + 1.05 * AddVel)
+			particle:SetLifeTime(0)
+			particle:SetDieTime(self.Life)
+			particle:SetStartAlpha(math.Rand(200, 225))
+			particle:SetEndAlpha(0)
+			particle:SetStartSize(math.Rand(3, 5) * self.HeatSize)
+			particle:SetEndSize(math.Rand(8, 12) * self.HeatSize)
+			particle:SetRoll(math.Rand(0, 360))
+			particle:SetRollDelta(math.Rand(-2, 2))
+			particle:SetAirResistance(5)
+			particle:SetGravity(Vector(0, 0, 40))
+			particle:SetColor(255, 255, 255)
 		end
 	end
 

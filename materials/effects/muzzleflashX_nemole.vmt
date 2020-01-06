@@ -6,11 +6,10 @@
 	$vertexalpha  "1"
    "Proxies"
    {
-      "AnimatedTexture"
+      "EntityRandom"
       {
-         "animatedtexturevar" $basetexture 
-         "animatedtextureframenumvar" $frame 
-         "animatedtextureframerate" 30
+         "scale" "12"
+         "resultVar" $frame
       }
    }
 }
