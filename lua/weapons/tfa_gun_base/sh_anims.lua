@@ -892,7 +892,11 @@ function SWEP:ChooseShootAnim(ifp)
 
 		if TFA.Enum.ShootReadyStatus[self:GetShootStatus()] then
 			self:SetShootStatus(TFA.Enum.SHOOT_START)
-			return self:PlayAnimation(self:GetStat("ShootAnimation.in"))
+			local inan = self:GetStat("ShootAnimation.in")
+			if not inan then
+				inan = self:GetStat("ShootAnimation.loop")
+			end
+			return self:PlayAnimation(inan)
 		end
 		
 		return
