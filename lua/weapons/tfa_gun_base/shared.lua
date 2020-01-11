@@ -240,6 +240,25 @@ SWEP.SprintAnimation = {
 	]]--
 }
 
+SWEP.ShootAnimation = {--[[
+	["in"] = {
+		["type"] = TFA.Enum.ANIMATION_SEQ, --Sequence or act
+		["value"] = "shoot_loop_start", --Number for act, String/Number for sequence
+		["value_is"] = "shoot_loop_iron_start"
+	},
+	["loop"] = {
+		["type"] = TFA.Enum.ANIMATION_SEQ, --Sequence or act
+		["value"] = "shoot_loop", --Number for act, String/Number for sequence
+		["value_is"] = "shoot_loop_iron",
+		["is_idle"] = true
+	},
+	["out"] = {
+		["type"] = TFA.Enum.ANIMATION_SEQ, --Sequence or act
+		["value"] = "shoot_loop_end", --Number for act, String/Number for sequence
+		["value_is"] = "shoot_loop_iron_end"
+	}]]--
+}
+
 SWEP.FirstDeployEnabled = nil--Force first deploy enabled
 
 --[[Dont edit under this unless you know what u r doing]]
@@ -362,6 +381,7 @@ function SWEP:SetupDataTables()
 	self:NetworkVar("Int", 1, "FireMode")
 	self:NetworkVar("Int", 2, "LastActivity")
 	self:NetworkVar("Int", 3, "BurstCount")
+	self:NetworkVar("Int", 4, "ShootStatus")
 	self:NetworkVar("Entity", 0, "SwapTarget")
 	hook.Run("TFA_SetupDataTables",self)
 end
@@ -431,6 +451,7 @@ function SWEP:Initialize()
 	end
 
 	self:SetNextLoopSoundCheck(-1)
+	self:SetShootStatus(TFA.Enum.SHOOT_IDLE)
 
 	if SERVER and self.Owner:IsNPC() then
 		local seq = self.Owner:LookupSequence("shootp1")
@@ -805,6 +826,7 @@ function SWEP:Think2()
 	self:ReloadCV()
 	self:IronSightSounds()
 	self:ProcessLoopSound()
+	self:ProcessLoopFire()
 	is, spr, wlk = self:IronSights()
 	if stat == TFA.Enum.STATUS_FIDGET and is then
 		self:SetStatusEnd(0)
@@ -1444,6 +1466,9 @@ function SWEP:PrimaryAttack()
 	if not self:VMIV() then return end
 	if not self:CanPrimaryAttack() then return end
 	if hook.Run("TFA_PrimaryAttack",self) then return end
+	if TFA.Enum.ShootReadyStatus[self:GetShootStatus()] then
+		self:SetShootStatus(TFA.Enum.SHOOT_IDLE)
+	end
 
 	if self.CanBeSilenced and self:GetOwner():KeyDown(IN_USE) and (SERVER or not sp) then
 		self:ChooseSilenceAnim(not self:GetSilenced())
@@ -1969,6 +1994,24 @@ function SWEP:ProcessLoopSound()
 
 		if tgtSound then
 			self:EmitSound(tgtSound)
+		end
+	end
+end
+
+function SWEP:ProcessLoopFire()
+	if (self:GetStatus() == TFA.Enum.STATUS_SHOOTING ) then
+		if TFA.Enum.ShootLoopingStatus[self:GetShootStatus()] then
+			self:SetShootStatus(TFA.Enum.SHOOT_LOOP)
+			if self:GetNextIdleAnim() <= CurTime() then
+				self:PlayAnimation(self:GetStat("ShootAnimation.loop"))
+			end
+		end
+	elseif (l_ct() - 0.01 > self:GetStatusEnd()) then
+		if (!TFA.Enum.ShootReadyStatus[self:GetShootStatus()]) then
+			self:SetShootStatus(TFA.Enum.SHOOT_IDLE)
+			if not ( self:GetSprinting() and self.Sprint_Mode ~= TFA.Enum.LOCOMOTION_LUA ) then
+				self:PlayAnimation(self:GetStat("ShootAnimation.out"))
+			end
 		end
 	end
 end

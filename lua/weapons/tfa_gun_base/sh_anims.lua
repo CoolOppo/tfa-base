@@ -864,6 +864,10 @@ function SWEP:ChooseWalkAnim()
 	return self:PlayAnimation(self:GetStat("WalkAnimation.loop"))
 end
 
+function SWEP:ChooseLoopShootAnim()
+	return self:PlayAnimation(self:GetStat("ShootAnimation.loop"))
+end
+
 --[[
 Function Name:  ChooseShootAnim
 Syntax: self:ChooseShootAnim().
@@ -875,6 +879,19 @@ Purpose:  Animation / Utility
 function SWEP:ChooseShootAnim(ifp)
 	ifp = ifp or IsFirstTimePredicted()
 	if not self:VMIV() then return end
+
+	if self:GetStat("ShootAnimation.loop") and self.Primary.Automatic then
+		if self.LuaShellEject and ifp then
+			self:EventShell()
+		end
+
+		if TFA.Enum.ShootReadyStatus[self:GetShootStatus()] then
+			self:SetShootStatus(TFA.Enum.SHOOT_START)
+			return self:PlayAnimation(self:GetStat("ShootAnimation.in"))
+		end
+		
+		return
+	end
 
 	if self:GetIronSights() and (self.Sights_Mode == TFA.Enum.LOCOMOTION_ANI or self.Sights_Mode == TFA.Enum.LOCOMOTION_HYBRID) and self:GetStat("IronAnimation.shoot") then
 		if self.LuaShellEject and ifp then
