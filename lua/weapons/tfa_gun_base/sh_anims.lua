@@ -786,6 +786,11 @@ function SWEP:ChooseIdleAnim()
 	--	self.Idle_WithHeld = nil
 	--	return
 	--end
+
+	if TFA.Enum.ShootLoopingStatus[self:GetShootStatus()] then
+		return self:ChooseLoopShootAnim()
+	end
+
 	if self.Idle_Mode ~= TFA.Enum.IDLE_BOTH and self.Idle_Mode ~= TFA.Enum.IDLE_ANI then return end
 
 	--self:ResetEvents()

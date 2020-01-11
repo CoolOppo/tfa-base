@@ -984,7 +984,9 @@ function SWEP:Think2()
 		end
 	end
 
-	if TFA.Enum.ReadyStatus[stat] and ct > self:GetNextIdleAnim() then
+	if ( ( TFA.Enum.ReadyStatus[stat] 
+		or (stat == TFA.Enum.STATUS_SHOOTING and TFA.Enum.ShootLoopingStatus[self:GetShootStatus()] ) )
+		and ct > self:GetNextIdleAnim() ) then
 		self:ChooseIdleAnim()
 	end
 end
@@ -2002,11 +2004,8 @@ function SWEP:ProcessLoopFire()
 	if (self:GetStatus() == TFA.Enum.STATUS_SHOOTING ) then
 		if TFA.Enum.ShootLoopingStatus[self:GetShootStatus()] then
 			self:SetShootStatus(TFA.Enum.SHOOT_LOOP)
-			if self:GetNextIdleAnim() <= CurTime() then
-				self:PlayAnimation(self:GetStat("ShootAnimation.loop"))
-			end
 		end
-	elseif (l_ct() - 0.01 > self:GetStatusEnd()) then
+	elseif (l_ct() > self:GetStatusEnd() + 0.01) then
 		if (!TFA.Enum.ShootReadyStatus[self:GetShootStatus()]) then
 			self:SetShootStatus(TFA.Enum.SHOOT_IDLE)
 			if not ( self:GetSprinting() and self.Sprint_Mode ~= TFA.Enum.LOCOMOTION_LUA ) then
