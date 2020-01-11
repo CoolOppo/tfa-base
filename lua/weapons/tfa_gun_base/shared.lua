@@ -2001,15 +2001,20 @@ function SWEP:ProcessLoopSound()
 end
 
 function SWEP:ProcessLoopFire()
+	if game.SinglePlayer() and !IsFirstTimePredicted() then return end
 	if (self:GetStatus() == TFA.Enum.STATUS_SHOOTING ) then
 		if TFA.Enum.ShootLoopingStatus[self:GetShootStatus()] then
 			self:SetShootStatus(TFA.Enum.SHOOT_LOOP)
 		end
-	elseif (l_ct() > self:GetStatusEnd() + 0.01) then
+	else --not shooting
 		if (!TFA.Enum.ShootReadyStatus[self:GetShootStatus()]) then
-			self:SetShootStatus(TFA.Enum.SHOOT_IDLE)
-			if not ( self:GetSprinting() and self.Sprint_Mode ~= TFA.Enum.LOCOMOTION_LUA ) then
-				self:PlayAnimation(self:GetStat("ShootAnimation.out"))
+			if ( self:GetShootStatus() ~= TFA.Enum.SHOOT_CHECK ) then
+				self:SetShootStatus(TFA.Enum.SHOOT_CHECK) --move to check first
+			else --if we've checked for one more tick that we're not shooting
+				self:SetShootStatus(TFA.Enum.SHOOT_IDLE) --move to check first
+				if not ( self:GetSprinting() and self.Sprint_Mode ~= TFA.Enum.LOCOMOTION_LUA ) then --assuming we don't need to transition into sprint
+					self:PlayAnimation(self:GetStat("ShootAnimation.out")) --exit
+				end
 			end
 		end
 	end
