@@ -440,7 +440,7 @@ end
 
 local tval
 
-function SWEP:PlayAnimation(data)
+function SWEP:PlayAnimation(data, fade)
 	if not self:VMIV() then return end
 	if not data then return false, -1 end
 	local vm = self.OwnerViewModel
@@ -480,7 +480,7 @@ function SWEP:PlayAnimation(data)
 			tval = tonumber(tval) or -1
 		end
 
-		if tval and tval > 0 then return self:SendViewModelAnim(tval, 1, false, data.transition and self.Idle_Blend or self.Idle_Smooth) end
+		if tval and tval > 0 then return self:SendViewModelAnim(tval, 1, false, fade or (data.transition and self.Idle_Blend or self.Idle_Smooth) ) end
 	elseif data.type == TFA.Enum.ANIMATION_SEQ then
 		tval = data.value
 
@@ -516,7 +516,7 @@ function SWEP:PlayAnimation(data)
 			tval = vm:LookupSequence(tval)
 		end
 
-		if tval and tval > 0 then return self:SendViewModelSeq(tval, 1, false, data.transition and self.Idle_Blend or self.Idle_Smooth) end
+		if tval and tval > 0 then return self:SendViewModelSeq(tval, 1, false, fade or (data.transition and self.Idle_Blend or self.Idle_Smooth) ) end
 	end
 end
 
