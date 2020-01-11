@@ -826,7 +826,6 @@ function SWEP:Think2()
 	self:ReloadCV()
 	self:IronSightSounds()
 	self:ProcessLoopSound()
-	self:ProcessLoopFire()
 	is, spr, wlk = self:IronSights()
 	if stat == TFA.Enum.STATUS_FIDGET and is then
 		self:SetStatusEnd(0)
@@ -984,6 +983,8 @@ function SWEP:Think2()
 		end
 	end
 
+	self:ProcessLoopFire()
+	
 	if ( ( TFA.Enum.ReadyStatus[stat] 
 		or (stat == TFA.Enum.STATUS_SHOOTING and TFA.Enum.ShootLoopingStatus[self:GetShootStatus()] ) )
 		and ct > self:GetNextIdleAnim() ) then
