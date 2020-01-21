@@ -973,6 +973,10 @@ function SWEP:Reload(released, ovr, ...)
 	if not self:VMIV() then return end
 	if ovr then return BaseClass.Reload(self, released, ...) end
 
+	if self:GetOwner().GetInfoNum and self:GetOwner():GetInfoNum("cl_tfa_keys_inspect", 0) > 0 then
+		return
+	end
+
 	if (self.SequenceEnabled[ACT_VM_FIDGET] or self.InspectionActions) and self:GetStatus() == TFA.Enum.STATUS_IDLE then
 		self:SetStatus(TFA.Enum.STATUS_FIDGET)
 		local _, tanim = self:ChooseInspectAnim()

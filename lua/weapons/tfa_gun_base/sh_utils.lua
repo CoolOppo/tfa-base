@@ -730,6 +730,10 @@ Purpose:  Feature
 ]]
 --
 function SWEP:ProcessFireMode()
+	if self:GetOwner().GetInfoNum and self:GetOwner():GetInfoNum("cl_tfa_keys_firemode", 0) > 0 then
+		return
+	end
+
 	if self:OwnerIsValid() and self:GetOwner():KeyPressed(IN_RELOAD) and self:GetOwner():KeyDown(IN_USE) and self:GetStatus() == TFA.Enum.STATUS_IDLE and (SERVER or not sp) then
 		if self:GetStat("SelectiveFire") and not self:GetOwner():KeyDown(IN_SPEED) then
 			self:CycleFireMode()
