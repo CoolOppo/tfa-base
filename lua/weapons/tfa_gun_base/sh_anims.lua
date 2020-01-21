@@ -898,7 +898,7 @@ function SWEP:ChooseShootAnim(ifp)
 			end
 			return self:PlayAnimation(inan)
 		end
-		
+
 		return
 	end
 
