@@ -45,10 +45,8 @@ if sp then -- THANK YOU GARRY FOR HIGH QUALITY PREDICTION IN SINGLEPLAYER
 				data.state = state
 
 				if state then
-					if data.onpress and type(data.onpress) == "function" then
-						data.onpress(ply)
-					end
-				elseif data.onrelease and type(data.onrelease) == "function" then
+					data.onpress(ply)
+				else
 					data.onrelease(ply)
 				end
 			end
@@ -68,12 +66,27 @@ if sp then -- THANK YOU GARRY FOR HIGH QUALITY PREDICTION IN SINGLEPLAYER
 	end
 end
 
+local function empty()
+end
+
 function TFA.RegisterKeyBind(data_in)
 	assert(type(data_in) == "table", "Data must be a table!")
 	assert(data_in.bind and type(data_in.bind) == "string", "Invalid bind name!")
 	-- assert(not TFA._KeyBindTable[data.bind], "Keybind already registered!")
 
 	local data = table.Copy(data_in)
+
+	if not data.onpress then
+		data.onpress = empty
+	elseif type(data.onpress) ~= "function" then
+		error("data.onpress - function expected, got " .. type(data.onpress))
+	end
+
+	if not data.onrelease then
+		data.onrelease = empty
+	elseif type(data.onrelease) ~= "function" then
+		error("data.onrelease - function expected, got " .. type(data.onrelease))
+	end
 
 	data.state = false
 
@@ -86,10 +99,7 @@ function TFA.RegisterKeyBind(data_in)
 
 		if cv_key > 0 and cv_key == button and not data.state then
 			data.state = true
-
-			if data.onpress and type(data.onpress) == "function" then
-				data.onpress(ply)
-			end
+			data.onpress(ply)
 
 			if sp and SERVER then
 				net.Start("TFA_KB_State")
@@ -105,10 +115,7 @@ function TFA.RegisterKeyBind(data_in)
 
 		if cv_key > 0 and cv_key == button and data.state then
 			data.state = false
-
-			if data.onrelease and type(data.onrelease) == "function" then
-				data.onrelease(ply)
-			end
+			data.onrelease(ply)
 
 			if sp and SERVER then
 				net.Start("TFA_KB_State")
