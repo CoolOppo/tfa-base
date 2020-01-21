@@ -984,8 +984,8 @@ function SWEP:Think2()
 	end
 
 	self:ProcessLoopFire()
-	
-	if ( ( TFA.Enum.ReadyStatus[stat] 
+
+	if ( ( TFA.Enum.ReadyStatus[stat]
 		or (stat == TFA.Enum.STATUS_SHOOTING and TFA.Enum.ShootLoopingStatus[self:GetShootStatus()] ) )
 		and ct > self:GetNextIdleAnim() ) then
 		self:ChooseIdleAnim()
