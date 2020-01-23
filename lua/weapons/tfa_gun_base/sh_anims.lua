@@ -440,7 +440,7 @@ end
 
 local tval
 
-function SWEP:PlayAnimation(data)
+function SWEP:PlayAnimation(data, fade)
 	if not self:VMIV() then return end
 	if not data then return false, -1 end
 	local vm = self.OwnerViewModel
@@ -480,7 +480,7 @@ function SWEP:PlayAnimation(data)
 			tval = tonumber(tval) or -1
 		end
 
-		if tval and tval > 0 then return self:SendViewModelAnim(tval, 1, false, data.transition and self.Idle_Blend or self.Idle_Smooth) end
+		if tval and tval > 0 then return self:SendViewModelAnim(tval, 1, false, fade or (data.transition and self.Idle_Blend or self.Idle_Smooth) ) end
 	elseif data.type == TFA.Enum.ANIMATION_SEQ then
 		tval = data.value
 
@@ -516,7 +516,7 @@ function SWEP:PlayAnimation(data)
 			tval = vm:LookupSequence(tval)
 		end
 
-		if tval and tval > 0 then return self:SendViewModelSeq(tval, 1, false, data.transition and self.Idle_Blend or self.Idle_Smooth) end
+		if tval and tval > 0 then return self:SendViewModelSeq(tval, 1, false, fade or (data.transition and self.Idle_Blend or self.Idle_Smooth) ) end
 	end
 end
 
@@ -786,6 +786,11 @@ function SWEP:ChooseIdleAnim()
 	--	self.Idle_WithHeld = nil
 	--	return
 	--end
+
+	if TFA.Enum.ShootLoopingStatus[self:GetShootStatus()] then
+		return self:ChooseLoopShootAnim()
+	end
+
 	if self.Idle_Mode ~= TFA.Enum.IDLE_BOTH and self.Idle_Mode ~= TFA.Enum.IDLE_ANI then return end
 
 	--self:ResetEvents()
@@ -864,6 +869,10 @@ function SWEP:ChooseWalkAnim()
 	return self:PlayAnimation(self:GetStat("WalkAnimation.loop"))
 end
 
+function SWEP:ChooseLoopShootAnim()
+	return self:PlayAnimation(self:GetStat("ShootAnimation.loop"))
+end
+
 --[[
 Function Name:  ChooseShootAnim
 Syntax: self:ChooseShootAnim().
@@ -875,6 +884,23 @@ Purpose:  Animation / Utility
 function SWEP:ChooseShootAnim(ifp)
 	ifp = ifp or IsFirstTimePredicted()
 	if not self:VMIV() then return end
+
+	if self:GetStat("ShootAnimation.loop") and self.Primary.Automatic then
+		if self.LuaShellEject and ifp then
+			self:EventShell()
+		end
+
+		if TFA.Enum.ShootReadyStatus[self:GetShootStatus()] then
+			self:SetShootStatus(TFA.Enum.SHOOT_START)
+			local inan = self:GetStat("ShootAnimation.in")
+			if not inan then
+				inan = self:GetStat("ShootAnimation.loop")
+			end
+			return self:PlayAnimation(inan)
+		end
+
+		return
+	end
 
 	if self:GetIronSights() and (self.Sights_Mode == TFA.Enum.LOCOMOTION_ANI or self.Sights_Mode == TFA.Enum.LOCOMOTION_HYBRID) and self:GetStat("IronAnimation.shoot") then
 		if self.LuaShellEject and ifp then

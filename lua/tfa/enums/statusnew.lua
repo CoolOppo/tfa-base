@@ -112,3 +112,20 @@ TFA.Enum.HUDDisabledStatus = {
 	[TFA.Enum.STATUS_BLOCKING_END] = true,
 	[TFA.Enum.STATUS_PUMP] = true
 }
+
+TFA.Enum.SHOOT_IDLE = 0
+TFA.Enum.SHOOT_START = 1
+TFA.Enum.SHOOT_LOOP = 2
+TFA.Enum.SHOOT_CHECK = 3
+TFA.Enum.SHOOT_END = 4
+
+TFA.Enum.ShootReadyStatus = {
+	[TFA.Enum.SHOOT_IDLE] = true,
+	[TFA.Enum.SHOOT_END] = true
+}
+
+TFA.Enum.ShootLoopingStatus = {
+	[TFA.Enum.SHOOT_START] = true,
+	[TFA.Enum.SHOOT_LOOP] = true,
+	[TFA.Enum.SHOOT_CHECK] = true
+}
