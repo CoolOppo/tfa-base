@@ -255,8 +255,6 @@ SWEP.IronSightsAng = Vector(0, 0, 0) --Change this, using SWEP Creation Kit pref
 --[[INSPECTION]]--
 SWEP.InspectPos = nil--Vector(0,0,0) --Replace with a vector, in style of ironsights position, to be used for inspection
 SWEP.InspectAng = nil--Vector(0,0,0) --Replace with a vector, in style of ironsights angle, to be used for inspection
---[[VIEWMODEL ANIMATION HANDLING]]--
-SWEP.AllowViewAttachment = true --Allow the view to sway based on weapon attachment while reloading or drawing, IF THE CLIENT HAS IT ENABLED IN THEIR CONVARS.
 --[[VIEWMODEL BLOWBACK]]--
 SWEP.BlowbackEnabled = false --Enable Blowback?
 SWEP.BlowbackVector = Vector(0,-1,0) --Vector to move bone <or root> relative to bone <or view> orientation.
@@ -358,6 +356,28 @@ SWEP.WalkAnimation = {
 		["value_empty"] = "Walk_to_Idle_Empty",
 		["transition"] = true
 	} --Outward transition
+}
+
+-- Looping fire animation (full-auto only)
+SWEP.ShootAnimation = {
+	["in"] = {
+		["type"] = TFA.Enum.ANIMATION_SEQ, --Sequence or act
+		["value"] = "ShootLoop_Start", --Number for act, String/Number for sequence
+		["value_is"] = "ShootLoop_Iron_Start", --Number for act, String/Number for sequence
+		["transition"] = true
+	}, --Looping Start, fallbacks to loop
+	["loop"] = {
+		["type"] = TFA.Enum.ANIMATION_SEQ, --Sequence or act
+		["value"] = "ShootLoop", --Number for act, String/Number for sequence,
+		["value_is"] = "ShootLoop_Iron", --Number for act, String/Number for sequence,
+		["is_idle"] = true,
+	}, --Looping Animation
+	["out"] = {
+		["type"] = TFA.Enum.ANIMATION_SEQ, --Sequence or act
+		["value"] = "ShootLoop_End", --Number for act, String/Number for sequence
+		["value_is"] = "ShootLoop_Iron_End", --Number for act, String/Number for sequence
+		["transition"] = true
+	}, --Looping End
 }
 
 --[[

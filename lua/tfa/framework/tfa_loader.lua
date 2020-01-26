@@ -24,11 +24,12 @@ if SERVER then AddCSLuaFile() end
 TFA = TFA or {}
 
 local do_load = true
-local version = 4.511
-local version_string = "4.5.1.1"
+local version = 4.52
+local version_string = "4.5.2.0"
 local changelog = [[
-	* Fixed bugs with level transition and for bullets fired after player's death
-	* Fixed looped fire sounds not working properly in P2P/listen servers
+	* Added keybinds! (Menu can be found at Q -> Options -> Keybinds)
+	* Added looping fire support
+	* Fixed shell casings scrape sounds (huge thanks to gmod_silent material for not working properly!)
 ]]
 
 local function testFunc()
