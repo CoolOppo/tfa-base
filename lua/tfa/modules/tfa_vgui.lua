@@ -51,12 +51,11 @@ if CLIENT then
 		local tfaOptionSV = {
 			Options = {},
 			CVars = {},
-			Label = "#Presets",
 			MenuButton = "1",
-			Folder = "TFA SWEP Settings Server"
+			Folder = "tfa_base_server"
 		}
 
-		tfaOptionSV.Options["#Default"] = {
+		tfaOptionSV.Options["#preset.default"] = {
 			sv_tfa_ironsights_enabled = "1",
 			sv_tfa_sprint_enabled = "1",
 			sv_tfa_weapon_strip = "0",
@@ -81,6 +80,8 @@ if CLIENT then
 			sv_tfa_jamming_factor_inc = "1",
 			sv_tfa_door_respawn = "-1"
 		}
+
+		tfaOptionSV.CVars = table.GetKeys(tfaOptionSV.Options["#preset.default"])
 
 		panel:AddControl("ComboBox", tfaOptionSV)
 
@@ -220,12 +221,11 @@ if CLIENT then
 		local tfaOptionCL = {
 			Options = {},
 			CVars = {},
-			Label = "#Presets",
 			MenuButton = "1",
-			Folder = "TFA SWEP Settings Client"
+			Folder = "tfa_base_sights"
 		}
 
-		tfaOptionCL.Options["#Default"] = {
+		tfaOptionCL.Options["#preset.default"] = {
 			cl_tfa_3dscope = "1",
 			cl_tfa_3dscope_overlay = "1",
 			cl_tfa_3dscope_quality = "-1",
@@ -238,6 +238,8 @@ if CLIENT then
 			cl_tfa_ironsights_toggle = "0",
 			cl_tfa_ironsights_resight = "1"
 		}
+
+		tfaOptionCL.CVars = table.GetKeys(tfaOptionCL.Options["#preset.default"])
 
 		panel:AddControl("ComboBox", tfaOptionCL)
 
@@ -386,12 +388,11 @@ if CLIENT then
 		local tfaOptionCL = {
 			Options = {},
 			CVars = {},
-			Label = "#Presets",
 			MenuButton = "1",
-			Folder = "TFA SWEP Settings Client"
+			Folder = "tfa_base_viewmodel"
 		}
 
-		tfaOptionCL.Options["#Default"] = {
+		tfaOptionCL.Options["#preset.default"] = {
 			cl_tfa_viewbob_animated = "0",
 			cl_tfa_gunbob_intensity = "1",
 			cl_tfa_viewmodel_viewpunch = "1",
@@ -406,6 +407,7 @@ if CLIENT then
 			cl_tfa_laser_trails = "1"
 		}
 
+		tfaOptionCL.CVars = table.GetKeys(tfaOptionCL.Options["#preset.default"])
 		panel:AddControl("ComboBox", tfaOptionCL)
 
 		--These are the panel controls.  Adding these means that you don't have to go into the console.
@@ -497,12 +499,11 @@ if CLIENT then
 		local tfaOptionPerf = {
 			Options = {},
 			CVars = {},
-			Label = "#Presets",
 			MenuButton = "1",
-			Folder = "TFA SWEP Settings Performance"
+			Folder = "tfa_base_performance"
 		}
 
-		tfaOptionPerf.Options["#Default"] = {
+		tfaOptionPerf.Options["#preset.default"] = {
 			sv_tfa_fx_penetration_decal = "1",
 			cl_tfa_fx_impact_enabled = "1",
 			cl_tfa_fx_impact_ricochet_enabled = "1",
@@ -518,6 +519,7 @@ if CLIENT then
 			cl_tfa_fx_ads_dof_hd = "0"
 		}
 
+		tfaOptionPerf.CVars = table.GetKeys(tfaOptionPerf.Options["#preset.default"])
 		panel:AddControl("ComboBox", tfaOptionPerf)
 
 		panel:AddControl("CheckBox", {
@@ -609,9 +611,8 @@ if CLIENT then
 		local tfaTBLOptionHUD = {
 			Options = {},
 			CVars = {},
-			Label = "#Presets",
 			MenuButton = "1",
-			Folder = "TFA SWEP Settings HUD"
+			Folder = "tfa_base_hud"
 		}
 
 		tfaTBLOptionHUD.Options["#preset.default"] = {
@@ -852,6 +853,7 @@ if CLIENT then
 			cl_tfa_hud_hitmarker_color_a = "255"
 		}
 
+		tfaTBLOptionHUD.CVars = table.GetKeys(tfaTBLOptionHUD.Options["#preset.default"])
 		panel:AddControl("ComboBox", tfaTBLOptionHUD)
 
 		--These are the panel controls.  Adding these means that you don't have to go into the console.
@@ -1024,12 +1026,17 @@ if CLIENT then
 		local tfaOptionPerf = {
 			Options = {},
 			CVars = {},
-			Label = "#Presets",
 			MenuButton = "1",
-			Folder = "TFA SWEP Settings Developer"
+			Folder = "tfa_base_debug"
 		}
 
-		tfaOptionPerf.Options["#Default"] = {}
+		tfaOptionPerf.Options["#preset.default"] = {
+			["cl_tfa_debug_crosshair"] = 0,
+			["cl_tfa_debug_rt"] = 0,
+			["cl_tfa_debug_cache"] = 0
+		}
+
+		tfaOptionPerf.CVars = table.GetKeys(tfaOptionPerf.Options["#preset.default"])
 		panel:AddControl("ComboBox", tfaOptionPerf)
 
 		panel:AddControl("CheckBox", {
@@ -1056,12 +1063,11 @@ if CLIENT then
 		local tfaOptionCO = {
 			Options = {},
 			CVars = {},
-			Label = "#Presets",
 			MenuButton = "1",
-			Folder = "TFA SWEP Settings Colors"
+			Folder = "tfa_base_colors"
 		}
 
-		tfaOptionCO.Options["#Default"] = {
+		tfaOptionCO.Options["#preset.default"] = {
 			cl_tfa_laser_color_r = "255",
 			cl_tfa_laser_color_g = "0",
 			cl_tfa_laser_color_b = "0",
@@ -1070,6 +1076,7 @@ if CLIENT then
 			cl_tfa_reticule_color_b = "0"
 		}
 
+		tfaOptionCO.CVars = table.GetKeys(tfaOptionCO.Options["#preset.default"])
 		panel:AddControl("ComboBox", tfaOptionCO)
 
 		panel:AddControl("Color", {
@@ -1102,12 +1109,11 @@ if CLIENT then
 		local tfaOptionPerf = {
 			Options = {},
 			CVars = {},
-			Label = "#Presets",
 			MenuButton = "1",
-			Folder = "TFA SWEP Settings Ballistics"
+			Folder = "tfa_base_ballistics"
 		}
 
-		tfaOptionPerf.Options["#Default"] = {
+		tfaOptionPerf.Options["#preset.default"] = {
 			["sv_tfa_ballistics_enabled"] = nil,
 			["sv_tfa_ballistics_mindist"] = -1,
 			["sv_tfa_ballistics_bullet_life"] = 10,
@@ -1122,6 +1128,7 @@ if CLIENT then
 			["cl_tfa_ballistics_fx_tracers_adv"] = 1
 		}
 
+		tfaOptionPerf.CVars = table.GetKeys(tfaOptionPerf.Options["#preset.default"])
 		panel:AddControl("ComboBox", tfaOptionPerf)
 
 		panel:AddControl("Label", {
