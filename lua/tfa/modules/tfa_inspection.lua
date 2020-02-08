@@ -35,8 +35,6 @@ if CLIENT then
 	tab["$pp_colour_mulb"] = 0
 
 	local function MyDrawBokehDOF()
-		if TFA.DrawingRenderTarget then return end
-		if not ( doblur and doblur:GetBool() ) then return end
 		render.UpdateScreenEffectTexture()
 		render.UpdateFullScreenDepthTexture()
 		blur_mat:SetTexture("$BASETEXTURE", render.GetScreenEffectTexture())
@@ -50,36 +48,36 @@ if CLIENT then
 
 	local cv_dxlevel = GetConVar("mat_dxlevel")
 
-	local function Render()
+	local function Render(vm)
+		if vm then return end -- TODO: change to "if not IsValid(vm)" when double drawing will be fixed
+
 		tfablurintensity = 0
 
 		if cv_dxlevel:GetInt() < 90 then return end
+		if TFA.DrawingRenderTarget then return end
 
 		local ply = LocalPlayer()
 		if not IsValid(ply) then return end
-		local wep = ply:GetActiveWeapon()
-		if not IsValid(wep) then return end
-		tfablurintensity = wep.InspectingProgress or 0
-		local its = tfablurintensity * 10
 
-		if its > 0.01 then
+		local wep = ply:GetActiveWeapon()
+		if not IsValid(wep) or not wep.IsTFAWeapon then return end
+
+		tfablurintensity = wep.InspectingProgress or 0
+
+		if tfablurintensity > 0.01 then
 			if doblur and doblur:GetBool() then
 				MyDrawBokehDOF()
 			end
 
 			tab["$pp_colour_brightness"] = -tfablurintensity * 0.02
 			tab["$pp_colour_contrast"] = 1 - tfablurintensity * 0.1
-			if not TFA.DrawingRenderTarget then
-				DrawColorModify(tab)
-			end
-			-- cam.IgnoreZ(true)
+
+			DrawColorModify(tab)
 		end
 	end
 
 	local function InitTFABlur()
-		hook.Add("PostDrawTranslucentRenderables", "PreDrawViewModel_TFA_INSPECT", function()
-			Render()
-		end)
+		hook.Add("PreDrawViewModel", "PreDrawViewModel_TFA_INSPECT", Render)
 
 		local pp_bokeh = GetConVar( "pp_bokeh" )
 		hook.Remove("NeedsDepthPass","NeedsDepthPass_Bokeh")
