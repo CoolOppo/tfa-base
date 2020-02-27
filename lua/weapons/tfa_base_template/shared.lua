@@ -426,7 +426,7 @@ SWEP.RTOpaque = false -- Do you want your render target to be opaque?
 SWEP.RTCode = nil--function(self) return end --This is the function to draw onto your rendertarget
 --[[AKIMBO]]--
 SWEP.Akimbo = false --Akimbo gun?  Alternates between primary and secondary attacks.
-SWEP.AnimCycle = 0 -- Start on the right
+SWEP.AnimCycle = 1 -- Start on the right
 --[[ATTACHMENTS]]--
 SWEP.VElements = nil --Export from SWEP Creation Kit.  For each item that can/will be toggled, set active=false in its individual table
 SWEP.WElements = nil --Export from SWEP Creation Kit.  For each item that can/will be toggled, set active=false in its individual table

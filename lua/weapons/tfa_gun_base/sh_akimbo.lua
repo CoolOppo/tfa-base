@@ -27,7 +27,7 @@ function SWEP:FixAkimbo()
 		self.Secondary.ClipSize = -1
 		self.Primary.RPM = self.Primary.RPM * 2
 		self.Akimbo_Inverted = self.ViewModelFlip
-		self.AnimCycle = self.ViewModelFlip and 0 or 01
+		self.AnimCycle = self.ViewModelFlip and 0 or 1
 		self:ClearStatCache()
 
 		timer.Simple(FrameTime(), function()

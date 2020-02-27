@@ -716,7 +716,7 @@ function SWEP:ChooseReloadAnim()
 		fac = self.ShellTime
 	end
 
-	self.AnimCycle = 0
+	self.AnimCycle = self.ViewModelFlip and 0 or 1
 
 	if SERVER and game.SinglePlayer() then
 		self.SetNW2Int = self.SetNW2Int or self.SetNWInt
