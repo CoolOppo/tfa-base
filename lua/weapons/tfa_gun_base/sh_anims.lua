@@ -836,8 +836,7 @@ function SWEP:ChooseFlatAnim()
 
 	if self:GetActivityEnabled(ACT_VM_IDLE_SILENCED) and self:GetSilenced() then
 		typev, tanim = self:ChooseAnimation("idle_silenced")
-	elseif self:Clip1() == 0 then
-		--self:GetActivityEnabled( ACT_VM_IDLE_EMPTY ) and (self:Clip1() == 0) then
+	elseif self:GetActivityEnabled(ACT_VM_IDLE_EMPTY) and ((self.Primary.ClipSize > 0 and self:Clip1() == 0) or (self.Primary.ClipSize <= 0 and self:Ammo1() == 0)) then
 		typev, tanim = self:ChooseAnimation("idle_empty")
 	end
 
