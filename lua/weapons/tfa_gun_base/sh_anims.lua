@@ -551,7 +551,7 @@ function SWEP:Locomote(flipis, is, flipsp, spr, flipwalk, walk)
 		end
 	end
 
-	if flipwalk then
+	if flipwalk and not is then
 		if walk and self:GetStat("WalkAnimation.in") then
 			tldata = self:GetStat("WalkAnimation.in") or tldata
 		elseif self:GetStat("WalkAnimation.out") and (not flipis and not flipsp) and not walk then
