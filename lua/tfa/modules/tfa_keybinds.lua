@@ -196,25 +196,14 @@ TFA.RegisterKeyBind({
 	end
 })
 
-do
-	local cv_cm = GetConVar("sv_tfa_cmenu")
+TFA.RegisterKeyBind({
+	bind = "customize",
+	onpress = function(plyv)
+		if not plyv:IsValid() then return end
 
-	TFA.RegisterKeyBind({
-		bind = "customize",
-		onpress = function(plyv)
-			if not CLIENT or not cv_cm:GetBool() then return end
-
-			if not plyv:IsValid() or GetViewEntity() ~= plyv then return end
-
-			if plyv:InVehicle() and not plyv:GetAllowWeaponsInVehicle() then return end
-
-			local wepv = plyv:GetActiveWeapon()
-			if not IsValid(wepv) or not wepv.ToggleInspect then return end
-
-			wepv:ToggleInspect()
-		end
-	})
-end
+		plyv:ConCommand("tfa_toggleinspect")
+	end
+})
 
 TFA.RegisterKeyBind({
 	bind = "inspect",

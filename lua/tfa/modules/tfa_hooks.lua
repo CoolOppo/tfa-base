@@ -147,6 +147,25 @@ local cv_cm = GetConVar("sv_tfa_cmenu")
 local cv_cm_key = GetConVar("sv_tfa_cmenu_key")
 local keyv
 
+local function ToggleInspectCommand(plyv)
+	if not cv_cm:GetBool() then return end
+
+	if not plyv:IsValid() or plyv:GetViewEntity() ~= plyv then return end
+
+	if plyv:InVehicle() and not plyv:GetAllowWeaponsInVehicle() then return end
+
+	local wepv = plyv:GetActiveWeapon()
+	if not IsValid(wepv) or not wepv.ToggleInspect then return end
+
+	wepv:ToggleInspect()
+
+	if SERVER then
+		wepv:CallOnClient("ToggleInspect")
+	end
+end
+
+concommand.Add("tfa_toggleinspect", ToggleInspectCommand)
+
 local function GetInspectionKey()
 	if cv_cm_key and cv_cm_key:GetInt() >= 0 then
 		keyv = cv_cm_key:GetInt()
@@ -180,9 +199,7 @@ if CLIENT then
 	local function TFAKPThink()
 		local plyv = LocalPlayer()
 
-		if not plyv:IsValid() or GetViewEntity() ~= plyv then return end
-
-		if plyv:InVehicle() and not plyv:GetAllowWeaponsInVehicle() then return end
+		if not plyv:IsValid() then return end
 
 		local wepv = plyv:GetActiveWeapon()
 		if not IsValid(wepv) or not wepv.ToggleInspect then return end
@@ -197,7 +214,7 @@ if CLIENT then
 		end
 
 		if kd ~= kd_old and kd and cv_cm:GetBool() and not (plyv:KeyDown(IN_USE) and not wepv.Inspecting) then
-			wepv:ToggleInspect()
+			plyv:ConCommand("tfa_toggleinspect")
 		end
 
 		kd_old = kd
