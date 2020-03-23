@@ -24,12 +24,13 @@ if SERVER then AddCSLuaFile() end
 TFA = TFA or {}
 
 local do_load = true
-local version = 4.52
-local version_string = "4.5.3.0"
+local version = 4.531
+local version_string = "4.5.3.1"
 local changelog = [[
 	* Fixed presets in settings menu not working
 	* Various Lua animation fixes
 	+ Added customization menu idle animation (and transitions) support
+	+ Added icons for ammo entities
 ]]
 
 local function testFunc()

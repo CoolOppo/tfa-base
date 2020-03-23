@@ -28,11 +28,6 @@ game.AddAmmoType({
 	minsplash = 5,
 	maxsplash = 5
 })
-
-if CLIENT then
-	language.Add("tfbow_arrow_ammo", "Arrows")
-end
---
 game.AddAmmoType({
 	name = "tfbow_bolt",
 	dmgtype = DMG_CLUB,
@@ -42,6 +37,15 @@ game.AddAmmoType({
 })
 
 if CLIENT then
+	language.Add("tfbow_arrow_ammo", "Arrows")
 	language.Add("tfbow_bolt_ammo", "Bolts")
+
+	if language.GetPhrase("SniperPenetratedRound_ammo") == "SniperPenetratedRound_ammo" then
+		language.Add("SniperPenetratedRound_ammo", "Sniper Ammo")
+	end
+
+	if language.GetPhrase("AirboatGun_ammo") == "AirboatGun_ammo" then
+		language.Add("AirboatGun_ammo", "Winchester Ammo")
+	end
 end
 
