@@ -25,11 +25,11 @@ TFA = TFA or {}
 
 local do_load = true
 local version = 4.52
-local version_string = "4.5.2.0"
+local version_string = "4.5.3.0"
 local changelog = [[
-	* Added keybinds! (Menu can be found at Q -> Options -> Keybinds)
-	* Added looping fire support
-	* Fixed shell casings scrape sounds (huge thanks to gmod_silent material for not working properly!)
+	* Fixed presets in settings menu not working
+	* Various Lua animation fixes
+	+ Added customization menu idle animation (and transitions) support
 ]]
 
 local function testFunc()
