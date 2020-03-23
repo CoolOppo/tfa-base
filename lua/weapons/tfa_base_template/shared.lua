@@ -283,13 +283,13 @@ SWEP.ProceduralHolsterTime = 0.3
 SWEP.ProceduralHolsterPos = Vector(3, 0, -5)
 SWEP.ProceduralHolsterAng = Vector(-40, -30, 10)
 
-SWEP.Sights_Mode = TFA.Enum.LOCOMOTION_LUA -- ANI = mdl, HYBRID = lua but continue idle, Lua = stop mdl animation
-SWEP.Sprint_Mode = TFA.Enum.LOCOMOTION_LUA -- ANI = mdl, HYBRID = ani + lua, Lua = lua only
-SWEP.Walk_Mode = TFA.Enum.LOCOMOTION_LUA -- ANI = mdl, HYBRID = ani + lua, Lua = lua only
 SWEP.Idle_Mode = TFA.Enum.IDLE_BOTH --TFA.Enum.IDLE_DISABLED = no idle, TFA.Enum.IDLE_LUA = lua idle, TFA.Enum.IDLE_ANI = mdl idle, TFA.Enum.IDLE_BOTH = TFA.Enum.IDLE_ANI + TFA.Enum.IDLE_LUA
 SWEP.Idle_Blend = 0.25 --Start an idle this far early into the end of a transition
 SWEP.Idle_Smooth = 0.05 --Start an idle this far early into the end of another animation
 --MDL Animations Below
+
+SWEP.Sights_Mode = TFA.Enum.LOCOMOTION_LUA -- ANI = mdl, HYBRID = lua but continue idle, Lua = stop mdl animation
+--[[
 SWEP.IronAnimation = {
 	["in"] = {
 		["type"] = TFA.Enum.ANIMATION_SEQ, --Sequence or act
@@ -315,7 +315,10 @@ SWEP.IronAnimation = {
 		["value_empty"] = "Fire_Iron_Dry"
 	} --What do you think
 }
+]]
 
+SWEP.Sprint_Mode = TFA.Enum.LOCOMOTION_LUA -- ANI = mdl, HYBRID = ani + lua, Lua = lua only
+--[[
 SWEP.SprintAnimation = {
 	["in"] = {
 		["type"] = TFA.Enum.ANIMATION_SEQ, --Sequence or act
@@ -336,7 +339,10 @@ SWEP.SprintAnimation = {
 		["transition"] = true
 	} --Outward transition
 }
+]]
 
+SWEP.Walk_Mode = TFA.Enum.LOCOMOTION_LUA -- ANI = mdl, HYBRID = ani + lua, Lua = lua only
+--[[
 SWEP.WalkAnimation = {
 	["in"] = {
 		["type"] = TFA.Enum.ANIMATION_SEQ, --Sequence or act
@@ -357,7 +363,9 @@ SWEP.WalkAnimation = {
 		["transition"] = true
 	} --Outward transition
 }
+]]
 
+--[[
 -- Looping fire animation (full-auto only)
 SWEP.ShootAnimation = {
 	["in"] = {
@@ -379,6 +387,28 @@ SWEP.ShootAnimation = {
 		["transition"] = true
 	}, --Looping End
 }
+]]
+
+SWEP.Customize_Mode = TFA.Enum.LOCOMOTION_ANI -- ANI = mdl, HYBRID = ani + lua, Lua = lua only
+--[[
+SWEP.CustomizeAnimation = {
+	["in"] = {
+		["type"] = TFA.Enum.ANIMATION_SEQ, --Sequence or act
+		["value"] = "customization_in", --Number for act, String/Number for sequence
+		["transition"] = true
+	},
+	["loop"] = {
+		["type"] = TFA.Enum.ANIMATION_SEQ, --Sequence or act
+		["value"] = "customization_idle", --Number for act, String/Number for sequence
+		["is_idle"] = true
+	},
+	["out"] = {
+		["type"] = TFA.Enum.ANIMATION_SEQ, --Sequence or act
+		["value"] = "customization_out", --Number for act, String/Number for sequence
+		["transition"] = true
+	}
+}
+]]
 
 --[[
 SWEP.PumpAction = { -- Pump/bolt animations

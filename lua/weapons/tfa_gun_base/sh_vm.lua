@@ -230,7 +230,7 @@ function SWEP:CalculateViewModelOffset(delta)
 		target_pos.z = target_pos.z + cl_tfa_viewmodel_offset_z:GetFloat()
 	end
 
-	if self.Inspecting then
+	if self.Inspecting and self.Customize_Mode ~= TFA.Enum.LOCOMOTION_ANI then
 		if not self.InspectPos then
 			self.InspectPos = self.InspectPosDef * 1
 

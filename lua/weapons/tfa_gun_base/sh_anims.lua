@@ -530,8 +530,8 @@ Purpose:  Animation / Utility
 ]]
 local tldata
 
-function SWEP:Locomote(flipis, is, flipsp, spr, flipwalk, walk)
-	if not (flipis or flipsp or flipwalk) then return end
+function SWEP:Locomote(flipis, is, flipsp, spr, flipwalk, walk, flipcust, cust)
+	if not (flipis or flipsp or flipwalk or flipcust) then return end
 	if not (self:GetStatus() == TFA.Enum.STATUS_IDLE or (self:GetStatus() == TFA.Enum.STATUS_SHOOTING and self:CanInterruptShooting())) then return end
 	tldata = nil
 
@@ -554,8 +554,16 @@ function SWEP:Locomote(flipis, is, flipsp, spr, flipwalk, walk)
 	if flipwalk and not is then
 		if walk and self:GetStat("WalkAnimation.in") then
 			tldata = self:GetStat("WalkAnimation.in") or tldata
-		elseif self:GetStat("WalkAnimation.out") and (not flipis and not flipsp) and not walk then
+		elseif self:GetStat("WalkAnimation.out") and (not flipis and not flipsp and not flipcust) and not walk then
 			tldata = self:GetStat("WalkAnimation.out") or tldata
+		end
+	end
+
+	if flipcust then
+		if cust and self:GetStat("CustomizeAnimation.in") then
+			tldata = self:GetStat("CustomizeAnimation.in") or tldata
+		elseif self:GetStat("CustomizeAnimation.out") and (not flipis and not flipsp and not flipwalk) and not cust then
+			tldata = self:GetStat("CustomizeAnimation.out") or tldata
 		end
 	end
 
@@ -804,6 +812,8 @@ function SWEP:ChooseIdleAnim()
 		return self:ChooseSprintAnim()
 	elseif self:GetWalking() and self.Walk_Mode ~= TFA.Enum.LOCOMOTION_LUA then
 		return self:ChooseWalkAnim()
+	elseif self:GetCustomizing() and self.Customize_Mode ~= TFA.Enum.LOCOMOTION_LUA then
+		return self:ChooseCustomizeAnim()
 	end
 
 	if self:GetActivityEnabled(ACT_VM_IDLE_SILENCED) and self:GetSilenced() then
@@ -870,6 +880,10 @@ end
 
 function SWEP:ChooseLoopShootAnim()
 	return self:PlayAnimation(self:GetStat("ShootAnimation.loop"))
+end
+
+function SWEP:ChooseCustomizeAnim()
+	return self:PlayAnimation(self:GetStat("CustomizeAnimation.loop"))
 end
 
 --[[

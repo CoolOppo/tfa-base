@@ -161,6 +161,7 @@ SWEP.Secondary.DefaultClip = 0
 SWEP.Sights_Mode = TFA.Enum.LOCOMOTION_LUA -- ANI = mdl, HYBRID = lua but continue idle, Lua = stop mdl animation
 SWEP.Sprint_Mode = TFA.Enum.LOCOMOTION_LUA -- ANI = mdl, HYBRID = ani + lua, Lua = lua only
 SWEP.Walk_Mode = TFA.Enum.LOCOMOTION_LUA -- ANI = mdl, HYBRID = ani + lua, Lua = lua only
+SWEP.Customize_Mode = TFA.Enum.LOCOMOTION_LUA -- ANI = mdl, HYBRID = ani + lua, Lua = lua only
 SWEP.SprintFOVOffset = 5
 SWEP.Idle_Mode = TFA.Enum.IDLE_BOTH --TFA.Enum.IDLE_DISABLED = no idle, TFA.Enum.IDLE_LUA = lua idle, TFA.Enum.IDLE_ANI = mdl idle, TFA.Enum.IDLE_BOTH = TFA.Enum.IDLE_ANI + TFA.Enum.IDLE_LUA
 SWEP.Idle_Blend = 0.25 --Start an idle this far early into the end of a transition
@@ -371,6 +372,7 @@ function SWEP:SetupDataTables()
 	self:NetworkVar("Bool", 2, "Silenced")
 	self:NetworkVar("Bool", 3, "ShotgunCancel")
 	self:NetworkVar("Bool", 4, "Walking")
+	self:NetworkVar("Bool", 5, "Customizing")
 	self:NetworkVar("Bool", 18, "FlashlightEnabled")
 	self:NetworkVar("Bool", 19, "Jammed")
 	self:NetworkVar("Float", 0, "StatusEnd")
@@ -800,7 +802,7 @@ Returns:  Nothing.
 Notes:  Essential for calling other important functions.
 Purpose:  Standard SWEP Function
 ]]
-local CT, is, spr, wlk, waittime, sht, lact, finalstat
+local CT, is, spr, wlk, cst, waittime, sht, lact, finalstat
 
 function SWEP:Think2()
 	CT = CurTime()
@@ -826,7 +828,7 @@ function SWEP:Think2()
 	self:ReloadCV()
 	self:IronSightSounds()
 	self:ProcessLoopSound()
-	is, spr, wlk = self:IronSights()
+	is, spr, wlk, cst = self:IronSights()
 	if stat == TFA.Enum.STATUS_FIDGET and is then
 		self:SetStatusEnd(0)
 		self.Idle_Mode_Old = self.Idle_Mode
@@ -948,11 +950,12 @@ function SWEP:Think2()
 		local smi = self.Sights_Mode == TFA.Enum.LOCOMOTION_HYBRID or self.Sights_Mode == TFA.Enum.LOCOMOTION_ANI
 		local spi = self.Sprint_Mode == TFA.Enum.LOCOMOTION_HYBRID or self.Sprint_Mode == TFA.Enum.LOCOMOTION_ANI
 		local wmi = self.Walk_Mode == TFA.Enum.LOCOMOTION_HYBRID or self.Walk_Mode == TFA.Enum.LOCOMOTION_ANI
+		local cmi = self.Customize_Mode == TFA.Enum.LOCOMOTION_HYBRID or self.Customize_Mode == TFA.Enum.LOCOMOTION_ANI
 
-		if ( not TFA.Enum.ReadyStatus[stat] ) and stat ~= TFA.GetStatus("shooting") and stat ~= TFA.GetStatus("pump") and finalstat == TFA.Enum.STATUS_IDLE and ( smi or spi ) then
+		if ( not TFA.Enum.ReadyStatus[stat] ) and stat ~= TFA.GetStatus("shooting") and stat ~= TFA.GetStatus("pump") and finalstat == TFA.Enum.STATUS_IDLE and ( (smi or spi) or (cst and cmi) ) then
 			is = self:GetIronSights( true )
-			if ( is and smi ) or ( spr and spi ) or ( wlk and wmi ) then
-				local success,_ = self:Locomote(is and smi, is, spr and spi, spr, wlk and wmi, wlk)
+			if ( is and smi ) or ( spr and spi ) or ( wlk and wmi ) or ( cst and cmi ) then
+				local success,_ = self:Locomote(is and smi, is, spr and spi, spr, wlk and wmi, wlk, cst and cmi, cst)
 				if success == false then
 					self:SetNextIdleAnim(-1)
 				else
@@ -992,10 +995,11 @@ function SWEP:Think2()
 	end
 end
 
-local issighting, issprinting, iswalking = false, false, false
+local issighting, issprinting, iswalking, iscustomizing = false, false, false, false
 SWEP.spr_old = false
 SWEP.is_old = false
 SWEP.walk_old = false
+SWEP.cust_old = false
 local issighting_tmp
 local ironsights_toggle_cvar, ironsights_resight_cvar
 local sprint_cv = GetConVar("sv_tfa_sprint_enabled")
@@ -1017,9 +1021,11 @@ function SWEP:IronSights()
 	issighting = false
 	issprinting = false
 	iswalking = false
+	iscustomizing = false
 	self.is_old = self:GetIronSightsRaw()
 	self.spr_old = self:GetSprinting()
 	self.walk_old = self:GetWalking()
+	self.cust_old = self:GetCustomizing()
 	if sprint_cv:GetBool() and not self:GetStat("AllowSprintAttack", false) then
 		issprinting = owent:GetVelocity():Length2D() > owent:GetRunSpeed() * 0.6 and owent:IsSprinting() and owent:OnGround()
 	end
@@ -1119,19 +1125,22 @@ function SWEP:IronSights()
 		self:SetNextIdleAnim(-1)
 	end
 
-	iswalking = owent:GetVelocity():Length2D() > (owent:GetWalkSpeed() * self:GetStat("MoveSpeed", 1) * .75) and owent:GetNW2Bool("TFA_IsWalking") and owent:OnGround() and not issprinting
+	iscustomizing = self.Inspecting
+	iswalking = owent:GetVelocity():Length2D() > (owent:GetWalkSpeed() * self:GetStat("MoveSpeed", 1) * .75) and owent:GetNW2Bool("TFA_IsWalking") and owent:OnGround() and not issprinting and not iscustomizing
 
 	local smi = ( self.Sights_Mode == TFA.Enum.LOCOMOTION_HYBRID or self.Sights_Mode == TFA.Enum.LOCOMOTION_ANI ) and self.is_old_final ~= issighting
 	local spi = ( self.Sprint_Mode == TFA.Enum.LOCOMOTION_HYBRID or self.Sprint_Mode == TFA.Enum.LOCOMOTION_ANI ) and self.spr_old ~= issprinting
 	local wmi = ( self.Walk_Mode == TFA.Enum.LOCOMOTION_HYBRID or self.Walk_Mode == TFA.Enum.LOCOMOTION_ANI ) and self.walk_old ~= iswalking
+	local cmi = ( self.Customize_Mode == TFA.Enum.LOCOMOTION_HYBRID or self.Customize_Mode == TFA.Enum.LOCOMOTION_ANI ) and self.cust_old ~= iscustomizing
 
-	if ( smi or spi or wmi ) and ( self:GetStatus() == TFA.Enum.STATUS_IDLE or ( self:GetStatus() == TFA.Enum.STATUS_SHOOTING and self:CanInterruptShooting() ) ) and not self:GetShotgunCancel() then
+	if ( smi or spi or wmi or cmi ) and ( self:GetStatus() == TFA.Enum.STATUS_IDLE or ( self:GetStatus() == TFA.Enum.STATUS_SHOOTING and self:CanInterruptShooting() ) ) and not self:GetShotgunCancel() then
 		local toggle_is = self.is_old ~= issighting
 		if issighting and self.spr_old ~= issprinting then
 			toggle_is = true
 		end
-		local success,_ = self:Locomote(toggle_is and (self.Sights_Mode ~= TFA.Enum.LOCOMOTION_LUA), issighting, spi, issprinting, wmi, iswalking)
-		if ( not success ) and ( ( toggle_is and smi ) or spi or wmi ) then
+		local success,_ = self:Locomote(toggle_is and (self.Sights_Mode ~= TFA.Enum.LOCOMOTION_LUA), issighting, spi, issprinting, wmi, iswalking, cmi, iscustomizing)
+
+		if ( not success ) and ( ( toggle_is and smi ) or spi or wmi or cmi ) then
 			self:SetNextIdleAnim(-1)
 		end
 	end
@@ -1144,9 +1153,13 @@ function SWEP:IronSights()
 		self:SetWalking(iswalking)
 	end
 
+	if (self.cust_old ~= iscustomizing) then
+		self:SetCustomizing(iscustomizing)
+	end
+
 	self.is_old_final = issighting
 
-	return issighting_tmp, issprinting, iswalking
+	return issighting_tmp, issprinting, iswalking, iscustomizing
 end
 
 SWEP.is_cached = nil
