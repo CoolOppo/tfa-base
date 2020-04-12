@@ -351,12 +351,40 @@ end
 
 --[[
 Hook: InitPostEntity
-Function: Fixed some playermodel maker's poor coding practices
-Used For:  Removing offending hands render hook
+Function: Patches or removes other hooks that breaking or changing behavior of our weapons in a negative way
+Used For: Fixing our stuff
 ]]
 --
-hook.Add("InitPostEntity", "tfa_unfuckthehands", function()
-	hook.Remove("PostDrawViewModel", "Set player hand skin")
+
+local function FixInvalidPMHook()
+	hook.Remove("PostDrawViewModel", "Set player hand skin") -- just remove it for now
+end
+
+local function PatchSiminovSniperHook()
+	if not CLIENT then return end -- that hook is clientside only
+
+	local CMtbl = hook.GetTable()["CreateMove"] or {}
+
+	local SniperCreateMove = CMtbl["SniperCreateMove"] -- getting the original function
+	if not SniperCreateMove then return end
+
+	local PatchedSniperCreateMove = function(cmd) -- wrapping their function with our check
+		local ply = LocalPlayer()
+
+		if IsValid(ply) and IsValid(ply:GetActiveWeapon()) and ply:GetActiveWeapon().IsTFAWeapon then
+			return
+		end
+
+		SniperCreateMove(cmd)
+	end
+
+	hook.Remove("CreateMove", "SniperCreateMove") -- removing original hook
+	hook.Add("CreateMove", "SniperCreateMove_PatchedByTFABase", PatchedSniperCreateMove) -- creating new hook with wrap
+end
+
+hook.Add("InitPostEntity", "tfa_unfuckeverything", function()
+	FixInvalidPMHook()
+	PatchSiminovSniperHook()
 end)
 
 --[[
