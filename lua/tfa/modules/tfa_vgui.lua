@@ -70,6 +70,7 @@ if CLIENT then
 			sv_tfa_bullet_penetration = "1",
 			sv_tfa_bullet_ricochet = "0",
 			sv_tfa_bullet_doordestruction = "1",
+			sv_tfa_melee_doordestruction = "1",
 			sv_tfa_reloads_legacy = "0",
 			sv_tfa_reloads_enabled = "1",
 			sv_tfa_cmenu = "1",
@@ -129,6 +130,11 @@ if CLIENT then
 		panel:AddControl("CheckBox", {
 			Label = "Enable Bullet Door Destruction",
 			Command = "sv_tfa_bullet_doordestruction"
+		})
+
+		panel:AddControl("CheckBox", {
+			Label = "Enable Melee Door Busting",
+			Command = "sv_tfa_melee_doordestruction"
 		})
 
 		panel:AddControl("CheckBox", {

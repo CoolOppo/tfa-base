@@ -330,8 +330,12 @@ function SWEP:MakeDoor(ent, dmginfo)
 	prop:EmitSound("physics/wood/wood_furniture_break" .. tostring(math.random(1, 2)) .. ".wav", 110, math.random(90, 110))
 end
 
+local cv_doordestruction = GetConVar("sv_tfa_melee_doordestruction")
+
 function SWEP:BurstDoor(ent, dmginfo)
 	if not ents.Create then return end
+
+	if not cv_doordestruction:GetBool() then return end
 
 	if dmginfo:GetDamage() > 60 and (dmginfo:IsDamageType(DMG_CRUSH) or dmginfo:IsDamageType(DMG_CLUB)) and (ent:GetClass() == "func_door_rotating" or ent:GetClass() == "prop_door_rotating") then
 		if dmginfo:GetDamage() > 150 then

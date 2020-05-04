@@ -81,8 +81,12 @@ local function bashcallback(a, b, c, wep, pain)
 	end
 end
 
+local cv_doordestruction = GetConVar("sv_tfa_melee_doordestruction")
+
 function SWEP:HandleDoor(slashtrace)
 	if CLIENT or not IsValid(slashtrace.Entity) then return end
+
+	if not cv_doordestruction:GetBool() then return end
 
 	if slashtrace.Entity:GetClass() == "func_door_rotating" or slashtrace.Entity:GetClass() == "prop_door_rotating" then
 		slashtrace.Entity:EmitSound("ambient/materials/door_hit1.wav", 100, math.random(80, 120))

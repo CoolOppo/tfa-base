@@ -109,6 +109,10 @@ if GetConVar("sv_tfa_melee_blocking_stun_time") == nil then
 	CreateReplConVar("sv_tfa_melee_blocking_stun_time", "0.65", "How long to stun NPCs on block.")
 end
 
+if GetConVar("sv_tfa_melee_doordestruction") == nil then
+	CreateReplConVar("sv_tfa_melee_doordestruction", "1", "Allow players to bash open doors?")
+end
+
 if GetConVar("sv_tfa_door_respawn") == nil then
 	CreateReplConVar("sv_tfa_door_respawn", "-1", "Time for doors to respawn; -1 for never.")
 end
