@@ -198,7 +198,7 @@ TFA.RegisterKeyBind({
 
 TFA.RegisterKeyBind({
 	bind = "customize",
-	onpress = function(plyv)
+	onpress = CLIENT and function(plyv)
 		if not plyv:IsValid() then return end
 
 		plyv:ConCommand("tfa_toggleinspect")
