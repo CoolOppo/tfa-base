@@ -82,7 +82,7 @@ function SWEP:CalculateViewModelFlip()
 	end
 
 	self.ViewModelFOV_OG = self.ViewModelFOV_OG or self.ViewModelFOV
-	self.ViewModelFOV = self.ViewModelFOV_OG * fovmod_mult:GetFloat() + fovmod_add:GetFloat()
+	self.ViewModelFOV = l_Lerp(self.IronSightsProgress, self.ViewModelFOV_OG, self:GetStat("IronViewModelFOV", self.ViewModelFOV_OG)) * fovmod_mult:GetFloat() + fovmod_add:GetFloat()
 end
 
 SWEP.WeaponLength = 0
