@@ -362,7 +362,7 @@ function SWEP:Sway(pos, ang, ftv)
 		delta.r = math.AngleDifference(eyeAngles.r, oldEyeAngles.r) / rft / 120 * clampFac
 		oldEyeAngles = eyeAngles
 		--calculate motions, based on Juckey's methods
-		counterMotion = LerpAngle(rft * (swayRate * (0.75 + (0.5 - wiggleFactor):max(0))), counterMotion, -motion)
+		counterMotion = LerpAngle(rft * (swayRate * (0.75 + math.max(0, 0.5 - wiggleFactor))), counterMotion, -motion)
 		compensation.p = math.AngleDifference(motion.p, -counterMotion.p)
 		compensation.y = math.AngleDifference(motion.y, -counterMotion.y)
 		motion = LerpAngle(rft * swayRate, motion, delta + compensation)
