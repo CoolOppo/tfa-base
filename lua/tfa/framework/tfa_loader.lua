@@ -24,13 +24,16 @@ if SERVER then AddCSLuaFile() end
 TFA = TFA or {}
 
 local do_load = true
-local version = 4.531
-local version_string = "4.5.3.1"
+local version = 4.540
+local version_string = "4.5.4.0"
 local changelog = [[
-	* Fixed presets in settings menu not working
-	* Various Lua animation fixes
-	+ Added customization menu idle animation (and transitions) support
-	+ Added icons for ammo entities
+	+ Started work on new RT scope attachment base
+	* Fixed silenced weapon shaking when Siminov's SWEP packs are installed
+	+ Added toggle for melee door destruction
+	* Fixed customization keybind not opening the menu
+	* Fixed viewmodel floating away with low MoveSpeed values
+	* Fixed ironsights FOV compensation to be more consistent on all FOV values
+	+ Added SWEP.IronViewModelFOV parameter - SWEP.ViewModelFOV will be set to this when aiming down the sights
 ]]
 
 local function testFunc()
