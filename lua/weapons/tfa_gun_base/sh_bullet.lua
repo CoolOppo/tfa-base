@@ -495,6 +495,7 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon)
 	bul.TracerName = ""
 	bul.Callback = function(a, b, c)
 		c:SetInflictor(IsValid(bul.Wep) and bul.Wep or IsValid(ply) and ply or Entity(0))
+		hook.Run("TFA_BulletPenetration", bul, a, b, c)
 
 		-- TODO: User died while bullet make penetration
 		-- handle further penetrations even when user is dead
