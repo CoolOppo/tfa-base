@@ -50,6 +50,8 @@ local vm_offset_ang = Angle()
 --local fps_max_cvar = GetConVar("fps_max")
 local righthanded, shouldflip, cl_vm_flip_cv, cl_vm_nearwall, fovmod_add, fovmod_mult
 
+local cv_fov = GetConVar("fov_desired")
+
 function SWEP:CalculateViewModelFlip()
 	if CLIENT and not cl_vm_flip_cv then
 		cl_vm_flip_cv = GetConVar("cl_tfa_viewmodel_flip")
@@ -82,7 +84,11 @@ function SWEP:CalculateViewModelFlip()
 	end
 
 	self.ViewModelFOV_OG = self.ViewModelFOV_OG or self.ViewModelFOV
-	self.ViewModelFOV = l_Lerp(self.IronSightsProgress, self.ViewModelFOV_OG, self:GetStat("IronViewModelFOV", self.ViewModelFOV_OG)) * fovmod_mult:GetFloat() + fovmod_add:GetFloat()
+
+	local cam_fov = self.LastTranslatedFOV or cv_fov:GetInt()
+	local iron_add = cam_fov * (1 - 90 / cam_fov) * math.max(1 - self:GetStat("Secondary.IronFOV") / 90, 0)
+
+	self.ViewModelFOV = l_Lerp(self.IronSightsProgress, self.ViewModelFOV_OG, self:GetStat("IronViewModelFOV", self.ViewModelFOV_OG)) * fovmod_mult:GetFloat() + fovmod_add:GetFloat() + iron_add * self.IronSightsProgress
 end
 
 SWEP.WeaponLength = 0

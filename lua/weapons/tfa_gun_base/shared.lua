@@ -1869,13 +1869,15 @@ function SWEP:TranslateFOV(fov)
 		return
 	end
 
+	self.LastTranslatedFOV = fov
+
 	local retVal = hook.Run("TFA_PreTranslateFOV",self,fov)
 
 	if retVal then return retVal end
 
 	self:CorrectScopeFOV()
 
-	nfov = l_Lerp(self.IronSightsProgress, fov, fov * math.min(self:GetStat("Secondary.IronFOV") / 90, 1) + fov * (1 - 90 / fov) * math.max(1 - self:GetStat("Secondary.IronFOV") / 90, 0))
+	nfov = l_Lerp(self.IronSightsProgress, fov, fov * math.min(self:GetStat("Secondary.IronFOV") / 90, 1))
 
 	local ret = l_Lerp(self.SprintProgress, nfov, nfov + self.SprintFOVOffset)
 
