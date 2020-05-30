@@ -1251,9 +1251,9 @@ function SWEP:IronSightSounds()
 	if SERVER or ( CLIENT and IsFirstTimePredicted() ) then
 		if is ~= self.is_sndcache_old and hook.Run("TFA_IronSightSounds",self) == nil then
 			if is then
-				self:EmitSound(self.IronInSound or "TFA.IronIn")
+				self:EmitSound(self:GetStat("IronInSound", "TFA.IronIn"))
 			else
-				self:EmitSound(self.IronOutSound or "TFA.IronOut")
+				self:EmitSound(self:GetStat("IronOutSound", "TFA.IronOut"))
 			end
 		end
 		self.is_sndcache_old = is
