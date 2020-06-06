@@ -94,6 +94,10 @@ SWEP.BaseAnimations = {
 		["type"] = TFA.Enum.ANIMATION_SEQ, --Sequence or act
 		["value"] = "shoot2_silenced"
 	},
+	["shoot2_is"] = {
+		["type"] = TFA.Enum.ANIMATION_ACT, --Sequence or act
+		["value"] = ACT_VM_ISHOOT_M203
+	},
 	["idle"] = {
 		["type"] = TFA.Enum.ANIMATION_ACT, --Sequence or act
 		["value"] = ACT_VM_IDLE
@@ -939,7 +943,7 @@ function SWEP:ChooseShootAnim(ifp)
 		elseif self:Clip1() == 0 and self:GetActivityEnabled(ACT_VM_DRYFIRE) and not self.ForceDryFireOff then
 			typev, tanim = self:ChooseAnimation("shoot1_empty")
 		elseif self:GetStat("Akimbo") and self:GetActivityEnabled(ACT_VM_SECONDARYATTACK) and ((self.AnimCycle == 0 and not self.Akimbo_Inverted) or (self.AnimCycle == 1 and self.Akimbo_Inverted)) then
-			typev, tanim = self:ChooseAnimation("shoot2")
+			typev, tanim = self:ChooseAnimation((self:GetIronSights() and self:GetActivityEnabled(ACT_VM_ISHOOT_M203)) and "shoot2_is" or "shoot2")
 		elseif self:GetIronSights() and self:GetActivityEnabled(ACT_VM_PRIMARYATTACK_1) then
 			typev, tanim = self:ChooseAnimation("shoot1_is")
 		else
