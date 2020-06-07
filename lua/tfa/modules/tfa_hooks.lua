@@ -116,14 +116,16 @@ hook.Add("PreRender", "prerender_tfabase", function()
 
 	local wepv = plyv:GetActiveWeapon()
 
-	if IsValid(wepv) and wepv.IsTFAWeapon and wepv.PlayerThinkCL then
-		wepv:PlayerThinkCL(plyv)
-	end
+	if IsValid(wepv) and wepv.IsTFAWeapon then
+		if wepv.PlayerThinkCL then
+			wepv:PlayerThinkCL(plyv)
+		end
 
-	if sp and CLIENT then
-		net.Start("tfaSDLP")
-		net.WriteBool(plyv:ShouldDrawLocalPlayer())
-		net.SendToServer()
+		if sp and CLIENT then
+			net.Start("tfaSDLP")
+			net.WriteBool(plyv:ShouldDrawLocalPlayer())
+			net.SendToServer()
+		end
 	end
 end)
 
