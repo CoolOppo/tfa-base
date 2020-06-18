@@ -1263,6 +1263,11 @@ end
 local legacy_reloads_cv = GetConVar("sv_tfa_reloads_legacy")
 local dryfire_cvar = GetConVar("sv_tfa_allow_dryfire")
 
+SWEP.Primary.Sound_DryFire = Sound("Weapon_Pistol.Empty2") -- dryfire sound, played only once
+SWEP.Primary.Sound_DrySafety = Sound("Weapon_AR2.Empty2") -- safety click sound
+SWEP.Primary.Sound_Blocked = Sound("Weapon_AR2.Empty") -- underwater click sound
+SWEP.Primary.Sound_Jammed = Sound("Default.ClipEmpty_Rifle") -- jammed click sound
+
 function SWEP:CanPrimaryAttack( )
 	local v = hook.Run("TFA_PreCanPrimaryAttack",self)
 	if v ~= nil then
@@ -1284,7 +1289,7 @@ function SWEP:CanPrimaryAttack( )
 	end
 
 	if self:IsSafety() then
-		self:EmitSound("Weapon_AR2.Empty2")
+		self:EmitSound(self:GetStat("Primary.Sound_DrySafety"))
 		self.LastSafetyShoot = self.LastSafetyShoot or 0
 
 		if l_CT() < self.LastSafetyShoot + 0.2 then
@@ -1317,7 +1322,7 @@ function SWEP:CanPrimaryAttack( )
 		end
 
 		if not self.HasPlayedEmptyClick then
-			self:EmitSound("Weapon_Pistol.Empty2")
+			self:EmitSound(self:GetStat("Primary.Sound_DryFire"))
 
 			if not dryfire_cvar:GetBool() then
 				self:Reload( true )
@@ -1331,7 +1336,7 @@ function SWEP:CanPrimaryAttack( )
 
 	if self.FiresUnderwater == false and self:GetOwner():WaterLevel() >= 3 then
 		self:SetNextPrimaryFire(l_CT() + 0.5)
-		self:EmitSound("Weapon_AR2.Empty")
+		self:EmitSound(self:GetStat("Primary.Sound_Blocked"))
 		return false
 	end
 
@@ -1347,7 +1352,7 @@ function SWEP:CanPrimaryAttack( )
 
 	if self:CheckJammed() then
 		if IsFirstTimePredicted() then
-			self:EmitSound('Default.ClipEmpty_Rifle')
+			self:EmitSound(self:GetStat("Primary.Sound_Jammed"))
 		end
 
 		local typev, tanim = self:ChooseAnimation("shoot1_empty")
@@ -1368,6 +1373,8 @@ end
 local npc_ar2_damage_cv = GetConVar("sk_npc_dmg_ar2")
 
 local sv_tfa_nearlyempty = GetConVar("sv_tfa_nearlyempty")
+
+SWEP.Primary.Sound_NearlyEmpty = Sound("TFA.NearlyEmpty") -- cs:go-like nearly-empty mag click sound
 
 function SWEP:EmitGunfireLoop()
 	local tgtSound = self:GetSilenced() and self:GetStat("Primary.LoopSoundSilenced", self:GetStat("Primary.LoopSound")) or self:GetStat("Primary.LoopSound")
@@ -1400,7 +1407,7 @@ function SWEP:EmitGunfireLoop()
 	self.GonnaAdjuctPitch = true
 	self.RequiredPitch = pitch
 
-	self:EmitSound("TFA.NearlyEmpty")
+	self:EmitSound(self:GetStatus("Primary.Sound_NearlyEmpty"))
 end
 
 function SWEP:EmitGunfireSound(soundscript)
@@ -1430,7 +1437,7 @@ function SWEP:EmitGunfireSound(soundscript)
 	self.GonnaAdjuctPitch = true
 	self.RequiredPitch = pitch
 
-	self:EmitSound("TFA.NearlyEmpty")
+	self:EmitSound(self:GetStatus("Primary.Sound_NearlyEmpty"))
 end
 
 function SWEP:PrimaryAttack()
