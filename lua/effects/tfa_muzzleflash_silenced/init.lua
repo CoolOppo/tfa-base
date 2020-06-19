@@ -250,24 +250,26 @@ function EFFECT:Init(data)
 		end
 	end
 
-	local smokeCount = math.ceil(self.SmokeSize * 6)
+	if TFA.GetMZFSmokeEnabled() then
+		local smokeCount = math.ceil(self.SmokeSize * 6)
 
-	for _ = 0, smokeCount do
-		local particle = emitter:Add("particles/smokey", self.vOffset + dir * math.Rand(3, 14))
+		for _ = 0, smokeCount do
+			local particle = emitter:Add("particles/smokey", self.vOffset + dir * math.Rand(3, 14))
 
-		if (particle) then
-			particle:SetVelocity(VectorRand() * 10 * self.SmokeSize + dir * math.Rand(35, 50) * self.SmokeSize + 1.05 * AddVel)
-			particle:SetDieTime(math.Rand(0.6, 1) * self.Life * 6)
-			particle:SetStartAlpha(math.Rand(12, 24))
-			particle:SetEndAlpha(0)
-			particle:SetStartSize(math.Rand(5, 7) * self.SmokeSize)
-			particle:SetEndSize(math.Rand(15, 20) * self.SmokeSize)
-			particle:SetRoll(math.rad(math.Rand(0, 360)))
-			particle:SetRollDelta(math.Rand(-0.8, 0.8))
-			particle:SetLighting(true)
-			particle:SetAirResistance(20)
-			particle:SetGravity(Vector(0, 0, 60))
-			particle:SetColor(255, 255, 255)
+			if (particle) then
+				particle:SetVelocity(VectorRand() * 10 * self.SmokeSize + dir * math.Rand(35, 50) * self.SmokeSize + 1.05 * AddVel)
+				particle:SetDieTime(math.Rand(0.6, 1) * self.Life * 6)
+				particle:SetStartAlpha(math.Rand(12, 24))
+				particle:SetEndAlpha(0)
+				particle:SetStartSize(math.Rand(5, 7) * self.SmokeSize)
+				particle:SetEndSize(math.Rand(15, 20) * self.SmokeSize)
+				particle:SetRoll(math.rad(math.Rand(0, 360)))
+				particle:SetRollDelta(math.Rand(-0.8, 0.8))
+				particle:SetLighting(true)
+				particle:SetAirResistance(20)
+				particle:SetGravity(Vector(0, 0, 60))
+				particle:SetColor(255, 255, 255)
+			end
 		end
 	end
 

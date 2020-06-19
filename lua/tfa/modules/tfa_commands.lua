@@ -500,6 +500,10 @@ if CLIENT then
 		CreateClientConVar("cl_tfa_fx_muzzlesmoke_limited", 1, true, true, "Limit muzzle smoke trails?")
 	end
 
+	if GetConVar("cl_tfa_fx_muzzleflashsmoke") == nil then
+		CreateClientConVar("cl_tfa_fx_muzzleflashsmoke", 1, true, true, "Enable muzzleflash smoke?")
+	end
+
 	if GetConVar("cl_tfa_legacy_shells") == nil then
 		CreateClientConVar("cl_tfa_legacy_shells", 0, true, true, "Use legacy shells?")
 	end

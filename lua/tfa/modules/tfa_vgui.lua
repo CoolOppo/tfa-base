@@ -518,6 +518,7 @@ if CLIENT then
 			cl_tfa_fx_gasblur = "1",
 			cl_tfa_fx_muzzlesmoke = "1",
 			cl_tfa_fx_muzzlesmoke_limited = "1",
+			cl_tfa_fx_muzzleflashsmoke = "1",
 			cl_tfa_inspection_bokeh = "0",
 			cl_tfa_fx_ejectionlife = "15",
 			cl_tfa_legacy_shells = "0",
@@ -531,6 +532,11 @@ if CLIENT then
 		panel:AddControl("CheckBox", {
 			Label = "Use Gas Blur",
 			Command = "cl_tfa_fx_gasblur"
+		})
+
+		panel:AddControl("CheckBox", {
+			Label = "Use Muzzle Flash Smoke",
+			Command = "cl_tfa_fx_muzzleflashsmoke"
 		})
 
 		panel:AddControl("CheckBox", {

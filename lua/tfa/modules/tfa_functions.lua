@@ -19,7 +19,6 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
-local tmpsp = game.SinglePlayer()
 local gas_cl_enabled = GetConVar("cl_tfa_fx_gasblur")
 local oldshell_cl_enabled = GetConVar("cl_tfa_legacy_shells")
 
@@ -240,28 +239,21 @@ function TFA.FrameTime()
 end
 
 --CVar Mediators
-
 function TFA.GetGasEnabled()
-	if tmpsp then return math.Round(Entity(1):GetInfoNum("cl_tfa_fx_gasblur", 0)) ~= 0 end
-	local enabled
+	local enabled = false
 
 	if gas_cl_enabled then
 		enabled = gas_cl_enabled:GetBool()
-	else
-		enabled = false
 	end
 
 	return enabled
 end
 
 function TFA.GetLegacyShellsEnabled()
-	if tmpsp then return math.Round(Entity(1):GetInfoNum("cl_tfa_legacy_shells", 0)) ~= 0 end
-	local enabled
+	local enabled = false
 
 	if oldshell_cl_enabled then
 		enabled = oldshell_cl_enabled:GetBool()
-	else
-		enabled = false
 	end
 
 	return enabled
@@ -271,26 +263,32 @@ local ejectionsmoke_cl_enabled = GetConVar("cl_tfa_fx_ejectionsmoke")
 local muzzlesmoke_cl_enabled = GetConVar("cl_tfa_fx_muzzlesmoke")
 
 function TFA.GetMZSmokeEnabled()
-	if tmpsp then return math.Round(Entity(1):GetInfoNum("cl_tfa_fx_muzzlesmoke", 0)) ~= 0 end
-	local enabled
+	local enabled = false
 
 	if muzzlesmoke_cl_enabled then
 		enabled = muzzlesmoke_cl_enabled:GetBool()
-	else
-		enabled = false
 	end
 
 	return enabled
 end
 
 function TFA.GetEJSmokeEnabled()
-	if tmpsp then return math.Round(Entity(1):GetInfoNum("cl_tfa_fx_ejectionsmoke", 0)) ~= 0 end
-	local enabled
+	local enabled = false
 
 	if ejectionsmoke_cl_enabled then
 		enabled = ejectionsmoke_cl_enabled:GetBool()
-	else
-		enabled = false
+	end
+
+	return enabled
+end
+
+local muzzleflashsmoke_cl_enabled = GetConVar("cl_tfa_fx_muzzleflashsmoke")
+
+function TFA.GetMZFSmokeEnabled()
+	local enabled = false
+
+	if muzzleflashsmoke_cl_enabled then
+		enabled = muzzleflashsmoke_cl_enabled:GetBool()
 	end
 
 	return enabled
@@ -299,13 +297,10 @@ end
 local ricofx_cl_enabled = GetConVar("cl_tfa_fx_impact_ricochet_enabled")
 
 function TFA.GetRicochetEnabled()
-	if tmpsp then return math.Round(Entity(1):GetInfoNum("cl_tfa_fx_impact_ricochet_enabled", 0)) ~= 0 end
-	local enabled
+	local enabled = false
 
 	if ricofx_cl_enabled then
 		enabled = ricofx_cl_enabled:GetBool()
-	else
-		enabled = false
 	end
 
 	return enabled
