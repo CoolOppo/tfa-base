@@ -1407,7 +1407,7 @@ function SWEP:EmitGunfireLoop()
 	self.GonnaAdjuctPitch = true
 	self.RequiredPitch = pitch
 
-	self:EmitSound(self:GetStatus("Primary.Sound_NearlyEmpty"))
+	self:EmitSound(self:GetStat("Primary.Sound_NearlyEmpty"), "TFA.NearlyEmpty")
 end
 
 function SWEP:EmitGunfireSound(soundscript)
@@ -1437,7 +1437,7 @@ function SWEP:EmitGunfireSound(soundscript)
 	self.GonnaAdjuctPitch = true
 	self.RequiredPitch = pitch
 
-	self:EmitSound(self:GetStatus("Primary.Sound_NearlyEmpty"))
+	self:EmitSound(self:GetStat("Primary.Sound_NearlyEmpty"), "TFA.NearlyEmpty")
 end
 
 function SWEP:PrimaryAttack()
