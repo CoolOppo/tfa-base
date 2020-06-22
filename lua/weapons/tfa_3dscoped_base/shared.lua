@@ -129,6 +129,8 @@ function SWEP:UpdateScopeType( force )
 		if self.BoltAction_3D then
 			self.BoltAction = true
 			self.BoltAction_3D = nil
+
+			self:ClearStatCache("BoltAction")
 		end
 
 		self.Secondary.IronFOV = 90 / self.Secondary.ScopeZoom
