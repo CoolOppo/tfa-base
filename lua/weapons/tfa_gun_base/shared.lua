@@ -1058,7 +1058,7 @@ function SWEP:IronSights()
 			issighting = false
 		end
 		if self:GetStat("BoltAction") or self:GetStat("BoltAction_Forced") then
-			if stat == TFA.Enum.STATUS_SHOOTING then
+			if stat == TFA.Enum.STATUS_SHOOTING or stat == TFA.Enum.STATUS_PUMP then
 				if not self.LastBoltShoot then
 					self.LastBoltShoot = CurTime()
 				end
