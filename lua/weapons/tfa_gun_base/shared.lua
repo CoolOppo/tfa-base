@@ -1058,7 +1058,7 @@ function SWEP:IronSights()
 			issighting = false
 		end
 		if self:GetStat("BoltAction") or self:GetStat("BoltAction_Forced") then
-			if not TFA.Enum.ReadyStatus[stat] or self:GetShotgunCancel() then
+			if stat == TFA.Enum.STATUS_SHOOTING then
 				if not self.LastBoltShoot then
 					self.LastBoltShoot = CurTime()
 				end
@@ -1066,6 +1066,8 @@ function SWEP:IronSights()
 				if CurTime() > self.LastBoltShoot + self.BoltTimerOffset then
 					issighting = false
 				end
+			elseif (stat == TFA.Enum.STATUS_IDLE and self:GetShotgunCancel(true)) or stat == TFA.Enum.STATUS_PUMP then
+				issighting = false
 			else
 				self.LastBoltShoot = nil
 			end
@@ -1110,7 +1112,7 @@ function SWEP:IronSights()
 	end
 
 	if self:GetStat("BoltAction") or self:GetStat("BoltAction_Forced") then
-		if not TFA.Enum.ReadyStatus[stat] or self:GetShotgunCancel() then
+		if stat == TFA.Enum.STATUS_SHOOTING then
 			if not self.LastBoltShoot then
 				self.LastBoltShoot = CurTime()
 			end
@@ -1118,6 +1120,8 @@ function SWEP:IronSights()
 			if CurTime() > self.LastBoltShoot + self.BoltTimerOffset then
 				issighting = false
 			end
+		elseif (stat == TFA.Enum.STATUS_IDLE and self:GetShotgunCancel(true)) or stat == TFA.Enum.STATUS_PUMP then
+			issighting = false
 		else
 			self.LastBoltShoot = nil
 		end
@@ -1179,7 +1183,7 @@ function SWEP:GetIronSights( ignorestatus )
 		end
 
 		if self:GetStat("BoltAction") or self:GetStat("BoltAction_Forced") then
-			if not TFA.Enum.ReadyStatus[stat] or self:GetShotgunCancel() then
+			if stat == TFA.Enum.STATUS_SHOOTING then
 				if not self.LastBoltShoot then
 					self.LastBoltShoot = CurTime()
 				end
@@ -1187,6 +1191,8 @@ function SWEP:GetIronSights( ignorestatus )
 				if CurTime() > self.LastBoltShoot + self.BoltTimerOffset then
 					issighting = false
 				end
+			elseif (stat == TFA.Enum.STATUS_IDLE and self:GetShotgunCancel(true)) or stat == TFA.Enum.STATUS_PUMP then
+				issighting = false
 			else
 				self.LastBoltShoot = nil
 			end
@@ -1207,7 +1213,7 @@ function SWEP:GetIronSights( ignorestatus )
 		end
 
 		if self:GetStat("BoltAction") or self:GetStat("BoltAction_Forced") then
-			if not TFA.Enum.ReadyStatus[stat] or self:GetShotgunCancel() then
+			if stat == TFA.Enum.STATUS_SHOOTING then
 				if not self.LastBoltShoot then
 					self.LastBoltShoot = CurTime()
 				end
@@ -1215,6 +1221,8 @@ function SWEP:GetIronSights( ignorestatus )
 				if CurTime() > self.LastBoltShoot + self.BoltTimerOffset then
 					issighting = false
 				end
+			elseif (stat == TFA.Enum.STATUS_IDLE and self:GetShotgunCancel(true)) or stat == TFA.Enum.STATUS_PUMP then
+				issighting = false
 			else
 				self.LastBoltShoot = nil
 			end
