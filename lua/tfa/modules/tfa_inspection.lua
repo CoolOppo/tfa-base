@@ -21,6 +21,7 @@
 
 if CLIENT then
 	local doblur = CreateClientConVar("cl_tfa_inspection_bokeh", 0, true, false)
+	local blurdist = CreateClientConVar("cl_tfa_inspection_bokeh_radius", 0.1, true, false)
 	local tfablurintensity = 0
 	local blur_mat = Material("pp/bokehblur")
 	local tab = {}
@@ -41,7 +42,7 @@ if CLIENT then
 		blur_mat:SetTexture("$DEPTHTEXTURE", render.GetResolvedFullFrameDepth())
 		blur_mat:SetFloat("$size", tfablurintensity * 6)
 		blur_mat:SetFloat("$focus", 0)
-		blur_mat:SetFloat("$focusradius", 0.1)
+		blur_mat:SetFloat("$focusradius", blurdist:GetFloat())
 		render.SetMaterial(blur_mat)
 		render.DrawScreenQuad()
 	end
