@@ -24,16 +24,14 @@ if SERVER then AddCSLuaFile() end
 TFA = TFA or {}
 
 local do_load = true
-local version = 4.540
-local version_string = "4.5.4.0"
+local version = 4.55
+local version_string = "4.5.5.0"
 local changelog = [[
-	+ Started work on new RT scope attachment base
-	* Fixed silenced weapon shaking when Siminov's SWEP packs are installed
-	+ Added toggle for melee door destruction
-	* Fixed customization keybind not opening the menu
-	* Fixed viewmodel floating away with low MoveSpeed values
-	* Fixed ironsights FOV compensation to be more consistent on all FOV values
-	+ Added SWEP.IronViewModelFOV parameter - SWEP.ViewModelFOV will be set to this when aiming down the sights
+	+ Added TFA_BulletPenetration hook, called when bullet hits/penetrates a surface
+	* Reverted ironsights FOV compensation changes - new compensation only applies to viewmodels now
+	* Exposed more variables to stat cache (various sounds, sck elements bodygroups)
+	* Fixed performance degradation when player holds a non-TFA weapon in singleplayer
+	+ Added muzzleflash smoke toggle convar (Q -> Options -> Performance -> Use Muzzle Flash Smoke)
 ]]
 
 local function testFunc()
