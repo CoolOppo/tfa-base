@@ -289,7 +289,7 @@ SWEP.Idle_Blend = 0.25 --Start an idle this far early into the end of a transiti
 SWEP.Idle_Smooth = 0.05 --Start an idle this far early into the end of another animation
 --MDL Animations Below
 
-SWEP.Sights_Mode = TFA.Enum.LOCOMOTION_LUA -- ANI = mdl, HYBRID = lua but continue idle, Lua = stop mdl animation
+SWEP.Sights_Mode = TFA.Enum.LOCOMOTION_LUA -- LOCOMOTION_ANI = mdl, LOCOMOTION_HYBRID = ani + lua, LOCOMOTION_LUA = lua only
 --[[
 SWEP.IronAnimation = {
 	["in"] = {
@@ -318,7 +318,7 @@ SWEP.IronAnimation = {
 }
 ]]
 
-SWEP.Sprint_Mode = TFA.Enum.LOCOMOTION_LUA -- ANI = mdl, HYBRID = ani + lua, Lua = lua only
+SWEP.Sprint_Mode = TFA.Enum.LOCOMOTION_LUA -- LOCOMOTION_ANI = mdl, LOCOMOTION_HYBRID = ani + lua, LOCOMOTION_LUA = lua only
 --[[
 SWEP.SprintAnimation = {
 	["in"] = {
@@ -342,7 +342,7 @@ SWEP.SprintAnimation = {
 }
 ]]
 
-SWEP.Walk_Mode = TFA.Enum.LOCOMOTION_LUA -- ANI = mdl, HYBRID = ani + lua, Lua = lua only
+SWEP.Walk_Mode = TFA.Enum.LOCOMOTION_LUA -- LOCOMOTION_ANI = mdl, LOCOMOTION_HYBRID = ani + lua, LOCOMOTION_LUA = lua only
 --[[
 SWEP.WalkAnimation = {
 	["in"] = {
@@ -390,7 +390,7 @@ SWEP.ShootAnimation = {
 }
 ]]
 
-SWEP.Customize_Mode = TFA.Enum.LOCOMOTION_ANI -- ANI = mdl, HYBRID = ani + lua, Lua = lua only
+SWEP.Customize_Mode = TFA.Enum.LOCOMOTION_LUA -- LOCOMOTION_ANI = mdl, LOCOMOTION_HYBRID = ani + lua, LOCOMOTION_LUA = lua only
 --[[
 SWEP.CustomizeAnimation = {
 	["in"] = {
