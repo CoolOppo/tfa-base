@@ -257,6 +257,18 @@ function SWEP:ViewModelDrawn()
 					end
 				end
 
+				local bgs = model:GetBodyGroups()
+
+				if bgs then
+					for _b = 0, #bgs - 1 do
+						local newbg = self:GetStat("VElements." .. name .. ".bodygroups." .. _b, 0) -- names are not supported, use overridetable
+
+						if model:GetBodygroup(_b) ~= newbg then
+							model:SetBodygroup(_b, newbg)
+						end
+					end
+				end
+
 				if v.bonemerge then
 					if v.rel and self.VElements[v.rel] and IsValid(self.VElements[v.rel].curmodel) then
 						v.parModel = self.VElements[v.rel].curmodel
@@ -507,10 +519,14 @@ function SWEP:DrawWorldModel()
 					end
 				end
 
-				if (v.bodygroup) then
-					for l, n in pairs(v.bodygroup) do
-						if (model:GetBodygroup(l) ~= n) then
-							model:SetBodygroup(l, n)
+				local wbgs = model:GetBodyGroups()
+
+				if wbgs then
+					for _wb = 0, #wbgs - 1 do
+						local newbg = self:GetStat("WElements." .. name .. ".bodygroups." .. _wb, 0) -- names are not supported, use overridetable
+
+						if model:GetBodygroup(_wb) ~= newbg then
+							model:SetBodygroup(_wb, newbg)
 						end
 					end
 				end
