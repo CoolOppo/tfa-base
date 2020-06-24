@@ -261,7 +261,7 @@ function SWEP:ViewModelDrawn()
 
 				if bgs then
 					for _b = 0, #bgs - 1 do
-						local newbg = self:GetStat("VElements." .. name .. ".bodygroups." .. _b, 0) -- names are not supported, use overridetable
+						local newbg = self:GetStat("VElements." .. name .. ".bodygroup." .. _b, 0) -- names are not supported, use overridetable
 
 						if model:GetBodygroup(_b) ~= newbg then
 							model:SetBodygroup(_b, newbg)
@@ -523,7 +523,7 @@ function SWEP:DrawWorldModel()
 
 				if wbgs then
 					for _wb = 0, #wbgs - 1 do
-						local newbg = self:GetStat("WElements." .. name .. ".bodygroups." .. _wb, 0) -- names are not supported, use overridetable
+						local newbg = self:GetStat("WElements." .. name .. ".bodygroup." .. _wb, 0) -- names are not supported, use overridetable
 
 						if model:GetBodygroup(_wb) ~= newbg then
 							model:SetBodygroup(_wb, newbg)
@@ -703,14 +703,6 @@ function SWEP:CreateModels(tabl, is_vm)
 
 				if v.skin then
 					v.curmodel:SetSkin(v.skin)
-				end
-
-				if (v.bodygroup) then
-					for l, b in pairs(v.bodygroup) do
-						if (type(l) == "number") and (v.curmodel:GetBodygroup(l) ~= b) then
-							v.curmodel:SetBodygroup(l, b)
-						end
-					end
 				end
 
 				local matrix = Matrix()
