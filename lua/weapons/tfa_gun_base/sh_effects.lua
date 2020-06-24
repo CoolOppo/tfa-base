@@ -315,3 +315,14 @@ function SWEP:CanSparkEffect(matv)
 
 	return false
 end
+
+-- Returns muzzle attachment position for HL2 tracers
+function SWEP:GetTracerOrigin(...)
+	local att = self:GetMuzzleAttachment()
+
+	local attpos = (self:IsFirstPerson() and self.OwnerViewModel or self):GetAttachment(att)
+
+	if attpos and attpos.Pos then
+		return attpos.Pos
+	end
+end

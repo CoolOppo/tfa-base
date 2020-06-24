@@ -31,6 +31,11 @@ function EFFECT:Init(data)
 	self.Position = data:GetStart()
 	self.WeaponEnt = data:GetEntity()
 	self.Attachment = data:GetAttachment()
+
+	if IsValid(self.WeaponEnt) and self.WeaponEnt.GetMuzzleAttachment then
+		self.Attachment = self.WeaponEnt:GetMuzzleAttachment()
+	end
+
 	local owent
 
 	if IsValid(self.WeaponEnt) then
@@ -54,18 +59,6 @@ function EFFECT:Init(data)
 			end
 
 			if not IsValid(self.WeaponEnt) then return end
-		end
-	end
-
-	if IsValid(self.WeaponEntOG) and self.WeaponEntOG.MuzzleAttachment then
-		self.Attachment = self.WeaponEnt:LookupAttachment(self.WeaponEntOG.MuzzleAttachment)
-
-		if not self.Attachment or self.Attachment <= 0 then
-			self.Attachment = 1
-		end
-
-		if self.WeaponEntOG:GetStat("Akimbo") then
-			self.Attachment = 2 - self.WeaponEntOG.AnimCycle
 		end
 	end
 
