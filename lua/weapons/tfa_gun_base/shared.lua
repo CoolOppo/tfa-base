@@ -182,6 +182,7 @@ SWEP.EventTable = {}
 SWEP.RTMaterialOverride = nil
 SWEP.RTOpaque = false
 SWEP.RTCode = nil--function(self) return end
+SWEP.RTBGBlur = true
 
 SWEP.VMPos = Vector(0,0,0)
 SWEP.VMAng = Vector(0,0,0)

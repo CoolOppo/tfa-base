@@ -861,7 +861,7 @@ function SWEP:DrawHUDAmmo()
 		local str
 
 		if self:GetStat("Primary.ClipSize") and self:GetStat("Primary.ClipSize") ~= -1 then
-			if self:GetStat("Akimbo") then
+			if self:GetStat("Akimbo") and self:GetStat("AkimboHUD") ~= false then
 				str = string.upper("MAG: " .. math.ceil(self:Clip1() / 2))
 
 				if (self:Clip1() > self:GetStat("Primary.ClipSize")) then
@@ -904,7 +904,7 @@ function SWEP:DrawHUDAmmo()
 		xx = xx - TFA.Fonts.SleekHeightSmall / 3
 		local angpos2
 
-		if self:GetStat("Akimbo") then
+		if self:GetStat("Akimbo") and self:GetStat("AkimboHUD") ~= false then
 			angpos2 = self:GetOwner():ShouldDrawLocalPlayer() and self:GetAttachment(2) or self.OwnerViewModel:GetAttachment(2)
 		else
 			angpos2 = self:GetOwner():ShouldDrawLocalPlayer() and self:GetAttachment(self.MuzzleAttachmentRaw or self:LookupAttachment(self.MuzzleAttachment)) or self:GetOwner():GetViewModel():GetAttachment(self.MuzzleAttachmentRaw or self:GetOwner():GetViewModel():LookupAttachment(self.MuzzleAttachment))
@@ -914,7 +914,7 @@ function SWEP:DrawHUDAmmo()
 			local pos2 = angpos2.Pos
 			local ts2 = pos2:ToScreen()
 
-			if self:GetStat("Akimbo") then
+			if self:GetStat("Akimbo") and self:GetStat("AkimboHUD") ~= false then
 				xx, yy = ts2.x, ts2.y
 
 				if self:GetStat("Primary.ClipSize") and self:GetStat("Primary.ClipSize") ~= -1 then

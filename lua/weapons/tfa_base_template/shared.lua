@@ -455,9 +455,11 @@ SWEP.EventTable = {} --Event Table, used for custom events when an action is pla
 SWEP.RTMaterialOverride = nil -- Take the material you want out of print(LocalPlayer():GetViewModel():GetMaterials()), subtract 1 from its index, and set it to this.
 SWEP.RTOpaque = false -- Do you want your render target to be opaque?
 SWEP.RTCode = nil--function(self) return end --This is the function to draw onto your rendertarget
+SWEP.RTBGBlur = true -- Draw background blur when 3D scope is active?
 --[[AKIMBO]]--
 SWEP.Akimbo = false --Akimbo gun?  Alternates between primary and secondary attacks.
 SWEP.AnimCycle = 1 -- Start on the right
+SWEP.AkimboHUD = true -- Draw holographic HUD for both weapons?
 --[[ATTACHMENTS]]--
 SWEP.VElements = nil --Export from SWEP Creation Kit.  For each item that can/will be toggled, set active=false in its individual table
 SWEP.WElements = nil --Export from SWEP Creation Kit.  For each item that can/will be toggled, set active=false in its individual table

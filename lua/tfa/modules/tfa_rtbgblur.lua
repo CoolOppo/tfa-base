@@ -74,6 +74,7 @@ hook.Add("PostDrawTranslucentRenderables", "tfa_draw_rt_blur", function()
 
 	local wep = ply:GetActiveWeapon()
 	if not IsValid(wep) or not wep.IsTFAWeapon or not wep.GetStat then return end
+	if not wep:GetStat("RTBGBlur") then return end
 	if not wep:GetStat("RTDrawEnabled") and not wep:GetStat("RTMaterialOverride") and not wep.RTCode then return end
 
 	if wep.GLDeployed and wep:GLDeployed() then
