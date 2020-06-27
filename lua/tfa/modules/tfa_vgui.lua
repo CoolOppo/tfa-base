@@ -774,7 +774,7 @@ if CLIENT then
 			cl_tfa_hud_crosshair_outline_color_g = "5",
 			cl_tfa_hud_crosshair_outline_color_b = "5",
 			cl_tfa_hud_crosshair_outline_color_a = "0",
-			cl_tfa_hud_enabled = "0",
+			cl_tfa_hud_enabled = "1",
 			cl_tfa_hud_ammodata_fadein = "0.01",
 			cl_tfa_hud_hangtime = "0",
 			cl_tfa_hud_crosshair_length_use_pixels = "1",

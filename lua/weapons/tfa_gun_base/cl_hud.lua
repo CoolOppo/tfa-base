@@ -420,7 +420,7 @@ function SWEP:GenerateInspectionDerma()
 
 	--Bottom block (bars and such)
 	local statspanel = contentpanel:Add("DPanel")
-	statspanel:SetSize(screenwidth - lbound, 144)
+	statspanel:SetSize(screenwidth - lbound, 192)
 	statspanel.Paint = function() end
 	statspanel:Dock(BOTTOM)
 
@@ -624,6 +624,32 @@ function SWEP:GenerateInspectionDerma()
 	stabilitytext:SetSize(screenwidth - lbound, 24)
 	stabilitytext.Paint = TextShadowPaint
 
+	-- Bash damage
+	if self.BashBase and self:GetStat("Secondary.CanBash") ~= false then
+		local bashdamagepanel = statspanel:Add("DPanel")
+		bashdamagepanel:SetSize(400, 24)
+
+		bashdamagepanel.Think = function(myself)
+			if not IsValid(self) then return end
+			myself.Bar = self:GetStat("Secondary.BashDamage", 0) / bestdamage
+		end
+
+		bashdamagepanel.Paint = PanelPaintBars
+		bashdamagepanel:Dock(TOP)
+		local bashdamagetext = bashdamagepanel:Add("DPanel")
+
+		bashdamagetext.Think = function(myself)
+			if not IsValid(self) then return end
+			myself.Text = "Bash Damage: " .. math.Round(self:GetStat("Secondary.BashDamage", 0))
+			myself.TextColor = TFA_INSPECTIONPANEL.SecondaryColor
+		end
+
+		bashdamagetext.Font = "TFA_INSPECTION_SMALL"
+		bashdamagetext:Dock(LEFT)
+		bashdamagetext:SetSize(screenwidth - lbound, 24)
+		bashdamagetext.Paint = TextShadowPaint
+	end
+
 	if not att_enabled_cv then
 		att_enabled_cv = GetConVar("sv_tfa_attachments_enabled")
 	end
@@ -799,6 +825,8 @@ function SWEP:DrawHUDAmmo()
 		end
 	end
 
+	if not hudenabled_cvar:GetBool() then return end
+
 	fm = self:GetFireMode()
 	targbool = (not TFA.Enum.HUDDisabledStatus[stat]) or fm ~= lfm
 	targbool = targbool or (stat == TFA.Enum.STATUS_SHOOTING and self.LastBoltShoot and l_CT() > self.LastBoltShoot + self.BoltTimerOffset)
@@ -828,23 +856,29 @@ function SWEP:DrawHUDAmmo()
 		self.MuzzleAttachmentRaw = self.MuzzleAttachmentRaw2 or 1
 	end
 
-	if not (mzpos and mzpos.Pos and not self:GetHidden() and hudenabled_cvar:GetBool()) then return end
+	if self:GetHidden() then return end
 
-	local pos = mzpos.Pos
-	local textsize = self.textsize and self.textsize or 1
-	local pl = LocalPlayer() and LocalPlayer() or self:GetOwner()
-	local ang = pl:EyeAngles() --(angpos.Ang):Up():Angle()
-	ang:RotateAroundAxis(ang:Right(), 90)
-	ang:RotateAroundAxis(ang:Up(), -90)
-	ang:RotateAroundAxis(ang:Forward(), 0)
-	pos = pos + ang:Right() * (self.textupoffset and self.textupoffset or -2 * (textsize / 1))
-	pos = pos + ang:Up() * (self.textfwdoffset and self.textfwdoffset or 0 * (textsize / 1))
-	pos = pos + ang:Forward() * (self.textrightoffset and self.textrightoffset or -1 * (textsize / 1))
-	cam.Start3D()
-	local postoscreen = pos:ToScreen()
-	cam.End3D()
-	local xx = postoscreen.x
-	local yy = postoscreen.y
+	local xx, yy
+
+	if mzpos and mzpos.Pos then
+		local pos = mzpos.Pos
+		local textsize = self.textsize and self.textsize or 1
+		local pl = LocalPlayer() and LocalPlayer() or self:GetOwner()
+		local ang = pl:EyeAngles() --(angpos.Ang):Up():Angle()
+		ang:RotateAroundAxis(ang:Right(), 90)
+		ang:RotateAroundAxis(ang:Up(), -90)
+		ang:RotateAroundAxis(ang:Forward(), 0)
+		pos = pos + ang:Right() * (self.textupoffset and self.textupoffset or -2 * (textsize / 1))
+		pos = pos + ang:Up() * (self.textfwdoffset and self.textfwdoffset or 0 * (textsize / 1))
+		pos = pos + ang:Forward() * (self.textrightoffset and self.textrightoffset or -1 * (textsize / 1))
+		cam.Start3D()
+		local postoscreen = pos:ToScreen()
+		cam.End3D()
+		xx = postoscreen.x
+		yy = postoscreen.y
+	else -- fallback to pseudo-3d if no muzzle
+		xx, yy = ScrW() * .65, ScrH() * .6
+	end
 
 	local v, newx, newy, newalpha = hook.Run("TFA_DrawHUDAmmo", self, xx, yy, myalpha)
 	if v ~= nil then
@@ -895,56 +929,53 @@ function SWEP:DrawHUDAmmo()
 		str = string.upper(self:GetFireModeName() .. (#self:GetStat("FireModes") > 2 and " | +" or ""))
 
 		if self:IsJammed() then
-			str = str .. '\nWeapon is jammed!'
+			str = str .. "\nWeapon is jammed!"
 		end
 
 		draw.DrawText(str, "TFASleekSmall", xx + 1, yy + 1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
 		draw.DrawText(str, "TFASleekSmall", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT)
 		yy = yy + TFA.Fonts.SleekHeightSmall
 		xx = xx - TFA.Fonts.SleekHeightSmall / 3
-		local angpos2
 
 		if self:GetStat("Akimbo") and self:GetStat("AkimboHUD") ~= false then
-			angpos2 = self:GetOwner():ShouldDrawLocalPlayer() and self:GetAttachment(2) or self.OwnerViewModel:GetAttachment(2)
-		else
-			angpos2 = self:GetOwner():ShouldDrawLocalPlayer() and self:GetAttachment(self.MuzzleAttachmentRaw or self:LookupAttachment(self.MuzzleAttachment)) or self:GetOwner():GetViewModel():GetAttachment(self.MuzzleAttachmentRaw or self:GetOwner():GetViewModel():LookupAttachment(self.MuzzleAttachment))
-		end
+			local angpos2 = self:GetOwner():ShouldDrawLocalPlayer() and self:GetAttachment(2) or self.OwnerViewModel:GetAttachment(2)
 
-		if angpos2 then
-			local pos2 = angpos2.Pos
-			local ts2 = pos2:ToScreen()
+			if angpos2 then
+				local pos2 = angpos2.Pos
+				local ts2 = pos2:ToScreen()
 
-			if self:GetStat("Akimbo") and self:GetStat("AkimboHUD") ~= false then
 				xx, yy = ts2.x, ts2.y
+			else
+				xx, yy = ScrW() * .35, ScrH() * .6
+			end
 
-				if self:GetStat("Primary.ClipSize") and self:GetStat("Primary.ClipSize") ~= -1 then
-					str = string.upper("MAG: " .. math.floor(self:Clip1() / 2))
+			if self:GetStat("Primary.ClipSize") and self:GetStat("Primary.ClipSize") ~= -1 then
+				str = string.upper("MAG: " .. math.floor(self:Clip1() / 2))
 
-					if (math.floor(self:Clip1() / 2) > math.floor(self:GetStat("Primary.ClipSize") / 2)) then
-						str = string.upper("MAG: " .. math.floor(self:Clip1() / 2) - 1 .. " + " .. (math.floor(self:Clip1() / 2) - math.floor(self:GetStat("Primary.ClipSize") / 2)))
-					end
-
-					draw.DrawText(str, "TFASleek", xx + 1, yy + 1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
-					draw.DrawText(str, "TFASleek", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT)
-					str = string.upper("RESERVE: " .. self:Ammo1())
-					yy = yy + TFA.Fonts.SleekHeight
-					xx = xx - TFA.Fonts.SleekHeight / 3
-					draw.DrawText(str, "TFASleekMedium", xx + 1, yy + 1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
-					draw.DrawText(str, "TFASleekMedium", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT)
-					yy = yy + TFA.Fonts.SleekHeightMedium
-					xx = xx - TFA.Fonts.SleekHeightMedium / 3
-				else
-					str = string.upper("AMMO: " .. self:Ammo1())
-					draw.DrawText(str, "TFASleek", xx + 1, yy + 1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
-					draw.DrawText(str, "TFASleek", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT)
-					yy = yy + TFA.Fonts.SleekHeightMedium
-					xx = xx - TFA.Fonts.SleekHeightMedium / 3
+				if (math.floor(self:Clip1() / 2) > math.floor(self:GetStat("Primary.ClipSize") / 2)) then
+					str = string.upper("MAG: " .. math.floor(self:Clip1() / 2) - 1 .. " + " .. (math.floor(self:Clip1() / 2) - math.floor(self:GetStat("Primary.ClipSize") / 2)))
 				end
 
-				str = string.upper(self:GetFireModeName() .. (#self.FireModes > 2 and " | +" or ""))
-				draw.DrawText(str, "TFASleekSmall", xx + 1, yy + 1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
-				draw.DrawText(str, "TFASleekSmall", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT)
+				draw.DrawText(str, "TFASleek", xx + 1, yy + 1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
+				draw.DrawText(str, "TFASleek", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT)
+				str = string.upper("RESERVE: " .. self:Ammo1())
+				yy = yy + TFA.Fonts.SleekHeight
+				xx = xx - TFA.Fonts.SleekHeight / 3
+				draw.DrawText(str, "TFASleekMedium", xx + 1, yy + 1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
+				draw.DrawText(str, "TFASleekMedium", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT)
+				yy = yy + TFA.Fonts.SleekHeightMedium
+				xx = xx - TFA.Fonts.SleekHeightMedium / 3
+			else
+				str = string.upper("AMMO: " .. self:Ammo1())
+				draw.DrawText(str, "TFASleek", xx + 1, yy + 1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
+				draw.DrawText(str, "TFASleek", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT)
+				yy = yy + TFA.Fonts.SleekHeightMedium
+				xx = xx - TFA.Fonts.SleekHeightMedium / 3
 			end
+
+			str = string.upper(self:GetFireModeName() .. (#self.FireModes > 2 and " | +" or ""))
+			draw.DrawText(str, "TFASleekSmall", xx + 1, yy + 1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
+			draw.DrawText(str, "TFASleekSmall", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT)
 		end
 
 		if self:GetStat("Secondary.Ammo") and self:GetStat("Secondary.Ammo") ~= "" and self:GetStat("Secondary.Ammo") ~= "none" and self:GetStat("Secondary.Ammo") ~= 0 and not self:GetStat("Akimbo") then
