@@ -49,9 +49,7 @@ if CLIENT then
 
 	local cv_dxlevel = GetConVar("mat_dxlevel")
 
-	local function Render(vm)
-		if vm then return end -- TODO: change to "if not IsValid(vm)" when double drawing will be fixed
-
+	local function Render()
 		tfablurintensity = 0
 
 		if cv_dxlevel:GetInt() < 90 then return end
@@ -78,7 +76,7 @@ if CLIENT then
 	end
 
 	local function InitTFABlur()
-		hook.Add("PreDrawViewModel", "PreDrawViewModel_TFA_INSPECT", Render)
+		hook.Add("PreDrawViewModels", "PreDrawViewModels_TFA_INSPECT", Render)
 
 		local pp_bokeh = GetConVar( "pp_bokeh" )
 		hook.Remove("NeedsDepthPass","NeedsDepthPass_Bokeh")
