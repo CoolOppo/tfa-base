@@ -24,14 +24,16 @@ if SERVER then AddCSLuaFile() end
 TFA = TFA or {}
 
 local do_load = true
-local version = 4.55
-local version_string = "4.5.5.0"
+local version = 4.551
+local version_string = "4.5.5.1"
 local changelog = [[
 	+ Added TFA_BulletPenetration hook, called when bullet hits/penetrates a surface
 	* Reverted ironsights FOV compensation changes - new compensation only applies to viewmodels now
 	* Exposed more variables to stat cache (various sounds, sck elements bodygroups)
 	* Fixed performance degradation when player holds a non-TFA weapon in singleplayer
 	+ Added muzzleflash smoke toggle convar (Q -> Options -> Performance -> Use Muzzle Flash Smoke)
+	* Fixed non-ballistics bullet tracers for akimbo weapons
+	+ Added bash damage display to inspection screen (when available)
 ]]
 
 local function testFunc()
