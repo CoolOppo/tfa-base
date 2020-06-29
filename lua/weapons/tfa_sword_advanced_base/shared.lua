@@ -54,15 +54,15 @@ SWEP.IsMelee = true
 SWEP.AllowSprintAttack = true
 --[[TTT CRAP]]
 --
-SWEP.Kind = WEAPON_EQUIP
+-- SWEP.Kind = WEAPON_EQUIP
 SWEP.Secondary.ClipSize = -1
 SWEP.Secondary.DefaultClip = -1
 SWEP.Primary.ClipSize = -1
 SWEP.Primary.DefaultClip = -1
-SWEP.CanBuy = {ROLE_TRAITOR, ROLE_DETECTIVE, ROLE_INNOCENT} -- only traitors can buy
-SWEP.LimitedStock = true -- only buyable once
-SWEP.NoSights = false
-SWEP.IsSilent = true
+-- SWEP.CanBuy = {ROLE_TRAITOR, ROLE_DETECTIVE, ROLE_INNOCENT} -- only traitors can buy
+-- SWEP.LimitedStock = true -- only buyable once
+-- SWEP.NoSights = false
+-- SWEP.IsSilent = true
 --[[Worldmodel Variables]]
 --
 SWEP.HoldType = "melee2" -- how others view you carrying the weapon
