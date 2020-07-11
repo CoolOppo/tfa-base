@@ -92,7 +92,7 @@ if CLIENT then
 			rightpanel.OnSelect = function(_self, _index, _value, _data)
 				if not _self.m_strConVar then return end
 
-				local _newval = tostring(data or value)
+				local _newval = tostring(_data or _value)
 				RunConsoleCommand(_self.m_strConVar, _newval)
 
 				if LocalPlayer():IsAdmin() then
