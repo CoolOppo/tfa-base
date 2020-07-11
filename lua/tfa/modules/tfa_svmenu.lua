@@ -59,7 +59,7 @@ if CLIENT then
 		end
 
 		decimals = decimals or 0
-		local sf = '%.' .. decimals .. 'f'
+		local sf = "%." .. decimals .. "f"
 
 		if not IsSinglePlayer then
 			local ignore = false
