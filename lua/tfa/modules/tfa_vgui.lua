@@ -87,139 +87,33 @@ if CLIENT then
 		panel:AddControl("ComboBox", tfaOptionSV)
 
 		--These are the panel controls.  Adding these means that you don't have to go into the console.
-		panel:AddControl("CheckBox", {
-			Label = "Require reload keypress",
-			Command = "sv_tfa_allow_dryfire"
-		})
+		TFA.CheckBoxNet(panel, "Require reload keypress", "sv_tfa_allow_dryfire")
+		TFA.CheckBoxNet(panel, "Dynamic Accuracy", "sv_tfa_dynamicaccuracy")
+		TFA.CheckBoxNet(panel, "Strip Empty Weapons", "sv_tfa_weapon_strip")
+		TFA.CheckBoxNet(panel, "Enable Ironsights", "sv_tfa_ironsights_enabled")
+		TFA.CheckBoxNet(panel, "Enable Modern-Style Sprinting", "sv_tfa_sprint_enabled")
+		TFA.CheckBoxNet(panel, "Enable Custom C-Menu", "sv_tfa_cmenu")
+		TFA.CheckBoxNet(panel, "Enable Bullet Penetration", "sv_tfa_bullet_penetration")
+		TFA.CheckBoxNet(panel, "Enable Bullet Ricochet", "sv_tfa_bullet_ricochet")
+		TFA.CheckBoxNet(panel, "Enable Bullet Door Destruction", "sv_tfa_bullet_doordestruction")
+		TFA.CheckBoxNet(panel, "Enable Melee Door Busting", "sv_tfa_melee_doordestruction")
+		TFA.CheckBoxNet(panel, "Enable Reloading", "sv_tfa_reloads_enabled")
+		TFA.CheckBoxNet(panel, "Enable Jamming (If supported by weapon)", "sv_tfa_jamming")
+		TFA.CheckBoxNet(panel, "Enable nearly-empty sounds", "sv_tfa_nearlyempty")
+		TFA.CheckBoxNet(panel, "Enable Legacy-Style Reloading", "sv_tfa_reloads_legacy")
 
-		panel:AddControl("CheckBox", {
-			Label = "Dynamic Accuracy",
-			Command = "sv_tfa_dynamicaccuracy"
-		})
+		TFA.NumSliderNet(panel, "Damage Multiplier", "sv_tfa_damage_multiplier", 0, 10, 2)
+		TFA.NumSliderNet(panel, "Door Respawn Time", "sv_tfa_door_respawn", -1, 120, 0)
 
-		panel:AddControl("CheckBox", {
-			Label = "Strip Empty Weapons",
-			Command = "sv_tfa_weapon_strip"
-		})
+		TFA.NumSliderNet(panel, "Jam chance multiplier", "sv_tfa_jamming_mult", 0.01, 10, 2)
+		TFA.NumSliderNet(panel, "Jam factor multiplier", "sv_tfa_jamming_factor", 0.01, 10, 2)
+		TFA.NumSliderNet(panel, "Jam factor increase multiplier", "sv_tfa_jamming_factor_inc", 0.01, 10, 2)
 
-		panel:AddControl("CheckBox", {
-			Label = "Enable Ironsights",
-			Command = "sv_tfa_ironsights_enabled"
-		})
-
-		panel:AddControl("CheckBox", {
-			Label = "Enable Modern-Style Sprinting",
-			Command = "sv_tfa_sprint_enabled"
-		})
-
-		panel:AddControl("CheckBox", {
-			Label = "Enable Custom C-Menu",
-			Command = "sv_tfa_cmenu"
-		})
-
-		panel:AddControl("CheckBox", {
-			Label = "Enable Bullet Penetration",
-			Command = "sv_tfa_bullet_penetration"
-		})
-
-		panel:AddControl("CheckBox", {
-			Label = "Enable Bullet Ricochet",
-			Command = "sv_tfa_bullet_ricochet"
-		})
-
-		panel:AddControl("CheckBox", {
-			Label = "Enable Bullet Door Destruction",
-			Command = "sv_tfa_bullet_doordestruction"
-		})
-
-		panel:AddControl("CheckBox", {
-			Label = "Enable Melee Door Busting",
-			Command = "sv_tfa_melee_doordestruction"
-		})
-
-		panel:AddControl("CheckBox", {
-			Label = "Enable Reloading",
-			Command = "sv_tfa_reloads_enabled"
-		})
-
-		panel:AddControl("CheckBox", {
-			Label = "If weapon support jamming, allow to jam",
-			Command = "sv_tfa_jamming"
-		})
-
-		panel:AddControl("CheckBox", {
-			Label = "Enable nearly-empty sounds",
-			Command = "sv_tfa_nearlyempty"
-		})
-
-		panel:AddControl("CheckBox", {
-			Label = "Enable Legacy-Style Reloading",
-			Command = "sv_tfa_reloads_legacy"
-		})
-
-		panel:AddControl("Slider", {
-			Label = "Damage Multiplier",
-			Command = "sv_tfa_damage_multiplier",
-			Type = "Float",
-			Min = "0",
-			Max = "5"
-		})
-
-		panel:AddControl("Slider", {
-			Label = "Door Respawn Time",
-			Command = "sv_tfa_door_respawn",
-			Type = "Integer",
-			Min = "-1",
-			Max = "120"
-		})
-
-		panel:NumSlider("Jam chance multiplier", "sv_tfa_jamming_mult", 0.01, 10, 2)
-		panel:NumSlider("Jam factor multiplier", "sv_tfa_jamming_factor", 0.01, 10, 2)
-		panel:NumSlider("Jam factor increase multiplier", "sv_tfa_jamming_factor_inc", 0.01, 10, 2)
-
-		panel:AddControl("Slider", {
-			Label = "Impact Force Multiplier",
-			Command = "sv_tfa_force_multiplier",
-			Type = "Float",
-			Min = "0",
-			Max = "5"
-		})
-
-		panel:AddControl("Slider", {
-			Label = "Spread Multiplier",
-			Command = "sv_tfa_spread_multiplier",
-			Type = "Float",
-			Min = "0",
-			Max = "5"
-		})
-
-		panel:AddControl("Slider", {
-			Label = "Penetration Count Limit",
-			Command = "sv_tfa_penetration_limit",
-			Type = "Integer",
-			Min = "0",
-			Max = "5"
-		})
-
-		panel:AddControl("Slider", {
-			Label = "Default Clip Count (-1 = default)",
-			Command = "sv_tfa_default_clip",
-			Type = "Integer",
-			Min = "-1",
-			Max = "10"
-		})
-
-		panel:AddControl("Slider", {
-			Label = "Bullet Range Damage Degredation",
-			Command = "sv_tfa_range_modifier",
-			Type = "Float",
-			Min = "0",
-			Max = "1"
-		})
-
-		panel:AddControl("Label", {
-			Text = "By TheForgottenArchitect"
-		})
+		TFA.NumSliderNet(panel, "Impact Force Multiplier", "sv_tfa_force_multiplier", 0, 10, 2)
+		TFA.NumSliderNet(panel, "Spread Multiplier", "sv_tfa_spread_multiplier", 0, 10, 2)
+		TFA.NumSliderNet(panel, "Penetration Count Limit", "sv_tfa_penetration_limit", 0, 10, 2)
+		TFA.NumSliderNet(panel, "Default Clip Count\n(-1 = default)", "sv_tfa_default_clip", -1, 10, 0)
+		TFA.NumSliderNet(panel, "Bullet Range Damage Degredation", "sv_tfa_range_modifier", 0, 1, 3)
 	end
 
 	local function tfaOptionSights(panel)
@@ -608,10 +502,7 @@ if CLIENT then
 			Max = "5"
 		})
 
-		panel:AddControl("CheckBox", {
-			Label = "Use Penetration Decal (SV)",
-			Command = "sv_tfa_fx_penetration_decal"
-		})
+		TFA.CheckBoxNet(panel, "Use Penetration Decal (SV)", "sv_tfa_fx_penetration_decal")
 
 		panel:AddControl("Label", {
 			Text = "By TheForgottenArchitect"
@@ -1147,58 +1038,13 @@ if CLIENT then
 			Text = "Serverside"
 		})
 
-		panel:AddControl("CheckBox", {
-			Label = "Enabler",
-			Command = "sv_tfa_ballistics_enabled"
-		})
-
-		panel:AddControl("Slider", {
-			Label = "Activation Distance (-1=always)",
-			Command = "sv_tfa_ballistics_mindist",
-			Type = "Int",
-			Min = "-1",
-			Max = "100"
-		})
-
-		panel:AddControl("Slider", {
-			Label = "Bullet Life",
-			Command = "sv_tfa_ballistics_bullet_life",
-			Type = "Float",
-			Min = "0",
-			Max = "20"
-		})
-
-		panel:AddControl("Slider", {
-			Label = "Bullet Air Resistance",
-			Command = "sv_tfa_ballistics_bullet_damping_air",
-			Type = "Float",
-			Min = "0",
-			Max = "10"
-		})
-
-		panel:AddControl("Slider", {
-			Label = "Bullet Water Resistance",
-			Command = "sv_tfa_ballistics_bullet_damping_water",
-			Type = "Float",
-			Min = "0",
-			Max = "10"
-		})
-
-		panel:AddControl("Slider", {
-			Label = "Bullet Velocity",
-			Command = "sv_tfa_ballistics_bullet_velocity",
-			Type = "Float",
-			Min = "0",
-			Max = "2"
-		})
-
-		panel:AddControl("Slider", {
-			Label = "Sub-Steps",
-			Command = "sv_tfa_ballistics_substeps",
-			Type = "Integer",
-			Min = "1",
-			Max = "5"
-		})
+		TFA.CheckBoxNet(panel, "Enabler", "sv_tfa_ballistics_enabled")
+		TFA.NumSliderNet(panel, "Activation Distance\n(-1 = always)", "sv_tfa_ballistics_mindist", -1, 100, 0)
+		TFA.NumSliderNet(panel, "Bullet Life", "sv_tfa_ballistics_bullet_life", 0, 20, 2)
+		TFA.NumSliderNet(panel, "Bullet Air Resistance", "sv_tfa_ballistics_bullet_damping_air", 0, 10, 2)
+		TFA.NumSliderNet(panel, "Bullet Water Resistance", "sv_tfa_ballistics_bullet_damping_water", 0, 10, 2)
+		TFA.NumSliderNet(panel, "Bullet Velocity", "sv_tfa_ballistics_bullet_velocity", 0, 2, 3)
+		TFA.NumSliderNet(panel, "Sub-Steps", "sv_tfa_ballistics_substeps", 1, 5, 0)
 
 		panel:AddControl("Label", {
 			Text = "Clientside"
