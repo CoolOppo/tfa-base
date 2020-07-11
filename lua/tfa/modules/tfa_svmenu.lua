@@ -42,23 +42,25 @@ if CLIENT then
 	function TFA.NumSliderNet(_parent, ...)
 		local newpanel = _parent:NumSlider(...)
 
-		newpanel.OnValueChanged = function(_self, _newval)
-			if not LocalPlayer():IsAdmin() then return end
-
-			local _cvarname = _self.TextArea.m_strConVar
-
-			if timer.Exists("tfa_vgui_" .. _cvarname) then
-				timer.Remove("tfa_vgui_" .. _cvarname)
-			end
-
-			timer.Create("tfa_vgui_" .. _cvarname, 0.1, 1, function()
+		if not IsSinglePlayer then
+			newpanel.OnValueChanged = function(_self, _newval)
 				if not LocalPlayer():IsAdmin() then return end
 
-				net.Start("TFA_SetServerCommand")
-				net.WriteString(_cvarname)
-				net.WriteString(_newval)
-				net.SendToServer()
-			end)
+				local _cvarname = _self.TextArea.m_strConVar
+
+				if timer.Exists("tfa_vgui_" .. _cvarname) then
+					timer.Remove("tfa_vgui_" .. _cvarname)
+				end
+
+				timer.Create("tfa_vgui_" .. _cvarname, 0.1, 1, function()
+					if not LocalPlayer():IsAdmin() then return end
+
+					net.Start("TFA_SetServerCommand")
+					net.WriteString(_cvarname)
+					net.WriteString(_newval)
+					net.SendToServer()
+				end)
+			end
 		end
 
 		return newpanel
@@ -67,13 +69,17 @@ if CLIENT then
 	function TFA.CheckBoxNet(_parent, ...)
 		local newpanel = _parent:CheckBox(...)
 
-		newpanel.OnValueChanged = function(_self, _bVal)
-			if not LocalPlayer():IsAdmin() then return end
+		if not IsSinglePlayer then
+			newpanel.OnChange = function(_self, _bVal)
+				if not _self.Button or not _self.Button.m_strConVar then return end
 
-			net.Start("TFA_SetServerCommand")
-			net.WriteString(_self.m_strConVar)
-			net.WriteString(_bVal and "1" or "0")
-			net.SendToServer()
+				if LocalPlayer():IsAdmin() then
+					net.Start("TFA_SetServerCommand")
+					net.WriteString(_self.Button.m_strConVar)
+					net.WriteString(_bVal and "1" or "0")
+					net.SendToServer()
+				end
+			end
 		end
 
 		return newpanel
