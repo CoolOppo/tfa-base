@@ -1,3 +1,4 @@
+
 -- Copyright (c) 2018-2020 TFA Base Devs
 
 -- Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -47,42 +48,79 @@ if SERVER then
 end
 
 if CLIENT then
-	function TFA.NumSliderNet(_parent, ...)
-		local newpanel = _parent:NumSlider(...)
+	function TFA.NumSliderNet(_parent, label, convar, ...)
+		local gconvar = assert(GetConVar(convar), "Unknown ConVar: " .. convar .. "!")
+		local newpanel
+
+		if IsSinglePlayer then
+			newpanel = _parent:NumSlider(label, convar, ...)
+		else
+			newpanel = _parent:NumSlider(label, nil, ...)
+		end
 
 		if not IsSinglePlayer then
-			newpanel.OnValueChanged = function(_self, _newval)
-				if not _self.TextArea or not _self.TextArea.m_strConVar then return end
+			local ignore = false
 
-				if LocalPlayer():IsAdmin() then
-					local _cvarname = _self.TextArea.m_strConVar
+			newpanel.Think = function(_self)
+				if _self._wait_for_update and _self._wait_for_update > RealTime() then return end
+				local float = gconvar:GetFloat()
 
-					timer.Create("tfa_vgui_" .. _cvarname, 0.05, 1, function()
-						net.Start("TFA_SetServerCommand")
-						net.WriteString(_cvarname)
-						net.WriteString(_newval)
-						net.SendToServer()
-					end)
+				if _self:GetValue() ~= float then
+					ignore = true
+					_self:SetValue(float)
+					ignore = false
 				end
+			end
+
+			newpanel.OnValueChanged = function(_self, _newval)
+				if ignore then return end
+
+				_self._wait_for_update = RealTime() + 1
+				if not LocalPlayer():IsAdmin() then return end
+
+				timer.Create("tfa_vgui_" .. convar, 0.5, 1, function()
+					if not LocalPlayer():IsAdmin() then return end
+
+					net.Start("TFA_SetServerCommand")
+					net.WriteString(convar)
+					net.WriteString(tostring(_newval))
+					net.SendToServer()
+				end)
 			end
 		end
 
 		return newpanel
 	end
 
-	function TFA.CheckBoxNet(_parent, ...)
-		local newpanel = _parent:CheckBox(...)
+	function TFA.CheckBoxNet(_parent, label, convar, ...)
+		local gconvar = assert(GetConVar(convar), "Unknown ConVar: " .. convar .. "!")
+		local newpanel
+
+		if IsSinglePlayer then
+			newpanel = _parent:CheckBox(label, convar, ...)
+		else
+			newpanel = _parent:CheckBox(label, nil, ...)
+		end
 
 		if not IsSinglePlayer then
-			newpanel.OnChange = function(_self, _bVal)
-				if not _self.Button or not _self.Button.m_strConVar then return end
+			if not IsValid(newpanel.Button) then return newpanel end
 
-				if LocalPlayer():IsAdmin() then
-					net.Start("TFA_SetServerCommand")
-					net.WriteString(_self.Button.m_strConVar)
-					net.WriteString(_bVal and "1" or "0")
-					net.SendToServer()
+			newpanel.Button.Think = function(_self)
+				local bool = gconvar:GetBool()
+
+				if _self:GetChecked() ~= bool then
+					_self:SetChecked(bool)
 				end
+			end
+
+			newpanel.OnChange = function(_self, _bVal)
+				if not LocalPlayer():IsAdmin() then return end
+				if _bVal == gconvar:GetBool() then return end
+
+				net.Start("TFA_SetServerCommand")
+				net.WriteString(convar)
+				net.WriteString(_bVal and "1" or "0")
+				net.SendToServer()
 			end
 		end
 
