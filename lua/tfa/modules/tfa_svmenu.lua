@@ -127,25 +127,36 @@ if CLIENT then
 		return newpanel
 	end
 
-	function TFA.ComboBoxNet(_parent, ...)
-		local rightpanel, leftpanel = _parent:ComboBox(...)
+	function TFA.ComboBoxNet(_parent, label, convar, ...)
+		local gconvar = assert(GetConVar(convar), "Unknown ConVar: " .. convar .. "!")
+		local combobox, leftpanel
+
+		if IsSinglePlayer then
+			combobox, leftpanel = _parent:ComboBox(label, convar, ...)
+		else
+			combobox, leftpanel = _parent:ComboBox(label, nil, ...)
+		end
 
 		if not IsSinglePlayer then
-			rightpanel.OnSelect = function(_self, _index, _value, _data)
-				if not _self.m_strConVar then return end
+			combobox.Think = function(_self)
+				local value = gconvar:GetString()
 
-				local _newval = tostring(_data or _value)
-				RunConsoleCommand(_self.m_strConVar, _newval)
-
-				if LocalPlayer():IsAdmin() then
-					net.Start("TFA_SetServerCommand")
-					net.WriteString(_self.m_strConVar)
-					net.WriteString(_newval)
-					net.SendToServer()
+				if _self:GetValue() ~= value then
+					_self:SetValue(value)
 				end
+			end
+
+			combobox.OnSelect = function(_self, _index, _value, _data)
+				if not LocalPlayer():IsAdmin() then return end
+				local _newval = tostring(_data or _value)
+
+				net.Start("TFA_SetServerCommand")
+				net.WriteString(convar)
+				net.WriteString(_newval)
+				net.SendToServer()
 			end
 		end
 
-		return rightpanel, leftpanel
+		return combobox, leftpanel
 	end
 end
