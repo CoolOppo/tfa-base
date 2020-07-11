@@ -78,8 +78,8 @@ if CLIENT then
 			newpanel.OnValueChanged = function(_self, _newval)
 				if ignore then return end
 
-				_self._wait_for_update = RealTime() + 1
 				if not LocalPlayer():IsAdmin() then return end
+				_self._wait_for_update = RealTime() + 1
 
 				timer.Create("tfa_vgui_" .. convar, 0.5, 1, function()
 					if not LocalPlayer():IsAdmin() then return end
