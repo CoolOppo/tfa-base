@@ -23,6 +23,16 @@ local IsSinglePlayer = game.SinglePlayer()
 if SERVER then
 	util.AddNetworkString("TFA_SetServerCommand")
 
+	local function QueueConVarChange(convarname, convarvalue)
+		if not convarname or not convarvalue then return end
+
+		timer.Create("tfa_cvarchange_" .. convarname, 0.1, 1, function()
+			if not string.find(convarname, "_tfa") or not GetConVar(convarname) then return end -- affect only TFA convars
+
+			RunConsoleCommand(convarname, convarvalue)
+		end)
+	end
+
 	local function ChangeServerOption(_length, _player)
 		local _cvarname = net.ReadString()
 		local _value = net.ReadString()
@@ -30,9 +40,7 @@ if SERVER then
 		if not IsValid(_player) or not _player:IsAdmin() then return end
 		if IsSinglePlayer or _player:IsListenServerHost() then return end
 
-		if not string.find(_cvarname, "_tfa") or not GetConVar(_cvarname) then return end -- affect only TFA convars
-
-		RunConsoleCommand(_cvarname, _value)
+		QueueConVarChange(_cvarname, _value)
 	end
 
 	net.Receive("TFA_SetServerCommand", ChangeServerOption)
@@ -44,22 +52,18 @@ if CLIENT then
 
 		if not IsSinglePlayer then
 			newpanel.OnValueChanged = function(_self, _newval)
-				if not LocalPlayer():IsAdmin() then return end
+				if not _self.TextArea or not _self.TextArea.m_strConVar then return end
 
-				local _cvarname = _self.TextArea.m_strConVar
+				if LocalPlayer():IsAdmin() then
+					local _cvarname = _self.TextArea.m_strConVar
 
-				if timer.Exists("tfa_vgui_" .. _cvarname) then
-					timer.Remove("tfa_vgui_" .. _cvarname)
+					timer.Create("tfa_vgui_" .. _cvarname, 0.05, 1, function()
+						net.Start("TFA_SetServerCommand")
+						net.WriteString(_cvarname)
+						net.WriteString(_newval)
+						net.SendToServer()
+					end)
 				end
-
-				timer.Create("tfa_vgui_" .. _cvarname, 0.1, 1, function()
-					if not LocalPlayer():IsAdmin() then return end
-
-					net.Start("TFA_SetServerCommand")
-					net.WriteString(_cvarname)
-					net.WriteString(_newval)
-					net.SendToServer()
-				end)
 			end
 		end
 
