@@ -48,15 +48,18 @@ if SERVER then
 end
 
 if CLIENT then
-	function TFA.NumSliderNet(_parent, label, convar, ...)
+	function TFA.NumSliderNet(_parent, label, convar, min, max, decimals, ...)
 		local gconvar = assert(GetConVar(convar), "Unknown ConVar: " .. convar .. "!")
 		local newpanel
 
 		if IsSinglePlayer then
-			newpanel = _parent:NumSlider(label, convar, ...)
+			newpanel = _parent:NumSlider(label, convar, min, max, decimals, ...)
 		else
-			newpanel = _parent:NumSlider(label, nil, ...)
+			newpanel = _parent:NumSlider(label, nil, min, max, decimals, ...)
 		end
+
+		decimals = decimals or 0
+		local sf = '%.' .. decimals .. 'f'
 
 		if not IsSinglePlayer then
 			local ignore = false
@@ -83,7 +86,7 @@ if CLIENT then
 
 					net.Start("TFA_SetServerCommand")
 					net.WriteString(convar)
-					net.WriteString(tostring(_newval))
+					net.WriteString(string.format(sf, _newval))
 					net.SendToServer()
 				end)
 			end
