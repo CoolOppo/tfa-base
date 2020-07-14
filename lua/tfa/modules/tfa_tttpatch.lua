@@ -154,7 +154,7 @@ local function Patch()
 end
 
 if SERVER then
-	hook.Add("InitPostEntity", "TFAPatchTTT", Patch)
+	hook.Add("Initialize", "TFAPatchTTT", Patch)
 end
 if CLIENT then
 	hook.Add("HUDPaint", "TFAPatchTTT", function()
