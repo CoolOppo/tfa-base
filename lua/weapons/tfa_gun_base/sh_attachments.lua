@@ -436,12 +436,14 @@ function SWEP:SetTFAAttachment(cat, id, nw, force)
 
 		if att_old then
 			att_old:Detach(self)
+			hook.Run("TFA_Attachment_Detached", self, attn_old, att_old, cat, id, force)
 		end
 
 		local att_neue = TFA.Attachments.Atts[self.Attachments[cat].atts[id] or -1]
 
 		if att_neue then
 			att_neue:Attach(self)
+			hook.Run("TFA_Attachment_Attached", self, attn, att_neue, cat, id, force)
 		end
 	end
 
