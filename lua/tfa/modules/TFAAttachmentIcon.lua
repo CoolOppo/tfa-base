@@ -90,11 +90,11 @@ end
 
 function PANEL:OnMousePressed()
 	if not IsValid(self.Wep) or ( not self.Attachment ) or self.Attachment == "" then return end
-	if not self.Wep:CanAttach( self.Attachment ) then return end
+
 	if self:GetSelected() then
 		self.Wep:SetTFAAttachment( self.Att, -1, true )
 		self:AttachSound( false )
-	elseif IsValid(self.Wep) and self.Wep.Attachments[self.Att] then
+	elseif self.Wep.Attachments[self.Att] and self.Wep:CanAttach(self.Attachment) then
 		self.Wep:SetTFAAttachment( self.Att, self.ID, true )
 		self:AttachSound( true )
 	end
@@ -150,7 +150,11 @@ function PANEL:Paint(w, h)
 	if not TFA.Attachments.Atts[self.Attachment] then self:SetMouseInputEnabled(false) return end
 	local sel = self:GetSelected()
 	local col = sel and TFA.Attachments.Colors["active"] or TFA.Attachments.Colors["background"]
-	if not self.Wep:CanAttach( self.Attachment) then col = TFA.Attachments.Colors["error"] end
+
+	if not sel and not self.Wep:CanAttach(self.Attachment) then
+		col = TFA.Attachments.Colors["error"]
+	end
+
 	draw.RoundedBox(0, 0, 0, w, h, ColorAlpha( col, self.Wep.InspectingProgress * 225))
 
 	if not TFA.Attachments.Atts[self.Attachment].Icon then
