@@ -24,11 +24,12 @@ if SERVER then AddCSLuaFile() end
 TFA = TFA or {}
 
 local do_load = true
-local version = 4.56
-local version_string = "4.5.6"
+local version = 4.57
+local version_string = "4.5.7"
 local changelog = [[
-	+ Added ammo entities for SMG grenades (1 and 5 grenades for small and large pickups)
-	+ Server settings menu now work in multiplayer (rewritten to use networked controls)
+	+ Added localization support. English and Russian locales are bundled by default.
+	* Fixed weapons not spawning in TTT (by Anairkoen Schno)
+	* Blocked new ammo pickups (SMG grenades) from being pocketed in DarkRP
 ]]
 
 local function testFunc()
