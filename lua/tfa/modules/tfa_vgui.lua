@@ -20,32 +20,6 @@
 
 --Config GUI
 if CLIENT then
-	language.Add("tfa3dsm.label", "3D Scope Sensitivity Mode")
-	language.Add("tfa3dsm.nc", "0 - No Compensation")
-	language.Add("tfa3dsm.sc", "1 - Standard Compensation")
-	language.Add("tfa3dsm.3d", "2 - 3D Compensation")
-	language.Add("tfa3dsm.rt", "3 - RT FOV Compensation")
-	language.Add("tfa3dsq.label", "3D Scope Quality")
-	language.Add("tfa3dsq.at", "-1 - Autodetected")
-	language.Add("tfa3dsq.ul", "0 - Ultra (2048x)")
-	language.Add("tfa3dsq.hq", "1 - High (1024x)")
-	language.Add("tfa3dsq.mq", "2 - Medium (512x)")
-	language.Add("tfa3dsq.lq", "3 - Low (256x)")
-	language.Add("tfa3dsb.label", "3D Scope Blur Mode")
-	language.Add("tfa3dsb.nb", "0 - No Blur")
-	language.Add("tfa3dsb.sb", "1 - Standard Blur")
-	language.Add("tfa3dsb.bb", "2 - Bokeh Blur")
-	language.Add("tfabaltra.di", "0 - Disabled")
-	language.Add("tfabaltra.sm", "1 - Smokey")
-	language.Add("tfabaltra.re", "2 - Bright Red")
-
-	language.Add("tfahudpreset.cross", "Cross")
-	language.Add("tfahudpreset.crysis2", "Crysis 2")
-	language.Add("tfahudpreset.dot", "Dot (Minimalist)")
-	language.Add("tfahudpreset.hl2", "Half-Life 2")
-	language.Add("tfahudpreset.hl2plus", "Half-Life 2 Enhanced")
-	language.Add("tfahudpreset.rockstar", "Rockstar (GTA V / Max Payne 3)")
-
 	local function tfaOptionServer(panel)
 		--Here are whatever default categories you want.
 		local tfaOptionSV = {
@@ -87,33 +61,33 @@ if CLIENT then
 		panel:AddControl("ComboBox", tfaOptionSV)
 
 		--These are the panel controls.  Adding these means that you don't have to go into the console.
-		TFA.CheckBoxNet(panel, "Require reload keypress", "sv_tfa_allow_dryfire")
-		TFA.CheckBoxNet(panel, "Dynamic Accuracy", "sv_tfa_dynamicaccuracy")
-		TFA.CheckBoxNet(panel, "Strip Empty Weapons", "sv_tfa_weapon_strip")
-		TFA.CheckBoxNet(panel, "Enable Ironsights", "sv_tfa_ironsights_enabled")
-		TFA.CheckBoxNet(panel, "Enable Modern-Style Sprinting", "sv_tfa_sprint_enabled")
-		TFA.CheckBoxNet(panel, "Enable Custom C-Menu", "sv_tfa_cmenu")
-		TFA.CheckBoxNet(panel, "Enable Bullet Penetration", "sv_tfa_bullet_penetration")
-		TFA.CheckBoxNet(panel, "Enable Bullet Ricochet", "sv_tfa_bullet_ricochet")
-		TFA.CheckBoxNet(panel, "Enable Bullet Door Destruction", "sv_tfa_bullet_doordestruction")
-		TFA.CheckBoxNet(panel, "Enable Melee Door Busting", "sv_tfa_melee_doordestruction")
-		TFA.CheckBoxNet(panel, "Enable Reloading", "sv_tfa_reloads_enabled")
-		TFA.CheckBoxNet(panel, "Enable Jamming (If supported by weapon)", "sv_tfa_jamming")
-		TFA.CheckBoxNet(panel, "Enable nearly-empty sounds", "sv_tfa_nearlyempty")
-		TFA.CheckBoxNet(panel, "Enable Legacy-Style Reloading", "sv_tfa_reloads_legacy")
+		TFA.CheckBoxNet(panel, "#tfa.svsettings.dryfire", "sv_tfa_allow_dryfire")
+		TFA.CheckBoxNet(panel, "#tfa.svsettings.dynaccuracy", "sv_tfa_dynamicaccuracy")
+		TFA.CheckBoxNet(panel, "#tfa.svsettings.stripempty", "sv_tfa_weapon_strip")
+		TFA.CheckBoxNet(panel, "#tfa.svsettings.ironsight", "sv_tfa_ironsights_enabled")
+		TFA.CheckBoxNet(panel, "#tfa.svsettings.sprint", "sv_tfa_sprint_enabled")
+		TFA.CheckBoxNet(panel, "#tfa.svsettings.cmenu", "sv_tfa_cmenu")
+		TFA.CheckBoxNet(panel, "#tfa.svsettings.penetration", "sv_tfa_bullet_penetration")
+		TFA.CheckBoxNet(panel, "#tfa.svsettings.ricochet", "sv_tfa_bullet_ricochet")
+		TFA.CheckBoxNet(panel, "#tfa.svsettings.doorbust", "sv_tfa_bullet_doordestruction")
+		TFA.CheckBoxNet(panel, "#tfa.svsettings.doorbash", "sv_tfa_melee_doordestruction")
+		TFA.CheckBoxNet(panel, "#tfa.svsettings.reloads", "sv_tfa_reloads_enabled")
+		TFA.CheckBoxNet(panel, "#tfa.svsettings.jamming", "sv_tfa_jamming")
+		TFA.CheckBoxNet(panel, "#tfa.svsettings.nearlyempty", "sv_tfa_nearlyempty")
+		TFA.CheckBoxNet(panel, "#tfa.svsettings.legacyreloads", "sv_tfa_reloads_legacy")
 
-		TFA.NumSliderNet(panel, "Damage Multiplier", "sv_tfa_damage_multiplier", 0, 10, 2)
-		TFA.NumSliderNet(panel, "Door Respawn Time", "sv_tfa_door_respawn", -1, 120, 0)
+		TFA.NumSliderNet(panel, "#tfa.svsettings.damagemult", "sv_tfa_damage_multiplier", 0, 10, 2)
+		TFA.NumSliderNet(panel, "#tfa.svsettings.doorrespawntime", "sv_tfa_door_respawn", -1, 120, 0)
 
-		TFA.NumSliderNet(panel, "Jam chance multiplier", "sv_tfa_jamming_mult", 0.01, 10, 2)
-		TFA.NumSliderNet(panel, "Jam factor multiplier", "sv_tfa_jamming_factor", 0.01, 10, 2)
-		TFA.NumSliderNet(panel, "Jam factor increase multiplier", "sv_tfa_jamming_factor_inc", 0.01, 10, 2)
+		TFA.NumSliderNet(panel, "#tfa.svsettings.jamchance", "sv_tfa_jamming_mult", 0.01, 10, 2)
+		TFA.NumSliderNet(panel, "#tfa.svsettings.jamfactormult", "sv_tfa_jamming_factor", 0.01, 10, 2)
+		TFA.NumSliderNet(panel, "#tfa.svsettings.jamfactorinc", "sv_tfa_jamming_factor_inc", 0.01, 10, 2)
 
-		TFA.NumSliderNet(panel, "Impact Force Multiplier", "sv_tfa_force_multiplier", 0, 10, 2)
-		TFA.NumSliderNet(panel, "Spread Multiplier", "sv_tfa_spread_multiplier", 0, 10, 2)
-		TFA.NumSliderNet(panel, "Penetration Count Limit", "sv_tfa_penetration_limit", 0, 10, 2)
-		TFA.NumSliderNet(panel, "Default Clip Count\n(-1 = default)", "sv_tfa_default_clip", -1, 10, 0)
-		TFA.NumSliderNet(panel, "Bullet Range Damage Degredation", "sv_tfa_range_modifier", 0, 1, 3)
+		TFA.NumSliderNet(panel, "#tfa.svsettings.forcemult", "sv_tfa_force_multiplier", 0, 10, 2)
+		TFA.NumSliderNet(panel, "#tfa.svsettings.spreadmult", "sv_tfa_spread_multiplier", 0, 10, 2)
+		TFA.NumSliderNet(panel, "#tfa.svsettings.penetrationlimit", "sv_tfa_penetration_limit", 0, 10, 2)
+		TFA.NumSliderNet(panel, "#tfa.svsettings.defaultclip", "sv_tfa_default_clip", -1, 10, 0)
+		TFA.NumSliderNet(panel, "#tfa.svsettings.rangemod", "sv_tfa_range_modifier", 0, 1, 3)
 	end
 
 	local function tfaOptionSights(panel)
@@ -143,140 +117,100 @@ if CLIENT then
 
 		panel:AddControl("ComboBox", tfaOptionCL)
 
-		--These are the panel controls.  Adding these means that you don't have to go into the console.
-		panel:AddControl("CheckBox", {
-			Label = "Enable 3D Scopes",
-			Command = "cl_tfa_3dscope"
-		})
-
-		panel:AddControl("CheckBox", {
-			Label = "Enable 3D Scope Shadows",
-			Command = "cl_tfa_3dscope_overlay"
-		})
+		panel:CheckBox("#tfa.sightsettings.3dscopes", "cl_tfa_3dscope")
+		panel:CheckBox("#tfa.sightsettings.3dscopeshadows", "cl_tfa_3dscope_overlay")
 
 		local tfaOption3DSM = {
 			Options = {},
 			CVars = {},
-			Label = "#tfa3dsm.label",
+			Label = "#tfa.sightsettings.3dsm",
 			MenuButton = "0",
 			Folder = "TFA 3D Scope Sens."
 		}
 
-		tfaOption3DSM.Options["#tfa3dsm.nc"] = {
+		tfaOption3DSM.Options["#tfa.sightsettings.3dsm.nc"] = {
 			cl_tfa_scope_sensitivity_3d = "0"
 		}
 
-		tfaOption3DSM.Options["#tfa3dsm.nc"] = {
+		tfaOption3DSM.Options["#tfa.sightsettings.3dsm.nc"] = {
 			cl_tfa_scope_sensitivity_3d = "0"
 		}
 
-		tfaOption3DSM.Options["#tfa3dsm.sc"] = {
+		tfaOption3DSM.Options["#tfa.sightsettings.3dsm.sc"] = {
 			cl_tfa_scope_sensitivity_3d = "1"
 		}
 
-		tfaOption3DSM.Options["#tfa3dsm.3d"] = {
+		tfaOption3DSM.Options["#tfa.sightsettings.3dsm.3d"] = {
 			cl_tfa_scope_sensitivity_3d = "2"
 		}
 
-		tfaOption3DSM.Options["#tfa3dsm.rt"] = {
+		tfaOption3DSM.Options["#tfa.sightsettings.3dsm.rt"] = {
 			cl_tfa_scope_sensitivity_3d = "3"
 		}
 
-		tfaOption3DSM.CVars = table.GetKeys(tfaOption3DSM.Options["#tfa3dsm.3d"])
+		tfaOption3DSM.CVars = table.GetKeys(tfaOption3DSM.Options["#tfa.sightsettings.3dsm.3d"])
 		panel:AddControl("ComboBox", tfaOption3DSM)
 
 		local tfaOption3DSQ = {
 			Options = {},
 			CVars = {},
-			Label = "#tfa3dsq.label",
+			Label = "#tfa.sightsettings.3dsq",
 			MenuButton = "0",
 			Folder = "TFA 3D Scope Sens."
 		}
 
-		tfaOption3DSQ.Options["#tfa3dsq.at"] = {
+		tfaOption3DSQ.Options["#tfa.sightsettings.3dsq.at"] = {
 			cl_tfa_3dscope_quality = "-1"
 		}
 
-		tfaOption3DSQ.Options["#tfa3dsq.ul"] = {
+		tfaOption3DSQ.Options["#tfa.sightsettings.3dsq.ul"] = {
 			cl_tfa_3dscope_quality = "0"
 		}
 
-		tfaOption3DSQ.Options["#tfa3dsq.hq"] = {
+		tfaOption3DSQ.Options["#tfa.sightsettings.3dsq.hq"] = {
 			cl_tfa_3dscope_quality = "1"
 		}
 
-		tfaOption3DSQ.Options["#tfa3dsq.mq"] = {
+		tfaOption3DSQ.Options["#tfa.sightsettings.3dsq.mq"] = {
 			cl_tfa_3dscope_quality = "2"
 		}
 
-		tfaOption3DSQ.Options["#tfa3dsq.lq"] = {
+		tfaOption3DSQ.Options["#tfa.sightsettings.3dsq.lq"] = {
 			cl_tfa_3dscope_quality = "3"
 		}
 
-		tfaOption3DSQ.CVars = table.GetKeys(tfaOption3DSQ.Options["#tfa3dsq.ul"])
+		tfaOption3DSQ.CVars = table.GetKeys(tfaOption3DSQ.Options["#tfa.sightsettings.3dsq.ul"])
 		panel:AddControl("ComboBox", tfaOption3DSQ)
 
 		local tfaOption3DSB = {
 			Options = {},
 			CVars = {},
-			Label = "#tfa3dsb.label",
+			Label = "#tfa.sightsettings.3dsb",
 			MenuButton = "0",
 			Folder = "TFA 3D Scope Blur."
 		}
 
-		tfaOption3DSB.Options["#tfa3dsb.nb"] = {
+		tfaOption3DSB.Options["#tfa.sightsettings.3dsb.nb"] = {
 			cl_tfa_fx_rtscopeblur_mode = "0"
 		}
 
-		tfaOption3DSB.Options["#tfa3dsb.sb"] = {
+		tfaOption3DSB.Options["#tfa.sightsettings.3dsb.sb"] = {
 			cl_tfa_fx_rtscopeblur_mode = "1"
 		}
 
-		tfaOption3DSB.Options["#tfa3dsb.bb"] = {
+		tfaOption3DSB.Options["#tfa.sightsettings.3dsb.bb"] = {
 			cl_tfa_fx_rtscopeblur_mode = "2"
 		}
 
-		tfaOption3DSB.CVars = table.GetKeys(tfaOption3DSB.Options["#tfa3dsb.bb"])
+		tfaOption3DSB.CVars = table.GetKeys(tfaOption3DSB.Options["#tfa.sightsettings.3dsb.bb"])
 		panel:AddControl("ComboBox", tfaOption3DSB)
 
-		panel:AddControl("Slider", {
-			Label = "Scope Blur Quality",
-			Command = "cl_tfa_fx_rtscopeblur_passes",
-			Type = "Integer",
-			Min = "1",
-			Max = "5"
-		})
-
-		panel:AddControl("Slider", {
-			Label = "Scope Blur Strength",
-			Command = "cl_tfa_fx_rtscopeblur_intensity",
-			Type = "Float",
-			Min = "0.01",
-			Max = "10"
-		})
-
-		panel:AddControl("CheckBox", {
-			Label = "Toggle Ironsights",
-			Command = "cl_tfa_ironsights_toggle"
-		})
-
-		panel:AddControl("CheckBox", {
-			Label = "Preserve Sights On Reload, Sprint, etc.",
-			Command = "cl_tfa_ironsights_resight"
-		})
-
-		panel:AddControl("CheckBox", {
-			Label = "Compensate Sensitivity for FOV",
-			Command = "cl_tfa_scope_sensitivity_autoscale"
-		})
-
-		panel:AddControl("Slider", {
-			Label = "Scope Sensitivity",
-			Command = "cl_tfa_scope_sensitivity",
-			Type = "Integer",
-			Min = "1",
-			Max = "100"
-		})
+		panel:NumSlider("#tfa.sightsettings.rtbgblurpasses", "cl_tfa_fx_rtscopeblur_passes", 1, 5, 0)
+		panel:NumSlider("#tfa.sightsettings.rtbgblurintensity", "cl_tfa_fx_rtscopeblur_intensity", 0.01, 10, 2)
+		panel:CheckBox("#tfa.sightsettings.adstoggle", "cl_tfa_ironsights_toggle")
+		panel:CheckBox("#tfa.sightsettings.adsresight", "cl_tfa_ironsights_resight")
+		panel:CheckBox("#tfa.sightsettings.scopesensscale", "cl_tfa_scope_sensitivity_autoscale")
+		panel:NumSlider("#tfa.sightsettings.scopesenspct", "cl_tfa_scope_sensitivity", 0.01, 100, 2)
 
 		panel:AddControl("Label", {
 			Text = "By TheForgottenArchitect"
@@ -310,84 +244,21 @@ if CLIENT then
 		tfaOptionCL.CVars = table.GetKeys(tfaOptionCL.Options["#preset.default"])
 		panel:AddControl("ComboBox", tfaOptionCL)
 
-		--These are the panel controls.  Adding these means that you don't have to go into the console.
-		panel:AddControl("CheckBox", {
-			Label = "Use Animated Viewbob",
-			Command = "cl_tfa_viewbob_animated"
-		})
+		panel:CheckBox("#tfa.vmsettings.viewbobanim", "cl_tfa_viewbob_animated")
+		panel:CheckBox("#tfa.vmsettings.viewpunch", "cl_tfa_viewmodel_viewpunch")
+		panel:NumSlider("#tfa.vmsettings.gunbobmult", "cl_tfa_gunbob_intensity", 0, 2, 2)
+		panel:NumSlider("#tfa.vmsettings.viewbobmult", "cl_tfa_viewbob_intensity", 0, 2, 2)
 
-		panel:AddControl("CheckBox", {
-			Label = "Use Viewmodel Viewpunch",
-			Command = "cl_tfa_viewmodel_viewpunch"
-		})
+		panel:NumSlider("#tfa.vmsettings.offset.x", "cl_tfa_viewmodel_offset_x", -2, 2, 2)
+		panel:NumSlider("#tfa.vmsettings.offset.y", "cl_tfa_viewmodel_offset_y", -2, 2, 2)
+		panel:NumSlider("#tfa.vmsettings.offset.z", "cl_tfa_viewmodel_offset_z", -2, 2, 2)
+		panel:NumSlider("#tfa.vmsettings.offset.fov", "cl_tfa_viewmodel_offset_fov", -5, 5, 2)
 
-		panel:AddControl("Slider", {
-			Label = "Gun Bob Intensity",
-			Command = "cl_tfa_gunbob_intensity",
-			Type = "Float",
-			Min = "0",
-			Max = "2"
-		})
+		panel:CheckBox("#tfa.vmsettings.centered", "cl_tfa_viewmodel_centered")
+		panel:CheckBox("#tfa.vmsettings.flip", "cl_tfa_viewmodel_flip")
 
-		panel:AddControl("Slider", {
-			Label = "View Bob Intensity",
-			Command = "cl_tfa_viewbob_intensity",
-			Type = "Float",
-			Min = "0",
-			Max = "2"
-		})
-
-		panel:AddControl("Slider", {
-			Label = "Viemodel Offset - X",
-			Command = "cl_tfa_viewmodel_offset_x",
-			Type = "Float",
-			Min = "-2",
-			Max = "2"
-		})
-
-		panel:AddControl("Slider", {
-			Label = "Viemodel Offset - Y",
-			Command = "cl_tfa_viewmodel_offset_y",
-			Type = "Float",
-			Min = "-2",
-			Max = "2"
-		})
-
-		panel:AddControl("Slider", {
-			Label = "Viemodel Offset - Z",
-			Command = "cl_tfa_viewmodel_offset_z",
-			Type = "Float",
-			Min = "-2",
-			Max = "2"
-		})
-
-		panel:AddControl("Slider", {
-			Label = "Viemodel Offset - FOV",
-			Command = "cl_tfa_viewmodel_offset_fov",
-			Type = "Float",
-			Min = "-5",
-			Max = "5"
-		})
-
-		panel:AddControl("CheckBox", {
-			Label = "Centered Viewmodel",
-			Command = "cl_tfa_viewmodel_centered"
-		})
-
-		panel:AddControl("CheckBox", {
-			Label = "Near Wall Viewmodel Offset",
-			Command = "cl_tfa_viewmodel_nearwall"
-		})
-
-		panel:AddControl("CheckBox", {
-			Label = "Laser Dot Trails",
-			Command = "cl_tfa_laser_trails"
-		})
-
-		panel:AddControl("CheckBox", {
-			Label = "Left Handed Viewmodel (Buggy)",
-			Command = "cl_tfa_viewmodel_flip"
-		})
+		panel:CheckBox("#tfa.vmsettings.laserdottrail", "cl_tfa_laser_trails")
+		panel:CheckBox("#tfa.vmsettings.nearwall", "cl_tfa_viewmodel_nearwall")
 
 		panel:AddControl("Label", {
 			Text = "By TheForgottenArchitect"
@@ -423,69 +294,25 @@ if CLIENT then
 		tfaOptionPerf.CVars = table.GetKeys(tfaOptionPerf.Options["#preset.default"])
 		panel:AddControl("ComboBox", tfaOptionPerf)
 
-		panel:AddControl("CheckBox", {
-			Label = "Use Gas Blur",
-			Command = "cl_tfa_fx_gasblur"
-		})
+		panel:Help("#tfa.settings.client")
+		panel:CheckBox("#tfa.perfsettings.gasblur", "cl_tfa_fx_gasblur")
+		panel:CheckBox("#tfa.perfsettings.mzsmoke", "cl_tfa_fx_muzzleflashsmoke")
+		panel:CheckBox("#tfa.perfsettings.mztrail", "cl_tfa_fx_muzzlesmoke")
+		panel:CheckBox("#tfa.perfsettings.mztrail.limit", "cl_tfa_fx_muzzlesmoke_limited")
+		panel:CheckBox("#tfa.perfsettings.ejsmoke", "cl_tfa_fx_ejectionsmoke")
+		panel:CheckBox("#tfa.perfsettings.impactfx", "cl_tfa_fx_impact_enabled")
+		panel:CheckBox("#tfa.perfsettings.ricochetfx", "cl_tfa_fx_impact_ricochet_enabled")
 
-		panel:AddControl("CheckBox", {
-			Label = "Use Muzzle Flash Smoke",
-			Command = "cl_tfa_fx_muzzleflashsmoke"
-		})
+		panel:CheckBox("#tfa.perfsettings.oldshells", "cl_tfa_legacy_shells")
 
-		panel:AddControl("CheckBox", {
-			Label = "Use Muzzle Smoke Trails",
-			Command = "cl_tfa_fx_muzzlesmoke"
-		})
+		panel:CheckBox("#tfa.perfsettings.inspectdof", "cl_tfa_inspection_bokeh")
 
-		panel:AddControl("CheckBox", {
-			Label = "Limit Muzzle Smoke Trails",
-			Command = "cl_tfa_fx_muzzlesmoke_limited"
-		})
+		panel:CheckBox("#tfa.perfsettings.adsdof", "cl_tfa_fx_ads_dof")
+		panel:CheckBox("#tfa.perfsettings.adsdof.hd", "cl_tfa_fx_ads_dof_hd")
 
-		panel:AddControl("CheckBox", {
-			Label = "Use Ejection Smoke",
-			Command = "cl_tfa_fx_ejectionsmoke"
-		})
+		panel:NumSlider("#tfa.perfsettings.ejlife", "cl_tfa_fx_ejectionlife", 0, 60, 0)
 
-		panel:AddControl("CheckBox", {
-			Label = "Use Custom Impact FX",
-			Command = "cl_tfa_fx_impact_enabled"
-		})
-
-		panel:AddControl("CheckBox", {
-			Label = "Use Ricochet FX",
-			Command = "cl_tfa_fx_impact_ricochet_enabled"
-		})
-
-		panel:AddControl("CheckBox", {
-			Label = "Use Inspection BokehDOF",
-			Command = "cl_tfa_inspection_bokeh"
-		})
-
-		panel:AddControl("CheckBox", {
-			Label = "Use Legacy Shell-Ejection",
-			Command = "cl_tfa_legacy_shells"
-		})
-
-		panel:AddControl("CheckBox", {
-			Label = "Enable Iron Sights DoF",
-			Command = "cl_tfa_fx_ads_dof"
-		})
-
-		panel:AddControl("CheckBox", {
-			Label = "Enable true DoF",
-			Command = "cl_tfa_fx_ads_dof_hd"
-		})
-
-		panel:AddControl("Slider", {
-			Label = "Ejected Shell Life",
-			Command = "cl_tfa_fx_ejectionlife",
-			Type = "Integer",
-			Min = "0",
-			Max = "60"
-		})
-
+		panel:NumSlider("#tfa.perfsettings.ricochetspark.amount", "cl_tfa_fx_impact_ricochet_sparks", 0, 50, 0)
 		panel:AddControl("Slider", {
 			Label = "Ricochet Spark Amount",
 			Command = "cl_tfa_fx_impact_ricochet_sparks",
@@ -494,15 +321,10 @@ if CLIENT then
 			Max = "50"
 		})
 
-		panel:AddControl("Slider", {
-			Label = "Ricochet Spark Life",
-			Command = "cl_tfa_fx_impact_ricochet_sparklife",
-			Type = "Float",
-			Min = "0",
-			Max = "5"
-		})
+		panel:NumSlider("#tfa.perfsettings.ricochetspark.life", "cl_tfa_fx_impact_ricochet_sparklife", 0, 5, 2)
 
-		TFA.CheckBoxNet(panel, "Use Penetration Decal (SV)", "sv_tfa_fx_penetration_decal")
+		panel:Help("#tfa.settings.server")
+		TFA.CheckBoxNet(panel, "#tfa.perfsettings.penetrationdecal", "sv_tfa_fx_penetration_decal")
 
 		panel:AddControl("Label", {
 			Text = "By TheForgottenArchitect"
@@ -552,7 +374,7 @@ if CLIENT then
 			cl_tfa_hud_hitmarker_color_a = "225"
 		}
 
-		tfaTBLOptionHUD.Options["#tfahudpreset.cross"] = {
+		tfaTBLOptionHUD.Options["#tfa.hudpreset.cross"] = {
 			cl_tfa_hud_crosshair_enable_custom = "1",
 			cl_tfa_hud_crosshair_color_r = "255",
 			cl_tfa_hud_crosshair_color_g = "255",
@@ -586,7 +408,7 @@ if CLIENT then
 			cl_tfa_hud_hitmarker_color_a = "225"
 		}
 
-		tfaTBLOptionHUD.Options["#tfahudpreset.dot"] = {
+		tfaTBLOptionHUD.Options["#tfa.hudpreset.dot"] = {
 			cl_tfa_hud_crosshair_enable_custom = "1",
 			cl_tfa_hud_crosshair_color_r = "72",
 			cl_tfa_hud_crosshair_color_g = "72",
@@ -620,7 +442,7 @@ if CLIENT then
 			cl_tfa_hud_hitmarker_color_a = "225"
 		}
 
-		tfaTBLOptionHUD.Options["#tfahudpreset.rockstar"] = {
+		tfaTBLOptionHUD.Options["#tfa.hudpreset.rockstar"] = {
 			cl_tfa_hud_crosshair_enable_custom = "1",
 			cl_tfa_hud_crosshair_color_r = "225",
 			cl_tfa_hud_crosshair_color_g = "225",
@@ -654,7 +476,7 @@ if CLIENT then
 			cl_tfa_hud_hitmarker_color_a = "8"
 		}
 
-		tfaTBLOptionHUD.Options["#tfahudpreset.hl2"] = {
+		tfaTBLOptionHUD.Options["#tfa.hudpreset.hl2"] = {
 			cl_tfa_hud_crosshair_enable_custom = "0",
 			cl_tfa_hud_crosshair_color_r = "255",
 			cl_tfa_hud_crosshair_color_g = "255",
@@ -688,7 +510,7 @@ if CLIENT then
 			cl_tfa_hud_hitmarker_color_a = "225"
 		}
 
-		tfaTBLOptionHUD.Options["#tfahudpreset.hl2plus"] = {
+		tfaTBLOptionHUD.Options["#tfa.hudpreset.hl2plus"] = {
 			cl_tfa_hud_crosshair_enable_custom = "1",
 			cl_tfa_hud_crosshair_color_r = "255",
 			cl_tfa_hud_crosshair_color_g = "255",
@@ -722,7 +544,7 @@ if CLIENT then
 			cl_tfa_hud_hitmarker_color_a = "225"
 		}
 
-		tfaTBLOptionHUD.Options["#tfahudpreset.crysis2"] = {
+		tfaTBLOptionHUD.Options["#tfa.hudpreset.crysis2"] = {
 			cl_tfa_hud_crosshair_enable_custom = "1",
 			cl_tfa_hud_crosshair_color_r = "231",
 			cl_tfa_hud_crosshair_color_g = "255",
@@ -759,78 +581,20 @@ if CLIENT then
 		tfaTBLOptionHUD.CVars = table.GetKeys(tfaTBLOptionHUD.Options["#preset.default"])
 		panel:AddControl("ComboBox", tfaTBLOptionHUD)
 
-		--These are the panel controls.  Adding these means that you don't have to go into the console.
-		panel:AddControl("CheckBox", {
-			Label = "Use Custom HUD",
-			Command = "cl_tfa_hud_enabled"
-		})
+		panel:CheckBox("#tfa.hudsettings.enabled", "cl_tfa_hud_enabled")
+		panel:NumSlider("#tfa.hudsettings.fadein", "cl_tfa_hud_ammodata_fadein", 0.01, 1, 2)
+		panel:NumSlider("#tfa.hudsettings.hangtime", "cl_tfa_hud_hangtime", 0, 5, 2)
 
-		panel:AddControl("Slider", {
-			Label = "Ammo HUD Fadein Time",
-			Command = "cl_tfa_hud_ammodata_fadein",
-			Type = "Float",
-			Min = "0.01",
-			Max = "1"
-		})
-
-		panel:AddControl("Slider", {
-			Label = "HUD Hang Time (after a reload, etc.)",
-			Command = "cl_tfa_hud_hangtime",
-			Type = "Float",
-			Min = "0",
-			Max = "5"
-		})
-
-		panel:AddControl("Label", {
-			Text = "-Crosshair Options-"
-		})
-
-		panel:AddControl("CheckBox", {
-			Label = "Use Custom Crosshair",
-			Command = "cl_tfa_hud_crosshair_enable_custom"
-		})
-
-		panel:AddControl("CheckBox", {
-			Label = "Use Crosshair Dot",
-			Command = "cl_tfa_hud_crosshair_dot"
-		})
-
-		panel:AddControl("CheckBox", {
-			Label = "Use Triangular Crosshair",
-			Command = "cl_tfa_hud_crosshair_triangular"
-		})
-
-		panel:AddControl("CheckBox", {
-			Label = "Crosshair Length In Pixels?",
-			Command = "cl_tfa_hud_crosshair_length_use_pixels"
-		})
-
-		panel:AddControl("Slider", {
-			Label = "Crosshair Length",
-			Command = "cl_tfa_hud_crosshair_length",
-			Type = "Float",
-			Min = "0",
-			Max = "10"
-		})
-
-		panel:AddControl("Slider", {
-			Label = "Crosshair Gap Scale",
-			Command = "cl_tfa_hud_crosshair_gap_scale",
-			Type = "Float",
-			Min = "0",
-			Max = "2"
-		})
-
-		panel:AddControl("Slider", {
-			Label = "Crosshair Width",
-			Command = "cl_tfa_hud_crosshair_width",
-			Type = "Integer",
-			Min = "0",
-			Max = "3"
-		})
-
+		panel:CheckBox("#tfa.hudsettings.crosshair.enabled", "cl_tfa_hud_crosshair_enable_custom")
+		panel:CheckBox("#tfa.hudsettings.crosshair.dot", "cl_tfa_hud_crosshair_dot")
+		panel:CheckBox("#tfa.hudsettings.crosshair.triangular", "cl_tfa_hud_crosshair_triangular")
+		panel:NumSlider("#tfa.hudsettings.crosshair.length", "cl_tfa_hud_crosshair_length", 0, 10, 2)
+		panel:CheckBox("#tfa.hudsettings.crosshair.length.usepixels", "cl_tfa_hud_crosshair_length_use_pixels")
+		panel:NumSlider("#tfa.hudsettings.crosshair.gapscale", "cl_tfa_hud_crosshair_gap_scale", 0, 2, 2)
+		panel:NumSlider("#tfa.hudsettings.crosshair.width", "cl_tfa_hud_crosshair_width", 0, 3, 0)
+		panel:CheckBox("#tfa.hudsettings.crosshair.teamcolor", "cl_tfa_hud_crosshair_color_team")
 		panel:AddControl("Color", {
-			Label = "Crosshair Color",
+			Label = "#tfa.hudsettings.crosshair.color",
 			Red = "cl_tfa_hud_crosshair_color_r",
 			Green = "cl_tfa_hud_crosshair_color_g",
 			Blue = "cl_tfa_hud_crosshair_color_b",
@@ -840,26 +604,10 @@ if CLIENT then
 			Multiplier = 255
 		})
 
-		panel:AddControl("CheckBox", {
-			Label = "Enable Crosshair Teamcolor",
-			Command = "cl_tfa_hud_crosshair_color_team"
-		})
-
-		panel:AddControl("CheckBox", {
-			Label = "Enable Crosshair Outline",
-			Command = "cl_tfa_hud_crosshair_outline_enabled"
-		})
-
-		panel:AddControl("Slider", {
-			Label = "Crosshair Outline Width",
-			Command = "cl_tfa_hud_crosshair_outline_width",
-			Type = "Integer",
-			Min = "0",
-			Max = "3"
-		})
-
+		panel:CheckBox("#tfa.hudsettings.crosshair.outline.enabled", "cl_tfa_hud_crosshair_outline_enabled")
+		panel:NumSlider("#tfa.hudsettings.crosshair.outline.width", "cl_tfa_hud_crosshair_outline_width", 0, 3, 0)
 		panel:AddControl("Color", {
-			Label = "Crosshair Outline Color",
+			Label = "#tfa.hudsettings.crosshair.outline.color",
 			Red = "cl_tfa_hud_crosshair_outline_color_r",
 			Green = "cl_tfa_hud_crosshair_outline_color_g",
 			Blue = "cl_tfa_hud_crosshair_outline_color_b",
@@ -869,47 +617,14 @@ if CLIENT then
 			Multiplier = 255
 		})
 
-		panel:AddControl("CheckBox", {
-			Label = "Enable Hitmarker",
-			Command = "cl_tfa_hud_hitmarker_enabled"
-		})
-
-		panel:AddControl("CheckBox", {
-			Label = "3D Hitmarker For All Weapons",
-			Command = "cl_tfa_hud_hitmarker_3d_all"
-		})
-
-		panel:AddControl("CheckBox", {
-			Label = "3D Hitmarker For Shotguns",
-			Command = "cl_tfa_hud_hitmarker_3d_shotguns"
-		})
-
-		panel:AddControl("Slider", {
-			Label = "Hitmaker Solid Time",
-			Command = "cl_tfa_hud_hitmarker_solidtime",
-			Type = "Float",
-			Min = "0",
-			Max = "1"
-		})
-
-		panel:AddControl("Slider", {
-			Label = "Hitmaker Fade Time",
-			Command = "cl_tfa_hud_hitmarker_fadetime",
-			Type = "Float",
-			Min = "0",
-			Max = "1"
-		})
-
-		panel:AddControl("Slider", {
-			Label = "Hitmaker Scale",
-			Command = "cl_tfa_hud_hitmarker_scale",
-			Type = "Float",
-			Min = "0",
-			Max = "5"
-		})
-
+		panel:CheckBox("#tfa.hudsettings.hitmarker.enabled", "cl_tfa_hud_hitmarker_enabled")
+		panel:CheckBox("#tfa.hudsettings.hitmarker.3d.shotguns", "cl_tfa_hud_hitmarker_3d_shotguns")
+		panel:CheckBox("#tfa.hudsettings.hitmarker.3d.all", "cl_tfa_hud_hitmarker_3d_all")
+		panel:NumSlider("#tfa.hudsettings.hitmarker.solidtime", "cl_tfa_hud_hitmarker_solidtime", 0, 1, 2)
+		panel:NumSlider("#tfa.hudsettings.hitmarker.fadetime", "cl_tfa_hud_hitmarker_fadetime", 0, 1, 2)
+		panel:NumSlider("#tfa.hudsettings.hitmarker.scale", "cl_tfa_hud_hitmarker_scale", 0, 5, 2)
 		panel:AddControl("Color", {
-			Label = "Hitmarker Color",
+			Label = "#tfa.hudsettings.hitmarker.color",
 			Red = "cl_tfa_hud_hitmarker_color_r",
 			Green = "cl_tfa_hud_hitmarker_color_g",
 			Blue = "cl_tfa_hud_hitmarker_color_b",
@@ -942,20 +657,9 @@ if CLIENT then
 		tfaOptionPerf.CVars = table.GetKeys(tfaOptionPerf.Options["#preset.default"])
 		panel:AddControl("ComboBox", tfaOptionPerf)
 
-		panel:AddControl("CheckBox", {
-			Label = "Force Debug Crosshair",
-			Command = "cl_tfa_debug_crosshair"
-		})
-
-		panel:AddControl("CheckBox", {
-			Label = "Debug RT Overlay",
-			Command = "cl_tfa_debug_rt"
-		})
-
-		panel:AddControl("CheckBox", {
-			Label = "Disable Stat Caching",
-			Command = "cl_tfa_debug_cache"
-		})
+		panel:CheckBox("#tfa.devsettings.debug.crosshair", "cl_tfa_debug_crosshair")
+		panel:CheckBox("#tfa.devsettings.debug.rtshadow", "cl_tfa_debug_rt")
+		panel:CheckBox("#tfa.devsettings.debug.cache", "cl_tfa_debug_cache")
 
 		panel:AddControl("Label", {
 			Text = "By TheForgottenArchitect"
@@ -983,7 +687,7 @@ if CLIENT then
 		panel:AddControl("ComboBox", tfaOptionCO)
 
 		panel:AddControl("Color", {
-			Label = "Laser Color",
+			Label = "#tfa.colorsettings.laser",
 			Red = "cl_tfa_laser_color_r",
 			Green = "cl_tfa_laser_color_g",
 			Blue = "cl_tfa_laser_color_b",
@@ -993,7 +697,7 @@ if CLIENT then
 		})
 
 		panel:AddControl("Color", {
-			Label = "Reticule Color",
+			Label = "#tfa.colorsettings.reticule",
 			Red = "cl_tfa_reticule_color_r",
 			Green = "cl_tfa_reticule_color_g",
 			Blue = "cl_tfa_reticule_color_b",
@@ -1034,65 +738,41 @@ if CLIENT then
 		tfaOptionPerf.CVars = table.GetKeys(tfaOptionPerf.Options["#preset.default"])
 		panel:AddControl("ComboBox", tfaOptionPerf)
 
-		panel:AddControl("Label", {
-			Text = "Serverside"
-		})
+		panel:Help("#tfa.settings.server")
+		TFA.CheckBoxNet(panel, "#tfa.ballisticsettings.enabled", "sv_tfa_ballistics_enabled")
+		TFA.NumSliderNet(panel, "#tfa.ballisticsettings.mindist", "sv_tfa_ballistics_mindist", -1, 100, 0)
+		TFA.NumSliderNet(panel, "#tfa.ballisticsettings.bullet.life", "sv_tfa_ballistics_bullet_life", 0, 20, 2)
+		TFA.NumSliderNet(panel, "#tfa.ballisticsettings.bullet.damping.air", "sv_tfa_ballistics_bullet_damping_air", 0, 10, 2)
+		TFA.NumSliderNet(panel, "#tfa.ballisticsettings.bullet.damping.water", "sv_tfa_ballistics_bullet_damping_water", 0, 10, 2)
+		TFA.NumSliderNet(panel, "#tfa.ballisticsettings.bullet.velocity", "sv_tfa_ballistics_bullet_velocity", 0, 2, 3)
+		TFA.NumSliderNet(panel, "#tfa.ballisticsettings.substeps", "sv_tfa_ballistics_substeps", 1, 5, 0)
 
-		TFA.CheckBoxNet(panel, "Enabler", "sv_tfa_ballistics_enabled")
-		TFA.NumSliderNet(panel, "Activation Distance\n(-1 = always)", "sv_tfa_ballistics_mindist", -1, 100, 0)
-		TFA.NumSliderNet(panel, "Bullet Life", "sv_tfa_ballistics_bullet_life", 0, 20, 2)
-		TFA.NumSliderNet(panel, "Bullet Air Resistance", "sv_tfa_ballistics_bullet_damping_air", 0, 10, 2)
-		TFA.NumSliderNet(panel, "Bullet Water Resistance", "sv_tfa_ballistics_bullet_damping_water", 0, 10, 2)
-		TFA.NumSliderNet(panel, "Bullet Velocity", "sv_tfa_ballistics_bullet_velocity", 0, 2, 3)
-		TFA.NumSliderNet(panel, "Sub-Steps", "sv_tfa_ballistics_substeps", 1, 5, 0)
+		panel:Help("#tfa.settings.client")
 
-		panel:AddControl("Label", {
-			Text = "Clientside"
-		})
-
-		panel:AddControl("CheckBox", {
-			Label = "Bullet Models",
-			Command = "cl_tfa_ballistics_fx_bullet"
-		})
-
-		panel:AddControl("CheckBox", {
-			Label = "HQ Position Calcuations",
-			Command = "cl_tfa_ballistics_fx_tracers_adv"
-		})
-
-		panel:AddControl("CheckBox", {
-			Label = "Multiplayer Ballistics",
-			Command = "cl_tfa_ballistics_mp"
-		})
-
-		panel:AddControl("CheckBox", {
-			Label = "Multiplayer Tracers",
-			Command = "cl_tfa_ballistics_fx_tracers_mp"
-		})
+		panel:CheckBox("#tfa.ballisticsettings.fx.bullet", "cl_tfa_ballistics_fx_bullet")
+		panel:CheckBox("#tfa.ballisticsettings.fx.hq", "cl_tfa_ballistics_fx_tracers_adv")
+		panel:CheckBox("#tfa.ballisticsettings.fx.mp", "cl_tfa_ballistics_mp")
+		panel:CheckBox("#tfa.ballisticsettings.fx.mptracer", "cl_tfa_ballistics_fx_tracers_mp")
 
 		local tfaOptionTracerStyle = {
 			Options = {},
 			CVars = {"cl_tfa_ballistics_fx_tracers_style"},
-			Label = "#Presets",
+			Label = "#tfa.ballisticsettings.tracer",
 			MenuButton = "1",
 			Folder = "TFASSBallTracerStyle"
 		}
 
-		tfaOptionTracerStyle.Options["#tfabaltra.di"] = {
+		tfaOptionTracerStyle.Options["#tfa.ballisticsettings.tracer.di"] = {
 			["cl_tfa_ballistics_fx_tracers_style"] = 0
 		}
 
-		tfaOptionTracerStyle.Options["#tfabaltra.sm"] = {
+		tfaOptionTracerStyle.Options["#tfa.ballisticsettings.tracer.sm"] = {
 			["cl_tfa_ballistics_fx_tracers_style"] = 1
 		}
 
-		tfaOptionTracerStyle.Options["#tfabaltra.re"] = {
+		tfaOptionTracerStyle.Options["#tfa.ballisticsettings.tracer.re"] = {
 			["cl_tfa_ballistics_fx_tracers_style"] = 2
 		}
-
-		panel:AddControl("Label", {
-			Text = "Tracer Style:"
-		})
 
 		panel:AddControl("ComboBox", tfaOptionTracerStyle)
 
@@ -1102,15 +782,14 @@ if CLIENT then
 	end
 
 	local function tfaAddOption()
-		spawnmenu.AddToolMenuOption("Options", "TFA SWEP Base Settings", "tfaOptionVM", "Viewmodel", "", "", tfaOptionVM)
-		spawnmenu.AddToolMenuOption("Options", "TFA SWEP Base Settings", "tfaOptionSights", "Scopes / Sights", "", "", tfaOptionSights)
-		spawnmenu.AddToolMenuOption("Options", "TFA SWEP Base Settings", "tfaOptionPerformance", "Performance", "", "", tfaOptionPerformance)
-		spawnmenu.AddToolMenuOption("Options", "TFA SWEP Base Settings", "TFASwepBaseCrosshair", "HUD / Crosshair", "", "", tfaOptionHUD)
-		spawnmenu.AddToolMenuOption("Options", "TFA SWEP Base Settings", "TFASwepBaseDeveloper", "Developer", "", "", tfaOptionDeveloper)
-		spawnmenu.AddToolMenuOption("Options", "TFA SWEP Base Settings", "TFASwepBaseColor", "Color Customisation", "", "", tfaOptionColors)
-		spawnmenu.AddToolMenuOption("Options", "TFA SWEP Base Settings", "TFASwepBaseBallistics", "Ballistics", "", "", tfaOptionBallistics)
-		spawnmenu.AddToolMenuOption("Options", "TFA SWEP Base Settings", "TFASwepBaseServer", "Admin / Server", "", "", tfaOptionServer)
-		--spawnmenu.AddToolMenuOption("Options", "TFA SWEP Base Settings", "TFASwepBaseRestriction", "Restriction", "", "", tfaOptionRestriction)
+		spawnmenu.AddToolMenuOption("Utilities", "TFA SWEP Base Settings", "tfaOptionVM", "#tfa.smsettings.viewmodel", "", "", tfaOptionVM)
+		spawnmenu.AddToolMenuOption("Utilities", "TFA SWEP Base Settings", "tfaOptionSights", "#tfa.smsettings.sights", "", "", tfaOptionSights)
+		spawnmenu.AddToolMenuOption("Utilities", "TFA SWEP Base Settings", "tfaOptionPerformance", "#tfa.smsettings.perf", "", "", tfaOptionPerformance)
+		spawnmenu.AddToolMenuOption("Utilities", "TFA SWEP Base Settings", "TFASwepBaseCrosshair", "#tfa.smsettings.hud", "", "", tfaOptionHUD)
+		spawnmenu.AddToolMenuOption("Utilities", "TFA SWEP Base Settings", "TFASwepBaseDeveloper", "#tfa.smsettings.dev", "", "", tfaOptionDeveloper)
+		spawnmenu.AddToolMenuOption("Utilities", "TFA SWEP Base Settings", "TFASwepBaseColor", "#tfa.smsettings.color", "", "", tfaOptionColors)
+		spawnmenu.AddToolMenuOption("Utilities", "TFA SWEP Base Settings", "TFASwepBaseBallistics", "#tfa.smsettings.ballistics", "", "", tfaOptionBallistics)
+		spawnmenu.AddToolMenuOption("Utilities", "TFA SWEP Base Settings", "TFASwepBaseServer", "#tfa.smsettings.server", "", "", tfaOptionServer)
 	end
 
 	hook.Add("PopulateToolMenu", "tfaAddOption", tfaAddOption)

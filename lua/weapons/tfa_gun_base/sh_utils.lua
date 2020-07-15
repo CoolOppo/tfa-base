@@ -604,32 +604,32 @@ end
 function SWEP:GetFireModeName()
 	local fm = self:GetFireMode()
 	local fmn = string.lower(self:GetStat("FireModes")[fm])
-	if fmn == "safe" or fmn == "holster" then return "Safety" end
-	if self:GetStat("FireModeName") then return self:GetStat("FireModeName") end
-	if fmn == "auto" or fmn == "automatic" then return "Full-Auto" end
+	if fmn == "safe" or fmn == "holster" then return language.GetPhrase("tfa.firemode.safe") end
+	if self:GetStat("FireModeName") then return language.GetPhrase(self:GetStat("FireModeName")) end
+	if fmn == "auto" or fmn == "automatic" then return language.GetPhrase("tfa.firemode.auto") end
 
 	if fmn == "semi" or fmn == "single" then
 		if self:GetStat("Revolver") then
 			if (self:GetStat("BoltAction")) then
-				return "Single-Action"
+				return language.GetPhrase("tfa.firemode.single")
 			else
-				return "Double-Action"
+				return language.GetPhrase("tfa.firemode.revolver")
 			end
 		else
 			if (self:GetStat("BoltAction")) then
-				return "Bolt-Action"
+				return language.GetPhrase("tfa.firemode.bolt")
 			else
 				if (self.Shotgun and self:GetStat("Primary.RPM") < 250) then
-					return "Pump-Action"
+					return language.GetPhrase("tfa.firemode.pump")
 				else
-					return "Semi-Auto"
+					return language.GetPhrase("tfa.firemode.semi")
 				end
 			end
 		end
 	end
 
 	local bpos = string.find(fmn, "burst")
-	if bpos then return string.sub(fmn, 1, bpos - 1) .. " Round Burst" end
+	if bpos then return language.GetPhrase("tfa.firemode.burst"):format(string.sub(fmn, 1, bpos - 1)) end
 
 	return ""
 end
