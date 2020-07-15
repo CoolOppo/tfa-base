@@ -222,12 +222,12 @@ local bestrange = feettosource(kmtofeet(1))
 local worstrecoil = 1
 
 SWEP.AmmoTypeStrings = {
-	["pistol"] = "Generic Pistol",
-	["smg1"] = "Generic SMG",
-	["ar2"] = "Generic Rifle",
-	["buckshot"] = "Generic Shotgun",
-	["357"] = "Generic Revolver",
-	["SniperPenetratedRound"] = "Generic Sniper"
+	-- ["pistol"] = "Generic Pistol",
+	-- ["smg1"] = "Generic SMG",
+	-- ["ar2"] = "Generic Rifle",
+	-- ["buckshot"] = "Generic Shotgun",
+	-- ["357"] = "Generic Revolver",
+	-- ["SniperPenetratedRound"] = "Generic Sniper"
 }
 
 local att_enabled_cv = GetConVar("sv_tfa_attachments_enabled")
@@ -347,7 +347,7 @@ function SWEP:GenerateInspectionDerma()
 		myauthor = "The Forgotten Architect"
 	end
 
-	authortext.Text = infotextpad .. "Creator: " .. myauthor
+	authortext.Text = infotextpad .. language.GetPhrase("tfa.inspect.creator"):format(myauthor)
 
 	authortext.Think = function(myself)
 		myself.TextColor = TFA_INSPECTIONPANEL.SecondaryColor
@@ -360,7 +360,7 @@ function SWEP:GenerateInspectionDerma()
 
 	if self.Manufacturer and string.Trim(self.Manufacturer) ~= "" then
 		local makertext = contentpanel:Add("DPanel")
-		makertext.Text = infotextpad .. "Manufacturer: " .. self.Manufacturer
+		makertext.Text = infotextpad .. language.GetPhrase("tfa.inspect.manufacturer"):format(self.Manufacturer)
 
 		makertext.Think = function(myself)
 			myself.TextColor = TFA_INSPECTIONPANEL.SecondaryColor
@@ -376,7 +376,7 @@ function SWEP:GenerateInspectionDerma()
 
 	if clip > 0 then
 		local capacitytext = contentpanel:Add("DPanel")
-		capacitytext.Text = infotextpad .. "Capacity: " .. clip .. (self:CanChamber() and (self:GetStat("Akimbo") and " + 2" or " + 1") or "") .. " Rounds"
+		capacitytext.Text = infotextpad .. language.GetPhrase("tfa.inspect.capacity"):format(clip .. (self:CanChamber() and (self:GetStat("Akimbo") and " + 2" or " + 1") or ""))
 
 		capacitytext.Think = function(myself)
 			myself.TextColor = TFA_INSPECTIONPANEL.SecondaryColor
@@ -392,7 +392,7 @@ function SWEP:GenerateInspectionDerma()
 
 	if an and an ~= "" and string.len(an) > 1 then
 		local ammotypetext = contentpanel:Add("DPanel")
-		ammotypetext.Text = infotextpad .. "Ammo: " .. (self.AmmoTypeStrings[self:GetStat("Primary.Ammo") or "ammo"] or language.GetPhrase(an .. "_ammo"))
+		ammotypetext.Text = infotextpad .. language.GetPhrase("tfa.inspect.ammotype"):format(language.GetPhrase(self.AmmoTypeStrings[self:GetStat("Primary.Ammo")] or "tfa.ammo." .. self:GetStat("Primary.Ammo"):lower()))
 
 		ammotypetext.Think = function(myself)
 			myself.TextColor = TFA_INSPECTIONPANEL.SecondaryColor
@@ -406,7 +406,7 @@ function SWEP:GenerateInspectionDerma()
 
 	if self.Purpose and string.Trim(self.Purpose) ~= "" then
 		local purpose = contentpanel:Add("DPanel")
-		purpose.Text = infotextpad .. "Purpose: " .. self.Purpose
+		purpose.Text = infotextpad .. language.GetPhrase("tfa.inspect.purpose"):format(self.Purpose)
 
 		purpose.Think = function(myself)
 			myself.TextColor = TFA_INSPECTIONPANEL.SecondaryColor
@@ -443,7 +443,7 @@ function SWEP:GenerateInspectionDerma()
 
 		conditiontext.Think = function(myself)
 			myself.TextColor = TFA_INSPECTIONPANEL.SecondaryColor
-			myself.Text = "Condition: " .. math.Clamp(math.Round(condition * 100), 0, 100) .. "%"
+			myself.Text = language.GetPhrase("tfa.inspect.condition"):format(math.Clamp(math.Round(condition * 100), 0, 100))
 		end
 
 		conditiontext.Font = "TFA_INSPECTION_SMALL"
@@ -483,7 +483,7 @@ function SWEP:GenerateInspectionDerma()
 	accuracytext.Think = function(myself)
 		if not IsValid(self) then return end
 		local spread = self:GetStat("Primary.Spread")
-		local accuracystr = "Accuracy: " .. math.Round(spread * 180) .. "°"
+		local accuracystr = language.GetPhrase("tfa.inspect.stat.accuracy"):format(math.Round(spread * 180))
 
 		if self:GetStat("data.ironsights") ~= 0 then
 			accuracystr = accuracystr .. " || " .. math.Round(self:GetStat("Primary.IronAccuracy", spread) * 180) .. "°"
@@ -514,7 +514,7 @@ function SWEP:GenerateInspectionDerma()
 	fireratetext.Think = function(myself)
 		if not IsValid(self) then return end
 		local rpmstat = self:GetStat("Primary.RPM_Displayed") or self:GetStat("Primary.RPM")
-		local fireratestr = "Firerate: " .. rpmstat .. "RPM"
+		local fireratestr = language.GetPhrase("tfa.inspect.stat.rpm"):format(rpmstat)
 		myself.Text = fireratestr
 		myself.TextColor = TFA_INSPECTIONPANEL.SecondaryColor
 	end
@@ -538,7 +538,7 @@ function SWEP:GenerateInspectionDerma()
 
 	mobilitytext.Think = function(myself)
 		if not IsValid(self) then return end
-		myself.Text = "Mobility: " .. math.Round(self:GetStat("MoveSpeed") * 100) .. "%"
+		myself.Text = language.GetPhrase("tfa.inspect.stat.mobility"):format(math.Round(self:GetStat("MoveSpeed") * 100))
 		myself.TextColor = TFA_INSPECTIONPANEL.SecondaryColor
 	end
 
@@ -561,7 +561,7 @@ function SWEP:GenerateInspectionDerma()
 
 	damagetext.Think = function(myself)
 		if not IsValid(self) then return end
-		local dmgstr = "Damage: " .. math.Round(self:GetStat("Primary.Damage"))
+		local dmgstr = language.GetPhrase("tfa.inspect.stat.damage"):format(math.Round(self:GetStat("Primary.Damage")))
 
 		if self:GetStat("Primary.NumShots") ~= 1 then
 			dmgstr = dmgstr .. "x" .. math.Round(self:GetStat("Primary.NumShots"))
@@ -591,7 +591,7 @@ function SWEP:GenerateInspectionDerma()
 
 	rangetext.Think = function(myself)
 		if not IsValid(self) then return end
-		myself.Text = "Range: " .. math.Round(feettokm(sourcetofeet(self:GetStat("Primary.Range"))) * 100) / 100 .. "K"
+		myself.Text = language.GetPhrase("tfa.inspect.stat.range"):format(math.Round(feettokm(sourcetofeet(self:GetStat("Primary.Range"))) * 100) / 100)
 		myself.TextColor = TFA_INSPECTIONPANEL.SecondaryColor
 	end
 
@@ -615,7 +615,7 @@ function SWEP:GenerateInspectionDerma()
 
 	stabilitytext.Think = function(myself)
 		if not IsValid(self) then return end
-		myself.Text = "Stability: " .. math.Clamp(math.Round((1 - math.abs(self:GetStat("Primary.KickUp") + self:GetStat("Primary.KickDown")) / 2 / 1) * 100), 0, 100) .. "%"
+		myself.Text = language.GetPhrase("tfa.inspect.stat.stability"):format(math.Clamp(math.Round((1 - math.abs(self:GetStat("Primary.KickUp") + self:GetStat("Primary.KickDown")) / 2 / 1) * 100), 0, 100))
 		myself.TextColor = TFA_INSPECTIONPANEL.SecondaryColor
 	end
 
@@ -640,7 +640,7 @@ function SWEP:GenerateInspectionDerma()
 
 		bashdamagetext.Think = function(myself)
 			if not IsValid(self) then return end
-			myself.Text = "Bash Damage: " .. math.Round(self:GetStat("Secondary.BashDamage", 0))
+			myself.Text = language.GetPhrase("tfa.inspect.stat.bashdamage"):format(math.Round(self:GetStat("Secondary.BashDamage", 0)))
 			myself.TextColor = TFA_INSPECTIONPANEL.SecondaryColor
 		end
 
@@ -892,26 +892,28 @@ function SWEP:DrawHUDAmmo()
 	end
 
 	if self.InspectingProgress < 0.01 and self:GetStat("Primary.Ammo") ~= "" and self:GetStat("Primary.Ammo") ~= 0 then
-		local str
+		local str, clipstr
 
 		if self:GetStat("Primary.ClipSize") and self:GetStat("Primary.ClipSize") ~= -1 then
+			clipstr = language.GetPhrase("tfa.hud.ammo.clip1")
+
 			if self:GetStat("Akimbo") and self:GetStat("AkimboHUD") ~= false then
-				str = string.upper("MAG: " .. math.ceil(self:Clip1() / 2))
+				str = clipstr:format(math.ceil(self:Clip1() / 2))
 
 				if (self:Clip1() > self:GetStat("Primary.ClipSize")) then
-					str = string.upper("MAG: " .. math.ceil(self:Clip1() / 2) - 1 .. " + " .. (math.ceil(self:Clip1() / 2) - math.ceil(self:GetStat("Primary.ClipSize") / 2)))
+					str = clipstr:format(math.ceil(self:Clip1() / 2) - 1 .. " + " .. (math.ceil(self:Clip1() / 2) - math.ceil(self:GetStat("Primary.ClipSize") / 2)))
 				end
 			else
-				str = string.upper("MAG: " .. self:Clip1())
+				str = clipstr:format(self:Clip1())
 
 				if (self:Clip1() > self:GetStat("Primary.ClipSize")) then
-					str = string.upper("MAG: " .. self:GetStat("Primary.ClipSize") .. " + " .. (self:Clip1() - self:GetStat("Primary.ClipSize")))
+					str = clipstr:format(self:GetStat("Primary.ClipSize") .. " + " .. (self:Clip1() - self:GetStat("Primary.ClipSize")))
 				end
 			end
 
 			draw.DrawText(str, "TFASleek", xx + 1, yy + 1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
 			draw.DrawText(str, "TFASleek", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT)
-			str = string.upper("RESERVE: " .. self:Ammo1())
+			str = language.GetPhrase("tfa.hud.ammo.reserve1"):format(self:Ammo1())
 			yy = yy + TFA.Fonts.SleekHeight
 			xx = xx - TFA.Fonts.SleekHeight / 3
 			draw.DrawText(str, "TFASleekMedium", xx + 1, yy + 1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
@@ -919,7 +921,7 @@ function SWEP:DrawHUDAmmo()
 			yy = yy + TFA.Fonts.SleekHeightMedium
 			xx = xx - TFA.Fonts.SleekHeightMedium / 3
 		else
-			str = string.upper("AMMO: " .. self:Ammo1())
+			str = language.GetPhrase("tfa.hud.ammo1"):format(self:Ammo1())
 			draw.DrawText(str, "TFASleek", xx + 1, yy + 1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
 			draw.DrawText(str, "TFASleek", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT)
 			yy = yy + TFA.Fonts.SleekHeightMedium
@@ -929,7 +931,7 @@ function SWEP:DrawHUDAmmo()
 		str = string.upper(self:GetFireModeName() .. (#self:GetStat("FireModes") > 2 and " | +" or ""))
 
 		if self:IsJammed() then
-			str = str .. "\nWeapon is jammed!"
+			str = str .. "\n" .. language.GetPhrase("tfa.hud.jammed")
 		end
 
 		draw.DrawText(str, "TFASleekSmall", xx + 1, yy + 1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
@@ -950,15 +952,17 @@ function SWEP:DrawHUDAmmo()
 			end
 
 			if self:GetStat("Primary.ClipSize") and self:GetStat("Primary.ClipSize") ~= -1 then
-				str = string.upper("MAG: " .. math.floor(self:Clip1() / 2))
+				clipstr = language.GetPhrase("tfa.hud.ammo.clip1")
+
+				str = clipstr:format(math.floor(self:Clip1() / 2))
 
 				if (math.floor(self:Clip1() / 2) > math.floor(self:GetStat("Primary.ClipSize") / 2)) then
-					str = string.upper("MAG: " .. math.floor(self:Clip1() / 2) - 1 .. " + " .. (math.floor(self:Clip1() / 2) - math.floor(self:GetStat("Primary.ClipSize") / 2)))
+					str = clipstr:format(math.floor(self:Clip1() / 2) - 1 .. " + " .. (math.floor(self:Clip1() / 2) - math.floor(self:GetStat("Primary.ClipSize") / 2)))
 				end
 
 				draw.DrawText(str, "TFASleek", xx + 1, yy + 1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
 				draw.DrawText(str, "TFASleek", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT)
-				str = string.upper("RESERVE: " .. self:Ammo1())
+				str = language.GetPhrase("tfa.hud.ammo.reserve1"):format(self:Ammo1())
 				yy = yy + TFA.Fonts.SleekHeight
 				xx = xx - TFA.Fonts.SleekHeight / 3
 				draw.DrawText(str, "TFASleekMedium", xx + 1, yy + 1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
@@ -966,7 +970,7 @@ function SWEP:DrawHUDAmmo()
 				yy = yy + TFA.Fonts.SleekHeightMedium
 				xx = xx - TFA.Fonts.SleekHeightMedium / 3
 			else
-				str = string.upper("AMMO: " .. self:Ammo1())
+				str = language.GetPhrase("tfa.hud.ammo1"):format(self:Ammo1())
 				draw.DrawText(str, "TFASleek", xx + 1, yy + 1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
 				draw.DrawText(str, "TFASleek", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT)
 				yy = yy + TFA.Fonts.SleekHeightMedium
@@ -980,16 +984,17 @@ function SWEP:DrawHUDAmmo()
 
 		if self:GetStat("Secondary.Ammo") and self:GetStat("Secondary.Ammo") ~= "" and self:GetStat("Secondary.Ammo") ~= "none" and self:GetStat("Secondary.Ammo") ~= 0 and not self:GetStat("Akimbo") then
 			if self:GetStat("Secondary.ClipSize") and self:GetStat("Secondary.ClipSize") ~= -1 then
-				str = (self:Clip2() > self:GetStat("Secondary.ClipSize")) and string.upper("ALT-MAG: " .. self:GetStat("Secondary.ClipSize") .. " + " .. (self:Clip2() - self:GetStat("Primary.ClipSize"))) or string.upper("ALT-MAG: " .. self:Clip2())
+				clipstr = language.GetPhrase("tfa.hud.ammo.clip2")
+				str = (self:Clip2() > self:GetStat("Secondary.ClipSize")) and clipstr:format(self:GetStat("Secondary.ClipSize") .. " + " .. (self:Clip2() - self:GetStat("Primary.ClipSize"))) or clipstr:format(self:Clip2())
 				draw.DrawText(str, "TFASleekSmall", xx + 1, yy + 1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
 				draw.DrawText(str, "TFASleekSmall", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT)
-				str = string.upper("ALT-RESERVE: " .. self:Ammo2())
+				str = language.GetPhrase("tfa.hud.ammo.reserve2"):format(self:Ammo2())
 				yy = yy + TFA.Fonts.SleekHeightSmall
 				xx = xx - TFA.Fonts.SleekHeightSmall / 3
 				draw.DrawText(str, "TFASleekSmall", xx + 1, yy + 1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
 				draw.DrawText(str, "TFASleekSmall", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT)
 			else
-				str = string.upper("ALT-AMMO: " .. self:Ammo2())
+				str = language.GetPhrase("tfa.hud.ammo2"):format(self:Ammo2())
 				draw.DrawText(str, "TFASleekSmall", xx + 1, yy + 1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
 				draw.DrawText(str, "TFASleekSmall", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT)
 			end

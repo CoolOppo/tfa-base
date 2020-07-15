@@ -1974,7 +1974,7 @@ function SWEP:NotifyJam()
 	local ply = self:GetOwner()
 
 	if IsValid(ply) and ply:IsPlayer() and IsFirstTimePredicted() and (not ply._TFA_LastJamMessage or ply._TFA_LastJamMessage < RealTime()) then
-		ply:PrintMessage(HUD_PRINTCENTER, 'Your weapon jammed. You need to reload it.')
+		ply:PrintMessage(HUD_PRINTCENTER, "#tfa.msg.weaponjammed")
 		ply._TFA_LastJamMessage = RealTime() + 4
 	end
 end

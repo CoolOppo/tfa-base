@@ -102,7 +102,7 @@ function SWEP:UpdateScopeType( force )
 			self.BoltAction_3D = true
 			self.BoltAction = self.BoltAction_Forced or false
 			self.DisableChambering = true
-			self.FireModeName = "BOLT-ACTION"
+			self.FireModeName = "tfa.firemode.bolt"
 		end
 
 		if self.Secondary.ScopeZoom and self.Secondary.ScopeZoom > 0 then

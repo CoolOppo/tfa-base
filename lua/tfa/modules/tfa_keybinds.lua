@@ -146,17 +146,17 @@ function TFA.RegisterKeyBind(data_in)
 end
 
 if CLIENT then -- Populate spawnmenu settings with registered keybinds
-	language.Add("tfa_keybind_bash", "Bash / Secondary Attack")
-	language.Add("tfa_keybind_customize", "Customization / Stats Menu")
-	language.Add("tfa_keybind_inspect", "Inspect Weapon")
-	language.Add("tfa_keybind_firemode", "Toggle Firemode")
-
 	local function tfaOptionKeys(panel)
+		panel:Help("#tfa.keybinds.help.bind")
+		panel:Help("#tfa.keybinds.help.bound")
+		panel:Help("#tfa.keybinds.help.unbind")
+		panel:Help("")
+
 		for _, data in pairs(KeyBindTable) do
 			local cv = GetConVar(cv_prefix .. data.bind)
 
 			if cv then
-				panel:Help("#tfa_keybind_" .. data.bind)
+				panel:Help("#tfa.keybind." .. data.bind)
 
 				local binder = vgui.Create("DBinder")
 
@@ -173,7 +173,7 @@ if CLIENT then -- Populate spawnmenu settings with registered keybinds
 	end
 
 	hook.Add("PopulateToolMenu", "TFA_AddKeyBinds", function()
-		spawnmenu.AddToolMenuOption("Options", "TFA SWEP Base Settings", "TFASwepBaseKeybinds", "Keybinds", "", "", tfaOptionKeys)
+		spawnmenu.AddToolMenuOption("Utilities", "TFA SWEP Base Settings", "TFASwepBaseKeybinds", "#tfa.smsettings.keybinds", "", "", tfaOptionKeys)
 	end)
 end
 
