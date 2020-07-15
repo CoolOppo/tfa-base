@@ -60,6 +60,8 @@ TFA_PostInitAttachments(wepom) --runs before building attachment cache
 TFA_FinalInitAttachments(wepom) --final attachment init hook
 TFA_PreCanAttach(wepom) --can we attach a thingy?  called before exclusions/dependencies
 TFA_CanAttach(wepom) --can we attach a thingy?  called after exclusions/dependencies
+TFA_Attachment_Attached(wepom, attid, atttable, category, attindex, forced) --called after attachment was attached to the gun
+TFA_Attachment_Detached(wepom, attid, atttable, category, attindex, forced) --called after attachment was detached from the gun
 --animation
 TFA_AnimationRate(wep,act,rate) --return modified rate value here
 --effects
