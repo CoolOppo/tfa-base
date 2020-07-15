@@ -211,10 +211,6 @@ if CLIENT then
 		panel:CheckBox("#tfa.sightsettings.adsresight", "cl_tfa_ironsights_resight")
 		panel:CheckBox("#tfa.sightsettings.scopesensscale", "cl_tfa_scope_sensitivity_autoscale")
 		panel:NumSlider("#tfa.sightsettings.scopesenspct", "cl_tfa_scope_sensitivity", 0.01, 100, 2)
-
-		panel:AddControl("Label", {
-			Text = "By TheForgottenArchitect"
-		})
 	end
 
 	local function tfaOptionVM(panel)
@@ -259,10 +255,6 @@ if CLIENT then
 
 		panel:CheckBox("#tfa.vmsettings.laserdottrail", "cl_tfa_laser_trails")
 		panel:CheckBox("#tfa.vmsettings.nearwall", "cl_tfa_viewmodel_nearwall")
-
-		panel:AddControl("Label", {
-			Text = "By TheForgottenArchitect"
-		})
 	end
 
 	local function tfaOptionPerformance(panel)
@@ -325,10 +317,6 @@ if CLIENT then
 
 		panel:Help("#tfa.settings.server")
 		TFA.CheckBoxNet(panel, "#tfa.perfsettings.penetrationdecal", "sv_tfa_fx_penetration_decal")
-
-		panel:AddControl("Label", {
-			Text = "By TheForgottenArchitect"
-		})
 	end
 
 	local function tfaOptionHUD(panel)
@@ -633,10 +621,6 @@ if CLIENT then
 			ShowRGB = 1,
 			Multiplier = 255
 		})
-
-		panel:AddControl("Label", {
-			Text = "By TheForgottenArchitect"
-		})
 	end
 
 	local function tfaOptionDeveloper(panel)
@@ -660,10 +644,6 @@ if CLIENT then
 		panel:CheckBox("#tfa.devsettings.debug.crosshair", "cl_tfa_debug_crosshair")
 		panel:CheckBox("#tfa.devsettings.debug.rtshadow", "cl_tfa_debug_rt")
 		panel:CheckBox("#tfa.devsettings.debug.cache", "cl_tfa_debug_cache")
-
-		panel:AddControl("Label", {
-			Text = "By TheForgottenArchitect"
-		})
 	end
 
 	local function tfaOptionColors(panel)
@@ -704,10 +684,6 @@ if CLIENT then
 			ShowHSV = 1,
 			ShowRGB = 1,
 			Multiplier = 255
-		})
-
-		panel:AddControl("Label", {
-			Text = "By TheForgottenArchitect"
 		})
 	end
 
@@ -775,10 +751,45 @@ if CLIENT then
 		}
 
 		panel:AddControl("ComboBox", tfaOptionTracerStyle)
+	end
 
-		panel:AddControl("Label", {
-			Text = "By TheForgottenArchitect"
-		})
+	local function tfaOptionAbout(panel)
+		panel:Help("TFA Base [Reduxed]")
+		panel:Help(language.GetPhrase("tfa.about.version"):format(TFA_BASE_VERSION))
+		panel:Help(language.GetPhrase("tfa.about.author"):format("TheForgottenArchitect"))
+		panel:Help(language.GetPhrase("tfa.about.maintain"):format("YuRaNnNzZZ", "DBotThePony"))
+
+		panel:Help("")
+
+		panel:Help("#tfa.about.help.label")
+		local btnGitLabIssues = panel:Button("GitLab Issues")
+		btnGitLabIssues.DoClick = function()
+			gui.OpenURL("https://gitlab.com/tfa-devs/tfa-base/-/issues")
+		end
+		local btnDiscordHelp = panel:Button("Help channel in Discord")
+		btnDiscordHelp.DoClick = function()
+			gui.OpenURL("https://discord.gg/U38pBcP")
+		end
+
+		panel:Help("")
+
+		panel:Help("#tfa.about.chat.label")
+		local btnSteam = panel:Button("Steam Group")
+		btnSteam.DoClick = function()
+			gui.OpenURL("https://steamcommunity.com/groups/tfa-mods")
+		end
+		local btnDiscord = panel:Button("Discord")
+		btnDiscord.DoClick = function()
+			gui.OpenURL("https://discord.gg/Gxqx67n")
+		end
+
+		panel:Help("")
+
+		panel:Help("#tfa.about.contrib.label")
+		local btnGitLab = panel:Button("TFA Base GitLab Repository")
+		btnGitLab.DoClick = function()
+			gui.OpenURL("https://gitlab.com/tfa-devs/tfa-base")
+		end
 	end
 
 	local function tfaAddOption()
@@ -790,6 +801,7 @@ if CLIENT then
 		spawnmenu.AddToolMenuOption("Utilities", "TFA SWEP Base Settings", "TFASwepBaseColor", "#tfa.smsettings.color", "", "", tfaOptionColors)
 		spawnmenu.AddToolMenuOption("Utilities", "TFA SWEP Base Settings", "TFASwepBaseBallistics", "#tfa.smsettings.ballistics", "", "", tfaOptionBallistics)
 		spawnmenu.AddToolMenuOption("Utilities", "TFA SWEP Base Settings", "TFASwepBaseServer", "#tfa.smsettings.server", "", "", tfaOptionServer)
+		spawnmenu.AddToolMenuOption("Utilities", "TFA SWEP Base Settings", "TFASwepBaseAbout", "#tfa.smsettings.about", "", "", tfaOptionAbout)
 	end
 
 	hook.Add("PopulateToolMenu", "tfaAddOption", tfaAddOption)
