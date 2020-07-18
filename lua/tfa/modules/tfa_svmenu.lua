@@ -38,8 +38,8 @@ if SERVER then
 		local _cvarname = net.ReadString()
 		local _value = net.ReadString()
 
+		if IsSinglePlayer then return end
 		if not IsValid(_player) or not _player:IsAdmin() then return end
-		if IsSinglePlayer or _player:IsListenServerHost() then return end
 
 		QueueConVarChange(_cvarname, _value)
 	end
