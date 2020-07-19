@@ -30,6 +30,7 @@ if SERVER then
 	util.AddNetworkString("tfaTracerSP")
 	util.AddNetworkString("tfaBaseShellSV")
 	--util.AddNetworkString("tfaAltAttack")
+	util.AddNetworkString("TFAJoinGroupPopup")
 
 	--Enable CKey Inspection
 
@@ -129,5 +130,9 @@ if CLIENT then
 			end
 		end
 		TFA.ParticleTracer( part, startPos, endPos, woosh, vent, att )
+	end)
+
+	net.Receive("TFAJoinGroupPopup", function()
+		gui.OpenURL("http://steamcommunity.com/groups/tfa-mods")
 	end)
 end

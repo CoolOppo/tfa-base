@@ -412,7 +412,7 @@ end)
 --[[
 Hook: SetupMove
 Function: Update players NW2 variable
-User For: Walking animation NW2 var
+Used For: Walking animation NW2 var
 ]]
 --
 hook.Add("SetupMove", "tfa_checkforplayerwalking", function(plyv, mvdatav, cmdv)
@@ -424,5 +424,96 @@ hook.Add("SetupMove", "tfa_checkforplayerwalking", function(plyv, mvdatav, cmdv)
 		end
 	elseif plyv:GetNW2Bool("TFA_IsWalking") then
 		plyv:SetNW2Bool("TFA_IsWalking", false)
+	end
+end)
+
+--[[
+Hook: PreDrawOpaqueRenderables
+Function: Calls SWEP:PreDrawOpaqueRenderables()
+Used For: whatever draw stuff you need lol
+]]
+--
+hook.Add("PreDrawOpaqueRenderables", "tfaweaponspredrawopaque", function()
+	for _, v in ipairs(player.GetAll()) do
+		local wepv = v:GetActiveWeapon()
+
+		if IsValid(wepv) and wepv.IsTFAWeapon and wepv.PreDrawOpaqueRenderables then
+			wepv:PreDrawOpaqueRenderables()
+		end
+	end
+end)
+
+--[[
+Hook: PlayerSay
+Function: Simple chat command
+Used For: Allowing users to open TFA's Steam group with a chat command
+]]
+--
+if SERVER then
+	hook.Add("PlayerSay", "TFAJoinGroupChat", function(plyv, text, tc)
+		if string.Trim(text) == "!jointfa" then
+			net.Start("TFAJoinGroupPopup")
+			net.Send(plyv)
+		end
+	end)
+end
+
+--[[
+Hook: PreDrawViewModel
+Function: Calculating viewmodel offsets
+Used For: Viewmodel sway, offset and flip
+]]
+--
+if CLIENT then
+	local st_old, host_ts, cheats, vec, ang
+	host_ts = GetConVar("host_timescale")
+	cheats = GetConVar("sv_cheats")
+	vec = Vector()
+	ang = Angle()
+
+	local IsGameUIVisible = gui and gui.IsGameUIVisible
+
+	hook.Add("PreDrawViewModel", "TFACalculateViewmodel", function(vm, plyv, wepv)
+		if not IsValid(wepv) or not wepv.IsTFAWeapon then return end
+
+		local st = SysTime()
+		st_old = st_old or st
+
+		local delta = st - st_old
+		st_old = st
+
+		if sp and IsGameUIVisible and IsGameUIVisible() then return end
+
+		delta = delta * game.GetTimeScale() * (cheats:GetBool() and host_ts:GetFloat() or 1)
+
+		wepv:Sway(vec, ang, delta)
+		wepv:CalculateViewModelOffset(delta)
+		wepv:CalculateViewModelFlip()
+	end)
+end
+
+--[[
+Hook: EntityTakeDamage
+Function: Applies physics damage to Combine Turrets
+Used For: Knocking up Combine Turrets with TFA Base weapons
+]]
+--
+hook.Add("EntityTakeDamage", "TFA_TurretPhysics", function(entv, dmg)
+	if entv:GetClass() == "npc_turret_floor" then
+		entv:TakePhysicsDamage(dmg)
+	end
+end)
+
+--[[
+Hook: HUDPaint
+Function: Calls another hook
+Used For: Hook that notifies when player is fully loaded.
+]]
+--
+hook.Add("HUDPaint", "TFA_TRIGGERCLIENTLOAD", function()
+	if LocalPlayer():IsValid() then
+		hook.Remove("HUDPaint", "TFA_TRIGGERCLIENTLOAD")
+
+		hook.Run("TFA_ClientLoad")
 	end
 end)
