@@ -583,6 +583,10 @@ if CLIENT then
 		CreateClientConVar("cl_tfa_debug_crosshair", 0, false, false, "Debug crosshair (Admin only)")
 	end
 
+	if GetConVar("cl_tfa_debug_animations") == nil then
+		CreateClientConVar("cl_tfa_debug_animations", 0, false, false, "Debug animations (Admin only)")
+	end
+
 	if GetConVar("cl_tfa_debug_rt") == nil then
 		CreateClientConVar("cl_tfa_debug_rt", 0, false, false, "Debug RT scopes (Admin only)")
 	end

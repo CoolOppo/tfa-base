@@ -634,6 +634,7 @@ if CLIENT then
 
 		tfaOptionPerf.Options["#preset.default"] = {
 			["cl_tfa_debug_crosshair"] = 0,
+			["cl_tfa_debug_animations"] = 0,
 			["cl_tfa_debug_rt"] = 0,
 			["cl_tfa_debug_cache"] = 0
 		}
@@ -641,7 +642,10 @@ if CLIENT then
 		tfaOptionPerf.CVars = table.GetKeys(tfaOptionPerf.Options["#preset.default"])
 		panel:AddControl("ComboBox", tfaOptionPerf)
 
+		panel:Help("#tfa.devsettings.adminonly")
+
 		panel:CheckBox("#tfa.devsettings.debug.crosshair", "cl_tfa_debug_crosshair")
+		panel:CheckBox("#tfa.devsettings.debug.animations", "cl_tfa_debug_animations")
 		panel:CheckBox("#tfa.devsettings.debug.rtshadow", "cl_tfa_debug_rt")
 		panel:CheckBox("#tfa.devsettings.debug.cache", "cl_tfa_debug_cache")
 	end
