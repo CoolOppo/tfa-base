@@ -429,7 +429,7 @@ function SWEP:SetTFAAttachment(cat, id, nw, force)
 	if (not self.Attachments[cat]) then return false end
 	local attn = self.Attachments[cat].atts[id] or ""
 	local attn_old = self.Attachments[cat].atts[self.Attachments[cat].sel or -1] or ""
-	if SERVER and id > 0 and not (self:CanAttach(attn) or force) then return false end
+	if SERVER and id > 0 and not (force or self:CanAttach(attn)) then return false end
 
 	if id ~= self.Attachments[cat].sel then
 		local att_old = TFA.Attachments.Atts[self.Attachments[cat].atts[self.Attachments[cat].sel] or -1]
