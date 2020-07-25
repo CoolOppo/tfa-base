@@ -24,13 +24,11 @@ if SERVER then AddCSLuaFile() end
 TFA = TFA or {}
 
 local do_load = true
-local version = 4.571
-local version_string = "4.5.7.1"
+local version = 4.58
+local version_string = "4.5.8"
 local changelog = [[
-	+ Added localization support. English and Russian locales are bundled by default.
-	* Fixed weapons not spawning in TTT (by Anairkoen Schno)
-	* Blocked new ammo pickups (SMG grenades) from being pocketed in DarkRP
-	* Fixed networked menu not working in Local/P2P servers
+	+ Added material proxy for tinting envmaps with ambient lighting (TFA_CubemapTint)
+	+ Added option to debug currently playing anination (Admin-only)
 ]]
 
 local function testFunc()
