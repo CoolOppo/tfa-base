@@ -2028,6 +2028,11 @@ function SWEP:OnRestore()
 	self.HasInitAttachments = false
 end
 
+-- lua autorefresh
+function SWEP:OnReloaded()
+	self:ClearStatCache()
+end
+
 function SWEP:ProcessLoopSound()
 	if (SERVER or not sp) and (
 			self:GetNextLoopSoundCheck() >= 0
