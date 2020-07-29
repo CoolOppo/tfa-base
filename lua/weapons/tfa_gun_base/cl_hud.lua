@@ -222,12 +222,12 @@ local bestrange = feettosource(kmtofeet(1))
 local worstrecoil = 1
 
 SWEP.AmmoTypeStrings = {
-	-- ["pistol"] = "Generic Pistol",
-	-- ["smg1"] = "Generic SMG",
-	-- ["ar2"] = "Generic Rifle",
-	-- ["buckshot"] = "Generic Shotgun",
-	-- ["357"] = "Generic Revolver",
-	-- ["SniperPenetratedRound"] = "Generic Sniper"
+	["pistol"] = "tfa.ammo.pistol",
+	["smg1"] = "tfa.ammo.smg1",
+	["ar2"] = "tfa.ammo.ar2",
+	["buckshot"] = "tfa.ammo.buckshot",
+	["357"] = "tfa.ammo.357",
+	["SniperPenetratedRound"] = "tfa.ammo.sniperpenetratedround"
 }
 
 local att_enabled_cv = GetConVar("sv_tfa_attachments_enabled")
@@ -392,7 +392,7 @@ function SWEP:GenerateInspectionDerma()
 
 	if an and an ~= "" and string.len(an) > 1 then
 		local ammotypetext = contentpanel:Add("DPanel")
-		ammotypetext.Text = infotextpad .. language.GetPhrase("tfa.inspect.ammotype"):format(language.GetPhrase(self.AmmoTypeStrings[self:GetStat("Primary.Ammo")] or "tfa.ammo." .. self:GetStat("Primary.Ammo"):lower()))
+		ammotypetext.Text = infotextpad .. language.GetPhrase("tfa.inspect.ammotype"):format(language.GetPhrase(self.AmmoTypeStrings[an:lower()] or (an .. "_ammo")))
 
 		ammotypetext.Think = function(myself)
 			myself.TextColor = TFA_INSPECTIONPANEL.SecondaryColor
