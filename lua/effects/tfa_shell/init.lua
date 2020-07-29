@@ -54,6 +54,8 @@ function EFFECT:ComputeSmokeLighting()
 end
 
 function EFFECT:Init(data)
+	self.IsTFAShell = true
+
 	if not cv_eject then
 		cv_eject = GetConVar("cl_tfa_fx_ejectionsmoke")
 	end
@@ -163,7 +165,7 @@ function EFFECT:Init(data)
 	if physObj:IsValid() then
 		physObj:SetDamping(0.1, 1)
 		physObj:SetMass(5)
-		physObj:SetMaterial("default_silent")
+		physObj:SetMaterial("gmod_silent")
 		physObj:SetVelocity(velocity)
 		local localVel = velocity:Length() * self.WeaponEnt:WorldToLocalAngles(velocity:Angle()):Forward()
 		physObj:AddAngleVelocity(localVel.y * self.VelocityAngle)
@@ -262,3 +264,9 @@ function EFFECT:Render()
 	self:SetupBones()
 	self:DrawModel()
 end
+
+hook.Add("EntityEmitSound", "TFA_BlockShellScrapeSound", function(sndData)
+	if IsValid(sndData.Entity) and sndData.Entity.IsTFAShell and sndData.SoundName:find("scrape") then
+		return false
+	end
+end)
