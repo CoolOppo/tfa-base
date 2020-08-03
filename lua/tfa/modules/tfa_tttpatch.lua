@@ -19,6 +19,8 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
+if engine.ActiveGamemode() ~= "terrortown" then return end
+
 if SERVER then
 	AddCSLuaFile()
 end
@@ -56,22 +58,29 @@ local TypeStrings = {
 	[WEAPON_HEAVY] = "Heavy",
 	[WEAPON_NADE] = "Grenade",
 	[WEAPON_CARRY] = "Carry",
-	[WEAPON_CARRY] = "Equipment",
+	[WEAPON_EQUIP1] = "Equipment",
 	[WEAPON_EQUIP2] = "Equipment",
 	[WEAPON_ROLE] = "Role"
 }
 
 local function PatchWep(wep)
+	if not weapons.IsBasedOn(wep, "tfa_gun_base") then return end
+	if wep:find("base") then return end
+
 	local tbl = weapons.GetStored(wep)
 	if not tbl then return end
-	if not tbl.Base then return end
-	if (not tbl.ISTFAWeapon) and (not string.find(tbl.Base, "tfa")) and (not string.find(tbl.Category or "", "TFA")) then return end
+
+	tbl.AllowSprintAttack = true -- no sprinting ever, running convar is a dumb idea
 
 	if (not tbl.Kind) or (not isnumber(tbl.Kind)) then
 		tbl.Kind = KindTable[tbl.Slot or 2] or WEAPON_HEAVY
 
 		if (tbl.ProjectileVelocity and tbl.ProjectileVelocity < 1000 and tbl.ProjectileVelocity > 0) or string.find(tbl.Base or "", "nade") then
 			tbl.Kind = WEAPON_NADE
+		end
+
+		if tbl.IsMelee then
+			tbl.Kind = WEAPON_MELEE
 		end
 
 		if not tbl.Spawnable then
@@ -138,17 +147,11 @@ local function PatchWep(wep)
 end
 
 local function Patch()
-	if engine.ActiveGamemode() == "terrortown" then
-		for _, v in pairs(weapons.GetList()) do
-			local wep = v.ClassName
+	for _, v in pairs(weapons.GetList()) do
+		local wep = v.ClassName
 
-			if wep then
-				PatchWep(wep)
-			end
-		end
-
-		if SERVER then
-			RunConsoleCommand("sv_tfa_sprint_enabled", "0")
+		if wep then
+			PatchWep(wep)
 		end
 	end
 end

@@ -354,10 +354,14 @@ function SWEP:GetSecondaryAmmoTypeC()
 end
 
 function SWEP:Ammo1()
+	if not self:GetOwner():IsValid() then return false end
+
 	return self:GetOwner():GetAmmoCount(self:GetPrimaryAmmoTypeC() or 0)
 end
 
 function SWEP:Ammo2()
+	if not self:GetOwner():IsValid() then return false end
+
 	return self:GetOwner():GetAmmoCount(self:GetSecondaryAmmoTypeC() or -1)
 end
 
