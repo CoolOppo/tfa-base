@@ -35,19 +35,19 @@ end
 
 local is, spr, walk, ist, sprt, walkt
 
-function SWEP:UpdataJumpRatio(ply)
+function SWEP:UpdataJumpRatio(ply, velocity)
 	local ft = TFA.FrameTime()
 
-	local jr_targ = math.min(math.abs(ply:GetVelocity().z) / 500, 1)
+	local jr_targ = math.min(math.abs(velocity.z) / 500, 1)
 	self:SetNW2Float("JumpRatio", l_mathApproach(self:GetNW2Float("JumpRatio", 0), jr_targ, (jr_targ - self:GetNW2Float("JumpRatio", 0)) * ft * 20))
 	self.JumpRatio = self:GetNW2Float("JumpRatio", 0)
 end
 
-hook.Add("FinishMove", "TFA:UpdataJumpRatio", function(self)
+hook.Add("FinishMove", "TFA:UpdataJumpRatio", function(self, movedata)
 	local weapon = self:GetActiveWeapon()
 
 	if IsValid(weapon) and weapon:IsTFA() then
-		weapon:UpdataJumpRatio(self)
+		weapon:UpdataJumpRatio(self, movedata:GetVelocity())
 	end
 end)
 
