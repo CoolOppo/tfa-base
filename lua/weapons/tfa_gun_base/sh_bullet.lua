@@ -79,6 +79,7 @@ local cv_dmg_mult_max = GetConVar("sv_tfa_damage_mult_max")
 local dmg, con, rec
 
 function SWEP:ShootBulletInformation()
+	self:CalculateRatios()
 	self:UpdateConDamage()
 	self.lastbul = nil
 	self.lastbulnoric = false

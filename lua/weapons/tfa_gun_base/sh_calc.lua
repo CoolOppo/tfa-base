@@ -33,18 +33,36 @@ local function l_mathApproach(a, b, delta)
 	end
 end
 
-local is, spr, walk, ist, sprt, walkt, ft, jr_targ
-ft = 0.01
-SWEP.LastRatio = nil
+local is, spr, walk, ist, sprt, walkt
 
-function SWEP:CalculateRatios(forced)
+function SWEP:UpdataJumpRatio(ply)
+	local ft = TFA.FrameTime()
+
+	local jr_targ = math.min(math.abs(ply:GetVelocity().z) / 500, 1)
+	self:SetNW2Float("JumpRatio", l_mathApproach(self:GetNW2Float("JumpRatio", 0), jr_targ, (jr_targ - self:GetNW2Float("JumpRatio", 0)) * ft * 20))
+	self.JumpRatio = self:GetNW2Float("JumpRatio", 0)
+end
+
+hook.Add("FinishMove", "TFA:UpdataJumpRatio", function(self)
+	local weapon = self:GetActiveWeapon()
+
+	if IsValid(weapon) and weapon:IsTFA() then
+		weapon:UpdataJumpRatio(self)
+	end
+end)
+
+function SWEP:CalculateRatios()
 	local owent = self:GetOwner()
 	if not IsValid(owent) or not owent:IsPlayer() then return end
+
 	local self2 = self:GetTable()
-	ft = TFA.FrameTime()
+
+	local ft = TFA.FrameTime()
+
 	is = self2.GetIronSights(self)
 	spr = self2.GetSprinting(self)
 	walk = self2.GetWalking(self)
+
 	ist = is and 1 or 0
 	sprt = spr and 1 or 0
 	walkt = walk and 1 or 0
@@ -58,18 +76,23 @@ function SWEP:CalculateRatios(forced)
 		adstransitionspeed = 12.5
 	end
 
-	if not IsFirstTimePredicted() and not forced then return end
+	self:SetNW2Float("CrouchingRatio", l_mathApproach(self:GetNW2Float("CrouchingRatio", 0), (owent:Crouching() and owent:OnGround()) and 1 or 0, ft / self2.ToCrouchTime))
+	self:SetNW2Float("SpreadRatio", l_mathClamp(self:GetNW2Float("SpreadRatio", 0) - self2.GetStat(self, "Primary.SpreadRecovery") * ft, 1, self2.GetStat(self, "Primary.SpreadMultiplierMax")))
+	self:SetNW2Float("IronSightsProgress", l_mathApproach(self:GetNW2Float("IronSightsProgress", 0), ist, (ist - self:GetNW2Float("IronSightsProgress", 0)) * ft * adstransitionspeed))
+	self:SetNW2Float("SprintProgress", l_mathApproach(self:GetNW2Float("SprintProgress", 0), sprt, (sprt - self:GetNW2Float("SprintProgress", 0)) * ft * adstransitionspeed))
+	self:SetNW2Float("WalkProgress", l_mathApproach(self:GetNW2Float("WalkProgress", 0), walkt, (walkt - self:GetNW2Float("WalkProgress", 0)) * ft * adstransitionspeed))
+	self:SetNW2Float("ProceduralHolsterProgress", l_mathApproach(self:GetNW2Float("ProceduralHolsterProgress", 0), sprt, (sprt - self:GetNW2Float("SprintProgress", 0)) * ft * self2.ProceduralHolsterTime * 15))
 
-	self2.CrouchingRatio = l_mathApproach(self2.CrouchingRatio or 0, (owent:Crouching() and owent:OnGround()) and 1 or 0, ft / self2.ToCrouchTime)
-	self2.SpreadRatio = l_mathClamp(self2.SpreadRatio - self2.GetStat(self, "Primary.SpreadRecovery") * ft, 1, self2.GetStat(self, "Primary.SpreadMultiplierMax"))
-	self2.IronSightsProgress = l_mathApproach(self2.IronSightsProgress, ist, (ist - self2.IronSightsProgress) * ft * adstransitionspeed)
-	self2.SprintProgress = l_mathApproach(self2.SprintProgress, sprt, (sprt - self2.SprintProgress) * ft * adstransitionspeed)
-	self2.WalkProgress = l_mathApproach(self2.WalkProgress, walkt, (walkt - self2.WalkProgress) * ft * adstransitionspeed)
-	self2.ProceduralHolsterProgress = l_mathApproach(self2.ProceduralHolsterProgress, sprt, (sprt - self2.SprintProgress) * ft * self2.ProceduralHolsterTime * 15)
+	self2.CrouchingRatio = self:GetNW2Float("CrouchingRatio", 0)
+	self2.SpreadRatio = self:GetNW2Float("SpreadRatio", 0)
+	self2.IronSightsProgress = self:GetNW2Float("IronSightsProgress", 0)
+	self2.SprintProgress = self:GetNW2Float("SprintProgress", 0)
+	self2.WalkProgress = self:GetNW2Float("WalkProgress", 0)
+	self2.ProceduralHolsterProgress = self:GetNW2Float("ProceduralHolsterProgress", 0)
 	self2.InspectingProgress = l_mathApproach(self2.InspectingProgress, self2.Inspecting and 1 or 0, ((self2.Inspecting and 1 or 0) - self2.InspectingProgress) * ft * 10)
+	self2.JumpRatio = self:GetNW2Float("JumpRatio", 0)
+
 	self2.CLIronSightsProgress = self2.IronSightsProgress --compatibility
-	jr_targ = math.min(math.abs(owent:GetVelocity().z) / 500, 1)
-	self2.JumpRatio = l_mathApproach(self2.JumpRatio, jr_targ, (jr_targ - self2.JumpRatio) * ft * 20)
 end
 
 SWEP.IronRecoilMultiplier = 0.5 --Multiply recoil by this factor when we're in ironsights.  This is proportional, not inversely.

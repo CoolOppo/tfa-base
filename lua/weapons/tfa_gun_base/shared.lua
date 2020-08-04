@@ -591,12 +591,11 @@ function SWEP:Deploy()
 	self.SprintProgress = 0
 	self.InspectingProgress = 0
 	self.ProceduralHolsterProgress = 0
+
 	if self.Inspecting then
-		--if gui then
-		--  gui.EnableScreenClicker(false)
-		--end
 		self.Inspecting = false
 	end
+
 	self.DefaultFOV = TFADUSKFOV or ( IsValid(self:GetOwner()) and self:GetOwner():GetFOV() or 90 )
 	if self:GetStat("Skin") and isnumber(self:GetStat("Skin")) then
 		self.OwnerViewModel:SetSkin(self:GetStat("Skin"))
@@ -736,6 +735,8 @@ Notes:  This is blank.
 Purpose:  Standard SWEP Function
 ]]
 function SWEP:Think()
+	self:CalculateRatios()
+
 	if self:OwnerIsValid() and self:GetOwner():IsNPC() then
 		if SERVER then
 			if self.ThinkNPC then self:ThinkNPC() end
@@ -750,8 +751,6 @@ function SWEP:Think()
 				end
 			end
 		end
-
-		return
 	end
 end
 
@@ -765,10 +764,6 @@ function SWEP:PlayerThink(plyv)
 	if not self:NullifyOIV() then return end
 
 	self:Think2()
-
-	if SERVER then
-		self:CalculateRatios()
-	end
 end
 
 function SWEP:PlayerThinkCL(plyv)
@@ -781,7 +776,6 @@ function SWEP:PlayerThinkCL(plyv)
 	if not self:NullifyOIV() then return end
 
 	self:SmokePCFLighting()
-	self:CalculateRatios(true)
 
 	if sp then
 		self:Think2()
