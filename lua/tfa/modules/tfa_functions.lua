@@ -23,12 +23,6 @@ local gas_cl_enabled = GetConVar("cl_tfa_fx_gasblur")
 local oldshell_cl_enabled = GetConVar("cl_tfa_legacy_shells")
 
 local ScrW, ScrH = ScrW, ScrH
-local l_FT = FrameTime
-local l_mathClamp = math.Clamp
-local sv_cheats_cv = GetConVar("sv_cheats")
-local host_timescale_cv = GetConVar("host_timescale")
-local ft = 0.01
-local LastSys
 
 local BindToKeyTBL = {
 	["ctrl"] = KEY_LCONTROL,
@@ -234,10 +228,6 @@ end
 
 --Frametime
 
-function TFA.FrameTime()
-	return ft
-end
-
 --CVar Mediators
 function TFA.GetGasEnabled()
 	local enabled = false
@@ -338,18 +328,30 @@ function TFA.ScaleH(num)
 	return num * (ScrH() / 1080)
 end
 
-hook.Add("Think","TFAFrameTimeThink",function()
-	ft = (SysTime() - (LastSys or SysTime())) * game.GetTimeScale()
+if CLIENT then
+	timer.Create("tfa_request_tickrate", 1, 0, function()
+		net.Start("tfa_request_tickrate")
+		net.SendToServer()
+	end)
 
-	if ft > l_FT() then
-		ft = l_FT()
-	end
+	net.Receive("tfa_request_tickrate", function()
+		local tickrate = net.ReadDouble()
+		timer.Stop("tfa_request_tickrate")
 
-	ft = l_mathClamp(ft, 0, 1 / 30)
+		function TFA.FrameTime()
+			return tickrate * game.GetTimeScale()
+		end
+	end)
+else
+	util.AddNetworkString("tfa_request_tickrate")
 
-	if sv_cheats_cv:GetBool() and host_timescale_cv:GetFloat() < 1 then
-		ft = ft * host_timescale_cv:GetFloat()
-	end
+	net.Receive("tfa_request_tickrate", function(_, ply)
+		net.Start("tfa_request_tickrate")
+		net.WriteDouble(FrameTime())
+		net.Send(ply)
+	end)
+end
 
-	LastSys = SysTime()
-end)
+function TFA.FrameTime()
+	return FrameTime() * game.GetTimeScale()
+end
