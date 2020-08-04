@@ -51,6 +51,20 @@ local function BallisticFirebullet(ply, bul, ovr)
 	end
 end
 
+local function PlayerPostThink(self)
+	local data = self.TFA_BulletEvents
+
+	if data and #data ~= 0 then
+		for _, event in ipairs(data) do
+			event(self)
+		end
+
+		self.TFA_BulletEvents = nil
+	end
+end
+
+hook.Add("PlayerPostThink", "TFA.DelayedBulletEvents", PlayerPostThink)
+
 --[[
 Function Name:  ShootBulletInformation
 Syntax: self:ShootBulletInformation( ).
@@ -540,14 +554,24 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon)
 	fx:SetRadius(bul.Damage / 32)
 	TFA.Effects.Create("tfa_penetrate", fx)
 
-	--end
-	if IsValid(ply) then
-		timer.Simple(0, function()
-			if IsValid(ply) and cv_decalbul:GetBool() then
-				ply:FireBullets(decalbul)
-				BallisticFirebullet(ply, bul, true)
-			end
-		end)
+	if IsValid(ply) and cv_decalbul:GetBool() then
+		if ply:IsPlayer() then
+			ply.TFA_BulletEvents = ply.TFA_BulletEvents or {}
+
+			table.insert(ply.TFA_BulletEvents, function()
+				if IsValid(ply) then
+					ply:FireBullets(decalbul)
+					BallisticFirebullet(ply, bul, true)
+				end
+			end)
+		else
+			timer.Simple(0, function()
+				if IsValid(ply) then
+					ply:FireBullets(decalbul)
+					BallisticFirebullet(ply, bul, true)
+				end
+			end)
+		end
 	end
 end
 
@@ -599,11 +623,21 @@ function SWEP.MainBullet:Ricochet(ply, traceres, dmginfo, weapon)
 			TFA.Effects.Create("tfa_ricochet", fx)
 		end
 
-		timer.Simple(0, function()
-			if IsValid(ply) then
-				BallisticFirebullet(ply, ric, true)
-			end
-		end)
+		if ply:IsPlayer() then
+			ply.TFA_BulletEvents = ply.TFA_BulletEvents or {}
+
+			table.insert(ply.TFA_BulletEvents, function()
+				if IsValid(ply) then
+					BallisticFirebullet(ply, ric, true)
+				end
+			end)
+		else
+			timer.Simple(0, function()
+				if IsValid(ply) then
+					BallisticFirebullet(ply, ric, true)
+				end
+			end)
+		end
 
 
 		return true
