@@ -31,8 +31,7 @@ end
 TFA.Ballistics = TFA.Ballistics or {}
 TFA.Ballistics.Enabled = false
 TFA.Ballistics.Gravity = Vector(0, 0, -cv_gravity:GetFloat())
-TFA.Ballistics.Bullets = {}
-TFA.Ballistics.BulletCount = TFA.Ballistics.BulletCount or 0
+TFA.Ballistics.Bullets = {bullet_registry = {}}
 TFA.Ballistics.BulletLife = 10
 TFA.Ballistics.UnitScale = TFA.UnitScale or 39.3701 --meters to inches
 TFA.Ballistics.AirResistance = 1
@@ -120,28 +119,38 @@ local CopyTable = table.Copy
 function TFA.Ballistics.Bullets:Add(bulletStruct, originalBulletData)
 	local b = TFA.Ballistics:Bullet(bulletStruct)
 	b.bul = CopyTable(originalBulletData or b.bul)
-	self[TFA.Ballistics.BulletCount] = b
+
+	table.insert(self.bullet_registry, b)
 
 	if SERVER and cv_ts:GetFloat() > 0.99 then
+		-- always update bullet since they are being added from predicted hook
 		b:Update(FrameTime())
 	end
-
-	TFA.Ballistics.BulletCount = TFA.Ballistics.BulletCount + 1
 end
 
-function TFA.Ballistics.Bullets:Update()
+function TFA.Ballistics.Bullets:Update(ply)
 	local delta = TimeScale(SysTime() - (self.lastUpdate or (SysTime() - FrameTime())))
 	self.lastUpdate = SysTime()
+	local toremove
+	local lply = CLIENT and LocalPlayer()
 
-	for k, v in pairs(self) do
-		if isnumber(k) then
-			if v.delete then
-				self[k] = nil
-			else
-				for _ = 1, TFA.Ballistics.SubSteps do
-					v:Update(delta)
-				end
+	for i, bullet in ipairs(self.bullet_registry) do
+		if bullet.delete then
+			if not toremove then
+				toremove = {}
 			end
+
+			table.insert(toremove, i)
+		elseif (CLIENT and bullet.owner ~= lply) or not ply and not bullet.playerOwned or ply == bullet.owner then
+			for _ = 1, TFA.Ballistics.SubSteps do
+				bullet:Update(delta)
+			end
+		end
+	end
+
+	if toremove then
+		for i = #toremove, 1, -1 do
+			table.remove(self.bullet_registry, toremove[i])
 		end
 	end
 end
@@ -291,10 +300,8 @@ function TFA.Ballistics:FireBullets(wep, b, angIn, bulletOverride)
 end
 
 function TFA.Ballistics.Bullets:Render()
-	for k, v in pairs(self) do
-		if isnumber(k) then
-			v:Render()
-		end
+	for i, bullet in ipairs(self.bullet_registry) do
+		bullet:Render()
 	end
 end
 
@@ -315,6 +322,10 @@ end
 
 hook.Add(SERVER and "Tick" or "PreRender", "TFABallisticsTick", function()
 	TFA.Ballistics.Bullets:Update()
+end)
+
+hook.Add("PlayerPostThink", "TFABallisticsTick", function(self)
+	TFA.Ballistics.Bullets:Update(self)
 end)
 
 --Rendering
