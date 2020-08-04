@@ -336,7 +336,7 @@ if CLIENT then
 
 	net.Receive("tfa_request_tickrate", function()
 		local tickrate = net.ReadDouble()
-		timer.Stop("tfa_request_tickrate")
+		timer.Remove("tfa_request_tickrate")
 
 		function TFA.FrameTime()
 			return tickrate * game.GetTimeScale()
