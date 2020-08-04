@@ -19,6 +19,9 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
+local LocalPlayer = LocalPlayer
+local math = math
+
 local function GetScreenAspectRatio()
 	return ScrW() / ScrH()
 end
@@ -33,12 +36,12 @@ local function ScaleFOVByWidthRatio(fovDegrees, ratio)
 end
 
 local default_fov_cv = GetConVar("default_fov")
-local ply
 
 function SWEP:GetTrueFOV()
 	local fov = TFADUSKFOV or default_fov_cv:GetFloat()
-	if not LocalPlayer():IsValid() then return fov end
-	ply = LocalPlayer()
+	local ply = LocalPlayer()
+
+	if not ply:IsValid() then return fov end
 
 	if ply:GetFOV() < ply:GetDefaultFOV() - 1 then
 		fov = ply:GetFOV()

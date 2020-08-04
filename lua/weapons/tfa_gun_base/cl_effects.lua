@@ -19,10 +19,14 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
-local upVec = Vector(0,0,1)
+local vector_up = Vector(0, 0, 1)
+local math = math
+local render = render
+local LerpVector = LerpVector
+
 --[[
 Function Name:  ComputeSmokeLighting
-Syntax: self:ComputeSmokeLighting(pos,nrm,pcf).
+Syntax: self:ComputeSmokeLighting(pos, nrm, pcf).
 Returns:  Nothing.
 Notes:	Used to light the muzzle smoke trail, by setting its PCF Control Point 1
 Purpose:  FX
@@ -34,6 +38,7 @@ function SWEP:ComputeSmokeLighting( pos, nrm, pcf )
 	local lichtFinal = LerpVector(lichtFloat, TFA.Particles.SmokeLightingMin, TFA.Particles.SmokeLightingMax)
 	pcf:SetControlPoint(1, lichtFinal)
 end
+
 --[[
 Function Name:  SmokePCFLighting
 Syntax: self:SmokePCFLighting().
@@ -47,14 +52,14 @@ function SWEP:SmokePCFLighting()
 	local pos = mzPos.Pos
 	if self.SmokePCF then
 		for _, v in pairs(self.SmokePCF) do
-			self:ComputeSmokeLighting(pos,upVec,v)
+			self:ComputeSmokeLighting(pos, vector_up, v)
 		end
 	end
 	if not self:VMIV() then return end
 	local vm = self.OwnerViewModel
 	if vm.SmokePCF then
 		for _, v in pairs(vm.SmokePCF) do
-			self:ComputeSmokeLighting(pos,upVec,v)
+			self:ComputeSmokeLighting(pos, vector_up, v)
 		end
 	end
 end

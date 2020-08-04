@@ -19,13 +19,13 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
-local l_Lerp = function(t, a, b) return a + (b - a) * t end
-local l_mathMin = function(a, b) return (a < b) and a or b end
-local l_mathMax = function(a, b) return (a > b) and a or b end
-local l_ABS = function(a) return (a < 0) and -a or a end
-local l_mathClamp = function(t, a, b) return l_mathMax(l_mathMin(t, b), a) end
+local function l_Lerp(t, a, b) return a + (b - a) * t end
+local function l_mathMin(a, b) return (a < b) and a or b end
+local function l_mathMax(a, b) return (a > b) and a or b end
+local function l_ABS(a) return (a < 0) and -a or a end
+local function l_mathClamp(t, a, b) return l_mathMax(l_mathMin(t, b), a) end
 
-local l_mathApproach = function(a, b, delta)
+local function l_mathApproach(a, b, delta)
 	if a < b then
 		return l_mathMin(a + l_ABS(delta), b)
 	else
@@ -40,10 +40,11 @@ SWEP.LastRatio = nil
 function SWEP:CalculateRatios(forced)
 	local owent = self:GetOwner()
 	if not IsValid(owent) or not owent:IsPlayer() then return end
+	local self2 = self:GetTable()
 	ft = TFA.FrameTime()
-	is = self:GetIronSights()
-	spr = self:GetSprinting()
-	walk = self:GetWalking()
+	is = self2.GetIronSights(self)
+	spr = self2.GetSprinting(self)
+	walk = self2.GetWalking(self)
 	ist = is and 1 or 0
 	sprt = spr and 1 or 0
 	walkt = walk and 1 or 0
@@ -57,17 +58,18 @@ function SWEP:CalculateRatios(forced)
 		adstransitionspeed = 12.5
 	end
 
-	if not ( IsFirstTimePredicted() or forced ) then return end
-	self.CrouchingRatio = l_mathApproach(self.CrouchingRatio or 0, (owent:Crouching() and owent:OnGround()) and 1 or 0, ft / self.ToCrouchTime)
-	self.SpreadRatio = l_mathClamp(self.SpreadRatio - self:GetStat("Primary.SpreadRecovery") * ft, 1, self:GetStat("Primary.SpreadMultiplierMax"))
-	self.IronSightsProgress = l_mathApproach(self.IronSightsProgress, ist, (ist - self.IronSightsProgress) * ft * adstransitionspeed)
-	self.SprintProgress = l_mathApproach(self.SprintProgress, sprt, (sprt - self.SprintProgress) * ft * adstransitionspeed)
-	self.WalkProgress = l_mathApproach(self.WalkProgress, walkt, (walkt - self.WalkProgress) * ft * adstransitionspeed)
-	self.ProceduralHolsterProgress = l_mathApproach(self.ProceduralHolsterProgress, sprt, (sprt - self.SprintProgress) * ft * self.ProceduralHolsterTime * 15)
-	self.InspectingProgress = l_mathApproach(self.InspectingProgress, self.Inspecting and 1 or 0, ((self.Inspecting and 1 or 0) - self.InspectingProgress) * ft * 10)
-	self.CLIronSightsProgress = self.IronSightsProgress --compatibility
+	if not IsFirstTimePredicted() and not forced then return end
+
+	self2.CrouchingRatio = l_mathApproach(self2.CrouchingRatio or 0, (owent:Crouching() and owent:OnGround()) and 1 or 0, ft / self2.ToCrouchTime)
+	self2.SpreadRatio = l_mathClamp(self2.SpreadRatio - self2.GetStat(self, "Primary.SpreadRecovery") * ft, 1, self2.GetStat(self, "Primary.SpreadMultiplierMax"))
+	self2.IronSightsProgress = l_mathApproach(self2.IronSightsProgress, ist, (ist - self2.IronSightsProgress) * ft * adstransitionspeed)
+	self2.SprintProgress = l_mathApproach(self2.SprintProgress, sprt, (sprt - self2.SprintProgress) * ft * adstransitionspeed)
+	self2.WalkProgress = l_mathApproach(self2.WalkProgress, walkt, (walkt - self2.WalkProgress) * ft * adstransitionspeed)
+	self2.ProceduralHolsterProgress = l_mathApproach(self2.ProceduralHolsterProgress, sprt, (sprt - self2.SprintProgress) * ft * self2.ProceduralHolsterTime * 15)
+	self2.InspectingProgress = l_mathApproach(self2.InspectingProgress, self2.Inspecting and 1 or 0, ((self2.Inspecting and 1 or 0) - self2.InspectingProgress) * ft * 10)
+	self2.CLIronSightsProgress = self2.IronSightsProgress --compatibility
 	jr_targ = math.min(math.abs(owent:GetVelocity().z) / 500, 1)
-	self.JumpRatio = l_mathApproach(self.JumpRatio, jr_targ, (jr_targ - self.JumpRatio) * ft * 20)
+	self2.JumpRatio = l_mathApproach(self2.JumpRatio, jr_targ, (jr_targ - self2.JumpRatio) * ft * 20)
 end
 
 SWEP.IronRecoilMultiplier = 0.5 --Multiply recoil by this factor when we're in ironsights.  This is proportional, not inversely.
@@ -80,56 +82,59 @@ SWEP.ChangeStateAccuracyMultiplier = 1.5 --Less is more.  A change of state is w
 SWEP.JumpAccuracyMultiplier = 2 --Less is more.  Accuracy * 2 = Half as accurate.  Accuracy * 5 = 1/5 as accurate
 SWEP.WalkAccuracyMultiplier = 1.35 --Less is more.  Accuracy * 2 = Half as accurate.  Accuracy * 5 = 1/5 as accurate
 SWEP.ToCrouchTime = 0.2
+
 local mult_cvar = GetConVar("sv_tfa_spread_multiplier")
 local dynacc_cvar = GetConVar("sv_tfa_dynamicaccuracy")
 local ccon, crec
+
 SWEP.JumpRatio = 0
 
 function SWEP:CalculateConeRecoil()
 	local dynacc = false
-	local isr = self.IronSightsProgress or 0
+	local self2 = self:GetTable()
+	local isr = self2.IronSightsProgress or 0
 
-	if dynacc_cvar:GetBool() and (self:GetStat("Primary.NumShots") <= 1) then
+	if dynacc_cvar:GetBool() and (self2.GetStat(self, "Primary.NumShots") <= 1) then
 		dynacc = true
 	end
 
 	local isr_1 = l_mathClamp(isr * 2, 0, 1)
 	local isr_2 = l_mathClamp((isr - 0.5) * 2, 0, 1)
-	local acv = self:GetStat("Primary.Spread") or self:GetStat("Primary.Accuracy")
-	local recv = self:GetStat("Primary.Recoil") * 5
+	local acv = self2.GetStat(self, "Primary.Spread") or self2.GetStat(self, "Primary.Accuracy")
+	local recv = self2.GetStat(self, "Primary.Recoil") * 5
 
 	if dynacc then
-		ccon = l_Lerp(isr_2, l_Lerp(isr_1, acv, acv * self:GetStat("ChangeStateAccuracyMultiplier")), self:GetStat("Primary.IronAccuracy"))
-		crec = l_Lerp(isr_2, l_Lerp(isr_1, recv, recv * self:GetStat("ChangeStateRecoilMultiplier")), recv * self:GetStat("IronRecoilMultiplier"))
+		ccon = l_Lerp(isr_2, l_Lerp(isr_1, acv, acv * self2.GetStat(self, "ChangeStateAccuracyMultiplier")), self2.GetStat(self, "Primary.IronAccuracy"))
+		crec = l_Lerp(isr_2, l_Lerp(isr_1, recv, recv * self2.GetStat(self, "ChangeStateRecoilMultiplier")), recv * self2.GetStat(self, "IronRecoilMultiplier"))
 	else
-		ccon = l_Lerp(isr, acv, self:GetStat("Primary.IronAccuracy"))
-		crec = l_Lerp(isr, recv, recv * self:GetStat("IronRecoilMultiplier"))
+		ccon = l_Lerp(isr, acv, self2.GetStat(self, "Primary.IronAccuracy"))
+		crec = l_Lerp(isr, recv, recv * self2.GetStat(self, "IronRecoilMultiplier"))
 	end
 
-	local crc_1 = l_mathClamp(self.CrouchingRatio * 2, 0, 1)
-	local crc_2 = l_mathClamp((self.CrouchingRatio - 0.5) * 2, 0, 1)
+	local crc_1 = l_mathClamp(self2.CrouchingRatio * 2, 0, 1)
+	local crc_2 = l_mathClamp((self2.CrouchingRatio - 0.5) * 2, 0, 1)
 
 	if dynacc then
-		ccon = l_Lerp(crc_2, l_Lerp(crc_1, ccon, ccon * self:GetStat("ChangeStateAccuracyMultiplier")), ccon * self:GetStat("CrouchAccuracyMultiplier"))
-		crec = l_Lerp(crc_2, l_Lerp(crc_1, crec, self:GetStat("Primary.Recoil") * self:GetStat("ChangeStateRecoilMultiplier")), crec * self:GetStat("CrouchRecoilMultiplier"))
+		ccon = l_Lerp(crc_2, l_Lerp(crc_1, ccon, ccon * self2.GetStat(self, "ChangeStateAccuracyMultiplier")), ccon * self2.GetStat(self, "CrouchAccuracyMultiplier"))
+		crec = l_Lerp(crc_2, l_Lerp(crc_1, crec, self2.GetStat(self, "Primary.Recoil") * self2.GetStat(self, "ChangeStateRecoilMultiplier")), crec * self2.GetStat(self, "CrouchRecoilMultiplier"))
 	end
 
 	local ovel = self:GetOwner():GetVelocity():Length2D()
 	local vfc_1 = l_mathClamp(ovel / self:GetOwner():GetWalkSpeed(), 0, 2)
 
 	if dynacc then
-		ccon = l_Lerp(vfc_1, ccon, ccon * self:GetStat("WalkAccuracyMultiplier"))
-		crec = l_Lerp(vfc_1, crec, crec * self:GetStat("WallRecoilMultiplier"))
+		ccon = l_Lerp(vfc_1, ccon, ccon * self2.GetStat(self, "WalkAccuracyMultiplier"))
+		crec = l_Lerp(vfc_1, crec, crec * self2.GetStat(self, "WallRecoilMultiplier"))
 	end
 
-	local jr = self.JumpRatio
+	local jr = self2.JumpRatio
 
 	if dynacc then
-		ccon = l_Lerp(jr, ccon, ccon * self:GetStat("JumpAccuracyMultiplier"))
-		crec = l_Lerp(jr, crec, crec * self:GetStat("JumpRecoilMultiplier"))
+		ccon = l_Lerp(jr, ccon, ccon * self2.GetStat(self, "JumpAccuracyMultiplier"))
+		crec = l_Lerp(jr, crec, crec * self2.GetStat(self, "JumpRecoilMultiplier"))
 	end
 
-	ccon = ccon * self.SpreadRatio
+	ccon = ccon * self2.SpreadRatio
 
 	if mult_cvar then
 		ccon = ccon * mult_cvar:GetFloat()

@@ -20,111 +20,123 @@
 -- SOFTWARE.
 
 function SWEP:FixSprintAnimBob()
-	if self.Sprint_Mode == TFA.Enum.LOCOMOTION_ANI then
-		self.SprintBobMult = 0
+	local self2 = self:GetTable()
+
+	if self2.Sprint_Mode == TFA.Enum.LOCOMOTION_ANI then
+		self2.SprintBobMult = 0
 	end
 end
 
 function SWEP:FixWalkAnimBob()
-	if self.Walk_Mode == TFA.Enum.LOCOMOTION_ANI then
-		self.WalkBobMult_Iron = self.WalkBobMult
-		self.WalkBobMult = 0
+	local self2 = self:GetTable()
+	if self2.Walk_Mode == TFA.Enum.LOCOMOTION_ANI then
+		self2.WalkBobMult_Iron = self2.WalkBobMult
+		self2.WalkBobMult = 0
 	end
 end
 
 function SWEP:PatchAmmoTypeAccessors()
-	self.GetPrimaryAmmoTypeOld = self.GetPrimaryAmmoTypeOld or self.GetPrimaryAmmoType
-	self.GetPrimaryAmmoType = function(myself, ...) return myself.GetPrimaryAmmoTypeC(myself, ...) end
-	self.GetSecondaryAmmoTypeOld = self.GetSecondaryAmmoTypeOld or self.GetSecondaryAmmoType
-	self.GetSecondaryAmmoType = function(myself, ...) return myself.GetSecondaryAmmoTypeC(myself, ...) end
+	local self2 = self:GetTable()
+	self2.GetPrimaryAmmoTypeOld = self2.GetPrimaryAmmoTypeOld or self2.GetPrimaryAmmoType
+	self2.GetPrimaryAmmoType = function(myself, ...) return myself.GetPrimaryAmmoTypeC(myself, ...) end
+	self2.GetSecondaryAmmoTypeOld = self2.GetSecondaryAmmoTypeOld or self2.GetSecondaryAmmoType
+	self2.GetSecondaryAmmoType = function(myself, ...) return myself.GetSecondaryAmmoTypeC(myself, ...) end
 end
 
 function SWEP:FixProjectile()
-	if self.ProjectileEntity and self.ProjectileEntity ~= "" then
-		self.Primary.Projectile = self.ProjectileEntity
-		self.ProjectileEntity = nil
+	local self2 = self:GetTable()
+	if self2.ProjectileEntity and self2.ProjectileEntity ~= "" then
+		self2.Primary.Projectile = self2.ProjectileEntity
+		self2.ProjectileEntity = nil
 	end
 
-	if self.ProjectileModel and self.ProjectileModel ~= "" then
-		self.Primary.ProjectileModel = self.ProjectileModel
-		self.ProjectileModel = nil
+	if self2.ProjectileModel and self2.ProjectileModel ~= "" then
+		self2.Primary.ProjectileModel = self2.ProjectileModel
+		self2.ProjectileModel = nil
 	end
 
-	if self.ProjectileVelocity and self.ProjectileVelocity ~= "" then
-		self.Primary.ProjectileVelocity = self.ProjectileVelocity
-		self.ProjectileVelocity = nil
+	if self2.ProjectileVelocity and self2.ProjectileVelocity ~= "" then
+		self2.Primary.ProjectileVelocity = self2.ProjectileVelocity
+		self2.ProjectileVelocity = nil
 	end
 end
 
 function SWEP:AutoDetectRange()
-	if self.Primary.Range <= 0 then
-		self.Primary.Range = math.sqrt(self.Primary.Damage / 32) * self:MetersToUnits(350) * self:AmmoRangeMultiplier()
+	local self2 = self:GetTable()
+	if self2.Primary.Range <= 0 then
+		self2.Primary.Range = math.sqrt(self2.Primary.Damage / 32) * self:MetersToUnits(350) * self:AmmoRangeMultiplier()
 	end
 
-	if self.Primary.RangeFalloff <= 0 then
-		self.Primary.RangeFalloff = 0.5
+	if self2.Primary.RangeFalloff <= 0 then
+		self2.Primary.RangeFalloff = 0.5
 	end
 end
 
 function SWEP:FixProceduralReload()
-	if self.DoProceduralReload then
-		self.ProceduralReloadEnabled = true
+	local self2 = self:GetTable()
+	if self2.DoProceduralReload then
+		self2.ProceduralReloadEnabled = true
 	end
 end
 
 function SWEP:FixRPM()
-	if not self.Primary.RPM then
-		if self.Primary.Delay then
-			self.Primary.RPM = 60 / self.Primary.Delay
+	local self2 = self:GetTable()
+	if not self2.Primary.RPM then
+		if self2.Primary.Delay then
+			self2.Primary.RPM = 60 / self2.Primary.Delay
 		else
-			self.Primary.RPM = 120
+			self2.Primary.RPM = 120
 		end
 	end
 end
 
 function SWEP:FixCone()
-	if self.Primary.Cone then
-		if (not self.Primary.Spread) or self.Primary.Spread < 0 then
-			self.Primary.Spread = self.Primary.Cone
+	local self2 = self:GetTable()
+	if self2.Primary.Cone then
+		if (not self2.Primary.Spread) or self2.Primary.Spread < 0 then
+			self2.Primary.Spread = self2.Primary.Cone
 		end
 
-		self.Primary.Cone = nil
+		self2.Primary.Cone = nil
 	end
 end
 
 --legacy compatibility
 function SWEP:FixIdles()
-	if self.DisableIdleAnimations ~= nil and self.DisableIdleAnimations == true then
-		self.Idle_Mode = TFA.Enum.IDLE_LUA
+	local self2 = self:GetTable()
+	if self2.DisableIdleAnimations ~= nil and self2.DisableIdleAnimations == true then
+		self2.Idle_Mode = TFA.Enum.IDLE_LUA
 	end
 end
 
 function SWEP:FixIS()
-	if self.SightsPos and (not self.IronSightsPos or (self.IronSightsPos.x ~= self.SightsPos.x and self.SightsPos.x ~= 0)) then
-		self.IronSightsPos = self.SightsPos or Vector()
-		self.IronSightsAng = self.SightsAng or Vector()
+	local self2 = self:GetTable()
+	if self2.SightsPos and (not self2.IronSightsPos or (self2.IronSightsPos.x ~= self2.SightsPos.x and self2.SightsPos.x ~= 0)) then
+		self2.IronSightsPos = self2.SightsPos or Vector()
+		self2.IronSightsAng = self2.SightsAng or Vector()
 	end
 end
 
 local legacy_spread_cv = GetConVar("sv_tfa_spread_legacy")
 
 function SWEP:AutoDetectSpread()
+	local self2 = self:GetTable()
 	if legacy_spread_cv and legacy_spread_cv:GetBool() then
 		self:SetUpSpreadLegacy()
 
 		return
 	end
 
-	if self.Primary.SpreadMultiplierMax == -1 or not self.Primary.SpreadMultiplierMax then
-		self.Primary.SpreadMultiplierMax = math.Clamp(math.sqrt(math.sqrt(self.Primary.Damage / 35) * 10 / 5) * 5, 0.01 / self.Primary.Spread, 0.1 / self.Primary.Spread)
+	if self2.Primary.SpreadMultiplierMax == -1 or not self2.Primary.SpreadMultiplierMax then
+		self2.Primary.SpreadMultiplierMax = math.Clamp(math.sqrt(math.sqrt(self2.Primary.Damage / 35) * 10 / 5) * 5, 0.01 / self2.Primary.Spread, 0.1 / self2.Primary.Spread)
 	end
 
-	if self.Primary.SpreadIncrement == -1 or not self.Primary.SpreadIncrement then
-		self.Primary.SpreadIncrement = self.Primary.SpreadMultiplierMax * 60 / self.Primary.RPM * 0.85 * 1.5
+	if self2.Primary.SpreadIncrement == -1 or not self2.Primary.SpreadIncrement then
+		self2.Primary.SpreadIncrement = self2.Primary.SpreadMultiplierMax * 60 / self2.Primary.RPM * 0.85 * 1.5
 	end
 
-	if self.Primary.SpreadRecovery == -1 or not self.Primary.SpreadRecovery then
-		self.Primary.SpreadRecovery = math.max(self.Primary.SpreadMultiplierMax * math.pow(self.Primary.RPM / 600, 1 / 3) * 0.75, self.Primary.SpreadMultiplierMax / 1.5)
+	if self2.Primary.SpreadRecovery == -1 or not self2.Primary.SpreadRecovery then
+		self2.Primary.SpreadRecovery = math.max(self2.Primary.SpreadMultiplierMax * math.pow(self2.Primary.RPM / 600, 1 / 3) * 0.75, self2.Primary.SpreadMultiplierMax / 1.5)
 	end
 end
 
@@ -137,26 +149,27 @@ Purpose:  Autodetection
 ]]
 --
 function SWEP:AutoDetectMuzzle()
-	if not self.MuzzleFlashEffect then
-		local a = string.lower(self.Primary.Ammo)
-		local cat = string.lower(self.Category and self.Category or "")
+	local self2 = self:GetTable()
+	if not self2.MuzzleFlashEffect then
+		local a = string.lower(self2.Primary.Ammo)
+		local cat = string.lower(self2.Category and self2.Category or "")
 
-		if self.Silenced or self:GetSilenced() then
-			self.MuzzleFlashEffect = "tfa_muzzleflash_silenced"
-		elseif string.find(a, "357") or self.Revolver or string.find(cat, "revolver") then
-			self.MuzzleFlashEffect = "tfa_muzzleflash_revolver"
-		elseif self.Shotgun or a == "buckshot" or a == "slam" or a == "airboatgun" or string.find(cat, "shotgun") then
-			self.MuzzleFlashEffect = "tfa_muzzleflash_shotgun"
+		if self2.Silenced or self:GetSilenced() then
+			self2.MuzzleFlashEffect = "tfa_muzzleflash_silenced"
+		elseif string.find(a, "357") or self2.Revolver or string.find(cat, "revolver") then
+			self2.MuzzleFlashEffect = "tfa_muzzleflash_revolver"
+		elseif self2.Shotgun or a == "buckshot" or a == "slam" or a == "airboatgun" or string.find(cat, "shotgun") then
+			self2.MuzzleFlashEffect = "tfa_muzzleflash_shotgun"
 		elseif string.find(a, "smg") or string.find(cat, "smg") or string.find(cat, "submachine") or string.find(cat, "sub-machine") then
-			self.MuzzleFlashEffect = "tfa_muzzleflash_smg"
+			self2.MuzzleFlashEffect = "tfa_muzzleflash_smg"
 		elseif string.find(a, "sniper") or string.find(cat, "sniper") then
-			self.MuzzleFlashEffect = "tfa_muzzleflash_sniper"
+			self2.MuzzleFlashEffect = "tfa_muzzleflash_sniper"
 		elseif string.find(a, "pistol") or string.find(cat, "pistol") then
-			self.MuzzleFlashEffect = "tfa_muzzleflash_pistol"
+			self2.MuzzleFlashEffect = "tfa_muzzleflash_pistol"
 		elseif string.find(a, "ar2") or string.find(a, "rifle") or (string.find(cat, "revolver") and not string.find(cat, "rifle")) then
-			self.MuzzleFlashEffect = "tfa_muzzleflash_rifle"
+			self2.MuzzleFlashEffect = "tfa_muzzleflash_rifle"
 		else
-			self.MuzzleFlashEffect = "tfa_muzzleflash_generic"
+			self2.MuzzleFlashEffect = "tfa_muzzleflash_generic"
 		end
 	end
 end
@@ -170,44 +183,45 @@ Purpose:  Autodetection
 ]]
 --
 function SWEP:AutoDetectDamage()
-	if self.Primary.Damage and self.Primary.Damage ~= -1 then return end
+	local self2 = self:GetTable()
+	if self2.Primary.Damage and self2.Primary.Damage ~= -1 then return end
 
-	if self.Primary.Round then
-		local rnd = string.lower(self.Primary.Round)
+	if self2.Primary.Round then
+		local rnd = string.lower(self2.Primary.Round)
 
 		if string.find(rnd, ".50bmg") then
-			self.Primary.Damage = 185
+			self2.Primary.Damage = 185
 		elseif string.find(rnd, "5.45x39") then
-			self.Primary.Damage = 22
+			self2.Primary.Damage = 22
 		elseif string.find(rnd, "5.56x45") then
-			self.Primary.Damage = 30
+			self2.Primary.Damage = 30
 		elseif string.find(rnd, "338_lapua") then
-			self.Primary.Damage = 120
+			self2.Primary.Damage = 120
 		elseif string.find(rnd, "338") then
-			self.Primary.Damage = 100
+			self2.Primary.Damage = 100
 		elseif string.find(rnd, "7.62x51") then
-			self.Primary.Damage = 100
+			self2.Primary.Damage = 100
 		elseif string.find(rnd, "9x39") then
-			self.Primary.Damage = 32
+			self2.Primary.Damage = 32
 		elseif string.find(rnd, "9mm") then
-			self.Primary.Damage = 22
+			self2.Primary.Damage = 22
 		elseif string.find(rnd, "9x19") then
-			self.Primary.Damage = 22
+			self2.Primary.Damage = 22
 		elseif string.find(rnd, "9x18") then
-			self.Primary.Damage = 20
+			self2.Primary.Damage = 20
 		end
 
 		if string.find(rnd, "ap") then
-			self.Primary.Damage = self.Primary.Damage * 1.2
+			self2.Primary.Damage = self2.Primary.Damage * 1.2
 		end
 	end
 
-	if (not self.Primary.Damage) or (self.Primary.Damage <= 0.01) and self.Velocity then
-		self.Primary.Damage = self.Velocity / 5
+	if (not self2.Primary.Damage) or (self2.Primary.Damage <= 0.01) and self2.Velocity then
+		self2.Primary.Damage = self2.Velocity / 5
 	end
 
-	if (not self.Primary.Damage) or (self.Primary.Damage <= 0.01) then
-		self.Primary.Damage = (self.Primary.KickUp + self.Primary.KickUp + self.Primary.KickUp) * 10
+	if (not self2.Primary.Damage) or (self2.Primary.Damage <= 0.01) then
+		self2.Primary.Damage = (self2.Primary.KickUp + self2.Primary.KickUp + self2.Primary.KickUp) * 10
 	end
 end
 
@@ -220,11 +234,12 @@ Purpose:  Autodetection
 ]]
 --
 function SWEP:AutoDetectDamageType()
-	if self.Primary.DamageType == -1 or not self.Primary.DamageType then
-		if self.DamageType and not self.Primary.DamageType then
-			self.Primary.DamageType = self.DamageType
+	local self2 = self:GetTable()
+	if self2.Primary.DamageType == -1 or not self2.Primary.DamageType then
+		if self2.DamageType and not self2.Primary.DamageType then
+			self2.Primary.DamageType = self2.DamageType
 		else
-			self.Primary.DamageType = DMG_BULLET
+			self2.Primary.DamageType = DMG_BULLET
 		end
 	end
 end
@@ -238,8 +253,9 @@ Purpose:  Autodetection
 ]]
 --
 function SWEP:AutoDetectForce()
-	if self.Primary.Force == -1 or not self.Primary.Force then
-		self.Primary.Force = self.Force or (math.sqrt(self.Primary.Damage / 16) * 3 / math.sqrt(self.Primary.NumShots))
+	local self2 = self:GetTable()
+	if self2.Primary.Force == -1 or not self2.Primary.Force then
+		self2.Primary.Force = self2.Force or (math.sqrt(self2.Primary.Damage / 16) * 3 / math.sqrt(self2.Primary.NumShots))
 	end
 end
 
@@ -252,8 +268,9 @@ Purpose:  Autodetection
 ]]
 --
 function SWEP:AutoDetectKnockback()
-	if self.Primary.Knockback == -1 or not self.Primary.Knockback then
-		self.Primary.Knockback = self.Knockback or math.max(math.pow(self.Primary.Force - 3.25, 2), 0) * math.pow(self.Primary.NumShots, 1 / 3)
+	local self2 = self:GetTable()
+	if self2.Primary.Knockback == -1 or not self2.Primary.Knockback then
+		self2.Primary.Knockback = self2.Knockback or math.max(math.pow(self2.Primary.Force - 3.25, 2), 0) * math.pow(self2.Primary.NumShots, 1 / 3)
 	end
 end
 
@@ -268,31 +285,32 @@ Purpose:  Autodetection
 local selicon_final = {}
 
 function SWEP:IconFix()
+	local self2 = self:GetTable()
 	if not surface then return end
-	self.Gun = self.ClassName or self.Folder
+	self2.Gun = self2.ClassName or self2.Folder
 	local tselicon
 	local proceed = true
 
-	if selicon_final[self.Gun] then
-		self.WepSelectIcon = selicon_final[self.Gun]
+	if selicon_final[self2.Gun] then
+		self2.WepSelectIcon = selicon_final[self2.Gun]
 
 		return
 	end
 
-	if self.WepSelectIcon then
-		tselicon = type(self.WepSelectIcon)
+	if self2.WepSelectIcon then
+		tselicon = type(self2.WepSelectIcon)
 	end
 
-	if self.WepSelectIcon and tselicon == "string" then
-		self.WepSelectIcon = surface.GetTextureID(self.WepSelectIcon)
+	if self2.WepSelectIcon and tselicon == "string" then
+		self2.WepSelectIcon = surface.GetTextureID(self2.WepSelectIcon)
 		proceed = false
 	end
 
-	if proceed and file.Exists("materials/vgui/hud/" .. self.ClassName .. ".vmt", "GAME") then
-		self.WepSelectIcon = surface.GetTextureID("vgui/hud/" .. self.ClassName)
+	if proceed and file.Exists("materials/vgui/hud/" .. self2.ClassName .. ".vmt", "GAME") then
+		self2.WepSelectIcon = surface.GetTextureID("vgui/hud/" .. self2.ClassName)
 	end
 
-	selicon_final[self.Gun] = self.WepSelectIcon
+	selicon_final[self2.Gun] = self2.WepSelectIcon
 end
 
 --[[
@@ -304,13 +322,14 @@ Purpose:  Autodetection
 ]]
 --
 function SWEP:CorrectScopeFOV(fov)
-	fov = fov or self.DefaultFOV
+	local self2 = self:GetTable()
+	fov = fov or self2.DefaultFOV
 
-	if not self.Secondary.IronFOV or self.Secondary.IronFOV <= 0 then
-		if self.Scoped then
-			self.Secondary.IronFOV = fov / (self.Secondary.ScopeZoom and self.Secondary.ScopeZoom or 2)
+	if not self2.Secondary.IronFOV or self2.Secondary.IronFOV <= 0 then
+		if self2.Scoped then
+			self2.Secondary.IronFOV = fov / (self2.Secondary.ScopeZoom and self2.Secondary.ScopeZoom or 2)
 		else
-			self.Secondary.IronFOV = 32
+			self2.Secondary.IronFOV = 32
 		end
 	end
 end
@@ -326,58 +345,59 @@ Purpose:  Autodetection
 SWEP.FireModeCache = {}
 
 function SWEP:CreateFireModes(isfirstdraw)
-	if not self.FireModes then
-		self.FireModes = {}
+	local self2 = self:GetTable()
+	if not self2.FireModes then
+		self2.FireModes = {}
 		local burstcnt = self:FindEvenBurstNumber()
 
-		if self.SelectiveFire then
-			if self.OnlyBurstFire then
+		if self2.SelectiveFire then
+			if self2.OnlyBurstFire then
 				if burstcnt then
-					self.FireModes[1] = burstcnt .. "Burst"
-					self.FireModes[2] = "Single"
+					self2.FireModes[1] = burstcnt .. "Burst"
+					self2.FireModes[2] = "Single"
 				else
-					self.FireModes[1] = "Single"
+					self2.FireModes[1] = "Single"
 				end
 			else
-				self.FireModes[1] = "Automatic"
+				self2.FireModes[1] = "Automatic"
 
-				if self.DisableBurstFire then
-					self.FireModes[2] = "Single"
+				if self2.DisableBurstFire then
+					self2.FireModes[2] = "Single"
 				else
 					if burstcnt then
-						self.FireModes[2] = burstcnt .. "Burst"
-						self.FireModes[3] = "Single"
+						self2.FireModes[2] = burstcnt .. "Burst"
+						self2.FireModes[3] = "Single"
 					else
-						self.FireModes[2] = "Single"
+						self2.FireModes[2] = "Single"
 					end
 				end
 			end
 		else
-			if self.Primary.Automatic then
-				self.FireModes[1] = "Automatic"
+			if self2.Primary.Automatic then
+				self2.FireModes[1] = "Automatic"
 
-				if self.OnlyBurstFire and burstcnt then
-					self.FireModes[1] = burstcnt .. "Burst"
+				if self2.OnlyBurstFire and burstcnt then
+					self2.FireModes[1] = burstcnt .. "Burst"
 				end
 			else
-				self.FireModes[1] = "Single"
+				self2.FireModes[1] = "Single"
 			end
 		end
 	end
 
-	if self.FireModes[#self.FireModes] ~= "Safe" then
-		self.FireModes[#self.FireModes + 1] = "Safe"
+	if self2.FireModes[#self2.FireModes] ~= "Safe" then
+		self2.FireModes[#self2.FireModes + 1] = "Safe"
 	end
 
-	if not self.FireModeCache or #self.FireModeCache <= 0 then
-		for k, v in ipairs(self.FireModes) do
-			self.FireModeCache[v] = k
+	if not self2.FireModeCache or #self2.FireModeCache <= 0 then
+		for k, v in ipairs(self2.FireModes) do
+			self2.FireModeCache[v] = k
 		end
 
-		if type(self.DefaultFireMode) == "number" then
-			self:SetFireMode(self.DefaultFireMode or (self.Primary.Automatic and 1 or #self.FireModes - 1))
+		if type(self2.DefaultFireMode) == "number" then
+			self:SetFireMode(self2.DefaultFireMode or (self2.Primary.Automatic and 1 or #self2.FireModes - 1))
 		else
-			self:SetFireMode(self.FireModeCache[self.DefaultFireMode] or (self.Primary.Automatic and 1 or #self.FireModes - 1))
+			self:SetFireMode(self2.FireModeCache[self2.DefaultFireMode] or (self2.Primary.Automatic and 1 or #self2.FireModes - 1))
 		end
 	end
 end
@@ -399,40 +419,41 @@ SWEP.ActCache = {}
 local vm, seq
 
 function SWEP:CacheAnimations()
-	table.Empty(self.ActCache)
+	local self2 = self:GetTable()
+	table.Empty(self2.ActCache)
 
-	if self.CanBeSilenced and self.SequenceEnabled[ACT_VM_IDLE_SILENCED] == nil then
-		self.SequenceEnabled[ACT_VM_IDLE_SILENCED] = true
+	if self2.CanBeSilenced and self2.SequenceEnabled[ACT_VM_IDLE_SILENCED] == nil then
+		self2.SequenceEnabled[ACT_VM_IDLE_SILENCED] = true
 	end
 
 	if not self:VMIV() then return end
-	vm = self.OwnerViewModel
+	vm = self2.OwnerViewModel
 
 	if IsValid(vm) then
 		self:BuildAnimActivities()
 
-		for _, v in ipairs(table.GetKeys(self.AnimationActivities)) do
+		for _, v in ipairs(table.GetKeys(self2.AnimationActivities)) do
 			if isnumber(v) then
 				seq = vm:SelectWeightedSequence(v)
 
-				if seq ~= -1 and vm:GetSequenceActivity(seq) == v and not self.ActCache[seq] then
-					self.SequenceEnabled[v] = true
-					self.SequenceLength[v] = vm:SequenceDuration(seq)
-					self.ActCache[seq] = v
+				if seq ~= -1 and vm:GetSequenceActivity(seq) == v and not self2.ActCache[seq] then
+					self2.SequenceEnabled[v] = true
+					self2.SequenceLength[v] = vm:SequenceDuration(seq)
+					self2.ActCache[seq] = v
 				else
-					self.SequenceEnabled[v] = false
-					self.SequenceLength[v] = 0.0
+					self2.SequenceEnabled[v] = false
+					self2.SequenceLength[v] = 0.0
 				end
 			else
 				local s = vm:LookupSequence(v)
 
 				if s and s > 0 then
-					self.SequenceEnabled[v] = true
-					self.SequenceLength[v] = vm:SequenceDuration(s)
-					self.ActCache[s] = v
+					self2.SequenceEnabled[v] = true
+					self2.SequenceLength[v] = vm:SequenceDuration(s)
+					self2.ActCache[s] = v
 				else
-					self.SequenceEnabled[v] = false
-					self.SequenceLength[v] = 0.0
+					self2.SequenceEnabled[v] = false
+					self2.SequenceLength[v] = 0.0
 				end
 			end
 		end
@@ -440,66 +461,67 @@ function SWEP:CacheAnimations()
 		return false
 	end
 
-	if self.ProceduralHolsterEnabled == nil then
-		if self.SequenceEnabled[ACT_VM_HOLSTER] then
-			self.ProceduralHolsterEnabled = false
+	if self2.ProceduralHolsterEnabled == nil then
+		if self2.SequenceEnabled[ACT_VM_HOLSTER] then
+			self2.ProceduralHolsterEnabled = false
 		else
-			self.ProceduralHolsterEnabled = true
+			self2.ProceduralHolsterEnabled = true
 		end
 	end
 
-	self.HasDetectedValidAnimations = true
+	self2.HasDetectedValidAnimations = true
 
 	return true
 end
 
 function SWEP:GetType()
-	if self.Type then return self.Type end
-	local at = string.lower(self.Primary.Ammo or "")
-	local ht = string.lower((self.DefaultHoldType or self.HoldType) or "")
-	local rpm = self.Primary.RPM_Displayed or self.Primary.RPM or 600
+	local self2 = self:GetTable()
+	if self2.Type then return self2.Type end
+	local at = string.lower(self2.Primary.Ammo or "")
+	local ht = string.lower((self2.DefaultHoldType or self2.HoldType) or "")
+	local rpm = self2.Primary.RPM_Displayed or self2.Primary.RPM or 600
 
-	if self.Primary.ProjectileEntity or self.ProjectileEntity then
-		if (self.ProjectileVelocity or self.Primary.ProjectileVelocity) > 400 then
-			self.Type = "Launcher"
+	if self2.Primary.ProjectileEntity or self2.ProjectileEntity then
+		if (self2.ProjectileVelocity or self2.Primary.ProjectileVelocity) > 400 then
+			self2.Type = "Launcher"
 		else
-			self.Type = "Grenade"
+			self2.Type = "Grenade"
 		end
 		return
 	end
 
 	if at == "buckshot" then
-		self.Type = "Shotgun"
+		self2.Type = "Shotgun"
 
 		return self:GetType()
 	end
 
-	if self.Pistol or (at == "pistol" and ht == "pistol") then
-		self.Type = "Pistol"
+	if self2.Pistol or (at == "pistol" and ht == "pistol") then
+		self2.Type = "Pistol"
 
 		return self:GetType()
 	end
 
-	if self.SMG or (at == "smg1" and (ht == "smg" or ht == "pistol" or ht == "357")) then
-		self.Type = "Sub-Machine Gun"
+	if self2.SMG or (at == "smg1" and (ht == "smg" or ht == "pistol" or ht == "357")) then
+		self2.Type = "Sub-Machine Gun"
 
 		return self:GetType()
 	end
 
-	if self.Revolver or (at == "357" and ht == "revolver") then
-		self.Type = "Revolver"
+	if self2.Revolver or (at == "357" and ht == "revolver") then
+		self2.Type = "Revolver"
 
 		return self:GetType()
 	end
 
 	--Detect Sniper Type
-	if ( (self.Scoped or self.Scoped_3D) and rpm < 600 ) or at == "sniperpenetratedround" then
-		if rpm > 180 and (self.Primary.Automatic or self.Primary.SelectiveFire) then
-			self.Type = "Designated Marksman Rifle"
+	if ( (self2.Scoped or self2.Scoped_3D) and rpm < 600 ) or at == "sniperpenetratedround" then
+		if rpm > 180 and (self2.Primary.Automatic or self2.Primary.SelectiveFire) then
+			self2.Type = "Designated Marksman Rifle"
 
 			return self:GetType()
 		else
-			self.Type = "Sniper Rifle"
+			self2.Type = "Sniper Rifle"
 
 			return self:GetType()
 		end
@@ -507,10 +529,10 @@ function SWEP:GetType()
 
 	--Detect based on holdtype
 	if ht == "pistol" then
-		if self.Primary.Automatic then
-			self.Type = "Machine Pistol"
+		if self2.Primary.Automatic then
+			self2.Type = "Machine Pistol"
 		else
-			self.Type = "Pistol"
+			self2.Type = "Pistol"
 		end
 
 		return self:GetType()
@@ -518,19 +540,19 @@ function SWEP:GetType()
 
 	if ht == "duel" then
 		if at == "pistol" then
-			self.Type = "Dual Pistols"
+			self2.Type = "Dual Pistols"
 
 			return self:GetType()
 		elseif at == "357" then
-			self.Type = "Dual Revolvers"
+			self2.Type = "Dual Revolvers"
 
 			return self:GetType()
 		elseif at == "smg1" then
-			self.Type = "Dual Sub-Machine Guns"
+			self2.Type = "Dual Sub-Machine Guns"
 
 			return self:GetType()
 		else
-			self.Type = "Dual Guns"
+			self2.Type = "Dual Guns"
 
 			return self:GetType()
 		end
@@ -538,16 +560,16 @@ function SWEP:GetType()
 
 	--If it's using rifle ammo, it's a rifle or a carbine
 	if at == "ar2" then
-		if self.Primary.ClipSize >= 60 then
-			self.Type = "Light Machine Gun"
+		if self2.Primary.ClipSize >= 60 then
+			self2.Type = "Light Machine Gun"
 
 			return self:GetType()
 		elseif ht == "rpg" or ht == "revolver" then
-			self.Type = "Carbine"
+			self2.Type = "Carbine"
 
 			return self:GetType()
 		else
-			self.Type = "Rifle"
+			self2.Type = "Rifle"
 
 			return self:GetType()
 		end
@@ -555,76 +577,77 @@ function SWEP:GetType()
 
 	--Check SMG one last time
 	if ht == "smg" or at == "smg1" then
-		self.Type = "Sub-Machine Gun"
+		self2.Type = "Sub-Machine Gun"
 
 		return self:GetType()
 	end
 
 	--Fallback to generic
-	self.Type = "Weapon"
+	self2.Type = "Weapon"
 
 	return self:GetType()
 end
 
 function SWEP:SetUpSpreadLegacy()
-	local ht = self.DefaultHoldType and self.DefaultHoldType or self.HoldType
+	local self2 = self:GetTable()
+	local ht = self2.DefaultHoldType and self2.DefaultHoldType or self2.HoldType
 
-	if not self.Primary.SpreadMultiplierMax or self.Primary.SpreadMultiplierMax <= 0 or self.AutoDetectSpreadMultiplierMax then
-		self.Primary.SpreadMultiplierMax = 2.5 * math.max(self.Primary.RPM, 400) / 600 * math.sqrt(self.Primary.Damage / 30 * self.Primary.NumShots) --How far the spread can expand when you shoot.
+	if not self2.Primary.SpreadMultiplierMax or self2.Primary.SpreadMultiplierMax <= 0 or self2.AutoDetectSpreadMultiplierMax then
+		self2.Primary.SpreadMultiplierMax = 2.5 * math.max(self2.Primary.RPM, 400) / 600 * math.sqrt(self2.Primary.Damage / 30 * self2.Primary.NumShots) --How far the spread can expand when you shoot.
 
 		if ht == "smg" then
-			self.Primary.SpreadMultiplierMax = self.Primary.SpreadMultiplierMax * 0.8
+			self2.Primary.SpreadMultiplierMax = self2.Primary.SpreadMultiplierMax * 0.8
 		end
 
 		if ht == "revolver" then
-			self.Primary.SpreadMultiplierMax = self.Primary.SpreadMultiplierMax * 2
+			self2.Primary.SpreadMultiplierMax = self2.Primary.SpreadMultiplierMax * 2
 		end
 
-		if self.Scoped then
-			self.Primary.SpreadMultiplierMax = self.Primary.SpreadMultiplierMax * 1.5
+		if self2.Scoped then
+			self2.Primary.SpreadMultiplierMax = self2.Primary.SpreadMultiplierMax * 1.5
 		end
 
-		self.AutoDetectSpreadMultiplierMax = true
+		self2.AutoDetectSpreadMultiplierMax = true
 	end
 
-	if not self.Primary.SpreadIncrement or self.Primary.SpreadIncrement <= 0 or self.AutoDetectSpreadIncrement then
-		self.AutoDetectSpreadIncrement = true
-		self.Primary.SpreadIncrement = 1 * math.Clamp(math.sqrt(self.Primary.RPM) / 24.5, 0.7, 3) * math.sqrt(self.Primary.Damage / 30 * self.Primary.NumShots) --What percentage of the modifier is added on, per shot.
+	if not self2.Primary.SpreadIncrement or self2.Primary.SpreadIncrement <= 0 or self2.AutoDetectSpreadIncrement then
+		self2.AutoDetectSpreadIncrement = true
+		self2.Primary.SpreadIncrement = 1 * math.Clamp(math.sqrt(self2.Primary.RPM) / 24.5, 0.7, 3) * math.sqrt(self2.Primary.Damage / 30 * self2.Primary.NumShots) --What percentage of the modifier is added on, per shot.
 
 		if ht == "revolver" then
-			self.Primary.SpreadIncrement = self.Primary.SpreadIncrement * 2
+			self2.Primary.SpreadIncrement = self2.Primary.SpreadIncrement * 2
 		end
 
 		if ht == "pistol" then
-			self.Primary.SpreadIncrement = self.Primary.SpreadIncrement * 1.35
+			self2.Primary.SpreadIncrement = self2.Primary.SpreadIncrement * 1.35
 		end
 
 		if ht == "ar2" or ht == "rpg" then
-			self.Primary.SpreadIncrement = self.Primary.SpreadIncrement * 0.65
+			self2.Primary.SpreadIncrement = self2.Primary.SpreadIncrement * 0.65
 		end
 
 		if ht == "smg" then
-			self.Primary.SpreadIncrement = self.Primary.SpreadIncrement * 1.75
-			self.Primary.SpreadIncrement = self.Primary.SpreadIncrement * (math.Clamp((self.Primary.RPM - 650) / 150, 0, 1) + 1)
+			self2.Primary.SpreadIncrement = self2.Primary.SpreadIncrement * 1.75
+			self2.Primary.SpreadIncrement = self2.Primary.SpreadIncrement * (math.Clamp((self2.Primary.RPM - 650) / 150, 0, 1) + 1)
 		end
 
-		if ht == "pistol" and self.Primary.Automatic == true then
-			self.Primary.SpreadIncrement = self.Primary.SpreadIncrement * 1.5
+		if ht == "pistol" and self2.Primary.Automatic == true then
+			self2.Primary.SpreadIncrement = self2.Primary.SpreadIncrement * 1.5
 		end
 
-		if self.Scoped then
-			self.Primary.SpreadIncrement = self.Primary.SpreadIncrement * 1.25
+		if self2.Scoped then
+			self2.Primary.SpreadIncrement = self2.Primary.SpreadIncrement * 1.25
 		end
 
-		self.Primary.SpreadIncrement = self.Primary.SpreadIncrement * math.sqrt(self.Primary.Recoil * (self.Primary.KickUp + self.Primary.KickDown + self.Primary.KickHorizontal)) * 0.8
+		self2.Primary.SpreadIncrement = self2.Primary.SpreadIncrement * math.sqrt(self2.Primary.Recoil * (self2.Primary.KickUp + self2.Primary.KickDown + self2.Primary.KickHorizontal)) * 0.8
 	end
 
-	if not self.Primary.SpreadRecovery or self.Primary.SpreadRecovery <= 0 or self.AutoDetectSpreadRecovery then
-		self.AutoDetectSpreadRecovery = true
-		self.Primary.SpreadRecovery = math.sqrt(math.max(self.Primary.RPM, 300)) / 29 * 4 --How much the spread recovers, per second.
+	if not self2.Primary.SpreadRecovery or self2.Primary.SpreadRecovery <= 0 or self2.AutoDetectSpreadRecovery then
+		self2.AutoDetectSpreadRecovery = true
+		self2.Primary.SpreadRecovery = math.sqrt(math.max(self2.Primary.RPM, 300)) / 29 * 4 --How much the spread recovers, per second.
 
 		if ht == "smg" then
-			self.Primary.SpreadRecovery = self.Primary.SpreadRecovery * (1 - math.Clamp((self.Primary.RPM - 600) / 200, 0, 1) * 0.33)
+			self2.Primary.SpreadRecovery = self2.Primary.SpreadRecovery * (1 - math.Clamp((self2.Primary.RPM - 600) / 200, 0, 1) * 0.33)
 		end
 	end
 end

@@ -41,6 +41,6 @@ end
 
 --[[Actual clientside values]]--
 
-SWEP.DrawAmmo				= true				--Should draw the default HL2 ammo counter
-SWEP.DrawWeaponInfoBox			= false				-- Should draw the weapon info box
+SWEP.DrawAmmo						= true				-- Should draw the default HL2 ammo counter
+SWEP.DrawWeaponInfoBox				= false				-- Should draw the weapon info box
 SWEP.BounceWeaponIcon   			= false				-- Should the weapon icon bounce?

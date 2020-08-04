@@ -135,13 +135,7 @@ function SWEP:BuildAttachmentCache()
 end
 
 function SWEP:IsAttached(attn)
-	local v = self.AttachmentCache[attn]
-
-	if v then
-		return true
-	else
-		return false
-	end
+	return isnumber(self.AttachmentCache[attn])
 end
 
 local tc
@@ -149,50 +143,51 @@ local tc
 function SWEP:CanAttach(attn)
 	local retVal = hook.Run("TFA_PreCanAttach", self, attn)
 	if retVal ~= nil then return retVal end
+	local self2 = self:GetTable()
 
-	if not self.HasBuiltMutualExclusions then
-		tc = tableCopy(self.AttachmentExclusions)
+	if not self2.HasBuiltMutualExclusions then
+		tc = tableCopy(self2.AttachmentExclusions)
 
 		for k, v in pairs(tc) do
 			if k ~= "BaseClass" then
 				for _, b in pairs(v) do
-					self.AttachmentExclusions[b] = self.AttachmentExclusions[b] or {}
+					self2.AttachmentExclusions[b] = self2.AttachmentExclusions[b] or {}
 
-					if not table.HasValue(self.AttachmentExclusions[b]) then
-						self.AttachmentExclusions[b][#self.AttachmentExclusions[b] + 1] = k
+					if not table.HasValue(self2.AttachmentExclusions[b]) then
+						self2.AttachmentExclusions[b][#self2.AttachmentExclusions[b] + 1] = k
 					end
 				end
 			end
 		end
 
-		self.HasBuiltMutualExclusions = true
+		self2.HasBuiltMutualExclusions = true
 	end
 
 	if att_enabled_cv and (not att_enabled_cv:GetBool()) then return false end
 
-	if self.AttachmentExclusions[attn] then
-		for _, v in pairs(self.AttachmentExclusions[attn]) do
-			if self:IsAttached(v) then return false end
+	if self2.AttachmentExclusions[attn] then
+		for _, v in pairs(self2.AttachmentExclusions[attn]) do
+			if self2.IsAttached(self, v) then return false end
 		end
 	end
 
-	if self.AttachmentDependencies[attn] then
-		local t = self.AttachmentDependencies[attn]
+	if self2.AttachmentDependencies[attn] then
+		local t = self2.AttachmentDependencies[attn]
 
 		if isstring(t) then
-			if t ~= "BaseClass" and not self:IsAttached(t) then return false end
+			if t ~= "BaseClass" and not self2.IsAttached(self, t) then return false end
 		elseif istable(t) then
 			t.type = t.type or "OR"
 
 			if t.type == "AND" then
 				for k, v in pairs(self.AttachmentDependencies[attn]) do
-					if k ~= "BaseClass" and k ~= "type" and not self:IsAttached(v) then return false end
+					if k ~= "BaseClass" and k ~= "type" and not self2.IsAttached(self, v) then return false end
 				end
 			else
 				local cnt = 0
 
 				for k, v in pairs(self.AttachmentDependencies[attn]) do
-					if k ~= "BaseClass" and k ~= "type" and self:IsAttached(v) then
+					if k ~= "BaseClass" and k ~= "type" and self2.IsAttached(self, v) then
 						cnt = cnt + 1
 					end
 				end
@@ -203,8 +198,7 @@ function SWEP:CanAttach(attn)
 	end
 
 	local atTable = TFA.Attachments.Atts[attn]
-	if not atTable then return false end
-	if not atTable:CanAttach(self) then return false end
+	if not atTable or not atTable:CanAttach(self) then return false end
 
 	local retVal2 = hook.Run("TFA_CanAttach", self, attn)
 	if retVal2 ~= nil then return retVal2 end
@@ -304,55 +298,55 @@ end
 local ccv = GetConVar("cl_tfa_debug_cache")
 
 function SWEP:GetStat(stat, default)
-	if self.StatStringCache[stat] == nil then
+	local self2 = self:GetTable()
+
+	if self2.StatStringCache[stat] == nil then
 		local t_stbl = string.Explode(".", stat, false)
 
 		for k, v in ipairs(t_stbl) do
 			t_stbl[k] = tonumber(v) or v
 		end
 
-		self.StatStringCache[stat] = t_stbl
+		self2.StatStringCache[stat] = t_stbl
 	end
 
-	local stbl = self.StatStringCache[stat]
+	local stbl = self2.StatStringCache[stat]
 
-	if self.StatCache2[stat] ~= nil then
+	if self2.StatCache2[stat] ~= nil then
 		local finalReturn
 
-		if self.StatCache[stat] ~= nil then
-			finalReturn = self.StatCache[stat]
+		if self2.StatCache[stat] ~= nil then
+			finalReturn = self2.StatCache[stat]
 		else
-			retval = self:GetStatRecursive(self, stbl)
+			retval = self2.GetStatRecursive(self, self2, stbl)
 
 			if retval ~= nil then
-				self.StatCache[stat] = retval
+				self2.StatCache[stat] = retval
 				finalReturn = retval
 			else
 				finalReturn = istable(default) and tableCopy(default) or default
 			end
 		end
 
-		finalReturn = hook.Run("TFA_GetStat", self, stat, finalReturn) or finalReturn
+		local getstat = hook.Run("TFA_GetStat", self, stat, finalReturn)
+		if getstat ~= nil then return getstat end
 
 		return finalReturn
 	else
-		if not self:OwnerIsValid() then
-			if IsValid(self) then
-				local finalReturn = self:GetStatRecursive(self, stbl, istable(default) and tableCopy(default) or default)
-				finalReturn = hook.Run("TFA_GetStat", self, stat, finalReturn) or finalReturn
+		if not self2.OwnerIsValid(self) then
+			local finalReturn = default
 
-				return finalReturn
+			if IsValid(self) then
+				finalReturn = self2.GetStatRecursive(self, self2, stbl, istable(default) and tableCopy(default) or default)
 			end
 
-			local finalReturn = default
-			finalReturn = hook.Run("TFA_GetStat", self, stat, finalReturn) or finalReturn
-
+			local getstat = hook.Run("TFA_GetStat", self, stat, finalReturn)
+			if getstat ~= nil then return getstat end
 			return finalReturn
 		end
 
-		local cs = self:GetStatRecursive(self, stbl, istable(default) and tableCopy(default) or default)
-		local ns, nc
-		ns, nc = self:GetStatRecursive(self.AttachmentTableCache, stbl, istable(cs) and tableCopy(cs) or cs)
+		local cs = self2.GetStatRecursive(self, self2, stbl, istable(default) and tableCopy(default) or default)
+		local ns, nc = self2.GetStatRecursive(self, self2.AttachmentTableCache, stbl, istable(cs) and tableCopy(cs) or cs)
 
 		if istable(ns) and istable(cs) then
 			cs = table.Merge(tableCopy(cs), ns)
@@ -360,15 +354,15 @@ function SWEP:GetStat(stat, default)
 			cs = ns
 		end
 
-		if (not self.StatCache_Blacklist[stat]) and (not self.StatCache_Blacklist[stbl[1]]) and (not nc) and not (ccv and ccv:GetBool()) then
-			self.StatCache[stat] = cs
-			self.StatCache2[stat] = true
+		if (not self2.StatCache_Blacklist[stat]) and (not self2.StatCache_Blacklist[stbl[1]]) and (not nc) and not (ccv and ccv:GetBool()) then
+			self2.StatCache[stat] = cs
+			self2.StatCache2[stat] = true
 		end
 
-		local finalReturn = cs
-		finalReturn = hook.Run("TFA_GetStat", self, stat, finalReturn) or finalReturn
+		local getstat = hook.Run("TFA_GetStat", self, stat, cs)
+		if getstat ~= nil then return getstat end
 
-		return finalReturn
+		return cs
 	end
 end
 
@@ -426,20 +420,22 @@ function SWEP:ForceAttachmentReqs(attn)
 end
 
 function SWEP:SetTFAAttachment(cat, id, nw, force)
-	if (not self.Attachments[cat]) then return false end
-	local attn = self.Attachments[cat].atts[id] or ""
-	local attn_old = self.Attachments[cat].atts[self.Attachments[cat].sel or -1] or ""
-	if SERVER and id > 0 and not (force or self:CanAttach(attn)) then return false end
+	local self2 = self:GetTable()
 
-	if id ~= self.Attachments[cat].sel then
-		local att_old = TFA.Attachments.Atts[self.Attachments[cat].atts[self.Attachments[cat].sel] or -1]
+	if (not self2.Attachments[cat]) then return false end
+	local attn = self2.Attachments[cat].atts[id] or ""
+	local attn_old = self2.Attachments[cat].atts[self2.Attachments[cat].sel or -1] or ""
+	if SERVER and id > 0 and not (force or self2.CanAttach(self, attn)) then return false end
+
+	if id ~= self2.Attachments[cat].sel then
+		local att_old = TFA.Attachments.Atts[self2.Attachments[cat].atts[self2.Attachments[cat].sel] or -1]
 
 		if att_old then
 			att_old:Detach(self)
 			hook.Run("TFA_Attachment_Detached", self, attn_old, att_old, cat, id, force)
 		end
 
-		local att_neue = TFA.Attachments.Atts[self.Attachments[cat].atts[id] or -1]
+		local att_neue = TFA.Attachments.Atts[self2.Attachments[cat].atts[id] or -1]
 
 		if att_neue then
 			att_neue:Attach(self)
@@ -447,20 +443,20 @@ function SWEP:SetTFAAttachment(cat, id, nw, force)
 		end
 	end
 
-	self:ClearStatCache()
+	self2.ClearStatCache(self)
 
 	if id > 0 then
-		self.Attachments[cat].sel = id
+		self2.Attachments[cat].sel = id
 	else
-		self.Attachments[cat].sel = nil
+		self2.Attachments[cat].sel = nil
 	end
 
-	self:BuildAttachmentCache()
+	self2.BuildAttachmentCache(self)
 
 	if id > 0 then
-		self:ForceAttachmentReqs(attn)
+		self2:ForceAttachmentReqs(attn)
 	else
-		self:ForceAttachmentReqs(attn_old)
+		self2:ForceAttachmentReqs(attn_old)
 	end
 
 	if nw then

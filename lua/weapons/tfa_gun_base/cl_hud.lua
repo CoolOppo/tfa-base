@@ -803,25 +803,41 @@ end
 function SWEP:DrawHUD3D2D()
 end
 
-SWEP.CLAmmoProgress = 0
+local draw = draw
+local cam = cam
+local surface = surface
+local render = render
+local Vector = Vector
+local Matrix = Matrix
+local TFA = TFA
+local math = math
+
+local function ColorAlpha(color_in, new_alpha)
+	if color_in.a == new_alpha then return color_in end
+	return Color(color_in.r, color_in.g, color_in.b, new_alpha)
+end
+
 local targ, lactive = 0, -1
 local targbool = false
 local hudhangtime_cvar = GetConVar("cl_tfa_hud_hangtime")
 local hudfade_cvar = GetConVar("cl_tfa_hud_ammodata_fadein")
 local lfm, fm = 0, 0
+
+SWEP.CLAmmoProgress = 0
 SWEP.TextCol = Color(255, 255, 255, 255) --Primary text color
 SWEP.TextColContrast = Color(32, 32, 32, 255) --Secondary Text Color (used for shadow)
 
 function SWEP:DrawHUDAmmo()
-	local stat = self:GetStatus()
+	local self2 = self:GetTable()
+	local stat = self2.GetStatus(self)
 
-	if self:GetStat("BoltAction") then
+	if self2.GetStat(self, "BoltAction") then
 		if stat == TFA.Enum.STATUS_SHOOTING then
-			if not self.LastBoltShoot then
-				self.LastBoltShoot = l_CT()
+			if not self2.LastBoltShoot then
+				self2.LastBoltShoot = l_CT()
 			end
-		elseif self.LastBoltShoot then
-			self.LastBoltShoot = nil
+		elseif self2.LastBoltShoot then
+			self2.LastBoltShoot = nil
 		end
 	end
 
@@ -829,8 +845,8 @@ function SWEP:DrawHUDAmmo()
 
 	fm = self:GetFireMode()
 	targbool = (not TFA.Enum.HUDDisabledStatus[stat]) or fm ~= lfm
-	targbool = targbool or (stat == TFA.Enum.STATUS_SHOOTING and self.LastBoltShoot and l_CT() > self.LastBoltShoot + self.BoltTimerOffset)
-	targbool = targbool or (self:GetStat("PumpAction") and (stat == TFA.GetStatus("pump") or (stat == TFA.Enum.STATUS_SHOOTING and self:Clip1() == 0)))
+	targbool = targbool or (stat == TFA.Enum.STATUS_SHOOTING and self2.LastBoltShoot and l_CT() > self2.LastBoltShoot + self2.BoltTimerOffset)
+	targbool = targbool or (self2.GetStat(self, "PumpAction") and (stat == TFA.GetStatus("pump") or (stat == TFA.Enum.STATUS_SHOOTING and self:Clip1() == 0)))
 	targbool = targbool or (stat == TFA.GetStatus("fidget"))
 
 	targ = targbool and 1 or 0
@@ -844,33 +860,34 @@ function SWEP:DrawHUDAmmo()
 		targ = 1
 	end
 
-	self.CLAmmoProgress = math.Approach(self.CLAmmoProgress, targ, (targ - self.CLAmmoProgress) * FrameTime() * 2 / hudfade_cvar:GetFloat())
-	local myalpha = 225 * self.CLAmmoProgress
+	self2.CLAmmoProgress = math.Approach(self2.CLAmmoProgress, targ, (targ - self2.CLAmmoProgress) * FrameTime() * 2 / hudfade_cvar:GetFloat())
+
+	local myalpha = 225 * self2.CLAmmoProgress
 	if myalpha < 1 then return end
-	local amn = self:GetStat("Primary.Ammo")
+	local amn = self2.GetStat(self, "Primary.Ammo")
 	if not amn then return end
 	if amn == "none" or amn == "" then return end
 	local mzpos = self:GetMuzzlePos()
 
-	if self:GetStat("Akimbo") then
-		self.MuzzleAttachmentRaw = self.MuzzleAttachmentRaw2 or 1
+	if self2.GetStat(self, "Akimbo") then
+		self2.MuzzleAttachmentRaw = self2.MuzzleAttachmentRaw2 or 1
 	end
 
-	if self:GetHidden() then return end
+	if self2.GetHidden(self) then return end
 
 	local xx, yy
 
 	if mzpos and mzpos.Pos then
 		local pos = mzpos.Pos
-		local textsize = self.textsize and self.textsize or 1
-		local pl = LocalPlayer() and LocalPlayer() or self:GetOwner()
+		local textsize = self2.textsize and self2.textsize or 1
+		local pl = IsValid(self:GetOwner()) and self:GetOwner() or LocalPlayer()
 		local ang = pl:EyeAngles() --(angpos.Ang):Up():Angle()
 		ang:RotateAroundAxis(ang:Right(), 90)
 		ang:RotateAroundAxis(ang:Up(), -90)
 		ang:RotateAroundAxis(ang:Forward(), 0)
-		pos = pos + ang:Right() * (self.textupoffset and self.textupoffset or -2 * (textsize / 1))
-		pos = pos + ang:Up() * (self.textfwdoffset and self.textfwdoffset or 0 * (textsize / 1))
-		pos = pos + ang:Forward() * (self.textrightoffset and self.textrightoffset or -1 * (textsize / 1))
+		pos = pos + ang:Right() * (self2.textupoffset and self2.textupoffset or -2 * (textsize / 1))
+		pos = pos + ang:Up() * (self2.textfwdoffset and self2.textfwdoffset or 0 * (textsize / 1))
+		pos = pos + ang:Forward() * (self2.textrightoffset and self2.textrightoffset or -1 * (textsize / 1))
 		cam.Start3D()
 		local postoscreen = pos:ToScreen()
 		cam.End3D()
@@ -891,56 +908,56 @@ function SWEP:DrawHUDAmmo()
 		end
 	end
 
-	if self.InspectingProgress < 0.01 and self:GetStat("Primary.Ammo") ~= "" and self:GetStat("Primary.Ammo") ~= 0 then
+	if self2.InspectingProgress < 0.01 and self2.GetStat(self, "Primary.Ammo") ~= "" and self2.GetStat(self, "Primary.Ammo") ~= 0 then
 		local str, clipstr
 
-		if self:GetStat("Primary.ClipSize") and self:GetStat("Primary.ClipSize") ~= -1 then
+		if self2.GetStat(self, "Primary.ClipSize") and self2.GetStat(self, "Primary.ClipSize") ~= -1 then
 			clipstr = language.GetPhrase("tfa.hud.ammo.clip1")
 
-			if self:GetStat("Akimbo") and self:GetStat("AkimboHUD") ~= false then
+			if self2.GetStat(self, "Akimbo") and self2.GetStat(self, "AkimboHUD") ~= false then
 				str = clipstr:format(math.ceil(self:Clip1() / 2))
 
-				if (self:Clip1() > self:GetStat("Primary.ClipSize")) then
-					str = clipstr:format(math.ceil(self:Clip1() / 2) - 1 .. " + " .. (math.ceil(self:Clip1() / 2) - math.ceil(self:GetStat("Primary.ClipSize") / 2)))
+				if (self:Clip1() > self2.GetStat(self, "Primary.ClipSize")) then
+					str = clipstr:format(math.ceil(self:Clip1() / 2) - 1 .. " + " .. (math.ceil(self:Clip1() / 2) - math.ceil(self2.GetStat(self, "Primary.ClipSize") / 2)))
 				end
 			else
 				str = clipstr:format(self:Clip1())
 
-				if (self:Clip1() > self:GetStat("Primary.ClipSize")) then
-					str = clipstr:format(self:GetStat("Primary.ClipSize") .. " + " .. (self:Clip1() - self:GetStat("Primary.ClipSize")))
+				if (self:Clip1() > self2.GetStat(self, "Primary.ClipSize")) then
+					str = clipstr:format(self2.GetStat(self, "Primary.ClipSize") .. " + " .. (self:Clip1() - self2.GetStat(self, "Primary.ClipSize")))
 				end
 			end
 
-			draw.DrawText(str, "TFASleek", xx + 1, yy + 1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
-			draw.DrawText(str, "TFASleek", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT)
-			str = language.GetPhrase("tfa.hud.ammo.reserve1"):format(self:Ammo1())
+			draw.DrawText(str, "TFASleek", xx + 1, yy + 1, ColorAlpha(self2.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
+			draw.DrawText(str, "TFASleek", xx, yy, ColorAlpha(self2.TextCol, myalpha), TEXT_ALIGN_RIGHT)
+			str = language.GetPhrase("tfa.hud.ammo.reserve1"):format(self2.Ammo1(self))
 			yy = yy + TFA.Fonts.SleekHeight
 			xx = xx - TFA.Fonts.SleekHeight / 3
-			draw.DrawText(str, "TFASleekMedium", xx + 1, yy + 1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
-			draw.DrawText(str, "TFASleekMedium", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT)
+			draw.DrawText(str, "TFASleekMedium", xx + 1, yy + 1, ColorAlpha(self2.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
+			draw.DrawText(str, "TFASleekMedium", xx, yy, ColorAlpha(self2.TextCol, myalpha), TEXT_ALIGN_RIGHT)
 			yy = yy + TFA.Fonts.SleekHeightMedium
 			xx = xx - TFA.Fonts.SleekHeightMedium / 3
 		else
-			str = language.GetPhrase("tfa.hud.ammo1"):format(self:Ammo1())
-			draw.DrawText(str, "TFASleek", xx + 1, yy + 1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
-			draw.DrawText(str, "TFASleek", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT)
+			str = language.GetPhrase("tfa.hud.ammo1"):format(self2.Ammo1(self))
+			draw.DrawText(str, "TFASleek", xx + 1, yy + 1, ColorAlpha(self2.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
+			draw.DrawText(str, "TFASleek", xx, yy, ColorAlpha(self2.TextCol, myalpha), TEXT_ALIGN_RIGHT)
 			yy = yy + TFA.Fonts.SleekHeightMedium
 			xx = xx - TFA.Fonts.SleekHeightMedium / 3
 		end
 
-		str = string.upper(self:GetFireModeName() .. (#self:GetStat("FireModes") > 2 and " | +" or ""))
+		str = string.upper(self:GetFireModeName() .. (#self2.GetStat(self, "FireModes") > 2 and " | +" or ""))
 
 		if self:IsJammed() then
 			str = str .. "\n" .. language.GetPhrase("tfa.hud.jammed")
 		end
 
-		draw.DrawText(str, "TFASleekSmall", xx + 1, yy + 1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
-		draw.DrawText(str, "TFASleekSmall", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT)
+		draw.DrawText(str, "TFASleekSmall", xx + 1, yy + 1, ColorAlpha(self2.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
+		draw.DrawText(str, "TFASleekSmall", xx, yy, ColorAlpha(self2.TextCol, myalpha), TEXT_ALIGN_RIGHT)
 		yy = yy + TFA.Fonts.SleekHeightSmall
 		xx = xx - TFA.Fonts.SleekHeightSmall / 3
 
-		if self:GetStat("Akimbo") and self:GetStat("AkimboHUD") ~= false then
-			local angpos2 = self:GetOwner():ShouldDrawLocalPlayer() and self:GetAttachment(2) or self.OwnerViewModel:GetAttachment(2)
+		if self2.GetStat(self, "Akimbo") and self2.GetStat(self, "AkimboHUD") ~= false then
+			local angpos2 = self:GetOwner():ShouldDrawLocalPlayer() and self:GetAttachment(2) or self2.OwnerViewModel:GetAttachment(2)
 
 			if angpos2 then
 				local pos2 = angpos2.Pos
@@ -951,71 +968,73 @@ function SWEP:DrawHUDAmmo()
 				xx, yy = ScrW() * .35, ScrH() * .6
 			end
 
-			if self:GetStat("Primary.ClipSize") and self:GetStat("Primary.ClipSize") ~= -1 then
+			if self2.GetStat(self, "Primary.ClipSize") and self2.GetStat(self, "Primary.ClipSize") ~= -1 then
 				clipstr = language.GetPhrase("tfa.hud.ammo.clip1")
 
 				str = clipstr:format(math.floor(self:Clip1() / 2))
 
-				if (math.floor(self:Clip1() / 2) > math.floor(self:GetStat("Primary.ClipSize") / 2)) then
-					str = clipstr:format(math.floor(self:Clip1() / 2) - 1 .. " + " .. (math.floor(self:Clip1() / 2) - math.floor(self:GetStat("Primary.ClipSize") / 2)))
+				if (math.floor(self:Clip1() / 2) > math.floor(self2.GetStat(self, "Primary.ClipSize") / 2)) then
+					str = clipstr:format(math.floor(self:Clip1() / 2) - 1 .. " + " .. (math.floor(self:Clip1() / 2) - math.floor(self2.GetStat(self, "Primary.ClipSize") / 2)))
 				end
 
-				draw.DrawText(str, "TFASleek", xx + 1, yy + 1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
-				draw.DrawText(str, "TFASleek", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT)
-				str = language.GetPhrase("tfa.hud.ammo.reserve1"):format(self:Ammo1())
+				draw.DrawText(str, "TFASleek", xx + 1, yy + 1, ColorAlpha(self2.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
+				draw.DrawText(str, "TFASleek", xx, yy, ColorAlpha(self2.TextCol, myalpha), TEXT_ALIGN_RIGHT)
+				str = language.GetPhrase("tfa.hud.ammo.reserve1"):format(self2.Ammo1(self))
 				yy = yy + TFA.Fonts.SleekHeight
 				xx = xx - TFA.Fonts.SleekHeight / 3
-				draw.DrawText(str, "TFASleekMedium", xx + 1, yy + 1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
-				draw.DrawText(str, "TFASleekMedium", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT)
+				draw.DrawText(str, "TFASleekMedium", xx + 1, yy + 1, ColorAlpha(self2.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
+				draw.DrawText(str, "TFASleekMedium", xx, yy, ColorAlpha(self2.TextCol, myalpha), TEXT_ALIGN_RIGHT)
 				yy = yy + TFA.Fonts.SleekHeightMedium
 				xx = xx - TFA.Fonts.SleekHeightMedium / 3
 			else
-				str = language.GetPhrase("tfa.hud.ammo1"):format(self:Ammo1())
-				draw.DrawText(str, "TFASleek", xx + 1, yy + 1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
-				draw.DrawText(str, "TFASleek", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT)
+				str = language.GetPhrase("tfa.hud.ammo1"):format(self2.Ammo1(self))
+				draw.DrawText(str, "TFASleek", xx + 1, yy + 1, ColorAlpha(self2.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
+				draw.DrawText(str, "TFASleek", xx, yy, ColorAlpha(self2.TextCol, myalpha), TEXT_ALIGN_RIGHT)
 				yy = yy + TFA.Fonts.SleekHeightMedium
 				xx = xx - TFA.Fonts.SleekHeightMedium / 3
 			end
 
-			str = string.upper(self:GetFireModeName() .. (#self.FireModes > 2 and " | +" or ""))
-			draw.DrawText(str, "TFASleekSmall", xx + 1, yy + 1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
-			draw.DrawText(str, "TFASleekSmall", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT)
+			str = string.upper(self:GetFireModeName() .. (#self2.FireModes > 2 and " | +" or ""))
+			draw.DrawText(str, "TFASleekSmall", xx + 1, yy + 1, ColorAlpha(self2.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
+			draw.DrawText(str, "TFASleekSmall", xx, yy, ColorAlpha(self2.TextCol, myalpha), TEXT_ALIGN_RIGHT)
 		end
 
-		if self:GetStat("Secondary.Ammo") and self:GetStat("Secondary.Ammo") ~= "" and self:GetStat("Secondary.Ammo") ~= "none" and self:GetStat("Secondary.Ammo") ~= 0 and not self:GetStat("Akimbo") then
-			if self:GetStat("Secondary.ClipSize") and self:GetStat("Secondary.ClipSize") ~= -1 then
+		if self2.GetStat(self, "Secondary.Ammo") and self2.GetStat(self, "Secondary.Ammo") ~= "" and self2.GetStat(self, "Secondary.Ammo") ~= "none" and self2.GetStat(self, "Secondary.Ammo") ~= 0 and not self2.GetStat(self, "Akimbo") then
+			if self2.GetStat(self, "Secondary.ClipSize") and self2.GetStat(self, "Secondary.ClipSize") ~= -1 then
 				clipstr = language.GetPhrase("tfa.hud.ammo.clip2")
-				str = (self:Clip2() > self:GetStat("Secondary.ClipSize")) and clipstr:format(self:GetStat("Secondary.ClipSize") .. " + " .. (self:Clip2() - self:GetStat("Primary.ClipSize"))) or clipstr:format(self:Clip2())
-				draw.DrawText(str, "TFASleekSmall", xx + 1, yy + 1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
-				draw.DrawText(str, "TFASleekSmall", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT)
-				str = language.GetPhrase("tfa.hud.ammo.reserve2"):format(self:Ammo2())
+				str = (self:Clip2() > self2.GetStat(self, "Secondary.ClipSize")) and clipstr:format(self2.GetStat(self, "Secondary.ClipSize") .. " + " .. (self:Clip2() - self2.GetStat(self, "Primary.ClipSize"))) or clipstr:format(self:Clip2())
+				draw.DrawText(str, "TFASleekSmall", xx + 1, yy + 1, ColorAlpha(self2.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
+				draw.DrawText(str, "TFASleekSmall", xx, yy, ColorAlpha(self2.TextCol, myalpha), TEXT_ALIGN_RIGHT)
+				str = language.GetPhrase("tfa.hud.ammo.reserve2"):format(self2.Ammo2(self))
 				yy = yy + TFA.Fonts.SleekHeightSmall
 				xx = xx - TFA.Fonts.SleekHeightSmall / 3
-				draw.DrawText(str, "TFASleekSmall", xx + 1, yy + 1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
-				draw.DrawText(str, "TFASleekSmall", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT)
+				draw.DrawText(str, "TFASleekSmall", xx + 1, yy + 1, ColorAlpha(self2.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
+				draw.DrawText(str, "TFASleekSmall", xx, yy, ColorAlpha(self2.TextCol, myalpha), TEXT_ALIGN_RIGHT)
 			else
-				str = language.GetPhrase("tfa.hud.ammo2"):format(self:Ammo2())
-				draw.DrawText(str, "TFASleekSmall", xx + 1, yy + 1, ColorAlpha(self.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
-				draw.DrawText(str, "TFASleekSmall", xx, yy, ColorAlpha(self.TextCol, myalpha), TEXT_ALIGN_RIGHT)
+				str = language.GetPhrase("tfa.hud.ammo2"):format(self2.Ammo2(self))
+				draw.DrawText(str, "TFASleekSmall", xx + 1, yy + 1, ColorAlpha(self2.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
+				draw.DrawText(str, "TFASleekSmall", xx, yy, ColorAlpha(self2.TextCol, myalpha), TEXT_ALIGN_RIGHT)
 			end
 		end
 	end
 end
 
 function SWEP:DoDrawCrosshair(x, y)
-	if not self.DrawCrosshairDefault then return true end
-	if self:GetHolding() then return true end
+	local self2 = self:GetTable()
 
-	local stat = self:GetStatus()
+	if not self2.DrawCrosshairDefault then return true end
+	if self2.GetHolding(self) then return true end
+
+	local stat = self2.GetStatus(self)
 
 	if not crosscustomenable_cvar:GetBool() then
-		return TFA.Enum.ReloadStatus[stat] or math.min(1 - self.IronSightsProgress, 1 - self.SprintProgress, 1 - self.InspectingProgress) <= 0.5
+		return TFA.Enum.ReloadStatus[stat] or math.min(1 - self2.IronSightsProgress, 1 - self2.SprintProgress, 1 - self.InspectingProgress) <= 0.5
 	end
 
-	self.clrelp = self.clrelp or 0
-	self.clrelp = math.Approach(self.clrelp, TFA.Enum.ReloadStatus[stat] and 0 or 1, ((TFA.Enum.ReloadStatus[stat] and 0 or 1) - self.clrelp) * FrameTime() * 15)
-	local crossa = crossa_cvar:GetFloat() * math.pow(math.min(1 - ((self.IronSightsProgress and not self.DrawCrosshairIS) and self.IronSightsProgress or 0), 1 - self.SprintProgress, 1 - self.InspectingProgress, self.clrelp), 2)
-	local outa = outa_cvar:GetFloat() * math.pow(math.min(1 - ((self.IronSightsProgress and not self.DrawCrosshairIS) and self.IronSightsProgress or 0), 1 - self.SprintProgress, 1 - self.InspectingProgress, self.clrelp), 2)
+	self2.clrelp = self2.clrelp or 0
+	self2.clrelp = math.Approach(self2.clrelp, TFA.Enum.ReloadStatus[stat] and 0 or 1, ((TFA.Enum.ReloadStatus[stat] and 0 or 1) - self2.clrelp) * FrameTime() * 15)
+	local crossa = crossa_cvar:GetFloat() * math.pow(math.min(1 - ((self2.IronSightsProgress and not self2.DrawCrosshairIS) and self2.IronSightsProgress or 0), 1 - self2.SprintProgress, 1 - self2.InspectingProgress, self2.clrelp), 2)
+	local outa = outa_cvar:GetFloat() * math.pow(math.min(1 - ((self2.IronSightsProgress and not self2.DrawCrosshairIS) and self2.IronSightsProgress or 0), 1 - self2.SprintProgress, 1 - self2.InspectingProgress, self2.clrelp), 2)
 	local ply = LocalPlayer()
 	if not ply:IsValid() or self:GetOwner() ~= ply then return false end
 
@@ -1050,12 +1069,12 @@ function SWEP:DoDrawCrosshair(x, y)
 		-- Center of screen
 	end
 
-	if not self.selftbl then
-		self.selftbl = {ply, self}
+	if not self2.selftbl then
+		self2.selftbl = {ply, self}
 	end
 
 	local crossr, crossg, crossb, crosslen, crosshairwidth, drawdot, teamcol
-	local targent = util.QuickTrace(ply:GetShootPos(), ply:EyeAngles():Forward() * 0x7FFF, self.selftbl).Entity
+	local targent = util.QuickTrace(ply:GetShootPos(), ply:EyeAngles():Forward() * 0x7FFF, self2.selftbl).Entity
 	teamcol = GetTeamColor(targent)
 	crossr = crossr_cvar:GetFloat()
 	crossg = crossg_cvar:GetFloat()
@@ -1172,43 +1191,44 @@ local w, h
 
 function SWEP:DrawScopeOverlay()
 	if hook.Run("TFA_DrawScopeOverlay", self) == true then return end
+	local self2 = self:GetTable()
 
-	local tbl = nil
+	local tbl
 
-	if self:GetStat("Secondary.UseACOG") then
+	if self2.GetStat(self, "Secondary.UseACOG") then
 		tbl = TFA_SCOPE_ACOG
 	end
 
-	if self:GetStat("Secondary.UseMilDot") then
+	if self2.GetStat(self, "Secondary.UseMilDot") then
 		tbl = TFA_SCOPE_MILDOT
 	end
 
-	if self:GetStat("Secondary.UseSVD") then
+	if self2.GetStat(self, "Secondary.UseSVD") then
 		tbl = TFA_SCOPE_SVD
 	end
 
-	if self:GetStat("Secondary.UseParabolic") then
+	if self2.GetStat(self, "Secondary.UseParabolic") then
 		tbl = TFA_SCOPE_PARABOLIC
 	end
 
-	if self:GetStat("Secondary.UseElcan") then
+	if self2.GetStat(self, "Secondary.UseElcan") then
 		tbl = TFA_SCOPE_ELCAN
 	end
 
-	if self:GetStat("Secondary.UseGreenDuplex") then
+	if self2.GetStat(self, "Secondary.UseGreenDuplex") then
 		tbl = TFA_SCOPE_GREENDUPLEX
 	end
 
-	if self:GetStat("Secondary.UseAimpoint") then
+	if self2.GetStat(self, "Secondary.UseAimpoint") then
 		tbl = TFA_SCOPE_AIMPOINT
 	end
 
-	if self:GetStat("Secondary.UseMatador") then
+	if self2.GetStat(self, "Secondary.UseMatador") then
 		tbl = TFA_SCOPE_MATADOR
 	end
 
-	if self:GetStat("Secondary.ScopeTable") then
-		tbl = self:GetStat("Secondary.ScopeTable")
+	if self2.GetStat(self, "Secondary.ScopeTable") then
+		tbl = self2.GetStat(self, "Secondary.ScopeTable")
 	end
 
 	if not tbl then
@@ -1285,6 +1305,7 @@ end
 
 local fsin, icon
 local matcache = {}
+
 function SWEP:DrawWeaponSelection(x, y, wide, tall, alpha)
 	surface.SetDrawColor(255, 255, 255, alpha)
 

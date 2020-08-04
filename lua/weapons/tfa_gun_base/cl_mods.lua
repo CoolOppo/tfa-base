@@ -93,21 +93,22 @@ SWEP.CameraAngCache = nil
 local tmpvec = Vector(0, 0, -2000)
 
 function SWEP:ViewModelDrawn()
+	local self2 = self:GetTable()
 	render.SetBlend(1)
 
-	if self.DrawHands then
-		self:DrawHands()
+	if self2.DrawHands then
+		self2.DrawHands(self)
 	end
 
 	local vm = self.OwnerViewModel
 	if not IsValid(vm) then return end
 	if not self:GetOwner().GetHands then return end
 
-	if self.UseHands then
+	if self2.UseHands then
 		local hands = self:GetOwner():GetHands()
 
 		if IsValid(hands) then
-			if not self:GetHidden() then
+			if not self2.GetHidden(self) then
 				hands:SetParent(vm)
 			else
 				hands:SetParent(nil)
@@ -116,23 +117,23 @@ function SWEP:ViewModelDrawn()
 		end
 	end
 
-	self:UpdateBonePositions(vm)
+	self2.UpdateBonePositions(self, vm)
 
-	if not self.CameraAttachment then
-		self.CameraAttachment = -1
+	if not self2.CameraAttachment then
+		self2.CameraAttachment = -1
 
-		for _, v in ipairs(self.CameraAttachments) do
+		for _, v in ipairs(self2.CameraAttachments) do
 			local attid = vm:LookupAttachment(v)
 
 			if attid and attid > 0 then
-				self.CameraAttachment = attid
+				self2.CameraAttachment = attid
 				break
 			end
 		end
 	end
 
-	if self.CameraAttachment and self.CameraAttachment > 0 then
-		local angpos = vm:GetAttachment(self.CameraAttachment)
+	if self2.CameraAttachment and self2.CameraAttachment > 0 then
+		local angpos = vm:GetAttachment(self2.CameraAttachment)
 
 		if angpos and angpos.Ang then
 			local angv = angpos.Ang
@@ -140,9 +141,9 @@ function SWEP:ViewModelDrawn()
 			local spd = 15
 			local cycl = vm:GetCycle()
 			local dissipatestart = 0
-			self.CameraAngCache = self.CameraAngCache or off
+			self2.CameraAngCache = self2.CameraAngCache or off
 
-			for _, v in pairs(self.CameraAttachmentOffsets) do
+			for _, v in pairs(self2.CameraAttachmentOffsets) do
 				local offtype = v[1]
 				local offang = v[2]
 
@@ -155,70 +156,70 @@ function SWEP:ViewModelDrawn()
 				end
 			end
 
-			if self.ViewModelFlip then
+			if self2.ViewModelFlip then
 				off = Angle()
 			end
 
 			local actind = vm:GetSequenceActivity(vm:GetSequence())
 
 			if (actind == ACT_VM_DRAW or actind == ACT_VM_HOLSTER_EMPTY or actind == ACT_VM_DRAW_SILENCED) and vm:GetCycle() < 0.05 then
-				self.CameraAngCache.p = 0
-				self.CameraAngCache.y = 0
-				self.CameraAngCache.r = 0
+				self2.CameraAngCache.p = 0
+				self2.CameraAngCache.y = 0
+				self2.CameraAngCache.r = 0
 			end
 
 			if (actind == ACT_VM_HOLSTER or actind == ACT_VM_HOLSTER_EMPTY) and cycl > dissipatestart then
-				self.CameraAngCache.p = self.CameraAngCache.p * (1 - cycl) / (1 - dissipatestart)
-				self.CameraAngCache.y = self.CameraAngCache.y * (1 - cycl) / (1 - dissipatestart)
-				self.CameraAngCache.r = self.CameraAngCache.r * (1 - cycl) / (1 - dissipatestart)
+				self2.CameraAngCache.p = self2.CameraAngCache.p * (1 - cycl) / (1 - dissipatestart)
+				self2.CameraAngCache.y = self2.CameraAngCache.y * (1 - cycl) / (1 - dissipatestart)
+				self2.CameraAngCache.r = self2.CameraAngCache.r * (1 - cycl) / (1 - dissipatestart)
 			end
 
-			self.CameraAngCache.p = math.ApproachAngle(self.CameraAngCache.p, off.p, (self.CameraAngCache.p - off.p) * FrameTime() * spd)
-			self.CameraAngCache.y = math.ApproachAngle(self.CameraAngCache.y, off.y, (self.CameraAngCache.y - off.y) * FrameTime() * spd)
-			self.CameraAngCache.r = math.ApproachAngle(self.CameraAngCache.r, off.r, (self.CameraAngCache.r - off.r) * FrameTime() * spd)
+			self2.CameraAngCache.p = math.ApproachAngle(self2.CameraAngCache.p, off.p, (self2.CameraAngCache.p - off.p) * FrameTime() * spd)
+			self2.CameraAngCache.y = math.ApproachAngle(self2.CameraAngCache.y, off.y, (self2.CameraAngCache.y - off.y) * FrameTime() * spd)
+			self2.CameraAngCache.r = math.ApproachAngle(self2.CameraAngCache.r, off.r, (self2.CameraAngCache.r - off.r) * FrameTime() * spd)
 		else
-			self.CameraAngCache.p = 0
-			self.CameraAngCache.y = 0
-			self.CameraAngCache.r = 0
+			self2.CameraAngCache.p = 0
+			self2.CameraAngCache.y = 0
+			self2.CameraAngCache.r = 0
 		end
 	end
 
-	if self.VElements and self.HasInitAttachments then
-		--self.VElements = self:GetStat("VElements")
-		self:CreateModels(self.VElements, true)
+	if self2.VElements and self2.HasInitAttachments then
+		--self2.VElements = self:GetStat("VElements")
+		self:CreateModels(self2.VElements, true)
 
-		self.SCKMaterialCached_V = self.SCKMaterialCached_V or {}
+		self2.SCKMaterialCached_V = self2.SCKMaterialCached_V or {}
 
-		if (not self.vRenderOrder) then
+		if (not self2.vRenderOrder) then
 			-- // we build a render order because sprites need to be drawn after models
-			self.vRenderOrder = {}
+			self2.vRenderOrder = {}
 
-			for k, v in pairs(self.VElements) do
+			for k, v in pairs(self2.VElements) do
 				if (v.type == "Model") then
-					table.insert(self.vRenderOrder, 1, k)
+					table.insert(self2.vRenderOrder, 1, k)
 				elseif (v.type == "Sprite" or v.type == "Quad") then
-					table.insert(self.vRenderOrder, k)
+					table.insert(self2.vRenderOrder, k)
 				end
 			end
 		end
 
-		for _, name in ipairs(self.vRenderOrder) do
-			local v = self.VElements[name]
+		for _, name in ipairs(self2.vRenderOrder) do
+			local v = self2.VElements[name]
 
 			if (not v) then
-				self.vRenderOrder = nil
+				self2.vRenderOrder = nil
 				break
 			end
 
 			local aktiv = self:GetStat("VElements." .. name .. ".active")
-			if aktiv ~= nil and aktiv == false then continue end
-			if v.type == "Quad" and v.draw_func_outer then continue end
-			if (v.hide) then continue end
+			if aktiv ~= nil and aktiv == false then goto CONTINUE end
+			if v.type == "Quad" and v.draw_func_outer then goto CONTINUE end
+			if (v.hide) then goto CONTINUE end
 			local model = v.curmodel
 			local sprite = v.spritemat
-			if (not v.bone) then continue end
-			local pos, ang = self:GetBoneOrientation(self.VElements, v, vm)
-			if not pos and not v.bonemerge then continue end
+			if (not v.bone) then goto CONTINUE end
+			local pos, ang = self:GetBoneOrientation(self2.VElements, v, vm)
+			if not pos and not v.bonemerge then goto CONTINUE end
 
 			if (v.type == "Model" and IsValid(model)) then
 				if not v.bonemerge then
@@ -245,8 +246,8 @@ function SWEP:ViewModelDrawn()
 					model:SetSkin(skin)
 				end
 
-				if not self.SCKMaterialCached_V[name] then
-					self.SCKMaterialCached_V[name] = true
+				if not self2.SCKMaterialCached_V[name] then
+					self2.SCKMaterialCached_V[name] = true
 
 					local materialtable = self:GetStat("VElements." .. name .. ".materials", {})
 
@@ -270,10 +271,10 @@ function SWEP:ViewModelDrawn()
 				end
 
 				if v.bonemerge then
-					if v.rel and self.VElements[v.rel] and IsValid(self.VElements[v.rel].curmodel) then
-						v.parModel = self.VElements[v.rel].curmodel
+					if v.rel and self2.VElements[v.rel] and IsValid(self2.VElements[v.rel].curmodel) then
+						v.parModel = self2.VElements[v.rel].curmodel
 					else
-						v.parModel = self.OwnerViewModel or self
+						v.parModel = self2.OwnerViewModel or self
 					end
 					if model:GetParent() ~= v.parModel then
 						model:SetParent(v.parModel)
@@ -319,42 +320,47 @@ function SWEP:ViewModelDrawn()
 				render.PopFilterMag()
 				cam.End3D2D()
 			end
+
+			::CONTINUE::
 		end
 	end
 
-	if not self.UseHands and self.ViewModelDrawnPost then
+	if not self2.UseHands and self2.ViewModelDrawnPost then
 		self:ViewModelDrawnPost()
 	end
 end
 
 function SWEP:ViewModelDrawnPost()
-	if not self:VMIV() then return end
+	local self2 = self:GetTable()
+	if not self2.VMIV(self) then return end
 
-	if self.VElements then
-		for _, name in ipairs(self.vRenderOrder or {}) do
-			local v = self.VElements[name]
+	if not self2.VElements then return end
 
-			if (not v) then
-				self.vRenderOrder = nil
-				break
-			end
+	for _, name in ipairs(self2.vRenderOrder or {}) do
+		local v = self2.VElements[name]
 
-			if v.type ~= "Quad" then continue end
-			if not v.draw_func_outer then continue end
-			if (v.hide) then continue end
-			if (not v.bone) then continue end
-			local pos, ang = self:GetBoneOrientation(self.VElements, v, self.OwnerViewModel)
-			if (not pos) then continue end
-			local aktiv = self:GetStat("VElements." .. name .. ".active")
-			if aktiv ~= nil and aktiv == false then continue end
-			local drawpos = pos + ang:Forward() * v.pos.x + ang:Right() * v.pos.y + ang:Up() * v.pos.z
-			ang:RotateAroundAxis(ang:Up(), v.angle.y)
-			ang:RotateAroundAxis(ang:Right(), v.angle.p)
-			ang:RotateAroundAxis(ang:Forward(), v.angle.r)
-			ProtectedCall(function()
-				v.draw_func_outer(self, drawpos, ang, v.size)
-			end)
+		if (not v) then
+			self2.vRenderOrder = nil
+			break
 		end
+
+		if v.type ~= "Quad" then goto CONTINUE end
+		if not v.draw_func_outer then goto CONTINUE end
+		if (v.hide) then goto CONTINUE end
+		if (not v.bone) then goto CONTINUE end
+		local pos, ang = self:GetBoneOrientation(self2.VElements, v, self2.OwnerViewModel)
+		if (not pos) then goto CONTINUE end
+		local aktiv = self2.GetStat(self, "VElements." .. name .. ".active")
+		if aktiv ~= nil and aktiv == false then goto CONTINUE end
+		local drawpos = pos + ang:Forward() * v.pos.x + ang:Right() * v.pos.y + ang:Up() * v.pos.z
+		ang:RotateAroundAxis(ang:Up(), v.angle.y)
+		ang:RotateAroundAxis(ang:Right(), v.angle.p)
+		ang:RotateAroundAxis(ang:Forward(), v.angle.r)
+		ProtectedCall(function()
+			v.draw_func_outer(self, drawpos, ang, v.size)
+		end)
+
+		::CONTINUE::
 	end
 end
 
@@ -369,33 +375,40 @@ Purpose:  SWEP Construction Kit Compatibility / Basic Attachments.
 ]]
 --
 function SWEP:DrawWorldModel()
-	if self:GetStat("MaterialTable_W") and not self.MaterialCached_W then
-		self.MaterialCached_W = {}
+	local self2 = self:GetTable()
+
+	if self2.GetStat(self, "MaterialTable_W") and not self2.MaterialCached_W then
+		self2.MaterialCached_W = {}
 		self:SetSubMaterial()
-		local collectedKeys = table.GetKeys(self:GetStat("MaterialTable_W"))
-		table.Merge(collectedKeys, table.GetKeys(self:GetStat("MaterialTable")))
+
+		local collectedKeys = table.GetKeys(self2.GetStat(self, "MaterialTable_W"))
+		table.Merge(collectedKeys, table.GetKeys(self2.GetStat(self, "MaterialTable")))
 
 		for _, k in pairs(collectedKeys) do
-			if (k == "BaseClass") then continue end
-			local v = self:GetStat("MaterialTable_W")[k]
+			if (k == "BaseClass") then goto CONTINUE end
 
-			if not self.MaterialCached_W[k] then
+			local v = self2.GetStat(self, "MaterialTable_W")[k]
+
+			if not self2.MaterialCached_W[k] then
 				self:SetSubMaterial(k - 1, v)
-				self.MaterialCached_W[k] = true
+				self2.MaterialCached_W[k] = true
 			end
+
+			::CONTINUE::
 		end
 	end
+
 	local ply = self:GetOwner()
 
-	if IsValid(ply) and ply.SetupBones then
+	if IsValid(ply) then
 		ply:SetupBones()
 		ply:InvalidateBoneCache()
 		self:InvalidateBoneCache()
 	end
 
-	if (self.ShowWorldModel == nil or self.ShowWorldModel or not self:OwnerIsValid()) then
+	if self2.ShowWorldModel == nil or self2.ShowWorldModel or not IsValid(ply) then
 		if game.SinglePlayer() or CLIENT then
-			if IsValid(ply) and self.Offset and self.Offset.Pos and self.Offset.Ang then
+			if IsValid(ply) and self2.Offset and self2.Offset.Pos and self2.Offset.Ang then
 				local handBone = ply:LookupBone("ValveBiped.Bip01_R_Hand")
 
 				if handBone then
@@ -409,22 +422,22 @@ function SWEP:DrawWorldModel()
 						pos, ang = ply:GetBonePosition(handBone)
 					end
 
-					pos = pos + ang:Forward() * self.Offset.Pos.Forward + ang:Right() * self.Offset.Pos.Right + ang:Up() * self.Offset.Pos.Up
-					ang:RotateAroundAxis(ang:Up(), self.Offset.Ang.Up)
-					ang:RotateAroundAxis(ang:Right(), self.Offset.Ang.Right)
-					ang:RotateAroundAxis(ang:Forward(), self.Offset.Ang.Forward)
+					pos = pos + ang:Forward() * self2.Offset.Pos.Forward + ang:Right() * self2.Offset.Pos.Right + ang:Up() * self2.Offset.Pos.Up
+					ang:RotateAroundAxis(ang:Up(), self2.Offset.Ang.Up)
+					ang:RotateAroundAxis(ang:Right(), self2.Offset.Ang.Right)
+					ang:RotateAroundAxis(ang:Forward(), self2.Offset.Ang.Forward)
 					self:SetRenderOrigin(pos)
 					self:SetRenderAngles(ang)
-					--if self.Offset.Scale and ( !self.MyModelScale or ( self.Offset and self.MyModelScale!=self.Offset.Scale ) ) then
-					self:SetModelScale(self.Offset.Scale or 1, 0)
+					--if self2.Offset.Scale and ( !self2.MyModelScale or ( self2.Offset and self2.MyModelScale!=self2.Offset.Scale ) ) then
+					self:SetModelScale(self2.Offset.Scale or 1, 0)
 					--end
 				end
 			else
 				self:SetRenderOrigin(nil)
 				self:SetRenderAngles(nil)
 
-				if self.Offset and self.Offset.Scale then
-					self:SetModelScale(self.Offset.Scale, 0)
+				if self2.Offset and self2.Offset.Scale then
+					self:SetModelScale(self2.Offset.Scale, 0)
 				end
 			end
 		end
@@ -433,51 +446,50 @@ function SWEP:DrawWorldModel()
 		self:DrawModel()
 	end
 
-	if self.SetupBones then
+	if CLIENT then
 		self:SetupBones()
 	end
 
 	self:UpdateWMBonePositions(self)
 
-	if self.WElements then
-		self:CreateModels(self.WElements)
+	if self2.WElements then
+		self:CreateModels(self2.WElements)
 
-		self.SCKMaterialCached_W = self.SCKMaterialCached_W or {}
+		self2.SCKMaterialCached_W = self2.SCKMaterialCached_W or {}
 
-		if (not self.wRenderOrder) then
-			self.wRenderOrder = {}
+		if (not self2.wRenderOrder) then
+			self2.wRenderOrder = {}
 
-			for k, v in pairs(self.WElements) do
+			for k, v in pairs(self2.WElements) do
 				if (v.type == "Model") then
-					table.insert(self.wRenderOrder, 1, k)
+					table.insert(self2.wRenderOrder, 1, k)
 				elseif (v.type == "Sprite" or v.type == "Quad") then
-					table.insert(self.wRenderOrder, k)
+					table.insert(self2.wRenderOrder, k)
 				end
 			end
 		end
 
+		for _, name in pairs(self2.wRenderOrder or {}) do
+			local v = self2.WElements[name]
 
-		for _, name in pairs(self.wRenderOrder or {}) do
-			local v = self.WElements[name]
-
-			if (not v) then
-				self.wRenderOrder = nil
+			if not v then
+				self2.wRenderOrder = nil
 				break
 			end
 
-			if (v.hide) then continue end
+			if (v.hide) then goto CONTINUE end
 			local aktiv = self:GetStat("WElements." .. name .. ".active")
-			if aktiv ~= nil and aktiv == false then continue end
+			if aktiv ~= nil and aktiv == false then goto CONTINUE end
 			local pos, ang
 
 			local bone_ent = (IsValid(self:GetOwner()) and self:GetOwner():LookupBone(v.bone or "ValveBiped.Bip01_R_Hand")) and self:GetOwner() or self
 			if (v.bone) then
-				pos, ang = self:GetBoneOrientation(self.WElements, v, bone_ent)
+				pos, ang = self:GetBoneOrientation(self2.WElements, v, bone_ent)
 			else
-				pos, ang = self:GetBoneOrientation(self.WElements, v, bone_ent, "ValveBiped.Bip01_R_Hand")
+				pos, ang = self:GetBoneOrientation(self2.WElements, v, bone_ent, "ValveBiped.Bip01_R_Hand")
 			end
 
-			if not pos and not v.bonemerge then continue end
+			if not pos and not v.bonemerge then goto CONTINUE end
 			local model = v.curmodel
 			local sprite = v.spritemat
 
@@ -507,8 +519,8 @@ function SWEP:DrawWorldModel()
 					model:SetSkin(skin)
 				end
 
-				if not self.SCKMaterialCached_W[name] then
-					self.SCKMaterialCached_W[name] = true
+				if not self2.SCKMaterialCached_W[name] then
+					self2.SCKMaterialCached_W[name] = true
 
 					local materialtable = self:GetStat("WElements." .. name .. ".materials", {})
 
@@ -539,8 +551,8 @@ function SWEP:DrawWorldModel()
 				render.SetBlend(v.color.a / 255)
 
 				if v.bonemerge then
-					if v.rel and self.WElements[v.rel] and IsValid(self.WElements[v.rel].curmodel) and self.WElements[v.rel].bone ~= "oof" then
-						v.parModel = self.WElements[v.rel].curmodel
+					if v.rel and self2.WElements[v.rel] and IsValid(self2.WElements[v.rel].curmodel) and self2.WElements[v.rel].bone ~= "oof" then
+						v.parModel = self2.WElements[v.rel].curmodel
 					else
 						v.parModel = self
 					end
@@ -578,6 +590,8 @@ function SWEP:DrawWorldModel()
 				v.draw_func(self)
 				cam.End3D2D()
 			end
+
+			::CONTINUE::
 		end
 	end
 
@@ -596,7 +610,8 @@ Purpose:  SWEP Construction Kit Compatibility / Basic Attachments.
 --
 function SWEP:GetBoneOrientation(basetabl, tabl, ent, bone_override)
 	local bone, pos, ang
-	if not IsValid(ent) then return Vector(0, 0, 0), Angle(0, 0, 0) end
+
+	if not IsValid(ent) then return Vector(), Angle() end
 
 	if tabl.rel and tabl.rel ~= "" and not tabl.bonemerge then
 		local v = basetabl[tabl.rel]
@@ -629,15 +644,17 @@ function SWEP:GetBoneOrientation(basetabl, tabl, ent, bone_override)
 		bone = ent:LookupBone(bone_override or tabl.bone) or 0
 	end
 
-	if (not bone) or (bone == -1) then return end
+	if not bone or bone == -1 then return end
 	pos, ang = Vector(0, 0, 0), Angle(0, 0, 0)
 	local m = ent:GetBoneMatrix(bone)
 
-	if (m) then
+	if m then
 		pos, ang = m:GetTranslation(), m:GetAngles()
 	end
 
-	if (IsValid(self:GetOwner()) and self:GetOwner():IsPlayer() and ent == self:GetOwner():GetViewModel() and self.ViewModelFlip) then
+	local owner = self:GetOwner()
+
+	if IsValid(owner) and owner:IsPlayer() and ent == owner:GetViewModel() and self.ViewModelFlip then
 		ang.r = -ang.r
 	end
 
@@ -797,78 +814,89 @@ end
 local vmbm_old_count = 0
 
 function SWEP:UpdateBonePositions(vm)
-	local vmbm = self:GetStat("ViewModelBoneMods")
+	local self2 = self:GetTable()
+	local vmbm = self2.GetStat(self, "ViewModelBoneMods")
+
 	local vmbm_count = 0
+
 	if vmbm then
 		vmbm_count = table.Count(vmbm)
 	end
+
 	if vmbm_old_count ~= vmbm_count then
 		self:ResetBonePositions()
 	end
+
 	vmbm_old_count = vmbm_count
+
 	if vmbm then
 		local stat = self:GetStatus()
 
-		if not self.BlowbackBoneMods then
-			self.BlowbackBoneMods = {}
-			self.BlowbackCurrent = 0
+		if not self2.BlowbackBoneMods then
+			self2.BlowbackBoneMods = {}
+			self2.BlowbackCurrent = 0
 		end
 
-		if not self.HasSetMetaVMBM then
-			for k,v in pairs(self.ViewModelBoneMods) do
-				if (k == "BaseClass") then continue end -- do not name your bones like this pls
+		if not self2.HasSetMetaVMBM then
+			for k,v in pairs(self2.ViewModelBoneMods) do
+				if (k == "BaseClass") then goto CONTINUE end -- do not name your bones like this pls
 
 				local scale = v.scale
 
 				if scale and scale.x ~= 1 or scale.y ~= 1 or scale.z ~= 1 then
 					self:ScaleChildBoneMods(vm, k)
 				end
+
+				::CONTINUE::
 			end
-			for _,v in pairs(self.BlowbackBoneMods) do
+
+			for _,v in pairs(self2.BlowbackBoneMods) do
 				v.pos_og = v.pos
 				v.angle_og = v.angle
 				v.scale_og = v.scale or onevec
 			end
-			self.HasSetMetaVMBM = true
-			self.ViewModelBoneMods["wepEnt"] = self
-			setmetatable(self.ViewModelBoneMods,{ __index = function(t,k)
+
+			self2.HasSetMetaVMBM = true
+			self2.ViewModelBoneMods["wepEnt"] = self
+
+			setmetatable(self2.ViewModelBoneMods, {__index = function(t,k)
 				if not IsValid(self) then return end
-				if self.ViewModelBoneMods_Children[k] then return self.ViewModelBoneMods_Children[k] end
-				if not self.BlowbackBoneMods[k] then return end
-				if not ( self.SequenceEnabled[ACT_VM_RELOAD_EMPTY] and TFA.Enum.ReloadStatus[stat] and self.Blowback_PistolMode ) then
-					self.BlowbackBoneMods[k].pos = self.BlowbackBoneMods[k].pos_og * self.BlowbackCurrent
-					self.BlowbackBoneMods[k].angle = self.BlowbackBoneMods[k].angle_og * self.BlowbackCurrent
-					self.BlowbackBoneMods[k].scale = Lerp(self.BlowbackCurrent, onevec, self.BlowbackBoneMods[k].scale_og)
-					return self.BlowbackBoneMods[k]
+				if self2.ViewModelBoneMods_Children[k] then return self2.ViewModelBoneMods_Children[k] end
+				if not self2.BlowbackBoneMods[k] then return end
+				if not ( self2.SequenceEnabled[ACT_VM_RELOAD_EMPTY] and TFA.Enum.ReloadStatus[stat] and self2.Blowback_PistolMode ) then
+					self2.BlowbackBoneMods[k].pos = self2.BlowbackBoneMods[k].pos_og * self2.BlowbackCurrent
+					self2.BlowbackBoneMods[k].angle = self2.BlowbackBoneMods[k].angle_og * self2.BlowbackCurrent
+					self2.BlowbackBoneMods[k].scale = Lerp(self2.BlowbackCurrent, onevec, self2.BlowbackBoneMods[k].scale_og)
+					return self2.BlowbackBoneMods[k]
 				end
 			end})
 		end
 
-		if not ( self.SequenceEnabled[ACT_VM_RELOAD_EMPTY] and TFA.Enum.ReloadStatus[stat] and self.Blowback_PistolMode ) then
-			self.BlowbackCurrent = math.Approach(self.BlowbackCurrent, 0, self.BlowbackCurrent * FrameTime() * 30)
+		if not ( self2.SequenceEnabled[ACT_VM_RELOAD_EMPTY] and TFA.Enum.ReloadStatus[stat] and self2.Blowback_PistolMode ) then
+			self2.BlowbackCurrent = math.Approach(self2.BlowbackCurrent, 0, self2.BlowbackCurrent * FrameTime() * 30)
 		end
 
 		local keys = getKeys(vmbm)
-		appendTable(keys, getKeys(self:GetStat("BlowbackBoneMods") or self.BlowbackBoneMods))
-		appendTable(keys, getKeys(self.ViewModelBoneMods_Children))
+		appendTable(keys, getKeys(self2.GetStat(self, "BlowbackBoneMods") or self2.BlowbackBoneMods))
+		appendTable(keys, getKeys(self2.ViewModelBoneMods_Children))
 
 		for _,k in pairs(keys) do
-			if k == "wepEnt" then continue end
+			if k == "wepEnt" then goto CONTINUE end
 
-			local v = vmbm[k] or self:GetStat("ViewModelBoneMods." .. k)
-			if not v then continue end
+			local v = vmbm[k] or self2.GetStat(self, "ViewModelBoneMods." .. k)
+			if not v then goto CONTINUE end
 
 			local vscale, vangle, vpos = v.scale, v.angle, v.pos
 
 			local bone = vm:LookupBone(k)
-			if not bone then continue end
+			if not bone then goto CONTINUE end
 
-			local b = self:GetStat("BlowbackBoneMods." .. k)
+			local b = self2.GetStat(self, "BlowbackBoneMods." .. k)
 
 			if b then
-				vscale = Lerp(self.BlowbackCurrent, vscale, vscale * b.scale)
-				vangle = vangle + b.angle * self.BlowbackCurrent
-				vpos = vpos + b.pos * self.BlowbackCurrent
+				vscale = Lerp(self2.BlowbackCurrent, vscale, vscale * b.scale)
+				vangle = vangle + b.angle * self2.BlowbackCurrent
+				vpos = vpos + b.pos * self2.BlowbackCurrent
 			end
 
 			if vm:GetManipulateBoneScale(bone) ~= vscale then
@@ -882,14 +910,16 @@ function SWEP:UpdateBonePositions(vm)
 			if vm:GetManipulateBonePosition(bone) ~= vpos then
 				vm:ManipulateBonePosition(bone, vpos)
 			end
+
+			::CONTINUE::
 		end
-	elseif self.BlowbackBoneMods then
-		for bonename, tbl in pairs(self.BlowbackBoneMods) do
+	elseif self2.BlowbackBoneMods then
+		for bonename, tbl in pairs(self2.BlowbackBoneMods) do
 			local bone = vm:LookupBone(bonename)
 
 			if bone and bone >= 0 then
-				bpos = tbl.pos * self.BlowbackCurrent
-				bang = tbl.angle * self.BlowbackCurrent
+				bpos = tbl.pos * self2.BlowbackCurrent
+				bang = tbl.angle * self2.BlowbackCurrent
 				vm:ManipulateBonePosition(bone, bpos)
 				vm:ManipulateBoneAngles(bone, bang)
 			end
@@ -938,15 +968,13 @@ function SWEP:UpdateWMBonePositions(wm)
 
 	local WM_BoneMods = self:GetStat("WorldModelBoneMods", self.WorldModelBoneMods)
 
-	if table.Count(WM_BoneMods) > 0 then
-		if (not wm:GetBoneCount()) then return end
+	if next(WM_BoneMods) then
 		local wbones = {}
-		local loopthrough
 
-		for i = 0, wm:GetBoneCount() do
-			local bonename = wm:GetBoneName(i)
+		for boneid = 0, wm:GetBoneCount() - 1 do
+			local bonename = wm:GetBoneName(boneid)
 
-			if (WM_BoneMods[bonename]) then
+			if WM_BoneMods[bonename] then
 				wbones[bonename] = WM_BoneMods[bonename]
 			else
 				wbones[bonename] = {
@@ -957,20 +985,18 @@ function SWEP:UpdateWMBonePositions(wm)
 			end
 		end
 
-		loopthrough = wbones
-
-		for k, v in pairs(loopthrough) do
-			if (k == "BaseClass") then continue end
+		for k, v in pairs(wbones) do
+			if k == "BaseClass" then goto CONTINUE end
 
 			local bone = wm:LookupBone(k)
-			if (not bone) or (bone == -1) then continue end
+			if (not bone) or (bone == -1) then goto CONTINUE end
 			local s = Vector(v.scale.x, v.scale.y, v.scale.z)
 			local p = Vector(v.pos.x, v.pos.y, v.pos.z)
 			local childscale = Vector(1, 1, 1)
 			local cur = wm:GetBoneParent(bone)
 
 			while (cur ~= -1) do
-				local pscale = loopthrough[wm:GetBoneName(cur)].scale
+				local pscale = wbones[wm:GetBoneName(cur)].scale
 				childscale = childscale * pscale
 				cur = wm:GetBoneParent(cur)
 			end
@@ -988,6 +1014,8 @@ function SWEP:UpdateWMBonePositions(wm)
 			if wm:GetManipulateBonePosition(bone) ~= p then
 				wm:ManipulateBonePosition(bone, p)
 			end
+
+			::CONTINUE::
 		end
 	end
 end
@@ -1012,9 +1040,8 @@ function SWEP:ResetWMBonePositions(wm)
 	end
 
 	if not IsValid(wm) then return end
-	if (not wm:GetBoneCount()) then return end
 
-	for i = 0, wm:GetBoneCount() do
+	for i = 0, wm:GetBoneCount() - 1 do
 		wm:ManipulateBoneScale(i, Vector(1, 1, 1))
 		wm:ManipulateBoneAngles(i, Angle(0, 0, 0))
 		wm:ManipulateBonePosition(i, vector_origin)
