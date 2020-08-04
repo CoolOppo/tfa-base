@@ -21,10 +21,9 @@
 
 --default cvar integration
 local cv_gravity = GetConVar("sv_gravity")
-local cv_ts = GetConVar("host_timescale")
 
 local function TimeScale(v)
-	return v * cv_ts:GetFloat() * game.GetTimeScale() / TFA.Ballistics.SubSteps
+	return v * game.GetTimeScale() / TFA.Ballistics.SubSteps
 end
 
 --init code
@@ -122,17 +121,18 @@ function TFA.Ballistics.Bullets:Add(bulletStruct, originalBulletData)
 
 	table.insert(self.bullet_registry, b)
 
-	if SERVER and cv_ts:GetFloat() > 0.99 then
+	if SERVER and game.GetTimeScale() > 0.99 then
 		-- always update bullet since they are being added from predicted hook
-		b:Update(FrameTime())
+		b:Update(TFA.FrameTime())
 	end
 end
 
 function TFA.Ballistics.Bullets:Update(ply)
-	local delta = TimeScale(SysTime() - (self.lastUpdate or (SysTime() - FrameTime())))
-	self.lastUpdate = SysTime()
+	--local delta = TimeScale(SysTime() - (self.lastUpdate or (SysTime() - FrameTime())))
+	local delta = TFA.FrameTime()
+
+	--self.lastUpdate = SysTime()
 	local toremove
-	local lply = CLIENT and LocalPlayer()
 
 	for i, bullet in ipairs(self.bullet_registry) do
 		if bullet.delete then
@@ -141,7 +141,7 @@ function TFA.Ballistics.Bullets:Update(ply)
 			end
 
 			table.insert(toremove, i)
-		elseif (CLIENT and bullet.owner ~= lply) or not ply and not bullet.playerOwned or ply == bullet.owner then
+		elseif CLIENT or not ply and not bullet.playerOwned or ply == bullet.owner then
 			for _ = 1, TFA.Ballistics.SubSteps do
 				bullet:Update(delta)
 			end
@@ -320,12 +320,15 @@ if CLIENT then
 	end)
 end
 
-hook.Add(SERVER and "Tick" or "PreRender", "TFABallisticsTick", function()
-	TFA.Ballistics.Bullets:Update()
-end)
 
-hook.Add("PlayerPostThink", "TFABallisticsTick", function(self)
-	TFA.Ballistics.Bullets:Update(self)
+if SERVER then
+	hook.Add("PlayerPostThink", "TFABallisticsTick", function(self)
+		TFA.Ballistics.Bullets:Update(self)
+	end)
+end
+
+hook.Add("Tick", "TFABallisticsTick", function()
+	TFA.Ballistics.Bullets:Update()
 end)
 
 --Rendering
