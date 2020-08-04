@@ -496,7 +496,7 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon)
 
 	bul.Tracer = 0 --weapon.TracerName and 0 or 1
 	bul.TracerName = ""
-	bul.Num = self.Num
+	bul.Num = 1
 	bul.Force = self.Force * mfac
 	bul.Damage = self.Damage * mfac
 	bul.Penetrate = self.Penetrate
