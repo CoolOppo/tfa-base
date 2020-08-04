@@ -328,30 +328,6 @@ function TFA.ScaleH(num)
 	return num * (ScrH() / 1080)
 end
 
-if CLIENT then
-	timer.Create("tfa_request_tickrate", 1, 0, function()
-		net.Start("tfa_request_tickrate")
-		net.SendToServer()
-	end)
-
-	net.Receive("tfa_request_tickrate", function()
-		local tickrate = net.ReadDouble()
-		timer.Remove("tfa_request_tickrate")
-
-		function TFA.FrameTime()
-			return tickrate * game.GetTimeScale()
-		end
-	end)
-else
-	util.AddNetworkString("tfa_request_tickrate")
-
-	net.Receive("tfa_request_tickrate", function(_, ply)
-		net.Start("tfa_request_tickrate")
-		net.WriteDouble(FrameTime())
-		net.Send(ply)
-	end)
-end
-
 function TFA.FrameTime()
-	return FrameTime() * game.GetTimeScale()
+	return engine.TickInterval() * game.GetTimeScale()
 end
