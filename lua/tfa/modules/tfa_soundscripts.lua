@@ -100,3 +100,19 @@ sound.Add({
 	pitch = {97, 103}
 })
 
+sound.Add({
+	name = "TFA.LowAmmo",
+	channel = CHAN_USER_BASE + 15,
+	volume = 1.0,
+	level = 75,
+	pitch = 100,
+	sound = ")weapons/tfa/lowammo_indicator.wav"
+})
+sound.Add({
+	name = "TFA.LowAmmo_Dry",
+	channel = CHAN_USER_BASE + 15,
+	volume = 1.0,
+	level = 75,
+	pitch = 100,
+	sound = ")weapons/tfa/lowammo_dry.wav"
+})

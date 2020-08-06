@@ -1385,10 +1385,6 @@ function SWEP:CanPrimaryAttack( )
 end
 local npc_ar2_damage_cv = GetConVar("sk_npc_dmg_ar2")
 
-local sv_tfa_nearlyempty = GetConVar("sv_tfa_nearlyempty")
-
-SWEP.Primary.Sound_NearlyEmpty = Sound("TFA.NearlyEmpty") -- cs:go-like nearly-empty mag click sound
-
 function SWEP:EmitGunfireLoop()
 	local tgtSound = self:GetSilenced() and self:GetStat("Primary.LoopSoundSilenced", self:GetStat("Primary.LoopSound")) or self:GetStat("Primary.LoopSound")
 
@@ -1403,7 +1399,18 @@ function SWEP:EmitGunfireLoop()
 	end
 
 	self:SetNextLoopSoundCheck(CurTime() + self:GetFireDelay())
+end
 
+function SWEP:EmitGunfireSound(soundscript)
+	self:EmitSound(soundscript)
+end
+
+local sv_tfa_nearlyempty = GetConVar("sv_tfa_nearlyempty")
+
+SWEP.Primary.Sound_LowAmmo = "TFA.LowAmmo"
+SWEP.Primary.Sound_LowAmmoLast = "TFA.LowAmmo_Dry"
+
+function SWEP:EmitLowAmmoSound()
 	if not sv_tfa_nearlyempty:GetBool() then return end
 
 	if not self.FireSoundAffectedByClipSize or self.Shotgun then return end
@@ -1413,44 +1420,12 @@ function SWEP:EmitGunfireLoop()
 	if maxclip1 <= 4 or maxclip1 >= 70 or clip1 <= 0 then return end
 
 	local mult = clip1 / maxclip1
-	if mult >= 0.3 or mult <= 0 then return end
+	if mult >= 0.33 or mult <= 0 then return end
 
-	local pitch = 0.8 + math.min(0.02 / mult, 0.4)
+	self.GonnaAdjustVol = true
+	self.RequiredVolume = 1 - (mult / 0.33)
 
-	self.GonnaAdjuctPitch = true
-	self.RequiredPitch = pitch
-
-	self:EmitSound(self:GetStat("Primary.Sound_NearlyEmpty"), "TFA.NearlyEmpty")
-end
-
-function SWEP:EmitGunfireSound(soundscript)
-	if not self.FireSoundAffectedByClipSize or self.Shotgun then
-		return self:EmitSound(soundscript)
-	end
-
-	local clip1, maxclip1 = self:Clip1(), self:GetMaxClip1()
-
-	if maxclip1 <= 4 or maxclip1 >= 70 then
-		return self:EmitSound(soundscript)
-	end
-
-	if clip1 <= 0 then
-		return self:EmitSound(soundscript)
-	end
-
-	local mult = clip1 / maxclip1
-	if mult >= 0.3 or mult <= 0 then return self:EmitSound(soundscript) end
-
-	local pitch = 0.8 + math.min(0.02 / mult, 0.4)
-
-	self:EmitSound(soundscript)
-
-	if not sv_tfa_nearlyempty:GetBool() then return end
-
-	self.GonnaAdjuctPitch = true
-	self.RequiredPitch = pitch
-
-	self:EmitSound(self:GetStat("Primary.Sound_NearlyEmpty"), "TFA.NearlyEmpty")
+	self:EmitSound(((clip1 - self:GetStat("Primary.AmmoConsumption")) <= 0) and self:GetStat("Primary.Sound_LowAmmoLast") or self:GetStat("Primary.Sound_LowAmmo"))
 end
 
 function SWEP:PrimaryAttack()
@@ -1538,6 +1513,8 @@ function SWEP:PrimaryAttack()
 		else
 			self:EmitGunfireSound(self:GetStat("Primary.Sound"))
 		end
+
+		self:EmitLowAmmoSound()
 	end
 
 	self:TakePrimaryAmmo(self:GetStat("Primary.AmmoConsumption"))
