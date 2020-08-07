@@ -628,3 +628,42 @@ function SWEP:SetUpSpreadLegacy()
 		end
 	end
 end
+
+SWEP.LowAmmoSoundTypeBlacklist = {
+	["Launcher"] = true,
+	["Grenade"] = true,
+	["Revolver"] = true,
+	["Dual Revolvers"] = true,
+}
+
+function SWEP:AutoDetectLowAmmoSound()
+	if not self.FireSoundAffectedByClipSize then return end
+
+	local wt = self:GetType()
+
+	if self.LowAmmoSoundTypeBlacklist[wt] then return end
+
+	if not self.LowAmmoSound then
+		self.LowAmmoSound = "TFA.LowAmmo"
+
+		if wt == "Pistol" or wt == "Dual Pistols" then
+			self.LowAmmoSound = "TFA.LowAmmo.Handgun"
+		end
+
+		if wt == "Shotgun" then
+			self.LowAmmoSound = "TFA.LowAmmo.Shotgun"
+		end
+	end
+
+	if not self.LastAmmoSound then
+		self.LastAmmoSound = "TFA.LowAmmo_Dry"
+
+		if wt == "Pistol" or wt == "Dual Pistols" then
+			self.LastAmmoSound = "TFA.LowAmmo.Handgun_Dry"
+		end
+
+		if wt == "Shotgun" then
+			self.LastAmmoSound = "TFA.LowAmmo.Shotgun_Dry"
+		end
+	end
+end

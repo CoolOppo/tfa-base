@@ -436,6 +436,7 @@ function SWEP:Initialize()
 	self:AutoDetectKnockback()
 	self:AutoDetectSpread()
 	self:AutoDetectRange()
+	self:AutoDetectLowAmmoSound()
 	self:IconFix()
 	self:CreateFireModes()
 	self:FixAkimbo()
@@ -1407,25 +1408,28 @@ end
 
 local sv_tfa_nearlyempty = GetConVar("sv_tfa_nearlyempty")
 
-SWEP.Primary.Sound_LowAmmo = "TFA.LowAmmo"
-SWEP.Primary.Sound_LowAmmoLast = "TFA.LowAmmo_Dry"
+SWEP.LowAmmoSoundThreshold = 0.33
 
 function SWEP:EmitLowAmmoSound()
 	if not sv_tfa_nearlyempty:GetBool() then return end
 
-	if not self.FireSoundAffectedByClipSize or self.Shotgun then return end
+	if not self.FireSoundAffectedByClipSize then return end
 
 	local clip1, maxclip1 = self:Clip1(), self:GetMaxClip1()
 
 	if maxclip1 <= 4 or maxclip1 >= 70 or clip1 <= 0 then return end
 
 	local mult = clip1 / maxclip1
-	if mult >= 0.33 or mult <= 0 then return end
+	if mult >= self.LowAmmoSoundThreshold or mult <= 0 then return end
 
-	self.GonnaAdjustVol = true
-	self.RequiredVolume = 1 - (mult / 0.33)
+	local soundname = ((clip1 - self:GetStat("Primary.AmmoConsumption", 1)) <= 0) and self:GetStat("LastAmmoSound", "") or self:GetStat("LowAmmoSound", "")
 
-	self:EmitSound(((clip1 - self:GetStat("Primary.AmmoConsumption")) <= 0) and self:GetStat("Primary.Sound_LowAmmoLast") or self:GetStat("Primary.Sound_LowAmmo"))
+	if soundname and soundname ~= "" then
+		self.GonnaAdjustVol = true
+		self.RequiredVolume = 1 - (mult / math.max(self.LowAmmoSoundThreshold, 0.01))
+
+		self:EmitSound(soundname)
+	end
 end
 
 function SWEP:PrimaryAttack()
