@@ -44,20 +44,39 @@ local function l_mathApproach(a, b, delta)
 end
 
 local is, spr, walk, ist, sprt, walkt
+local sprint_cv = GetConVar("sv_tfa_sprint_enabled")
 
-function SWEP:UpdataJumpRatio(ply, velocity)
+function SWEP:TFAFinishMove(ply, velocity, movedata)
 	local ft = TFA.FrameTime()
+	local self2 = self:GetTable()
 
 	local jr_targ = math.min(math.abs(velocity.z) / 500, 1)
 	self:SetNW2Float("JumpRatio", l_mathApproach(self:GetNW2Float("JumpRatio", 0), jr_targ, (jr_targ - self:GetNW2Float("JumpRatio", 0)) * ft * 20))
-	self.JumpRatio = self:GetNW2Float("JumpRatio", 0)
+	self2.JumpRatio = self:GetNW2Float("JumpRatio", 0)
+
+	local status = self2.GetStatus(self)
+	local oldsprinting, oldwalking = self:GetSprinting(), self:GetWalking()
+	local vellen = velocity:Length2D()
+
+	if TFA.Enum.ReloadStatus[status] then
+		self:SetSprinting(false)
+	elseif sprint_cv:GetBool() and not self:GetStat("AllowSprintAttack", false) then
+		self:SetSprinting(vellen > ply:GetRunSpeed() * 0.6 and movedata:KeyDown(IN_SPEED) and ply:OnGround())
+	else
+		self:SetSprinting(false)
+	end
+
+	self:SetWalking(vellen > (ply:GetWalkSpeed() * self:GetStat("MoveSpeed", 1) * .75) and ply:GetNW2Bool("TFA_IsWalking") and ply:OnGround() and not self:GetSprinting() and not self:GetCustomizing())
+
+	self2.walking_updated = oldwalking ~= self:GetWalking()
+	self2.sprinting_updated = oldsprinting ~= self:GetSprinting()
 end
 
 hook.Add("FinishMove", "TFA:UpdataJumpRatio", function(self, movedata)
 	local weapon = self:GetActiveWeapon()
 
 	if IsValid(weapon) and weapon:IsTFA() then
-		weapon:UpdataJumpRatio(self, movedata:GetVelocity())
+		weapon:TFAFinishMove(self, movedata:GetVelocity(), movedata)
 	end
 end)
 

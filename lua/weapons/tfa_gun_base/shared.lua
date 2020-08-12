@@ -988,11 +988,11 @@ end
 local issighting, issprinting, iswalking, iscustomizing = false, false, false, false
 SWEP.spr_old = false
 SWEP.is_old = false
-SWEP.walk_old = false
 SWEP.cust_old = false
 local issighting_tmp
 local ironsights_toggle_cvar, ironsights_resight_cvar
 local sprint_cv = GetConVar("sv_tfa_sprint_enabled")
+
 if CLIENT then
 	ironsights_resight_cvar = GetConVar("cl_tfa_ironsights_resight")
 	ironsights_toggle_cvar = GetConVar("cl_tfa_ironsights_toggle")
@@ -1003,22 +1003,20 @@ function SWEP:IronSights()
 		return
 	end
 
-	ct = l_CT()
-	stat = self:GetStatus()
+	local ct = l_CT()
+	local stat = self:GetStatus()
 	local owent = self:GetOwner()
 	if not IsValid(owent) then return end
 
-	issighting = false
-	issprinting = false
-	iswalking = false
-	iscustomizing = false
+	local self2 = self:GetTable()
+
+	local issighting = false
+	local iscustomizing = false
+	local issprinting = self:GetSprinting()
+	local iswalking = self:GetWalking()
+
 	self.is_old = self:GetIronSightsRaw()
-	self.spr_old = self:GetSprinting()
-	self.walk_old = self:GetWalking()
 	self.cust_old = self:GetCustomizing()
-	if sprint_cv:GetBool() and not self:GetStat("AllowSprintAttack", false) then
-		issprinting = owent:GetVelocity():Length2D() > owent:GetRunSpeed() * 0.6 and owent:IsSprinting() and owent:OnGround()
-	end
 
 	if (SERVER or not sp) and self:GetStat("data.ironsights") ~= 0 then
 		if (CLIENT and not ironsights_toggle_cvar:GetBool()) or owent:GetInfoNum("cl_tfa_ironsights_toggle", 0) == 0 then
@@ -1039,7 +1037,7 @@ function SWEP:IronSights()
 		issighting = self:GetIronSightsRaw()
 	end
 
-	if ( ( CLIENT and ironsights_toggle_cvar:GetBool() ) or ( SERVER and owent:GetInfoNum("cl_tfa_ironsights_toggle", 0) == 1 ) ) and not ( ( CLIENT and ironsights_resight_cvar:GetBool() ) or ( SERVER and owent:GetInfoNum("cl_tfa_ironsights_resight", 0) == 1 ) ) then
+	if ((CLIENT and ironsights_toggle_cvar:GetBool()) or (SERVER and owent:GetInfoNum("cl_tfa_ironsights_toggle", 0) == 1)) and not ((CLIENT and ironsights_resight_cvar:GetBool()) or (SERVER and owent:GetInfoNum("cl_tfa_ironsights_resight", 0) == 1)) then
 		if issprinting then
 			issighting = false
 		end
@@ -1047,6 +1045,7 @@ function SWEP:IronSights()
 		if not TFA.Enum.IronStatus[stat] then
 			issighting = false
 		end
+
 		if self:GetStat("BoltAction") or self:GetStat("BoltAction_Forced") then
 			if stat == TFA.Enum.STATUS_SHOOTING then
 				if not self.LastBoltShoot then
@@ -1062,10 +1061,6 @@ function SWEP:IronSights()
 				self.LastBoltShoot = nil
 			end
 		end
-	end
-
-	if TFA.Enum.ReloadStatus[stat] then
-		issprinting = false
 	end
 
 	if issighting and owent:InVehicle() and not owent:GetAllowWeaponsInVehicle() then
@@ -1122,31 +1117,24 @@ function SWEP:IronSights()
 	end
 
 	iscustomizing = self.Inspecting
-	iswalking = owent:GetVelocity():Length2D() > (owent:GetWalkSpeed() * self:GetStat("MoveSpeed", 1) * .75) and owent:GetNW2Bool("TFA_IsWalking") and owent:OnGround() and not issprinting and not iscustomizing
 
 	local smi = ( self.Sights_Mode == TFA.Enum.LOCOMOTION_HYBRID or self.Sights_Mode == TFA.Enum.LOCOMOTION_ANI ) and self.is_old_final ~= issighting
-	local spi = ( self.Sprint_Mode == TFA.Enum.LOCOMOTION_HYBRID or self.Sprint_Mode == TFA.Enum.LOCOMOTION_ANI ) and self.spr_old ~= issprinting
-	local wmi = ( self.Walk_Mode == TFA.Enum.LOCOMOTION_HYBRID or self.Walk_Mode == TFA.Enum.LOCOMOTION_ANI ) and self.walk_old ~= iswalking
+	local spi = ( self.Sprint_Mode == TFA.Enum.LOCOMOTION_HYBRID or self.Sprint_Mode == TFA.Enum.LOCOMOTION_ANI ) and self2.sprinting_updated
+	local wmi = ( self.Walk_Mode == TFA.Enum.LOCOMOTION_HYBRID or self.Walk_Mode == TFA.Enum.LOCOMOTION_ANI ) and self2.walking_updated
 	local cmi = ( self.Customize_Mode == TFA.Enum.LOCOMOTION_HYBRID or self.Customize_Mode == TFA.Enum.LOCOMOTION_ANI ) and self.cust_old ~= iscustomizing
 
 	if ( smi or spi or wmi or cmi ) and ( self:GetStatus() == TFA.Enum.STATUS_IDLE or ( self:GetStatus() == TFA.Enum.STATUS_SHOOTING and self:CanInterruptShooting() ) ) and not self:GetShotgunCancel() then
 		local toggle_is = self.is_old ~= issighting
-		if issighting and self.spr_old ~= issprinting then
+
+		if issighting and self:GetSprinting() then
 			toggle_is = true
 		end
+
 		local success,_ = self:Locomote(toggle_is and (self.Sights_Mode ~= TFA.Enum.LOCOMOTION_LUA), issighting, spi, issprinting, wmi, iswalking, cmi, iscustomizing)
 
 		if ( not success ) and ( ( toggle_is and smi ) or spi or wmi or cmi ) then
 			self:SetNextIdleAnim(-1)
 		end
-	end
-
-	if (self.spr_old ~= issprinting) then
-		self:SetSprinting(issprinting)
-	end
-
-	if (self.walk_old ~= iswalking) then
-		self:SetWalking(iswalking)
 	end
 
 	if (self.cust_old ~= iscustomizing) then
@@ -1165,9 +1153,11 @@ function SWEP:GetIronSights( ignorestatus )
 	if self.Owner:IsNPC() then
 		return
 	end
+
 	if ignorestatus then
 		issighting = self:GetIronSightsRaw()
 		issprinting = self:GetSprinting()
+
 		if issprinting then
 			issighting = false
 		end
@@ -1190,6 +1180,7 @@ function SWEP:GetIronSights( ignorestatus )
 
 		return issighting
 	end
+
 	if self.is_cached == nil then
 		issighting = self:GetIronSightsRaw()
 		issprinting = self:GetSprinting()
