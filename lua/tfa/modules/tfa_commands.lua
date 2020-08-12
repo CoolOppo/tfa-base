@@ -57,8 +57,8 @@ if GetConVar("sv_tfa_allow_dryfire") == nil then
 	CreateReplConVar("sv_tfa_allow_dryfire", "1", "Allow dryfire?")
 end
 
-if GetConVar("sv_tfa_penetration_limit") == nil then
-	CreateReplConVar("sv_tfa_penetration_limit", "2", "Number of objects we can penetrate through.")
+if GetConVar("sv_tfa_penetration_hardlimit") == nil then
+	CreateReplConVar("sv_tfa_penetration_hardlimit", "100", "Max number of objects we can penetrate through.")
 end
 
 if GetConVar("sv_tfa_penetration_hitmarker") == nil then

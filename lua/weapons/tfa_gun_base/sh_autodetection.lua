@@ -259,6 +259,33 @@ function SWEP:AutoDetectForce()
 	end
 end
 
+function SWEP:AutoDetectPenetrationPower()
+	local self2 = self:GetTable()
+
+	if self2.Primary.PenetrationPower == -1 or not self2.Primary.PenetrationPower then
+		local am = string.lower(self:GetStat("Primary.Ammo"))
+		local m = 1
+
+		if (am == "pistol") then
+			m = 0.4
+		elseif (am == "357") then
+			m = 1.75
+		elseif (am == "smg1") then
+			m = 0.34
+		elseif (am == "ar2") then
+			m = 1.1
+		elseif (am == "buckshot") then
+			m = 0.3
+		elseif (am == "airboatgun") then
+			m = 2.25
+		elseif (am == "sniperpenetratedround") then
+			m = 3
+		end
+
+		self2.Primary.PenetrationPower = self2.PenetrationPower or math.sqrt(self2.Primary.Force * 200 * m)
+	end
+end
+
 --[[
 Function Name:  AutoDetectKnockback
 Syntax: self:AutoDetectKnockback().  Call only once.  Hopefully you call this only once on like SWEP:Initialize() or something.

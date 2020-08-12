@@ -48,7 +48,7 @@ if CLIENT then
 			sv_tfa_reloads_legacy = "0",
 			sv_tfa_reloads_enabled = "1",
 			sv_tfa_cmenu = "1",
-			sv_tfa_penetration_limit = "2",
+			sv_tfa_penetration_hardlimit = "2",
 			sv_tfa_jamming = "1",
 			sv_tfa_jamming_mult = "1",
 			sv_tfa_jamming_factor = "1",
@@ -85,7 +85,7 @@ if CLIENT then
 
 		TFA.NumSliderNet(panel, "#tfa.svsettings.forcemult", "sv_tfa_force_multiplier", 0, 10, 2)
 		TFA.NumSliderNet(panel, "#tfa.svsettings.spreadmult", "sv_tfa_spread_multiplier", 0, 10, 2)
-		TFA.NumSliderNet(panel, "#tfa.svsettings.penetrationlimit", "sv_tfa_penetration_limit", 0, 10, 2)
+		TFA.NumSliderNet(panel, "#tfa.svsettings.penetrationlimit", "sv_tfa_penetration_hardlimit", 0, 10, 2)
 		TFA.NumSliderNet(panel, "#tfa.svsettings.defaultclip", "sv_tfa_default_clip", -1, 10, 0)
 		TFA.NumSliderNet(panel, "#tfa.svsettings.rangemod", "sv_tfa_range_modifier", 0, 1, 3)
 	end
