@@ -605,6 +605,10 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon, penetrated)
 			pentraceres.FractionLeftSolid = ostart:Distance(pentrace.start) / ostart:Distance(pentrace.endpos) + pentraceres.FractionLeftSolid
 			pentrace.start = ostart
 			pentraceres.StartPos = ostart
+		else
+			pentraceres.FractionLeftSolid = 0
+			pentrace.start = ostart
+			pentraceres.StartPos = ostart
 		end
 	end
 
