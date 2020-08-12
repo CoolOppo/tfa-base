@@ -430,19 +430,25 @@ local debugsphere3 = Color(255, 255, 255)
 local debugsphere4 = Color(0, 0, 255)
 local debugsphere5 = Color(12, 255, 0)
 
-local IsInWorld
+local IsInWorld, IsInWorld2
 
-if CLIENT then
+do
 	local tr = {collisiongroup = COLLISION_GROUP_WORLD}
 
-	function IsInWorld(pos)
+	function IsInWorld2(pos)
 		tr.start = pos
 		tr.endpos = pos
 		return not util.TraceLine(tr).AllSolid
 	end
+end
+
+if CLIENT then
+	IsInWorld = IsInWorld2
 else
 	IsInWorld = util.IsInWorld
 end
+
+local MAX_CORRECTION_ITERATIONS = 20
 
 function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon, penetrated)
 	--debugoverlay.Sphere( self.Src, 5, 5, color_white, true)
@@ -579,26 +585,24 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon, penetrated)
 		local lastend
 		local iter = 0
 
-		local cond = (pentraceres.AllSolid or not IsInWorld(pentraceres.HitPos)) and acc_length < desired_length
+		local cond = (pentraceres.AllSolid or not IsInWorld2(pentraceres.HitPos)) and acc_length < desired_length
 
-		while (pentraceres.AllSolid or not IsInWorld(pentraceres.HitPos)) and acc_length < desired_length and iter < 10 do
+		while (pentraceres.AllSolid or not IsInWorld2(pentraceres.HitPos)) and acc_length < desired_length and iter < MAX_CORRECTION_ITERATIONS do
 			iter = iter + 1
 			local slen = desired_length - acc_length
 
-			pentrace.start = pentraceres.HitPos + newdir
-			pentrace.endpos = pentraceres.HitPos + newdir * slen
+			pentrace.start = pentraceres.HitPos + newdir * 8
 
 			if SERVER and develop:GetBool() and DLib then
-				DLib.debugoverlay.Cross(pentrace.start, 8, 10, Color(iter / 10 * 255, iter / 10 * 255, iter / 10 * 255), true)
+				DLib.debugoverlay.Cross(pentrace.start, 8, 10, Color(iter / MAX_CORRECTION_ITERATIONS * 255, iter / MAX_CORRECTION_ITERATIONS * 255, iter / MAX_CORRECTION_ITERATIONS * 255), true)
 			end
 
-			lastend = pentrace.endpos
-
 			pentraceres = util.TraceLine(pentrace)
-			acc_length = acc_length + pentraceres.HitPos:Distance(pentraceres.StartPos)
+			acc_length = acc_length + pentraceres.HitPos:Distance(pentraceres.StartPos) + 8
 		end
 
-		if cond and not pentraceres.AllSolid then
+		if cond and not (pentraceres.AllSolid or not IsInWorld2(pentraceres.HitPos)) then
+			pentraceres.FractionLeftSolid = ostart:Distance(pentrace.start) / ostart:Distance(pentrace.endpos) + pentraceres.FractionLeftSolid
 			pentrace.start = ostart
 			pentraceres.StartPos = ostart
 		end
