@@ -583,10 +583,16 @@ function SWEP:Deploy()
 		self:SetShotgunCancel( false )
 	end
 	self:SetBurstCount(0)
+
 	self.IronSightsProgress = 0
 	self.SprintProgress = 0
 	self.InspectingProgress = 0
 	self.ProceduralHolsterProgress = 0
+
+	self:SetNW2Float("IronSightsProgress", 0)
+	self:SetNW2Float("SprintProgress", 0)
+	self:SetNW2Float("InspectingProgress", 0)
+	self:SetNW2Float("ProceduralHolsterProgress", 0)
 
 	if self.Inspecting then
 		self.Inspecting = false
