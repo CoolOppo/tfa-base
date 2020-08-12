@@ -23,7 +23,17 @@ local function l_Lerp(t, a, b) return a + (b - a) * t end
 local function l_mathMin(a, b) return (a < b) and a or b end
 local function l_mathMax(a, b) return (a > b) and a or b end
 local function l_ABS(a) return (a < 0) and -a or a end
-local function l_mathClamp(t, a, b) return l_mathMax(l_mathMin(t, b), a) end
+local function l_mathClamp(t, a, b)
+	if t > b then
+		return b
+	end
+
+	if t < a then
+		return a
+	end
+
+	return t
+end
 
 local function l_mathApproach(a, b, delta)
 	if a < b then

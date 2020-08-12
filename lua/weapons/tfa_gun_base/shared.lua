@@ -474,6 +474,7 @@ function SWEP:Initialize()
 		self.Owner:SetKeyValue( "spawnflags", "256" )
 		return
 	end
+
 	hook.Run("TFA_Initialize",self)
 end
 
