@@ -227,21 +227,28 @@ function SWEP:Recoil(recoil, ifp)
 		return
 	end
 
-	if ifp then
-		self.SpreadRatio = l_mathClamp(self.SpreadRatio + self:GetStat("Primary.SpreadIncrement"), 1, self:GetStat("Primary.SpreadMultiplierMax"))
-	end
+	local owner = self:GetOwner()
 
-	math.randomseed(self:GetSeed() + 1)
-	self:GetOwner():SetVelocity(-self:GetOwner():EyeAngles():Forward() * self:GetStat("Primary.Knockback") * cv_forcemult:GetFloat() * recoil / 5)
-	local tmprecoilang = Angle(math.Rand(self:GetStat("Primary.KickDown"), self:GetStat("Primary.KickUp")) * recoil * -1, math.Rand(-self:GetStat("Primary.KickHorizontal"), self:GetStat("Primary.KickHorizontal")) * recoil, 0)
-	local maxdist = math.min(math.max(0, 89 + self:GetOwner():EyeAngles().p - math.abs(self:GetOwner():GetViewPunchAngles().p * 2)), 88.5)
+	self:SetNW2Float("SpreadRatio", l_mathClamp(self:GetNW2Float("SpreadRatio") + self:GetStat("Primary.SpreadIncrement"), 1, self:GetStat("Primary.SpreadMultiplierMax")))
+
+	local seed = self:GetSeed() + 1
+
+	owner:SetVelocity(-owner:EyeAngles():Forward() * self:GetStat("Primary.Knockback") * cv_forcemult:GetFloat() * recoil / 5)
+
+	local tmprecoilang = Angle(
+		util.SharedRandom("TFA_KickDown", self:GetStat("Primary.KickDown"), self:GetStat("Primary.KickUp"), seed) * recoil * -1,
+		util.SharedRandom("TFA_KickHorizontal", -self:GetStat("Primary.KickHorizontal"), self:GetStat("Primary.KickHorizontal"), seed) * recoil,
+		0
+	)
+
+	local maxdist = math.min(math.max(0, 89 + owner:EyeAngles().p - math.abs(owner:GetViewPunchAngles().p * 2)), 88.5)
 	local tmprecoilangclamped = Angle(math.Clamp(tmprecoilang.p, -maxdist, maxdist), tmprecoilang.y, 0)
-	self:GetOwner():ViewPunch(tmprecoilangclamped * (1 - self:GetStat("Primary.StaticRecoilFactor")))
+	owner:ViewPunch(tmprecoilangclamped * (1 - self:GetStat("Primary.StaticRecoilFactor")))
 
 	if (game.SinglePlayer() and SERVER) or (CLIENT and ifp) then
-		local neweyeang = self:GetOwner():EyeAngles() + tmprecoilang * self:GetStat("Primary.StaticRecoilFactor")
-		--neweyeang.p = math.Clamp(neweyeang.p, -90 + math.abs(self:GetOwner():GetViewPunchAngles().p), 90 - math.abs(self:GetOwner():GetViewPunchAngles().p))
-		self:GetOwner():SetEyeAngles(neweyeang)
+		local neweyeang = owner:EyeAngles() + tmprecoilang * self:GetStat("Primary.StaticRecoilFactor")
+		--neweyeang.p = math.Clamp(neweyeang.p, -90 + math.abs(owner:GetViewPunchAngles().p), 90 - math.abs(owner:GetViewPunchAngles().p))
+		owner:SetEyeAngles(neweyeang)
 	end
 end
 
