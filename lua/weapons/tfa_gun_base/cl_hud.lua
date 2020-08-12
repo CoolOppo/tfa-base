@@ -1019,7 +1019,7 @@ function SWEP:DrawHUDAmmo()
 	end
 end
 
-function SWEP:DoDrawCrosshair(x, y)
+function SWEP:DoDrawCrosshair()
 	local self2 = self:GetTable()
 
 	if not self2.DrawCrosshairDefault then return true end
@@ -1054,12 +1054,15 @@ function SWEP:DoDrawCrosshair(x, y)
 
 	local s_cone = self:CalculateConeRecoil()
 
+	local targent
+
 	-- If we're drawing the local player, draw the crosshair where they're aiming
 	-- instead of in the center of the screen.
-	if (self:GetOwner():ShouldDrawLocalPlayer() and not ply:GetNW2Bool("ThirtOTS", false)) then
+	if self:GetOwner():ShouldDrawLocalPlayer() and not ply:GetNW2Bool("ThirtOTS", false) then
 		local tr = util.GetPlayerTrace(self:GetOwner())
 		tr.mask = CONTENTS_SOLID + CONTENTS_MOVEABLE + CONTENTS_MONSTER + CONTENTS_WINDOW + CONTENTS_DEBRIS + CONTENTS_GRATE + CONTENTS_AUX -- This controls what the crosshair will be projected onto.
 		local trace = util.TraceLine(tr)
+		targent = trace.Entity
 		local coords = trace.HitPos:ToScreen()
 		coords.x = math.Clamp(coords.x, 0, ScrW())
 		coords.y = math.Clamp(coords.y, 0, ScrH())
@@ -1067,6 +1070,11 @@ function SWEP:DoDrawCrosshair(x, y)
 		ply.interpposy = math.Approach(ply.interpposy, coords.y, (ply.interpposy - coords.y) * FrameTime() * 7.5)
 		x, y = ply.interpposx, ply.interpposy
 		-- Center of screen
+	else
+		local tr = util.QuickTrace(ply:GetShootPos(), (ply:EyeAngles() + ply:GetViewPunchAngles()):Forward() * 0x7FFF, self2.selftbl)
+		targent = tr.Entity
+		local pos = tr.HitPos:ToScreen()
+		x, y = pos.x, pos.y
 	end
 
 	if not self2.selftbl then
@@ -1074,7 +1082,6 @@ function SWEP:DoDrawCrosshair(x, y)
 	end
 
 	local crossr, crossg, crossb, crosslen, crosshairwidth, drawdot, teamcol
-	local targent = util.QuickTrace(ply:GetShootPos(), ply:EyeAngles():Forward() * 0x7FFF, self2.selftbl).Entity
 	teamcol = GetTeamColor(targent)
 	crossr = crossr_cvar:GetFloat()
 	crossg = crossg_cvar:GetFloat()
