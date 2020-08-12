@@ -233,7 +233,7 @@ function SWEP:Recoil(recoil, ifp)
 
 	local seed = self:GetSeed() + 1
 
-	owner:SetVelocity(-owner:EyeAngles():Forward() * self:GetStat("Primary.Knockback") * cv_forcemult:GetFloat() * recoil / 5)
+	self:SetNW2Vector("QueuedRecoil", -owner:EyeAngles():Forward() * self:GetStat("Primary.Knockback") * cv_forcemult:GetFloat() * recoil / 5)
 
 	local tmprecoilang = Angle(
 		util.SharedRandom("TFA_KickDown", self:GetStat("Primary.KickDown"), self:GetStat("Primary.KickUp"), seed) * recoil * -1,
@@ -242,12 +242,12 @@ function SWEP:Recoil(recoil, ifp)
 	)
 
 	local maxdist = math.min(math.max(0, 89 + owner:EyeAngles().p - math.abs(owner:GetViewPunchAngles().p * 2)), 88.5)
-	local tmprecoilangclamped = Angle(math.Clamp(tmprecoilang.p, -maxdist, maxdist), tmprecoilang.y, 0)
+	local tmprecoilangclamped = Angle(l_mathClamp(tmprecoilang.p, -maxdist, maxdist), tmprecoilang.y, 0)
 	owner:ViewPunch(tmprecoilangclamped * (1 - self:GetStat("Primary.StaticRecoilFactor")))
 
 	if (game.SinglePlayer() and SERVER) or (CLIENT and ifp) then
 		local neweyeang = owner:EyeAngles() + tmprecoilang * self:GetStat("Primary.StaticRecoilFactor")
-		--neweyeang.p = math.Clamp(neweyeang.p, -90 + math.abs(owner:GetViewPunchAngles().p), 90 - math.abs(owner:GetViewPunchAngles().p))
+		--neweyeang.p = l_mathClamp(neweyeang.p, -90 + math.abs(owner:GetViewPunchAngles().p), 90 - math.abs(owner:GetViewPunchAngles().p))
 		owner:SetEyeAngles(neweyeang)
 	end
 end
@@ -395,9 +395,9 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon)
 	if not self.HasAppliedRange then
 		local bulletdistance = (traceres.HitPos - traceres.StartPos):Length()
 		local damagescale = bulletdistance / weapon:GetStat("Primary.Range")
-		damagescale = math.Clamp(damagescale - weapon:GetStat("Primary.RangeFalloff"), 0, 1)
-		damagescale = math.Clamp(damagescale / math.max(1 - weapon:GetStat("Primary.RangeFalloff"), 0.01), 0, 1)
-		damagescale = (1 - cv_rangemod:GetFloat()) + (math.Clamp(1 - damagescale, 0, 1) * cv_rangemod:GetFloat())
+		damagescale = l_mathClamp(damagescale - weapon:GetStat("Primary.RangeFalloff"), 0, 1)
+		damagescale = l_mathClamp(damagescale / math.max(1 - weapon:GetStat("Primary.RangeFalloff"), 0.01), 0, 1)
+		damagescale = (1 - cv_rangemod:GetFloat()) + (l_mathClamp(1 - damagescale, 0, 1) * cv_rangemod:GetFloat())
 		dmginfo:ScaleDamage(damagescale)
 		self.HasAppliedRange = true
 	end
@@ -467,7 +467,7 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon)
 	maxpen = math.min(penetration_max_cvar and (penetration_max_cvar:GetInt() - 1) or 1, weapon.Primary.MaxPenetration)
 	if self.PenetrationCount > maxpen then return end
 	local mult = weapon:GetPenetrationMultiplier(traceres.MatType)
-	local penetrationoffset = traceres.Normal * math.Clamp(self.Force * mult, 0, 32)
+	local penetrationoffset = traceres.Normal * l_mathClamp(self.Force * mult, 0, 32)
 	local pentrace = {}
 	pentrace.endpos = traceres.HitPos
 	pentrace.start = traceres.HitPos + penetrationoffset
@@ -605,7 +605,7 @@ function SWEP.MainBullet:Ricochet(ply, traceres, dmginfo, weapon)
 	ricochetchance = ricochetchance * weapon:GetAmmoRicochetMultiplier()
 	local riccbak = ricochetchance / 0.7
 	local ricothreshold = 0.6
-	ricochetchance = math.Clamp(ricochetchance * ( 1 + math.Clamp(1 - (dp + ricothreshold), 0, 1) ), 0, 1)
+	ricochetchance = l_mathClamp(ricochetchance * ( 1 + l_mathClamp(1 - (dp + ricothreshold), 0, 1) ), 0, 1)
 	if dp <= ricochetchance and math.Rand(0, 1) < ricochetchance then
 		local ric = {}
 		ric.Ricochet = self.Ricochet
@@ -703,7 +703,7 @@ function SWEP.MainBullet:HandleDoor(ply, traceres, dmginfo, wep)
 	ent.TFADoorHealth = ent.TFADoorHealth or defaultdoorhealth
 	if ent:GetClass() ~= "func_door_rotating" and ent:GetClass() ~= "prop_door_rotating" then return end
 	local realDamage = dmginfo:GetDamage() * self.Num
-	ent.TFADoorHealth = math.Clamp(ent.TFADoorHealth - realDamage, 0, defaultdoorhealth)
+	ent.TFADoorHealth = l_mathClamp(ent.TFADoorHealth - realDamage, 0, defaultdoorhealth)
 	if ent.TFADoorHealth > 0 then return end
 	ply:EmitSound("ambient/materials/door_hit1.wav", 100, math.random(90, 110))
 

@@ -76,6 +76,13 @@ function SWEP:TFAFinishMove(ply, velocity, movedata)
 	if self:GetCustomizing() and (self2.GetIronSights(self) or self:GetSprinting() or not TFA.Enum.ReadyStatus[status]) then
 		self:ToggleCustomize()
 	end
+
+	local velocity = self:GetNW2Vector("QueuedRecoil", false)
+
+	if velocity and velocity:Length() ~= 0 then
+		movedata:SetVelocity(movedata:GetVelocity() + velocity)
+		self:SetNW2Vector("QueuedRecoil", vector_origin)
+	end
 end
 
 hook.Add("FinishMove", "TFA:UpdataJumpRatio", function(self, movedata)
