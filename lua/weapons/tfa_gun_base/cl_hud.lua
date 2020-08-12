@@ -1022,7 +1022,7 @@ end
 function SWEP:DoDrawCrosshair()
 	local self2 = self:GetTable()
 
-	if not self2.DrawCrosshairDefault then return true end
+	if not self2.ratios_calc or not self2.DrawCrosshairDefault then return true end
 	if self2.GetHolding(self) then return true end
 
 	local stat = self2.GetStatus(self)

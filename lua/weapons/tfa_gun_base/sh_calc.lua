@@ -86,6 +86,10 @@ function SWEP:CalculateRatios()
 
 	local self2 = self:GetTable()
 
+	if self2.ratios_calc == nil then
+		self2.ratios_calc = true
+	end
+
 	local ft = TFA.FrameTime()
 
 	is = self2.GetIronSights(self)
