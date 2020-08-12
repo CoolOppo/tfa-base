@@ -172,7 +172,9 @@ end
 function BallisticBullet:Impact(tr)
 	self.pos = tr.HitPos
 	self:Remove()
+
 	if CLIENT and (game.SinglePlayer() or self.owner ~= LocalPlayer()) then return end
+
 	if tr.HitSky then return end
 	local vn = self.velocity:GetNormalized()
 
@@ -197,7 +199,7 @@ function BallisticBullet:Impact(tr)
 		self.owner:LagCompensation(true)
 	end
 
-	self.owner:FireBullets(bul, true)
+	self.owner:FireBullets(bul)
 
 	if self.playerOwned then
 		self.owner:LagCompensation(false)

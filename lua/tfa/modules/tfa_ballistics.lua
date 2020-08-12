@@ -94,8 +94,15 @@ local function updateCVars()
 	TFA.Ballistics.SubSteps = cv_substep:GetInt()
 end
 
-timer.Create("TFABallisticsUpdateSVCVars", 1, 0, updateCVars)
+cvars.AddChangeCallback("sv_tfa_ballistics_enabled", updateCVars, "TFA")
+cvars.AddChangeCallback("sv_tfa_ballistics_bullet_life", updateCVars, "TFA")
+cvars.AddChangeCallback("sv_tfa_ballistics_bullet_damping_air", updateCVars, "TFA")
+cvars.AddChangeCallback("sv_tfa_ballistics_bullet_damping_water", updateCVars, "TFA")
+cvars.AddChangeCallback("sv_tfa_ballistics_bullet_velocity", updateCVars, "TFA")
+cvars.AddChangeCallback("sv_tfa_ballistics_substeps", updateCVars, "TFA")
+cvars.AddChangeCallback("sv_tfa_ballistics_mindist", updateCVars, "TFA")
 updateCVars()
+
 --client cvar code
 local cv_receive, cv_tracers_style, cv_tracers_mp
 
@@ -141,7 +148,7 @@ function TFA.Ballistics.Bullets:Update(ply)
 			end
 
 			table.insert(toremove, i)
-		elseif CLIENT or not ply and not bullet.playerOwned or ply == bullet.owner then
+		elseif not ply and not bullet.playerOwned or ply == bullet.owner then
 			for _ = 1, TFA.Ballistics.SubSteps do
 				bullet:Update(delta)
 			end
@@ -224,9 +231,8 @@ function TFA.Ballistics:FireBullets(wep, b, angIn, bulletOverride)
 		vel = TFA.Ballistics:AutoDetectVelocity(dmg) * TFA.Ballistics.UnitScale
 	end
 
-	if not CLIENT and game.SinglePlayer() then
-		vel = vel * (TFA.Ballistics.VelocityMultiplier or 1)
-	end
+	vel = vel * (TFA.Ballistics.VelocityMultiplier or 1)
+
 	local oldNum = b.Num
 	b.Num = 1
 
@@ -322,10 +328,16 @@ end
 
 
 if SERVER then
-	hook.Add("PlayerPostThink", "TFABallisticsTick", function(self)
+	hook.Remove("PlayerPostThink", "TFABallisticsTick", function(self)
 		TFA.Ballistics.Bullets:Update(self)
 	end)
 end
+
+hook.Add("FinishMove", "TFABallisticsTick", function(self)
+	if IsFirstTimePredicted() then
+		TFA.Ballistics.Bullets:Update(self)
+	end
+end)
 
 hook.Add("Tick", "TFABallisticsTick", function()
 	TFA.Ballistics.Bullets:Update()
