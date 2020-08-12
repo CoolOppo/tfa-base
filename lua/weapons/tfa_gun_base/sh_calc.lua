@@ -72,6 +72,10 @@ function SWEP:TFAFinishMove(ply, velocity, movedata)
 
 	self2.walking_updated = oldwalking ~= self:GetWalking()
 	self2.sprinting_updated = oldsprinting ~= self:GetSprinting()
+
+	if self:GetCustomizing() and (self2.GetIronSights(self) or self:GetSprinting() or not TFA.Enum.ReadyStatus[status]) then
+		self:ToggleCustomize()
+	end
 end
 
 hook.Add("FinishMove", "TFA:UpdataJumpRatio", function(self, movedata)
@@ -116,13 +120,14 @@ function SWEP:CalculateRatios()
 	self:SetNW2Float("SprintProgress", l_mathApproach(self:GetNW2Float("SprintProgress", 0), sprt, (sprt - self:GetNW2Float("SprintProgress", 0)) * ft * adstransitionspeed))
 	self:SetNW2Float("WalkProgress", l_mathApproach(self:GetNW2Float("WalkProgress", 0), walkt, (walkt - self:GetNW2Float("WalkProgress", 0)) * ft * adstransitionspeed))
 	self:SetNW2Float("ProceduralHolsterProgress", l_mathApproach(self:GetNW2Float("ProceduralHolsterProgress", 0), sprt, (sprt - self:GetNW2Float("SprintProgress", 0)) * ft * self2.ProceduralHolsterTime * 15))
+	self:SetNW2Float("InspectingProgress", l_mathApproach(self:GetNW2Float("InspectingProgress", 0), self:GetCustomizing() and 1 or 0, ((self:GetCustomizing() and 1 or 0) - self:GetNW2Float("InspectingProgress", 0)) * ft * 10))
 
 	self2.SpreadRatio = self:GetNW2Float("SpreadRatio", 0)
 	self2.IronSightsProgress = self:GetNW2Float("IronSightsProgress", 0)
 	self2.SprintProgress = self:GetNW2Float("SprintProgress", 0)
 	self2.WalkProgress = self:GetNW2Float("WalkProgress", 0)
 	self2.ProceduralHolsterProgress = self:GetNW2Float("ProceduralHolsterProgress", 0)
-	self2.InspectingProgress = l_mathApproach(self2.InspectingProgress, self2.Inspecting and 1 or 0, ((self2.Inspecting and 1 or 0) - self2.InspectingProgress) * ft * 10)
+	self2.InspectingProgress = self:GetNW2Float("InspectingProgress", 0)
 
 	self2.CLIronSightsProgress = self2.IronSightsProgress --compatibility
 end

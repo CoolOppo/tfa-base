@@ -95,6 +95,7 @@ function TFA.RegisterKeyBind(data_in)
 	end
 
 	hook.Add("PlayerButtonDown", "TFA_KB_KeyDown_" .. data.bind, function(ply, button)
+		if not IsFirstTimePredicted() then return end
 		local cv_key = ply:GetInfoNum(cv_prefix .. data.bind, 0)
 
 		if cv_key > 0 and cv_key == button and not data.state then
@@ -111,6 +112,7 @@ function TFA.RegisterKeyBind(data_in)
 	end)
 
 	hook.Add("PlayerButtonUp", "TFA_KB_KeyUp_" .. data.bind, function(ply, button)
+		if not IsFirstTimePredicted() then return end
 		local cv_key = ply:GetInfoNum(cv_prefix .. data.bind, 0)
 
 		if cv_key > 0 and cv_key == button and data.state then
@@ -201,7 +203,7 @@ TFA.RegisterKeyBind({
 	onpress = CLIENT and function(plyv)
 		if not plyv:IsValid() then return end
 
-		plyv:ConCommand("tfa_toggleinspect")
+		plyv:ConCommand("impulse " .. TFA.INSPECTION_IMPULSE)
 	end
 })
 

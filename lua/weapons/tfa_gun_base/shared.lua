@@ -594,11 +594,12 @@ function SWEP:Deploy()
 	self:SetNW2Float("InspectingProgress", 0)
 	self:SetNW2Float("ProceduralHolsterProgress", 0)
 
-	if self.Inspecting then
-		self.Inspecting = false
+	if self:GetCustomizing() then
+		self:ToggleCustomize()
 	end
 
 	self.DefaultFOV = TFADUSKFOV or ( IsValid(self:GetOwner()) and self:GetOwner():GetFOV() or 90 )
+
 	if self:GetStat("Skin") and isnumber(self:GetStat("Skin")) then
 		self.OwnerViewModel:SetSkin(self:GetStat("Skin"))
 		self:SetSkin(self:GetStat("Skin"))
@@ -1018,7 +1019,6 @@ function SWEP:IronSights()
 	local stat = self:GetStatus()
 
 	local issighting = false
-	local iscustomizing = false
 	local issprinting = self:GetSprinting()
 	local iswalking = self:GetWalking()
 
@@ -1077,11 +1077,11 @@ function SWEP:IronSights()
 
 	self2.is_cached = nil
 
-	if ( issighting or issprinting or stat ~= TFA.Enum.STATUS_IDLE ) and self2.Inspecting then
+	if ( issighting or issprinting or stat ~= TFA.Enum.STATUS_IDLE ) and self:GetCustomizing() then
 		--if gui then
 		--  gui.EnableScreenClicker(false)
 		--end
-		self2.Inspecting = false
+		self2.FuckOffInspectionOnNextFrame = true
 	end
 
 	if (self2.is_old ~= issighting) then
@@ -1123,12 +1123,10 @@ function SWEP:IronSights()
 		self:SetNextIdleAnim(-1)
 	end
 
-	iscustomizing = self2.Inspecting
-
 	local smi = ( self2.Sights_Mode == TFA.Enum.LOCOMOTION_HYBRID or self2.Sights_Mode == TFA.Enum.LOCOMOTION_ANI ) and self2.is_old_final ~= issighting
 	local spi = ( self2.Sprint_Mode == TFA.Enum.LOCOMOTION_HYBRID or self2.Sprint_Mode == TFA.Enum.LOCOMOTION_ANI ) and self2.sprinting_updated
 	local wmi = ( self2.Walk_Mode == TFA.Enum.LOCOMOTION_HYBRID or self2.Walk_Mode == TFA.Enum.LOCOMOTION_ANI ) and self2.walking_updated
-	local cmi = ( self2.Customize_Mode == TFA.Enum.LOCOMOTION_HYBRID or self2.Customize_Mode == TFA.Enum.LOCOMOTION_ANI ) and self2.cust_old ~= iscustomizing
+	local cmi = ( self2.Customize_Mode == TFA.Enum.LOCOMOTION_HYBRID or self2.Customize_Mode == TFA.Enum.LOCOMOTION_ANI ) and self2.customizing_updated == ct
 
 	if ( smi or spi or wmi or cmi ) and ( self:GetStatus() == TFA.Enum.STATUS_IDLE or ( self:GetStatus() == TFA.Enum.STATUS_SHOOTING and self:CanInterruptShooting() ) ) and not self:GetShotgunCancel() then
 		local toggle_is = self2.is_old ~= issighting
@@ -1137,21 +1135,17 @@ function SWEP:IronSights()
 			toggle_is = true
 		end
 
-		local success,_ = self:Locomote(toggle_is and (self2.Sights_Mode ~= TFA.Enum.LOCOMOTION_LUA), issighting, spi, issprinting, wmi, iswalking, cmi, iscustomizing)
+		local success,_ = self:Locomote(toggle_is and (self2.Sights_Mode ~= TFA.Enum.LOCOMOTION_LUA), issighting, spi, issprinting, wmi, iswalking, cmi, self:GetCustomizing())
 
 		if ( not success ) and ( ( toggle_is and smi ) or spi or wmi or cmi ) then
 			self:SetNextIdleAnim(-1)
 		end
 	end
 
-	if (self2.cust_old ~= iscustomizing) then
-		self:SetCustomizing(iscustomizing)
-	end
-
 	self2.is_old_final = issighting
 
 	self2._issighting_tmp = issighting_tmp
-	return issighting_tmp, issprinting, iswalking, iscustomizing
+	return issighting_tmp, issprinting, iswalking, self:GetCustomizing()
 end
 
 SWEP.is_cached = nil
@@ -1905,16 +1899,27 @@ function SWEP:GetPrimaryAmmoType()
 end
 
 function SWEP:ToggleInspect()
-	if self.Owner:IsNPC() then
+	if self:GetOwner():IsNPC() then
 		return
 	end
-	if self:GetSprinting() or self:GetIronSights() or self:GetStatus() ~= TFA.Enum.STATUS_IDLE then return end
-	self.Inspecting = not self.Inspecting
+
+	if (self:GetSprinting() or self:GetIronSights() or self:GetStatus() ~= TFA.Enum.STATUS_IDLE) and not self:GetCustomizing() then return end
+
+	self:SetCustomizing(not self:GetCustomizing())
+	self.Inspecting = self:GetCustomizing()
+	self.customizing_updated = CurTime()
+
 	--if self.Inspecting then
 	--  gui.EnableScreenClicker(true)
 	--else
 	--  gui.EnableScreenClicker(false)
 	--end
+end
+
+SWEP.ToggleCustomize = SWEP.ToggleInspect
+
+function SWEP:GetIsInspecting()
+	return self:GetCustomizing()
 end
 
 function SWEP:EmitSoundNet(sound)

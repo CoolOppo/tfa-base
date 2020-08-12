@@ -19,6 +19,8 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
+TFA.INSPECTION_IMPULSE = 148
+
 local sp = game.SinglePlayer()
 
 --[[
@@ -149,25 +151,6 @@ local cv_cm = GetConVar("sv_tfa_cmenu")
 local cv_cm_key = GetConVar("sv_tfa_cmenu_key")
 local keyv
 
-local function ToggleInspectCommand(plyv)
-	if not cv_cm:GetBool() then return end
-
-	if not plyv:IsValid() or plyv:GetViewEntity() ~= plyv then return end
-
-	if plyv:InVehicle() and not plyv:GetAllowWeaponsInVehicle() then return end
-
-	local wepv = plyv:GetActiveWeapon()
-	if not IsValid(wepv) or not wepv.ToggleInspect then return end
-
-	wepv:ToggleInspect()
-
-	if SERVER then
-		wepv:CallOnClient("ToggleInspect")
-	end
-end
-
-concommand.Add("tfa_toggleinspect", ToggleInspectCommand)
-
 local function GetInspectionKey()
 	if cv_cm_key and cv_cm_key:GetInt() >= 0 then
 		keyv = cv_cm_key:GetInt()
@@ -195,16 +178,14 @@ end
 
 hook.Add("ContextMenuOpen", "TFAContextBlock", TFAContextBlock)
 
+local TFAKPThink
+
 if CLIENT then
 	local kd_old = false
+	local kd_switched = false
 
-	local function TFAKPThink()
-		local plyv = LocalPlayer()
-
-		if not plyv:IsValid() then return end
-
-		local wepv = plyv:GetActiveWeapon()
-		if not IsValid(wepv) or not wepv.ToggleInspect then return end
+	function TFAKPThink(plyv, wepv)
+		kd_switched = false
 
 		if plyv:GetInfoNum("cl_tfa_keys_customize", 0) > 0 then return end
 
@@ -215,15 +196,40 @@ if CLIENT then
 			kd = false
 		end
 
-		if kd ~= kd_old and kd and cv_cm:GetBool() and not (plyv:KeyDown(IN_USE) and not wepv.Inspecting) then
-			plyv:ConCommand("tfa_toggleinspect")
+		if kd ~= kd_old and kd and cv_cm:GetBool() and not plyv:KeyDown(IN_USE) then
+			kd_switched = true
 		end
 
 		kd_old = kd
 	end
 
-	hook.Add("Think", "TFAInspectionMenu", TFAKPThink)
+	local function StartCommand(ply, cusercmd)
+		local wepv = ply:GetActiveWeapon()
+		if not IsValid(wepv) or not wepv.ToggleInspect then return end
+
+		if kd_switched then
+			cusercmd:SetImpulse(TFA.INSPECTION_IMPULSE)
+		end
+	end
+
+	hook.Remove("Think", "TFAInspectionMenu", TFAKPThink)
+	hook.Add("StartCommand", "TFAInspectionMenu", StartCommand)
 end
+
+local function FinishMove(ply, cmovedata)
+	local wepv = ply:GetActiveWeapon()
+	if not IsValid(wepv) or not wepv.ToggleInspect then return end
+
+	if CLIENT and IsFirstTimePredicted() then
+		TFAKPThink(ply, wepv)
+	end
+
+	if cmovedata:GetImpulseCommand() ~= TFA.INSPECTION_IMPULSE then return end
+
+	wepv:ToggleInspect()
+end
+
+hook.Add("FinishMove", "TFAInspectionMenu", FinishMove)
 
 --[[
 Hook: KeyPress
