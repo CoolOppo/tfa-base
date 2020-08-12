@@ -91,7 +91,7 @@ function ATTACHMENT:RTCode(wep, rt, scrw, scrh)
 	render.Clear(0, 0, 0, 255, true, true)
 	render.SetScissorRect(0, 0, rtw, rth, true)
 
-	if wep.IronSightsProgress > 0.005 then
+	if wep:GetNW2Float("IronSightsProgress") > 0.005 then
 		render.RenderView(cd)
 	end
 
@@ -102,7 +102,7 @@ function ATTACHMENT:RTCode(wep, rt, scrw, scrh)
 
 	-- ADS transition darkening
 	draw.NoTexture()
-	surface.SetDrawColor(ColorAlpha(color_black, 255 * (1 - wep.IronSightsProgress)))
+	surface.SetDrawColor(ColorAlpha(color_black, 255 * (1 - wep:GetNW2Float("IronSightsProgress"))))
 	surface.DrawRect(0, 0, rtw, rth)
 
 	surface.SetMaterial(wep:GetStat("RTReticleMaterial", fallbackReticle))

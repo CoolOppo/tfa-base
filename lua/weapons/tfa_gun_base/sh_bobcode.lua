@@ -122,7 +122,7 @@ function SWEP:WalkBob(pos, ang, breathIntensity, walkIntensity, rate, ftv)
 	pos:Add(upLocal * walkVec.z)
 	--jumping
 	local trigX = -math.Clamp(zVelocitySmooth / 200, -1, 1) * math.pi / 2
-	local jumpIntensity = (3 + math.Clamp(math.abs(zVelocitySmooth) - 100, 0, 200) / 200 * 4) * (1 - self2.IronSightsProgress * 0.8)
+	local jumpIntensity = (3 + math.Clamp(math.abs(zVelocitySmooth) - 100, 0, 200) / 200 * 4) * (1 - self:GetNW2Float("IronSightsProgress") * 0.8)
 	pos:Add(ri * math.sin(trigX) * scale_r * 0.1 * jumpIntensity * flip_v * 0.4)
 	pos:Add(-up * math.sin(trigX) * scale_r * 0.1 * jumpIntensity * 0.4)
 	ang:RotateAroundAxis(ang:Forward(), math.sin(trigX) * scale_r * jumpIntensity * flip_v * 0.4)
@@ -150,7 +150,7 @@ function SWEP:SprintBob(pos, ang, intensity)
 	intensity = intensity * gunbob_intensity * 1.5
 	gunbob_intensity = gunbob_intensity_cvar:GetFloat()
 
-	if self2.SprintProgress > 0.005 then
+	if self:GetNW2Float("SprintProgress") > 0.005 then
 		if self2.SprintStyle == 1 then
 			local intensity3 = math.max(intensity - 0.3, 0) / (1 - 0.3)
 			ang:RotateAroundAxis(ang:Up(), math.sin(self2.ti * pist_rate) * pist_scale * intensity3 * 0.33 * 0.75)

@@ -1854,7 +1854,7 @@ function SWEP:AdjustMouseSensitivity()
 		end
 	end
 
-	sensval = sensval * l_Lerp(self.IronSightsProgress, 1, self:GetStat( "IronSightsSensitivity" ) )
+	sensval = sensval * l_Lerp(self:GetNW2Float("IronSightsProgress"), 1, self:GetStat( "IronSightsSensitivity" ) )
 	return sensval
 end
 
@@ -1879,7 +1879,7 @@ function SWEP:TranslateFOV(fov)
 
 	self:CorrectScopeFOV()
 
-	nfov = l_Lerp(self.IronSightsProgress, fov, fov * math.min(self:GetStat("Secondary.IronFOV") / 90, 1))
+	nfov = l_Lerp(self:GetNW2Float("IronSightsProgress"), fov, fov * math.min(self:GetStat("Secondary.IronFOV") / 90, 1))
 
 	local ret = l_Lerp(self.SprintProgress, nfov, nfov + self.SprintFOVOffset)
 

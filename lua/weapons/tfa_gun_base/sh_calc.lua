@@ -129,7 +129,7 @@ function SWEP:CalculateRatios()
 	self2.ProceduralHolsterProgress = self:GetNW2Float("ProceduralHolsterProgress", 0)
 	self2.InspectingProgress = self:GetNW2Float("InspectingProgress", 0)
 
-	self2.CLIronSightsProgress = self2.IronSightsProgress --compatibility
+	self2.CLIronSightsProgress = self:GetNW2Float("IronSightsProgress") --compatibility
 end
 
 SWEP.IronRecoilMultiplier = 0.5 --Multiply recoil by this factor when we're in ironsights.  This is proportional, not inversely.
@@ -152,7 +152,7 @@ SWEP.JumpRatio = 0
 function SWEP:CalculateConeRecoil()
 	local dynacc = false
 	local self2 = self:GetTable()
-	local isr = self2.IronSightsProgress or 0
+	local isr = self:GetNW2Float("IronSightsProgress") or 0
 
 	if dynacc_cvar:GetBool() and (self2.GetStat(self, "Primary.NumShots") <= 1) then
 		dynacc = true

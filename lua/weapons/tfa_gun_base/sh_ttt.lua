@@ -191,7 +191,7 @@ end
 
 function SWEP:DyingShot()
 	local fired = false
-	-- if self.IronSightsProgress and self.IronSightsProgress > 0.01  then
+	-- if self:GetNW2Float("IronSightsProgress") and self:GetNW2Float("IronSightsProgress") > 0.01  then
 	self:SetIronSightsRaw(false)
 	if self:GetNextPrimaryFire() > CurTime() then return fired end
 

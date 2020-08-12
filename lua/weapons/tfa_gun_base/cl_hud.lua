@@ -247,7 +247,7 @@ function SWEP:GenerateInspectionDerma()
 
 		local wep = ply:GetActiveWeapon()
 
-		if not IsValid(wep) or not wep.IsTFAWeapon or wep.InspectingProgress <= 0.01 then
+		if not IsValid(wep) or not wep.IsTFAWeapon or wep:GetNW2Float("InspectingProgress") <= 0.01 then
 			myself:Remove()
 
 			return
@@ -261,7 +261,7 @@ function SWEP:GenerateInspectionDerma()
 		local wep = self
 
 		if IsValid(wep) then
-			myself.Alpha = wep.InspectingProgress * 255
+			myself.Alpha = wep:GetNW2Float("InspectingProgress") * 255
 			myself.PrimaryColor = ColorAlpha(INSPECTION_PRIMARYCOLOR, TFA_INSPECTIONPANEL.Alpha)
 			myself.SecondaryColor = ColorAlpha(INSPECTION_SECONDARYCOLOR, TFA_INSPECTIONPANEL.Alpha)
 			myself.BackgroundColor = ColorAlpha(INSPECTION_BACKGROUND, TFA_INSPECTIONPANEL.Alpha)
@@ -277,7 +277,7 @@ function SWEP:GenerateInspectionDerma()
 		end
 	end
 
-	--Derma_DrawBackgroundBlur( myself, SysTime()-wep.InspectingProgress )
+	--Derma_DrawBackgroundBlur( myself, SysTime()-wep:GetNW2Float("InspectingProgress") )
 	--draw.NoTexture()
 	--surface.SetDrawColor(ColorAlpha(INSPECTION_BACKGROUND,TFA_INSPECTIONPANEL.Alpha*0.25))
 	--surface.DrawRect(0,0,w,h)
@@ -748,9 +748,9 @@ function SWEP:GenerateInspectionDerma()
 end
 
 function SWEP:DoInspectionDerma()
-	self.InspectingProgress = self.InspectingProgress or 0
+	self.InspectingProgress = self:GetNW2Float("InspectingProgress") or 0
 
-	if not IsValid(TFA_INSPECTIONPANEL) and self.InspectingProgress > 0.01 then
+	if not IsValid(TFA_INSPECTIONPANEL) and self:GetNW2Float("InspectingProgress") > 0.01 then
 		self:GenerateInspectionDerma()
 	end
 
@@ -795,7 +795,7 @@ end
 
 function SWEP:DrawHUDBackground()
 	--Scope Overlay
-	if self.IronSightsProgress > self:GetStat("ScopeOverlayThreshold") and self:GetStat("Scoped") then
+	if self:GetNW2Float("IronSightsProgress") > self:GetStat("ScopeOverlayThreshold") and self:GetStat("Scoped") then
 		self:DrawScopeOverlay()
 	end
 end
@@ -908,7 +908,7 @@ function SWEP:DrawHUDAmmo()
 		end
 	end
 
-	if self2.InspectingProgress < 0.01 and self2.GetStat(self, "Primary.Ammo") ~= "" and self2.GetStat(self, "Primary.Ammo") ~= 0 then
+	if self:GetNW2Float("InspectingProgress") < 0.01 and self2.GetStat(self, "Primary.Ammo") ~= "" and self2.GetStat(self, "Primary.Ammo") ~= 0 then
 		local str, clipstr
 
 		if self2.GetStat(self, "Primary.ClipSize") and self2.GetStat(self, "Primary.ClipSize") ~= -1 then
@@ -1028,13 +1028,13 @@ function SWEP:DoDrawCrosshair()
 	local stat = self2.GetStatus(self)
 
 	if not crosscustomenable_cvar:GetBool() then
-		return TFA.Enum.ReloadStatus[stat] or math.min(1 - self2.IronSightsProgress, 1 - self2.SprintProgress, 1 - self.InspectingProgress) <= 0.5
+		return TFA.Enum.ReloadStatus[stat] or math.min(1 - self:GetNW2Float("IronSightsProgress"), 1 - self:GetNW2Float("SprintProgress"), 1 - self:GetNW2Float("InspectingProgress")) <= 0.5
 	end
 
 	self2.clrelp = self2.clrelp or 0
 	self2.clrelp = math.Approach(self2.clrelp, TFA.Enum.ReloadStatus[stat] and 0 or 1, ((TFA.Enum.ReloadStatus[stat] and 0 or 1) - self2.clrelp) * FrameTime() * 15)
-	local crossa = crossa_cvar:GetFloat() * math.pow(math.min(1 - ((self2.IronSightsProgress and not self2.DrawCrosshairIS) and self2.IronSightsProgress or 0), 1 - self2.SprintProgress, 1 - self2.InspectingProgress, self2.clrelp), 2)
-	local outa = outa_cvar:GetFloat() * math.pow(math.min(1 - ((self2.IronSightsProgress and not self2.DrawCrosshairIS) and self2.IronSightsProgress or 0), 1 - self2.SprintProgress, 1 - self2.InspectingProgress, self2.clrelp), 2)
+	local crossa = crossa_cvar:GetFloat() * math.pow(math.min(1 - ((self:GetNW2Float("IronSightsProgress") and not self2.DrawCrosshairIS) and self:GetNW2Float("IronSightsProgress") or 0), 1 - self:GetNW2Float("SprintProgress"), 1 - self:GetNW2Float("InspectingProgress"), self2.clrelp), 2)
+	local outa = outa_cvar:GetFloat() * math.pow(math.min(1 - ((self:GetNW2Float("IronSightsProgress") and not self2.DrawCrosshairIS) and self:GetNW2Float("IronSightsProgress") or 0), 1 - self:GetNW2Float("SprintProgress"), 1 - self:GetNW2Float("InspectingProgress"), self2.clrelp), 2)
 	local ply = LocalPlayer()
 	if not ply:IsValid() or self:GetOwner() ~= ply then return false end
 

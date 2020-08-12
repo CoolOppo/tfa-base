@@ -490,7 +490,7 @@ Purpose:  Utility
 ]]
 --
 function SWEP:IsCurrentlyScoped()
-	return (self.IronSightsProgress > self:GetStat("ScopeOverlayThreshold")) and self:GetStat("Scoped")
+	return (self:GetNW2Float("IronSightsProgress") > self:GetStat("ScopeOverlayThreshold")) and self:GetStat("Scoped")
 end
 
 --[[

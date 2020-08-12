@@ -327,8 +327,8 @@ hook.Add("SetupMove", "tfa_setupmove", function(plyv, movedata, commanddata)
 	local wepv = plyv:GetActiveWeapon()
 
 	if IsValid(wepv) and wepv.IsTFAWeapon then
-		wepv.IronSightsProgress = wepv.IronSightsProgress or 0
-		speedmult = Lerp(wepv.IronSightsProgress, wepv:GetStat("MoveSpeed"), wepv:GetStat("IronSightsMoveSpeed"))
+		wepv.IronSightsProgress = wepv:GetNW2Float("IronSightsProgress") or 0
+		speedmult = Lerp(wepv:GetNW2Float("IronSightsProgress"), wepv:GetStat("MoveSpeed"), wepv:GetStat("IronSightsMoveSpeed"))
 		movedata:SetMaxClientSpeed(movedata:GetMaxClientSpeed() * speedmult)
 		commanddata:SetForwardMove(commanddata:GetForwardMove() * speedmult)
 		commanddata:SetSideMove(commanddata:GetSideMove() * speedmult)

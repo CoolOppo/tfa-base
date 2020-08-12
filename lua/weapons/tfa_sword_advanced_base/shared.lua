@@ -381,7 +381,7 @@ end
 
 function SWEP:Think2()
 	BaseClass.Think2(self)
-	local isr = self.IronSightsProgress
+	local isr = self:GetNW2Float("IronSightsProgress")
 	ply = self:GetOwner()
 
 	if self.PrevBlockRat and isr and self.PrevBlockRat <= 0.3 and isr > 0.3 then

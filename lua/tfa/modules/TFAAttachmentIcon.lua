@@ -155,7 +155,7 @@ function PANEL:Paint(w, h)
 		col = TFA.Attachments.Colors["error"]
 	end
 
-	draw.RoundedBox(0, 0, 0, w, h, ColorAlpha( col, self.Wep.InspectingProgress * 225))
+	draw.RoundedBox(0, 0, 0, w, h, ColorAlpha( col, self.Wep:GetNW2Float("InspectingProgress") * 225))
 
 	if not TFA.Attachments.Atts[self.Attachment].Icon then
 		TFA.Attachments.Atts[self.Attachment].Icon = "entities/tfa_qmark.png"
@@ -165,13 +165,13 @@ function PANEL:Paint(w, h)
 		TFA.Attachments.Atts[self.Attachment].Icon_Cached = Material( TFA.Attachments.Atts[self.Attachment].Icon, "noclamp smooth" )
 	end
 
-	surface.SetDrawColor(ColorAlpha(color_white, self.Wep.InspectingProgress * 255))
+	surface.SetDrawColor(ColorAlpha(color_white, self.Wep:GetNW2Float("InspectingProgress") * 255))
 	surface.SetMaterial(TFA.Attachments.Atts[self.Attachment].Icon_Cached)
 	surface.DrawTexturedRect(padding, padding, w - padding * 2, h - padding * 2)
 	if not TFA.Attachments.Atts[self.Attachment].ShortName then
 		TFA.Attachments.Atts[self.Attachment].ShortName = abbrev( TFA.Attachments.Atts[self.Attachment].Name or "")
 	end
-	draw.SimpleText( string.upper( TFA.Attachments.Atts[self.Attachment].ShortName ) , "TFAAttachmentIconFontTiny", padding / 4, h, ColorAlpha(TFA.Attachments.Colors["primary"], self.Wep.InspectingProgress * ( sel and 192 or 64 ) ), TEXT_ALIGN_LEFT, TEXT_ALIGN_BOTTOM)
+	draw.SimpleText( string.upper( TFA.Attachments.Atts[self.Attachment].ShortName ) , "TFAAttachmentIconFontTiny", padding / 4, h, ColorAlpha(TFA.Attachments.Colors["primary"], self.Wep:GetNW2Float("InspectingProgress") * ( sel and 192 or 64 ) ), TEXT_ALIGN_LEFT, TEXT_ALIGN_BOTTOM)
 end
 
 vgui.Register("TFAAttachmentIcon", PANEL, "Panel")
