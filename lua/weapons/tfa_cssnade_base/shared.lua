@@ -45,7 +45,7 @@ function SWEP:Deploy()
 		if self:Ammo1() <= 0 then
 			timer.Simple(0, function()
 				if IsValid(self) and self:OwnerIsValid() and SERVER then
-					self.Owner:StripWeapon(self:GetClass())
+					self:GetOwner():StripWeapon(self:GetClass())
 				end
 			end)
 		else
@@ -57,7 +57,7 @@ function SWEP:Deploy()
 	self:SetNW2Bool("Charging", false)
 	self:SetNW2Bool("Ready", false)
 	self:SetNW2Bool("Underhanded", false)
-	self.oldang = self.Owner:EyeAngles()
+	self.oldang = self:GetOwner():EyeAngles()
 	self.anga = Angle()
 	self.angb = Angle()
 	self.angc = Angle()
@@ -68,7 +68,7 @@ end
 function SWEP:ChoosePullAnim()
 	if not self:OwnerIsValid() then return end
 
-	self.Owner:SetAnimation(PLAYER_RELOAD)
+	self:GetOwner():SetAnimation(PLAYER_RELOAD)
 	--self:ResetEvents()
 	local tanim = ACT_VM_PULLPIN
 	local success = true
@@ -86,7 +86,7 @@ end
 function SWEP:ChooseShootAnim()
 	if not self:OwnerIsValid() then return end
 
-	self.Owner:SetAnimation(PLAYER_ATTACK1)
+	self:GetOwner():SetAnimation(PLAYER_ATTACK1)
 	self:SendViewModelAnim(ACT_VM_THROW)
 	local tanim = ACT_VM_THROW
 	local success = true
@@ -124,7 +124,7 @@ end
 
 function SWEP:DoAmmoCheck()
 	if IsValid(self) and SERVER then
-		local vm = self.Owner:GetViewModel()
+		local vm = self:GetOwner():GetViewModel()
 		if not IsValid(vm) then return end
 		local delay = vm:SequenceDuration()
 		delay = delay * 1 - math.Clamp(vm:GetCycle(), 0, 1)
@@ -138,7 +138,7 @@ function SWEP:DoAmmoCheck()
 end
 
 function SWEP:Think2()
-	if not self:GetNW2Bool("Charging", false) and self:GetNW2Bool("Ready", true) and  self:OwnerIsValid() and not self.Owner:KeyDown(IN_ATTACK2) and not self.Owner:KeyDown(IN_ATTACK) then
+	if not self:GetNW2Bool("Charging", false) and self:GetNW2Bool("Ready", true) and  self:OwnerIsValid() and not self:GetOwner():KeyDown(IN_ATTACK2) and not self:GetOwner():KeyDown(IN_ATTACK) then
 		self:ThrowStart()
 	end
 	BaseClass.Think2(self)
@@ -152,7 +152,7 @@ function SWEP:PrimaryAttack()
 		self:SetNW2Bool("Charging", true)
 
 		if IsFirstTimePredicted() then
-			timer.Simple(self.Owner:GetViewModel():SequenceDuration(), function()
+			timer.Simple(self:GetOwner():GetViewModel():SequenceDuration(), function()
 				if IsValid(self) then
 					self:SetNW2Bool("Charging", false)
 					self:SetNW2Bool("Ready", true)
@@ -174,7 +174,7 @@ end
 
 function SWEP:CanFire()
 	if not self:OwnerIsValid() then return false end
-	local vm = self.Owner:GetViewModel()
+	local vm = self:GetOwner():GetViewModel()
 	local seq = vm:GetSequence()
 	local act = vm:GetSequenceActivity(seq)
 	if not (act == ACT_VM_DRAW or act == ACT_VM_IDLE) then return false end

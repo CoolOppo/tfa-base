@@ -149,7 +149,7 @@ function SWEP:SetupWeaponHoldTypeForAI(t)
 end
 
 function SWEP:TranslateActivity(act)
-	if (self.Owner:IsNPC()) then
+	if (self:GetOwner():IsNPC()) then
 		if (self.ActivityTranslateAI[act]) then return self.ActivityTranslateAI[act] end
 
 		return -1
@@ -169,9 +169,9 @@ function SWEP:GetCapabilities()
 
 	if SERVER and not self.HasSetOwnerCapabilities then
 		if self.IsMelee or self.IsKnife then
-			self.Owner:CapabilitiesRemove(CAP_WEAPON_RANGE_ATTACK1)
-			self.Owner:CapabilitiesRemove(CAP_INNATE_RANGE_ATTACK1)
-			self.Owner:CapabilitiesAdd(CAP_WEAPON_MELEE_ATTACK1)
+			self:GetOwner():CapabilitiesRemove(CAP_WEAPON_RANGE_ATTACK1)
+			self:GetOwner():CapabilitiesRemove(CAP_INNATE_RANGE_ATTACK1)
+			self:GetOwner():CapabilitiesAdd(CAP_WEAPON_MELEE_ATTACK1)
 		end
 
 		self.HasSetOwnerCapabilities = true

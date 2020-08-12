@@ -143,7 +143,7 @@ function ENT:TargetEnt( init )
 				self.enthasbones = false
 			else
 				if ent.SetupBones then
-					ent:SetupBones( )
+					ent:SetupBones()
 				end
 
 				bonepos, bonerot = ent:GetBonePosition(bone)

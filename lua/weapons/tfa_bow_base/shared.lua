@@ -101,11 +101,11 @@ function SWEP:Think2(...)
 	end
 
 	if TFA.Enum.ReadyStatus[self:GetStatus()] and self:CanPrimaryAttack() then
-		if self.Owner:KeyDown(IN_ATTACK2) and self:GetCharge() > self.ChargeThreshold then
+		if self:GetOwner():KeyDown(IN_ATTACK2) and self:GetCharge() > self.ChargeThreshold then
 			self:PlayAnimation(self.BowAnimations.cancel)
 			self:SetStatus(TFA.GetStatus("bow_cancel"))
 			self:SetStatusEnd(CurTime() + self:GetActivityLength())
-		elseif self.Owner:KeyDown(IN_ATTACK) then
+		elseif self:GetOwner():KeyDown(IN_ATTACK) then
 			if self:GetCharge() <= 0 then
 				self:PlayAnimation(self.BowAnimations.draw)
 				self:SetCharge(0.01)
@@ -215,7 +215,7 @@ end
 
 --[[
 Function Name:  ShootBulletInformation
-Syntax: self:ShootBulletInformation( ).
+Syntax: self:ShootBulletInformation().
 Returns:   Nothing.
 Notes:	Used to generate a self.MainBullet table which is then sent to self:ShootBullet, and also to call shooteffects.
 Purpose:  Bullet

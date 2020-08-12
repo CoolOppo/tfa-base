@@ -67,7 +67,7 @@ hook.Add("PlayerPostThink", "TFA.DelayedBulletEvents", PlayerPostThink)
 
 --[[
 Function Name:  ShootBulletInformation
-Syntax: self:ShootBulletInformation( ).
+Syntax: self:ShootBulletInformation().
 Returns:   Nothing.
 Notes:  Used to generate a self.MainBullet table which is then sent to self:ShootBullet, and also to call shooteffects.
 Purpose:  Bullet
@@ -254,7 +254,7 @@ end
 
 --[[
 Function Name:  GetAmmoRicochetMultiplier
-Syntax: self:GetAmmoRicochetMultiplier( ).
+Syntax: self:GetAmmoRicochetMultiplier().
 Returns:  The ricochet multiplier for our ammotype.  More is more chance to ricochet.
 Notes:  Only compatible with default ammo types, unless you/I mod that.  BMG ammotype is detected based on name and category.
 Purpose:  Utility
@@ -286,7 +286,7 @@ end
 
 --[[
 Function Name:  GetMaterialConcise
-Syntax: self:GetMaterialConcise( ).
+Syntax: self:GetMaterialConcise().
 Returns:  The string material name.
 Notes:  Always lowercase.
 Purpose:  Utility

@@ -48,7 +48,7 @@ end
 
 --[[
 Function Name:  ProcessEvents
-Syntax: self:ProcessEvents( ).
+Syntax: self:ProcessEvents().
 Returns:  Nothing.
 Notes: Critical for the event table to function.
 Purpose:  Main SWEP function

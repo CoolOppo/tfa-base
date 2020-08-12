@@ -113,7 +113,7 @@ surface.CreateFont("TFAAttachmentTTBody", {
 local headerfont = "TFAAttachmentTTHeader"
 local bodyfont = "TFAAttachmentTTBody"
 
-function PANEL:GetHeaderHeight( )
+function PANEL:GetHeaderHeight()
 	if not IsValid(self.Wep) then return 0 end
 	if not self.Header then return 0 end
 	surface.SetFont(headerfont)
@@ -121,7 +121,7 @@ function PANEL:GetHeaderHeight( )
 	return th + padding * 2
 end
 
-function PANEL:GetHeaderSize( )
+function PANEL:GetHeaderSize()
 	if not IsValid(self.Wep) then return 0, 0 end
 	if not self.Header then return 0, 0 end
 	surface.SetFont(headerfont)
@@ -129,7 +129,7 @@ function PANEL:GetHeaderSize( )
 	return tw + padding * 2, th + padding * 2
 end
 
-function PANEL:GetTextTableHeight( )
+function PANEL:GetTextTableHeight()
 	if not self.TextTable or #self.TextTable <= 0 then return 0 end
 	local hv = padding
 	surface.SetFont(bodyfont)
@@ -206,7 +206,7 @@ function PANEL:DrawTextTable( x, y )
 	return hv
 end
 
-function PANEL:CalcSize( )
+function PANEL:CalcSize()
 	local header_w, header_h = self:GetHeaderSize()
 	local text_w, text_h = self:GetTextTableSize()
 	self:SetWidthOld( math.max( self.DefaultWidth, math.max( header_w, text_w ) + padding * 2 ))

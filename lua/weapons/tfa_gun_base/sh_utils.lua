@@ -414,7 +414,7 @@ end
 
 --[[
 Function Name:  IsSafety
-Syntax: self:IsSafety( ).
+Syntax: self:IsSafety().
 Returns:   Are we in safety firemode.
 Notes:  Non.
 Purpose:  Utility
@@ -483,7 +483,7 @@ end
 
 --[[
 Function Name:  IsCurrentlyScoped
-Syntax: self:IsCurrentlyScoped( ).
+Syntax: self:IsCurrentlyScoped().
 Returns:   Is the player scoped in enough to display the overlay?  true/false, returns a boolean.
 Notes:  Change SWEP.ScopeOverlayThreshold to change when the overlay is displayed.
 Purpose:  Utility
@@ -495,7 +495,7 @@ end
 
 --[[
 Function Name:  IsHidden
-Syntax: self:IsHidden( ).
+Syntax: self:IsHidden().
 Returns:   Should we hide self?.
 Notes:
 Purpose:  Utility
@@ -512,7 +512,7 @@ end
 
 --[[
 Function Name:  IsFirstPerson
-Syntax: self:IsFirstPerson( ).
+Syntax: self:IsFirstPerson().
 Returns:   Is the owner in first person.
 Notes:  Broken in singplayer because gary.
 Purpose:  Utility
@@ -762,7 +762,7 @@ function SWEP:Unload()
 	self:SetClip1(0)
 
 	if self.OwnerIsValid and self:OwnerIsValid() and self.Owner.GiveAmmo then
-		self.Owner:GiveAmmo(amm, self:GetPrimaryAmmoType(), true)
+		self:GetOwner():GiveAmmo(amm, self:GetPrimaryAmmoType(), true)
 	end
 end
 
@@ -779,7 +779,7 @@ function SWEP:Unload2()
 	self:SetClip2(0)
 
 	if self.OwnerIsValid and self:OwnerIsValid() and self.Owner.GiveAmmo then
-		self.Owner:GiveAmmo(amm, self:GetSecondaryAmmoType(), true)
+		self:GetOwner():GiveAmmo(amm, self:GetSecondaryAmmoType(), true)
 	end
 end
 

@@ -80,7 +80,7 @@ function BallisticBullet:_setup()
 	end
 
 	if self.playerOwned == nil then
-		self.playerOwned = self.owner.IsPlayer and self.owner:IsPlayer()
+		self.playerOwned = self.owner.IsPlayer and self:GetOwner():IsPlayer()
 	end
 
 	self.startVelocity = self.startVelocity or self.velocity:Length()
@@ -151,13 +151,13 @@ function BallisticBullet:_moveSafe(newPos)
 
 	--collision trace
 	if self.playerOwned then
-		self.owner:LagCompensation(true)
+		self:GetOwner():LagCompensation(true)
 	end
 
 	util.TraceLine(traceData)
 
 	if self.playerOwned then
-		self.owner:LagCompensation(false)
+		self:GetOwner():LagCompensation(false)
 	end
 
 	--collision check
@@ -194,13 +194,13 @@ function BallisticBullet:Impact(tr)
 	})
 
 	if self.playerOwned then
-		self.owner:LagCompensation(true)
+		self:GetOwner():LagCompensation(true)
 	end
 
-	self.owner:FireBullets(bul, true)
+	self:GetOwner():FireBullets(bul, true)
 
 	if self.playerOwned then
-		self.owner:LagCompensation(false)
+		self:GetOwner():LagCompensation(false)
 	end
 end
 
@@ -271,13 +271,13 @@ function BallisticBullet:Render()
 
 				fpos = self.curmodel:LocalToWorld(self.vOffsetPos)
 				fang = self.curmodel:LocalToWorldAngles(self.vOffsetAng)
-			elseif self.owner:IsPlayer() and cv_tracers_adv:GetBool() then
+			elseif self:GetOwner():IsPlayer() and cv_tracers_adv:GetBool() then
 				local spos, sang = self.pos, self.velocity:Angle()
 				self.curmodel:SetPos(spos)
 				self.curmodel:SetAngles(sang)
 
 				if not self.vOffsetPos then
-					local npos = self.owner:GetActiveWeapon():GetAttachment(1) or DEFANGPOS
+					local npos = self:GetOwner():GetActiveWeapon():GetAttachment(1) or DEFANGPOS
 					self.vOffsetPos = self.curmodel:WorldToLocal(npos.Pos)
 					self.vOffsetAng = self.curmodel:WorldToLocalAngles(npos.Ang)
 				end
@@ -303,7 +303,7 @@ function BallisticBullet:Render()
 		self.cursmoke = CreateParticleSystem(self.curmodel, self.smokeparticle, PATTACH_ABSORIGIN_FOLLOW, 1)
 		self.cursmoke:StartEmission()
 	elseif self.cursmoke then
-		self.cursmoke:SetSortOrigin(self.owner:GetShootPos())
+		self.cursmoke:SetSortOrigin(self:GetOwner():GetShootPos())
 
 		if self.Underwater then
 			self.cursmoke:StopEmission()

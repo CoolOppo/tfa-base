@@ -404,7 +404,7 @@ end
 
 --[[
 Function Name:  CacheAnimations
-Syntax: self:CacheAnimations( ).  Call as much as you like.
+Syntax: self:CacheAnimations().  Call as much as you like.
 Returns:  Nothing.
 Notes:  This is what autodetects animations for the SWEP.SequenceEnabled and SWEP.SequenceLength tables.
 Purpose:  Autodetection

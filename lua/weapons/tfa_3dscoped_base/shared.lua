@@ -112,7 +112,7 @@ function SWEP:UpdateScopeType( force )
 			self.Secondary.IronFOV_Backup = self.Secondary.IronFOV
 			self.Secondary.IronFOV = 70
 			if CLIENT then
-				self.IronSightsSensitivity = self:Get3DSensitivity( )
+				self.IronSightsSensitivity = self:Get3DSensitivity()
 			end
 			self.Secondary.ScopeZoom = nil
 		end

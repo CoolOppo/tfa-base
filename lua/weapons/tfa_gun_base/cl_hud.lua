@@ -118,7 +118,7 @@ end
 --
 --[[
 Function Name:  DoInspectionDerma
-Syntax: self:DoInspectionDerma( ).
+Syntax: self:DoInspectionDerma().
 Returns:  Nothing.
 Notes:  Used to manage our Derma.
 Purpose:  Used to manage our Derma.
@@ -780,7 +780,7 @@ local tricross_cvar = GetConVar("cl_tfa_hud_crosshair_triangular")
 
 --[[
 Function Name:  DrawHUD
-Syntax: self:DrawHUD( ).
+Syntax: self:DrawHUD().
 Returns:  Nothing.
 Notes:  Used to draw the HUD.  Can you read?
 Purpose:  HUD
