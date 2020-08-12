@@ -51,7 +51,8 @@ local function BallisticFirebullet(ply, bul, ovr)
 	end
 end
 
-local function PlayerPostThink(self)
+local function FinishMove(self)
+	if not IsFirstTimePredicted() then return end
 	local data = self.TFA_BulletEvents
 
 	if data and #data ~= 0 then
@@ -63,7 +64,7 @@ local function PlayerPostThink(self)
 	end
 end
 
-hook.Add("PlayerPostThink", "TFA.DelayedBulletEvents", PlayerPostThink)
+hook.Add("FinishMove", "TFA.DelayedBulletEvents", FinishMove)
 
 --[[
 Function Name:  ShootBulletInformation
@@ -390,9 +391,11 @@ end
 local decalbul = {
 	Num = 1,
 	Spread = vector_origin,
-	Tracer = 0,
-	Force = 0.5,
-	Damage = 0.1
+	Tracer = 1,
+	TracerName = "",
+	Force = 0,
+	Damage = 0,
+	Distance = 40
 }
 
 local maxpen
@@ -423,10 +426,11 @@ local nextdebugcol = -1
 local debugsphere1 = Color(149, 189, 230)
 local debugsphere2 = Color(34, 43, 53)
 local debugsphere3 = Color(255, 255, 255)
+local debugsphere4 = Color(0, 0, 255)
+local debugsphere5 = Color(12, 255, 0)
 
 function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon, penetrated)
 	--debugoverlay.Sphere( self.Src, 5, 5, color_white, true)
-	if CLIENT then return end
 
 	DisableOwnerDamage(ply, traceres, dmginfo)
 
@@ -538,7 +542,7 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon, penetrated)
 
 	local isent = IsValid(traceres.Entity)
 	local pentraceres2, pentrace2
-	local startpos
+	local startpos, decalstartpos, outnormal
 
 	if isent then
 		table.insert(penetrated, traceres.Entity)
@@ -569,11 +573,14 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon, penetrated)
 
 		pentraceres2 = util.TraceLine(pentrace2)
 		loss = pentraceres2.HitPos:Distance(pentrace.start) * mult
+		outnormal = pentraceres2.HitNormal
 
 		if pentraceres2.HitPos:Distance(pentrace.start) < 0.01 then
 			-- bullet stuck in
 			loss = self.PenetrationPower
 		end
+
+		decalstartpos = pentraceres2.HitPos + newdir * 3
 	else
 		if pentraceres.AllSolid then
 			return
@@ -581,7 +588,10 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon, penetrated)
 			return
 		end
 
-		startpos = LerpVector(pentraceres.FractionLeftSolid, pentrace.start, pentrace.endpos) + newdir
+		outnormal = pentraceres.HitNormal
+
+		startpos = LerpVector(pentraceres.FractionLeftSolid, pentrace.start, pentrace.endpos) + newdir * 2
+		decalstartpos = startpos + newdir * 2
 		loss = startpos:Distance(pentrace.start) * mult
 	end
 
@@ -609,6 +619,8 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon, penetrated)
 	local prev = self.PenetrationPower
 	self.PenetrationPower = self.PenetrationPower - loss
 
+	local mfac = self.PenetrationPower / self.InitialPenetrationPower
+
 	local bul = {
 		PenetrationPower = self.PenetrationPower,
 		PenetrationCount = self.PenetrationCount,
@@ -617,28 +629,24 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon, penetrated)
 		InitialForce = self.InitialForce,
 		Src = startpos,
 		Dir = newdir,
-	}
+		Tracer = 1,
+		TracerName = self.TracerName,
+		IgnoreEntity = traceres.Entity,
 
-	local mfac = self.PenetrationPower / self.InitialPenetrationPower
+		Num = 1,
+		Force = self.InitialForce * mfac,
+		Damage = self.InitialDamage * mfac,
+		Penetrate = self.Penetrate,
+		MakeDoor = self.MakeDoor,
+		HandleDoor = self.HandleDoor,
+		Ricochet = self.Ricochet,
+		Spread = vector_origin,
+		Wep = weapon,
+	}
 
 	if SERVER and develop:GetBool()  then
 		DLib.debugoverlay.Text(startpos, string.format('penetrate %.3f->%.3f %d %.3f', prev, self.PenetrationPower, self.PenetrationCount, mfac), 10)
 	end
-
-	bul.Tracer = 0 --weapon.TracerName and 0 or 1
-	bul.TracerName = ""
-	bul.Num = 1
-	bul.Force = self.InitialForce * mfac
-	bul.Damage = self.InitialDamage * mfac
-	bul.Penetrate = self.Penetrate
-	bul.MakeDoor = self.MakeDoor
-	bul.HandleDoor = self.HandleDoor
-	bul.Ricochet = self.Ricochet
-	bul.Spread = vector_origin
-	bul.Wep = weapon
-	bul.Tracer = 0
-	bul.TracerName = ""
-	bul.IgnoreEntity = traceres.Entity
 
 	function bul.Callback(attacker, trace, dmginfo)
 		if SERVER and develop:GetBool()  then
@@ -657,31 +665,22 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon, penetrated)
 		end
 	end
 
-	decalbul.Dir = -traceres.Normal * 64
-
-	if IsValid(ply) and ply:IsPlayer() then
-		decalbul.Dir = ply:EyeAngles():Forward() * (-64)
-	end
-
-	decalbul.Src = pentraceres.HitPos - decalbul.Dir * 4
-	decalbul.Damage = 0.1
-	decalbul.Force = 0.1
-	decalbul.Tracer = 0
-	decalbul.TracerName = ""
+	decalbul.Dir = -newdir
+	decalbul.Src = decalstartpos
 	decalbul.Callback = DisableOwnerDamage
+
+	if SERVER and develop:GetBool()  then
+		DLib.debugoverlay.Cross(decalbul.Src, 8, 10, debugsphere4, true)
+		DLib.debugoverlay.Cross(decalbul.Src + decalbul.Dir * decalbul.Distance, 8, 10, debugsphere5, true)
+	end
 
 	if self.PenetrationCount <= 1 and IsValid(weapon) then
 		weapon:PCFTracer(self, pentraceres.HitPos or traceres.HitPos, true)
 	end
 
-	--else
 	local fx = EffectData()
 	fx:SetOrigin(bul.Src)
 	fx:SetNormal(bul.Dir)
-
-	if IsValid(ply) then
-		fx:SetNormal(ply:EyeAngles():Forward())
-	end
 
 	fx:SetMagnitude((bul.PenetrationCount + 1) * 1000)
 	fx:SetEntity(weapon)
@@ -700,7 +699,7 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon, penetrated)
 			table.insert(ply.TFA_BulletEvents, function()
 				if IsValid(ply) then
 					if cv_decalbul:GetBool() then
-						--ply:FireBullets(decalbul)
+						ply:FireBullets(decalbul)
 					end
 
 					BallisticFirebullet(ply, bul, true)
@@ -710,7 +709,7 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon, penetrated)
 			timer.Simple(0, function()
 				if IsValid(ply) then
 					if cv_decalbul:GetBool() then
-						--ply:FireBullets(decalbul)
+						ply:FireBullets(decalbul)
 					end
 
 					BallisticFirebullet(ply, bul, true)
