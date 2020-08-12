@@ -105,6 +105,7 @@ Purpose:  Bullet
 --
 local TracerName
 local cv_forcemult = GetConVar("sv_tfa_force_multiplier")
+local sv_tfa_bullet_penetration_power_mul = GetConVar("sv_tfa_bullet_penetration_power_mul")
 
 function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet, bulletoverride)
 	if not IsFirstTimePredicted() and not game.SinglePlayer() then return end
@@ -198,7 +199,7 @@ function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet,
 
 	self.MainBullet.TracerName = TracerName
 	self.MainBullet.PenetrationCount = 0
-	self.MainBullet.PenetrationPower = self:GetStat("Primary.PenetrationPower")
+	self.MainBullet.PenetrationPower = self:GetStat("Primary.PenetrationPower") * sv_tfa_bullet_penetration_power_mul:GetFloat(1)
 	self.MainBullet.InitialPenetrationPower = self.MainBullet.PenetrationPower
 	self.MainBullet.AmmoType = self:GetPrimaryAmmoType()
 	self.MainBullet.Force = damage / 10 * self:GetAmmoForceMultiplier()
@@ -429,6 +430,20 @@ local debugsphere3 = Color(255, 255, 255)
 local debugsphere4 = Color(0, 0, 255)
 local debugsphere5 = Color(12, 255, 0)
 
+local IsInWorld
+
+if CLIENT then
+	local tr = {collisiongroup = COLLISION_GROUP_WORLD}
+
+	function IsInWorld(pos)
+		tr.start = pos
+		tr.endpos = pos
+		return not util.TraceLine(tr).AllSolid
+	end
+else
+	IsInWorld = util.IsInWorld
+end
+
 function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon, penetrated)
 	--debugoverlay.Sphere( self.Src, 5, 5, color_white, true)
 
@@ -531,7 +546,8 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon, penetrated)
 
 	local mult = weapon:GetPenetrationMultiplier(traceres.MatType)
 	local newdir = (traceres.HitPos - traceres.StartPos):GetNormalized()
-	local penetrationoffset = newdir * l_mathClamp(self.PenetrationPower / mult, 0, 1000)
+	local desired_length = l_mathClamp(self.PenetrationPower / mult, 0, 1000)
+	local penetrationoffset = newdir * desired_length
 
 	local pentrace = {
 		start = traceres.HitPos,
@@ -557,6 +573,37 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon, penetrated)
 	local pentraceres2, pentrace2
 	local loss
 
+	if not isent then
+		local acc_length = pentraceres.HitPos:Distance(pentraceres.StartPos)
+		local ostart, oend = pentrace.start, pentrace.endpos
+		local lastend
+		local iter = 0
+
+		local cond = (pentraceres.AllSolid or not IsInWorld(pentraceres.HitPos)) and acc_length < desired_length
+
+		while (pentraceres.AllSolid or not IsInWorld(pentraceres.HitPos)) and acc_length < desired_length and iter < 10 do
+			iter = iter + 1
+			local slen = desired_length - acc_length
+
+			pentrace.start = pentraceres.HitPos + newdir
+			pentrace.endpos = pentraceres.HitPos + newdir * slen
+
+			if SERVER and develop:GetBool() and DLib then
+				DLib.debugoverlay.Cross(pentrace.start, 8, 10, Color(iter / 10 * 255, iter / 10 * 255, iter / 10 * 255), true)
+			end
+
+			lastend = pentrace.endpos
+
+			pentraceres = util.TraceLine(pentrace)
+			acc_length = acc_length + pentraceres.HitPos:Distance(pentraceres.StartPos)
+		end
+
+		if cond and not pentraceres.AllSolid then
+			pentrace.start = ostart
+			pentraceres.StartPos = ostart
+		end
+	end
+
 	if isent then
 		startpos = pentraceres.HitPos - newdir
 		local ent = traceres.Entity
@@ -581,29 +628,31 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon, penetrated)
 		end
 
 		decalstartpos = pentraceres2.HitPos + newdir * 3
-	else
-		if pentraceres.AllSolid then
-			return
-		elseif SERVER and not util.IsInWorld(pentraceres.HitPos) then
-			return
-		end
 
+		if SERVER and develop:GetBool() and DLib then
+			nextdebugcol = (nextdebugcol + 1) % #debugcolors
+			DLib.debugoverlay.Line(pentrace.start, pentrace.endpos, 10, debugcolors[nextdebugcol + 1], true)
+			DLib.debugoverlay.Cross(pentrace.start, 8, 10, debugsphere1, true)
+			DLib.debugoverlay.Cross(pentraceres2.HitPos, 8, 10, debugsphere2, true)
+		end
+	else
 		outnormal = pentraceres.HitNormal
 
 		startpos = LerpVector(pentraceres.FractionLeftSolid, pentrace.start, pentrace.endpos) + newdir * 2
 		decalstartpos = startpos + newdir * 2
 		loss = startpos:Distance(pentrace.start) * mult
-	end
 
-	if SERVER and develop:GetBool() and DLib then
-		nextdebugcol = (nextdebugcol + 1) % #debugcolors
-		DLib.debugoverlay.Line(pentrace.start, pentrace.endpos, 10, debugcolors[nextdebugcol + 1], true)
-		DLib.debugoverlay.Cross(pentrace.start, 8, 10, debugsphere1, true)
-
-		if isent then
-			DLib.debugoverlay.Cross(pentraceres2.HitPos, 8, 10, debugsphere2, true)
-		else
+		if SERVER and develop:GetBool() and DLib then
+			nextdebugcol = (nextdebugcol + 1) % #debugcolors
+			DLib.debugoverlay.Line(pentrace.start, pentrace.endpos, 10, debugcolors[nextdebugcol + 1], true)
+			DLib.debugoverlay.Cross(pentrace.start, 8, 10, debugsphere1, true)
 			DLib.debugoverlay.Cross(startpos, 8, 10, debugsphere2, true)
+		end
+
+		if pentraceres.AllSolid then
+			return
+		elseif not IsInWorld(pentraceres.HitPos) then
+			return
 		end
 	end
 

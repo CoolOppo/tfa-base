@@ -38,6 +38,7 @@ if CLIENT then
 			sv_tfa_default_clip = "-1",
 			sv_tfa_arrow_lifetime = "30",
 			sv_tfa_force_multiplier = "1",
+			sv_tfa_bullet_penetration_power_mul = "1",
 			sv_tfa_dynamicaccuracy = "1",
 			sv_tfa_range_modifier = "0.5",
 			sv_tfa_spread_multiplier = "1",
@@ -84,6 +85,7 @@ if CLIENT then
 		TFA.NumSliderNet(panel, "#tfa.svsettings.jamfactorinc", "sv_tfa_jamming_factor_inc", 0.01, 10, 2)
 
 		TFA.NumSliderNet(panel, "#tfa.svsettings.forcemult", "sv_tfa_force_multiplier", 0, 10, 2)
+		TFA.NumSliderNet(panel, "#tfa.svsettings.penpowermul", "sv_tfa_bullet_penetration_power_mul", 0, 10, 2)
 		TFA.NumSliderNet(panel, "#tfa.svsettings.spreadmult", "sv_tfa_spread_multiplier", 0, 10, 2)
 		TFA.NumSliderNet(panel, "#tfa.svsettings.penetrationlimit", "sv_tfa_penetration_hardlimit", 0, 10, 2)
 		TFA.NumSliderNet(panel, "#tfa.svsettings.defaultclip", "sv_tfa_default_clip", -1, 10, 0)

@@ -61,6 +61,10 @@ if GetConVar("sv_tfa_penetration_hardlimit") == nil then
 	CreateReplConVar("sv_tfa_penetration_hardlimit", "100", "Max number of objects we can penetrate through.")
 end
 
+if GetConVar("sv_tfa_bullet_penetration_power_mul") == nil then
+	CreateReplConVar("sv_tfa_bullet_penetration_power_mul", "1", "Power multiplier. Set to 3 for CS1.6 experience")
+end
+
 if GetConVar("sv_tfa_penetration_hitmarker") == nil then
 	CreateReplConVar("sv_tfa_penetration_hitmarker", "1", "Should penetrating bullet send hitmarker to attacker?")
 end
