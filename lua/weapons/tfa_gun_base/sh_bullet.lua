@@ -519,7 +519,7 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon, penetrated)
 	end
 
 	if self:Ricochet(ply, traceres, dmginfo, weapon) then
-		if SERVER and develop:GetBool() then
+		if SERVER and develop:GetBool() and DLib then
 			DLib.debugoverlay.Text(traceres.HitPos - Vector(0, 0, 12), 'ricochet', 10)
 		end
 
@@ -595,7 +595,7 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon, penetrated)
 		loss = startpos:Distance(pentrace.start) * mult
 	end
 
-	if SERVER and develop:GetBool() then
+	if SERVER and develop:GetBool() and DLib then
 		nextdebugcol = (nextdebugcol + 1) % #debugcolors
 		DLib.debugoverlay.Line(pentrace.start, pentrace.endpos, 10, debugcolors[nextdebugcol + 1], true)
 		DLib.debugoverlay.Cross(pentrace.start, 8, 10, debugsphere1, true)
@@ -608,7 +608,7 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon, penetrated)
 	end
 
 	if self.PenetrationPower - loss <= 0 then
-		if SERVER and develop:GetBool() then
+		if SERVER and develop:GetBool() and DLib then
 			DLib.debugoverlay.Text(startpos, string.format('Lost penetration power %.3f %.3f', self.PenetrationPower, loss), 10)
 		end
 
@@ -644,12 +644,12 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon, penetrated)
 		Wep = weapon,
 	}
 
-	if SERVER and develop:GetBool()  then
+	if SERVER and develop:GetBool() and DLib  then
 		DLib.debugoverlay.Text(startpos, string.format('penetrate %.3f->%.3f %d %.3f', prev, self.PenetrationPower, self.PenetrationCount, mfac), 10)
 	end
 
 	function bul.Callback(attacker, trace, dmginfo)
-		if SERVER and develop:GetBool()  then
+		if SERVER and develop:GetBool() and DLib  then
 			DLib.debugoverlay.Cross(trace.HitPos, 8, 10, debugsphere3, true)
 			DLib.debugoverlay.Text(trace.HitPos - Vector(0, 0, 7), string.format('hit %.3f %d', mfac, bul.PenetrationCount, bul.PenetrationPower), 10)
 		end
@@ -669,7 +669,7 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon, penetrated)
 	decalbul.Src = decalstartpos
 	decalbul.Callback = DisableOwnerDamage
 
-	if SERVER and develop:GetBool()  then
+	if SERVER and develop:GetBool() and DLib  then
 		DLib.debugoverlay.Cross(decalbul.Src, 8, 10, debugsphere4, true)
 		DLib.debugoverlay.Cross(decalbul.Src + decalbul.Dir * decalbul.Distance, 8, 10, debugsphere5, true)
 	end
