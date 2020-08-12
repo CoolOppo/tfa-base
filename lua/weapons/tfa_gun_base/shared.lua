@@ -2048,13 +2048,13 @@ function SWEP:ProcessLoopSound()
 end
 
 function SWEP:ProcessLoopFire()
-	if sp and !IsFirstTimePredicted() then return end
+	if sp and not IsFirstTimePredicted() then return end
 	if (self:GetStatus() == TFA.Enum.STATUS_SHOOTING ) then
 		if TFA.Enum.ShootLoopingStatus[self:GetShootStatus()] then
 			self:SetShootStatus(TFA.Enum.SHOOT_LOOP)
 		end
 	else --not shooting
-		if (!TFA.Enum.ShootReadyStatus[self:GetShootStatus()]) then
+		if (not TFA.Enum.ShootReadyStatus[self:GetShootStatus()]) then
 			if ( self:GetShootStatus() ~= TFA.Enum.SHOOT_CHECK ) then
 				self:SetShootStatus(TFA.Enum.SHOOT_CHECK) --move to check first
 			else --if we've checked for one more tick that we're not shooting
