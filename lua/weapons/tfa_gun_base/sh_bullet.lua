@@ -582,6 +582,7 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon, penetrated)
 	if not isent then
 		local acc_length = pentraceres.HitPos:Distance(pentraceres.StartPos)
 		local ostart, oend = pentrace.start, pentrace.endpos
+		local FractionLeftSolid = pentraceres.FractionLeftSolid
 		local lastend
 		local iter = 0
 
@@ -602,11 +603,11 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon, penetrated)
 		end
 
 		if cond and not (pentraceres.AllSolid or not IsInWorld2(pentraceres.HitPos)) then
-			pentraceres.FractionLeftSolid = ostart:Distance(pentrace.start) / ostart:Distance(pentrace.endpos) + pentraceres.FractionLeftSolid
+			pentraceres.FractionLeftSolid = ostart:Distance(pentrace.start) / ostart:Distance(pentrace.endpos) + pentraceres.FractionLeftSolid + 0.02
 			pentrace.start = ostart
 			pentraceres.StartPos = ostart
 		else
-			pentraceres.FractionLeftSolid = 0
+			pentraceres.FractionLeftSolid = FractionLeftSolid
 			pentrace.start = ostart
 			pentraceres.StartPos = ostart
 		end
