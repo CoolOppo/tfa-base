@@ -219,6 +219,26 @@ end
 
 local sp = game.SinglePlayer()
 
+function SWEP:TFAMove(ply, movedata)
+	local ft = TFA.FrameTime()
+	local self2 = self:GetTable()
+
+	local velocity = self:GetNW2Vector("QueuedRecoil", false)
+
+	if velocity and velocity:Length() ~= 0 then
+		movedata:SetVelocity(movedata:GetVelocity() + velocity)
+		self:SetNW2Vector("QueuedRecoil", vector_origin)
+	end
+end
+
+hook.Add("Move", "TFAMove", function(self, movedata)
+	local weapon = self:GetActiveWeapon()
+
+	if IsValid(weapon) and weapon:IsTFA() then
+		weapon:TFAMove(self, movedata)
+	end
+end)
+
 function SWEP:Recoil(recoil, ifp)
 	if sp and type(recoil) == "string" then
 		local _, CurrentRecoil = self:CalculateConeRecoil()
