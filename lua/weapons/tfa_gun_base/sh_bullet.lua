@@ -689,7 +689,7 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon, penetrated)
 		fx:SetScale(pentraceres.Entity:EntIndex())
 	end
 
-	fx:SetRadius(bul.Damage / 32)
+	fx:SetRadius(l_mathClamp(self.Damage / 4, 6, 32))
 	TFA.Effects.Create("tfa_penetrate", fx)
 
 	if IsValid(ply) then
