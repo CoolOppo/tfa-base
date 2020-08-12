@@ -444,6 +444,8 @@ function SWEP:SetTFAAttachment(cat, id, nw, force)
 	end
 
 	self2.ClearStatCache(self)
+	self2.ClearMaterialCache(self)
+	self2.ClearBodygroupCache(self)
 
 	if id > 0 then
 		self2.Attachments[cat].sel = id
@@ -651,46 +653,54 @@ function SWEP:ProcessBodygroups()
 		self.HasFilledBodygroupTables = true
 	end
 
-	if self:VMIV() then
-		bgt = self:GetStat("Bodygroups_V", self.Bodygroups_V)
+	if not self.BodygroupsCached_V then
+		if self:VMIV() then
+			bgt = self:GetStat("Bodygroups_V", self.Bodygroups_V)
+
+			for k, v in pairs(bgt) do
+				v = self:GetStat("Bodygroups_V." .. k, v)
+
+				if type(v) == "table" then continue end -- BASECLASS OUT
+
+				if type(k) == "string" then
+					local _k = self.OwnerViewModel:FindBodygroupByName(k)
+
+					k = _k >= 0 and _k or tonumber(k)
+				elseif bgt[self.OwnerViewModel:GetBodygroupName(k)] then
+					continue -- bodygroup names have the priority over indexes
+				end
+
+				if k and self.OwnerViewModel:GetBodygroup(k) ~= v then
+					self.OwnerViewModel:SetBodygroup(k, v)
+				end
+			end
+
+			self.BodygroupsCached_V = true
+		end
+	end
+
+	if not self.BodygroupsCached_W then
+		bgt = self:GetStat("Bodygroups_W", self.Bodygroups_W)
 
 		for k, v in pairs(bgt) do
-			v = self:GetStat("Bodygroups_V." .. k, v)
+			v = self:GetStat("Bodygroups_W." .. k, v)
 
 			if type(v) == "table" then continue end -- BASECLASS OUT
 
 			if type(k) == "string" then
-				local _k = self.OwnerViewModel:FindBodygroupByName(k)
+				local _k = self:FindBodygroupByName(k)
 
 				k = _k >= 0 and _k or tonumber(k)
-			elseif bgt[self.OwnerViewModel:GetBodygroupName(k)] then
+			elseif bgt[self:GetBodygroupName(k)] then
 				continue -- bodygroup names have the priority over indexes
 			end
 
-			if k and self.OwnerViewModel:GetBodygroup(k) ~= v then
-				self.OwnerViewModel:SetBodygroup(k, v)
+			if k and self:GetBodygroup(k) ~= v then
+				self:SetBodygroup(k, v)
 			end
 		end
-	end
 
-	bgt = self:GetStat("Bodygroups_W", self.Bodygroups_W)
-
-	for k, v in pairs(bgt) do
-		v = self:GetStat("Bodygroups_W." .. k, v)
-
-		if type(v) == "table" then continue end -- BASECLASS OUT
-
-		if type(k) == "string" then
-			local _k = self:FindBodygroupByName(k)
-
-			k = _k >= 0 and _k or tonumber(k)
-		elseif bgt[self:GetBodygroupName(k)] then
-			continue -- bodygroup names have the priority over indexes
-		end
-
-		if k and self:GetBodygroup(k) ~= v then
-			self:SetBodygroup(k, v)
-		end
+		self.BodygroupsCached_W = true
 	end
 end
 
@@ -712,4 +722,9 @@ function SWEP:CallAttFunc(funcName, ...)
 	end
 
 	return nil
+end
+
+function SWEP:ClearBodygroupCache()
+	self.BodygroupsCached_V = nil
+	self.BodygroupsCached_W = nil
 end

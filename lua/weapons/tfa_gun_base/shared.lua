@@ -348,13 +348,8 @@ SWEP.DefaultFOV = 90
 local function l_Lerp(v, f, t)
 	return f + (t - f) * v
 end
-
 local l_mathApproach = math.Approach
 local l_CT = CurTime
-
-
---[[Localize Functions]]
-local l_ct = CurTime
 --[[Frequently Reused Local Vars]]
 local stat, statend --Weapon status
 local ct, ft  = 0, 0.01--Curtime, frametime, real frametime
@@ -797,12 +792,12 @@ Returns:  Nothing.
 Notes:  Essential for calling other important functions.
 Purpose:  Standard SWEP Function
 ]]
-local CT, is, spr, wlk, cst, waittime, sht, lact, finalstat
+local is, spr, wlk, cst, waittime, sht, lact, finalstat
 
 function SWEP:Think2()
-	CT = CurTime()
+	ct = l_CT()
 
-	if self.LuaShellRequestTime > 0 and CT > self.LuaShellRequestTime then
+	if self.LuaShellRequestTime > 0 and ct > self.LuaShellRequestTime then
 		self.LuaShellRequestTime = -1
 		self:MakeShell()
 	end
@@ -837,7 +832,6 @@ function SWEP:Think2()
 		statend = -1
 	end
 	is = self:GetIronSights()
-	ct = l_ct()
 	stat = self:GetStatus()
 	statend = self:GetStatusEnd()
 
@@ -870,7 +864,7 @@ function SWEP:Think2()
 				waittime = self:GetActivityLength( self:GetLastActivity(), false ) - self:GetActivityLength( self:GetLastActivity(), true )
 				if waittime > 0.01 then
 					finalstat = TFA.GetStatus("reloading_wait")
-					self:SetStatusEnd( CT + waittime )
+					self:SetStatusEnd( ct + waittime )
 				else
 					finalstat = self:LoadShell()
 				end
@@ -894,7 +888,7 @@ function SWEP:Think2()
 			end
 			if waittime > 0.01 then
 				finalstat = TFA.GetStatus("reloading_wait")
-				self:SetStatusEnd( CT + waittime )
+				self:SetStatusEnd( ct + waittime )
 			else
 				if self:Ammo1() <= 0 or self:Clip1() >= self:GetPrimaryClipSize() or self:GetShotgunCancel() then
 					finalstat = TFA.Enum.STATUS_RELOADING_SHOTGUN_END
@@ -910,7 +904,7 @@ function SWEP:Think2()
 			waittime = self:GetActivityLength( self:GetLastActivity(), false ) - self:GetActivityLength( self:GetLastActivity(), true )
 			if waittime > 0.01 then
 				finalstat = TFA.GetStatus("reloading_wait")
-				self:SetStatusEnd( CT + waittime )
+				self:SetStatusEnd( ct + waittime )
 			end
 			--self:SetStatusEnd( self:GetNextPrimaryFire() )
 		elseif stat == TFA.Enum.STATUS_SILENCER_TOGGLE then
@@ -954,7 +948,7 @@ function SWEP:Think2()
 				if success == false then
 					self:SetNextIdleAnim(-1)
 				else
-					self:SetNextIdleAnim(math.max(self:GetNextIdleAnim(),CT + 0.1))
+					self:SetNextIdleAnim(math.max(self:GetNextIdleAnim(),ct + 0.1))
 				end
 			end
 		end
@@ -966,14 +960,14 @@ function SWEP:Think2()
 				self:PrimaryAttack()
 			else
 				self:SetBurstCount(0)
-				self:SetNextPrimaryFire( CT + self:GetBurstDelay() )
+				self:SetNextPrimaryFire( ct + self:GetBurstDelay() )
 			end
 		end
 	end
 
 	if stat == TFA.Enum.STATUS_IDLE and self:GetShotgunCancel() then
 		if self:GetStat("PumpAction") then
-			if CT > self:GetNextPrimaryFire() and not self:GetOwner():KeyDown(IN_ATTACK) then
+			if ct > self:GetNextPrimaryFire() and not self:GetOwner():KeyDown(IN_ATTACK) then
 				self:DoPump()
 			end
 		else
@@ -1004,7 +998,7 @@ if CLIENT then
 end
 
 function SWEP:IronSights()
-	if self.Owner:IsNPC() then
+	if self:GetOwner():IsNPC() then
 		return
 	end
 
@@ -1055,10 +1049,10 @@ function SWEP:IronSights()
 		if self:GetStat("BoltAction") or self:GetStat("BoltAction_Forced") then
 			if stat == TFA.Enum.STATUS_SHOOTING then
 				if not self.LastBoltShoot then
-					self.LastBoltShoot = CurTime()
+					self.LastBoltShoot = l_CT()
 				end
 
-				if CurTime() > self.LastBoltShoot + self.BoltTimerOffset then
+				if l_CT() > self.LastBoltShoot + self.BoltTimerOffset then
 					issighting = false
 				end
 			elseif (stat == TFA.Enum.STATUS_IDLE and self:GetShotgunCancel(true)) or stat == TFA.Enum.STATUS_PUMP then
@@ -1109,10 +1103,10 @@ function SWEP:IronSights()
 	if self:GetStat("BoltAction") or self:GetStat("BoltAction_Forced") then
 		if stat == TFA.Enum.STATUS_SHOOTING then
 			if not self.LastBoltShoot then
-				self.LastBoltShoot = CurTime()
+				self.LastBoltShoot = l_CT()
 			end
 
-			if CurTime() > self.LastBoltShoot + self.BoltTimerOffset then
+			if l_CT() > self.LastBoltShoot + self.BoltTimerOffset then
 				issighting = false
 			end
 		elseif (stat == TFA.Enum.STATUS_IDLE and self:GetShotgunCancel(true)) or stat == TFA.Enum.STATUS_PUMP then
@@ -1180,10 +1174,10 @@ function SWEP:GetIronSights( ignorestatus )
 		if self:GetStat("BoltAction") or self:GetStat("BoltAction_Forced") then
 			if stat == TFA.Enum.STATUS_SHOOTING then
 				if not self.LastBoltShoot then
-					self.LastBoltShoot = CurTime()
+					self.LastBoltShoot = l_CT()
 				end
 
-				if CurTime() > self.LastBoltShoot + self.BoltTimerOffset then
+				if l_CT() > self.LastBoltShoot + self.BoltTimerOffset then
 					issighting = false
 				end
 			elseif (stat == TFA.Enum.STATUS_IDLE and self:GetShotgunCancel(true)) or stat == TFA.Enum.STATUS_PUMP then
@@ -1210,10 +1204,10 @@ function SWEP:GetIronSights( ignorestatus )
 		if self:GetStat("BoltAction") or self:GetStat("BoltAction_Forced") then
 			if stat == TFA.Enum.STATUS_SHOOTING then
 				if not self.LastBoltShoot then
-					self.LastBoltShoot = CurTime()
+					self.LastBoltShoot = l_CT()
 				end
 
-				if CurTime() > self.LastBoltShoot + self.BoltTimerOffset then
+				if l_CT() > self.LastBoltShoot + self.BoltTimerOffset then
 					issighting = false
 				end
 			elseif (stat == TFA.Enum.STATUS_IDLE and self:GetShotgunCancel(true)) or stat == TFA.Enum.STATUS_PUMP then
@@ -1281,7 +1275,7 @@ function SWEP:CanPrimaryAttack( )
 		return v
 	end
 	if self.Owner:IsNPC() and SERVER then
-		if CurTime() < self:GetNextPrimaryFire() then
+		if l_CT() < self:GetNextPrimaryFire() then
 			return false
 		end
 		return true
@@ -1349,7 +1343,7 @@ function SWEP:CanPrimaryAttack( )
 
 	self.HasPlayedEmptyClick = false
 
-	if CurTime() < self:GetNextPrimaryFire() then return false end
+	if l_CT() < self:GetNextPrimaryFire() then return false end
 
 	local v2 = hook.Run("TFA_CanPrimaryAttack",self)
 
@@ -1370,7 +1364,7 @@ function SWEP:CanPrimaryAttack( )
 			self:SendViewModelSeq(tanim)
 		end
 
-		self:SetNextPrimaryFire(CurTime() + 1)
+		self:SetNextPrimaryFire(l_CT() + 1)
 
 		return false
 	end
@@ -1386,7 +1380,7 @@ SWEP.Primary.Sound_NearlyEmpty = Sound("TFA.NearlyEmpty") -- cs:go-like nearly-e
 function SWEP:EmitGunfireLoop()
 	local tgtSound = self:GetSilenced() and self:GetStat("Primary.LoopSoundSilenced", self:GetStat("Primary.LoopSound")) or self:GetStat("Primary.LoopSound")
 
-	if self:GetNextLoopSoundCheck() < 0 or (CurTime() >= self:GetNextLoopSoundCheck() and self.LastLoopSound ~= tgtSound) then
+	if self:GetNextLoopSoundCheck() < 0 or (l_CT() >= self:GetNextLoopSoundCheck() and self.LastLoopSound ~= tgtSound) then
 		if self.LastLoopSound ~= tgtSound and self.LastLoopSound ~= nil then
 			self:StopSound(self.LastLoopSound)
 		end
@@ -1396,7 +1390,7 @@ function SWEP:EmitGunfireLoop()
 		self:EmitSound(tgtSound)
 	end
 
-	self:SetNextLoopSoundCheck(CurTime() + self:GetFireDelay())
+	self:SetNextLoopSoundCheck(l_CT() + self:GetFireDelay())
 
 	if not sv_tfa_nearlyempty:GetBool() then return end
 
@@ -1414,7 +1408,7 @@ function SWEP:EmitGunfireLoop()
 	self.GonnaAdjuctPitch = true
 	self.RequiredPitch = pitch
 
-	self:EmitSound(self:GetStat("Primary.Sound_NearlyEmpty"), "TFA.NearlyEmpty")
+	self:EmitSound(self:GetStat("Primary.Sound_NearlyEmpty", "TFA.NearlyEmpty"))
 end
 
 function SWEP:EmitGunfireSound(soundscript)
@@ -1444,7 +1438,7 @@ function SWEP:EmitGunfireSound(soundscript)
 	self.GonnaAdjuctPitch = true
 	self.RequiredPitch = pitch
 
-	self:EmitSound(self:GetStat("Primary.Sound_NearlyEmpty"), "TFA.NearlyEmpty")
+	self:EmitSound(self:GetStat("Primary.Sound_NearlyEmpty", "TFA.NearlyEmpty"))
 end
 
 function SWEP:PrimaryAttack()
@@ -1458,7 +1452,7 @@ function SWEP:PrimaryAttack()
 			return
 		end
 
-		if SERVER and CurTime() < self:GetNextPrimaryFire() then return false end
+		if SERVER and l_CT() < self:GetNextPrimaryFire() then return false end
 
 		local times_to_fire = 2
 
@@ -1470,7 +1464,7 @@ function SWEP:PrimaryAttack()
 			times_to_fire = math.random(5, 8)
 		end
 
-		self:SetNextPrimaryFire(CurTime() + (((self.Primary.RPM / 60) / 100) * times_to_fire) + math.random(0.2, 0.6))
+		self:SetNextPrimaryFire(l_CT() + (((self.Primary.RPM / 60) / 100) * times_to_fire) + math.random(0.2, 0.6))
 
 		timer.Create("GunTimer" .. tostring(self:GetOwner():EntIndex()), (self.Primary.RPM / 60) / 100, times_to_fire, function()
 			if not IsValid(self) then return end
@@ -1508,7 +1502,7 @@ function SWEP:PrimaryAttack()
 		return
 	end
 
-	self:SetNextPrimaryFire(CurTime() + self:GetFireDelay())
+	self:SetNextPrimaryFire(l_CT() + self:GetFireDelay())
 
 	if self:GetMaxBurst() > 1 then
 		self:SetBurstCount(math.max(1, self:GetBurstCount() + 1))
@@ -1537,7 +1531,7 @@ function SWEP:PrimaryAttack()
 	self:TakePrimaryAmmo(self:GetStat("Primary.AmmoConsumption"))
 
 	if self:Clip1() == 0 and self:GetStat("Primary.ClipSize") > 0 then
-		self:SetNextPrimaryFire(math.max(self:GetNextPrimaryFire(), CurTime() + (self.Primary.DryFireDelay or self:GetActivityLength(tanim, true))))
+		self:SetNextPrimaryFire(math.max(self:GetNextPrimaryFire(), l_CT() + (self.Primary.DryFireDelay or self:GetActivityLength(tanim, true))))
 	end
 
 	self:ShootBulletInformation()
@@ -1759,9 +1753,9 @@ function SWEP:DoPump()
 	end
 	local _,tanim = self:PlayAnimation( self:GetStat("PumpAction") )
 	self:SetStatus( TFA.GetStatus("pump") )
-	self:SetStatusEnd( CurTime() + self:GetActivityLength( tanim, true ) )
-	self:SetNextPrimaryFire( CurTime() + self:GetActivityLength( tanim, false ) )
-	self:SetNextIdleAnim(math.max( self:GetNextIdleAnim(), CurTime() + self:GetActivityLength( tanim, false ) ))
+	self:SetStatusEnd( l_CT() + self:GetActivityLength( tanim, true ) )
+	self:SetNextPrimaryFire( l_CT() + self:GetActivityLength( tanim, false ) )
+	self:SetNextIdleAnim(math.max( self:GetNextIdleAnim(), l_CT() + self:GetActivityLength( tanim, false ) ))
 end
 
 function SWEP:LoadShell( )
@@ -1820,7 +1814,7 @@ end
 
 local cv_strip = GetConVar("sv_tfa_weapon_strip")
 function SWEP:DoAmmoCheck()
-	if self.Owner:IsNPC() then
+	if self:GetOwner():IsNPC() then
 		return
 	end
 	if IsValid(self) and SERVER and cv_strip:GetBool() and self:Clip1() == 0 and self:Ammo1() == 0 then
@@ -1983,7 +1977,7 @@ function SWEP:RollJamChance()
 	if not self:CanBeJammed() then return false end
 	if self:IsJammed() then return true end
 	local chance = self:GetJamChance()
-	local roll = util.SharedRandom('tfa_base_jam', math.max(0.002711997795105, math.pow(chance, 1.19)), 1, CurTime())
+	local roll = util.SharedRandom('tfa_base_jam', math.max(0.002711997795105, math.pow(chance, 1.19)), 1, l_CT())
 	--print(chance, roll)
 
 	if roll <= chance * sv_tfa_jamming_mult:GetFloat() then
@@ -2049,7 +2043,7 @@ function SWEP:ProcessLoopSound()
 end
 
 function SWEP:ProcessLoopFire()
-	if game.SinglePlayer() and !IsFirstTimePredicted() then return end
+	if sp and !IsFirstTimePredicted() then return end
 	if (self:GetStatus() == TFA.Enum.STATUS_SHOOTING ) then
 		if TFA.Enum.ShootLoopingStatus[self:GetShootStatus()] then
 			self:SetShootStatus(TFA.Enum.SHOOT_LOOP)
