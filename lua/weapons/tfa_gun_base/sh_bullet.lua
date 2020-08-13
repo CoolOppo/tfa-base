@@ -588,7 +588,7 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon, penetrated)
 
 	local mult = weapon:GetPenetrationMultiplier(traceres.MatType)
 	local newdir = (traceres.HitPos - traceres.StartPos):GetNormalized()
-	local desired_length = l_mathClamp(self.PenetrationPower / mult, 0, 1000)
+	local desired_length = l_mathClamp(self.PenetrationPower / mult, 0, l_mathClamp(sv_tfa_bullet_penetration_power_mul:GetFloat() * 100, 1000, 8000))
 	local penetrationoffset = newdir * desired_length
 
 	local pentrace = {
@@ -690,7 +690,7 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon, penetrated)
 	else
 		outnormal = pentraceres.HitNormal
 
-		startpos = LerpVector(pentraceres.FractionLeftSolid, pentrace.start, pentrace.endpos) + newdir * 2
+		startpos = LerpVector(pentraceres.FractionLeftSolid, pentrace.start, pentrace.endpos) + newdir * 4
 		realstartpos = startpos
 		decalstartpos = startpos + newdir * 2
 		loss = startpos:Distance(pentrace.start) * mult
@@ -706,6 +706,22 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon, penetrated)
 			return
 		elseif not IsInWorld(pentraceres.HitPos) then
 			return
+		end
+
+		if not IsInWorld2(startpos) then
+			for i = 1, 10 do
+				startpos = LerpVector(pentraceres.FractionLeftSolid, pentrace.start, pentrace.endpos) + newdir * ((4 - i) * 3)
+
+				if IsInWorld2(startpos) then break end
+
+				startpos = LerpVector(pentraceres.FractionLeftSolid, pentrace.start, pentrace.endpos) + newdir * ((4 + i) * 3)
+
+				if IsInWorld2(startpos) then break end
+			end
+
+			if not IsInWorld2(startpos) then
+				return
+			end
 		end
 	end
 
