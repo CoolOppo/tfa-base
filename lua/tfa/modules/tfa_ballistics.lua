@@ -30,7 +30,8 @@ end
 TFA.Ballistics = TFA.Ballistics or {}
 TFA.Ballistics.Enabled = false
 TFA.Ballistics.Gravity = Vector(0, 0, -cv_gravity:GetFloat())
-TFA.Ballistics.Bullets = {bullet_registry = {}}
+TFA.Ballistics.Bullets = TFA.Ballistics.Bullets or {}
+TFA.Ballistics.Bullets.bullet_registry = TFA.Ballistics.Bullets.bullet_registry or {}
 TFA.Ballistics.BulletLife = 10
 TFA.Ballistics.UnitScale = TFA.UnitScale or 39.3701 --meters to inches
 TFA.Ballistics.AirResistance = 1
