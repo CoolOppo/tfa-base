@@ -312,10 +312,12 @@ function TFA.Ballistics.Bullets:Render()
 	end
 end
 
+local sp = game.SinglePlayer()
+
 --Netcode and Hooks
 if CLIENT then
 	net.Receive(TFA.Ballistics.BulletCreationNetString, function()
-		if game.SinglePlayer() or cv_receive:GetBool() then
+		if sp or cv_receive:GetBool() then
 			local wep, b, ang
 			wep = net.ReadEntity()
 			b = net.ReadTable()
@@ -327,13 +329,6 @@ if CLIENT then
 	end)
 end
 
-
-if SERVER then
-	hook.Remove("PlayerPostThink", "TFABallisticsTick", function(self)
-		TFA.Ballistics.Bullets:Update(self)
-	end)
-end
-
 hook.Add("FinishMove", "TFABallisticsTick", function(self)
 	if IsFirstTimePredicted() then
 		TFA.Ballistics.Bullets:Update(self)
@@ -342,6 +337,10 @@ end)
 
 hook.Add("Tick", "TFABallisticsTick", function()
 	TFA.Ballistics.Bullets:Update()
+
+	if CLIENT and sp then
+		TFA.Ballistics.Bullets:Update(LocalPlayer())
+	end
 end)
 
 --Rendering
