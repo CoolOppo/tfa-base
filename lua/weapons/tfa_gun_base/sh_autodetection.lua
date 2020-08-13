@@ -79,7 +79,7 @@ function SWEP:AutoDetectRange()
 	local self2 = self:GetTable()
 	if self2.Primary.FalloffMetricBased then return end
 
-	if trueself2.Primary.Range <= 0 and self2.Primary.RangeFalloff <= 0 or legacy_range_cv:GetBool() then
+	if self2.Primary.Range <= 0 and self2.Primary.RangeFalloff <= 0 or legacy_range_cv:GetBool() then
 		self2.Primary.FalloffMetricBased = true
 
 		local am = string.lower(self2.Primary.Ammo or "")
