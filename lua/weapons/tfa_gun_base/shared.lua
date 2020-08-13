@@ -773,7 +773,7 @@ function SWEP:Think()
 	local self2 = self:GetTable()
 	self2.CalculateRatios(self)
 
-	if self2.OwnerIsValid(self) and self:GetOwner():IsNPC() then
+	if self:GetOwner():IsNPC() then
 		if SERVER then
 			if self2.ThinkNPC then self2.ThinkNPC(self) end
 
@@ -1502,7 +1502,7 @@ function SWEP:PrimaryAttack()
 	self:PrePrimaryAttack()
 
 	if self:GetOwner():IsNPC() then
-		if self:Clip1() <= 0 then
+		if self:Clip1() <= 0 and self:GetMaxClip1() > 0 then
 			if SERVER then
 				self:GetOwner():SetSchedule(SCHED_RELOAD)
 			end
@@ -1522,23 +1522,31 @@ function SWEP:PrimaryAttack()
 			times_to_fire = math.random(5, 8)
 		end
 
+		if self:GetMaxClip1() > 0 then
+			times_to_fire = math.min(self:GetMaxClip1(), times_to_fire)
+		end
+
 		self:SetNextPrimaryFire(l_CT() + (((self2.Primary.RPM / 60) / 100) * times_to_fire) + math.random(0.2, 0.6))
 
-		timer.Create("GunTimer" .. tostring(self:GetOwner():EntIndex()), (self2.Primary.RPM / 60) / 100, times_to_fire, function()
-			if not IsValid(self) then return end
-			if not IsValid(self2.Owner) then return end
+		timer.Create("TFA_NPCWeaponTimer_" .. tostring(self:GetOwner():EntIndex()), (self2.Primary.RPM / 60) / 100, times_to_fire, function()
+			if not IsValid(self) or not self:GetOwner() then return end
 			if not self:GetOwner().GetShootPos then return end
+
 			self:EmitGunfireSound(self2.Primary.Sound)
-			self:TakePrimaryAmmo(1)
-			local damage_to_do = self2.Primary.Damage * npc_ar2_damage_cv:GetFloat() / 16
+			self:TakePrimaryAmmo(self:GetStat("Primary.AmmoConsumption"))
+
+			--[[local damage_to_do = self2.Primary.Damage * npc_ar2_damage_cv:GetFloat() / 16
+
 			local bullet = {}
+
 			bullet.Num = self2.Primary.NumShots
 			bullet.Src = self:GetOwner():GetShootPos()
 			bullet.Dir = self:GetOwner():GetAimVector()
 			bullet.Tracer = 1
 			bullet.Damage = damage_to_do
-			bullet.AmmoType = self2.Primary.Ammo
-			self:GetOwner():FireBullets(bullet)
+			bullet.AmmoType = self2.Primary.Ammo]]
+
+			self:ShootBulletInformation()
 		end)
 
 		return

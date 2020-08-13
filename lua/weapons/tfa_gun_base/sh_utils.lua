@@ -355,12 +355,14 @@ end
 
 function SWEP:Ammo1()
 	if not self:GetOwner():IsValid() then return false end
+	if self:GetOwner():IsNPC() then return 9999 end
 
 	return self:GetOwner():GetAmmoCount(self:GetPrimaryAmmoTypeC() or 0)
 end
 
 function SWEP:Ammo2()
 	if not self:GetOwner():IsValid() then return false end
+	if self:GetOwner():IsNPC() then return 9999 end
 
 	return self:GetOwner():GetAmmoCount(self:GetSecondaryAmmoTypeC() or -1)
 end
@@ -369,6 +371,7 @@ function SWEP:TakePrimaryAmmo(num, pool)
 	-- Doesn't use clips
 	if self:GetStat("Primary.ClipSize") < 0 or pool then
 		if (self:Ammo1() <= 0) then return end
+		if not self:GetOwner():IsPlayer() then return end
 		self:GetOwner():RemoveAmmo(math.min(self:Ammo1(), num), self:GetPrimaryAmmoTypeC())
 
 		return
@@ -381,6 +384,7 @@ function SWEP:TakeSecondaryAmmo(num, pool)
 	-- Doesn't use clips
 	if self:GetStat("Secondary.ClipSize") < 0 or pool then
 		if (self:Ammo2() <= 0) then return end
+		if not self:GetOwner():IsPlayer() then return end
 		self:GetOwner():RemoveAmmo(math.min(self:Ammo2(), num), self:GetSecondaryAmmoTypeC())
 
 		return

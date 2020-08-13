@@ -118,13 +118,13 @@ function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet,
 		for _ = 1, num_bullets do
 			local ent = ents.Create(self:GetStat("Primary.Projectile"))
 			local dir
-			local ang = self:GetOwner():EyeAngles()
+			local ang = self:GetOwner():GetAimVector():Angle()
 			ang:RotateAroundAxis(ang:Right(), -aimcone / 2 + math.Rand(0, aimcone))
 			ang:RotateAroundAxis(ang:Up(), -aimcone / 2 + math.Rand(0, aimcone))
 			dir = ang:Forward()
 			ent:SetPos(self:GetOwner():GetShootPos())
 			ent:SetOwner(self:GetOwner())
-			ent:SetAngles(self:GetOwner():EyeAngles())
+			ent:SetAngles(ang)
 			ent.damage = self:GetStat("Primary.Damage")
 			ent.mydamage = self:GetStat("Primary.Damage")
 
@@ -184,7 +184,10 @@ function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet,
 	self.MainBullet.Src = ow:GetShootPos()
 
 	local ang = ow:EyeAngles()
-	ang:Add(ow:GetViewPunchAngles())
+
+	if ow:IsPlayer() then
+		ang:Add(ow:GetViewPunchAngles())
+	end
 
 	self.MainBullet.Dir = ang:Forward()
 	self.MainBullet.HullSize = self:GetStat("Primary.HullSize") or 0
@@ -270,9 +273,15 @@ function SWEP:Recoil(recoil, ifp)
 
 	self:SetNW2Float("SpreadRatio", l_mathClamp(self:GetNW2Float("SpreadRatio") + self:GetStat("Primary.SpreadIncrement"), 1, self:GetStat("Primary.SpreadMultiplierMax")))
 
-	local seed = self:GetSeed() + 1
+	if owner:IsPlayer() then
+		self:SetNW2Vector("QueuedRecoil", -owner:EyeAngles():Forward() * self:GetStat("Primary.Knockback") * cv_forcemult:GetFloat() * recoil / 5)
+	else
+		owner:SetVelocity(owner:GetVelocity() - owner:EyeAngles():Forward() * self:GetStat("Primary.Knockback") * cv_forcemult:GetFloat() * recoil / 5)
+	end
 
-	self:SetNW2Vector("QueuedRecoil", -owner:EyeAngles():Forward() * self:GetStat("Primary.Knockback") * cv_forcemult:GetFloat() * recoil / 5)
+	if not owner:IsPlayer() then return end
+
+	local seed = self:GetSeed() + 1
 
 	local tmprecoilang = Angle(
 		util.SharedRandom("TFA_KickDown", self:GetStat("Primary.KickDown"), self:GetStat("Primary.KickUp"), seed) * recoil * -1,

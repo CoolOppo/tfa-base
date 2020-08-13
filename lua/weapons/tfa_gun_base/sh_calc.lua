@@ -19,6 +19,8 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
+TFA.GUESS_NPC_WALKSPEED = 160
+
 local function l_Lerp(t, a, b) return a + (b - a) * t end
 local function l_mathMin(a, b) return (a < b) and a or b end
 local function l_mathMax(a, b) return (a > b) and a or b end
@@ -49,11 +51,12 @@ local sprint_cv = GetConVar("sv_tfa_sprint_enabled")
 function SWEP:TFAFinishMove(ply, velocity, movedata)
 	local ft = TFA.FrameTime()
 	local self2 = self:GetTable()
+	local isply = ply:IsPlayer()
 
 	local jr_targ = math.min(math.abs(velocity.z) / 500, 1)
 	self:SetNW2Float("JumpRatio", l_mathApproach(self:GetNW2Float("JumpRatio", 0), jr_targ, (jr_targ - self:GetNW2Float("JumpRatio", 0)) * ft * 20))
 	self2.JumpRatio = self:GetNW2Float("JumpRatio", 0)
-	self:SetNW2Float("CrouchingRatio", l_mathApproach(self:GetNW2Float("CrouchingRatio", 0), (ply:Crouching() and ply:OnGround()) and 1 or 0, ft / self2.ToCrouchTime))
+	self:SetNW2Float("CrouchingRatio", l_mathApproach(self:GetNW2Float("CrouchingRatio", 0), ((isply and ply:Crouching()) and ply:OnGround()) and 1 or 0, ft / self2.ToCrouchTime))
 	self2.CrouchingRatio = self:GetNW2Float("CrouchingRatio", 0)
 
 	local status = self2.GetStatus(self)
@@ -62,13 +65,13 @@ function SWEP:TFAFinishMove(ply, velocity, movedata)
 
 	if TFA.Enum.ReloadStatus[status] then
 		self:SetSprinting(false)
-	elseif sprint_cv:GetBool() and not self:GetStat("AllowSprintAttack", false) then
+	elseif sprint_cv:GetBool() and not self:GetStat("AllowSprintAttack", false) and movedata then
 		self:SetSprinting(vellen > ply:GetRunSpeed() * 0.6 and movedata:KeyDown(IN_SPEED) and ply:OnGround())
 	else
 		self:SetSprinting(false)
 	end
 
-	self:SetWalking(vellen > (ply:GetWalkSpeed() * self:GetStat("MoveSpeed", 1) * .75) and ply:GetNW2Bool("TFA_IsWalking") and ply:OnGround() and not self:GetSprinting() and not self:GetCustomizing())
+	self:SetWalking(vellen > ((isply and ply:GetWalkSpeed() or TFA.GUESS_NPC_WALKSPEED) * self:GetStat("MoveSpeed", 1) * .75) and ply:GetNW2Bool("TFA_IsWalking") and ply:OnGround() and not self:GetSprinting() and not self:GetCustomizing())
 
 	self2.walking_updated = oldwalking ~= self:GetWalking()
 	self2.sprinting_updated = oldsprinting ~= self:GetSprinting()
@@ -88,7 +91,8 @@ end)
 
 function SWEP:CalculateRatios()
 	local owent = self:GetOwner()
-	if not IsValid(owent) or not owent:IsPlayer() then return end
+	--if not IsValid(owent) or not owent:IsPlayer() then return end
+	if not IsValid(owent) then return end
 
 	local self2 = self:GetTable()
 
@@ -113,6 +117,10 @@ function SWEP:CalculateRatios()
 		adstransitionspeed = 7.5
 	else
 		adstransitionspeed = 12.5
+	end
+
+	if not owent:IsPlayer() then
+		self:TFAFinishMove(owent, owent:GetVelocity())
 	end
 
 	self:SetNW2Float("SpreadRatio", l_mathClamp(self:GetNW2Float("SpreadRatio", 0) - self2.GetStat(self, "Primary.SpreadRecovery") * ft, 1, self2.GetStat(self, "Primary.SpreadMultiplierMax")))
@@ -179,8 +187,11 @@ function SWEP:CalculateConeRecoil()
 		crec = l_Lerp(crc_2, l_Lerp(crc_1, crec, self2.GetStat(self, "Primary.Recoil") * self2.GetStat(self, "ChangeStateRecoilMultiplier")), crec * self2.GetStat(self, "CrouchRecoilMultiplier"))
 	end
 
-	local ovel = self:GetOwner():GetVelocity():Length2D()
-	local vfc_1 = l_mathClamp(ovel / self:GetOwner():GetWalkSpeed(), 0, 2)
+	local owner = self:GetOwner()
+	local isply = owner:IsPlayer()
+
+	local ovel = owner:GetVelocity():Length2D()
+	local vfc_1 = l_mathClamp(ovel / (isply and owner:GetWalkSpeed() or TFA.GUESS_NPC_WALKSPEED), 0, 2)
 
 	if dynacc then
 		ccon = l_Lerp(vfc_1, ccon, ccon * self2.GetStat(self, "WalkAccuracyMultiplier"))
@@ -198,6 +209,22 @@ function SWEP:CalculateConeRecoil()
 
 	if mult_cvar then
 		ccon = ccon * mult_cvar:GetFloat()
+	end
+
+	if not isply then
+		local prof = owner:GetCurrentWeaponProficiency()
+
+		if prof == WEAPON_PROFICIENCY_POOR then
+			ccon = ccon * 8
+		elseif prof == WEAPON_PROFICIENCY_AVERAGE then
+			ccon = ccon * 5
+		elseif prof == WEAPON_PROFICIENCY_GOOD then
+			ccon = ccon * 3
+		elseif prof == WEAPON_PROFICIENCY_VERY_GOOD then
+			ccon = ccon * 2
+		elseif prof == WEAPON_PROFICIENCY_PERFECT then
+			ccon = ccon * 1.5
+		end
 	end
 
 	return ccon, crec
