@@ -853,14 +853,14 @@ function SWEP:DrawHUDAmmo()
 	lfm = fm
 
 	if targ == 1 then
-		lactive = l_CT()
-	elseif l_CT() < lactive + hudhangtime_cvar:GetFloat() then
+		lactive = RealTime()
+	elseif RealTime() < lactive + hudhangtime_cvar:GetFloat() then
 		targ = 1
 	elseif self:GetOwner():KeyDown(IN_RELOAD) then
 		targ = 1
 	end
 
-	self2.CLAmmoProgress = math.Approach(self2.CLAmmoProgress, targ, (targ - self2.CLAmmoProgress) * FrameTime() * 2 / hudfade_cvar:GetFloat())
+	self2.CLAmmoProgress = math.Approach(self2.CLAmmoProgress, targ, (targ - self2.CLAmmoProgress) * RealFrameTime() * 2 / hudfade_cvar:GetFloat())
 
 	local myalpha = 225 * self2.CLAmmoProgress
 	if myalpha < 1 then return end
@@ -1032,7 +1032,7 @@ function SWEP:DoDrawCrosshair()
 	end
 
 	self2.clrelp = self2.clrelp or 0
-	self2.clrelp = math.Approach(self2.clrelp, TFA.Enum.ReloadStatus[stat] and 0 or 1, ((TFA.Enum.ReloadStatus[stat] and 0 or 1) - self2.clrelp) * FrameTime() * 15)
+	self2.clrelp = math.Approach(self2.clrelp, TFA.Enum.ReloadStatus[stat] and 0 or 1, ((TFA.Enum.ReloadStatus[stat] and 0 or 1) - self2.clrelp) * RealFrameTime() * 15)
 	local crossa = crossa_cvar:GetFloat() * math.pow(math.min(1 - ((self:GetNW2Float("IronSightsProgress") and not self2.DrawCrosshairIS) and self:GetNW2Float("IronSightsProgress") or 0), 1 - self:GetNW2Float("SprintProgress"), 1 - self:GetNW2Float("InspectingProgress"), self2.clrelp), 2)
 	local outa = outa_cvar:GetFloat() * math.pow(math.min(1 - ((self:GetNW2Float("IronSightsProgress") and not self2.DrawCrosshairIS) and self:GetNW2Float("IronSightsProgress") or 0), 1 - self:GetNW2Float("SprintProgress"), 1 - self:GetNW2Float("InspectingProgress"), self2.clrelp), 2)
 	local ply = LocalPlayer()
@@ -1066,8 +1066,8 @@ function SWEP:DoDrawCrosshair()
 		local coords = trace.HitPos:ToScreen()
 		coords.x = math.Clamp(coords.x, 0, ScrW())
 		coords.y = math.Clamp(coords.y, 0, ScrH())
-		ply.interpposx = math.Approach(ply.interpposx, coords.x, (ply.interpposx - coords.x) * FrameTime() * 7.5)
-		ply.interpposy = math.Approach(ply.interpposy, coords.y, (ply.interpposy - coords.y) * FrameTime() * 7.5)
+		ply.interpposx = math.Approach(ply.interpposx, coords.x, (ply.interpposx - coords.x) * RealFrameTime() * 7.5)
+		ply.interpposy = math.Approach(ply.interpposy, coords.y, (ply.interpposy - coords.y) * RealFrameTime() * 7.5)
 		x, y = ply.interpposx, ply.interpposy
 		-- Center of screen
 	else
@@ -1332,7 +1332,7 @@ function SWEP:DrawWeaponSelection(x, y, wide, tall, alpha)
 		surface.SetTexture(icon)
 	end
 
-	fsin = self.BounceWeaponIcon and math.sin( l_CT() * 10 ) * 5 or 0
+	fsin = self.BounceWeaponIcon and math.sin( RealTime() * 10 ) * 5 or 0
 
 	-- Borders
 	y = y + 10

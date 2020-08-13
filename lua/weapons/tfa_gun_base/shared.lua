@@ -763,7 +763,7 @@ function SWEP:Think()
 	end
 end
 
-function SWEP:PlayerThink(plyv)
+function SWEP:PlayerThink(plyv, is_first_tick)
 	local self2 = self:GetTable()
 
 	if self:GetOwner():IsNPC() then
@@ -774,7 +774,7 @@ function SWEP:PlayerThink(plyv)
 
 	if not self:NullifyOIV() then return end
 
-	self:Think2()
+	self:Think2(is_first_tick)
 end
 
 function SWEP:PlayerThinkCL(plyv)
@@ -791,7 +791,7 @@ function SWEP:PlayerThinkCL(plyv)
 	self:SmokePCFLighting()
 
 	if sp then
-		self:Think2()
+		self:Think2(false)
 	end
 
 	if self:GetStat("BlowbackEnabled") then
@@ -812,32 +812,36 @@ Purpose:  Standard SWEP Function
 ]]
 local is, spr, wlk, cst, waittime, sht, lact, finalstat
 
-function SWEP:Think2()
+function SWEP:Think2(is_first_tick)
 	local self2 = self:GetTable()
+
 	ct = l_CT()
 
-	if self2.LuaShellRequestTime > 0 and ct > self2.LuaShellRequestTime then
-		self2.LuaShellRequestTime = -1
-		self:MakeShell()
+	if is_first_tick then
+		if self2.LuaShellRequestTime > 0 and ct > self2.LuaShellRequestTime then
+			self2.LuaShellRequestTime = -1
+			self:MakeShell()
+		end
+
+		if not self2.HasInitialized then
+			self:Initialize()
+		end
+
+		if not self2.HasDetectedValidAnimations then
+			self:CacheAnimations()
+			self:ChooseDrawAnim()
+		end
+
+		self:InitAttachments()
+		self:ProcessBodygroups()
+		self:ProcessEvents()
+		self:ProcessFireMode()
+		self:ProcessHoldType()
+		self:ReloadCV()
+		self:IronSightSounds()
+		self:ProcessLoopSound()
 	end
 
-	if not self2.HasInitialized then
-		self:Initialize()
-	end
-
-	if not self2.HasDetectedValidAnimations then
-		self:CacheAnimations()
-		self:ChooseDrawAnim()
-	end
-
-	self:InitAttachments()
-	self:ProcessBodygroups()
-	self:ProcessEvents()
-	self:ProcessFireMode()
-	self:ProcessHoldType()
-	self:ReloadCV()
-	self:IronSightSounds()
-	self:ProcessLoopSound()
 	is, spr, wlk, cst = self:IronSights()
 
 	if stat == TFA.Enum.STATUS_FIDGET and is then
@@ -847,13 +851,15 @@ function SWEP:Think2()
 		self:ChooseIdleAnim()
 
 		if sp then
-			self:CallOnClient("ChooseIdleAnim","")
+			self:CallOnClient("ChooseIdleAnim", "")
 		end
 
 		self2.Idle_Mode = self2.Idle_Mode_Old
 		self2.Idle_Mode_Old = nil
 		statend = -1
 	end
+
+	--if not is_first_tick then return end
 
 	is = self:GetIronSights()
 	stat = self:GetStatus()
@@ -1954,12 +1960,17 @@ function SWEP:TranslateFOV(fov)
 
 	nfov = l_Lerp(self:GetNW2Float("IronSightsProgress"), fov, fov * math.min(self:GetStat("Secondary.IronFOV") / 90, 1))
 
-	local ret = l_Lerp(self2.SprintProgress, nfov, nfov + self2.SprintFOVOffset)
+	local ret = l_Lerp(self:GetNW2Float("SprintProgress"), nfov, nfov + self2.SprintFOVOffset)
 
 	if self:OwnerIsValid() and not self2.IsMelee then
 		local vpa = self:GetOwner():GetViewPunchAngles()
 
 		ret = ret + math.abs(vpa.p) / 4 + math.abs(vpa.y) / 4 + math.abs(vpa.r) / 4
+	end
+
+	if CLIENT then
+		self2.LastTranslatedFOV2 = Lerp(RealFrameTime() * 3, self2.LastTranslatedFOV2 or ret, ret)
+		ret = self2.LastTranslatedFOV2
 	end
 
 	ret = hook.Run("TFA_TranslateFOV",self,ret) or ret
