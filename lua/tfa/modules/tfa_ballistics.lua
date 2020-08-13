@@ -102,6 +102,7 @@ cvars.AddChangeCallback("sv_tfa_ballistics_bullet_damping_water", updateCVars, "
 cvars.AddChangeCallback("sv_tfa_ballistics_bullet_velocity", updateCVars, "TFA")
 cvars.AddChangeCallback("sv_tfa_ballistics_substeps", updateCVars, "TFA")
 cvars.AddChangeCallback("sv_tfa_ballistics_mindist", updateCVars, "TFA")
+cvars.AddChangeCallback("sv_gravity", updateCVars, "TFA Ballistics")
 updateCVars()
 
 --client cvar code
@@ -124,23 +125,27 @@ end
 local CopyTable = table.Copy
 
 function TFA.Ballistics.Bullets:Add(bulletStruct, originalBulletData)
-	local b = TFA.Ballistics:Bullet(bulletStruct)
-	b.bul = CopyTable(originalBulletData or b.bul)
+	local bullet = TFA.Ballistics:Bullet(bulletStruct)
+	bullet.bul = CopyTable(originalBulletData or bullet.bul)
+	bullet.last_update = CurTime() - TFA.FrameTime()
 
-	table.insert(self.bullet_registry, b)
+	table.insert(self.bullet_registry, bullet)
+
+	bullet:_setup()
 
 	if SERVER and game.GetTimeScale() > 0.99 then
 		-- always update bullet since they are being added from predicted hook
-		b:Update(TFA.FrameTime())
+		bullet:Update(CurTime())
 	end
 end
 
 function TFA.Ballistics.Bullets:Update(ply)
 	--local delta = TimeScale(SysTime() - (self.lastUpdate or (SysTime() - FrameTime())))
-	local delta = TFA.FrameTime()
+	local delta = CurTime()
 
 	--self.lastUpdate = SysTime()
 	local toremove
+	local lply = CLIENT and LocalPlayer()
 
 	for i, bullet in ipairs(self.bullet_registry) do
 		if bullet.delete then
@@ -149,7 +154,7 @@ function TFA.Ballistics.Bullets:Update(ply)
 			end
 
 			table.insert(toremove, i)
-		elseif not ply and not bullet.playerOwned or ply == bullet.owner then
+		elseif not ply and not bullet.playerOwned or CLIENT and bullet.owner ~= lply or ply == bullet.owner then
 			for _ = 1, TFA.Ballistics.SubSteps do
 				bullet:Update(delta)
 			end
@@ -207,13 +212,14 @@ function TFA.Ballistics:ShouldUse(wep)
 	end
 end
 
-function TFA.Ballistics:FireBullets(wep, b, angIn, bulletOverride)
+function TFA.Ballistics:FireBullets(wep, bulletStruct, angIn, bulletOverride)
 	if not IsValid(wep) then return end
 	if not IsValid(wep:GetOwner()) then return end
+
 	local vel, sharedRandomSeed
 
-	if b.Velocity then
-		vel = b.Velocity
+	if bulletStruct.Velocity then
+		vel = bulletStruct.Velocity
 	elseif wep.GetStat and wep:GetStat("Primary.Velocity") then
 		vel = wep:GetStat("Primary.Velocity") * TFA.Ballistics.UnitScale
 	elseif wep.Primary and wep.Primary.Velocity then
@@ -234,8 +240,8 @@ function TFA.Ballistics:FireBullets(wep, b, angIn, bulletOverride)
 
 	vel = vel * (TFA.Ballistics.VelocityMultiplier or 1)
 
-	local oldNum = b.Num
-	b.Num = 1
+	local oldNum = bulletStruct.Num
+	bulletStruct.Num = 1
 
 	for i = 1, oldNum do
 		local ang
@@ -244,61 +250,59 @@ function TFA.Ballistics:FireBullets(wep, b, angIn, bulletOverride)
 			ang = angIn
 		else
 			ang = wep:GetOwner():EyeAngles() + wep:GetOwner():GetViewPunchAngles()
-			local ac = b.Spread
+			local ac = bulletStruct.Spread
 			sharedRandomSeed = ("Ballistics" .. tostring(CurTime()))
 			ang:RotateAroundAxis(ang:Up(), util.SharedRandom(sharedRandomSeed, -ac.x * 45, ac.x * 45, 0 + i))
 			ang:RotateAroundAxis(ang:Right(), util.SharedRandom(sharedRandomSeed, -ac.y * 45, ac.y * 45, 1 + i))
 		end
 
 		local struct = {
-			["owner"] = wep:GetOwner(), --used for dmginfo SetAttacker
-			["inflictor"] = wep, --used for dmginfo SetInflictor
-			["damage"] = b.Damage, --floating point number representing inflicted damage
-			["force"] = b.Force,
-			["pos"] = bulletOverride and b.Src or wep:GetOwner():GetShootPos(), --b.Src, --vector representing current position
-			["velocity"] = (bulletOverride and b.Dir or ang:Forward()) * vel, --b.Dir * vel, --vector representing movement velocity
-			["model"] = wep.BulletModel or b.Model, --optional variable representing the given model
-			["smokeparticle"] = b.SmokeParticle,
-			["customPosition"] = b.CustomPosition or bulletOverride
+			owner = wep:GetOwner(), --used for dmginfo SetAttacker
+			inflictor = wep, --used for dmginfo SetInflictor
+			damage = bulletStruct.Damage, --floating point number representing inflicted damage
+			force = bulletStruct.Force,
+			pos = bulletOverride and bulletStruct.Src or wep:GetOwner():GetShootPos(), --b.Src, --vector representing current position
+			velocity = (bulletOverride and bulletStruct.Dir or ang:Forward()) * vel, --b.Dir * vel, --vector representing movement velocity
+			model = wep.BulletModel or bulletStruct.Model, --optional variable representing the given model
+			smokeparticle = bulletStruct.SmokeParticle,
+			customPosition = bulletStruct.CustomPosition or bulletOverride,
+			IgnoreEntity = bulletStruct.IgnoreEntity
 		}
 
-		--disable shotgun tracers
-		if oldNum > 1 and util.SharedRandom(sharedRandomSeed, 0, math.sqrt(oldNum), i) > 1 then
-			struct.smokeparticle = ""
-		end
-
 		if CLIENT then
-			if (not cv_tracers_mp:GetBool()) and wep:GetOwner() ~= LocalPlayer() then
-				struct.smokeparticle = ""
-			elseif not struct.smokeparticle then
+			if not struct.smokeparticle then
 				struct.smokeparticle = TFA.Ballistics.TracerStyles[cv_tracers_style:GetInt()]
 			end
 		end
 
-		self.Bullets:Add(struct, b)
+		self.Bullets:Add(struct, bulletOverride)
 
 		if SERVER then
 			net.Start(TFA.Ballistics.BulletCreationNetString)
-			net.WriteEntity(wep)
 
-			net.WriteTable({
-				["Damage"] = b.Damage,
-				["Force"] = b.Force,
-				["Num"] = b.Num,
-				["Src"] = b.Src,
-				["Dir"] = b.Dir,
-				["Attacker"] = b.Attacker,
-				["Spread"] = b.Spread,
-				["SmokeParticle"] = struct.smokeparticle,
-				["CustomPosition"] = struct.customPosition,
-				["Model"] = struct.model,
-				["Velocity"] = vel
-			})
+			net.WriteEntity(struct.owner)
+			net.WriteEntity(struct.inflictor)
+			net.WriteFloat(struct.damage)
+			net.WriteFloat(struct.force)
+			net.WriteVector(struct.pos)
 
-			net.WriteAngle(ang)
+			net.WriteDouble(struct.velocity.x)
+			net.WriteDouble(struct.velocity.y)
+			net.WriteDouble(struct.velocity.z)
+
+			net.WriteString(struct.model or '')
+			net.WriteString(struct.smokeparticle or '')
+			net.WriteBool(struct.customPosition == true)
+			net.WriteEntity(struct.IgnoreEntity or NULL)
+
+			net.WriteVector(bulletStruct.Src)
+			net.WriteNormal(bulletStruct.Dir)
+			net.WriteEntity(bulletStruct.Attacker)
+			net.WriteVector(bulletStruct.Spread)
+			net.WriteFloat(vel)
 
 			if game.SinglePlayer() then
-				net.Broadcast()
+				net.SendPVS(struct.pos)
 			else
 				net.SendOmit(wep:GetOwner())
 			end
@@ -317,15 +321,62 @@ local sp = game.SinglePlayer()
 --Netcode and Hooks
 if CLIENT then
 	net.Receive(TFA.Ballistics.BulletCreationNetString, function()
-		if sp or cv_receive:GetBool() then
-			local wep, b, ang
-			wep = net.ReadEntity()
-			b = net.ReadTable()
-			ang = net.ReadAngle()
-			if not wep then return end
-			if not b then return end
-			TFA.Ballistics:FireBullets(wep, b, ang, b.CustomPosition)
+		if not sp and not cv_receive:GetBool() then return end
+
+		local owner = 			net.ReadEntity()
+		local inflictor = 		net.ReadEntity()
+		local damage = 			net.ReadFloat()
+		local force = 			net.ReadFloat()
+		local pos = 			net.ReadVector()
+		local velocity = 		Vector(net.ReadDouble(), net.ReadDouble(), net.ReadDouble())
+		local model = 			net.ReadString()
+		local smokeparticle = 	net.ReadString()
+		local customPosition = 	net.ReadBool()
+		local IgnoreEntity = 	net.ReadEntity()
+
+
+		local Src = 			net.ReadVector()
+		local Dir = 			net.ReadNormal()
+		local Attacker = 		net.ReadEntity()
+		local Spread = 			net.ReadVector()
+		local Velocity = 		net.ReadFloat()
+
+		if not IsValid(owner) or not IsValid(inflictor) then return end
+
+		if not cv_tracers_mp:GetBool() and owner ~= LocalPlayer() then
+			smokeparticle = ""
+		elseif smokeparticle == "" then
+			smokeparticle = TFA.Ballistics.TracerStyles[cv_tracers_style:GetInt()]
 		end
+
+		local struct = {
+			owner = owner,
+			inflictor = inflictor,
+			damage = damage,
+			force = force,
+			pos = pos,
+			velocity = velocity,
+			model = model ~= "" and model or nil,
+			smokeparticle = smokeparticle,
+			customPosition = customPosition,
+			IgnoreEntity = IgnoreEntity,
+		}
+
+		local bulletStruct = {
+			Damage = damage,
+			Force = force,
+			Num = 1,
+			Src = Src,
+			Dir = Dir,
+			Attacker = Attacker,
+			Spread = Spread,
+			SmokeParticle = smokeparticle,
+			CustomPosition = customPosition,
+			Model = model ~= "" and model or nil,
+			Velocity = Velocity
+		}
+
+		TFA.Ballistics.Bullets:Add(struct, bulletStruct)
 	end)
 end
 

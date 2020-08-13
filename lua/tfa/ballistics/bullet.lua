@@ -59,17 +59,22 @@ local MASK_SHOT_NOWATER = MASK_SHOT
 
 --main update block
 function BallisticBullet:Update(delta)
+	if self.delete then return end
 	self:_setup()
 	if self.delete then return end
-	local newPos = self:_getnewPosition(delta)
-	newPos = self:_checkWater(delta, newPos)
-	self:_accelerate(delta)
+
+	local realdelta = delta - self.last_update
+	self.last_update = delta
+
+	local newPos = self:_getnewPosition(realdelta)
+	newPos = self:_checkWater(realdelta, newPos)
+	self:_accelerate(realdelta)
 	self:_moveSafe(newPos)
 end
 
 --internal function for sanity checks, etc.
 function BallisticBullet:_setup()
-	self.creationTime = self.creationTime or CurTime()
+	self.creationTime = CurTime()
 
 	if (not IsValid(self.owner)) or (not IsValid(self.inflictor)) then
 		self:Remove()
@@ -79,12 +84,19 @@ function BallisticBullet:_setup()
 		self:Remove()
 	end
 
-	if self.playerOwned == nil then
-		self.playerOwned = self.owner.IsPlayer and self.owner:IsPlayer()
+	self.playerOwned = self.owner.IsPlayer and self.owner:IsPlayer()
+	self.startVelocity = self.velocity:Length()
+	self.startDamage = self.damage
+end
+
+function BallisticBullet:_think()
+	if (not IsValid(self.owner)) or (not IsValid(self.inflictor)) then
+		self:Remove()
 	end
 
-	self.startVelocity = self.startVelocity or self.velocity:Length()
-	self.startDamage = self.startDamage or self.damage
+	if CurTime() > self.creationTime + TFA.Ballistics.BulletLife then
+		self:Remove()
+	end
 end
 
 --internal function for calculating position change
@@ -236,15 +248,13 @@ function BallisticBullet:Render()
 
 	if not self.curmodel then
 		self.curmodel = ClientsideModel(self.model, RENDERGROUP_OPAQUE)
-		self.curmodel:SetNoDraw(true)
+		self.curmodel:SetNoDraw(not cv_bullet_style:GetBool())
 	end
 
-	if IsValid(self.curmodel) and (cv_bullet_style:GetBool() or self.smokeparticle ~= "") then
-		local fpos, fang
-
+	--[==[if IsValid(self.curmodel) and (cv_bullet_style:GetBool() or self.smokeparticle ~= "") then
 		if self.customPosition then
 			fpos = self.pos
-			fang = self.velocity:Angle()
+			--fang = self.velocity:Angle()
 		else
 			if self.owner == GetViewEntity() or self.owner == LocalPlayer() then
 				local spos, sang = self.pos, self.velocity:Angle()
@@ -272,7 +282,7 @@ function BallisticBullet:Render()
 				end
 
 				fpos = self.curmodel:LocalToWorld(self.vOffsetPos)
-				fang = self.curmodel:LocalToWorldAngles(self.vOffsetAng)
+				--fang = self.curmodel:LocalToWorldAngles(self.vOffsetAng)
 			elseif self.owner:IsPlayer() and cv_tracers_adv:GetBool() then
 				local spos, sang = self.pos, self.velocity:Angle()
 				self.curmodel:SetPos(spos)
@@ -285,24 +295,27 @@ function BallisticBullet:Render()
 				end
 
 				fpos = self.curmodel:LocalToWorld(self.vOffsetPos)
-				fang = self.curmodel:LocalToWorldAngles(self.vOffsetAng)
+				--fang = self.curmodel:LocalToWorldAngles(self.vOffsetAng)
 			else
 				fpos = self.pos
-				fang = self.velocity:Angle()
+				--fang = self.velocity:Angle()
 			end
 		end
 
-		self.curmodel:SetPos(fpos)
-		self.curmodel:SetAngles(fang)
-
-		if cv_bullet_style:GetBool() then
+		--[[if cv_bullet_style:GetBool() then
 			self.curmodel:SetupBones()
 			self.curmodel:DrawModel()
-		end
-	end
+		end]]
+	end]==]
+
+	local fpos, fang = self.pos, self.velocity:Angle()
+
+	self.curmodel:SetPos(fpos)
+	self.curmodel:SetAngles(fang)
 
 	if self.smokeparticle ~= "" and not self.cursmoke then
 		self.cursmoke = CreateParticleSystem(self.curmodel, self.smokeparticle, PATTACH_ABSORIGIN_FOLLOW, 1)
+		if not self.cursmoke then return end
 		self.cursmoke:StartEmission()
 	elseif self.cursmoke then
 		self.cursmoke:SetSortOrigin(self.owner:GetShootPos())
