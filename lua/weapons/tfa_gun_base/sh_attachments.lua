@@ -53,8 +53,18 @@ function SWEP:RemoveUnusedAttachments()
 	end
 end
 
-local function CloneTableRecursive(source, target)
-	for k, v in pairs(source) do
+local function CloneTableRecursive(source, target, root)
+	for k2, v in pairs(source) do
+		local k = k2
+
+		if k == "Primary" and root then
+			k = "Primary_TFA"
+		end
+
+		if k == "Secondary" and root then
+			k = "Secondary_TFA"
+		end
+
 		if istable(v) then
 			if istable(target[k]) and target[k].functionTable then
 				local baseTable = target[k]
@@ -124,8 +134,9 @@ function SWEP:BuildAttachmentCache()
 		if not TFA.Attachments.Atts[attName] then continue end
 
 		local srctbl = TFA.Attachments.Atts[attName].WeaponTable
+
 		if type(srctbl) == "table" then
-			CloneTableRecursive(srctbl, self.AttachmentTableCache)
+			CloneTableRecursive(srctbl, self.AttachmentTableCache, true)
 		end
 
 		if type(self.AttachmentTableOverride[attName]) == "table" then
