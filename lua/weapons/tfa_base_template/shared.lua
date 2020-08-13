@@ -161,6 +161,10 @@ SWEP.Primary.SpreadRecovery = nil--How much the spread recovers, per second. Exa
 --Range Related
 SWEP.Primary.Range = -1 -- The distance the bullet can travel in source units.  Set to -1 to autodetect based on damage/rpm.
 SWEP.Primary.RangeFalloff = -1 -- The percentage of the range the bullet damage starts to fall off at.  Set to 0.8, for example, to start falling off after 80% of the range.
+SWEP.Primary.FalloffMetricBased = false -- Set to true if you set up values below
+SWEP.Primary.FalloffByMeter = nil -- How much damage points will bullet loose when travel
+SWEP.Primary.MinRangeStartFalloff = nil -- How long will bullet travel in Hammer Units before starting to lose damage? To define value in meters, divide meters by 0.0254
+SWEP.Primary.MaxFalloff = nil -- Maximal amount of damage to be lost
 --Penetration Related
 SWEP.MaxPenetrationCounter = 4 --The maximum number of ricochets.  To prevent stack overflows.
 --Misc

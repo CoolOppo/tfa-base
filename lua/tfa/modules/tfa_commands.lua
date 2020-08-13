@@ -41,6 +41,10 @@ if GetConVar("sv_tfa_spread_legacy") == nil then
 	CreateReplConVar("sv_tfa_spread_legacy", "0", "Use legacy spread algorithms?")
 end
 
+if GetConVar("sv_tfa_range_legacy") == nil then
+	CreateReplConVar("sv_tfa_range_legacy", "0", "Use legacy range algorithms?")
+end
+
 if GetConVar("sv_tfa_cmenu") == nil then
 	CreateReplConVar("sv_tfa_cmenu", "1", "Allow custom context menu?")
 end

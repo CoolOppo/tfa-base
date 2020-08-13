@@ -61,8 +61,11 @@ function SWEP:FixProjectile()
 	end
 end
 
-function SWEP:AutoDetectRange()
+local legacy_range_cv = GetConVar("sv_tfa_range_legacy")
+
+function SWEP:AutoDetectRangeLegacy()
 	local self2 = self:GetTable()
+
 	if self2.Primary.Range <= 0 then
 		self2.Primary.Range = math.sqrt(self2.Primary.Damage / 32) * self:MetersToUnits(350) * self:AmmoRangeMultiplier()
 	end
@@ -70,6 +73,47 @@ function SWEP:AutoDetectRange()
 	if self2.Primary.RangeFalloff <= 0 then
 		self2.Primary.RangeFalloff = 0.5
 	end
+end
+
+function SWEP:AutoDetectRange()
+	local self2 = self:GetTable()
+	if self2.Primary.FalloffMetricBased then return end
+
+	if trueself2.Primary.Range <= 0 and self2.Primary.RangeFalloff <= 0 or legacy_range_cv:GetBool() then
+		self2.Primary.FalloffMetricBased = true
+
+		local am = string.lower(self2.Primary.Ammo or "")
+		local m = 1
+
+		if (am == "pistol") then
+			m = 0.4
+		elseif (am == "357") then
+			m = 1.15
+		elseif (am == "smg1") then
+			m = 0.34
+		elseif (am == "ar2") then
+			m = 1.4
+		elseif (am == "buckshot") then
+			m = 0.18
+		elseif (am == "airboatgun") then
+			m = 1.6
+		elseif (am == "sniperpenetratedround") then
+			m = 2.25
+		end
+
+		local force = (self2.Primary.Force or 0) * m
+
+		self2.Primary.FalloffByMeter = force / self2.Primary.Damage * 1.5
+		self2.Primary.MinRangeStartFalloff = math.sqrt(self2.Primary.Damage / 2) * (4 / 0.0254)
+		self2.Primary.MaxFalloff = self2.Primary.Damage - math.max(self2.Primary.Damage * 0.1, 1)
+		self2.Primary.Range = self2.Primary.MinRangeStartFalloff + self2.Primary.MaxFalloff * (self2.Primary.FalloffByMeter / 0.0254)
+
+		self2.Primary.RangeFalloff = 0.5 -- compatibility
+
+		return
+	end
+
+	self2.AutoDetectRangeLegacy(self)
 end
 
 function SWEP:FixProceduralReload()
