@@ -286,12 +286,29 @@ end
 ]]
 --
 function SWEP:ClearStatCache(vn)
+	local self2 = self:GetTable()
+
 	if vn then
-		self.StatCache[vn] = nil
-		self.StatCache2[vn] = nil
+		self2.StatCache[vn] = nil
+		self2.StatCache2[vn] = nil
 	else
-		table.Empty(self.StatCache)
-		table.Empty(self.StatCache2)
+		table.Empty(self2.StatCache)
+		table.Empty(self2.StatCache2)
+
+		table.Empty(self2.Primary)
+		table.Empty(self2.Secondary)
+
+		for k, v in pairs(self2.Primary_TFA) do
+			if isstring(k) then
+				self2.Primary[k] = self2.GetStat(self, "Primary." .. k)
+			end
+		end
+
+		for k, v in pairs(self.Secondary_TFA) do
+			if isstring(k) then
+				self2.Secondary[k] = self2.GetStat(self, "Secondary." .. k)
+			end
+		end
 	end
 end
 
@@ -302,6 +319,14 @@ function SWEP:GetStat(stat, default)
 
 	if self2.StatStringCache[stat] == nil then
 		local t_stbl = string.Explode(".", stat, false)
+
+		if t_stbl[1] == "Primary" then
+			t_stbl[1] = "Primary_TFA"
+		end
+
+		if t_stbl[1] == "Secondary" then
+			t_stbl[1] = "Secondary_TFA"
+		end
 
 		for k, v in ipairs(t_stbl) do
 			t_stbl[k] = tonumber(v) or v

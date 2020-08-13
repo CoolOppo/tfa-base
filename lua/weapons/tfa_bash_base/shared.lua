@@ -123,8 +123,8 @@ function SWEP:AltAttack()
 	if not self:OwnerIsValid() then return end
 	if l_CT() < self:GetNextSecondaryFire() then return end
 	local stat = self:GetStatus()
-	if ( not TFA.Enum.ReadyStatus[stat] ) and not self.Secondary.BashInterrupt then return end
-	if ( stat == TFA.Enum.STATUS_BASHING ) and self.Secondary.BashInterrupt then return end
+	if ( not TFA.Enum.ReadyStatus[stat] ) and not self.Secondary_TFA.BashInterrupt then return end
+	if ( stat == TFA.Enum.STATUS_BASHING ) and self.Secondary_TFA.BashInterrupt then return end
 	if self:IsSafety() then return end
 	if self:GetHolding() then return end
 	local enabled, act = self:ChooseBashAnim()

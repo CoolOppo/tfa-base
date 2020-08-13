@@ -457,11 +457,11 @@ function SWEP:PlayAnimation(data, fade)
 	if data.type == TFA.Enum.ANIMATION_ACT then
 		tval = data.value
 
-		if self:Clip1() <= 0 and self2.Primary.ClipSize >= 0 then
+		if self:Clip1() <= 0 and self2.Primary_TFA.ClipSize >= 0 then
 			tval = data.value_empty or tval
 		end
 
-		if self:Clip1() == 1 and self2.Primary.ClipSize >= 0 then
+		if self:Clip1() == 1 and self2.Primary_TFA.ClipSize >= 0 then
 			tval = data.value_last or tval
 		end
 
@@ -472,11 +472,11 @@ function SWEP:PlayAnimation(data, fade)
 		if self:GetIronSightsDirect() then
 			tval = data.value_is or tval
 
-			if self:Clip1() <= 0 and self2.Primary.ClipSize >= 0 then
+			if self:Clip1() <= 0 and self2.Primary_TFA.ClipSize >= 0 then
 				tval = data.value_is_empty or tval
 			end
 
-			if self:Clip1() == 1 and self2.Primary.ClipSize >= 0 then
+			if self:Clip1() == 1 and self2.Primary_TFA.ClipSize >= 0 then
 				tval = data.value_is_last or tval
 			end
 
@@ -493,11 +493,11 @@ function SWEP:PlayAnimation(data, fade)
 	elseif data.type == TFA.Enum.ANIMATION_SEQ then
 		tval = data.value
 
-		if self:Clip1() <= 0 and self2.Primary.ClipSize >= 0 then
+		if self:Clip1() <= 0 and self2.Primary_TFA.ClipSize >= 0 then
 			tval = data.value_empty or tval
 		end
 
-		if self:Clip1() == 1 and self2.Primary.ClipSize >= 0 then
+		if self:Clip1() == 1 and self2.Primary_TFA.ClipSize >= 0 then
 			tval = data.value_last or tval
 		end
 
@@ -508,11 +508,11 @@ function SWEP:PlayAnimation(data, fade)
 		if self:GetIronSightsDirect() then
 			tval = data.value_is or tval
 
-			if self:Clip1() <= 0 and self2.Primary.ClipSize >= 0 then
+			if self:Clip1() <= 0 and self2.Primary_TFA.ClipSize >= 0 then
 				tval = data.value_is_empty or tval
 			end
 
-			if self:Clip1() == 1 and self2.Primary.ClipSize >= 0 then
+			if self:Clip1() == 1 and self2.Primary_TFA.ClipSize >= 0 then
 				tval = data.value_is_last or tval
 			end
 
@@ -644,7 +644,7 @@ function SWEP:ChooseInspectAnim()
 
 	if self:GetActivityEnabled(ACT_VM_FIDGET_SILENCED) and self2.GetSilenced(self) then
 		typev, tanim = self:ChooseAnimation("inspect_silenced")
-	elseif self:GetActivityEnabled(ACT_VM_FIDGET_EMPTY) and self2.Primary.ClipSize > 0 and math.Round(self:Clip1()) == 0 then
+	elseif self:GetActivityEnabled(ACT_VM_FIDGET_EMPTY) and self2.Primary_TFA.ClipSize > 0 and math.Round(self:Clip1()) == 0 then
 		typev, tanim = self:ChooseAnimation("inspect_empty")
 	elseif self2.InspectionActions then
 		tanim = self2.InspectionActions[self:SharedRandom(1, #self2.InspectionActions, "Inspect")]
@@ -837,7 +837,7 @@ function SWEP:ChooseIdleAnim()
 
 	if self:GetActivityEnabled(ACT_VM_IDLE_SILENCED) and self2.GetSilenced(self) then
 		typev, tanim = self:ChooseAnimation("idle_silenced")
-	elseif (self2.Primary.ClipSize > 0 and self:Clip1() == 0) or (self2.Primary.ClipSize <= 0 and self:Ammo1() == 0) then
+	elseif (self2.Primary_TFA.ClipSize > 0 and self:Clip1() == 0) or (self2.Primary_TFA.ClipSize <= 0 and self:Ammo1() == 0) then
 		--self:GetActivityEnabled( ACT_VM_IDLE_EMPTY ) and (self:Clip1() == 0) then
 		if self:GetActivityEnabled(ACT_VM_IDLE_EMPTY) then
 			typev, tanim = self:ChooseAnimation("idle_empty")
@@ -866,7 +866,7 @@ function SWEP:ChooseFlatAnim()
 
 	if self:GetActivityEnabled(ACT_VM_IDLE_SILENCED) and self2.GetSilenced(self) then
 		typev, tanim = self:ChooseAnimation("idle_silenced")
-	elseif self:GetActivityEnabled(ACT_VM_IDLE_EMPTY) and ((self2.Primary.ClipSize > 0 and self:Clip1() == 0) or (self2.Primary.ClipSize <= 0 and self:Ammo1() == 0)) then
+	elseif self:GetActivityEnabled(ACT_VM_IDLE_EMPTY) and ((self2.Primary_TFA.ClipSize > 0 and self:Clip1() == 0) or (self2.Primary_TFA.ClipSize <= 0 and self:Ammo1() == 0)) then
 		typev, tanim = self:ChooseAnimation("idle_empty")
 	end
 
@@ -924,7 +924,7 @@ function SWEP:ChooseShootAnim(ifp)
 	ifp = ifp or IsFirstTimePredicted()
 	if not self:VMIV() then return end
 
-	if self2.GetStat(self, "ShootAnimation.loop") and self2.Primary.Automatic then
+	if self2.GetStat(self, "ShootAnimation.loop") and self2.Primary_TFA.Automatic then
 		if self2.LuaShellEject and ifp then
 			self:EventShell()
 		end
@@ -958,9 +958,9 @@ function SWEP:ChooseShootAnim(ifp)
 
 		if self:GetActivityEnabled(ACT_VM_PRIMARYATTACK_SILENCED) and self2.GetSilenced(self) then
 			typev, tanim = self:ChooseAnimation("shoot1_silenced")
-		elseif self:Clip1() <= self2.Primary.AmmoConsumption and self:GetActivityEnabled(ACT_VM_PRIMARYATTACK_EMPTY) and self2.Primary.ClipSize >= 1 and not self2.ForceEmptyFireOff then
+		elseif self:Clip1() <= self2.Primary_TFA.AmmoConsumption and self:GetActivityEnabled(ACT_VM_PRIMARYATTACK_EMPTY) and self2.Primary_TFA.ClipSize >= 1 and not self2.ForceEmptyFireOff then
 			typev, tanim = self:ChooseAnimation("shoot1_last")
-		elseif self:Ammo1() <= self2.Primary.AmmoConsumption and self:GetActivityEnabled(ACT_VM_PRIMARYATTACK_EMPTY) and self2.Primary.ClipSize < 1 and not self2.ForceEmptyFireOff then
+		elseif self:Ammo1() <= self2.Primary_TFA.AmmoConsumption and self:GetActivityEnabled(ACT_VM_PRIMARYATTACK_EMPTY) and self2.Primary_TFA.ClipSize < 1 and not self2.ForceEmptyFireOff then
 			typev, tanim = self:ChooseAnimation("shoot1_last")
 		elseif self:Clip1() == 0 and self:GetActivityEnabled(ACT_VM_DRYFIRE) and not self2.ForceDryFireOff then
 			typev, tanim = self:ChooseAnimation("shoot1_empty")

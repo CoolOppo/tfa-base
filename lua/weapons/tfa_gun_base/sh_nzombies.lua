@@ -57,13 +57,13 @@ function SWEP:NZMaxAmmo()
 		nzombies = engine.ActiveGamemode() == "nzombies"
 	end
 	local at = self:GetPrimaryAmmoType()
-	local at2 = self.GetSecondaryAmmoType and self:GetSecondaryAmmoType() or self.Secondary.Ammo
+	local at2 = self.GetSecondaryAmmoType and self:GetSecondaryAmmoType() or self.Secondary_TFA.Ammo
 
 	if IsValid(self:GetOwner()) then
 		if self:GetStat("Primary.ClipSize") <= 0 then
 			count = math.Clamp(10, 300 / (self:GetStat("Primary.Damage") / 30), 10, 300)
-			if self.Primary.NZMaxAmmo and self.Primary.NZMaxAmmo > 0 then
-				count = self.Primary.NZMaxAmmo
+			if self.Primary_TFA.NZMaxAmmo and self.Primary_TFA.NZMaxAmmo > 0 then
+				count = self.Primary_TFA.NZMaxAmmo
 				if self:GetPaP() then
 					count = count * 5 / 3
 				end
@@ -73,8 +73,8 @@ function SWEP:NZMaxAmmo()
 			upperclamp = self:GetPaP() and 600 or 300
 			count = math.Clamp(math.abs(self:GetStat("Primary.ClipSize")) * 10, 10, upperclamp)
 			count = count + self:GetStat("Primary.ClipSize") - self:Clip1()
-			if self.Primary.NZMaxAmmo and self.Primary.NZMaxAmmo > 0 then
-				count = self.Primary.NZMaxAmmo
+			if self.Primary_TFA.NZMaxAmmo and self.Primary_TFA.NZMaxAmmo > 0 then
+				count = self.Primary_TFA.NZMaxAmmo
 				if self:GetPaP() then
 					count = count * 5 / 3
 				end
@@ -84,8 +84,8 @@ function SWEP:NZMaxAmmo()
 		if self:GetStat("Secondary.ClipSize") > 0 or self:GetSecondaryAmmoType() >= 0 then
 			if self:GetStat("Secondary.ClipSize") <= 0 then
 				count = math.ceil( math.Clamp(10, 300 / math.pow( ( self:GetStat("Secondary.Damage") or 100 ) / 30, 2 ), 10, 300) / 5 ) * 5
-				if self.Secondary.NZMaxAmmo and self.Secondary.NZMaxAmmo > 0 then
-					count = self.Secondary.NZMaxAmmo
+				if self.Secondary_TFA.NZMaxAmmo and self.Secondary_TFA.NZMaxAmmo > 0 then
+					count = self.Secondary_TFA.NZMaxAmmo
 					if self:GetPaP() then
 						count = count * 5 / 3
 					end
@@ -95,8 +95,8 @@ function SWEP:NZMaxAmmo()
 				upperclamp = self:GetPaP() and 600 or 300
 				count = math.Clamp(math.abs(self:GetStat("Secondary.ClipSize")) * 10, 10, upperclamp)
 				count = count + self:GetStat("Secondary.ClipSize") - self:Clip2()
-				if self.Secondary.NZMaxAmmo and self.Secondary.NZMaxAmmo > 0 then
-					count = self.Secondary.NZMaxAmmo
+				if self.Secondary_TFA.NZMaxAmmo and self.Secondary_TFA.NZMaxAmmo > 0 then
+					count = self.Secondary_TFA.NZMaxAmmo
 					if self:GetPaP() then
 						count = count * 5 / 3
 					end

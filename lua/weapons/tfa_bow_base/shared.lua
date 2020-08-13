@@ -147,9 +147,9 @@ function SWEP:Think2(...)
 	end
 
 	if IsFirstTimePredicted() or game.SinglePlayer() then
-		self.Primary.SpreadBase = self.Primary.SpreadBase or self:GetStat("Primary.Spread")
-		local targ = self:GetShaking() and self.Primary.SpreadShake or self:GetStat("Primary.SpreadBase")
-		self.Primary.Spread = math.Approach(self.Primary.Spread, targ, (targ - self.Primary.Spread) * FrameTime() * 5)
+		self.Primary_TFA.SpreadBase = self.Primary_TFA.SpreadBase or self:GetStat("Primary.Spread")
+		local targ = self:GetShaking() and self.Primary_TFA.SpreadShake or self:GetStat("Primary.SpreadBase")
+		self.Primary_TFA.Spread = math.Approach(self.Primary_TFA.Spread, targ, (targ - self.Primary_TFA.Spread) * FrameTime() * 5)
 		self:ClearStatCache("Primary.Spread")
 	end
 

@@ -415,6 +415,15 @@ function SWEP:Initialize()
 		self2.BobScaleCustom = 1
 	end
 
+	self.Primary_TFA = table.Copy(self.Primary)
+	self.Secondary_TFA = table.Copy(self.Secondary)
+
+	self.Primary.BaseClass = nil
+	self.Secondary.BaseClass = nil
+
+	self.Primary_TFA.BaseClass = nil
+	self.Secondary_TFA.BaseClass = nil
+
 	self2.BobScale = 0
 	self2.SwayScaleCustom = 1
 	self2.SwayScale = 0
@@ -442,8 +451,13 @@ function SWEP:Initialize()
 	self2.FixAkimbo(self)
 	self2.FixSprintAnimBob(self)
 	self2.FixWalkAnimBob(self)
-	self2.PathStatsTable(self, "Primary")
-	self2.PathStatsTable(self, "Secondary")
+
+	table.Merge(self.Primary, self.Primary_TFA)
+	table.Merge(self.Secondary, self.Secondary_TFA)
+
+	self.Primary_TFA.BaseClass = nil
+	self.Secondary_TFA.BaseClass = nil
+
 	self2.ClearStatCache(self)
 
 	if not self2.IronSightsMoveSpeed then
@@ -486,47 +500,6 @@ function SWEP:Initialize()
 	end
 
 	hook.Run("TFA_Initialize",self)
-end
-
-function SWEP:PathStatsTable(statID)
-	local self2 = self:GetTable()
-
-	local tableDest = self2[statID]
-	local tableCopy = table.Copy(tableDest)
-
-	self2[statID .. "_TFA"] = tableCopy
-
-	local ammo = statID .. ".Ammo"
-	local clipSize = statID .. ".ClipSize"
-	table.Empty(tableDest)
-	local ignore = false
-
-	local function ignoreHack(key)
-		if key == "Ammo" then
-			return self2.GetStat(self, ammo)
-		elseif key == "ClipSize" then
-			return self2.GetStat(self, clipSize)
-		else
-			return tableCopy[key]
-		end
-	end
-
-	self2[statID] = setmetatable(tableDest, {
-		__index = function(_, key)
-			if ignore then return tableCopy[key] end
-			ignore = true
-			local val = ignoreHack(key)
-			ignore = false
-
-			return val
-		end,
-
-		__newindex = function(_, key, value)
-			tableCopy[key] = value
-		end
-	})
-
-	hook.Run("TFA_PathStatsTable",self)
 end
 
 function SWEP:NPCWeaponThinkHook()
@@ -1518,7 +1491,7 @@ function SWEP:PrimaryAttack()
 			times_to_fire = 3
 		end
 
-		if self2.Primary.Automatic then
+		if self2.Primary_TFA.Automatic then
 			times_to_fire = math.random(5, 8)
 		end
 
@@ -1526,25 +1499,25 @@ function SWEP:PrimaryAttack()
 			times_to_fire = math.min(self:GetMaxClip1(), times_to_fire)
 		end
 
-		self:SetNextPrimaryFire(l_CT() + (((self2.Primary.RPM / 60) / 100) * times_to_fire) + math.random(0.2, 0.6))
+		self:SetNextPrimaryFire(l_CT() + (((self2.Primary_TFA.RPM / 60) / 100) * times_to_fire) + math.random(0.2, 0.6))
 
-		timer.Create("TFA_NPCWeaponTimer_" .. tostring(self:GetOwner():EntIndex()), (self2.Primary.RPM / 60) / 100, times_to_fire, function()
+		timer.Create("TFA_NPCWeaponTimer_" .. tostring(self:GetOwner():EntIndex()), (self2.Primary_TFA.RPM / 60) / 100, times_to_fire, function()
 			if not IsValid(self) or not self:GetOwner() then return end
 			if not self:GetOwner().GetShootPos then return end
 
-			self:EmitGunfireSound(self2.Primary.Sound)
+			self:EmitGunfireSound(self2.Primary_TFA.Sound)
 			self:TakePrimaryAmmo(self:GetStat("Primary.AmmoConsumption"))
 
-			--[[local damage_to_do = self2.Primary.Damage * npc_ar2_damage_cv:GetFloat() / 16
+			--[[local damage_to_do = self2.Primary_TFA.Damage * npc_ar2_damage_cv:GetFloat() / 16
 
 			local bullet = {}
 
-			bullet.Num = self2.Primary.NumShots
+			bullet.Num = self2.Primary_TFA.NumShots
 			bullet.Src = self:GetOwner():GetShootPos()
 			bullet.Dir = self:GetOwner():GetAimVector()
 			bullet.Tracer = 1
 			bullet.Damage = damage_to_do
-			bullet.AmmoType = self2.Primary.Ammo]]
+			bullet.AmmoType = self2.Primary_TFA.Ammo]]
 
 			self:ShootBulletInformation()
 		end)
@@ -1585,7 +1558,7 @@ function SWEP:PrimaryAttack()
 	end
 
 	if self:GetStat("Primary.Sound") and IsFirstTimePredicted() and not (sp and CLIENT) then
-		if self:GetOwner():IsPlayer() and self:GetStat("Primary.LoopSound") and (not self:GetStat("Primary.LoopSoundAutoOnly", false) or self2.Primary.Automatic) then
+		if self:GetOwner():IsPlayer() and self:GetStat("Primary.LoopSound") and (not self:GetStat("Primary.LoopSoundAutoOnly", false) or self2.Primary_TFA.Automatic) then
 			self:EmitGunfireLoop()
 		elseif self:GetStat("Primary.SilencedSound") and self:GetSilenced() then
 			self:EmitGunfireSound(self:GetStat("Primary.SilencedSound"))
@@ -1597,7 +1570,7 @@ function SWEP:PrimaryAttack()
 	self:TakePrimaryAmmo(self:GetStat("Primary.AmmoConsumption"))
 
 	if self:Clip1() == 0 and self:GetStat("Primary.ClipSize") > 0 then
-		self:SetNextPrimaryFire(math.max(self:GetNextPrimaryFire(), l_CT() + (self2.Primary.DryFireDelay or self:GetActivityLength(tanim, true))))
+		self:SetNextPrimaryFire(math.max(self:GetNextPrimaryFire(), l_CT() + (self2.Primary_TFA.DryFireDelay or self:GetActivityLength(tanim, true))))
 	end
 
 	self:ShootBulletInformation()

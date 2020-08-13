@@ -30,7 +30,7 @@ SWEP.Ent = "" -- Nade Entity
 SWEP.Velocity = 550 -- Entity Velocity
 
 function SWEP:Initialize()
-	self.ProjectileEntity = self.ProjectileEntity or self.Primary.Round --Entity to shoot
+	self.ProjectileEntity = self.ProjectileEntity or self.Primary_TFA.Round --Entity to shoot
 	self.ProjectileVelocity = self.Velocity and self.Velocity or 550 --Entity to shoot's velocity
 	self.ProjectileModel = nil --Entity to shoot's model
 	self:SetNW2Bool("Charging", false)

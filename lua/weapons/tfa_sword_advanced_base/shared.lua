@@ -219,7 +219,7 @@ SWEP.Action = true --Use action IDs?
 --[[Stop editing here for normal users of my base.  Code starts here.]]--
 --[[
 function SWEP:Precache()
-util.PrecacheSound(self.Primary.Sound)
+util.PrecacheSound(self.Primary_TFA.Sound)
 util.PrecacheModel(self.ViewModel)
 util.PrecacheModel(self.WorldModel)
 end
@@ -248,8 +248,8 @@ function SWEP:DoImpactEffect(tr, dmg)
 			util.Decal("ManhackCut", impactpos + impactnormal, impactpos - impactnormal)
 		end
 
-		if (tr.MatType == MAT_GLASS) and (self.Primary.Sound_Glass and self.Primary.Sound_Glass_Enabled == true) and (self.GlassSoundPlayed == false) then
-			self:EmitSound(self.Primary.Sound_Glass, 100, math.random(self.Primary.Sound_Pitch_Low, self.Primary.Sound_Pitch_High), 0.75, CHAN_WEAPON)
+		if (tr.MatType == MAT_GLASS) and (self.Primary_TFA.Sound_Glass and self.Primary_TFA.Sound_Glass_Enabled == true) and (self.GlassSoundPlayed == false) then
+			self:EmitSound(self.Primary_TFA.Sound_Glass, 100, math.random(self.Primary_TFA.Sound_Pitch_Low, self.Primary_TFA.Sound_Pitch_High), 0.75, CHAN_WEAPON)
 			self.GlassSoundPlayed = true
 		end
 	end
@@ -298,15 +298,15 @@ function SWEP:HitThing(ent, posv, normalv, damage, tr)
 
 				if (hitmat == MAT_METAL or hitmat == MAT_GRATE or hitmat == MAT_VENT or hitmat == MAT_COMPUTER) then
 					--Emit metal sound
-					wep.Weapon:EmitSound(self.Primary.Sound_Impact_Metal, 100, math.random(self.Primary.Sound_Pitch_Low, self.Primary.Sound_Pitch_High), 0.75, CHAN_AUTO)
+					wep.Weapon:EmitSound(self.Primary_TFA.Sound_Impact_Metal, 100, math.random(self.Primary_TFA.Sound_Pitch_Low, self.Primary_TFA.Sound_Pitch_High), 0.75, CHAN_AUTO)
 					wep.sounds = self.sounds + 1
 					--Emit flesh sound
 					--Emit generic sound.
 				elseif (hitmat == MAT_FLESH or hitmat == MAT_BLOODYFLESH or hitmat == MAT_ALIENFLESH) then
-					wep.Weapon:EmitSound(self.Primary.Sound_Impact_Flesh, 100, math.random(self.Primary.Sound_Pitch_Low, self.Primary.Sound_Pitch_High), 0.75, CHAN_AUTO)
+					wep.Weapon:EmitSound(self.Primary_TFA.Sound_Impact_Flesh, 100, math.random(self.Primary_TFA.Sound_Pitch_Low, self.Primary_TFA.Sound_Pitch_High), 0.75, CHAN_AUTO)
 					wep.sounds = self.sounds + 1
 				else
-					wep.Weapon:EmitSound(self.Primary.Sound_Impact_Generic, 100, math.random(self.Primary.Sound_Pitch_Low, self.Primary.Sound_Pitch_High), 0.75, CHAN_AUTO)
+					wep.Weapon:EmitSound(self.Primary_TFA.Sound_Impact_Generic, 100, math.random(self.Primary_TFA.Sound_Pitch_Low, self.Primary_TFA.Sound_Pitch_High), 0.75, CHAN_AUTO)
 					wep.sounds = self.sounds + 1
 				end
 			end
@@ -350,12 +350,12 @@ function SWEP:PrimaryAttack()
 	self:SetStatusEnd(CurTime() + vm:SequenceDuration(vm:LookupSequence(self.Sequences[self:GetNW2Int("Slash", 1)].name)))
 	self.LastTraceTime = CurTime() + self.Sequences[self:GetNW2Int("Slash", 1)].startt
 
-	self:SetNextPrimaryFire(CurTime() + 1 / (self.Primary.RPM / 60))
+	self:SetNextPrimaryFire(CurTime() + 1 / (self.Primary_TFA.RPM / 60))
 
 	if SERVER then
 		timer.Simple(self.Sequences[self:GetNW2Int("Slash", 1)].startt, function()
-			if IsValid(self) and self.Primary.Sound then
-				self:EmitSound(self.Primary.Sound)
+			if IsValid(self) and self.Primary_TFA.Sound then
+				self:EmitSound(self.Primary_TFA.Sound)
 			end
 		end)
 	end
@@ -417,7 +417,7 @@ function SWEP:Think2()
 			aimoff:RotateAroundAxis(aimoff:Forward(), cutangle.r + self.SlashRandom.r * self.randfac + self.SlashJitter.r * jitfac) --Roll is static
 			aimoff:RotateAroundAxis(aimoff:Up(), cutangle.y + self.SlashRandom.y * self.randfac + self.SlashJitter.y * jitfac)
 			aimoff:RotateAroundAxis(aimoff:Right(), cutangle.p + self.SlashRandom.p * self.randfac + self.SlashJitter.p * jitfac)
-			self:HitThing(ply, ply:GetShootPos(), aimoff:Forward(), self.Primary.Damage * strikepercent)
+			self:HitThing(ply, ply:GetShootPos(), aimoff:Forward(), self.Primary_TFA.Damage * strikepercent)
 			self.LastTraceTime = CurTime()
 		end
 	end

@@ -176,16 +176,16 @@ function SWEP:Deploy()
 end
 
 function SWEP:AddNZAnimations()
-	if self.Primary.Attacks then
-		for _, v in pairs(self.Primary.Attacks) do
+	if self.Primary_TFA.Attacks then
+		for _, v in pairs(self.Primary_TFA.Attacks) do
 			if v.act then
 				self.DTapActivities[v.act] = true
 			end
 		end
 	end
 
-	if self.Secondary.Attacks then
-		for _, v in pairs(self.Secondary.Attacks) do
+	if self.Secondary_TFA.Attacks then
+		for _, v in pairs(self.Secondary_TFA.Attacks) do
 			if v.act then
 				self.DTapActivities[v.act] = true
 			end
@@ -373,7 +373,7 @@ function SWEP:ThinkNPC()
 	if ow:IsCurrentSchedule(SCHED_CHASE_ENEMY) then return end
 	if ow:IsCurrentSchedule(SCHED_MELEE_ATTACK1) then return end
 	if not self.Range then
-		local t = table.Random( self.Primary.Attacks )
+		local t = table.Random( self.Primary_TFA.Attacks )
 		if t and t.range then
 			self.Range = t.src:Length() + t.dir:Length()
 		else
@@ -483,7 +483,7 @@ function SWEP:StrikeThink()
 
 	if self.AttackSoundTime ~= -1 and CurTime() > self.AttackSoundTime then
 		ind = self:GetMelAttackID() or 1
-		srctbl = (ind < 0) and self.Secondary.Attacks or self.Primary.Attacks
+		srctbl = (ind < 0) and self.Secondary_TFA.Attacks or self.Primary_TFA.Attacks
 		attack = srctbl[math.abs(ind)]
 		self:EmitSound(attack.snd)
 
@@ -504,7 +504,7 @@ function SWEP:StrikeThink()
 
 	if CurTime() > self:GetStatusEnd() then
 		ind = self:GetMelAttackID() or 1
-		srctbl = (ind < 0) and self.Secondary.Attacks or self.Primary.Attacks
+		srctbl = (ind < 0) and self.Secondary_TFA.Attacks or self.Primary_TFA.Attacks
 		attack = srctbl[math.abs(ind)]
 		self.DamageType = attack.dmgtype
 		--Just attacked, so don't do it again
@@ -700,9 +700,9 @@ lvec = Vector()
 function SWEP:PrimaryAttack()
 	local ow = self:GetOwner()
 	if IsValid(ow) and ow:IsNPC() then
-		local keys = table.GetKeys(self.Primary.Attacks)
+		local keys = table.GetKeys(self.Primary_TFA.Attacks)
 		table.RemoveByValue(keys,"BaseClass")
-		local attk = self.Primary.Attacks[table.Random(keys)]
+		local attk = self.Primary_TFA.Attacks[table.Random(keys)]
 		local owv = self:GetOwner()
 		timer.Simple(0.5, function()
 			if IsValid(self) and IsValid(owv) and owv:IsCurrentSchedule(SCHED_MELEE_ATTACK1) then
@@ -724,11 +724,11 @@ function SWEP:PrimaryAttack()
 	if not self:VMIV() then return end
 	if CurTime() <= self:GetNextPrimaryFire() then return end
 	if not TFA.Enum.ReadyStatus[self:GetStatus()] then return end
-	if self:GetComboCount() >= self.Primary.MaxCombo and self.Primary.MaxCombo > 0 then return end
+	if self:GetComboCount() >= self.Primary_TFA.MaxCombo and self.Primary_TFA.MaxCombo > 0 then return end
 	table.Empty(att)
 	local founddir = false
 
-	if self.Primary.Directional then
+	if self.Primary_TFA.Directional then
 		ply = self:GetOwner()
 		--lvec = WorldToLocal(ply:GetVelocity(), Angle(0, 0, 0), vector_origin, ply:EyeAngles()):GetNormalized()
 		lvec.x = 0
@@ -765,7 +765,7 @@ function SWEP:PrimaryAttack()
 			targ = ""
 		end
 
-		for k, v in pairs(self.Primary.Attacks) do
+		for k, v in pairs(self.Primary_TFA.Attacks) do
 			if (not self:GetSprinting() or v.spr) and v.direction and string.find(v.direction, targ) then
 				if string.find(v.direction, targ) then
 					founddir = true
@@ -776,8 +776,8 @@ function SWEP:PrimaryAttack()
 		end
 	end
 
-	if not self.Primary.Directional or #att <= 0 or not founddir then
-		for k, v in pairs(self.Primary.Attacks) do
+	if not self.Primary_TFA.Directional or #att <= 0 or not founddir then
+		for k, v in pairs(self.Primary_TFA.Attacks) do
 			if (not self:GetSprinting() or v.spr) and v.dmg then
 				table.insert(att, #att + 1, k)
 			end
@@ -786,7 +786,7 @@ function SWEP:PrimaryAttack()
 
 	if #att <= 0 then return end
 	ind = att[self:SharedRandom(1, #att, "PrimaryAttack")]
-	attack = self.Primary.Attacks[ind]
+	attack = self.Primary_TFA.Attacks[ind]
 	--We have attack isolated, begin attack logic
 	self:PlaySwing(attack.act)
 
@@ -841,15 +841,15 @@ function SWEP:SecondaryAttack()
 	if not self:VMIV() then return end
 	if CurTime() <= self:GetNextPrimaryFire() then return end
 	if not TFA.Enum.ReadyStatus[self:GetStatus()] then return end
-	if self:GetComboCount() >= self.Secondary.MaxCombo and self.Secondary.MaxCombo > 0 then return end
+	if self:GetComboCount() >= self.Secondary_TFA.MaxCombo and self.Secondary_TFA.MaxCombo > 0 then return end
 	table.Empty(att)
 	local founddir = false
 
-	if not self.Secondary.Attacks or #self.Secondary.Attacks == 0 then
-		self.Secondary.Attacks = self.Primary.Attacks
+	if not self.Secondary_TFA.Attacks or #self.Secondary_TFA.Attacks == 0 then
+		self.Secondary_TFA.Attacks = self.Primary_TFA.Attacks
 	end
 
-	if self.Secondary.Directional then
+	if self.Secondary_TFA.Directional then
 		ply = self:GetOwner()
 		--lvec = WorldToLocal(ply:GetVelocity(), Angle(0, 0, 0), vector_origin, ply:EyeAngles()):GetNormalized()
 		lvec.x = 0
@@ -886,7 +886,7 @@ function SWEP:SecondaryAttack()
 			targ = ""
 		end
 
-		for k, v in pairs(self.Secondary.Attacks) do
+		for k, v in pairs(self.Secondary_TFA.Attacks) do
 			if (not self:GetSprinting() or v.spr) and v.direction and string.find(v.direction, targ) then
 				if string.find(v.direction, targ) then
 					founddir = true
@@ -897,8 +897,8 @@ function SWEP:SecondaryAttack()
 		end
 	end
 
-	if not self.Secondary.Directional or #att <= 0 or not founddir then
-		for k, v in pairs(self.Secondary.Attacks) do
+	if not self.Secondary_TFA.Directional or #att <= 0 or not founddir then
+		for k, v in pairs(self.Secondary_TFA.Attacks) do
 			if (not self:GetSprinting() or v.spr) and v.dmg then
 				table.insert(att, #att + 1, k)
 			end
@@ -907,7 +907,7 @@ function SWEP:SecondaryAttack()
 
 	if #att <= 0 then return end
 	ind = att[self:SharedRandom(1, #att, "SecondaryAttack")]
-	attack = self.Secondary.Attacks[ind]
+	attack = self.Secondary_TFA.Attacks[ind]
 	--We have attack isolated, begin attack logic
 	self:PlaySwing(attack.act)
 
@@ -958,7 +958,7 @@ end
 
 function SWEP:AltAttack()
 	if self.CanBlock then
-		if self.Secondary.CanBash and self.CanBlock and self:GetOwner():KeyDown(IN_USE) then
+		if self.Secondary_TFA.CanBash and self.CanBlock and self:GetOwner():KeyDown(IN_USE) then
 			BaseClass.AltAttack(self)
 
 			return
@@ -966,7 +966,7 @@ function SWEP:AltAttack()
 	else
 		if not self:VMIV() then return end
 		if not TFA.Enum.ReadyStatus[self:GetStatus()] then return end
-		if not self.Secondary.CanBash then return end
+		if not self.Secondary_TFA.CanBash then return end
 		if self:IsSafety() then return end
 
 		return BaseClass.AltAttack(self)

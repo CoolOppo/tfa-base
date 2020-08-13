@@ -22,10 +22,10 @@
 SWEP.AnimCycle = SWEP.ViewModelFlip and 0 or 1
 
 function SWEP:FixAkimbo()
-	if self:GetStat("Akimbo") and self.Secondary.ClipSize > 0 then
-		self.Primary.ClipSize = self.Primary.ClipSize + self.Secondary.ClipSize
-		self.Secondary.ClipSize = -1
-		self.Primary.RPM = self.Primary.RPM * 2
+	if self:GetStat("Akimbo") and self.Secondary_TFA.ClipSize > 0 then
+		self.Primary_TFA.ClipSize = self.Primary_TFA.ClipSize + self.Secondary_TFA.ClipSize
+		self.Secondary_TFA.ClipSize = -1
+		self.Primary_TFA.RPM = self.Primary_TFA.RPM * 2
 		self.Akimbo_Inverted = self.ViewModelFlip
 		self.AnimCycle = self.ViewModelFlip and 0 or 1
 		self:ClearStatCache()
@@ -33,7 +33,7 @@ function SWEP:FixAkimbo()
 		timer.Simple(FrameTime(), function()
 			timer.Simple(0.01, function()
 				if IsValid(self) and self:OwnerIsValid() then
-					self:SetClip1(self.Primary.ClipSize)
+					self:SetClip1(self.Primary_TFA.ClipSize)
 				end
 			end)
 		end)

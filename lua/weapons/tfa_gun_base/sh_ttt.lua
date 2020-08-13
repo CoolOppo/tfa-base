@@ -115,7 +115,7 @@ function SWEP:PreDrop()
 	if not IsValid(self) then return end
 	if not self.Ammo1 then return end
 
-	if SERVER and IsValid(self:GetOwner()) and self.Primary.Ammo ~= "none" then
+	if SERVER and IsValid(self:GetOwner()) and self.Primary_TFA.Ammo ~= "none" then
 		local ammo = self:Ammo1()
 
 		-- Do not drop ammo if we have another gun that uses this type
@@ -128,7 +128,7 @@ function SWEP:PreDrop()
 		self.StoredAmmo = ammo
 
 		if ammo > 0 then
-			self:GetOwner():RemoveAmmo(ammo, self.Primary.Ammo)
+			self:GetOwner():RemoveAmmo(ammo, self.Primary_TFA.Ammo)
 		end
 	end
 end
@@ -175,11 +175,11 @@ function SWEP:EquipTTT(newowner)
 
 	if not self.Ammo1 then return end
 
-	if SERVER and IsValid(newowner) and self.StoredAmmo > 0 and self.Primary.Ammo ~= "none" then
-		local ammo = newowner:GetAmmoCount(self.Primary.Ammo)
-		self.Primary.ClipMax = self.Primary.ClipMax or (math.abs(self.Primary.ClipSize) * 4)
-		local given = math.min(self.StoredAmmo, self.Primary.ClipMax - ammo)
-		newowner:GiveAmmo(given, self.Primary.Ammo)
+	if SERVER and IsValid(newowner) and self.StoredAmmo > 0 and self.Primary_TFA.Ammo ~= "none" then
+		local ammo = newowner:GetAmmoCount(self.Primary_TFA.Ammo)
+		self.Primary_TFA.ClipMax = self.Primary_TFA.ClipMax or (math.abs(self.Primary_TFA.ClipSize) * 4)
+		local given = math.min(self.StoredAmmo, self.Primary_TFA.ClipMax - ammo)
+		newowner:GiveAmmo(given, self.Primary_TFA.Ammo)
 		self.StoredAmmo = 0
 	end
 end
@@ -197,7 +197,7 @@ function SWEP:DyingShot()
 
 	-- Owner should still be alive here
 	if IsValid(self:GetOwner()) then
-		local punch = self.Primary.Recoil or 5
+		local punch = self.Primary_TFA.Recoil or 5
 		-- Punch view to disorient aim before firing dying shot
 		local eyeang = self:GetOwner():EyeAngles()
 		eyeang.pitch = eyeang.pitch - math.Rand(-punch, punch)

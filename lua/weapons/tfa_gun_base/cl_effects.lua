@@ -129,13 +129,13 @@ function SWEP:DoImpactEffect(tr, dmgtype)
 	local dmginfo = DamageInfo()
 	dmginfo:SetDamageType(dmgtype)
 
-	if dmginfo:IsDamageType(DMG_SLASH) or (ib and self.Secondary.BashDamageType == DMG_SLASH and tr.MatType ~= MAT_FLESH and tr.MatType ~= MAT_ALIENFLESH) or (self and self.DamageType and self.DamageType == DMG_SLASH) then
+	if dmginfo:IsDamageType(DMG_SLASH) or (ib and self.Secondary_TFA.BashDamageType == DMG_SLASH and tr.MatType ~= MAT_FLESH and tr.MatType ~= MAT_ALIENFLESH) or (self and self.DamageType and self.DamageType == DMG_SLASH) then
 		util.Decal("ManhackCut", tr.HitPos + tr.HitNormal, tr.HitPos - tr.HitNormal)
 
 		return true
 	end
 
-	if ib and self.Secondary.BashDamageType == DMG_GENERIC then return true end
+	if ib and self.Secondary_TFA.BashDamageType == DMG_GENERIC then return true end
 	if ib then return end
 
 	if IsValid(self) then

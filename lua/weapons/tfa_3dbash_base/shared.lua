@@ -76,10 +76,10 @@ function SWEP:UpdateScopeType( force )
 		self.Scoped = true
 		self.Scoped_3D = false
 
-		if self.Secondary.ScopeZoom_Backup then
-			self.Secondary.ScopeZoom = self.Secondary.ScopeZoom_Backup
+		if self.Secondary_TFA.ScopeZoom_Backup then
+			self.Secondary_TFA.ScopeZoom = self.Secondary_TFA.ScopeZoom_Backup
 		else
-			self.Secondary.ScopeZoom = 90 / self:GetStat("Secondary.IronFOV")
+			self.Secondary_TFA.ScopeZoom = 90 / self:GetStat("Secondary.IronFOV")
 		end
 
 		if self.BoltAction_3D then
@@ -89,15 +89,15 @@ function SWEP:UpdateScopeType( force )
 			self:ClearStatCache("BoltAction")
 		end
 
-		self.Secondary.IronFOV = 90 / self:GetStat("Secondary.ScopeZoom")
+		self.Secondary_TFA.IronFOV = 90 / self:GetStat("Secondary.ScopeZoom")
 		self.IronSightsSensitivity = 1
 	end
 	if self:Do3DScope() then
 		self.Scoped = false
 		self.Scoped_3D = true
 
-		if not self.Secondary.ScopeZoom_Backup then
-			self.Secondary.ScopeZoom_Backup = self.Secondary.ScopeZoom
+		if not self.Secondary_TFA.ScopeZoom_Backup then
+			self.Secondary_TFA.ScopeZoom_Backup = self.Secondary_TFA.ScopeZoom
 		end
 
 		if self.BoltAction then
@@ -107,25 +107,25 @@ function SWEP:UpdateScopeType( force )
 			self.FireModeName = "tfa.firemode.bolt"
 		end
 
-		if self.Secondary.ScopeZoom and self.Secondary.ScopeZoom > 0 then
+		if self.Secondary_TFA.ScopeZoom and self.Secondary_TFA.ScopeZoom > 0 then
 			if CLIENT then
-				self.RTScopeFOV = 90 / self.Secondary.ScopeZoom * ( self.Secondary.ScopeScreenScale or 0.392592592592592 )
+				self.RTScopeFOV = 90 / self.Secondary_TFA.ScopeZoom * ( self.Secondary_TFA.ScopeScreenScale or 0.392592592592592 )
 			end
-			self.Secondary.IronFOV_Backup = self.Secondary.IronFOV
-			self.Secondary.IronFOV = 70
+			self.Secondary_TFA.IronFOV_Backup = self.Secondary_TFA.IronFOV
+			self.Secondary_TFA.IronFOV = 70
 			if CLIENT then
 				self.IronSightsSensitivity = self:Get3DSensitivity()
 			end
-			self.Secondary.ScopeZoom = nil
+			self.Secondary_TFA.ScopeZoom = nil
 		end
 	else
 		self.Scoped = true
 		self.Scoped_3D = false
 
-		if self.Secondary.ScopeZoom_Backup then
-			self.Secondary.ScopeZoom = self.Secondary.ScopeZoom_Backup
+		if self.Secondary_TFA.ScopeZoom_Backup then
+			self.Secondary_TFA.ScopeZoom = self.Secondary_TFA.ScopeZoom_Backup
 		else
-			self.Secondary.ScopeZoom = 4
+			self.Secondary_TFA.ScopeZoom = 4
 		end
 
 		if self.BoltAction_3D then
@@ -133,7 +133,7 @@ function SWEP:UpdateScopeType( force )
 			self.BoltAction_3D = nil
 		end
 
-		self.Secondary.IronFOV = 90 / self.Secondary.ScopeZoom
+		self.Secondary_TFA.IronFOV = 90 / self.Secondary_TFA.ScopeZoom
 		self.IronSightsSensitivity = 1
 	end
 end

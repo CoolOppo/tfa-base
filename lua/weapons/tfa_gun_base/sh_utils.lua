@@ -30,7 +30,7 @@ SWEP.AmmoRangeTable = {
 }
 
 function SWEP:AmmoRangeMultiplier()
-	return self.AmmoRangeTable[self.Primary.Ammo or "def"] or self.AmmoRangeTable["def"] or 1
+	return self.AmmoRangeTable[self.Primary_TFA.Ammo or "def"] or self.AmmoRangeTable["def"] or 1
 end
 
 function SWEP:MetersToUnits(x)
@@ -43,14 +43,14 @@ SWEP.SensitivtyFunctions = {
 	[0] = function() return 1 end,
 	[1] = function(self, ...)
 		if self:GetStat("Secondary.ScopeZoom") then
-			return TFA.CalculateSensitivtyScale(90 / self:GetStat("Secondary.ScopeZoom"), self:GetStat("Secondary.IronFOV"), self.Secondary.ScopeScreenScale or 0.392592592592592)
+			return TFA.CalculateSensitivtyScale(90 / self:GetStat("Secondary.ScopeZoom"), self:GetStat("Secondary.IronFOV"), self.Secondary_TFA.ScopeScreenScale or 0.392592592592592)
 		else
 			return self.SensitivtyFunctions[2](self, ...)
 		end
 	end,
 	[2] = function(self, ...)
 		if self:GetStat("RTScopeFOV") then
-			return TFA.CalculateSensitivtyScale(self:GetStat("RTScopeFOV"), self:GetStat("Secondary.IronFOV"), self.Secondary.ScopeScreenScale or 0.392592592592592)
+			return TFA.CalculateSensitivtyScale(self:GetStat("RTScopeFOV"), self:GetStat("Secondary.IronFOV"), self.Secondary_TFA.ScopeScreenScale or 0.392592592592592)
 		else
 			return self.SensitivtyFunctions[0](self, ...)
 		end
@@ -222,13 +222,13 @@ end
 
 function SWEP:ReloadCV()
 	if rlcv then
-		if (not rlcv:GetBool()) and (not self.Primary.ClipSize_PreEdit) then
-			self.Primary.ClipSize_PreEdit = self.Primary.ClipSize
-			self.Primary.ClipSize = -1
+		if (not rlcv:GetBool()) and (not self.Primary_TFA.ClipSize_PreEdit) then
+			self.Primary_TFA.ClipSize_PreEdit = self.Primary_TFA.ClipSize
+			self.Primary_TFA.ClipSize = -1
 			self:ClearStatCache()
-		elseif rlcv:GetBool() and self.Primary.ClipSize_PreEdit then
-			self.Primary.ClipSize = self.Primary.ClipSize_PreEdit
-			self.Primary.ClipSize_PreEdit = nil
+		elseif rlcv:GetBool() and self.Primary_TFA.ClipSize_PreEdit then
+			self.Primary_TFA.ClipSize = self.Primary_TFA.ClipSize_PreEdit
+			self.Primary_TFA.ClipSize_PreEdit = nil
 			self:ClearStatCache()
 		end
 	end
@@ -332,7 +332,7 @@ local at
 function SWEP:GetPrimaryAmmoTypeC()
 	at = self:GetStat("Primary.Ammo")
 
-	if at and at ~= self.Primary.Ammo then
+	if at and at ~= self.Primary_TFA.Ammo then
 		return at
 	elseif self.GetPrimaryAmmoTypeOld then
 		return self:GetPrimaryAmmoTypeOld()
@@ -344,7 +344,7 @@ end
 function SWEP:GetSecondaryAmmoTypeC()
 	at = self:GetStat("Secondary.Ammo")
 
-	if at and at ~= self.Secondary.Ammo then
+	if at and at ~= self.Secondary_TFA.Ammo then
 		return at
 	elseif self.GetSecondaryAmmoTypeOld then
 		return self:GetSecondaryAmmoTypeOld()
@@ -396,7 +396,7 @@ end
 function SWEP:GetFireDelay()
 	if self:GetMaxBurst() > 1 and self:GetStat("Primary.RPM_Burst") and self:GetStat("Primary.RPM_Burst") > 0 then
 		return 60 / self:GetStat("Primary.RPM_Burst")
-	elseif self:GetStat("Primary.RPM_Semi") and not self.Primary.Automatic and self:GetStat("Primary.RPM_Semi") and self:GetStat("Primary.RPM_Semi") > 0 then
+	elseif self:GetStat("Primary.RPM_Semi") and not self.Primary_TFA.Automatic and self:GetStat("Primary.RPM_Semi") and self:GetStat("Primary.RPM_Semi") > 0 then
 		return 60 / self:GetStat("Primary.RPM_Semi")
 	elseif self:GetStat("Primary.RPM") and self:GetStat("Primary.RPM") > 0 then
 		return 60 / self:GetStat("Primary.RPM")
@@ -701,7 +701,7 @@ function SWEP:CycleFireMode()
 	self:SetStatus(TFA.GetStatus("firemode"))
 	self:SetStatusEnd(self:GetNextPrimaryFire())
 
-	self.Primary.Automatic = self:GetStat("FireModesAutomatic." .. self:GetStat("FireModes." .. fm)) ~= nil
+	self.Primary_TFA.Automatic = self:GetStat("FireModesAutomatic." .. self:GetStat("FireModes." .. fm)) ~= nil
 end
 
 --[[

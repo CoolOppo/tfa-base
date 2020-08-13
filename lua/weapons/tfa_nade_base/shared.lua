@@ -43,7 +43,7 @@ function SWEP:Initialize()
 	if nzombies == nil then
 		nzombies = engine.ActiveGamemode() == "nzombies"
 	end
-	self.ProjectileEntity = self.Primary.Round --Entity to shoot
+	self.ProjectileEntity = self.Primary_TFA.Round --Entity to shoot
 	self.ProjectileVelocity = self.Velocity and self.Velocity or 550 --Entity to shoot's velocity
 	self.ProjectileModel = nil --Entity to shoot's model
 	self:SetNW2Bool("Ready", false)

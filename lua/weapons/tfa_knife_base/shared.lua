@@ -100,7 +100,7 @@ function SWEP:SlashSound(tr)
 				self:EmitSound(self.KnifeShink)
 			end
 		else
-			self:EmitSound(self.Primary.Sound)
+			self:EmitSound(self.Primary_TFA.Sound)
 		end
 	end
 end
@@ -206,7 +206,7 @@ function SWEP:Slash(bPrimary)
 	ea = ow:EyeAngles()
 	fw = ea:Forward()
 	tracedata.start = gsp
-	tracedata.endpos = gsp + fw * (bPrimary and self.Primary.Length or self.Secondary.Length)
+	tracedata.endpos = gsp + fw * (bPrimary and self.Primary_TFA.Length or self.Secondary_TFA.Length)
 	tracedata.filter = ow
 
 	tr = self:GetSlashTrace(tracedata, fw)
@@ -238,10 +238,10 @@ function SWEP:PrimaryAttack()
 		self:SendViewModelSeq(self.SlashTable[self.SlashCounter])
 
 		self:GetOwner():SetAnimation(PLAYER_ATTACK1)
-		self:SetNextPrimaryFire(CurTime() + 1 / (self.Primary.RPM / 60))
-		self:SetNextSecondaryFire(CurTime() + 1 / (self.Primary.RPM / 60))
+		self:SetNextPrimaryFire(CurTime() + 1 / (self.Primary_TFA.RPM / 60))
+		self:SetNextSecondaryFire(CurTime() + 1 / (self.Primary_TFA.RPM / 60))
 		self:SetStatus(TFA.Enum.STATUS_RELOADING)
-		self:SetStatusEnd(CurTime() + self.Primary.Delay)
+		self:SetStatusEnd(CurTime() + self.Primary_TFA.Delay)
 	end
 end
 
@@ -256,7 +256,7 @@ function SWEP:SecondaryAttack()
 	ea = ow:EyeAngles()
 	fw = ea:Forward()
 	tracedata.start = gsp
-	tracedata.endpos = gsp + fw * self.Secondary.Length
+	tracedata.endpos = gsp + fw * self.Secondary_TFA.Length
 	tracedata.filter = ow
 
 	tr = self:GetSlashTrace(tracedata, fw)
@@ -282,15 +282,15 @@ function SWEP:SecondaryAttack()
 	end
 
 	self:GetOwner():SetAnimation(PLAYER_ATTACK1)
-	self:SetNextPrimaryFire(CurTime() + 60 / self.Secondary.RPM)
-	self:SetNextSecondaryFire(CurTime() + 60 / self.Secondary.RPM )
+	self:SetNextPrimaryFire(CurTime() + 60 / self.Secondary_TFA.RPM)
+	self:SetNextSecondaryFire(CurTime() + 60 / self.Secondary_TFA.RPM )
 	self:SetStatus(TFA.Enum.STATUS_SILENCER_TOGGLE)
-	self:SetStatusEnd(CurTime() + self.Secondary.Delay)
+	self:SetStatusEnd(CurTime() + self.Secondary_TFA.Delay)
 end
 
 function SWEP:ThrowKnife()
 	if not IsFirstTimePredicted() then return end
-	self:EmitSound(self.Primary.Sound)
+	self:EmitSound(self.Primary_TFA.Sound)
 
 	if SERVER then
 		local ent = ents.Create("tfa_thrown_blade")
@@ -298,7 +298,7 @@ function SWEP:ThrowKnife()
 		if ent:IsValid() then
 			ent:SetPos(self:GetOwner():GetShootPos())
 			ent:SetAngles(self:GetOwner():EyeAngles())
-			ent:SetModel(self.Primary.ProjectileModel or self.WorldModel)
+			ent:SetModel(self.Primary_TFA.ProjectileModel or self.WorldModel)
 			ent:SetOwner(self:GetOwner())
 			ent:SetPhysicsAttacker(self:GetOwner())
 			ent:Spawn()
