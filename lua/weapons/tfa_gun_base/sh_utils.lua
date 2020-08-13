@@ -701,7 +701,8 @@ function SWEP:CycleFireMode()
 	self:SetStatus(TFA.GetStatus("firemode"))
 	self:SetStatusEnd(self:GetNextPrimaryFire())
 
-	self.Primary_TFA.Automatic = self:GetStat("FireModesAutomatic." .. self:GetStat("FireModes." .. fm)) ~= nil
+	self.Primary.Automatic = self:GetStat("FireModesAutomatic." .. self:GetStat("FireModes." .. fm)) ~= nil
+	self.Primary_TFA.Automatic =self.Primary.Automatic
 end
 
 --[[
