@@ -242,6 +242,7 @@ function TFA.Ballistics:FireBullets(wep, bulletStruct, angIn, bulletOverride)
 
 	local oldNum = bulletStruct.Num
 	bulletStruct.Num = 1
+	bulletStruct.IsBallistics = true
 
 	for i = 1, oldNum do
 		local ang
@@ -373,7 +374,8 @@ if CLIENT then
 			SmokeParticle = smokeparticle,
 			CustomPosition = customPosition,
 			Model = model ~= "" and model or nil,
-			Velocity = Velocity
+			Velocity = Velocity,
+			IsBallistics = true,
 		}
 
 		TFA.Ballistics.Bullets:Add(struct, bulletStruct)

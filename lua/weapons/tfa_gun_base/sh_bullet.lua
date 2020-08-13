@@ -644,6 +644,10 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon, penetrated)
 			DLib.debugoverlay.Cross(pentrace.start, 8, 10, debugsphere1, true)
 			DLib.debugoverlay.Cross(pentraceres2.HitPos, 8, 10, debugsphere2, true)
 		end
+
+		if self.IsBallistics then
+			startpos = decalstartpos
+		end
 	else
 		outnormal = pentraceres.HitNormal
 

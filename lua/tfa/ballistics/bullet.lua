@@ -154,11 +154,35 @@ function BallisticBullet:_accelerate(delta)
 	self.damage = self.startDamage * math.sqrt(self.velocity:Length() / self.startVelocity)
 end
 
+local IsInWorld, IsInWorld2
+
+do
+	local tr = {collisiongroup = COLLISION_GROUP_WORLD}
+
+	function IsInWorld2(pos)
+		tr.start = pos
+		tr.endpos = pos
+		return not util.TraceLine(tr).AllSolid
+	end
+end
+
+if CLIENT then
+	IsInWorld = IsInWorld2
+else
+	IsInWorld = util.IsInWorld
+end
+
 --internal function for moving with collision test
 function BallisticBullet:_moveSafe(newPos)
 	traceData.start = self.pos
 	traceData.endpos = newPos + (newPos - self.pos):GetNormalized()
-	traceData.filter = {self.owner, self.inflictor}
+
+	if IsValid(self.IgnoreEntity) then
+		traceData.filter = {self.owner, self.inflictor, self.IgnoreEntity}
+	else
+		traceData.filter = {self.owner, self.inflictor}
+	end
+
 	traceData.mask = MASK_SHOT_NOWATER
 
 	--collision trace
@@ -175,8 +199,10 @@ function BallisticBullet:_moveSafe(newPos)
 	--collision check
 	if traceRes.Hit and traceRes.Fraction < 1 and traceRes.Fraction > 0 then
 		self:Impact(traceRes)
-	else
+	elseif IsInWorld(newPos) then
 		self.pos = newPos
+	else
+		self:Remove()
 	end
 end
 
