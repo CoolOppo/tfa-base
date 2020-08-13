@@ -275,7 +275,7 @@ function TFA.Ballistics:FireBullets(wep, bulletStruct, angIn, bulletOverride)
 			end
 		end
 
-		self.Bullets:Add(struct, bulletOverride)
+		self.Bullets:Add(struct, bulletStruct)
 
 		if SERVER then
 			net.Start(TFA.Ballistics.BulletCreationNetString)
