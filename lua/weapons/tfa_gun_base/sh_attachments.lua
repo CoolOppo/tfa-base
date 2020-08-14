@@ -139,7 +139,7 @@ function SWEP:BuildAttachmentCache()
 		end
 
 		if type(self.AttachmentTableOverride[attName]) == "table" then
-			CloneTableRecursive(self.AttachmentTableOverride[attName], self.AttachmentTableCache)
+			CloneTableRecursive(self.AttachmentTableOverride[attName], self.AttachmentTableCache, true)
 		end
 
 		::CONTINUE::
