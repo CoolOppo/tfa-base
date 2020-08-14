@@ -78,9 +78,7 @@ if SERVER then
 			wep:SetTFAAttachment(cat, ind, true)
 		end
 	end)
-end
-
-if CLIENT then
+else
 	net.Receive("TFA_Attachment_Set", function(len)
 		local wep = net.ReadEntity()
 

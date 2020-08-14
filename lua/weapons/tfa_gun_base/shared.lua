@@ -784,7 +784,7 @@ function SWEP:PlayerThinkCL(plyv)
 	self:SmokePCFLighting()
 
 	if sp then
-		self:Think2(false)
+		self:Think2(true)
 	end
 
 	if self:GetStat("BlowbackEnabled") then
