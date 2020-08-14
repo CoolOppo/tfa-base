@@ -759,8 +759,6 @@ function SWEP:Think()
 end
 
 function SWEP:PlayerThink(plyv, is_first_tick)
-	local self2 = self:GetTable()
-
 	if self:GetOwner():IsNPC() then
 		return
 	end
@@ -1446,20 +1444,18 @@ function SWEP:PrimaryAttack()
 end
 
 function SWEP:PrePrimaryAttack()
-	local self2 = self:GetTable()
+	-- override
 end
 
 function SWEP:PostPrimaryAttack()
-	local self2 = self:GetTable()
+	-- override
 end
 
 function SWEP:CanSecondaryAttack()
-	local self2 = self:GetTable()
+	-- override
 end
 
 function SWEP:SecondaryAttack()
-	local self2 = self:GetTable()
-
 	self:PreSecondaryAttack()
 
 	if hook.Run("TFA_SecondaryAttack", self) then return end
@@ -1468,7 +1464,7 @@ function SWEP:SecondaryAttack()
 		return
 	end
 
-	if self:GetStat("data.ironsights", 0) == 0 and self2.AltAttack then
+	if self:GetStat("data.ironsights", 0) == 0 and self.AltAttack then
 		self:AltAttack()
 		self:PostSecondaryAttack()
 		return
@@ -1478,15 +1474,14 @@ function SWEP:SecondaryAttack()
 end
 
 function SWEP:PreSecondaryAttack()
-	local self2 = self:GetTable()
+	-- override
 end
 
 function SWEP:PostSecondaryAttack()
-	local self2 = self:GetTable()
+	-- override
 end
 
 function SWEP:GetLegacyReloads()
-	local self2 = self:GetTable()
 	return legacy_reloads_cv:GetBool()
 end
 
@@ -1573,11 +1568,11 @@ function SWEP:Reload(released)
 end
 
 function SWEP:PreReload(released)
-	local self2 = self:GetTable()
+	-- override
 end
 
 function SWEP:PostReload(released)
-	local self2 = self:GetTable()
+	-- override
 end
 
 function SWEP:Reload2(released)
@@ -1641,11 +1636,12 @@ function SWEP:Reload2(released)
 end
 
 function SWEP:DoPump()
-	local self2 = self:GetTable()
-	if hook.Run("TFA_Pump",self) then return end
+	if hook.Run("TFA_Pump", self) then return end
+
 	if self:GetOwner():IsNPC() then
 		return
 	end
+
 	local _,tanim = self:PlayAnimation( self:GetStat("PumpAction") )
 	self:SetStatus( TFA.GetStatus("pump") )
 	self:SetStatusEnd( l_CT() + self:GetActivityLength( tanim, true ) )
@@ -1654,12 +1650,14 @@ function SWEP:DoPump()
 end
 
 function SWEP:LoadShell()
-	local self2 = self:GetTable()
 	if hook.Run("TFA_LoadShell",self) then return end
+
 	if self:GetOwner():IsNPC() then
 		return
 	end
+
 	local _, tanim = self:ChooseReloadAnim()
+
 	if self:GetActivityLength(tanim,true) < self:GetActivityLength(tanim,false) then
 		self:SetStatusEnd(ct + self:GetActivityLength( tanim, true ) )
 	else
@@ -1667,11 +1665,11 @@ function SWEP:LoadShell()
 		if sht then sht = sht / self:GetAnimationRate(ACT_VM_RELOAD) end
 		self:SetStatusEnd(ct + ( sht or self:GetActivityLength( tanim, true ) ) )
 	end
+
 	return TFA.Enum.STATUS_RELOADING_SHOTGUN_LOOP
 end
 
 function SWEP:CompleteReload()
-	local self2 = self:GetTable()
 	if hook.Run("TFA_CompleteReload",self) then return end
 
 	if self:GetOwner():IsNPC() then
@@ -1688,12 +1686,16 @@ end
 
 
 function SWEP:CheckAmmo()
-	local self2 = self:GetTable()
-	if hook.Run("TFA_CheckAmmo",self) then return end
+	if hook.Run("TFA_CheckAmmo", self) then return end
+
 	if self:GetOwner():IsNPC() then
 		return
 	end
-	if self:GetIronSights() or self:GetSprinting() then return end
+
+	local self2 = self:GetTable()
+
+	if self2.GetIronSights(self) or self2.GetSprinting(self) then return end
+
 
 	--if self2.NextInspectAnim == nil then
 	--  self2.NextInspectAnim = -1
@@ -1712,10 +1714,12 @@ end
 
 local cv_strip = GetConVar("sv_tfa_weapon_strip")
 function SWEP:DoAmmoCheck()
-	local self2 = self:GetTable()
 	if self:GetOwner():IsNPC() then
 		return
 	end
+
+	local self2 = self:GetTable()
+
 	if IsValid(self) and SERVER and cv_strip:GetBool() and self:Clip1() == 0 and self:Ammo1() == 0 then
 		timer.Simple(.1, function()
 			if SERVER and IsValid(self) and self:OwnerIsValid() then
@@ -1742,7 +1746,6 @@ if CLIENT then
 end
 
 function SWEP:AdjustMouseSensitivity()
-	local self2 = self:GetTable()
 	sensval = 1
 
 	if self:GetIronSights() then
@@ -1808,15 +1811,15 @@ function SWEP:TranslateFOV(fov)
 end
 
 function SWEP:GetPrimaryAmmoType()
-	local self2 = self:GetTable()
 	return self:GetStat("Primary.Ammo") or ""
 end
 
 function SWEP:ToggleInspect()
-	local self2 = self:GetTable()
 	if self:GetOwner():IsNPC() then
 		return
 	end
+
+	local self2 = self:GetTable()
 
 	if (self:GetSprinting() or self:GetIronSights() or self:GetStatus() ~= TFA.Enum.STATUS_IDLE) and not self:GetCustomizing() then return end
 
@@ -1834,12 +1837,10 @@ end
 SWEP.ToggleCustomize = SWEP.ToggleInspect
 
 function SWEP:GetIsInspecting()
-	local self2 = self:GetTable()
 	return self:GetCustomizing()
 end
 
 function SWEP:EmitSoundNet(sound)
-	local self2 = self:GetTable()
 	if CLIENT or sp then
 		if sp and not IsFirstTimePredicted() then return end
 
@@ -1861,14 +1862,12 @@ function SWEP:EmitSoundNet(sound)
 end
 
 function SWEP:CanBeJammed()
-	local self2 = self:GetTable()
-	return self2.CanJam and self:GetMaxClip1() > 0 and sv_tfa_jamming:GetBool()
+	return self.CanJam and self:GetMaxClip1() > 0 and sv_tfa_jamming:GetBool()
 end
 
 -- Use this to increase/decrease factor added based on ammunition/weather conditions/etc
 function SWEP:GrabJamFactorMult()
-	local self2 = self:GetTable()
-	return 1
+	return 1 -- override
 end
 
 function SWEP:UpdateJamFactor()
@@ -1879,13 +1878,11 @@ function SWEP:UpdateJamFactor()
 end
 
 function SWEP:IsJammed()
-	local self2 = self:GetTable()
 	if not self:CanBeJammed() then return false end
 	return self:GetJammed()
 end
 
 function SWEP:NotifyJam()
-	local self2 = self:GetTable()
 	local ply = self:GetOwner()
 
 	if IsValid(ply) and ply:IsPlayer() and IsFirstTimePredicted() and (not ply._TFA_LastJamMessage or ply._TFA_LastJamMessage < RealTime()) then
@@ -1895,14 +1892,12 @@ function SWEP:NotifyJam()
 end
 
 function SWEP:CheckJammed()
-	local self2 = self:GetTable()
 	if not self:IsJammed() then return false end
 	self:NotifyJam()
 	return true
 end
 
 function SWEP:RollJamChance()
-	local self2 = self:GetTable()
 	if not self:CanBeJammed() then return false end
 	if self:IsJammed() then return true end
 	local chance = self:GetJamChance()
@@ -1919,11 +1914,11 @@ function SWEP:RollJamChance()
 end
 
 function SWEP:GrabJamChanceMult()
-	local self2 = self:GetTable()
-	return 1
+	return 1 -- override
 end
 
 function SWEP:GetJamChance()
+	-- you can safely override this with your own logic if you desire
 	local self2 = self:GetTable()
 	if not self:CanBeJammed() then return 0 end
 	return self:GetJamFactor() * sv_tfa_jamming_factor:GetFloat() * (self2.JamChance / 100) * self:GrabJamChanceMult()
@@ -1964,7 +1959,6 @@ function SWEP:OnReloaded()
 end
 
 function SWEP:ProcessLoopSound()
-	local self2 = self:GetTable()
 	if (SERVER or not sp) and (
 			self:GetNextLoopSoundCheck() >= 0
 			and ct > self:GetNextLoopSoundCheck()

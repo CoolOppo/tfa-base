@@ -66,7 +66,7 @@ function SWEP:ProcessEvents()
 
 	if not evtbl then return end
 	for _, v in pairs(evtbl) do
-		if v.called or l_CT() < self.EventTimer + v.time / self:GetAnimationRate( self.LastAct or self:GetLastActivity() ) then continue end
+		if v.called or l_CT() < self.EventTimer + v.time / self:GetAnimationRate( self.LastAct or self:GetLastActivity() ) then goto CONTINUE end
 		v.called = true
 
 		if v.client == nil then
@@ -108,6 +108,8 @@ function SWEP:ProcessEvents()
 				end
 			end
 		end
+
+		::CONTINUE::
 	end
 end
 
@@ -194,7 +196,7 @@ function SWEP:ProcessStatus()
 			lact = self:GetLastActivity()
 
 			if self2.GetActivityLength(self, lact, true) < self2.GetActivityLength(self, lact, false) - 0.01 then
-				sht = self2.GetStat(self, "ShellTime")
+				local sht = self2.GetStat(self, "ShellTime")
 
 				if sht then
 					sht = sht / self2.GetAnimationRate(self, ACT_VM_RELOAD)

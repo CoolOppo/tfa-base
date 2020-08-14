@@ -787,7 +787,6 @@ function SWEP:ChooseShotgunReloadAnim()
 end
 
 function SWEP:ChooseShotgunPumpAnim()
-	local self2 = self:GetTable()
 	if not self:VMIV() then return end
 	typev, tanim = self:ChooseAnimation("reload_shotgun_finish")
 
@@ -892,22 +891,18 @@ function SWEP:ChooseADSAnim()
 end
 
 function SWEP:ChooseSprintAnim()
-	local self2 = self:GetTable()
 	return self:PlayAnimation(self:GetStat("SprintAnimation.loop"))
 end
 
 function SWEP:ChooseWalkAnim()
-	local self2 = self:GetTable()
 	return self:PlayAnimation(self:GetStat("WalkAnimation.loop"))
 end
 
 function SWEP:ChooseLoopShootAnim()
-	local self2 = self:GetTable()
 	return self:PlayAnimation(self:GetStat("ShootAnimation.loop"))
 end
 
 function SWEP:ChooseCustomizeAnim()
-	local self2 = self:GetTable()
 	return self:PlayAnimation(self:GetStat("CustomizeAnimation.loop"))
 end
 
@@ -1014,7 +1009,6 @@ Purpose:  Animation / Utility
 ]]
 --
 function SWEP:ChooseSilenceAnim(val)
-	local self2 = self:GetTable()
 	if not self:VMIV() then return end
 	--self:ResetEvents()
 	typev, tanim = self:ChooseAnimation("idle_silenced")
@@ -1095,10 +1089,10 @@ function SWEP:ChooseROFAnim()
 
 	--self:ResetEvents()
 	if self:GetIronSights() and self:GetActivityEnabled(ACT_VM_IFIREMODE) then
-		typev, tanim = self:ChooseAnimation("rof_is")
+		typev, tanim = self2.ChooseAnimation(self, "rof_is")
 		success = true
 	elseif self:GetActivityEnabled(ACT_VM_FIREMODE) then
-		typev, tanim = self:ChooseAnimation("rof")
+		typev, tanim = self2.ChooseAnimation(self, "rof")
 		success = true
 	else
 		success = false

@@ -8,6 +8,7 @@ ignore = {
 stds.addon = {}
 stds.addon.globals = {
 	"TFA",
+	"DLib",
 	"TFA_SCOPE_ACOG",
 	"TFA_SCOPE_MILDOT",
 	"TFA_SCOPE_SVD",

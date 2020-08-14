@@ -395,7 +395,6 @@ end
 --local vmfov
 --local bbvec
 function SWEP:AirWalkScale()
-	local self2 = self:GetTable()
 	return (self:OwnerIsValid() and self:GetOwner():IsOnGround()) and 1 or 0.2
 end
 

@@ -48,7 +48,6 @@ function SWEP:RemoveUnusedAttachments()
 
 		if #v.atts <= 0 then
 			self.Attachments[k] = nil
-			continue
 		end
 	end
 end
@@ -130,8 +129,8 @@ function SWEP:BuildAttachmentCache()
 	table.Empty(self.AttachmentTableCache)
 
 	for attName, sel in pairs(self.AttachmentCache) do
-		if not sel then continue end
-		if not TFA.Attachments.Atts[attName] then continue end
+		if not sel then goto CONTINUE end
+		if not TFA.Attachments.Atts[attName] then goto CONTINUE end
 
 		local srctbl = TFA.Attachments.Atts[attName].WeaponTable
 
@@ -142,6 +141,8 @@ function SWEP:BuildAttachmentCache()
 		if type(self.AttachmentTableOverride[attName]) == "table" then
 			CloneTableRecursive(self.AttachmentTableOverride[attName], self.AttachmentTableCache)
 		end
+
+		::CONTINUE::
 	end
 end
 
@@ -309,13 +310,13 @@ function SWEP:ClearStatCache(vn)
 		table.Empty(self2.Primary)
 		table.Empty(self2.Secondary)
 
-		for k, v in pairs(self2.Primary_TFA) do
+		for k in pairs(self2.Primary_TFA) do
 			if isstring(k) then
 				self2.Primary[k] = self2.GetStat(self, "Primary." .. k)
 			end
 		end
 
-		for k, v in pairs(self.Secondary_TFA) do
+		for k in pairs(self.Secondary_TFA) do
 			if isstring(k) then
 				self2.Secondary[k] = self2.GetStat(self, "Secondary." .. k)
 			end
@@ -586,7 +587,7 @@ function SWEP:InitAttachments()
 			if type(vsel) == "string" then
 				vsel = table.KeyFromValue(v.atts, vsel) or tonumber(vsel)
 
-				if not vsel then continue end
+				if not vsel then goto CONTINUE end
 			end
 
 			timer.Simple(0, function()
@@ -603,6 +604,8 @@ function SWEP:InitAttachments()
 				end)
 			end
 		end
+
+		::CONTINUE::
 	end
 
 	hook.Run("TFA_PostInitAttachments", self)
@@ -717,10 +720,10 @@ end
 
 function SWEP:CallAttFunc(funcName, ...)
 	for attName, sel in pairs(self.AttachmentCache or {}) do
-		if not sel then continue end
+		if not sel then goto CONTINUE end
 
 		local att = TFA.Attachments.Atts[attName]
-		if not att then continue end
+		if not att then goto CONTINUE end
 
 		local attFunc = att[funcName]
 		if attFunc and type(attFunc) == "function" then
@@ -730,6 +733,8 @@ function SWEP:CallAttFunc(funcName, ...)
 				return _ret1, _ret2, _ret3, _ret4, _ret5, _ret6, _ret7, _ret8, _ret9, _ret10
 			end
 		end
+
+		::CONTINUE::
 	end
 
 	return nil

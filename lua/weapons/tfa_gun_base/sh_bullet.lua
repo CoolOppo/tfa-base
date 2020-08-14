@@ -247,9 +247,6 @@ end
 local sp = game.SinglePlayer()
 
 function SWEP:TFAMove(ply, movedata)
-	local ft = TFA.FrameTime()
-	local self2 = self:GetTable()
-
 	local velocity = self:GetNW2Vector("QueuedRecoil", false)
 
 	if velocity and velocity:Length() ~= 0 then
@@ -541,15 +538,15 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon, penetrated)
 
 	-- custom damage checks
 	if atype ~= DMG_BULLET then
-		if cl == "npc_strider" and (dmginfo:IsDamageType(DMG_SHOCK) or dmginfo:IsDamageType(DMG_BLAST)) and traceres.Hit and IsValid(hitent) and hitent.Fire then
-			--[[hitent:SetHealth(math.max(hitent:Health() - dmginfo:GetDamage(), 2))
+		--[[if cl == "npc_strider" and (dmginfo:IsDamageType(DMG_SHOCK) or dmginfo:IsDamageType(DMG_BLAST)) and traceres.Hit and IsValid(hitent) and hitent.Fire then
+			hitent:SetHealth(math.max(hitent:Health() - dmginfo:GetDamage(), 2))
 
 			if hitent:Health() <= 3 then
 				hitent:Extinguish()
 				hitent:Fire("sethealth", "-1", 0.01)
 				dmginfo:ScaleDamage(0)
-			end]]
-		end
+			end
+		end]]
 
 		if dmginfo:IsDamageType(DMG_BURN) and weapon.Primary.DamageTypeHandled and traceres.Hit and IsValid(hitent) and not traceres.HitWorld and not traceres.HitSky and dmginfo:GetDamage() > 1 and hitent.Ignite then
 			hitent:Ignite(dmginfo:GetDamage() / 2, 1)
@@ -603,8 +600,7 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon, penetrated)
 	}
 
 	local isent = IsValid(traceres.Entity)
-	local pentraceres2, pentrace2
-	local startpos, decalstartpos, outnormal
+	local startpos, decalstartpos
 
 	if isent then
 		table.insert(penetrated, traceres.Entity)
@@ -622,16 +618,14 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon, penetrated)
 
 	if not isent then
 		local acc_length = pentraceres.HitPos:Distance(pentraceres.StartPos)
-		local ostart, oend = pentrace.start, pentrace.endpos
+		local ostart = pentrace.start
 		local FractionLeftSolid = pentraceres.FractionLeftSolid
-		local lastend
 		local iter = 0
 
 		local cond = (pentraceres.AllSolid or not IsInWorld2(pentraceres.HitPos)) and acc_length < desired_length
 
 		while (pentraceres.AllSolid or not IsInWorld2(pentraceres.HitPos)) and acc_length < desired_length and iter < MAX_CORRECTION_ITERATIONS do
 			iter = iter + 1
-			local slen = desired_length - acc_length
 
 			pentrace.start = pentraceres.HitPos + newdir * 8
 
@@ -670,7 +664,6 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon, penetrated)
 
 		pentraceres2 = util.TraceLine(pentrace2)
 		loss = pentraceres2.HitPos:Distance(pentrace.start) * mult
-		outnormal = pentraceres2.HitNormal
 
 		if pentraceres2.HitPos:Distance(pentrace.start) < 0.01 then
 			-- bullet stuck in
@@ -692,8 +685,6 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon, penetrated)
 
 		realstartpos = decalstartpos
 	else
-		outnormal = pentraceres.HitNormal
-
 		startpos = LerpVector(pentraceres.FractionLeftSolid, pentrace.start, pentrace.endpos) + newdir * 4
 		realstartpos = startpos
 		decalstartpos = startpos + newdir * 2
@@ -782,25 +773,25 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon, penetrated)
 		DLib.debugoverlay.Text(startpos, string.format('penetrate %.3f->%.3f %d %.3f', prev, self.PenetrationPower, self.PenetrationCount, mfac), 10)
 	end
 
-	function bul.Callback(attacker, trace, dmginfo)
+	function bul.Callback(attacker, trace, dmginfo2)
 		if SERVER and develop:GetBool() and DLib  then
 			DLib.debugoverlay.Cross(trace.HitPos, 8, 10, debugsphere3, true)
 			DLib.debugoverlay.Text(trace.HitPos - Vector(0, 0, 7), string.format('hit %.3f %d', mfac, bul.PenetrationCount, bul.PenetrationPower), 10)
 		end
 
-		dmginfo:SetInflictor(IsValid(bul.Wep) and bul.Wep or IsValid(ply) and ply or Entity(0))
+		dmginfo2:SetInflictor(IsValid(bul.Wep) and bul.Wep or IsValid(ply) and ply or Entity(0))
 
 		if IsValid(weapon) and weapon:GetStat("Primary.FalloffMetricBased") then
 			bul.Damage = (self.InitialDamage - self:CalculateFalloff(trace.HitPos)) * mfac
-			dmginfo:SetDamage(bul.Damage)
+			dmginfo2:SetDamage(bul.Damage)
 		end
 
-		hook.Run("TFA_BulletPenetration", bul, attacker, trace, dmginfo)
+		hook.Run("TFA_BulletPenetration", bul, attacker, trace, dmginfo2)
 
 		-- TODO: User died while bullet make penetration
 		-- handle further penetrations even when user is dead
 		if IsValid(bul.Wep) then
-			bul:Penetrate(attacker, trace, dmginfo, bul.Wep, penetrated)
+			bul:Penetrate(attacker, trace, dmginfo2, bul.Wep, penetrated)
 		end
 	end
 

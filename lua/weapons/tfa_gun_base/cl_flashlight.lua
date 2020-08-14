@@ -25,7 +25,6 @@ SWEP.FlashlightAttachment = 0
 SWEP.FlashlightBrightness = 1
 SWEP.FlashlightFOV = 60
 
-local render = render
 local Material = Material
 local ProjectedTexture = ProjectedTexture
 local math = math
