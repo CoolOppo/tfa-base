@@ -174,15 +174,17 @@ end
 
 --internal function for moving with collision test
 function BallisticBullet:_moveSafe(newPos)
-	traceData.start = self.pos
-	traceData.endpos = newPos + (newPos - self.pos):GetNormalized()
-
-	if IsValid(self.IgnoreEntity) then
-		traceData.filter = {self.owner, self.inflictor, self.IgnoreEntity}
-	else
-		traceData.filter = {self.owner, self.inflictor}
+	if not self.tr_filter then
+		if IsValid(self.IgnoreEntity) then
+			self.tr_filter = {self.owner, self.inflictor, self.IgnoreEntity}
+		else
+			self.tr_filter = {self.owner, self.inflictor}
+		end
 	end
 
+	traceData.start = self.pos
+	traceData.endpos = newPos + (newPos - self.pos):GetNormalized()
+	traceData.filter = self.tr_filter
 	traceData.mask = MASK_SHOT_NOWATER
 
 	--collision trace
