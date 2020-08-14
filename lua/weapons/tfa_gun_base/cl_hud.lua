@@ -748,8 +748,6 @@ function SWEP:GenerateInspectionDerma()
 end
 
 function SWEP:DoInspectionDerma()
-	self.InspectingProgress = self:GetNW2Float("InspectingProgress") or 0
-
 	if not IsValid(TFA_INSPECTIONPANEL) and self:GetNW2Float("InspectingProgress") > 0.01 then
 		self:GenerateInspectionDerma()
 	end

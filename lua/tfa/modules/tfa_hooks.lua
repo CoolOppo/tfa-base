@@ -103,7 +103,7 @@ if CLIENT then
 			elseif table.Count(w.Attachments) <= 0 then
 				tfablurintensity = 0
 			else
-				tfablurintensity = w.Inspecting and 1 or 0
+				tfablurintensity = w:GetCustomizing() and 1 or 0
 			end
 		end
 

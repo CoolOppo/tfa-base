@@ -580,11 +580,6 @@ function SWEP:Deploy()
 
 	self:SetBurstCount(0)
 
-	self2.IronSightsProgress = 0
-	self2.SprintProgress = 0
-	self2.InspectingProgress = 0
-	self2.ProceduralHolsterProgress = 0
-
 	self:SetNW2Float("IronSightsProgress", 0)
 	self:SetNW2Float("SprintProgress", 0)
 	self:SetNW2Float("InspectingProgress", 0)

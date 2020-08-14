@@ -89,6 +89,8 @@ hook.Add("FinishMove", "TFAFinishMove", function(self, movedata)
 	end
 end)
 
+local sp = game.SinglePlayer()
+
 function SWEP:CalculateRatios()
 	local owent = self:GetOwner()
 	--if not IsValid(owent) or not owent:IsPlayer() then return end
@@ -136,6 +138,10 @@ function SWEP:CalculateRatios()
 	self2.WalkProgress = self:GetNW2Float("WalkProgress", 0)
 	self2.ProceduralHolsterProgress = self:GetNW2Float("ProceduralHolsterProgress", 0)
 	self2.InspectingProgress = self:GetNW2Float("InspectingProgress", 0)
+
+	if sp and CLIENT then
+		self2.Inspecting = self:GetCustomizing() --compatibility
+	end
 
 	self2.CLIronSightsProgress = self:GetNW2Float("IronSightsProgress") --compatibility
 end
