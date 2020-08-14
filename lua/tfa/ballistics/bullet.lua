@@ -63,7 +63,7 @@ function BallisticBullet:Update(delta)
 	self:_setup()
 	if self.delete then return end
 
-	local realdelta = delta - self.last_update
+	local realdelta = (delta - self.last_update) / TFA.Ballistics.SubSteps
 	self.last_update = delta
 
 	local newPos = self:_getnewPosition(realdelta)
@@ -245,14 +245,15 @@ function BallisticBullet:Impact(tr)
 end
 
 --Render
-local cv_bullet_style, cv_tracers_adv
+--local cv_bullet_style, cv_tracers_adv
+local cv_bullet_style
 
 if CLIENT then
 	CreateClientConVar("cl_tfa_ballistics_mp", "1", true, false, "Receive bullet data from other players?")
 	cv_bullet_style = CreateClientConVar("cl_tfa_ballistics_fx_bullet", "1", true, false, "Display bullet models for each TFA ballistics bullet?")
 	CreateClientConVar("cl_tfa_ballistics_fx_tracers_style", "1", true, false, "Style of tracers for TFA ballistics? 0=disable,1=smoke")
 	CreateClientConVar("cl_tfa_ballistics_fx_tracers_mp", "1", true, false, "Enable tracers for other TFA ballistics users?")
-	cv_tracers_adv = CreateClientConVar("cl_tfa_ballistics_fx_tracers_adv", "1", true, false, "Enable advanced tracer calculations for other users? This corrects smoke trail to their barrel")
+	--cv_tracers_adv = CreateClientConVar("cl_tfa_ballistics_fx_tracers_adv", "1", true, false, "Enable advanced tracer calculations for other users? This corrects smoke trail to their barrel")
 	--[[
 	cv_receive = GetConVar("cl_tfa_ballistics_mp")
 	cv_bullet_style = GetConVar("cl_tfa_ballistics_fx_bullet")
@@ -263,10 +264,10 @@ if CLIENT then
 	--
 end
 
-local DEFANGPOS = {
+--[[local DEFANGPOS = {
 	Pos = vector_origin,
 	Ang = angle_zero
-}
+}]]
 
 function BallisticBullet:Render()
 	if SERVER then return end

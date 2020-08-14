@@ -1017,8 +1017,7 @@ function SWEP:DrawHUDAmmo()
 	end
 end
 
-function SWEP:DoDrawCrosshair()
-	local x, y
+function SWEP:DoDrawCrosshair(x, y)
 	local self2 = self:GetTable()
 
 	if not self2.ratios_calc or not self2.DrawCrosshairDefault then return true end
@@ -1037,12 +1036,6 @@ function SWEP:DoDrawCrosshair()
 	local ply = LocalPlayer()
 	if not ply:IsValid() or self:GetOwner() ~= ply then return false end
 
-	local v = hook.Run("TFA_DrawCrosshair", self, x, y)
-
-	if v ~= nil then
-		return v
-	end
-
 	if not ply.interpposx then
 		ply.interpposx = ScrW() / 2
 	end
@@ -1050,8 +1043,6 @@ function SWEP:DoDrawCrosshair()
 	if not ply.interpposy then
 		ply.interpposy = ScrH() / 2
 	end
-
-	local s_cone = self:CalculateConeRecoil()
 
 	local targent
 
@@ -1075,6 +1066,14 @@ function SWEP:DoDrawCrosshair()
 		local pos = tr.HitPos:ToScreen()
 		x, y = pos.x, pos.y
 	end
+
+	local v = hook.Run("TFA_DrawCrosshair", self, x, y)
+
+	if v ~= nil then
+		return v
+	end
+
+	local s_cone = self:CalculateConeRecoil()
 
 	if not self2.selftbl then
 		self2.selftbl = {ply, self}

@@ -22,9 +22,9 @@
 --default cvar integration
 local cv_gravity = GetConVar("sv_gravity")
 
-local function TimeScale(v)
+--[[local function TimeScale(v)
 	return v * game.GetTimeScale() / TFA.Ballistics.SubSteps
-end
+end]]
 
 --init code
 TFA.Ballistics = TFA.Ballistics or {}

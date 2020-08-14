@@ -351,7 +351,7 @@ end
 local l_mathApproach = math.Approach
 local l_CT = CurTime
 --[[Frequently Reused Local Vars]]
-local stat, statend --Weapon status
+local stat --Weapon status
 local ct, ft  = 0, 0.01--Curtime, frametime, real frametime
 local sp = game.SinglePlayer() --Singleplayer
 
@@ -1928,7 +1928,6 @@ SWEP.FlashlightSoundToggleOn = Sound("HL2Player.FlashLightOn")
 SWEP.FlashlightSoundToggleOff = Sound("HL2Player.FlashLightOff")
 
 function SWEP:ToggleFlashlight(toState)
-	local self2 = self:GetTable()
 	if toState == nil then
 		toState = not self:GetFlashlightEnabled()
 	end
