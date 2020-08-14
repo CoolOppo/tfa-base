@@ -197,10 +197,16 @@ if CLIENT then
 	local kd_old = false
 	local kd_switched = false
 
+	local cl_tfa_keys_customize
+
 	function TFAKPThink(plyv, wepv)
 		kd_switched = false
 
-		if plyv:GetInfoNum("cl_tfa_keys_customize", 0) > 0 then return end
+		if not cl_tfa_keys_customize then
+			cl_tfa_keys_customize = GetConVar("cl_tfa_keys_customize")
+		end
+
+		if cl_tfa_keys_customize:GetBool() then return end
 
 		local key = GetInspectionKey()
 		local kd = input.IsKeyDown(key)
