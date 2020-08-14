@@ -230,7 +230,15 @@ if CLIENT then
 	end
 
 	if sp then
-		hook.Add("Think", "TFAInspectionMenu", TFAKPThink)
+		local function ShareIfYouDontThink()
+			local ply = LocalPlayer()
+			if not IsValid(ply) then return end
+			local wep = ply:GetActiveWeapon()
+			if not IsValid(wep) or not wep.ToggleInspect then return end
+			TFAKPThink(ply, wep)
+		end
+
+		hook.Add("Think", "TFAInspectionMenu", ShareIfYouDontThink)
 	else
 		hook.Add("StartCommand", "TFAInspectionMenu", StartCommand)
 	end
