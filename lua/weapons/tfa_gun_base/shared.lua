@@ -773,10 +773,6 @@ end
 function SWEP:PlayerThinkCL(plyv)
 	local self2 = self:GetTable()
 
-	if self:GetOwner():IsNPC() then
-		return
-	end
-
 	ft = TFA.FrameTime()
 
 	if not self:NullifyOIV() then return end
@@ -787,7 +783,7 @@ function SWEP:PlayerThinkCL(plyv)
 		self:Think2(true)
 	end
 
-	if self:GetStat("BlowbackEnabled") then
+	if self2.GetStat(self, "BlowbackEnabled") then
 		if not self2.Blowback_PistolMode or self:Clip1() == -1 or self:Clip1() > 0.1 or self2.Blowback_PistolMode_Disabled[self:GetLastActivity()] then
 			self2.BlowbackCurrent = l_mathApproach(self2.BlowbackCurrent, 0, self2.BlowbackCurrent * ft * 15)
 		end
