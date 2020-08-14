@@ -307,22 +307,60 @@ function SWEP:ClearStatCache(vn)
 		self2.StatCache[vn] = nil
 		self2.StatCache2[vn] = nil
 	else
+		clearprimary, clearsecondary = true, true
 		table.Empty(self2.StatCache)
 		table.Empty(self2.StatCache2)
+	end
 
+	if vn == "Primary" or not vn then
 		table.Empty(self2.Primary)
-		table.Empty(self2.Secondary)
+
+		local temp = {}
+
+		setmetatable(self2.Primary, {
+			__index = function(self3, key)
+				return self2.GetStat(self, "Primary." .. key)
+			end,
+
+			__newindex = function() end
+		})
 
 		for k in pairs(self2.Primary_TFA) do
 			if isstring(k) then
-				self2.Primary[k] = self2.GetStat(self, "Primary." .. k)
+				temp[k] = self2.GetStat(self, "Primary." .. k)
 			end
 		end
 
+		setmetatable(self2.Primary, nil)
+
+		for k, v in pairs(temp) do
+			self2.Primary[k] = v
+		end
+	end
+
+	if vn == "Secondary" or not vn then
+		table.Empty(self2.Secondary)
+
+		local temp = {}
+
+		setmetatable(self2.Secondary, {
+			__index = function(self3, key)
+				return self2.GetStat(self, "Secondary." .. key)
+			end,
+
+			__newindex = function() end
+		})
+
 		for k in pairs(self.Secondary_TFA) do
 			if isstring(k) then
-				self2.Secondary[k] = self2.GetStat(self, "Secondary." .. k)
+				temp[k] = self2.GetStat(self, "Secondary." .. k)
 			end
+		end
+
+		setmetatable(self2.Secondary, nil)
+
+		for k, v in pairs(temp) do
+			self2.Secondary[k] = v
 		end
 	end
 end
