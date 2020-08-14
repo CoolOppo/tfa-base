@@ -144,6 +144,9 @@ function SWEP:BuildAttachmentCache()
 
 		::CONTINUE::
 	end
+
+	self:ClearStatCache()
+	self:ClearMaterialCache()
 end
 
 function SWEP:IsAttached(attn)
@@ -487,8 +490,6 @@ function SWEP:SetTFAAttachment(cat, id, nw, force)
 	end
 
 	self2.BuildAttachmentCache(self)
-	self2.ClearStatCache(self)
-	self2.ClearMaterialCache(self)
 
 	if id > 0 then
 		self2.ForceAttachmentReqs(self, attn)
