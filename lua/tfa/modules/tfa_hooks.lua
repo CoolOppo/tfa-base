@@ -210,7 +210,11 @@ if CLIENT then
 		end
 
 		if kd ~= kd_old and kd and cv_cm:GetBool() and not plyv:KeyDown(IN_USE) then
-			kd_switched = true
+			if sp then
+				RunConsoleCommand("impulse", tostring(TFA.INSPECTION_IMPULSE))
+			else
+				kd_switched = true
+			end
 		end
 
 		kd_old = kd
@@ -225,15 +229,18 @@ if CLIENT then
 		end
 	end
 
-	hook.Remove("Think", "TFAInspectionMenu", TFAKPThink)
-	hook.Add("StartCommand", "TFAInspectionMenu", StartCommand)
+	if sp then
+		hook.Add("Think", "TFAInspectionMenu", TFAKPThink)
+	else
+		hook.Add("StartCommand", "TFAInspectionMenu", StartCommand)
+	end
 end
 
 local function FinishMove(ply, cmovedata)
 	local wepv = ply:GetActiveWeapon()
 	if not IsValid(wepv) or not wepv.ToggleInspect then return end
 
-	if CLIENT and IsFirstTimePredicted() then
+	if not sp and CLIENT and IsFirstTimePredicted() then
 		TFAKPThink(ply, wepv)
 	end
 
