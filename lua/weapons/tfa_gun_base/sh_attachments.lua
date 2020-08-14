@@ -480,9 +480,6 @@ function SWEP:SetTFAAttachment(cat, id, nw, force)
 		end
 	end
 
-	self2.ClearStatCache(self)
-	self2.ClearMaterialCache(self)
-
 	if id > 0 then
 		self2.Attachments[cat].sel = id
 	else
@@ -490,11 +487,13 @@ function SWEP:SetTFAAttachment(cat, id, nw, force)
 	end
 
 	self2.BuildAttachmentCache(self)
+	self2.ClearStatCache(self)
+	self2.ClearMaterialCache(self)
 
 	if id > 0 then
-		self2:ForceAttachmentReqs(attn)
+		self2.ForceAttachmentReqs(self, attn)
 	else
-		self2:ForceAttachmentReqs(attn_old)
+		self2.ForceAttachmentReqs(self, attn_old)
 	end
 
 	if nw then
