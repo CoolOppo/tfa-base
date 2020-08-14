@@ -714,7 +714,7 @@ function SWEP:ProcessBodygroups()
 		self2.IterateBodygroups(self, self2.OwnerViewModel, "Bodygroups_V")
 	end
 
-	self2.IterateBodygroups(self, self2, "Bodygroups_W")
+	self2.IterateBodygroups(self, self, "Bodygroups_W")
 end
 
 function SWEP:CallAttFunc(funcName, ...)
