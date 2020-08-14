@@ -119,30 +119,26 @@ if CLIENT then
 	end)
 end
 
---[[
-Hook: PreRender
-Function: Weapon Logic
-Used For: Per-frame weapon "think" logic
-]]
---
-hook.Add("PreRender", "prerender_tfabase", function()
-	local plyv = LocalPlayer()
-	if not IsValid(plyv) then return end
+if CLIENT then
+	hook.Add("Think", "TFABase_PlayerThinkCL", function()
+		local ply = LocalPlayer()
+		if not IsValid(ply) then return end
 
-	local wepv = plyv:GetActiveWeapon()
+		local weapon = ply:GetActiveWeapon()
 
-	if IsValid(wepv) and wepv.IsTFAWeapon then
-		if wepv.PlayerThinkCL then
-			wepv:PlayerThinkCL(plyv)
+		if IsValid(weapon) and weapon.IsTFAWeapon then
+			if weapon.PlayerThinkCL then
+				weapon:PlayerThinkCL(ply)
+			end
+
+			if sp then
+				net.Start("tfaSDLP")
+				net.WriteBool(ply:ShouldDrawLocalPlayer())
+				net.SendToServer()
+			end
 		end
-
-		if sp and CLIENT then
-			net.Start("tfaSDLP")
-			net.WriteBool(plyv:ShouldDrawLocalPlayer())
-			net.SendToServer()
-		end
-	end
-end)
+	end)
+end
 
 --[[
 Hook: AllowPlayerPickup
