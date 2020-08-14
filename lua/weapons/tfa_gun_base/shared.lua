@@ -1018,18 +1018,12 @@ function SWEP:Think2(is_first_tick)
 	end
 end
 
-local issighting, issprinting, iswalking, iscustomizing = false, false, false, false
+local issighting, issprinting = false, false
 SWEP.spr_old = false
 SWEP.is_old = false
 SWEP.cust_old = false
 local issighting_tmp
 local ironsights_toggle_cvar, ironsights_resight_cvar
-local sprint_cv = GetConVar("sv_tfa_sprint_enabled")
-
-if CLIENT then
-	ironsights_resight_cvar = GetConVar("cl_tfa_ironsights_resight")
-	ironsights_toggle_cvar = GetConVar("cl_tfa_ironsights_toggle")
-end
 
 function SWEP:IronSights()
 	local self2 = self:GetTable()
@@ -1039,8 +1033,6 @@ function SWEP:IronSights()
 	if owent:IsNPC() then
 		return
 	end
-
-	local self2 = self:GetTable()
 
 	local ct = l_CT()
 	local stat = self:GetStatus()
@@ -1052,8 +1044,11 @@ function SWEP:IronSights()
 	self2.is_old = self:GetIronSightsRaw()
 	self2.cust_old = self:GetCustomizing()
 
-	if (SERVER or not sp) and self:GetStat("data.ironsights") ~= 0 then
-		if (CLIENT and not ironsights_toggle_cvar:GetBool()) or owent:GetInfoNum("cl_tfa_ironsights_toggle", 0) == 0 then
+	ironsights_toggle_cvar = owent:GetInfoNum("cl_tfa_ironsights_toggle", 0) == 1
+	ironsights_resight_cvar = owent:GetInfoNum("cl_tfa_ironsights_resight", 0) == 1
+
+	if (SERVER or not sp) and self2.GetStat(self, "data.ironsights") ~= 0 then
+		if not ironsights_toggle_cvar then
 			if owent:KeyDown(IN_ATTACK2) then
 				issighting = true
 			end
@@ -1071,7 +1066,7 @@ function SWEP:IronSights()
 		issighting = self:GetIronSightsRaw()
 	end
 
-	if ((CLIENT and ironsights_toggle_cvar:GetBool()) or (SERVER and owent:GetInfoNum("cl_tfa_ironsights_toggle", 0) == 1)) and not ((CLIENT and ironsights_resight_cvar:GetBool()) or (SERVER and owent:GetInfoNum("cl_tfa_ironsights_resight", 0) == 1)) then
+	if ironsights_toggle_cvar and not ironsights_resight_cvar then
 		if issprinting then
 			issighting = false
 		end
@@ -1080,7 +1075,7 @@ function SWEP:IronSights()
 			issighting = false
 		end
 
-		if self:GetStat("BoltAction") or self:GetStat("BoltAction_Forced") then
+		if self2.GetStat(self, "BoltAction") or self2.GetStat(self, "BoltAction_Forced") then
 			if stat == TFA.Enum.STATUS_SHOOTING then
 				if not self2.LastBoltShoot then
 					self2.LastBoltShoot = l_CT()
@@ -1130,7 +1125,7 @@ function SWEP:IronSights()
 		--issprinting = true
 	end
 
-	if self:GetStat("BoltAction") or self:GetStat("BoltAction_Forced") then
+	if self2.GetStat(self, "BoltAction") or self2.GetStat(self, "BoltAction_Forced") then
 		if stat == TFA.Enum.STATUS_SHOOTING then
 			if not self2.LastBoltShoot then
 				self2.LastBoltShoot = l_CT()
