@@ -100,3 +100,51 @@ sound.Add({
 	pitch = {97, 103}
 })
 
+sound.Add({
+	name = "TFA.LowAmmo",
+	channel = CHAN_USER_BASE + 15,
+	volume = 1.0,
+	level = 75,
+	pitch = 100,
+	sound = ")weapons/tfa/lowammo_indicator.wav"
+})
+sound.Add({
+	name = "TFA.LowAmmo.Handgun",
+	channel = CHAN_USER_BASE + 15,
+	volume = 1.0,
+	level = 75,
+	pitch = 100,
+	sound = ")weapons/tfa/lowammo_indicator_handgun.wav"
+})
+sound.Add({
+	name = "TFA.LowAmmo.Shotgun",
+	channel = CHAN_USER_BASE + 15,
+	volume = 1.0,
+	level = 75,
+	pitch = 100,
+	sound = ")weapons/tfa/lowammo_indicator_shotgun.wav"
+})
+sound.Add({
+	name = "TFA.LowAmmo_Dry",
+	channel = CHAN_USER_BASE + 15,
+	volume = 1.0,
+	level = 75,
+	pitch = 100,
+	sound = ")weapons/tfa/lowammo_dry.wav"
+})
+sound.Add({
+	name = "TFA.LowAmmo.Handgun_Dry",
+	channel = CHAN_USER_BASE + 15,
+	volume = 1.0,
+	level = 75,
+	pitch = 100,
+	sound = ")weapons/tfa/lowammo_dry_handgun.wav"
+})
+sound.Add({
+	name = "TFA.LowAmmo.Shotgun_Dry",
+	channel = CHAN_USER_BASE + 15,
+	volume = 1.0,
+	level = 75,
+	pitch = 100,
+	sound = ")weapons/tfa/lowammo_dry_shotgun.wav"
+})
