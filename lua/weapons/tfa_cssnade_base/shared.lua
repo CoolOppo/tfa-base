@@ -137,11 +137,12 @@ function SWEP:DoAmmoCheck()
 	end
 end
 
-function SWEP:Think2()
+function SWEP:Think2(...)
 	if not self:GetNW2Bool("Charging", false) and self:GetNW2Bool("Ready", true) and  self:OwnerIsValid() and not self:GetOwner():KeyDown(IN_ATTACK2) and not self:GetOwner():KeyDown(IN_ATTACK) then
 		self:ThrowStart()
 	end
-	BaseClass.Think2(self)
+
+	BaseClass.Think2(self, ...)
 end
 
 function SWEP:PrimaryAttack()

@@ -322,14 +322,14 @@ function SWEP:Reload()
 	self:ThrowKnife()
 end
 
-function SWEP:Think2()
+function SWEP:Think2(...)
 	if self:GetStatus() == TFA.Enum.STATUS_SILENCER_TOGGLE and CurTime() > self:GetStatusEnd() then
 		self:Slash(false)
 	elseif self:GetStatus() == TFA.Enum.STATUS_RELOADING and CurTime() > self:GetStatusEnd() then
 		self:Slash(true)
 	end
 
-	BaseClass.Think2(self)
+	BaseClass.Think2(self, ...)
 end
 
 SWEP.IsKnife = true

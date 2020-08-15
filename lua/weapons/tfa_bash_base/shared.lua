@@ -171,7 +171,7 @@ end
 
 local ttime = -1
 
-function SWEP:Think2()
+function SWEP:Think2(...)
 	ttime = self:GetNW2Float("BashTTime", -1)
 
 	if ttime ~= -1 and l_CT() > ttime then
@@ -243,7 +243,7 @@ function SWEP:Think2()
 		end
 	end
 
-	BaseClass.Think2(self)
+	BaseClass.Think2(self, ...)
 end
 
 function SWEP:SecondaryAttack()

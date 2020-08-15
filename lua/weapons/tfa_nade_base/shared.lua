@@ -184,9 +184,11 @@ end
 
 local stat
 
-function SWEP:Think2()
+function SWEP:Think2(...)
 	if not self:OwnerIsValid() then return end
+
 	stat = self:GetStatus()
+
 	if stat == TFA.GetStatus("grenade_pull") then
 		if self:GetOwner():KeyDown(IN_ATTACK2) then
 			self:SetNW2Bool("Underhanded", true)
@@ -197,6 +199,7 @@ function SWEP:Think2()
 			self:SetStatusEnd(math.huge)
 		end
 	end
+
 	if stat == TFA.GetStatus("grenade_ready") then
 		if self:GetOwner():KeyDown(IN_ATTACK2) then
 			self:SetNW2Bool("Underhanded", true)
@@ -205,7 +208,8 @@ function SWEP:Think2()
 			self:ThrowStart()
 		end
 	end
-	BaseClass.Think2(self)
+
+	BaseClass.Think2(self, ...)
 end
 
 function SWEP:PrimaryAttack()

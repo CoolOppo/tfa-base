@@ -46,7 +46,7 @@ hook.Add("PlayerPostThink", "PlayerTickTFA", function(plyv)
 	local wepv = plyv:GetActiveWeapon()
 
 	if IsValid(wepv) and wepv.PlayerThink and wepv.IsTFAWeapon then
-		wepv:PlayerThink(plyv, plyv.last_tfa_think ~= engine.TickCount())
+		wepv:PlayerThink(plyv, plyv.last_tfa_think == engine.TickCount())
 		plyv.last_tfa_think = engine.TickCount()
 	end
 end)
@@ -56,7 +56,7 @@ if SERVER or not sp then
 		local wepv = plyv:GetActiveWeapon()
 
 		if IsValid(wepv) and wepv.IsTFAWeapon and wepv.PlayerThink then
-			wepv:PlayerThink(plyv, IsFirstTimePredicted())
+			wepv:PlayerThink(plyv, not IsFirstTimePredicted())
 		end
 	end)
 

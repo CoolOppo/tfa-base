@@ -388,7 +388,7 @@ function SWEP:ThinkNPC()
 	end
 end
 
-function SWEP:Think2()
+function SWEP:Think2(...)
 	if not self:VMIV() then return end
 
 	if (not self:GetOwner():KeyDown(IN_ATTACK)) and (not self:GetOwner():KeyDown(IN_ATTACK2)) then
@@ -432,7 +432,7 @@ function SWEP:Think2()
 	end
 
 	self:StrikeThink()
-	BaseClass.Think2(self)
+	BaseClass.Think2(self, ...)
 end
 
 function SWEP:ProcessHoldType(...)

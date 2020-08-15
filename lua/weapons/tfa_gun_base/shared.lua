@@ -758,7 +758,7 @@ function SWEP:Think()
 	end
 end
 
-function SWEP:PlayerThink(plyv, is_first_tick)
+function SWEP:PlayerThink(plyv, is_working_out_prediction_errors)
 	if self:GetOwner():IsNPC() then
 		return
 	end
@@ -767,7 +767,7 @@ function SWEP:PlayerThink(plyv, is_first_tick)
 
 	if not self:NullifyOIV() then return end
 
-	self:Think2(is_first_tick)
+	self:Think2(is_working_out_prediction_errors)
 end
 
 function SWEP:PlayerThinkCL(plyv)
@@ -780,7 +780,7 @@ function SWEP:PlayerThinkCL(plyv)
 	self:SmokePCFLighting()
 
 	if sp then
-		self:Think2(true)
+		self:Think2(false)
 	end
 
 	if self2.GetStat(self, "BlowbackEnabled") then
@@ -801,12 +801,12 @@ Purpose:  Standard SWEP Function
 ]]
 local is, spr, wlk, cst, waittime, sht, lact, finalstat
 
-function SWEP:Think2(is_first_tick)
+function SWEP:Think2(is_working_out_prediction_errors)
 	local self2 = self:GetTable()
 
 	ct = l_CT()
 
-	if is_first_tick then
+	if not is_working_out_prediction_errors then
 		if self2.LuaShellRequestTime > 0 and ct > self2.LuaShellRequestTime then
 			self2.LuaShellRequestTime = -1
 			self:MakeShell()
@@ -833,7 +833,7 @@ function SWEP:Think2(is_first_tick)
 
 	is, spr, wlk, cst = self:IronSights()
 
-	--if not is_first_tick then return end
+	--if is_working_out_prediction_errors then return end
 
 	self2.ProcessStatus(self)
 
