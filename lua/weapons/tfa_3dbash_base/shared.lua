@@ -71,15 +71,20 @@ function SWEP:Do3DScopeOverlay()
 		return false
 	end
 end
+
+local sp = game.SinglePlayer()
+
 function SWEP:UpdateScopeType( force )
+	local target = self.Secondary_TFA or self.Secondary
+
 	if self.Scoped_3D and force then
 		self.Scoped = true
 		self.Scoped_3D = false
 
-		if self.Secondary_TFA.ScopeZoom_Backup then
-			self.Secondary_TFA.ScopeZoom = self.Secondary_TFA.ScopeZoom_Backup
+		if target.ScopeZoom_Backup then
+			target.ScopeZoom = target.ScopeZoom_Backup
 		else
-			self.Secondary_TFA.ScopeZoom = 90 / self:GetStat("Secondary.IronFOV")
+			target.ScopeZoom = 90 / self:GetStat("Secondary.IronFOV")
 		end
 
 		if self.BoltAction_3D then
@@ -89,15 +94,16 @@ function SWEP:UpdateScopeType( force )
 			self:ClearStatCache("BoltAction")
 		end
 
-		self.Secondary_TFA.IronFOV = 90 / self:GetStat("Secondary.ScopeZoom")
+		target.IronFOV = 90 / self:GetStat("Secondary.ScopeZoom")
 		self.IronSightsSensitivity = 1
 	end
+
 	if self:Do3DScope() then
 		self.Scoped = false
 		self.Scoped_3D = true
 
-		if not self.Secondary_TFA.ScopeZoom_Backup then
-			self.Secondary_TFA.ScopeZoom_Backup = self.Secondary_TFA.ScopeZoom
+		if not target.ScopeZoom_Backup then
+			target.ScopeZoom_Backup = target.ScopeZoom
 		end
 
 		if self.BoltAction then
@@ -107,25 +113,28 @@ function SWEP:UpdateScopeType( force )
 			self.FireModeName = "tfa.firemode.bolt"
 		end
 
-		if self.Secondary_TFA.ScopeZoom and self.Secondary_TFA.ScopeZoom > 0 then
+		if target.ScopeZoom and target.ScopeZoom > 0 then
 			if CLIENT then
-				self.RTScopeFOV = 90 / self.Secondary_TFA.ScopeZoom * ( self.Secondary_TFA.ScopeScreenScale or 0.392592592592592 )
+				self.RTScopeFOV = 90 / target.ScopeZoom * ( target.ScopeScreenScale or 0.392592592592592 )
 			end
-			self.Secondary_TFA.IronFOV_Backup = self.Secondary_TFA.IronFOV
-			self.Secondary_TFA.IronFOV = 70
+
+			target.IronFOV_Backup = target.IronFOV
+			target.IronFOV = 70
+
 			if CLIENT then
 				self.IronSightsSensitivity = self:Get3DSensitivity()
 			end
-			self.Secondary_TFA.ScopeZoom = nil
+
+			target.ScopeZoom = nil
 		end
 	else
 		self.Scoped = true
 		self.Scoped_3D = false
 
-		if self.Secondary_TFA.ScopeZoom_Backup then
-			self.Secondary_TFA.ScopeZoom = self.Secondary_TFA.ScopeZoom_Backup
+		if target.ScopeZoom_Backup then
+			target.ScopeZoom = target.ScopeZoom_Backup
 		else
-			self.Secondary_TFA.ScopeZoom = 4
+			target.ScopeZoom = 4
 		end
 
 		if self.BoltAction_3D then
@@ -133,30 +142,29 @@ function SWEP:UpdateScopeType( force )
 			self.BoltAction_3D = nil
 		end
 
-		self.Secondary_TFA.IronFOV = 90 / self.Secondary_TFA.ScopeZoom
+		target.IronFOV = 90 / target.ScopeZoom
 		self.IronSightsSensitivity = 1
 	end
 end
 
 function SWEP:Initialize()
+	self.Primary_TFA = self.Primary
+	self.Secondary_TFA = self.Secondary
 	self:UpdateScopeType()
+	self.Primary_TFA = nil
+	self.Secondary_TFA = nil
+
+	BaseClass.Initialize(self)
 
 	timer.Simple(0, function()
 		if IsValid(self) and self:OwnerIsValid() then
 			self:UpdateScopeType()
-
-			if SERVER then
-				self:CallOnClient("UpdateScopeType", "")
-			end
 		end
 	end)
-
-	BaseClass.Initialize(self)
-
 end
 
 function SWEP:Deploy(...)
-	if SERVER and self:OwnerIsValid() then
+	if SERVER and self:OwnerIsValid() and sp then
 		self:CallOnClient("UpdateScopeType", "")
 	end
 
@@ -165,14 +173,10 @@ function SWEP:Deploy(...)
 	timer.Simple(0, function()
 		if IsValid(self) and self:OwnerIsValid() then
 			self:UpdateScopeType()
-
-			if SERVER then
-				self:CallOnClient("UpdateScopeType", "")
-			end
 		end
 	end)
 
-	return BaseClass.Deploy(self,...)
+	return BaseClass.Deploy(self, ...)
 end
 
 local flipcv
