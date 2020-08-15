@@ -56,13 +56,9 @@ local function FinishMove(self)
 	local data = self.TFA_BulletEvents
 
 	if data and #data ~= 0 then
-		self:LagCompensation(true)
-
 		for _, event in ipairs(data) do
 			event(self)
 		end
-
-		self:LagCompensation(false)
 
 		self.TFA_BulletEvents = nil
 	end
