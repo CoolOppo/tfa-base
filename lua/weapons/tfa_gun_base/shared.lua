@@ -1256,20 +1256,22 @@ SWEP.LowAmmoSoundThreshold = 0.33
 function SWEP:EmitLowAmmoSound()
 	if not sv_tfa_nearlyempty:GetBool() then return end
 
-	if not self.FireSoundAffectedByClipSize then return end
+	local self2 = self:GetTable()
+
+	if not self2.FireSoundAffectedByClipSize then return end
 
 	local clip1, maxclip1 = self:Clip1(), self:GetMaxClip1()
 
 	if maxclip1 <= 4 or maxclip1 >= 70 or clip1 <= 0 then return end
 
 	local mult = clip1 / maxclip1
-	if mult >= self.LowAmmoSoundThreshold or mult <= 0 then return end
+	if mult >= self2.LowAmmoSoundThreshold or mult <= 0 then return end
 
 	local soundname = ((clip1 - self:GetStat("Primary.AmmoConsumption", 1)) <= 0) and self:GetStat("LastAmmoSound", "") or self:GetStat("LowAmmoSound", "")
 
 	if soundname and soundname ~= "" then
-		self.GonnaAdjustVol = true
-		self.RequiredVolume = 1 - (mult / math.max(self.LowAmmoSoundThreshold, 0.01))
+		self2.GonnaAdjustVol = true
+		self2.RequiredVolume = 1 - (mult / math.max(self2.LowAmmoSoundThreshold, 0.01))
 
 		self:EmitSound(soundname)
 	end
