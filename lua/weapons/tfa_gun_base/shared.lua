@@ -520,6 +520,8 @@ function SWEP:Equip(...)
 	local owner = self:GetOwner()
 
 	if owner:IsNPC() then
+		self.IsNPCOwned = true
+
 		if not self.IsFirstEquip and sv_tfa_npc_randomize_atts:GetBool() then
 			timer.Simple(0.25, function()
 				if not IsValid(self) or self:GetOwner() ~= owner then return end
@@ -534,6 +536,8 @@ function SWEP:Equip(...)
 		hook.Add("TFA_NPCWeaponThink", self, function()
 			ProtectedCall(closure)
 		end)
+	else
+		self.IsNPCOwned = false
 	end
 
 	self.IsFirstEquip = true
@@ -553,6 +557,8 @@ function SWEP:Deploy()
 	local self2 = self:GetTable()
 	hook.Run("TFA_PreDeploy", self)
 	local ply = self:GetOwner()
+
+	self2.IsNPCOwned = ply:IsNPC()
 
 	if IsValid(ply) and IsValid(ply:GetViewModel()) then
 		self2.OwnerViewModel = ply:GetViewModel()
@@ -744,6 +750,13 @@ end
 function SWEP:OwnerChanged() -- TODO: sometimes not called after switching weapon ???
 	if not IsValid(self:GetOwner()) and self.ResetViewModelModifications then
 		self:ResetViewModelModifications()
+	end
+
+	if SERVER then
+		if self.IsNPCOwned and (not IsValid(self:GetOwner()) or not self:GetOwner():IsNPC()) then
+			self:SetClip1(self:GetMaxClip1())
+			self:SetClip2(self:GetMaxClip2())
+		end
 	end
 end
 
