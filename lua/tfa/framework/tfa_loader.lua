@@ -162,20 +162,6 @@ if do_load then
 		end
 	end
 
-	if SERVER then
-		for _, filename in ipairs(modules_server) do
-			include("tfa/modules/" .. filename)
-		end
-
-		for _, filename in ipairs(modules_client) do
-			AddCSLuaFile("tfa/modules/" .. filename)
-		end
-	else
-		for _, filename in ipairs(modules_client) do
-			include("tfa/modules/" .. filename)
-		end
-	end
-
 	local flist = file.Find("tfa/modules/*.lua", "LUA")
 	local yell = false
 
