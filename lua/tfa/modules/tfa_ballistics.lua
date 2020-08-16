@@ -302,7 +302,7 @@ function TFA.Ballistics:FireBullets(wep, bulletStruct, angIn, bulletOverride)
 			net.WriteVector(bulletStruct.Spread)
 			net.WriteFloat(vel)
 
-			if game.SinglePlayer() then
+			if game.SinglePlayer() or wep:GetOwner():IsNPC() then
 				net.SendPVS(struct.pos)
 			else
 				net.SendOmit(wep:GetOwner())

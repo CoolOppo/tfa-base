@@ -1231,6 +1231,14 @@ local dynholdtypecvar = GetConVar("sv_tfa_holdtype_dynamic")
 SWEP.mht_old = ""
 local mht
 
+function SWEP:IsOwnerCrouching()
+	local ply = self:GetOwner()
+
+	if not ply:IsPlayer() then return false end
+
+	return ply:Crouching()
+end
+
 function SWEP:ProcessHoldType()
 	local self2 = self:GetTable()
 	mht = self2.GetStat(self, "HoldType") or "ar2"
@@ -1284,7 +1292,7 @@ function SWEP:ProcessHoldType()
 	stat = self:GetStatus()
 
 	if dynholdtypecvar:GetBool() then
-		if self:OwnerIsValid() and self:GetOwner():Crouching() and self2.CrouchHoldType then
+		if self:OwnerIsValid() and self:IsOwnerCrouching() and self2.CrouchHoldType then
 			targhold = self2.CrouchHoldType
 		else
 			if self:GetIronSights() then

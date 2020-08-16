@@ -50,7 +50,12 @@ function SWEP:EventShell()
 	if SERVER and not game.SinglePlayer() then
 		net.Start("tfaBaseShellSV")
 		net.WriteEntity(self)
-		net.SendOmit(self:GetOwner())
+
+		if self:GetOwner():IsPlayer() then
+			net.SendOmit(self:GetOwner())
+		else
+			net.SendPVS(self:GetPos())
+		end
 	else
 		self:MakeShellBridge(true)
 	end
@@ -261,8 +266,8 @@ function SWEP:ShootEffectsCustom(ifp)
 		net.Start("tfa_base_muzzle_mp")
 		net.WriteEntity(self)
 
-		if (sp) then
-			net.Broadcast()
+		if sp or not self:GetOwner():IsPlayer() then
+			net.SendPVS(self:GetPos())
 		else
 			net.SendOmit(self:GetOwner())
 		end

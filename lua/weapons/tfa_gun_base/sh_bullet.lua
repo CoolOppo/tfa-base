@@ -82,17 +82,23 @@ local dmg, con, rec
 function SWEP:ShootBulletInformation()
 	self:CalculateRatios()
 	self:UpdateConDamage()
+
 	self.lastbul = nil
 	self.lastbulnoric = false
 	self.ConDamageMultiplier = cv_dmg_mult:GetFloat()
+
 	if not IsFirstTimePredicted() then return end
+
 	con, rec = self:CalculateConeRecoil()
 	local tmpranddamage = math.Rand(cv_dmg_mult_min:GetFloat(), cv_dmg_mult_max:GetFloat())
 	local basedamage = self.ConDamageMultiplier * self:GetStat("Primary.Damage")
 	dmg = basedamage * tmpranddamage
+
 	local ns = self:GetStat("Primary.NumShots")
 	local clip = (self:GetStat("Primary.ClipSize") == -1) and self:Ammo1() or self:Clip1()
+
 	ns = math.Round(ns, math.min(clip / self:GetStat("Primary.NumShots"), 1))
+
 	self:ShootBullet(dmg, rec, ns, con)
 end
 
@@ -177,20 +183,24 @@ function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet,
 		end
 	end
 
-	local ow = self:GetOwner()
+	local owner = self:GetOwner()
 
-	self.MainBullet.Attacker = ow
+	self.MainBullet.Attacker = owner
 	self.MainBullet.Inflictor = self
 	self.MainBullet.Num = num_bullets
-	self.MainBullet.Src = ow:GetShootPos()
+	self.MainBullet.Src = owner:GetShootPos()
 
-	local ang = ow:EyeAngles()
+	local aimvector
 
-	if ow:IsPlayer() then
-		ang:Add(ow:GetViewPunchAngles())
+	if owner:IsPlayer() then
+		aimvector = owner:EyeAngles()
+		aimvector:Add(owner:GetViewPunchAngles())
+		aimvector = aimvector:Forward()
+	else
+		aimvector = owner:GetAimVector()
 	end
 
-	self.MainBullet.Dir = ang:Forward()
+	self.MainBullet.Dir = aimvector
 	self.MainBullet.HullSize = self:GetStat("Primary.HullSize") or 0
 	self.MainBullet.Spread.x = aimcone
 	self.MainBullet.Spread.y = aimcone
@@ -211,7 +221,7 @@ function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet,
 	self.MainBullet.Damage = damage
 	self.MainBullet.InitialDamage = damage
 	self.MainBullet.InitialForce = self.MainBullet.Force
-	self.MainBullet.InitialPosition = ow:GetShootPos()
+	self.MainBullet.InitialPosition = Vector(self.MainBullet.Src)
 	self.MainBullet.HasAppliedRange = false
 
 	if self.CustomBulletCallback then
@@ -237,7 +247,7 @@ function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet,
 		self:PCFTracer(self.MainBullet, trace.HitPos or vector_origin)
 	end
 
-	BallisticFirebullet(self:GetOwner(), self.MainBullet)
+	BallisticFirebullet(owner, self.MainBullet)
 end
 
 local sp = game.SinglePlayer()

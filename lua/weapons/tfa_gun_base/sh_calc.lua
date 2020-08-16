@@ -195,8 +195,14 @@ function SWEP:CalculateConeRecoil()
 
 	local owner = self:GetOwner()
 	local isply = owner:IsPlayer()
+	local ovel
 
-	local ovel = owner:GetVelocity():Length2D()
+	if IsValid(owner) then
+		ovel = owner:GetVelocity():Length2D()
+	else
+		ovel = 0
+	end
+
 	local vfc_1 = l_mathClamp(ovel / (isply and owner:GetWalkSpeed() or TFA.GUESS_NPC_WALKSPEED), 0, 2)
 
 	if dynacc then
@@ -217,7 +223,7 @@ function SWEP:CalculateConeRecoil()
 		ccon = ccon * mult_cvar:GetFloat()
 	end
 
-	if not isply then
+	if not isply and IsValid(owner) then
 		local prof = owner:GetCurrentWeaponProficiency()
 
 		if prof == WEAPON_PROFICIENCY_POOR then

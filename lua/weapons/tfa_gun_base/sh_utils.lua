@@ -148,15 +148,21 @@ end
 --
 --, seq )
 function SWEP:GetActivityLengthRaw(tanim, status)
-	if not self:VMIV() then return 0 end
-	tanim = tanim or self:GetLastActivity()
-	if tanim < 0 then return 0 end
-	nm = self.OwnerViewModel:GetSequenceName(self.OwnerViewModel:SelectWeightedSequence(tanim))
+	local vm = self:VMIVNPC()
+	if not vm then return 0 end
 
-	if tanim == self.OwnerViewModel:GetSequenceActivity(self.OwnerViewModel:GetSequence()) then
-		sqlen = self.OwnerViewModel:SequenceDuration(self.OwnerViewModel:GetSequence())
+	tanim = tanim or self:GetLastActivity()
+
+	if tanim < 0 then return 0 end
+
+	nm = vm:GetSequenceName(vm:SelectWeightedSequence(tanim))
+
+	local sqlen
+
+	if tanim == vm:GetSequenceActivity(vm:GetSequence()) then
+		sqlen = vm:SequenceDuration(vm:GetSequence())
 	else
-		sqlen = self.OwnerViewModel:SequenceDuration(self.OwnerViewModel:SelectWeightedSequenceSeeded(math.max(tanim or 1, 1), self:GetSeed()))
+		sqlen = vm:SequenceDuration(vm:SelectWeightedSequenceSeeded(math.max(tanim or 1, 1), self:GetSeed()))
 	end
 
 	slo = self:GetStat("StatusLengthOverride." .. nm) or self:GetStat("StatusLengthOverride." .. (tanim or "0"))
@@ -172,11 +178,10 @@ function SWEP:GetActivityLengthRaw(tanim, status)
 end
 
 function SWEP:GetActivityLength(tanim, status)
-	if not self:VMIV() then return 0 end
-	sqlen = self:GetActivityLengthRaw(tanim, status)
-	sqlen = sqlen / self:GetAnimationRate(tanim)
-
-	return sqlen
+	if not self:VMIVNPC() then return 0 end
+	local sqlen = self:GetActivityLengthRaw(tanim, status)
+	if sqlen <= 0 then return 0 end
+	return sqlen / self:GetAnimationRate(tanim)
 end
 
 function SWEP:GetHolding()
@@ -249,6 +254,18 @@ function SWEP:NullifyOIV()
 	end
 
 	return self:VMIV()
+end
+
+function SWEP:VMIVNPC()
+	local ply = self:GetOwner()
+
+	if ply:IsPlayer() then return self:VMIV() end
+
+	if ply:IsNPC() then
+		return self
+	end
+
+	return false
 end
 
 function SWEP:VMIV()
@@ -524,6 +541,7 @@ Purpose:  Utility
 --
 function SWEP:IsFirstPerson()
 	if not IsValid(self) or not self:OwnerIsValid() then return false end
+	if self:GetOwner():IsNPC() then return false end
 	if CLIENT and (not game.SinglePlayer()) and self:GetOwner() ~= GetViewEntity() then return false end
 	if sp and SERVER then return not self:GetOwner().TFASDLP end
 	if self:GetOwner().ShouldDrawLocalPlayer and self:GetOwner():ShouldDrawLocalPlayer() then return false end
@@ -741,6 +759,8 @@ Purpose:  Feature
 ]]
 --
 function SWEP:ProcessFireMode()
+	if self:GetOwner():IsNPC() then return end
+
 	if self:GetOwner().GetInfoNum and self:GetOwner():GetInfoNum("cl_tfa_keys_firemode", 0) > 0 then
 		return
 	end

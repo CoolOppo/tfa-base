@@ -51,3 +51,27 @@ end
 SWEP.Weight = 60 -- Decides whether we should switch from/to this
 SWEP.AutoSwitchTo = true -- Auto switch to
 SWEP.AutoSwitchFrom = true -- Auto switch from
+
+function SWEP:NPCShoot_Primary()
+	return self:PrimaryAttack()
+end
+
+function SWEP:GetNPCRestTimes()
+	return self:GetFireDelay(), self:GetFireDelay() * 2
+end
+
+function SWEP:GetNPCBurstSettings()
+	return 1, 6, self:GetFireDelay() * self:GetMaxBurst()
+end
+
+function SWEP:GetNPCBulletSpread()
+	return 1 -- we handle this manually, in calculate cone, recoil and shootbullet
+end
+
+function SWEP:GetCapabilities()
+	return CAP_WEAPON_RANGE_ATTACK1
+end
+
+function SWEP:CanBePickedUpByNPCs()
+	return true
+end

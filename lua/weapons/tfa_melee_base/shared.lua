@@ -576,7 +576,7 @@ function SWEP:Strike(attk, precision)
 	local strikedirfull = strikedir * 1
 	debugoverlay.Line(tr.start + Vector(0, 0, -1) + fwd * distance / 2 - strikedirfull / 2, tr.start + Vector(0, 0, -1) + fwd * distance / 2 + strikedirfull / 2, 5, red)
 
-	if SERVER and not game.SinglePlayer() then
+	if SERVER and not game.SinglePlayer() and ow:IsPlayer() then
 		ow:LagCompensation(true)
 	end
 
@@ -591,7 +591,7 @@ function SWEP:Strike(attk, precision)
 		table.insert(totalResults, traceres)
 	end
 
-	if SERVER and not game.SinglePlayer() then
+	if SERVER and not game.SinglePlayer() and ow:IsPlayer() then
 		ow:LagCompensation(false)
 	end
 
@@ -699,26 +699,32 @@ lvec = Vector()
 
 function SWEP:PrimaryAttack()
 	local ow = self:GetOwner()
+
 	if IsValid(ow) and ow:IsNPC() then
-		local keys = table.GetKeys(self.Primary_TFA.Attacks)
-		table.RemoveByValue(keys,"BaseClass")
-		local attk = self.Primary_TFA.Attacks[table.Random(keys)]
+		local keys = table.GetKeys(self:GetStat("Primary.Attacks"))
+		table.RemoveByValue(keys, "BaseClass")
+		local attk = self:GetStat("Primary.Attacks")[table.Random(keys)]
 		local owv = self:GetOwner()
+
 		timer.Simple(0.5, function()
 			if IsValid(self) and IsValid(owv) and owv:IsCurrentSchedule(SCHED_MELEE_ATTACK1) then
 				attack = attk
-				self:Strike(attk,5)
+				self:Strike(attk, 5)
 			end
 		end)
+
 		self:SetNextPrimaryFire(CurTime() + attk["end"] or 1)
+
 		timer.Simple(self:GetNextPrimaryFire() - CurTime(), function()
 			if IsValid(owv) then
 				owv:ClearSchedule()
 			end
 		end)
+
 		self:GetOwner():SetSchedule(SCHED_MELEE_ATTACK1)
 		return
 	end
+
 	if self:GetSprinting() and not self:GetStat("AllowSprintAttack", false) then return end
 	if self:IsSafety() then return end
 	if not self:VMIV() then return end

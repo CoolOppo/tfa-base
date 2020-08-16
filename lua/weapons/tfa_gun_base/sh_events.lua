@@ -38,6 +38,7 @@ function SWEP:ResetEvents()
 
 	if IsFirstTimePredicted() or game.SinglePlayer() then
 		self.EventTimer = l_CT()
+
 		for _, v in pairs(self.EventTable) do
 			for _, b in pairs(v) do
 				b.called = false
@@ -55,18 +56,25 @@ Purpose:  Main SWEP function
 ]]--
 
 function SWEP:ProcessEvents()
-	if not self:VMIV() then return end
+	local viewmodel = self:VMIVNPC()
+	if not viewmodel then return end
+
+	local ply = self:GetOwner()
+	local isplayer = ply:IsPlayer()
+
 	if self.EventTimer < 0 then
 		self:ResetEvents()
 	end
+
 	if sp then
 		self.LastAct = self:GetLastActivity()
 	end
-	local evtbl = self.EventTable[ self.LastAct or self:GetLastActivity() ] or self.EventTable[ self.OwnerViewModel:GetSequenceName(self.OwnerViewModel:GetSequence()) ]
 
+	local evtbl = self.EventTable[self.LastAct or self:GetLastActivity()] or self.EventTable[viewmodel:GetSequenceName(viewmodel:GetSequence())]
 	if not evtbl then return end
+
 	for _, v in pairs(evtbl) do
-		if v.called or l_CT() < self.EventTimer + v.time / self:GetAnimationRate( self.LastAct or self:GetLastActivity() ) then goto CONTINUE end
+		if v.called or l_CT() < self.EventTimer + v.time / self:GetAnimationRate(self.LastAct or self:GetLastActivity()) then goto CONTINUE end
 		v.called = true
 
 		if v.client == nil then
@@ -78,8 +86,8 @@ function SWEP:ProcessEvents()
 				v.server = true
 			end
 
-			if (v.client and CLIENT and (not v.client_predictedonly or self:GetOwner() == LocalPlayer())) or (v.server and SERVER) and v.value then
-				v.value(self, self.OwnerViewModel)
+			if (v.client and CLIENT and (not v.client_predictedonly or ply == LocalPlayer())) or (v.server and SERVER) and v.value then
+				v.value(self, viewmodel)
 			end
 		elseif v.type == "snd" or v.type == "sound" then
 			if v.server == nil then
@@ -88,19 +96,26 @@ function SWEP:ProcessEvents()
 
 			if SERVER then
 				if v.client then
-					net.Start("tfaSoundEvent")
-					net.WriteEntity(self)
-					net.WriteString(v.value or "")
+					if not isplayer and player.GetCount() ~= 0 then
+						net.Start("tfaSoundEvent")
+						net.WriteEntity(self)
+						net.WriteString(v.value or "")
+						net.SendPVS(self:GetPos())
+					elseif isplayer then
+						net.Start("tfaSoundEvent")
+						net.WriteEntity(self)
+						net.WriteString(v.value or "")
 
-					if sp then
-						net.Broadcast()
-					else
-						net.SendOmit(self:GetOwner())
+						if sp then
+							net.SendPVS(self:GetPos())
+						else
+							net.SendOmit(ply)
+						end
 					end
 				elseif v.server and v.value and v.value ~= "" then
 					self:EmitSound(v.value)
 				end
-			elseif v.client and self:GetOwner() == LocalPlayer() and ( not sp ) and v.value and v.value ~= "" then
+			elseif v.client and ply == LocalPlayer() and ( not sp ) and v.value and v.value ~= "" then
 				if v.time <= 0.01 then
 					self:EmitSoundSafe(v.value)
 				else
@@ -114,7 +129,7 @@ function SWEP:ProcessEvents()
 end
 
 function SWEP:EmitSoundSafe(snd)
-	timer.Simple(0,function()
+	timer.Simple(0, function()
 		if IsValid(self) and snd then self:EmitSound(snd) end
 	end)
 end
@@ -124,6 +139,9 @@ local ct, is, stat, statend, finalstat, waittime, lact
 function SWEP:ProcessStatus()
 	local self2 = self:GetTable()
 
+	local ply = self:GetOwner()
+	local isplayer = ply:IsPlayer()
+
 	ct = l_CT()
 
 	is = self:GetIronSights()
@@ -132,6 +150,7 @@ function SWEP:ProcessStatus()
 
 	if stat == TFA.Enum.STATUS_FIDGET and is then
 		self:SetStatusEnd(0)
+
 		self2.Idle_Mode_Old = self2.Idle_Mode
 		self2.Idle_Mode = TFA.Enum.IDLE_BOTH
 		self2.ChooseIdleAnim(self)
@@ -293,11 +312,11 @@ function SWEP:ProcessStatus()
 
 	if stat == TFA.Enum.STATUS_IDLE and self:GetShotgunCancel() then
 		if self2.GetStat(self, "PumpAction") then
-			if ct > self:GetNextPrimaryFire() and not self:GetOwner():KeyDown(IN_ATTACK) then
+			if ct > self:GetNextPrimaryFire() and (not isplayer or not ply:KeyDown(IN_ATTACK)) then
 				self2.DoPump(self)
 			end
 		else
-			self:SetShotgunCancel( false )
+			self:SetShotgunCancel(false)
 		end
 	end
 end
