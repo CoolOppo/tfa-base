@@ -19,13 +19,6 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
-if SERVER then
-	util.AddNetworkString("tfaHitmarker")
-	util.AddNetworkString("tfaHitmarker3D")
-
-	return
-end
-
 local ScrW, ScrH = ScrW, ScrH
 
 local markers = {}
@@ -93,26 +86,25 @@ hook.Add("HUDPaint", "tfaDrawHitmarker", function()
 	sprh = math.floor((h / 1080) * 64 * scalecvar:GetFloat())
 
 	for k, v in pairs(markers) do
-		if not v.time then
-			markers[k] = nil
-			continue
-		end
+		if v.time then
+			local alpha = math.Clamp(v.time - CurTime() + solidtime + fadetime, 0, fadetime) / fadetime
+			c.a = acvar:GetFloat() * alpha
 
-		local alpha = math.Clamp(v.time - CurTime() + solidtime + fadetime, 0, fadetime) / fadetime
-		c.a = acvar:GetFloat() * alpha
+			if alpha > 0 then
+				pos = {x = w * .5, y = h * .5}
 
-		if alpha > 0 then
-			pos = {x = w * .5, y = h * .5}
+				if v.pos then
+					pos = v.pos:ToScreen()
+				end
 
-			if v.pos then
-				pos = v.pos:ToScreen()
+				if pos.visible then
+					surface.SetDrawColor(c)
+					surface.SetMaterial(tricross_cvar:GetBool() and mat_triang or mat_regular)
+					surface.DrawTexturedRect(pos.x - sprh * .5, pos.y - sprh * .5, sprh, sprh)
+				end
+			else
+				markers[k] = nil
 			end
-
-			if pos.visible == false then continue end
-
-			surface.SetDrawColor(c)
-			surface.SetMaterial(tricross_cvar:GetBool() and mat_triang or mat_regular)
-			surface.DrawTexturedRect(pos.x - sprh * .5, pos.y - sprh * .5, sprh, sprh)
 		else
 			markers[k] = nil
 		end

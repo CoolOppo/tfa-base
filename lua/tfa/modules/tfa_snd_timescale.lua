@@ -19,7 +19,6 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
-
 local sv_cheats_cv = GetConVar("sv_cheats")
 local host_timescale_cv = GetConVar("host_timescale")
 local ts

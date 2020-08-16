@@ -19,12 +19,6 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
-if SERVER then
-	AddCSLuaFile()
-
-	return
-end
-
 local padding = TFA.Attachments.UIPadding
 local PANEL = {}
 PANEL.Wep = nil

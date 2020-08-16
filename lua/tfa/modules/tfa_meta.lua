@@ -20,6 +20,7 @@
 -- SOFTWARE.
 
 local WEAPON = FindMetaTable("Weapon")
+
 if WEAPON then
 	function WEAPON:IsTFA()
 		return self.IsTFAWeapon
@@ -29,6 +30,7 @@ else
 end
 
 local PLAYER = FindMetaTable("Player")
+
 if PLAYER then
 	function PLAYER:TFA_ZoomKeyDown()
 		if not IsValid(self) then return false end

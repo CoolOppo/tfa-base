@@ -42,7 +42,6 @@ else
 end
 
 if TFA_BASE_VERSION then
-
 	if TFA_BASE_VERSION > version then
 		print("You have a newer, conflicting version of TFA Base.")
 		print("It's located at: " .. ( TFA_FILE_PATH or "" ) )
@@ -57,7 +56,70 @@ if TFA_BASE_VERSION then
 		print("It's located at: " .. ( TFA_FILE_PATH or "" ) )
 		print("Contact the author of that pack, not TFA.")
 	end
+end
 
+local modules_shared = {
+	"tfa_ammo.lua",
+	"tfa_attachments.lua",
+	"tfa_ballistics.lua",
+	"tfa_bodygroups.lua",
+	"tfa_commands.lua",
+	"tfa_darkrp.lua",
+	"tfa_effects.lua",
+	"tfa_envcheck.lua",
+	"tfa_functions.lua",
+	"tfa_hitmarker.lua",
+	"tfa_hooks.lua",
+	"tfa_keybinds.lua",
+	"tfa_keyvalues.lua",
+	"tfa_matproxies.lua",
+	"tfa_melee_autorun.lua",
+	"tfa_meta.lua",
+	"tfa_netcode.lua",
+	"tfa_npc_weaponmenu.lua",
+	"tfa_nzombies.lua",
+	"tfa_particles.lua",
+	"tfa_snd_timescale.lua",
+	"tfa_soundscripts.lua",
+	"tfa_tttpatch.lua",
+}
+
+local modules_server = {
+	"sv_tfa_settingsmenu.lua",
+}
+
+local modules_client = {
+	"cl_tfa_attachment_icon.lua",
+	"cl_tfa_attachment_panel.lua",
+	"cl_tfa_attachment_tip.lua",
+	"cl_tfa_changelog.lua",
+	"cl_tfa_commands.lua",
+	"cl_tfa_devtools.lua",
+	"cl_tfa_fonts.lua",
+	"cl_tfa_inspection.lua",
+	"cl_tfa_materials.lua",
+	"cl_tfa_models.lua",
+	"cl_tfa_particles_lua.lua",
+	"cl_tfa_projtex.lua",
+	"cl_tfa_rendertarget.lua",
+	"cl_tfa_rtbgblur.lua",
+	"cl_tfa_settingsmenu.lua",
+	"cl_tfa_vgui.lua",
+	"cl_tfa_vm_blur.lua",
+}
+
+local official_modules = {}
+
+for _, modulename in ipairs(modules_shared) do
+	official_modules[modulename] = true
+end
+
+for _, modulename in ipairs(modules_server) do
+	official_modules[modulename] = true
+end
+
+for _, modulename in ipairs(modules_client) do
+	official_modules[modulename] = true
 end
 
 if do_load then
@@ -81,15 +143,63 @@ if do_load then
 		end
 
 		if SERVER and typev ~= "SERVER" then
-			AddCSLuaFile( "tfa/enums/" .. filename )
+			AddCSLuaFile("tfa/enums/" .. filename)
 		end
 
-		if ( SERVER and typev ~= "CLIENT" ) or ( CLIENT and typev ~= "SERVER" ) then
-			include( "tfa/enums/" .. filename )
+		if SERVER and typev ~= "CLIENT" or CLIENT and typev ~= "SERVER" then
+			include("tfa/enums/" .. filename)
 		end
 	end
 
-	flist = file.Find("tfa/modules/*.lua","LUA")
+	for _, filename in ipairs(modules_shared) do
+		if SERVER then
+			AddCSLuaFile("tfa/modules/" .. filename)
+		end
+
+		include("tfa/modules/" .. filename)
+	end
+
+	if SERVER then
+		for _, filename in ipairs(modules_server) do
+			include("tfa/modules/" .. filename)
+		end
+
+		for _, filename in ipairs(modules_client) do
+			AddCSLuaFile("tfa/modules/" .. filename)
+		end
+	else
+		for _, filename in ipairs(modules_client) do
+			include("tfa/modules/" .. filename)
+		end
+	end
+
+	local flist = file.Find("tfa/modules/*.lua", "LUA")
+	local yell = false
+
+	for _, filename in pairs(flist) do
+		if not official_modules[filename] then
+			local typev = "SHARED"
+
+			if filename:StartWith("cl_") then
+				typev = "CLIENT"
+			elseif filename:StartWith("sv_") then
+				typev = "SERVER"
+			end
+
+			if SERVER and typev ~= "SERVER" then
+				AddCSLuaFile("tfa/modules/" .. filename)
+			end
+
+			if SERVER and typev ~= "CLIENT" or CLIENT and typev ~= "SERVER" then
+				include("tfa/modules/" .. filename)
+			end
+
+			print("[TFA Base] [!] Loaded unofficial module " .. string.sub(filename, 1, -5) .. ".")
+			yell = true
+		end
+	end
+
+	local flist = file.Find("tfa/external/*.lua","LUA")
 
 	for _, filename in pairs(flist) do
 		local typev = "SHARED"
@@ -101,34 +211,18 @@ if do_load then
 		end
 
 		if SERVER and typev ~= "SERVER" then
-			AddCSLuaFile( "tfa/modules/" .. filename )
+			AddCSLuaFile("tfa/external/" .. filename)
 		end
 
-		if ( SERVER and typev ~= "CLIENT" ) or ( CLIENT and typev ~= "SERVER" ) then
-			include( "tfa/modules/" .. filename )
+		if SERVER and typev ~= "CLIENT" or CLIENT and typev ~= "SERVER" then
+			include("tfa/external/" .. filename)
 		end
 	end
 
-	flist = file.Find("tfa/external/*.lua","LUA")
-
-	for _, filename in pairs(flist) do
-
-		local typev = "SHARED"
-		if filename:StartWith("cl_") then
-			typev = "CLIENT"
-		elseif filename:StartWith("sv_") then
-			typev = "SERVER"
-		end
-
-		if SERVER and typev ~= "SERVER" then
-			AddCSLuaFile( "tfa/external/" .. filename )
-		end
-
-		if ( SERVER and typev ~= "CLIENT" ) or ( CLIENT and typev ~= "SERVER" ) then
-			include( "tfa/external/" .. filename )
-			--print("Initialized " .. filename .. " || " .. fileid .. "/" .. #flist )
-		end
-
+	if yell then
+		print("[TFA Base] [!] Some of files not belonging to TFA Base were loaded from tfa/modules/ directory")
+		print("[TFA Base] This behavior is kept for backward compatiblity and using this is highly discouraged!")
+		print("[TFA Base] Files loaded this way have no pre-defined sorting applied and result of execution of those files is undefined.")
+		print("[TFA Base] If you are author of these files, please consider moving your modules to tfa/external/ as soon as possible.")
 	end
-
 end

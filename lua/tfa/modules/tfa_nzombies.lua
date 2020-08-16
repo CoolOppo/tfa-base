@@ -19,10 +19,6 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
-if SERVER then
-	AddCSLuaFile()
-end
-
 TFA.NZombies = TFA.NZombies or {}
 
 if TFA.NZombies.Patch == nil then

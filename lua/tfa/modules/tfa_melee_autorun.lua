@@ -19,16 +19,11 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
-if SERVER then
-	AddCSLuaFile()
-end
-
 local timed_blocking_cv = GetConVar("sv_tfa_melee_blocking_timed")
 local angle_mult_cv = GetConVar("sv_tfa_melee_blocking_anglemult")
 local deflect_cv = GetConVar("sv_tfa_melee_blocking_deflection")
 local stun_cv = GetConVar("sv_tfa_melee_blocking_stun_enabled")
 local stuntime_cv = GetConVar("sv_tfa_melee_blocking_stun_time")
-
 
 local bul = {
 	HullSize = 5,

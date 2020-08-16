@@ -19,44 +19,42 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
-AddCSLuaFile()
-
 -- AI Options
-hook.Add("PopulateMenuBar", "NPCOptions_MenuBar_TFA", function(menubarV)
-	local menuName = language.GetPhrase("menubar.npcs") == "menubar.npcs" and "NPCs" or "#menubar.npcs" -- chromium branch nonsense
-	local m = menubarV:AddOrGetMenu(menuName)
-	local wpns = m:AddSubMenu("TFA Weapon Override")
-	wpns:SetDeleteSelf(false)
-	local weaponCats = {}
+if CLIENT then
+	hook.Add("PopulateMenuBar", "NPCOptions_MenuBar_TFA", function(menubarV)
+		local menuName = language.GetPhrase("menubar.npcs") == "menubar.npcs" and "NPCs" or "#menubar.npcs" -- chromium branch nonsense
+		local m = menubarV:AddOrGetMenu(menuName)
+		local wpns = m:AddSubMenu("TFA Weapon Override")
+		wpns:SetDeleteSelf(false)
+		local weaponCats = {}
 
-	for _, wep in pairs(weapons.GetList()) do
-		if wep and wep.Spawnable and weapons.IsBasedOn(wep.ClassName, "tfa_gun_base") then
-			local cat = wep.Category or "Other"
-			weaponCats[cat] = weaponCats[cat] or {}
+		for _, wep in pairs(weapons.GetList()) do
+			if wep and wep.Spawnable and weapons.IsBasedOn(wep.ClassName, "tfa_gun_base") then
+				local cat = wep.Category or "Other"
+				weaponCats[cat] = weaponCats[cat] or {}
 
-			table.insert(weaponCats[cat], {
-				["class"] = wep.ClassName,
-				["title"] = wep.PrintName or wep.ClassName
-			})
+				table.insert(weaponCats[cat], {
+					["class"] = wep.ClassName,
+					["title"] = wep.PrintName or wep.ClassName
+				})
+			end
 		end
-	end
 
-	local catKeys = table.GetKeys(weaponCats)
-	table.sort(catKeys, function(a, b) return a < b end)
+		local catKeys = table.GetKeys(weaponCats)
+		table.sort(catKeys, function(a, b) return a < b end)
 
-	for _, k in ipairs(catKeys) do
-		local v = weaponCats[k]
-		local wpnSub = wpns:AddSubMenu(k)
-		wpnSub:SetDeleteSelf(false)
-		table.SortByMember(v, "title", true)
+		for _, k in ipairs(catKeys) do
+			local v = weaponCats[k]
+			local wpnSub = wpns:AddSubMenu(k)
+			wpnSub:SetDeleteSelf(false)
+			table.SortByMember(v, "title", true)
 
-		for _, b in ipairs(v) do
-			wpnSub:AddCVar(b.title, "gmod_npcweapon", b.class)
+			for _, b in ipairs(v) do
+				wpnSub:AddCVar(b.title, "gmod_npcweapon", b.class)
+			end
 		end
-	end
-end)
-
-if SERVER then
+	end)
+else
 	local npcWepList = list.GetForEdit("NPCUsableWeapons")
 
 	hook.Add("PlayerSpawnNPC", "TFACheckNPCWeapon", function(plyv, npcclassv, wepclassv)

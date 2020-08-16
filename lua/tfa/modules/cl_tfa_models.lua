@@ -19,45 +19,49 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
-if CLIENT then
-	TFA_SCOPE_ACOG = {
-		scopetex = surface.GetTextureID("scope/gdcw_closedsight"),
-		reticletex = surface.GetTextureID("scope/gdcw_acogchevron"),
-		dottex = surface.GetTextureID("scope/gdcw_acogcross")
-	}
+TFA.ClientsideModels = TFA.ClientsideModels or {}
 
-	TFA_SCOPE_MILDOT = {
-		scopetex = surface.GetTextureID("scope/gdcw_scopesight")
-	}
-
-	TFA_SCOPE_SVD = {
-		scopetex = surface.GetTextureID("scope/gdcw_svdsight")
-	}
-
-	TFA_SCOPE_PARABOLIC = {
-		scopetex = surface.GetTextureID("scope/gdcw_parabolicsight")
-	}
-
-	TFA_SCOPE_ELCAN = {
-		scopetex = surface.GetTextureID("scope/gdcw_elcansight"),
-		reticletex = surface.GetTextureID("scope/gdcw_elcanreticle")
-	}
-
-	TFA_SCOPE_GREENDUPLEX = {
-		scopetex = surface.GetTextureID("scope/gdcw_closedsight"),
-		reticletex = surface.GetTextureID("scope/gdcw_nvgilluminatedduplex")
-	}
-
-	TFA_SCOPE_AIMPOINT = {
-		scopetex = surface.GetTextureID("scope/gdcw_closedsight"),
-		reticletex = surface.GetTextureID("scope/aimpoint")
-	}
-
-	TFA_SCOPE_MATADOR = {
-		scopetex = surface.GetTextureID("scope/rocketscope")
-	}
-
-	TFA_SCOPE_SCOPESCALE = 4
-	TFA_SCOPE_RETICLESCALE = 1
-	TFA_SCOPE_DOTSCALE = 1
+--this is for you, linter
+local function dummyfunc(ent)
 end
+
+TFA.RemoveCliensideModel = function(ent)
+	if ent and ent.Remove then
+		ent.Remove(ent)
+	end
+
+	ent = nil
+	dummyfunc(ent)
+end
+
+TFA.RegisterClientsideModel = function(cmdl, wepv)
+	TFA.ClientsideModels[#TFA.ClientsideModels + 1] = {
+		["mdl"] = cmdl,
+		["wep"] = wepv
+	}
+end
+
+local t, i
+
+timer.Create("TFA_UpdateClientsideModels", 0.1, 0, function()
+	i = 1
+
+	while i <= #TFA.ClientsideModels do
+		t = TFA.ClientsideModels[i]
+
+		if not t then
+			table.remove(TFA.ClientsideModels, i)
+		elseif not IsValid(t.wep) then
+			TFA.RemoveCliensideModel(t.mdl)
+			table.remove(TFA.ClientsideModels, i)
+		elseif IsValid(t.wep:GetOwner()) and t.wep:GetOwner().GetActiveWeapon and t.wep ~= t.wep:GetOwner():GetActiveWeapon() then
+			TFA.RemoveCliensideModel(t.mdl)
+			table.remove(TFA.ClientsideModels, i)
+		elseif t.wep.IsHidden and t.wep:IsHidden() then
+			TFA.RemoveCliensideModel(t.mdl)
+			table.remove(TFA.ClientsideModels, i)
+		else
+			i = i + 1
+		end
+	end
+end)

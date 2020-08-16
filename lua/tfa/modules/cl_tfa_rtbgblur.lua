@@ -19,9 +19,6 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
---YuRaNnNzZZ's work at play here
-if SERVER then return end
-
 local FT = FrameTime
 
 local tfablurintensity = 0

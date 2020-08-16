@@ -19,7 +19,6 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
-if SERVER then return end
 local supports
 local cl_tfa_fx_dof, cl_tfa_fx_dof_hd
 local fmat = CreateMaterial("TFA_DOF_Material4", "Refract", {

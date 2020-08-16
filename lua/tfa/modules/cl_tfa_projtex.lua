@@ -19,46 +19,38 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
-if CLIENT then
-	local TFA_DISPLAY_CHANGELOG = false
-	local changes = TFA_BASE_VERSION_CHANGES or ""
-	local cvar_changelog
+local ply = LocalPlayer()
+local LocalPlayer = LocalPlayer
 
-	if not file.Exists("tfa_base_version.txt", "DATA") then
-		local f = file.Open("tfa_base_version.txt", "w", "DATA")
-		f:Write(TFA_BASE_VERSION)
-		f:Flush()
-		f:Close()
-		TFA_DISPLAY_CHANGELOG = true
+hook.Add("PreRender", "TFACleanupProjectedTextures", function()
+	if not IsValid(ply) then
+		ply = LocalPlayer()
+		if not IsValid(ply) then return end
 	end
 
-	local f = file.Open("tfa_base_version.txt", "r", "DATA")
+	local wep = ply:GetActiveWeapon()
 
-	if f then
-		local fileversion = f:ReadLine()
-		local fileversionnumber = tonumber(fileversion or "")
+	if not IsValid(wep) or not wep:IsTFA() then
+		if IsValid(ply.TFAFlashlightGun) then
+			ply.TFAFlashlightGun:Remove()
+		end
 
-		if fileversionnumber and fileversionnumber < TFA_BASE_VERSION then
-			TFA_DISPLAY_CHANGELOG = true
-			local f2 = file.Open("tfa_base_version.txt", "w", "DATA")
-			f2:Write(TFA_BASE_VERSION)
-			f2:Flush()
-			f2:Close()
+		if IsValid(ply.TFALaserDot) then
+			ply.TFALaserDot:Remove()
 		end
 	end
+end)
 
-	hook.Add("HUDPaint", "TFA_DISPLAY_CHANGELOG", function()
-		if LocalPlayer():IsValid() then
-			if not cvar_changelog then
-				cvar_changelog = GetConVar("sv_tfa_changelog")
-			end
-			if TFA_DISPLAY_CHANGELOG and cvar_changelog:GetBool() then
-				chat.AddText("Updated to TFA Base Version: ")
-				chat.AddText(TFA_BASE_VERSION_STRING)
-				chat.AddText(changes)
-			end
+hook.Add("PrePlayerDraw", "TFACleanupProjectedTextures", function(plyv)
+	local wep = plyv:GetActiveWeapon()
 
-			hook.Remove("HUDPaint", "TFA_DISPLAY_CHANGELOG")
+	if not IsValid(wep) or not wep:IsTFA() then
+		if IsValid(plyv.TFAFlashlightGun) then
+			plyv.TFAFlashlightGun:Remove()
 		end
-	end)
-end
+
+		if IsValid(plyv.TFALaserDot) then
+			plyv.TFALaserDot:Remove()
+		end
+	end
+end)

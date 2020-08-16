@@ -19,8 +19,6 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
-if not CLIENT then return end
-
 TFA.Fonts = TFA.Fonts or {}
 
 if not TFA.Fonts.SleekFontCreated then

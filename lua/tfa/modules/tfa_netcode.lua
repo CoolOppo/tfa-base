@@ -32,6 +32,9 @@ if SERVER then
 	--util.AddNetworkString("tfaAltAttack")
 	util.AddNetworkString("TFAJoinGroupPopup")
 
+	util.AddNetworkString("tfaHitmarker")
+	util.AddNetworkString("tfaHitmarker3D")
+
 	--Enable CKey Inspection
 
 	net.Receive("tfaRequestFidget",function(length,client)
@@ -77,9 +80,7 @@ if SERVER then
 			wep:ShootEffectsCustom()
 		end
 	end)
-end
-
-if CLIENT then
+else
 	--Arrow can follow entities clientside too
 	net.Receive("tfaArrowFollow",function()
 		local ent = net.ReadEntity()

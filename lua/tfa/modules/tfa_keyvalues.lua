@@ -46,7 +46,6 @@ local CHAR_NEWLINE = {
 	["\n"] = true
 }
 
-
 local CHAR_COMMENT = {
 	["/"] = true,
 	["-"] = true

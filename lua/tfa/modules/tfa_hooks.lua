@@ -117,9 +117,7 @@ if CLIENT then
 
 		its_old = tfablurintensity * 1
 	end)
-end
 
-if CLIENT then
 	hook.Add("Think", "TFABase_PlayerThinkCL", function()
 		local ply = LocalPlayer()
 		if not IsValid(ply) then return end
