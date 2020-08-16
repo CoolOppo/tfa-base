@@ -1251,6 +1251,7 @@ end
 function SWEP:PrimaryAttack()
 	local self2 = self:GetTable()
 	local ply = self:GetOwner()
+	if not IsValid(ply) then return end
 
 	self:PrePrimaryAttack()
 
