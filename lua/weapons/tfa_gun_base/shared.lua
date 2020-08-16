@@ -516,7 +516,13 @@ end
 
 function SWEP:Equip(...)
 	if self:GetOwner():IsNPC() then
-		hook.Add("TFA_NPCWeaponThink", self, self.NPCWeaponThinkHook)
+		local function closure()
+			self:NPCWeaponThinkHook()
+		end
+
+		hook.Add("TFA_NPCWeaponThink", self, function()
+			ProtectedCall(closure)
+		end)
 	end
 
 	self.OwnerViewModel = nil
