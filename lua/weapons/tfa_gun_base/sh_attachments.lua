@@ -583,7 +583,7 @@ function SWEP:RandomizeAttachments(force)
 
 	for category, def in pairs(self.Attachments) do
 		if istable(def) and istable(def.atts) and #def.atts > 0 then
-			if math.random() > 0.6 then
+			if math.random() > 0.3 then
 				local randkey = math.random(1, #def.atts)
 				self:SetTFAAttachment(category, randkey, true, force)
 			end
