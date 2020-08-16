@@ -44,12 +44,13 @@ if SERVER then
 
 	local function UpdateWeapon(wep, ply)
 		for k, v in pairs(wep.Attachments) do
-			if type(k) == "string" then continue end
-			net.Start("TFA_Attachment_Set")
-			net.WriteEntity(wep)
-			net.WriteInt(k, 8)
-			net.WriteInt(v.sel or -1, 7)
-			net.Send(ply)
+			if type(k) ~= "string" then
+				net.Start("TFA_Attachment_Set")
+				net.WriteEntity(wep)
+				net.WriteInt(k, 8)
+				net.WriteInt(v.sel or -1, 7)
+				net.Send(ply)
+			end
 		end
 	end
 
@@ -159,8 +160,8 @@ local function patchInheritance(t, basetbl)
 	end
 end
 
-function TFAUpdateAttachments()
-	if SERVER then
+function TFAUpdateAttachments(network)
+	if SERVER and network ~= false then
 		net.Start("TFA_Attachment_Reload")
 		net.Broadcast()
 	end
@@ -212,7 +213,7 @@ end
 
 hook.Add("InitPostEntity", "TFAUpdateAttachmentsIPE", TFAUpdateAttachments)
 
-if TFAUpdateAttachments then
+if not VLL2_FILEDEF then
 	TFAUpdateAttachments()
 end
 

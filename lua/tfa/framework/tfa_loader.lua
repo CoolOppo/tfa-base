@@ -72,8 +72,8 @@ if do_load then
 	local flist = file.Find("tfa/enums/*.lua","LUA")
 
 	for _, filename in pairs(flist) do
-
 		local typev = "SHARED"
+
 		if filename:StartWith("cl_") then
 			typev = "CLIENT"
 		elseif filename:StartWith("sv_") then
@@ -86,16 +86,14 @@ if do_load then
 
 		if ( SERVER and typev ~= "CLIENT" ) or ( CLIENT and typev ~= "SERVER" ) then
 			include( "tfa/enums/" .. filename )
-			--print("Initialized " .. filename .. " || " .. fileid .. "/" .. #flist )
 		end
-
 	end
 
 	flist = file.Find("tfa/modules/*.lua","LUA")
 
 	for _, filename in pairs(flist) do
-
 		local typev = "SHARED"
+
 		if filename:StartWith("cl_") then
 			typev = "CLIENT"
 		elseif filename:StartWith("sv_") then
@@ -108,9 +106,7 @@ if do_load then
 
 		if ( SERVER and typev ~= "CLIENT" ) or ( CLIENT and typev ~= "SERVER" ) then
 			include( "tfa/modules/" .. filename )
-			--print("Initialized " .. filename .. " || " .. fileid .. "/" .. #flist )
 		end
-
 	end
 
 	flist = file.Find("tfa/external/*.lua","LUA")
