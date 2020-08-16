@@ -514,8 +514,19 @@ function SWEP:NPCWeaponThinkHook()
 	self2.Think(self)
 end
 
+local sv_tfa_npc_randomize_atts = GetConVar("sv_tfa_npc_randomize_atts")
+
 function SWEP:Equip(...)
-	if self:GetOwner():IsNPC() then
+	local owner = self:GetOwner()
+
+	if owner:IsNPC() then
+		if not self.IsFirstEquip and sv_tfa_npc_randomize_atts:GetBool() then
+			timer.Simple(0.25, function()
+				if not IsValid(self) or self:GetOwner() ~= owner then return end
+				self:RandomizeAttachments(true)
+			end)
+		end
+
 		local function closure()
 			self:NPCWeaponThinkHook()
 		end
@@ -525,6 +536,7 @@ function SWEP:Equip(...)
 		end)
 	end
 
+	self.IsFirstEquip = true
 	self.OwnerViewModel = nil
 	self:EquipTTT(...)
 end

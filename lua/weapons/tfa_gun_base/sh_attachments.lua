@@ -574,6 +574,23 @@ function SWEP:Detach(attname, force)
 	return self:SetTFAAttachment(cat, 0, true, force)
 end
 
+function SWEP:RandomizeAttachments(force)
+	for key, slot in pairs(self.AttachmentCache) do
+		if slot then
+			self:Detach(key)
+		end
+	end
+
+	for category, def in pairs(self.Attachments) do
+		if istable(def) and istable(def.atts) and #def.atts > 0 then
+			if math.random() > 0.6 then
+				local randkey = math.random(1, #def.atts)
+				self:SetTFAAttachment(category, randkey, true, force)
+			end
+		end
+	end
+end
+
 local attachments_sorted_alphabetically = GetConVar("sv_tfa_attachments_alphabetical")
 
 function SWEP:InitAttachments()

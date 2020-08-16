@@ -125,6 +125,10 @@ if GetConVar("sv_tfa_door_respawn") == nil then
 	CreateReplConVar("sv_tfa_door_respawn", "-1", "Time for doors to respawn; -1 for never.")
 end
 
+if GetConVar("sv_tfa_npc_randomize_atts") == nil then
+	CreateReplConVar("sv_tfa_npc_randomize_atts", "1", "Randomize NPC's weapons attachments.")
+end
+
 local cv_dfc
 if GetConVar("sv_tfa_default_clip") == nil then
 	cv_dfc = CreateReplConVar("sv_tfa_default_clip", "-1", "How many clips will a weapon spawn with? Negative reverts to default values.")
