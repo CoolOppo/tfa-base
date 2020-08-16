@@ -58,12 +58,15 @@ if TFA_BASE_VERSION then
 	end
 end
 
-local modules_shared = {
+local official_modules_sorted = {
+	"tfa_commands.lua",
+	"cl_tfa_commands.lua", -- we need to load clientside convars before anything else
+
 	"tfa_ammo.lua",
 	"tfa_attachments.lua",
 	"tfa_ballistics.lua",
 	"tfa_bodygroups.lua",
-	"tfa_commands.lua",
+
 	"tfa_darkrp.lua",
 	"tfa_effects.lua",
 	"tfa_envcheck.lua",
@@ -81,18 +84,14 @@ local modules_shared = {
 	"tfa_snd_timescale.lua",
 	"tfa_soundscripts.lua",
 	"tfa_tttpatch.lua",
-}
 
-local modules_server = {
 	"sv_tfa_settingsmenu.lua",
-}
 
-local modules_client = {
 	"cl_tfa_attachment_icon.lua",
 	"cl_tfa_attachment_panel.lua",
 	"cl_tfa_attachment_tip.lua",
 	"cl_tfa_changelog.lua",
-	"cl_tfa_commands.lua",
+
 	"cl_tfa_devtools.lua",
 	"cl_tfa_fonts.lua",
 	"cl_tfa_hitmarker.lua",
@@ -110,15 +109,7 @@ local modules_client = {
 
 local official_modules = {}
 
-for _, modulename in ipairs(modules_shared) do
-	official_modules[modulename] = true
-end
-
-for _, modulename in ipairs(modules_server) do
-	official_modules[modulename] = true
-end
-
-for _, modulename in ipairs(modules_client) do
+for _, modulename in ipairs(official_modules_sorted) do
 	official_modules[modulename] = true
 end
 
@@ -151,12 +142,24 @@ if do_load then
 		end
 	end
 
-	for _, filename in ipairs(modules_shared) do
-		if SERVER then
-			AddCSLuaFile("tfa/modules/" .. filename)
-		end
+	for _, filename in ipairs(official_modules_sorted) do
+		if filename:StartWith("cl_") then
+			if SERVER then
+				AddCSLuaFile("tfa/modules/" .. filename)
+			else
+				include("tfa/modules/" .. filename)
+			end
+		elseif filename:StartWith("sv_") then
+			if SERVER then
+				include("tfa/modules/" .. filename)
+			end
+		else
+			if SERVER then
+				AddCSLuaFile("tfa/modules/" .. filename)
+			end
 
-		include("tfa/modules/" .. filename)
+			include("tfa/modules/" .. filename)
+		end
 	end
 
 	if SERVER then
