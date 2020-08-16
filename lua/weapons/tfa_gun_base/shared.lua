@@ -1267,7 +1267,7 @@ function SWEP:EmitLowAmmoSound()
 	local mult = clip1 / maxclip1
 	if mult >= self2.LowAmmoSoundThreshold or mult <= 0 then return end
 
-	local soundname = ((clip1 - self:GetStat("Primary.AmmoConsumption", 1)) <= 0) and self:GetStat("LastAmmoSound", "") or self:GetStat("LowAmmoSound", "")
+	local soundname = ((clip1 - (self:GetStat("Primary.AmmoConsumption", 1) * (self:GetStat("Akimbo") and 2 or 1))) <= 0) and self:GetStat("LastAmmoSound", "") or self:GetStat("LowAmmoSound", "")
 
 	if soundname and soundname ~= "" then
 		self2.GonnaAdjustVol = true
