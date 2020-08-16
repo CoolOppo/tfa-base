@@ -214,4 +214,10 @@ if do_load then
 		print("[TFA Base] Files loaded this way have no pre-defined sorting applied and result of execution of those files is undefined.")
 		print("[TFA Base] If you are author of these files, please consider moving your modules to tfa/external/ as soon as possible.")
 	end
+
+	if not VLL2_FILEDEF then
+		TFAUpdateAttachments()
+	end
+
+	hook.Run("TFABaseInit")
 end
