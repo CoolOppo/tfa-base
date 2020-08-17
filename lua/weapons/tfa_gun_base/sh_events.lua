@@ -124,6 +124,20 @@ function SWEP:ProcessEvents()
 					self:EmitSound(v.value)
 				end
 			end
+		elseif v.type == "bg" or v.type == "bodygroup" then
+			if v.server == nil then v.server = true end
+			if v.view == nil then v.view = true end
+			if v.world == nil then v.world = true end
+
+			if (v.client and CLIENT and (not v.client_predictedonly or ply == LocalPlayer())) or (v.server and SERVER) and (v.name and v.value and v.value ~= "") then
+				if v.view then
+					self.Bodygroups_V[v.name] = v.value
+				end
+
+				if v.world then
+					self.Bodygroups_W[v.name] = v.value
+				end
+			end
 		end
 
 		::CONTINUE::
