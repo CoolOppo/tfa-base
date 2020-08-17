@@ -79,6 +79,8 @@ local cv_dmg_mult_min = GetConVar("sv_tfa_damage_mult_min")
 local cv_dmg_mult_max = GetConVar("sv_tfa_damage_mult_max")
 local dmg, con, rec
 
+local npc_ar2_damage_cv = GetConVar("sk_npc_dmg_ar2")
+
 function SWEP:ShootBulletInformation()
 	self:CalculateRatios()
 	self:UpdateConDamage()
@@ -92,7 +94,7 @@ function SWEP:ShootBulletInformation()
 	con, rec = self:CalculateConeRecoil()
 	local tmpranddamage = math.Rand(cv_dmg_mult_min:GetFloat(), cv_dmg_mult_max:GetFloat())
 	local basedamage = self.ConDamageMultiplier * self:GetStat("Primary.Damage")
-	dmg = basedamage * tmpranddamage
+	dmg = basedamage * tmpranddamage * (npc_ar2_damage_cv:GetFloat() / 3)
 
 	local ns = self:GetStat("Primary.NumShots")
 	local clip = (self:GetStat("Primary.ClipSize") == -1) and self:Ammo1() or self:Clip1()
