@@ -103,19 +103,34 @@ else
 	end)
 end
 
-function TFA.Attachments.Register(id, att)
+function TFA.Attachments.Register(id, ATTACHMENT)
 	if istable(id) then
-		att = id
-		id = att.ID
+		ATTACHMENT = id
+		id = ATTACHMENT.ID
 	end
 
-	att.ID = att.ID or id
+	assert(istable(ATTACHMENT), "Invalid attachment argument provided")
+	assert(isstring(id), "Invalid attachment ID provided")
+	local size = table.Count(ATTACHMENT)
 
-	if att.ID and att.ID ~= "base" then
-		att.Base = att.Base or "base"
+	if size == 0 or size == 1 and ATTACHMENT.ID ~= nil then
+		ErrorNoHalt("[TFA Base] Attempt to register an empty attachment\n")
+		ErrorNoHalt(debug.traceback() .. "\n")
+		MsgC("\n")
+		return
 	end
 
-	TFA.Attachments.Atts[att.ID or att.Name] = att
+	ATTACHMENT.ID = ATTACHMENT.ID or id
+
+	if ATTACHMENT.ID and ATTACHMENT.ID ~= "base" then
+		ATTACHMENT.Base = ATTACHMENT.Base or "base"
+	end
+
+	ProtectedCall(function()
+		hook.Run("TFABase_RegisterAttachment", id, ATTACHMENT)
+	end)
+
+	TFA.Attachments.Atts[ATTACHMENT.ID or ATTACHMENT.Name] = ATTACHMENT
 end
 
 TFARegisterAttachment = TFA.Attachments.Register
@@ -169,8 +184,8 @@ function TFAUpdateAttachments(network)
 	TFA.AttachmentColors = TFA.Attachments.Colors --for compatibility
 	TFA.Attachments.Atts = {}
 	TFA_ATTACHMENT_ISUPDATING = true
-	local tbl = file.Find(TFA.Attachments.Path .. "*base*", "LUA", "namedesc")
-	local addtbl = file.Find(TFA.Attachments.Path .. "*", "LUA", "namedesc")
+	local tbl = file.Find(TFA.Attachments.Path .. "*base*", "LUA")
+	local addtbl = file.Find(TFA.Attachments.Path .. "*", "LUA")
 
 	for _, v in ipairs(addtbl) do
 		if not string.find(v, "base") then
@@ -178,26 +193,44 @@ function TFAUpdateAttachments(network)
 		end
 	end
 
-	for _, v in ipairs(tbl) do
-		local id = v
-		v = TFA.Attachments.Path .. v
-		ATTACHMENT = {}
+	table.sort(tbl)
 
-		setmetatable(ATTACHMENT, {
-			__index = basefunc
-		})
+	for _, id in ipairs(tbl) do
+		local path = TFA.Attachments.Path .. id
 
-		ATTACHMENT.ID = string.lower(string.Replace(id, ".lua", ""))
+		local status
 
-		if SERVER then
-			AddCSLuaFile(v)
-			include(v)
-		else
-			include(v)
+		ProtectedCall(function()
+			status = hook.Run("TFABase_ShouldLoadAttachment", id, path)
+		end)
+
+		if status ~= false then
+			ATTACHMENT = {}
+
+			setmetatable(ATTACHMENT, {
+				__index = basefunc
+			})
+
+			ATTACHMENT.ID = string.lower(string.Replace(id, ".lua", ""))
+
+			ProtectedCall(function()
+				hook.Run("TFABase_PreBuildAttachment", id, path, ATTACHMENT)
+			end)
+
+			if SERVER then
+				AddCSLuaFile(path)
+				include(path)
+			else
+				include(path)
+			end
+
+			ProtectedCall(function()
+				hook.Run("TFABase_BuildAttachment", id, path, ATTACHMENT)
+			end)
+
+			TFA.Attachments.Register(ATTACHMENT)
+			ATTACHMENT = nil
 		end
-
-		TFA.Attachments.Register(ATTACHMENT)
-		ATTACHMENT = nil
 	end
 
 	ProtectedCall(function()
@@ -207,6 +240,10 @@ function TFAUpdateAttachments(network)
 	for _, v in pairs(TFA.Attachments.Atts) do
 		patchInheritance(v)
 	end
+
+	ProtectedCall(function()
+		hook.Run("TFAAttachmentsInitialized")
+	end)
 
 	TFA_ATTACHMENT_ISUPDATING = false
 end
