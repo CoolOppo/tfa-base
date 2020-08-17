@@ -94,7 +94,11 @@ function SWEP:ShootBulletInformation()
 	con, rec = self:CalculateConeRecoil()
 	local tmpranddamage = math.Rand(cv_dmg_mult_min:GetFloat(), cv_dmg_mult_max:GetFloat())
 	local basedamage = self.ConDamageMultiplier * self:GetStat("Primary.Damage")
-	dmg = basedamage * tmpranddamage * (npc_ar2_damage_cv:GetFloat() / 3)
+	dmg = basedamage * tmpranddamage
+
+	if self:GetOwner():IsNPC() then
+		dmg = dmg * npc_ar2_damage_cv:GetFloat() / 3
+	end
 
 	local ns = self:GetStat("Primary.NumShots")
 	local clip = (self:GetStat("Primary.ClipSize") == -1) and self:Ammo1() or self:Clip1()
