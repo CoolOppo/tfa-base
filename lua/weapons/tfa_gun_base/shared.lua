@@ -846,17 +846,13 @@ function SWEP:Think2(is_working_out_prediction_errors)
 		self:ProcessLoopSound()
 	end
 
-	is, spr, wlk, cst = self:IronSights()
-
 	--if is_working_out_prediction_errors then return end
 
 	self2.ProcessStatus(self)
 
 	self:ProcessLoopFire()
 
-	if ( ( TFA.Enum.ReadyStatus[stat]
-		or (stat == TFA.Enum.STATUS_SHOOTING and TFA.Enum.ShootLoopingStatus[self:GetShootStatus()] ) )
-		and ct > self:GetNextIdleAnim() ) then
+	if ct > self:GetNextIdleAnim() and (TFA.Enum.ReadyStatus[stat] or (stat == TFA.Enum.STATUS_SHOOTING and TFA.Enum.ShootLoopingStatus[self:GetShootStatus()])) then
 		self:ChooseIdleAnim()
 	end
 end
@@ -1097,7 +1093,7 @@ SWEP.is_sndcache_old = false
 function SWEP:IronSightSounds()
 	local self2 = self:GetTable()
 
-	is = self:GetIronSights()
+	local is = self:GetIronSights()
 
 	if SERVER or IsFirstTimePredicted() then
 		if is ~= self2.is_sndcache_old and hook.Run("TFA_IronSightSounds", self) == nil then

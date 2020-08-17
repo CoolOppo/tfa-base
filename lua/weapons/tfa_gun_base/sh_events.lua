@@ -23,6 +23,8 @@ local sp = game.SinglePlayer()
 local l_CT = CurTime
 SWEP.EventTimer = -1
 
+local is, spr, wlk, cst
+
 --[[
 Function Name:  ResetEvents
 Syntax: self:ResetEvents()
@@ -138,6 +140,8 @@ local ct, is, stat, statend, finalstat, waittime, lact
 
 function SWEP:ProcessStatus()
 	local self2 = self:GetTable()
+
+	is, spr, wlk, cst = self:IronSights()
 
 	local ply = self:GetOwner()
 	local isplayer = ply:IsPlayer()
