@@ -74,12 +74,11 @@ Notes:  Used to generate a self.MainBullet table which is then sent to self:Shoo
 Purpose:  Bullet
 ]]
 --
-local cv_dmg_mult = GetConVar("sv_tfa_damage_multiplier")
+local sv_tfa_damage_multiplier = GetConVar("sv_tfa_damage_multiplier")
+local sv_tfa_damage_multiplier_npc = GetConVar("sv_tfa_damage_multiplier_npc")
 local cv_dmg_mult_min = GetConVar("sv_tfa_damage_mult_min")
 local cv_dmg_mult_max = GetConVar("sv_tfa_damage_mult_max")
 local dmg, con, rec
-
-local npc_ar2_damage_cv = GetConVar("sk_npc_dmg_ar2")
 
 function SWEP:ShootBulletInformation()
 	self:CalculateRatios()
@@ -87,7 +86,7 @@ function SWEP:ShootBulletInformation()
 
 	self.lastbul = nil
 	self.lastbulnoric = false
-	self.ConDamageMultiplier = cv_dmg_mult:GetFloat()
+	self.ConDamageMultiplier = self:GetOwner():IsNPC() and sv_tfa_damage_multiplier_npc:GetFloat() or sv_tfa_damage_multiplier:GetFloat()
 
 	if not IsFirstTimePredicted() then return end
 
@@ -95,10 +94,6 @@ function SWEP:ShootBulletInformation()
 	local tmpranddamage = math.Rand(cv_dmg_mult_min:GetFloat(), cv_dmg_mult_max:GetFloat())
 	local basedamage = self.ConDamageMultiplier * self:GetStat("Primary.Damage")
 	dmg = basedamage * tmpranddamage
-
-	if self:GetOwner():IsNPC() then
-		dmg = dmg * npc_ar2_damage_cv:GetFloat() / 3
-	end
 
 	local ns = self:GetStat("Primary.NumShots")
 	local clip = (self:GetStat("Primary.ClipSize") == -1) and self:Ammo1() or self:Clip1()

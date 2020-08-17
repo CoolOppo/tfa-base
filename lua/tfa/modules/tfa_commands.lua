@@ -77,6 +77,10 @@ if GetConVar("sv_tfa_damage_multiplier") == nil then
 	CreateReplConVar("sv_tfa_damage_multiplier", "1", "Multiplier for TFA base projectile damage.")
 end
 
+if GetConVar("sv_tfa_damage_multiplier_npc") == nil then
+	CreateReplConVar("sv_tfa_damage_multiplier_npc", "1", "Multiplier for TFA base projectile damage for NPCs.")
+end
+
 if GetConVar("sv_tfa_damage_mult_min") == nil then
 	CreateConVar("sv_tfa_damage_mult_min", "0.95", {FCVAR_REPLICATED, FCVAR_NOTIFY, FCVAR_ARCHIVE}, "This is the lower range of a random damage factor.")
 end

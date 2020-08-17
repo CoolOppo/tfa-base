@@ -35,6 +35,7 @@ local function tfaOptionServer(panel)
 		sv_tfa_weapon_strip = "0",
 		sv_tfa_allow_dryfire = "1",
 		sv_tfa_damage_multiplier = "1",
+		sv_tfa_damage_multiplier_npc = "1",
 		sv_tfa_default_clip = "-1",
 		sv_tfa_arrow_lifetime = "30",
 		sv_tfa_force_multiplier = "1",
@@ -78,6 +79,7 @@ local function tfaOptionServer(panel)
 	TFA.CheckBoxNet(panel, "#tfa.svsettings.legacyreloads", "sv_tfa_reloads_legacy")
 
 	TFA.NumSliderNet(panel, "#tfa.svsettings.damagemult", "sv_tfa_damage_multiplier", 0, 10, 2)
+	TFA.NumSliderNet(panel, "#tfa.svsettings.damagemultnpc", "sv_tfa_damage_multiplier_npc", 0, 10, 2)
 	TFA.NumSliderNet(panel, "#tfa.svsettings.doorrespawntime", "sv_tfa_door_respawn", -1, 120, 0)
 
 	TFA.NumSliderNet(panel, "#tfa.svsettings.jamchance", "sv_tfa_jamming_mult", 0.01, 10, 2)
