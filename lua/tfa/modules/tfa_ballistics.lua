@@ -216,7 +216,7 @@ function TFA.Ballistics:FireBullets(wep, bulletStruct, angIn, bulletOverride)
 	if not IsValid(wep) then return end
 	if not IsValid(wep:GetOwner()) then return end
 
-	local vel, sharedRandomSeed
+	local vel
 
 	if bulletStruct.Velocity then
 		vel = bulletStruct.Velocity
@@ -244,25 +244,33 @@ function TFA.Ballistics:FireBullets(wep, bulletStruct, angIn, bulletOverride)
 	bulletStruct.Num = 1
 	bulletStruct.IsBallistics = true
 
+	local owner = wep:GetOwner()
+	local isnpc = owner:IsNPC()
+	local ac = bulletStruct.Spread
+	local sharedRandomSeed = "Ballistics" .. CurTime()
+
 	for i = 1, oldNum do
 		local ang
 
 		if angIn then
 			ang = angIn
+		elseif isnpc then
+			ang = owner:GetAimVector():Forward()
 		else
-			ang = wep:GetOwner():EyeAngles() + wep:GetOwner():GetViewPunchAngles()
-			local ac = bulletStruct.Spread
-			sharedRandomSeed = ("Ballistics" .. tostring(CurTime()))
+			ang = owner:EyeAngles() + owner:GetViewPunchAngles()
+		end
+
+		if not angIn then
 			ang:RotateAroundAxis(ang:Up(), util.SharedRandom(sharedRandomSeed, -ac.x * 45, ac.x * 45, 0 + i))
 			ang:RotateAroundAxis(ang:Right(), util.SharedRandom(sharedRandomSeed, -ac.y * 45, ac.y * 45, 1 + i))
 		end
 
 		local struct = {
-			owner = wep:GetOwner(), --used for dmginfo SetAttacker
+			owner = owner, --used for dmginfo SetAttacker
 			inflictor = wep, --used for dmginfo SetInflictor
 			damage = bulletStruct.Damage, --floating point number representing inflicted damage
 			force = bulletStruct.Force,
-			pos = bulletOverride and bulletStruct.Src or wep:GetOwner():GetShootPos(), --b.Src, --vector representing current position
+			pos = bulletOverride and bulletStruct.Src or owner:GetShootPos(), --b.Src, --vector representing current position
 			velocity = (bulletOverride and bulletStruct.Dir or ang:Forward()) * vel, --b.Dir * vel, --vector representing movement velocity
 			model = wep.BulletModel or bulletStruct.Model, --optional variable representing the given model
 			smokeparticle = bulletStruct.SmokeParticle,
@@ -302,10 +310,10 @@ function TFA.Ballistics:FireBullets(wep, bulletStruct, angIn, bulletOverride)
 			net.WriteVector(bulletStruct.Spread)
 			net.WriteFloat(vel)
 
-			if game.SinglePlayer() or wep:GetOwner():IsNPC() then
+			if game.SinglePlayer() or isnpc then
 				net.SendPVS(struct.pos)
 			else
-				net.SendOmit(wep:GetOwner())
+				net.SendOmit(owner)
 			end
 		end
 	end
