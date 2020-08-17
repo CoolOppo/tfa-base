@@ -128,7 +128,7 @@ local rlcv = GetConVar("sv_tfa_reloads_enabled")
 local holding_result_cached = false
 local last_held_check = -1
 local sp = game.SinglePlayer()
-local sqlen, slo, sqlo
+local slo, sqlo
 local nm
 
 --[[

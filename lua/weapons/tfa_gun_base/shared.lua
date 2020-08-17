@@ -1583,7 +1583,7 @@ function SWEP:LoadShell()
 	if self:GetActivityLength(tanim,true) < self:GetActivityLength(tanim,false) then
 		self:SetStatusEnd(ct + self:GetActivityLength(tanim, true))
 	else
-		sht = self:GetStat("ShellTime")
+		local sht = self:GetStat("ShellTime")
 		if sht then sht = sht / self:GetAnimationRate(ACT_VM_RELOAD) end
 		self:SetStatusEnd(ct + ( sht or self:GetActivityLength(tanim, true)))
 	end
