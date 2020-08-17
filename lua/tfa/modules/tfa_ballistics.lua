@@ -312,8 +312,8 @@ function TFA.Ballistics:FireBullets(wep, bulletStruct, angIn, bulletOverride)
 end
 
 function TFA.Ballistics.Bullets:Render()
-	for i, bullet in ipairs(self.bullet_registry) do
-		bullet:Render()
+	for i = 1, #self.bullet_registry do
+		self.bullet_registry[i]:Render()
 	end
 end
 

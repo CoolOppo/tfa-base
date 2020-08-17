@@ -1017,8 +1017,9 @@ function SWEP:DrawHUDAmmo()
 	end
 end
 
-function SWEP:DoDrawCrosshair(x, y)
+function SWEP:DoDrawCrosshair()
 	local self2 = self:GetTable()
+	local x, y
 
 	if not self2.ratios_calc or not self2.DrawCrosshairDefault then return true end
 	if self2.GetHolding(self) then return true end

@@ -814,8 +814,6 @@ Returns:  Nothing.
 Notes:  Essential for calling other important functions.
 Purpose:  Standard SWEP Function
 ]]
-local is, spr, wlk, cst, waittime, sht, lact, finalstat
-
 function SWEP:Think2(is_working_out_prediction_errors)
 	local self2 = self:GetTable()
 
@@ -857,7 +855,6 @@ function SWEP:Think2(is_working_out_prediction_errors)
 	end
 end
 
-local issighting, issprinting = false, false
 SWEP.spr_old = false
 SWEP.is_old = false
 SWEP.cust_old = false
@@ -867,8 +864,8 @@ function SWEP:IronSights()
 	local owent = self:GetOwner()
 	if not IsValid(owent) then return end
 
-	local ct = l_CT()
-	local stat = self:GetStatus()
+	ct = l_CT()
+	stat = self:GetStatus()
 
 	local issighting = false
 	local issprinting = self:GetSprinting()
@@ -1011,8 +1008,8 @@ function SWEP:GetIronSights( ignorestatus )
 	local self2 = self:GetTable()
 
 	if ignorestatus then
-		issighting = self:GetIronSightsRaw()
-		issprinting = self:GetSprinting()
+		local issighting = self:GetIronSightsRaw()
+		local issprinting = self:GetSprinting()
 
 		if issprinting then
 			issighting = false
@@ -1038,8 +1035,8 @@ function SWEP:GetIronSights( ignorestatus )
 	end
 
 	if self2.is_cached == nil then
-		issighting = self:GetIronSightsRaw()
-		issprinting = self:GetSprinting()
+		local issighting = self:GetIronSightsRaw()
+		local issprinting = self:GetSprinting()
 		stat = self:GetStatus()
 
 		if issprinting then
@@ -1218,8 +1215,6 @@ function SWEP:CanPrimaryAttack()
 	return true
 end
 
-local npc_ar2_damage_cv = GetConVar("sk_npc_dmg_ar2")
-
 function SWEP:EmitGunfireLoop()
 	local self2 = self:GetTable()
 	local tgtSound = self:GetSilenced() and self:GetStat("Primary.LoopSoundSilenced", self:GetStat("Primary.LoopSound")) or self:GetStat("Primary.LoopSound")
@@ -1351,10 +1346,8 @@ function SWEP:PrimaryAttack()
 
 	if self:GetStatus() == TFA.GetStatus("shooting") and self:GetStat("PumpAction") then
 		if self:Clip1() == 0 and self:GetStat("PumpAction").value_empty then
-			--finalstat = TFA.GetStatus("pump_ready")
 			self:SetShotgunCancel(true)
 		elseif (self:GetStat("Primary.ClipSize") < 0 or self:Clip1() > 0) and self:GetStat("PumpAction").value then
-			--finalstat = TFA.GetStatus("pump_ready")
 			self:SetShotgunCancel(true)
 		end
 	end
@@ -1573,9 +1566,6 @@ end
 
 function SWEP:DoPump()
 	if hook.Run("TFA_Pump", self) then return end
-
-	local ply = self:GetOwner()
-	local isplayer = ply:IsPlayer()
 
 	local _, tanim = self:PlayAnimation(self:GetStat("PumpAction"))
 

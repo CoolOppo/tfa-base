@@ -303,6 +303,8 @@ end
 function SWEP:ClearStatCache(vn)
 	local self2 = self:GetTable()
 
+	local clearprimary, clearsecondary
+
 	if vn then
 		self2.StatCache[vn] = nil
 		self2.StatCache2[vn] = nil

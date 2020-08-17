@@ -150,7 +150,7 @@ function SWEP:EmitSoundSafe(snd)
 	end)
 end
 
-local ct, is, stat, statend, finalstat, waittime, lact
+local ct, stat, statend, finalstat, waittime, lact
 
 function SWEP:ProcessStatus()
 	local self2 = self:GetTable()
@@ -159,12 +159,6 @@ function SWEP:ProcessStatus()
 
 	local ply = self:GetOwner()
 	local isplayer = ply:IsPlayer()
-
-	ct = l_CT()
-
-	is = self:GetIronSights()
-	stat = self:GetStatus()
-	statend = self:GetStatusEnd()
 
 	if stat == TFA.Enum.STATUS_FIDGET and is then
 		self:SetStatusEnd(0)
@@ -181,6 +175,12 @@ function SWEP:ProcessStatus()
 		self2.Idle_Mode_Old = nil
 		statend = -1
 	end
+
+	is = self:GetIronSights()
+	stat = self:GetStatus()
+	statend = self:GetStatusEnd()
+
+	ct = l_CT()
 
 	if stat ~= TFA.Enum.STATUS_IDLE and ct > statend then
 		finalstat = TFA.Enum.STATUS_IDLE

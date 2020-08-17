@@ -167,7 +167,7 @@ if do_load then
 	hook.Run("TFABase_EarlyInit")
 	hook.Run("TFABase_PreInit")
 
-	local flist = file.Find("tfa/modules/*.lua", "LUA")
+	flist = file.Find("tfa/modules/*.lua", "LUA")
 	local yell = false
 
 	for _, filename in pairs(flist) do
@@ -196,7 +196,7 @@ if do_load then
 	hook.Run("TFABase_Init")
 	hook.Run("TFABase_PreFullInit")
 
-	local flist = file.Find("tfa/external/*.lua","LUA")
+	flist = file.Find("tfa/external/*.lua","LUA")
 
 	for _, filename in pairs(flist) do
 		local typev = "SHARED"

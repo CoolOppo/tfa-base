@@ -33,6 +33,7 @@ stds.addon.read_globals = {
 	"TFA_BASE_VERSION_STRING",
 	"TFA_BASE_VERSION_CHANGES",
 	"TFA_FILE_PATH",
+	"VLL2_FILEDEF",
 	"LANG",
 	"WEPS",
 	"Key",
