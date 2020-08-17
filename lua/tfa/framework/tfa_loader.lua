@@ -142,6 +142,8 @@ if do_load then
 		end
 	end
 
+	hook.Run("TFABase_PreEarlyInit")
+
 	for _, filename in ipairs(official_modules_sorted) do
 		if filename:StartWith("cl_") then
 			if SERVER then
@@ -161,6 +163,9 @@ if do_load then
 			include("tfa/modules/" .. filename)
 		end
 	end
+
+	hook.Run("TFABase_EarlyInit")
+	hook.Run("TFABase_PreInit")
 
 	local flist = file.Find("tfa/modules/*.lua", "LUA")
 	local yell = false
@@ -187,6 +192,9 @@ if do_load then
 			yell = true
 		end
 	end
+
+	hook.Run("TFABase_Init")
+	hook.Run("TFABase_PreFullInit")
 
 	local flist = file.Find("tfa/external/*.lua","LUA")
 
@@ -215,9 +223,11 @@ if do_load then
 		print("[TFA Base] If you are author of these files, please consider moving your modules to tfa/external/ as soon as possible.")
 	end
 
+	hook.Run("TFABase_FullInit")
+
 	if not VLL2_FILEDEF then
 		TFAUpdateAttachments()
 	end
 
-	hook.Run("TFABaseInit")
+	hook.Run("TFABase_LateInit")
 end

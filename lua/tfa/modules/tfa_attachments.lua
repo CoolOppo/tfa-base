@@ -211,6 +211,7 @@ function TFAUpdateAttachments(network)
 	TFA_ATTACHMENT_ISUPDATING = false
 end
 
+hook.Add("Initialize", "TFAUpdateAttachmentsIPE", TFAUpdateAttachments)
 hook.Add("InitPostEntity", "TFAUpdateAttachmentsIPE", TFAUpdateAttachments)
 
 if not VLL2_FILEDEF then
