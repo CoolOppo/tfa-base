@@ -90,8 +90,7 @@ hook.Add("FinishMove", "TFAFinishMove", function(self, movedata)
 end)
 
 local sp = game.SinglePlayer()
-local angle_zero = Angle()
-local LerpAngle = LerpAngle
+local sv_tfa_recoil_legacy = GetConVar("sv_tfa_recoil_legacy")
 
 function SWEP:CalculateRatios()
 	local owent = self:GetOwner()
@@ -134,12 +133,14 @@ function SWEP:CalculateRatios()
 	self:SetNW2Float("ProceduralHolsterProgress", l_mathApproach(self:GetNW2Float("ProceduralHolsterProgress", 0), sprt, (sprt - self:GetNW2Float("SprintProgress", 0)) * ft * self2.ProceduralHolsterTime * 15))
 	self:SetNW2Float("InspectingProgress", l_mathApproach(self:GetNW2Float("InspectingProgress", 0), self:GetCustomizing() and 1 or 0, ((self:GetCustomizing() and 1 or 0) - self:GetNW2Float("InspectingProgress", 0)) * (ft / game.GetTimeScale()) * 10))
 
-	ft = l_mathClamp(ft, 0, 1)
-	self:SetNW2Float("ViewPunchBuild", l_mathMax(0, self:GetNW2Float("ViewPunchBuild") - self:GetNW2Float("ViewPunchBuild") * ft))
-	local build = l_mathMax(0, 4.5 - self:GetNW2Float("ViewPunchBuild"))
-	ft = ft * build * build
-	self:SetNW2Float("ViewPunchP", self:GetNW2Float("ViewPunchP") - self:GetNW2Float("ViewPunchP") * ft)
-	self:SetNW2Float("ViewPunchY", self:GetNW2Float("ViewPunchY") - self:GetNW2Float("ViewPunchY") * ft)
+	if not sv_tfa_recoil_legacy:GetBool() then
+		ft = l_mathClamp(ft, 0, 1)
+		self:SetNW2Float("ViewPunchBuild", l_mathMax(0, self:GetNW2Float("ViewPunchBuild") - self:GetNW2Float("ViewPunchBuild") * ft))
+		local build = l_mathMax(0, 4.5 - self:GetNW2Float("ViewPunchBuild"))
+		ft = ft * build * build
+		self:SetNW2Float("ViewPunchP", self:GetNW2Float("ViewPunchP") - self:GetNW2Float("ViewPunchP") * ft)
+		self:SetNW2Float("ViewPunchY", self:GetNW2Float("ViewPunchY") - self:GetNW2Float("ViewPunchY") * ft)
+	end
 
 	self2.SpreadRatio = self:GetNW2Float("SpreadRatio", 0)
 	self2.IronSightsProgress = self:GetNW2Float("IronSightsProgress", 0)

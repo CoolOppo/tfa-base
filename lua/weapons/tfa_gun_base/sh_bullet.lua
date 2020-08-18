@@ -78,6 +78,7 @@ local sv_tfa_damage_multiplier = GetConVar("sv_tfa_damage_multiplier")
 local sv_tfa_damage_multiplier_npc = GetConVar("sv_tfa_damage_multiplier_npc")
 local cv_dmg_mult_min = GetConVar("sv_tfa_damage_mult_min")
 local cv_dmg_mult_max = GetConVar("sv_tfa_damage_mult_max")
+local sv_tfa_recoil_legacy = GetConVar("sv_tfa_recoil_legacy")
 local dmg, con, rec
 
 function SWEP:ShootBulletInformation()
@@ -195,8 +196,14 @@ function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet,
 
 	if owner:IsPlayer() then
 		aimvector = owner:EyeAngles()
-		aimvector.p = aimvector.p + self:GetNW2Float("ViewPunchP")
-		aimvector.y = aimvector.y + self:GetNW2Float("ViewPunchY")
+
+		if sv_tfa_recoil_legacy:GetBool() then
+			aimvector:Add(owner:GetViewPunchAngles())
+		else
+			aimvector.p = aimvector.p + self:GetNW2Float("ViewPunchP")
+			aimvector.y = aimvector.y + self:GetNW2Float("ViewPunchY")
+		end
+
 		aimvector = aimvector:Forward()
 	else
 		aimvector = owner:GetAimVector()
@@ -294,22 +301,24 @@ function SWEP:Recoil(recoil, ifp)
 
 	local kickP = util.SharedRandom("TFA_KickDown", self:GetStat("Primary.KickDown"), self:GetStat("Primary.KickUp"), seed) * recoil * -1
 	local kickY = util.SharedRandom("TFA_KickHorizontal", -self:GetStat("Primary.KickHorizontal"), self:GetStat("Primary.KickHorizontal"), seed) * recoil
-
 	local factor = 1 - self:GetStat("Primary.StaticRecoilFactor")
 
 	local maxdist = math.min(math.max(0, 89 + owner:EyeAngles().p - math.abs(owner:GetViewPunchAngles().p * 2)), 88.5)
-	local maxdist2 = l_mathClamp(30 - math.abs(self:GetNW2Float("ViewPunchP")), 0, 30)
 	local punchP = l_mathClamp(kickP, -maxdist, maxdist) * factor
-	local punchP2 = l_mathClamp(kickP, -maxdist2, maxdist2) * factor
 	local punchY = kickY * factor
 
 	if ifp and isplayer then
 		owner:ViewPunch(Angle(punchP, punchY))
 	end
 
-	self:SetNW2Float("ViewPunchP", self:GetNW2Float("ViewPunchP", 0) + punchP2 * 2)
-	self:SetNW2Float("ViewPunchY", self:GetNW2Float("ViewPunchY", 0) + punchY * 2)
-	self:SetNW2Float("ViewPunchBuild", math.min(3, self:GetNW2Float("ViewPunchBuild", 0) + math.sqrt(math.pow(punchP, 2) + math.pow(punchY, 2)) / 3) + 0.2)
+	if not isplayer or not sv_tfa_recoil_legacy:GetBool() then
+		local maxdist2 = l_mathClamp(30 - math.abs(self:GetNW2Float("ViewPunchP")), 0, 30)
+		local punchP2 = l_mathClamp(kickP, -maxdist2, maxdist2) * factor
+
+		self:SetNW2Float("ViewPunchP", self:GetNW2Float("ViewPunchP", 0) + punchP2 * 2)
+		self:SetNW2Float("ViewPunchY", self:GetNW2Float("ViewPunchY", 0) + punchY * 2)
+		self:SetNW2Float("ViewPunchBuild", math.min(3, self:GetNW2Float("ViewPunchBuild", 0) + math.sqrt(math.pow(punchP, 2) + math.pow(punchY, 2)) / 3) + 0.2)
+	end
 
 	if isplayer and ((game.SinglePlayer() and SERVER) or (CLIENT and ifp)) then
 		local neweyeang = owner:EyeAngles()

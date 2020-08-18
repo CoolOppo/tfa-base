@@ -248,6 +248,10 @@ if GetConVar("sv_tfa_reloads_legacy") == nil then
 	CreateReplConVar("sv_tfa_reloads_legacy", "0", "Enable legacy-style reloading?")
 end
 
+if GetConVar("sv_tfa_recoil_legacy") == nil then
+	CreateReplConVar("sv_tfa_recoil_legacy", "0", "Enable legacy-style recoil? This will cause prediction issues in multiplayer. Always disabled for NPCs!")
+end
+
 if GetConVar("sv_tfa_fx_penetration_decal") == nil then
 	CreateReplConVar("sv_tfa_fx_penetration_decal", "1", "Enable decals on the other side of a penetrated object?")
 end

@@ -1017,6 +1017,8 @@ function SWEP:DrawHUDAmmo()
 	end
 end
 
+local sv_tfa_recoil_legacy = GetConVar("sv_tfa_recoil_legacy")
+
 function SWEP:DoDrawCrosshair()
 	local self2 = self:GetTable()
 	local x, y
@@ -1063,8 +1065,13 @@ function SWEP:DoDrawCrosshair()
 		-- Center of screen
 	else
 		local ang = ply:EyeAngles()
-		ang.p = ang.p + self:GetNW2Float("ViewPunchP")
-		ang.y = ang.y + self:GetNW2Float("ViewPunchY")
+
+		if sv_tfa_recoil_legacy:GetBool() then
+			ang:Add(ply:GetViewPunchAngles())
+		else
+			ang.p = ang.p + self:GetNW2Float("ViewPunchP")
+			ang.y = ang.y + self:GetNW2Float("ViewPunchY")
+		end
 
 		local tr = util.QuickTrace(ply:GetShootPos(), ang:Forward() * 0x7FFF, self2.selftbl)
 		targent = tr.Entity

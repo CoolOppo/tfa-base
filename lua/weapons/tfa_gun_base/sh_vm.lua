@@ -167,6 +167,7 @@ target_ang = Vector()
 local centered_sprintpos = Vector(0, -1, 1)
 local centered_sprintang = Vector(-15, 0, 0)
 local vmviewpunch_cv
+local sv_tfa_recoil_legacy = GetConVar("sv_tfa_recoil_legacy")
 
 function SWEP:CalculateViewModelOffset(delta)
 	local self2 = self:GetTable()
@@ -301,13 +302,15 @@ function SWEP:CalculateViewModelOffset(delta)
 	end
 
 	if vmviewpunch_cv and not vmviewpunch_cv:GetBool() then
-		--[[local vpa = self:GetOwner():GetViewPunchAngles()
-		target_ang.x = target_ang.x + vpa.p
-		target_ang.y = target_ang.y + vpa.y
-		target_ang.z = target_ang.z + vpa.r]]
-
-		target_ang.x = target_ang.x + self:GetNW2Float("ViewPunchP")
-		target_ang.x = target_ang.y + self:GetNW2Float("ViewPunchY")
+		if sv_tfa_recoil_legacy:GetBool() then
+			local vpa = self:GetOwner():GetViewPunchAngles()
+			target_ang.x = target_ang.x + vpa.p
+			target_ang.y = target_ang.y + vpa.y
+			target_ang.z = target_ang.z + vpa.r
+		else
+			target_ang.x = target_ang.x + self:GetNW2Float("ViewPunchP")
+			target_ang.x = target_ang.y + self:GetNW2Float("ViewPunchY")
+		end
 	elseif not vmviewpunch_cv then
 		vmviewpunch_cv = GetConVar("cl_tfa_viewmodel_viewpunch")
 	end
