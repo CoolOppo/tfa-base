@@ -278,6 +278,11 @@ hook.Add("Move", "TFAMove", function(self, movedata)
 	end
 end)
 
+local sv_tfa_recoil_mul_p = GetConVar("sv_tfa_recoil_mul_p")
+local sv_tfa_recoil_mul_p_npc = GetConVar("sv_tfa_recoil_mul_p_npc")
+local sv_tfa_recoil_mul_y = GetConVar("sv_tfa_recoil_mul_y")
+local sv_tfa_recoil_mul_y_npc = GetConVar("sv_tfa_recoil_mul_y_npc")
+
 function SWEP:Recoil(recoil, ifp)
 	if sp and type(recoil) == "string" then
 		local _, CurrentRecoil = self:CalculateConeRecoil()
@@ -301,6 +306,13 @@ function SWEP:Recoil(recoil, ifp)
 
 	local kickP = util.SharedRandom("TFA_KickDown", self:GetStat("Primary.KickDown"), self:GetStat("Primary.KickUp"), seed) * recoil * -1
 	local kickY = util.SharedRandom("TFA_KickHorizontal", -self:GetStat("Primary.KickHorizontal"), self:GetStat("Primary.KickHorizontal"), seed) * recoil
+
+	if isplayer then
+		kickP, kickY = kickP * sv_tfa_recoil_mul_p:GetFloat(), kickY * sv_tfa_recoil_mul_y:GetFloat()
+	else
+		kickP, kickY = kickP * sv_tfa_recoil_mul_p_npc:GetFloat(), kickY * sv_tfa_recoil_mul_y_npc:GetFloat()
+	end
+
 	local factor = 1 - self:GetStat("Primary.StaticRecoilFactor")
 
 	local maxdist = math.min(math.max(0, 89 + owner:EyeAngles().p - math.abs(owner:GetViewPunchAngles().p * 2)), 88.5)
