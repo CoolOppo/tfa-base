@@ -206,7 +206,10 @@ function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet,
 
 		aimvector = aimvector:Forward()
 	else
-		aimvector = owner:GetAimVector()
+		aimvector = owner:GetAimVector():Angle()
+		aimvector.p = aimvector.p + self:GetNW2Float("ViewPunchP")
+		aimvector.y = aimvector.y + self:GetNW2Float("ViewPunchY")
+		aimvector = aimvector:Forward()
 	end
 
 	self.MainBullet.Dir = aimvector
@@ -314,12 +317,12 @@ function SWEP:Recoil(recoil, ifp)
 	end
 
 	local factor = 1 - self:GetStat("Primary.StaticRecoilFactor")
-
-	local maxdist = math.min(math.max(0, 89 + owner:EyeAngles().p - math.abs(owner:GetViewPunchAngles().p * 2)), 88.5)
-	local punchP = l_mathClamp(kickP, -maxdist, maxdist) * factor
 	local punchY = kickY * factor
 
 	if ifp and isplayer then
+		local maxdist = math.min(math.max(0, 89 + owner:EyeAngles().p - math.abs(owner:GetViewPunchAngles().p * 2)), 88.5)
+		local punchP = l_mathClamp(kickP, -maxdist, maxdist) * factor
+
 		owner:ViewPunch(Angle(punchP, punchY))
 	end
 
@@ -329,7 +332,7 @@ function SWEP:Recoil(recoil, ifp)
 
 		self:SetNW2Float("ViewPunchP", self:GetNW2Float("ViewPunchP", 0) + punchP2 * 2)
 		self:SetNW2Float("ViewPunchY", self:GetNW2Float("ViewPunchY", 0) + punchY * 2)
-		self:SetNW2Float("ViewPunchBuild", math.min(3, self:GetNW2Float("ViewPunchBuild", 0) + math.sqrt(math.pow(punchP, 2) + math.pow(punchY, 2)) / 3) + 0.2)
+		self:SetNW2Float("ViewPunchBuild", math.min(3, self:GetNW2Float("ViewPunchBuild", 0) + math.sqrt(math.pow(punchP2, 2) + math.pow(punchY, 2)) / 3) + 0.2)
 	end
 
 	if isplayer and ((game.SinglePlayer() and SERVER) or (CLIENT and ifp)) then
