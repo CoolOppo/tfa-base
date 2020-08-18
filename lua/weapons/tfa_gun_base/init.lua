@@ -53,6 +53,11 @@ SWEP.AutoSwitchTo = true -- Auto switch to
 SWEP.AutoSwitchFrom = true -- Auto switch from
 
 function SWEP:NPCShoot_Primary()
+	if self:Clip1() <= 0 and self:GetMaxClip1() > 0 then
+		self:GetOwner():SetSchedule(SCHED_RELOAD)
+		return
+	end
+
 	return self:PrimaryAttack()
 end
 
