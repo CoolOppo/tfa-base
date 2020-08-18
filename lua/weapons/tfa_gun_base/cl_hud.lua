@@ -1062,7 +1062,11 @@ function SWEP:DoDrawCrosshair()
 		x, y = ply.interpposx, ply.interpposy
 		-- Center of screen
 	else
-		local tr = util.QuickTrace(ply:GetShootPos(), (ply:EyeAngles() + ply:GetViewPunchAngles()):Forward() * 0x7FFF, self2.selftbl)
+		local ang = ply:EyeAngles()
+		ang.p = ang.p + self:GetNW2Float("ViewPunchP")
+		ang.y = ang.y + self:GetNW2Float("ViewPunchY")
+
+		local tr = util.QuickTrace(ply:GetShootPos(), ang:Forward() * 0x7FFF, self2.selftbl)
 		targent = tr.Entity
 		local pos = tr.HitPos:ToScreen()
 		x, y = pos.x, pos.y

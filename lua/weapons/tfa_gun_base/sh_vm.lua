@@ -301,10 +301,13 @@ function SWEP:CalculateViewModelOffset(delta)
 	end
 
 	if vmviewpunch_cv and not vmviewpunch_cv:GetBool() then
-		local vpa = self:GetOwner():GetViewPunchAngles()
+		--[[local vpa = self:GetOwner():GetViewPunchAngles()
 		target_ang.x = target_ang.x + vpa.p
 		target_ang.y = target_ang.y + vpa.y
-		target_ang.z = target_ang.z + vpa.r
+		target_ang.z = target_ang.z + vpa.r]]
+
+		target_ang.x = target_ang.x + self:GetNW2Float("ViewPunchP")
+		target_ang.x = target_ang.y + self:GetNW2Float("ViewPunchY")
 	elseif not vmviewpunch_cv then
 		vmviewpunch_cv = GetConVar("cl_tfa_viewmodel_viewpunch")
 	end

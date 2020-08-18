@@ -254,10 +254,11 @@ function TFA.Ballistics:FireBullets(wep, bulletStruct, angIn, bulletOverride)
 
 		if angIn then
 			ang = angIn
-		elseif isnpc then
-			ang = owner:GetAimVector():Forward()
 		else
-			ang = owner:EyeAngles() + owner:GetViewPunchAngles()
+			ang = owner:GetAimVector()
+			ang.p = ang.p + wep:GetNW2Float("ViewPunchP")
+			ang.y = ang.y + wep:GetNW2Float("ViewPunchY")
+			ang = ang:Forward()
 		end
 
 		if not angIn then
