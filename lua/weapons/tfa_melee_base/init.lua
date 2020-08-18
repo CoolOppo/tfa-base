@@ -34,7 +34,3 @@ end
 function SWEP:GetNPCBulletSpread()
 	return 1 -- we handle this manually, in calculate cone, recoil and shootbullet
 end
-
-function SWEP:GetCapabilities()
-	return CAP_WEAPON_MELEE_ATTACK1
-end
