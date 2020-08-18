@@ -87,7 +87,7 @@ function EFFECT:Init(data)
 	end
 
 	-- Keep the start and end Pos - we're going to interpolate between them
-	if IsValid(owent) and self.Position:Distance(owent:GetShootPos()) > 72 then
+	if IsValid(owent) and self.Position:Distance(owent:EyePos()) > 72 then
 		self.WeaponEnt = nil
 	end
 

@@ -70,7 +70,7 @@ function EFFECT:Init(data)
 	AddVel = AddVel * 0.05
 	local dot = dir:GetNormalized():Dot(GetViewEntity():EyeAngles():Forward())
 	local halofac = math.abs(dot)
-	local epos = ownerent:GetShootPos()
+	local epos = ownerent:EyePos()
 	local dlight = DynamicLight(ownerent:EntIndex())
 
 	if (dlight) then
@@ -341,7 +341,7 @@ function EFFECT:Think()
 	if CurTime() > self.DieTime then
 		return false
 	elseif self.DLight and IsValid(self.OwnerEnt) then
-			self.DLight.pos = self.OwnerEnt:GetShootPos() + self.OwnerEnt:EyeAngles():Forward() * self.Dist
+		self.DLight.pos = self.OwnerEnt:EyePos() + self.OwnerEnt:EyeAngles():Forward() * self.Dist
 	end
 
 	return true
