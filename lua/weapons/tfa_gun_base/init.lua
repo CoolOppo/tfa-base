@@ -68,7 +68,11 @@ function SWEP:GetNPCRestTimes()
 		return self:GetStat("NPCMinRest", self:GetFireDelay()), self:GetStat("NPCMaxRest", self:GetFireDelay() * 2)
 	end
 
-	return 0, 0
+	if self:GetStat("Primary.Automatic") then
+		return 0, 0
+	else
+		return self:GetFireDelay(), self:GetFireDelay() * 2
+	end
 end
 
 function SWEP:GetNPCBurstSettings()
@@ -79,10 +83,15 @@ function SWEP:GetNPCBurstSettings()
 	if self:GetMaxClip1() > 0 then
 		local burst = self:GetMaxBurst()
 		local value = math.ceil(self:Clip1() / burst)
+		local delay = self:GetFireDelay() * burst
 
-		return value, value, self:GetFireDelay() * burst
+		if self:GetStat("Primary.Automatic") then
+			return math.min(4, value), math.min(12, value), delay
+		else
+			return 1, math.min(4, value), delay
+		end
 	else
-		return 1, 1, self:GetFireDelay() * self:GetMaxBurst()
+		return 1, 30, self:GetFireDelay() * self:GetMaxBurst()
 	end
 end
 
