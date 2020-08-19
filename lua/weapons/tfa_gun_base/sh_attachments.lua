@@ -511,7 +511,17 @@ do
 		self3 = self
 		local self2 = self:GetTable()
 
-		if (not self2.Attachments[cat]) then return false end
+		if not self2.Attachments[cat] then return false end
+
+		if isstring(id) then
+			if id == "" then
+				id = -1
+			else
+				id = table.KeyFromValue(self2.Attachments[cat].atts, id)
+				if not id then return false end
+			end
+		end
+
 		local attn = self2.Attachments[cat].atts[id] or ""
 		local attn_old = self2.Attachments[cat].atts[self2.Attachments[cat].sel or -1] or ""
 		if SERVER and id > 0 and not (force or self2.CanAttach(self, attn)) then return false end
@@ -545,7 +555,7 @@ do
 			net.Start("TFA_Attachment_Set")
 			net.WriteEntity(self)
 			net.WriteUInt(cat, 8)
-			net.WriteInt(id, 16)
+			net.WriteString(attn)
 
 			if SERVER then
 				if isentity(nw) then

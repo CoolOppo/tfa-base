@@ -50,7 +50,12 @@ if SERVER then
 				net.Start("TFA_Attachment_Set")
 				net.WriteEntity(wep)
 				net.WriteUInt(category, 8)
-				net.WriteInt(data.sel or -1, 16)
+
+				if data.atts and data.atts[data.sel] then
+					net.WriteString(data.atts[data.sel])
+				else
+					net.WriteString("")
+				end
 
 				net.Send(ply)
 			end
@@ -85,7 +90,7 @@ if SERVER then
 		if not IsValid(ply) or not IsValid(wep) or not wep.SetTFAAttachment or ply:GetActiveWeapon() ~= wep then return end
 
 		local cat = net.ReadUInt(8)
-		local ind = net.ReadInt(16)
+		local ind = net.ReadString()
 		local status = wep:SetTFAAttachment(cat, ind, ply)
 
 		net.Start("TFA_Attachment_SetStatus")
@@ -94,8 +99,14 @@ if SERVER then
 
 		if not status then
 			if wep.Attachments and wep.Attachments[cat] then
+				local data = wep.Attachments[cat]
 				net.WriteUInt(cat, 8)
-				net.WriteInt(wep.Attachments[cat].sel or -1, 16)
+
+				if data.atts and data.atts[data.sel] then
+					net.WriteString(data.atts[data.sel])
+				else
+					net.WriteString("")
+				end
 			end
 		end
 
@@ -107,7 +118,7 @@ else
 
 		if IsValid(wep) and wep.SetTFAAttachment then
 			local cat = net.ReadUInt(8)
-			local ind = net.ReadInt(16)
+			local ind = net.ReadString()
 			wep:SetTFAAttachment(cat, ind, false)
 		end
 	end)
@@ -125,7 +136,7 @@ else
 		surface.PlaySound("buttons/button2.wav")
 
 		local cat = net.ReadUInt(8)
-		local ind = net.ReadInt(16)
+		local ind = net.ReadString()
 		weapon:SetTFAAttachment(cat, ind, false)
 	end)
 
