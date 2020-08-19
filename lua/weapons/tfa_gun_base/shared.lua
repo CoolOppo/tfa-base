@@ -852,6 +852,7 @@ function SWEP:Think2(is_working_out_prediction_errors)
 
 	self2.ProcessStatus(self)
 	self2.ProcessLoopFire(self)
+	stat = self2.GetStatus(self)
 
 	if ct > self:GetNextIdleAnim() and (TFA.Enum.ReadyStatus[stat] or (stat == TFA.Enum.STATUS_SHOOTING and TFA.Enum.ShootLoopingStatus[self:GetShootStatus()])) then
 		self:ChooseIdleAnim()
@@ -1275,7 +1276,7 @@ function SWEP:PrimaryAttack()
 	self:SetStatusEnd(self:GetNextPrimaryFire())
 	self:ToggleAkimbo()
 
-	local _, tanim = self:ChooseShootAnim()
+	local _, tanim = self:ChooseShootAnim(IsFirstTimePredicted())
 
 	if (not sp) or (not self:IsFirstPerson()) then
 		self:GetOwner():SetAnimation(PLAYER_ATTACK1)
