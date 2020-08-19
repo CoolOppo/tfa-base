@@ -1023,6 +1023,7 @@ function SWEP.MainBullet:MakeDoor(ent, dmginfo)
 end
 
 local cv_doordestruction = GetConVar("sv_tfa_bullet_doordestruction")
+local sv_tfa_bullet_doordestruction_keep = GetConVar("sv_tfa_bullet_doordestruction_keep")
 
 function SWEP.MainBullet:HandleDoor(ply, traceres, dmginfo, wep)
 	-- Don't do anything if door desstruction isn't enabled
@@ -1040,7 +1041,7 @@ function SWEP.MainBullet:HandleDoor(ply, traceres, dmginfo, wep)
 	if ent.TFADoorHealth > 0 then return end
 	ply:EmitSound("ambient/materials/door_hit1.wav", 100, math.random(90, 110))
 
-	if self.Damage * self.Num > 100 then
+	if not sv_tfa_bullet_doordestruction_keep:GetBool() and self.Damage * self.Num > 100 then
 		self:MakeDoor(ent, dmginfo)
 		ent.TFADoorUntouchable = CurTime() + 0.5
 

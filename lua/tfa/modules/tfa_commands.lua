@@ -225,7 +225,11 @@ if GetConVar("sv_tfa_bullet_penetration") == nil then
 end
 
 if GetConVar("sv_tfa_bullet_doordestruction") == nil then
-	CreateReplConVar("sv_tfa_bullet_doordestruction", "1", "Allow players to shoot down doors?")
+	CreateReplConVar("sv_tfa_bullet_doordestruction", "1", "Allow to shoot down doors?")
+end
+
+if GetConVar("sv_tfa_bullet_doordestruction_keep") == nil then
+	CreateReplConVar("sv_tfa_bullet_doordestruction_keep", "0", "Don't shoot door off hinges")
 end
 
 if GetConVar("sv_tfa_bullet_ricochet") == nil then
