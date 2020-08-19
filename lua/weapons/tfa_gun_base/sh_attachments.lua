@@ -496,58 +496,71 @@ function SWEP:ForceAttachmentReqs(attn)
 	end
 end
 
-function SWEP:SetTFAAttachment(cat, id, nw, force)
-	local self2 = self:GetTable()
+do
+	local self3, att_neue, att_old
 
-	if (not self2.Attachments[cat]) then return false end
-	local attn = self2.Attachments[cat].atts[id] or ""
-	local attn_old = self2.Attachments[cat].atts[self2.Attachments[cat].sel or -1] or ""
-	if SERVER and id > 0 and not (force or self2.CanAttach(self, attn)) then return false end
+	local function attach()
+		att_neue:Attach(self3)
+	end
 
-	if id ~= self2.Attachments[cat].sel then
-		local att_old = TFA.Attachments.Atts[self2.Attachments[cat].atts[self2.Attachments[cat].sel] or -1]
+	local function detach()
+		att_old:Detach(self3)
+	end
 
-		if att_old then
-			att_old:Detach(self)
-			hook.Run("TFA_Attachment_Detached", self, attn_old, att_old, cat, id, force)
+	function SWEP:SetTFAAttachment(cat, id, nw, force)
+		self3 = self
+		local self2 = self:GetTable()
+
+		if (not self2.Attachments[cat]) then return false end
+		local attn = self2.Attachments[cat].atts[id] or ""
+		local attn_old = self2.Attachments[cat].atts[self2.Attachments[cat].sel or -1] or ""
+		if SERVER and id > 0 and not (force or self2.CanAttach(self, attn)) then return false end
+
+		if id ~= self2.Attachments[cat].sel then
+			att_old = TFA.Attachments.Atts[self2.Attachments[cat].atts[self2.Attachments[cat].sel] or -1]
+
+			if att_old then
+				ProtectedCall(detach)
+				hook.Run("TFA_Attachment_Detached", self, attn_old, att_old, cat, id, force)
+			end
+
+			att_neue = TFA.Attachments.Atts[self2.Attachments[cat].atts[id] or -1]
+
+			if att_neue then
+				ProtectedCall(attach)
+				hook.Run("TFA_Attachment_Attached", self, attn, att_neue, cat, id, force)
+			end
 		end
 
-		local att_neue = TFA.Attachments.Atts[self2.Attachments[cat].atts[id] or -1]
-
-		if att_neue then
-			att_neue:Attach(self)
-			hook.Run("TFA_Attachment_Attached", self, attn, att_neue, cat, id, force)
+		if id > 0 then
+			self2.Attachments[cat].sel = id
+		else
+			self2.Attachments[cat].sel = nil
 		end
-	end
 
-	if id > 0 then
-		self2.Attachments[cat].sel = id
-	else
-		self2.Attachments[cat].sel = nil
-	end
+		self2.BuildAttachmentCache(self)
 
-	self2.BuildAttachmentCache(self)
-
-	if id > 0 then
-		self2.ForceAttachmentReqs(self, attn)
-	else
-		self2.ForceAttachmentReqs(self, attn_old)
-	end
-
-	if nw then
-		net.Start("TFA_Attachment_Set")
-		net.WriteEntity(self)
-		net.WriteInt(cat, 8)
-		net.WriteInt(id or -1, 7)
-
-		if SERVER then
-			net.Broadcast()
-		elseif CLIENT then
-			net.SendToServer()
+		if id > 0 then
+			self2.ForceAttachmentReqs(self, attn)
+		else
+			self2.ForceAttachmentReqs(self, attn_old)
 		end
-	end
 
-	return true
+		if nw then
+			net.Start("TFA_Attachment_Set")
+			net.WriteEntity(self)
+			net.WriteInt(cat, 8)
+			net.WriteInt(id or -1, 7)
+
+			if SERVER then
+				net.Broadcast()
+			elseif CLIENT then
+				net.SendToServer()
+			end
+		end
+
+		return true
+	end
 end
 
 function SWEP:Attach(attname, force)
