@@ -272,6 +272,7 @@ function SWEP:GetAnimationRate(ani)
 
 	return rate
 end
+
 function SWEP:SendViewModelAnim(act, rate, targ, blend)
 	local self2 = self:GetTable()
 	local vm = self2.OwnerViewModel
@@ -398,7 +399,6 @@ function SWEP:SendViewModelSeq(seq, rate, targ, blend)
 	end
 
 	if seq < 0 then return false, act end
-	self:SetLastActivity(act)
 	self2.LastAct = act
 	self:ResetEvents()
 
@@ -443,6 +443,8 @@ function SWEP:SendViewModelSeq(seq, rate, targ, blend)
 			self:SetNextIdleAnim(CurTime() + d / pbr - blend)
 		end
 	end
+
+	self:SetLastActivity(act)
 
 	return true, act
 end
@@ -917,7 +919,7 @@ Purpose:  Animation / Utility
 --
 function SWEP:ChooseShootAnim(ifp)
 	local self2 = self:GetTable()
-	ifp = ifp or IsFirstTimePredicted()
+	if ifp == nil then ifp = IsFirstTimePredicted() end
 	if not self:VMIV() then return end
 
 	if self2.GetStat(self, "ShootAnimation.loop") and self2.Primary_TFA.Automatic then
@@ -927,10 +929,13 @@ function SWEP:ChooseShootAnim(ifp)
 
 		if TFA.Enum.ShootReadyStatus[self:GetShootStatus()] then
 			self:SetShootStatus(TFA.Enum.SHOOT_START)
+
 			local inan = self2.GetStat(self, "ShootAnimation.in")
+
 			if not inan then
 				inan = self2.GetStat(self, "ShootAnimation.loop")
 			end
+
 			return self:PlayAnimation(inan)
 		end
 
@@ -970,26 +975,26 @@ function SWEP:ChooseShootAnim(ifp)
 
 		if typev ~= TFA.Enum.ANIMATION_SEQ then
 			return self:SendViewModelAnim(tanim)
-		else
-			return self:SendViewModelSeq(tanim)
-		end
-	else
-		if game.SinglePlayer() and SERVER then
-			self:CallOnClient("BlowbackFull", "")
 		end
 
-		if ifp then
-			self:BlowbackFull(ifp)
-		end
-
-		if self2.Blowback_Shell_Enabled and (ifp or game.SinglePlayer()) then
-			self:EventShell()
-		end
-
-		self:SendViewModelAnim(ACT_VM_BLOWBACK)
-
-		return true, ACT_VM_IDLE
+		return self:SendViewModelSeq(tanim)
 	end
+
+	if game.SinglePlayer() and SERVER then
+		self:CallOnClient("BlowbackFull", "")
+	end
+
+	if ifp then
+		self:BlowbackFull(ifp)
+	end
+
+	if self2.Blowback_Shell_Enabled and (ifp or game.SinglePlayer()) then
+		self:EventShell()
+	end
+
+	self:SendViewModelAnim(ACT_VM_BLOWBACK)
+
+	return true, ACT_VM_IDLE
 end
 
 function SWEP:BlowbackFull()
