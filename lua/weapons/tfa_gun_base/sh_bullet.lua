@@ -56,15 +56,39 @@ local function FinishMove(self)
 	local data = self.TFA_BulletEvents
 
 	if data and #data ~= 0 then
+		self:LagCompensation(true)
+
 		for _, event in ipairs(data) do
 			event(self)
 		end
+
+		self:LagCompensation(false)
 
 		self.TFA_BulletEvents = nil
 	end
 end
 
-hook.Add("FinishMove", "TFA.DelayedBulletEvents", FinishMove)
+local function PlayerPostThink(self)
+	local data = self.TFA_BulletEvents
+
+	if data and #data ~= 0 then
+		self:LagCompensation(true)
+
+		for _, event in ipairs(data) do
+			event(self)
+		end
+
+		self:LagCompensation(false)
+
+		self.TFA_BulletEvents = nil
+	end
+end
+
+if CLIENT then
+	hook.Add("FinishMove", "TFA.DelayedBulletEvents", FinishMove)
+else
+	hook.Add("PlayerPostThink", "TFA.DelayedBulletEvents", PlayerPostThink)
+end
 
 --[[
 Function Name:  ShootBulletInformation
