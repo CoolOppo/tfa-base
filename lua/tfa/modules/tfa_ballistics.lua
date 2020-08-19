@@ -397,11 +397,17 @@ if CLIENT then
 	end)
 end
 
-hook.Add("FinishMove", "TFABallisticsTick", function(self)
-	if IsFirstTimePredicted() then
+if CLIENT then
+	hook.Add("FinishMove", "TFABallisticsTick", function(self)
+		if IsFirstTimePredicted() then
+			TFA.Ballistics.Bullets:Update(self)
+		end
+	end)
+else
+	hook.Add("PlayerPostThink", "TFABallisticsTick", function(self)
 		TFA.Ballistics.Bullets:Update(self)
-	end
-end)
+	end)
+end
 
 hook.Add("Tick", "TFABallisticsTick", function()
 	TFA.Ballistics.Bullets:Update()
