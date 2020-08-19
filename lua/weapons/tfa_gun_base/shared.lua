@@ -928,7 +928,7 @@ function SWEP:IronSights()
 		self:SetIronSightsRaw(false)
 	end
 
-	self2.is_cached = nil
+	self:SetNW2Float("LastSightsStatusCached", false)
 
 	if ( issighting or issprinting or stat ~= TFA.Enum.STATUS_IDLE ) and self:GetCustomizing() then
 		--if gui then
@@ -1001,15 +1001,13 @@ function SWEP:IronSights()
 	return issighting_tmp, issprinting, iswalking, self:GetCustomizing()
 end
 
-SWEP.is_cached = nil
-SWEP.is_cached_old = false
-
-function SWEP:GetIronSights( ignorestatus )
+function SWEP:GetIronSights(ignorestatus)
 	local self2 = self:GetTable()
 
-	if ignorestatus then
+	if ignorestatus or not self:GetNW2Bool("LastSightsStatusCached", false) then
 		local issighting = self:GetIronSightsRaw()
 		local issprinting = self:GetSprinting()
+		local stat = self:GetStatus()
 
 		if issprinting then
 			issighting = false
@@ -1029,60 +1027,33 @@ function SWEP:GetIronSights( ignorestatus )
 			else
 				self2.LastBoltShoot = nil
 			end
+		end
+
+		if not ignorestatus then
+			self:SetNW2Bool("LastSightsStatus", issighting)
+			self:SetNW2Bool("LastSightsStatusCached", true)
+
+			--[[
+			if (self2.is_cached_old ~= issighting) and not ( sp and CLIENT ) then
+				if (issighting == false) then--and ((CLIENT and IsFirstTimePredicted()) or (SERVER and sp)) then
+					self:EmitSound(self2.IronOutSound or "TFA.IronOut")
+				elseif issighting == true then--and ((CLIENT and IsFirstTimePredicted()) or (SERVER and sp)) then
+					self:EmitSound(self2.IronInSound or "TFA.IronIn")
+				end
+			end
+			]]--
+
+			self:SetNW2Bool("LastSightsStatusOld", issighting)
 		end
 
 		return issighting
 	end
 
-	if self2.is_cached == nil then
-		local issighting = self:GetIronSightsRaw()
-		local issprinting = self:GetSprinting()
-		stat = self:GetStatus()
-
-		if issprinting then
-			issighting = false
-		end
-
-		if not TFA.Enum.IronStatus[stat] then
-			issighting = false
-		end
-
-		if self:GetStat("BoltAction") or self:GetStat("BoltAction_Forced") then
-			if stat == TFA.Enum.STATUS_SHOOTING then
-				if not self2.LastBoltShoot then
-					self2.LastBoltShoot = l_CT()
-				end
-
-				if l_CT() > self2.LastBoltShoot + self2.BoltTimerOffset then
-					issighting = false
-				end
-			elseif (stat == TFA.Enum.STATUS_IDLE and self:GetShotgunCancel(true)) or stat == TFA.Enum.STATUS_PUMP then
-				issighting = false
-			else
-				self2.LastBoltShoot = nil
-			end
-		end
-
-		self2.is_cached = issighting
-
-		--[[
-		if (self2.is_cached_old ~= issighting) and not ( sp and CLIENT ) then
-			if (issighting == false) then--and ((CLIENT and IsFirstTimePredicted()) or (SERVER and sp)) then
-				self:EmitSound(self2.IronOutSound or "TFA.IronOut")
-			elseif issighting == true then--and ((CLIENT and IsFirstTimePredicted()) or (SERVER and sp)) then
-				self:EmitSound(self2.IronInSound or "TFA.IronIn")
-			end
-		end
-		]]--
-
-		self2.is_cached_old = self2.is_cached
-	end
-
-	return self2.is_cached
+	return self:GetNW2Bool("LastSightsStatus", false)
 end
 
 function SWEP:GetIronSightsDirect()
-	return self.is_cached == true
+	return self:GetNW2Bool("LastSightsStatus", false)
 end
 
 SWEP.is_sndcache_old = false

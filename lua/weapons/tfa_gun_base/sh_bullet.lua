@@ -92,6 +92,7 @@ function SWEP:ShootBulletInformation()
 	if not IsFirstTimePredicted() then return end
 
 	con, rec = self:CalculateConeRecoil()
+
 	local tmpranddamage = math.Rand(cv_dmg_mult_min:GetFloat(), cv_dmg_mult_max:GetFloat())
 	local basedamage = self.ConDamageMultiplier * self:GetStat("Primary.Damage")
 	dmg = basedamage * tmpranddamage

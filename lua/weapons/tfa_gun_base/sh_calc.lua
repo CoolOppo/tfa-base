@@ -45,7 +45,6 @@ local function l_mathApproach(a, b, delta)
 	end
 end
 
-local is, spr, walk, ist, sprt, walkt
 local sprint_cv = GetConVar("sv_tfa_sprint_enabled")
 
 function SWEP:TFAFinishMove(ply, velocity, movedata)
@@ -79,6 +78,18 @@ function SWEP:TFAFinishMove(ply, velocity, movedata)
 	if self:GetCustomizing() and (self2.GetIronSights(self) or self:GetSprinting() or not TFA.Enum.ReadyStatus[status]) then
 		self:ToggleCustomize()
 	end
+
+	local spr = self:GetSprinting(self)
+	local walk = self:GetWalking(self)
+
+	local sprt = spr and 1 or 0
+	local walkt = walk and 1 or 0
+	local adstransitionspeed = (spr or walk) and 7.5 or 12.5
+
+	self:SetNW2Float("SprintProgress", l_mathApproach(self:GetNW2Float("SprintProgress", 0), sprt, (sprt - self:GetNW2Float("SprintProgress", 0)) * ft * adstransitionspeed))
+	self:SetNW2Float("WalkProgress", l_mathApproach(self:GetNW2Float("WalkProgress", 0), walkt, (walkt - self:GetNW2Float("WalkProgress", 0)) * ft * adstransitionspeed))
+
+	self:SetNW2Float("LastVelocity", vellen)
 end
 
 hook.Add("FinishMove", "TFAFinishMove", function(self, movedata)
@@ -105,13 +116,13 @@ function SWEP:CalculateRatios()
 
 	local ft = TFA.FrameTime()
 
-	is = self2.GetIronSights(self)
-	spr = self2.GetSprinting(self)
-	walk = self2.GetWalking(self)
+	local is = self2.GetIronSights(self)
+	local spr = self2.GetSprinting(self)
+	local walk = self2.GetWalking(self)
 
-	ist = is and 1 or 0
-	sprt = spr and 1 or 0
-	walkt = walk and 1 or 0
+	local ist = is and 1 or 0
+	local sprt = spr and 1 or 0
+	local walkt = walk and 1 or 0
 	local adstransitionspeed
 
 	if is then
@@ -128,8 +139,6 @@ function SWEP:CalculateRatios()
 
 	self:SetNW2Float("SpreadRatio", l_mathClamp(self:GetNW2Float("SpreadRatio", 0) - self2.GetStat(self, "Primary.SpreadRecovery") * ft, 1, self2.GetStat(self, "Primary.SpreadMultiplierMax")))
 	self:SetNW2Float("IronSightsProgress", l_mathApproach(self:GetNW2Float("IronSightsProgress", 0), ist, (ist - self:GetNW2Float("IronSightsProgress", 0)) * ft * adstransitionspeed))
-	self:SetNW2Float("SprintProgress", l_mathApproach(self:GetNW2Float("SprintProgress", 0), sprt, (sprt - self:GetNW2Float("SprintProgress", 0)) * ft * adstransitionspeed))
-	self:SetNW2Float("WalkProgress", l_mathApproach(self:GetNW2Float("WalkProgress", 0), walkt, (walkt - self:GetNW2Float("WalkProgress", 0)) * ft * adstransitionspeed))
 	self:SetNW2Float("ProceduralHolsterProgress", l_mathApproach(self:GetNW2Float("ProceduralHolsterProgress", 0), sprt, (sprt - self:GetNW2Float("SprintProgress", 0)) * ft * self2.ProceduralHolsterTime * 15))
 	self:SetNW2Float("InspectingProgress", l_mathApproach(self:GetNW2Float("InspectingProgress", 0), self:GetCustomizing() and 1 or 0, ((self:GetCustomizing() and 1 or 0) - self:GetNW2Float("InspectingProgress", 0)) * (ft / game.GetTimeScale()) * 10))
 
@@ -176,7 +185,7 @@ SWEP.JumpRatio = 0
 function SWEP:CalculateConeRecoil()
 	local dynacc = false
 	local self2 = self:GetTable()
-	local isr = self:GetNW2Float("IronSightsProgress") or 0
+	local isr = self:GetNW2Float("IronSightsProgress", 0)
 
 	if dynacc_cvar:GetBool() and (self2.GetStat(self, "Primary.NumShots") <= 1) then
 		dynacc = true
@@ -195,8 +204,8 @@ function SWEP:CalculateConeRecoil()
 		crec = l_Lerp(isr, recv, recv * self2.GetStat(self, "IronRecoilMultiplier"))
 	end
 
-	local crc_1 = l_mathClamp(self2.CrouchingRatio * 2, 0, 1)
-	local crc_2 = l_mathClamp((self2.CrouchingRatio - 0.5) * 2, 0, 1)
+	local crc_1 = l_mathClamp(self:GetNW2Float("CrouchingRatio") * 2, 0, 1)
+	local crc_2 = l_mathClamp((self:GetNW2Float("CrouchingRatio") - 0.5) * 2, 0, 1)
 
 	if dynacc then
 		ccon = l_Lerp(crc_2, l_Lerp(crc_1, ccon, ccon * self2.GetStat(self, "ChangeStateAccuracyMultiplier")), ccon * self2.GetStat(self, "CrouchAccuracyMultiplier"))
@@ -208,7 +217,11 @@ function SWEP:CalculateConeRecoil()
 	local ovel
 
 	if IsValid(owner) then
-		ovel = owner:GetVelocity():Length2D()
+		if owner:IsPlayer() then
+			ovel = self:GetNW2Float("LastVelocity")
+		else
+			ovel = owner:GetVelocity():Length2D()
+		end
 	else
 		ovel = 0
 	end
@@ -220,14 +233,14 @@ function SWEP:CalculateConeRecoil()
 		crec = l_Lerp(vfc_1, crec, crec * self2.GetStat(self, "WallRecoilMultiplier"))
 	end
 
-	local jr = self2.JumpRatio
+	local jr = self:GetNW2Float("JumpRatio")
 
 	if dynacc then
 		ccon = l_Lerp(jr, ccon, ccon * self2.GetStat(self, "JumpAccuracyMultiplier"))
 		crec = l_Lerp(jr, crec, crec * self2.GetStat(self, "JumpRecoilMultiplier"))
 	end
 
-	ccon = ccon * self2.SpreadRatio
+	ccon = ccon * self:GetNW2Float("SpreadRatio")
 
 	if mult_cvar then
 		ccon = ccon * mult_cvar:GetFloat()
