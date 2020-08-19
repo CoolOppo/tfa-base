@@ -273,11 +273,36 @@ function SWEP:TFAMove(ply, movedata)
 	end
 end
 
+function SWEP:TFAStartCommand(ply, cusercmd)
+	local cmdrate = ply:GetInfoNum('cl_cmdrate', 30) / 66
+
+	local kickP = self:GetNW2Float("AccumulatedKickP")
+	local kickY = self:GetNW2Float("AccumulatedKickY")
+
+	if kickP ~= 0 or kickY ~= 0 then
+		self:SetNW2Float("AccumulatedKickP", 0)
+		self:SetNW2Float("AccumulatedKickY", 0)
+
+		local ang = cusercmd:GetViewAngles()
+		ang.p = ang.p + kickP * cmdrate
+		ang.y = ang.y + kickY * cmdrate
+		cusercmd:SetViewAngles(ang)
+	end
+end
+
 hook.Add("Move", "TFAMove", function(self, movedata)
 	local weapon = self:GetActiveWeapon()
 
 	if IsValid(weapon) and weapon:IsTFA() then
 		weapon:TFAMove(self, movedata)
+	end
+end)
+
+hook.Add("StartCommand", "TFAStartCommand", function(self, cusercmd)
+	local weapon = self:GetActiveWeapon()
+
+	if IsValid(weapon) and weapon:IsTFA() then
+		weapon:TFAStartCommand(self, cusercmd)
 	end
 end)
 
@@ -335,11 +360,10 @@ function SWEP:Recoil(recoil, ifp)
 		self:SetNW2Float("ViewPunchBuild", math.min(3, self:GetNW2Float("ViewPunchBuild", 0) + math.sqrt(math.pow(punchP2, 2) + math.pow(punchY, 2)) / 3) + 0.2)
 	end
 
-	if isplayer and ((game.SinglePlayer() and SERVER) or (CLIENT and ifp)) then
-		local neweyeang = owner:EyeAngles()
-		neweyeang:Add(Angle(kickP * self:GetStat("Primary.StaticRecoilFactor"), kickY * self:GetStat("Primary.StaticRecoilFactor")))
-		--neweyeang.p = l_mathClamp(neweyeang.p, -90 + math.abs(owner:GetViewPunchAngles().p), 90 - math.abs(owner:GetViewPunchAngles().p))
-		owner:SetEyeAngles(neweyeang)
+	if isplayer then
+		local recoilf = self:GetStat("Primary.StaticRecoilFactor")
+		self:SetNW2Float("AccumulatedKickP", self:GetNW2Float("AccumulatedKickP") + kickP * recoilf)
+		self:SetNW2Float("AccumulatedKickY", self:GetNW2Float("AccumulatedKickY") + kickY * recoilf)
 	end
 end
 
