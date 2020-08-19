@@ -151,11 +151,18 @@ function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet,
 
 		for _ = 1, num_bullets do
 			local ent = ents.Create(self:GetStat("Primary.Projectile"))
-			local dir
+
 			local ang = self:GetOwner():GetAimVector():Angle()
+
+			if not sv_tfa_recoil_legacy:GetBool() then
+				ang.p = ang.p + self:GetNW2Float("ViewPunchP")
+				ang.y = ang.y + self:GetNW2Float("ViewPunchY")
+			end
+
 			ang:RotateAroundAxis(ang:Right(), -aimcone / 2 + math.Rand(0, aimcone))
 			ang:RotateAroundAxis(ang:Up(), -aimcone / 2 + math.Rand(0, aimcone))
-			dir = ang:Forward()
+			local dir = ang:Forward()
+
 			ent:SetPos(self:GetOwner():GetShootPos())
 			ent:SetOwner(self:GetOwner())
 			ent:SetAngles(ang)
