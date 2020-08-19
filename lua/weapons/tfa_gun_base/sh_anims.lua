@@ -306,7 +306,6 @@ function SWEP:SendViewModelAnim(act, rate, targ, blend)
 		if seq < 0 then return false, act end
 	end
 
-	self:SetLastActivity(act)
 	self2.LastAct = act
 	self:ResetEvents()
 
@@ -356,6 +355,8 @@ function SWEP:SendViewModelAnim(act, rate, targ, blend)
 
 		self:SetNextIdleAnim(CurTime() + math.max(d / pbr - blend, self2.Idle_Smooth))
 	end
+
+	self:SetLastActivity(act)
 
 	return true, act
 end
