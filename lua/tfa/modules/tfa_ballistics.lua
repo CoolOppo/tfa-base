@@ -82,6 +82,8 @@ local cv_res_air = CreateReplConVar("sv_tfa_ballistics_bullet_damping_air", 1, "
 local cv_res_water = CreateReplConVar("sv_tfa_ballistics_bullet_damping_water", 3, "Water resistance, which makes bullets arc faster in water.")
 local cv_vel = CreateReplConVar("sv_tfa_ballistics_bullet_velocity", 1, "Global velocity multiplier for TFA ballistics bullets.")
 local cv_substep = CreateReplConVar("sv_tfa_ballistics_substeps", 1, "Substeps for ballistics; more is more precise, at the cost of performance.")
+local sv_tfa_ballistics_custom_gravity = CreateReplConVar("sv_tfa_ballistics_custom_gravity", 0, "Enable sv_gravity override for ballistics")
+local sv_tfa_ballistics_custom_gravity_value = CreateReplConVar("sv_tfa_ballistics_custom_gravity_value", 0, "Z velocity down of custom gravity")
 CreateReplConVar("sv_tfa_ballistics_mindist", -1, "Minimum distance to activate; -1 for always.")
 
 local function updateCVars()
@@ -90,7 +92,13 @@ local function updateCVars()
 	TFA.Ballistics.WaterResistance = cv_res_water:GetFloat()
 	TFA.Ballistics.WaterEntranceResistance = TFA.Ballistics.WaterResistance * 2
 	TFA.Ballistics.VelocityMultiplier = cv_vel:GetFloat()
-	TFA.Ballistics.Gravity.z = -cv_gravity:GetFloat()
+
+	if sv_tfa_ballistics_custom_gravity:GetBool() then
+		TFA.Ballistics.Gravity.z = -sv_tfa_ballistics_custom_gravity_value:GetFloat()
+	else
+		TFA.Ballistics.Gravity.z = -cv_gravity:GetFloat()
+	end
+
 	TFA.Ballistics.Enabled = cv_enabled:GetBool()
 	TFA.Ballistics.SubSteps = cv_substep:GetInt()
 end
@@ -102,6 +110,8 @@ cvars.AddChangeCallback("sv_tfa_ballistics_bullet_damping_water", updateCVars, "
 cvars.AddChangeCallback("sv_tfa_ballistics_bullet_velocity", updateCVars, "TFA")
 cvars.AddChangeCallback("sv_tfa_ballistics_substeps", updateCVars, "TFA")
 cvars.AddChangeCallback("sv_tfa_ballistics_mindist", updateCVars, "TFA")
+cvars.AddChangeCallback("sv_tfa_ballistics_custom_gravity", updateCVars, "TFA")
+cvars.AddChangeCallback("sv_tfa_ballistics_custom_gravity_value", updateCVars, "TFA")
 cvars.AddChangeCallback("sv_gravity", updateCVars, "TFA Ballistics")
 updateCVars()
 
@@ -212,6 +222,8 @@ function TFA.Ballistics:ShouldUse(wep)
 	end
 end
 
+local sv_tfa_recoil_legacy = GetConVar("sv_tfa_recoil_legacy")
+
 function TFA.Ballistics:FireBullets(wep, bulletStruct, angIn, bulletOverride)
 	if not IsValid(wep) then return end
 	if not IsValid(wep:GetOwner()) then return end
@@ -255,16 +267,14 @@ function TFA.Ballistics:FireBullets(wep, bulletStruct, angIn, bulletOverride)
 		if angIn then
 			ang = angIn
 		else
-			ang = owner:GetAimVector()
+			ang = owner:GetAimVector():Angle()
 
 			if sv_tfa_recoil_legacy:GetBool() and not isnpc then
+				ang:Add(owner:GetViewPunchAngles())
+			else
 				ang.p = ang.p + wep:GetNW2Float("ViewPunchP")
 				ang.y = ang.y + wep:GetNW2Float("ViewPunchY")
-			else
-				ang:Add(owner:GetViewPunchAngles():Forward())
 			end
-
-			ang = ang:Forward()
 		end
 
 		if not angIn then

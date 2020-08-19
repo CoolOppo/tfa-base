@@ -712,6 +712,8 @@ local function tfaOptionBallistics(panel)
 		["sv_tfa_ballistics_bullet_damping_water"] = 3,
 		["sv_tfa_ballistics_bullet_velocity"] = 1,
 		["sv_tfa_ballistics_bullet_substeps"] = 3,
+		["sv_tfa_ballistics_custom_gravity"] = 0,
+		["sv_tfa_ballistics_custom_gravity_value"] = 0,
 		["cl_tfa_ballistics_mp"] = 1,
 		["cl_tfa_ballistics_fx_bullet"] = 1,
 		["cl_tfa_ballistics_fx_tracers_style"] = 1,
@@ -730,6 +732,8 @@ local function tfaOptionBallistics(panel)
 	TFA.NumSliderNet(panel, "#tfa.ballisticsettings.bullet.damping.water", "sv_tfa_ballistics_bullet_damping_water", 0, 10, 2)
 	TFA.NumSliderNet(panel, "#tfa.ballisticsettings.bullet.velocity", "sv_tfa_ballistics_bullet_velocity", 0, 2, 3)
 	TFA.NumSliderNet(panel, "#tfa.ballisticsettings.substeps", "sv_tfa_ballistics_substeps", 1, 5, 0)
+	TFA.CheckBoxNet(panel, "#tfa.ballisticsettings.customgravity", "sv_tfa_ballistics_custom_gravity")
+	TFA.CheckBoxNet(panel, "#tfa.ballisticsettings.customgravityvalue", "sv_tfa_ballistics_custom_gravity_value")
 
 	panel:Help("#tfa.settings.client")
 

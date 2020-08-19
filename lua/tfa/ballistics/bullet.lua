@@ -346,8 +346,8 @@ function BallisticBullet:Render()
 		self.cursmoke = CreateParticleSystem(self.curmodel, self.smokeparticle, PATTACH_ABSORIGIN_FOLLOW, 1)
 		if not self.cursmoke then return end
 		self.cursmoke:StartEmission()
-	elseif self.cursmoke then
-		self.cursmoke:SetSortOrigin(self.owner:GetShootPos())
+	elseif self.cursmoke and IsValid(self.owner) then
+		self.cursmoke:SetSortOrigin(self.owner.GetShootPos and self.owner:GetShootPos() or self.owner.EyePos and self.owner:EyePos() or vector_origin)
 
 		if self.Underwater then
 			self.cursmoke:StopEmission()
