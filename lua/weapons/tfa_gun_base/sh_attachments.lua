@@ -530,30 +530,32 @@ do
 				ProtectedCall(attach)
 				hook.Run("TFA_Attachment_Attached", self, attn, att_neue, cat, id, force)
 			end
-		end
 
-		if id > 0 then
-			self2.Attachments[cat].sel = id
-		else
-			self2.Attachments[cat].sel = nil
+			if id > 0 then
+				self2.Attachments[cat].sel = id
+			else
+				self2.Attachments[cat].sel = nil
+			end
 		end
 
 		self2.BuildAttachmentCache(self)
+		self2.ForceAttachmentReqs(self, (id > 0) and attn or attn_old)
 
-		if id > 0 then
-			self2.ForceAttachmentReqs(self, attn)
-		else
-			self2.ForceAttachmentReqs(self, attn_old)
-		end
-
-		if nw then
+		if nw and (not isentity(nw) or SERVER) then
 			net.Start("TFA_Attachment_Set")
 			net.WriteEntity(self)
-			net.WriteInt(cat, 8)
-			net.WriteInt(id or -1, 7)
+			net.WriteUInt(cat, 8)
+			net.WriteInt(id, 16)
 
 			if SERVER then
-				net.Broadcast()
+				if isentity(nw) then
+					local filter = RecipientFilter()
+					filter:AddPVS(self:GetPos())
+					filter:RemovePlayer(nw)
+					net.Send(filter)
+				else
+					net.SendPVS(self:GetPos())
+				end
 			elseif CLIENT then
 				net.SendToServer()
 			end

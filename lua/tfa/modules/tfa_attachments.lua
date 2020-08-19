@@ -39,16 +39,19 @@ TFA.Attachments.CategorySpacing = 128
 
 if SERVER then
 	util.AddNetworkString("TFA_Attachment_Set")
+	util.AddNetworkString("TFA_Attachment_SetStatus")
 	util.AddNetworkString("TFA_Attachment_Reload")
 	util.AddNetworkString("TFA_Attachment_RequestAll")
+	util.AddNetworkString("TFA_Attachment_Request")
 
 	local function UpdateWeapon(wep, ply)
-		for k, v in pairs(wep.Attachments) do
-			if type(k) ~= "string" then
+		for category, data in pairs(wep.Attachments) do
+			if type(category) ~= "string" then
 				net.Start("TFA_Attachment_Set")
 				net.WriteEntity(wep)
-				net.WriteInt(k, 8)
-				net.WriteInt(v.sel or -1, 7)
+				net.WriteUInt(category, 8)
+				net.WriteInt(data.sel or -1, 16)
+
 				net.Send(ply)
 			end
 		end
@@ -60,7 +63,7 @@ if SERVER then
 		if not IsValid(ply) then return end
 
 		if sp or not ply.TFA_RequestAll then
-			for _, v in pairs(ents.GetAll()) do
+			for _, v in ipairs(ents.GetAll()) do
 				if v:IsWeapon() and v:IsTFA() and v.HasInitAttachments then
 					UpdateWeapon(v, ply)
 				end
@@ -70,22 +73,41 @@ if SERVER then
 		end
 	end)
 
+	net.Receive("TFA_Attachment_Request", function(len, ply)
+		if not IsValid(ply) then return end
+		local wep = net.ReadEntity()
+		if not IsValid(wep) then return end
+		UpdateWeapon(wep, ply)
+	end)
+
 	net.Receive("TFA_Attachment_Set", function(len, ply)
 		local wep = net.ReadEntity()
+		if not IsValid(ply) or not IsValid(wep) or not wep.SetTFAAttachment or ply:GetActiveWeapon() ~= wep then return end
 
-		if IsValid(ply) and IsValid(wep) and wep.SetTFAAttachment and ply:GetActiveWeapon() == wep then
-			local cat = net.ReadInt(8)
-			local ind = net.ReadInt(7)
-			wep:SetTFAAttachment(cat, ind, true)
+		local cat = net.ReadUInt(8)
+		local ind = net.ReadInt(16)
+		local status = wep:SetTFAAttachment(cat, ind, ply)
+
+		net.Start("TFA_Attachment_SetStatus")
+		net.WriteEntity(wep)
+		net.WriteBool(status)
+
+		if not status then
+			if wep.Attachments and wep.Attachments[cat] then
+				net.WriteUInt(cat, 8)
+				net.WriteInt(wep.Attachments[cat].sel or -1, 16)
+			end
 		end
+
+		net.Send(ply)
 	end)
 else
 	net.Receive("TFA_Attachment_Set", function(len)
 		local wep = net.ReadEntity()
 
 		if IsValid(wep) and wep.SetTFAAttachment then
-			local cat = net.ReadInt(8)
-			local ind = net.ReadInt(7)
+			local cat = net.ReadUInt(8)
+			local ind = net.ReadInt(16)
 			wep:SetTFAAttachment(cat, ind, false)
 		end
 	end)
@@ -94,12 +116,52 @@ else
 		TFAUpdateAttachments()
 	end)
 
+	net.Receive("TFA_Attachment_SetStatus", function(len)
+		local weapon = net.ReadEntity()
+		if not IsValid(weapon) then return end
+		local status = net.ReadBool()
+
+		if status then return end
+		surface.PlaySound("buttons/button2.wav")
+
+		local cat = net.ReadUInt(8)
+		local ind = net.ReadInt(16)
+		weapon:SetTFAAttachment(cat, ind, false)
+	end)
+
 	hook.Add("HUDPaint", "TFA_Attachment_RequestAll", function()
 		if LocalPlayer():IsValid() then
 			hook.Remove("HUDPaint", "TFA_Attachment_RequestAll")
 			net.Start("TFA_Attachment_RequestAll")
 			net.SendToServer()
 		end
+	end)
+
+	local function request(self)
+		if self._TFA_Attachment_Request then return end
+		net.Start("TFA_Attachment_Request")
+		net.WriteEntity(self)
+		net.SendToServer()
+		self._TFA_Attachment_Request = true
+	end
+
+	hook.Add("NotifyShouldTransmit", "TFA_AttachmentsRequest", function(self, notDormant)
+		if not self.IsTFAWeapon or not notDormant then return end
+		request(self)
+	end)
+
+	hook.Add("NetworkEntityCreated", "TFA_AttachmentsRequest", function(self)
+		timer.Simple(0, function()
+			if not IsValid(self) or not self.IsTFAWeapon then return end
+			request(self)
+		end)
+	end)
+
+	hook.Add("OnEntityCreated", "TFA_AttachmentsRequest", function(self)
+		timer.Simple(0, function()
+			if not IsValid(self) or not self.IsTFAWeapon then return end
+			request(self)
+		end)
 	end)
 end
 
