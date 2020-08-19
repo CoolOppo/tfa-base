@@ -55,11 +55,17 @@ function SWEP:DrawLaser(is_vm)
 	local ply = self:GetOwner()
 	if not IsValid(ply) then return end
 
-	local f = ply.GetNW2Vector or ply.GetNWVector
-	pc = f(ply, "TFALaserColor", vector_origin)
-	col.r = pc.x
-	col.g = pc.y
-	col.b = pc.z
+	if ply:IsPlayer() then
+		local f = ply.GetNW2Vector or ply.GetNWVector
+		pc = f(ply, "TFALaserColor", vector_origin)
+		col.r = pc.x
+		col.g = pc.y
+		col.b = pc.z
+	else
+		col.r = 255
+		col.g = 0
+		col.b = 0
+	end
 
 	if is_vm then
 		if not self:VMIV() then
