@@ -287,6 +287,10 @@ function SWEP:ViewModelDrawn()
 						model:SetLocalPos(vector_origin)
 						model:SetLocalAngles(angle_zero)
 					end
+
+					if self2.ViewModelFlip then
+						render.CullMode(MATERIAL_CULLMODE_CW)
+					end
 				elseif model:IsEffectActive(EF_BONEMERGE) then
 					model:RemoveEffects(EF_BONEMERGE)
 					model:SetParent(nil)
@@ -297,6 +301,10 @@ function SWEP:ViewModelDrawn()
 				model:DrawModel()
 				render.SetBlend(1)
 				render.SetColorModulation(1, 1, 1)
+
+				if v.bonemerge and self2.ViewModelFlip then
+					render.CullMode(MATERIAL_CULLMODE_CCW)
+				end
 
 				if (v.surpresslightning) then
 					render.SuppressEngineLighting(false)
