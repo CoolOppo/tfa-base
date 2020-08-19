@@ -76,3 +76,31 @@ end
 function SWEP:CanBePickedUpByNPCs()
 	return true
 end
+
+local sv_tfa_npc_randomize_atts = GetConVar("sv_tfa_npc_randomize_atts")
+
+function SWEP:Equip(...)
+	local owner = self:GetOwner()
+
+	if owner:IsNPC() then
+		self.IsNPCOwned = true
+
+		if not self.IsFirstEquip and sv_tfa_npc_randomize_atts:GetBool() then
+			self:RandomizeAttachments(true)
+		end
+
+		local function closure()
+			self:NPCWeaponThinkHook()
+		end
+
+		hook.Add("TFA_NPCWeaponThink", self, function()
+			ProtectedCall(closure)
+		end)
+	else
+		self.IsNPCOwned = false
+	end
+
+	self.IsFirstEquip = true
+	self.OwnerViewModel = nil
+	self:EquipTTT(...)
+end
