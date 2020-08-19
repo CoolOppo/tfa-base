@@ -528,24 +528,30 @@ do
 
 		if id ~= self2.Attachments[cat].sel then
 			att_old = TFA.Attachments.Atts[self2.Attachments[cat].atts[self2.Attachments[cat].sel] or -1]
+			local detach_status = att_old == nil
 
 			if att_old then
-				ProtectedCall(detach)
-				hook.Run("TFA_Attachment_Detached", self, attn_old, att_old, cat, id, force)
-			end
+				detach_status = ProtectedCall(detach)
 
-			att_neue = TFA.Attachments.Atts[self2.Attachments[cat].atts[id] or -1]
-			local attach_status = false
-
-			if att_neue then
-				attach_status = ProtectedCall(attach)
-
-				if attach_status then
-					hook.Run("TFA_Attachment_Attached", self, attn, att_neue, cat, id, force)
+				if detach_status then
+					hook.Run("TFA_Attachment_Detached", self, attn_old, att_old, cat, id, force)
 				end
 			end
 
-			if attach_status then
+			att_neue = TFA.Attachments.Atts[self2.Attachments[cat].atts[id] or -1]
+			local attach_status = att_neue == nil
+
+			if detach_status then
+				if att_neue then
+					attach_status = ProtectedCall(attach)
+
+					if attach_status then
+						hook.Run("TFA_Attachment_Attached", self, attn, att_neue, cat, id, force)
+					end
+				end
+			end
+
+			if detach_status and attach_status then
 				if id > 0 then
 					self2.Attachments[cat].sel = id
 				else
