@@ -320,7 +320,7 @@ function SWEP:Recoil(recoil, ifp)
 	local factor = 1 - self:GetStat("Primary.StaticRecoilFactor")
 	local punchY = kickY * factor
 
-	if ifp and isplayer then
+	if isplayer then
 		local maxdist = math.min(math.max(0, 89 + owner:EyeAngles().p - math.abs(owner:GetViewPunchAngles().p * 2)), 88.5)
 		local punchP = l_mathClamp(kickP, -maxdist, maxdist) * factor
 
