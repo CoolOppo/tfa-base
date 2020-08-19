@@ -163,21 +163,7 @@ end
 function SWEP:GetCapabilities()
 	local ht = self.DefaultHoldType or self.HoldType or "pistol"
 
-	if ht == "melee" or ht == "melee2" or ht == "knife" then
-		self.IsMelee = true
-	end
-
-	if SERVER and not self.HasSetOwnerCapabilities then
-		if self.IsMelee or self.IsKnife then
-			self:GetOwner():CapabilitiesRemove(CAP_WEAPON_RANGE_ATTACK1)
-			self:GetOwner():CapabilitiesRemove(CAP_INNATE_RANGE_ATTACK1)
-			self:GetOwner():CapabilitiesAdd(CAP_WEAPON_MELEE_ATTACK1)
-		end
-
-		self.HasSetOwnerCapabilities = true
-	end
-
-	if self.IsMelee or self.IsKnife then
+	if ht == "melee" or ht == "melee2" or ht == "knife" or self.IsKnife then
 		return CAP_WEAPON_MELEE_ATTACK1
 	else
 		return bit.bor(CAP_WEAPON_RANGE_ATTACK1, CAP_INNATE_RANGE_ATTACK1)
