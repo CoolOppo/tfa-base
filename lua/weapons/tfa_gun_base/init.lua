@@ -52,6 +52,8 @@ SWEP.Weight = 60 -- Decides whether we should switch from/to this
 SWEP.AutoSwitchTo = true -- Auto switch to
 SWEP.AutoSwitchFrom = true -- Auto switch from
 
+local sv_tfa_npc_burst = GetConVar("sv_tfa_npc_burst")
+
 function SWEP:NPCShoot_Primary()
 	if self:Clip1() <= 0 and self:GetMaxClip1() > 0 then
 		self:GetOwner():SetSchedule(SCHED_RELOAD)
@@ -62,11 +64,26 @@ function SWEP:NPCShoot_Primary()
 end
 
 function SWEP:GetNPCRestTimes()
-	return self:GetFireDelay(), self:GetFireDelay() * 2
+	if sv_tfa_npc_burst:GetBool() or self:GetStat("NPCBurstOverride", false) then
+		return self:GetStat("NPCMinRest", self:GetFireDelay()), self:GetStat("NPCMaxRest", self:GetFireDelay() * 2)
+	end
+
+	return 0, 0
 end
 
 function SWEP:GetNPCBurstSettings()
-	return 1, 6, self:GetFireDelay() * self:GetMaxBurst()
+	if sv_tfa_npc_burst:GetBool() or self:GetStat("NPCBurstOverride", false) then
+		return self:GetStat("NPCMinBurst", 1), self:GetStat("NPCMinBurst", 6), self:GetStat("NPCBurstDelay", self:GetFireDelay() * self:GetMaxBurst())
+	end
+
+	if self:GetMaxClip1() > 0 then
+		local burst = self:GetMaxBurst()
+		local value = math.ceil(self:Clip1() / burst)
+
+		return value, value, self:GetFireDelay() * burst
+	else
+		return 1, 1, self:GetFireDelay() * self:GetMaxBurst()
+	end
 end
 
 function SWEP:GetNPCBulletSpread()

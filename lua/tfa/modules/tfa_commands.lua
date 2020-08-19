@@ -232,6 +232,10 @@ if GetConVar("sv_tfa_bullet_doordestruction_keep") == nil then
 	CreateReplConVar("sv_tfa_bullet_doordestruction_keep", "0", "Don't shoot door off hinges")
 end
 
+if GetConVar("sv_tfa_npc_burst") == nil then
+	CreateReplConVar("sv_tfa_npc_burst", "0", "Whenever NPCs should fire in bursts like they do with HL2 weapons.")
+end
+
 if GetConVar("sv_tfa_bullet_ricochet") == nil then
 	CreateReplConVar("sv_tfa_bullet_ricochet", "0", "Allow bullet ricochet?")
 end
