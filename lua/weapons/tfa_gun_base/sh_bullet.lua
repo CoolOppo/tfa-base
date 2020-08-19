@@ -161,7 +161,6 @@ function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet,
 
 			ang:RotateAroundAxis(ang:Right(), -aimcone / 2 + math.Rand(0, aimcone))
 			ang:RotateAroundAxis(ang:Up(), -aimcone / 2 + math.Rand(0, aimcone))
-			local dir = ang:Forward()
 
 			ent:SetPos(self:GetOwner():GetShootPos())
 			ent:SetOwner(self:GetOwner())
@@ -174,11 +173,15 @@ function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet,
 			end
 
 			ent:Spawn()
-			ent:SetVelocity(dir * self:GetStat("Primary.ProjectileVelocity"))
+
+			local dir = ang:Forward()
+			dir:Mul(self:GetStat("Primary.ProjectileVelocity"))
+
+			ent:SetVelocity(dir)
 			local phys = ent:GetPhysicsObject()
 
 			if IsValid(phys) then
-				phys:SetVelocity(dir * self:GetStat("Primary.ProjectileVelocity"))
+				phys:SetVelocity(dir)
 			end
 
 			if self.ProjectileModel then
