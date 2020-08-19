@@ -535,16 +535,22 @@ do
 			end
 
 			att_neue = TFA.Attachments.Atts[self2.Attachments[cat].atts[id] or -1]
+			local attach_status = false
 
 			if att_neue then
-				ProtectedCall(attach)
-				hook.Run("TFA_Attachment_Attached", self, attn, att_neue, cat, id, force)
+				attach_status = ProtectedCall(attach)
+
+				if attach_status then
+					hook.Run("TFA_Attachment_Attached", self, attn, att_neue, cat, id, force)
+				end
 			end
 
-			if id > 0 then
-				self2.Attachments[cat].sel = id
-			else
-				self2.Attachments[cat].sel = nil
+			if attach_status then
+				if id > 0 then
+					self2.Attachments[cat].sel = id
+				else
+					self2.Attachments[cat].sel = nil
+				end
 			end
 		end
 
