@@ -822,7 +822,7 @@ function SWEP:Think2(is_working_out_prediction_errors)
 	if not is_working_out_prediction_errors then
 		if self2.LuaShellRequestTime > 0 and ct > self2.LuaShellRequestTime then
 			self2.LuaShellRequestTime = -1
-			self:MakeShell()
+			self2.MakeShell(self)
 		end
 
 		if not self2.HasInitialized then
@@ -830,25 +830,28 @@ function SWEP:Think2(is_working_out_prediction_errors)
 		end
 
 		if not self2.HasDetectedValidAnimations then
-			self:CacheAnimations()
-			self:ChooseDrawAnim()
+			self2.CacheAnimations(self)
+			self2.ChooseDrawAnim(self)
 		end
 
-		self:InitAttachments()
-		self:ProcessBodygroups()
-		self:ProcessEvents()
-		self:ProcessFireMode()
-		self:ProcessHoldType()
-		self:ReloadCV()
-		self:IronSightSounds()
-		self:ProcessLoopSound()
+		self2.InitAttachments(self)
+	end
+
+	self2.ProcessBodygroups(self)
+	self2.ProcessEvents(self)
+
+	if not is_working_out_prediction_errors then
+		self2.ProcessFireMode(self)
+		self2.ProcessHoldType(self)
+		self2.ReloadCV(self)
+		self2.IronSightSounds(self)
+		self2.ProcessLoopSound(self)
 	end
 
 	--if is_working_out_prediction_errors then return end
 
 	self2.ProcessStatus(self)
-
-	self:ProcessLoopFire()
+	self2.ProcessLoopFire(self)
 
 	if ct > self:GetNextIdleAnim() and (TFA.Enum.ReadyStatus[stat] or (stat == TFA.Enum.STATUS_SHOOTING and TFA.Enum.ShootLoopingStatus[self:GetShootStatus()])) then
 		self:ChooseIdleAnim()
