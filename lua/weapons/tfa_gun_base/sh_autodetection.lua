@@ -104,9 +104,9 @@ function SWEP:AutoDetectRange()
 		local force = (self2.Primary_TFA.Force or 0) * m
 
 		self2.Primary_TFA.FalloffByMeter = force / self2.Primary_TFA.Damage * 1.5
-		self2.Primary_TFA.MinRangeStartFalloff = math.sqrt(self2.Primary_TFA.Damage / 2) * (4 / 0.0254)
+		self2.Primary_TFA.MinRangeStartFalloff = math.sqrt(self2.Primary_TFA.Damage / 2) * 4
 		self2.Primary_TFA.MaxFalloff = self2.Primary_TFA.Damage - math.max(self2.Primary_TFA.Damage * 0.1, 1)
-		self2.Primary_TFA.Range = self2.Primary_TFA.MinRangeStartFalloff + self2.Primary_TFA.MaxFalloff * (self2.Primary_TFA.FalloffByMeter / 0.0254)
+		self2.Primary_TFA.Range = self2.Primary_TFA.MinRangeStartFalloff / 0.0254 + self2.Primary_TFA.MaxFalloff * (self2.Primary_TFA.FalloffByMeter / 0.0254)
 
 		self2.Primary_TFA.RangeFalloff = 0.5 -- compatibility
 

@@ -545,7 +545,7 @@ local MAX_CORRECTION_ITERATIONS = 20
 
 function SWEP.MainBullet:CalculateFalloff(HitPos)
 	local dist = self.InitialPosition:Distance(HitPos)
-	local minfalloff = self.Wep:GetStat("Primary.MinRangeStartFalloff")
+	local minfalloff = self.Wep:GetStat("Primary.MinRangeStartFalloff") / 0.0254
 	if dist <= minfalloff then return 0 end
 	return l_mathClamp((dist - minfalloff) * (self.Wep:GetStat("Primary.FalloffByMeter") * 0.0254), 0, self.Wep:GetStat("Primary.MaxFalloff"))
 end
