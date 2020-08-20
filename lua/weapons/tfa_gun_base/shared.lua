@@ -1225,7 +1225,7 @@ function SWEP:PrimaryAttack()
 		self:SetShootStatus(TFA.Enum.SHOOT_IDLE)
 	end
 
-	if self2.CanBeSilenced and self:GetOwner():KeyDown(IN_USE) and (SERVER or not sp) then
+	if self2.CanBeSilenced and (ply.KeyDown and ply:KeyDown(IN_USE)) and (SERVER or not sp) then
 		self:ChooseSilenceAnim(not self:GetSilenced())
 		local _, tanim = self:SetStatus(TFA.Enum.STATUS_SILENCER_TOGGLE)
 		self:SetStatusEnd(l_CT() + self:GetActivityLength(tanim, true))
