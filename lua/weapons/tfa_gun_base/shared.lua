@@ -819,6 +819,10 @@ function SWEP:Think2(is_working_out_prediction_errors)
 
 	--if is_working_out_prediction_errors then return end
 
+	if not sp or SERVER then
+		self2.IronSights(self)
+	end
+
 	self2.ProcessStatus(self)
 	self2.ProcessLoopFire(self)
 	stat = self2.GetStatus(self)
@@ -897,8 +901,7 @@ function SWEP:IronSights()
 	end
 
 	-- self:SetNW2Float("LastSightsStatusCached", false)
-
-	local issighting_tmp = issighting
+	local userstatus = issighting
 
 	if current_iron_sights ~= issighting then
 		self:SetIronSightsRaw(issighting)
@@ -966,8 +969,7 @@ function SWEP:IronSights()
 
 	self:SetNW2Bool("IronSightsOldFinal", issighting)
 
-	self2._issighting_tmp = issighting_tmp
-	return issighting_tmp, issprinting, iswalking, self:GetCustomizing()
+	return userstatus, issighting
 end
 
 function SWEP:GetIronSights()

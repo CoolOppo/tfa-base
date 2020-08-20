@@ -155,7 +155,10 @@ local ct, stat, statend, finalstat, waittime, lact
 function SWEP:ProcessStatus()
 	local self2 = self:GetTable()
 
-	is, spr, wlk, cst = self:IronSights()
+	is = self2.GetIronSightsRaw(self)
+	spr = self2.GetSprinting(self)
+	wlk = self2.GetWalking(self)
+	cst = self2.GetCustomizing(self)
 
 	local ply = self:GetOwner()
 	local isplayer = ply:IsPlayer()
