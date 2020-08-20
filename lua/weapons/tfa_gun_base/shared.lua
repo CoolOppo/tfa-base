@@ -828,10 +828,6 @@ function SWEP:Think2(is_working_out_prediction_errors)
 	end
 end
 
-SWEP.spr_old = false
-SWEP.is_old = false
-SWEP.cust_old = false
-
 function SWEP:IronSights()
 	local self2 = self:GetTable()
 	local owent = self:GetOwner()
@@ -844,8 +840,7 @@ function SWEP:IronSights()
 	local issprinting = self:GetSprinting()
 	local iswalking = self:GetWalking()
 
-	self2.is_old = self:GetIronSightsRaw()
-	self2.cust_old = self:GetCustomizing()
+	local current_iron_sights = self:GetIronSightsRaw()
 	local isplayer = owent:IsPlayer()
 
 	local ironsights_toggle_cvar = (isplayer and owent:GetInfoNum("cl_tfa_ironsights_toggle", 0) or 0) == 1
@@ -896,37 +891,29 @@ function SWEP:IronSights()
 		end
 	end
 
-	if issighting and not isplayer and owent:InVehicle() and not owent:GetAllowWeaponsInVehicle() then
+	if issighting and isplayer and owent:InVehicle() and not owent:GetAllowWeaponsInVehicle() then
 		issighting = false
 		self:SetIronSightsRaw(false)
 	end
 
-	self:SetNW2Float("LastSightsStatusCached", false)
-
-	if ( issighting or issprinting or stat ~= TFA.Enum.STATUS_IDLE ) and self:GetCustomizing() then
-		--if gui then
-		--  gui.EnableScreenClicker(false)
-		--end
-		self2.FuckOffInspectionOnNextFrame = true
-	end
-
-	if (self2.is_old ~= issighting) then
-		self:SetIronSightsRaw(issighting)
-	end
+	-- self:SetNW2Float("LastSightsStatusCached", false)
 
 	local issighting_tmp = issighting
+
+	if current_iron_sights ~= issighting then
+		self:SetIronSightsRaw(issighting)
+	end
 
 	if issprinting then
 		issighting = false
 	end
 
-	if not TFA.Enum.IronStatus[stat] then
+	if issighting and not TFA.Enum.IronStatus[stat] then
 		issighting = false
 	end
 
-	if self:IsSafety() then
+	if issighting and self:IsSafety() then
 		issighting = false
-		--issprinting = true
 	end
 
 	if self2.GetStat(self, "BoltAction") or self2.GetStat(self, "BoltAction_Forced") then
@@ -945,40 +932,51 @@ function SWEP:IronSights()
 		end
 	end
 
-	if (self2.is_old_final ~= issighting) and self2.Sights_Mode == TFA.Enum.LOCOMOTION_LUA then--and stat == TFA.Enum.STATUS_IDLE then
+	local old_iron_sights_final = self:GetNW2Bool("IronSightsOldFinal", false)
+
+	if old_iron_sights_final ~= issighting and self2.Sights_Mode == TFA.Enum.LOCOMOTION_LUA then -- and stat == TFA.Enum.STATUS_IDLE then
 		self:SetNextIdleAnim(-1)
 	end
 
-	local smi = ( self2.Sights_Mode == TFA.Enum.LOCOMOTION_HYBRID or self2.Sights_Mode == TFA.Enum.LOCOMOTION_ANI ) and self2.is_old_final ~= issighting
-	local spi = ( self2.Sprint_Mode == TFA.Enum.LOCOMOTION_HYBRID or self2.Sprint_Mode == TFA.Enum.LOCOMOTION_ANI ) and self2.sprinting_updated
-	local wmi = ( self2.Walk_Mode == TFA.Enum.LOCOMOTION_HYBRID or self2.Walk_Mode == TFA.Enum.LOCOMOTION_ANI ) and self2.walking_updated
-	local cmi = ( self2.Customize_Mode == TFA.Enum.LOCOMOTION_HYBRID or self2.Customize_Mode == TFA.Enum.LOCOMOTION_ANI ) and self2.customizing_updated == ct
+	local smi = (self2.Sights_Mode == TFA.Enum.LOCOMOTION_HYBRID or self2.Sights_Mode == TFA.Enum.LOCOMOTION_ANI)
+		and old_iron_sights_final ~= issighting
 
-	if ( smi or spi or wmi or cmi ) and ( self:GetStatus() == TFA.Enum.STATUS_IDLE or ( self:GetStatus() == TFA.Enum.STATUS_SHOOTING and self:CanInterruptShooting() ) ) and not self:GetShotgunCancel() then
-		local toggle_is = self2.is_old ~= issighting
+	local spi = (self2.Sprint_Mode == TFA.Enum.LOCOMOTION_HYBRID or self2.Sprint_Mode == TFA.Enum.LOCOMOTION_ANI)
+		and self2.sprinting_updated
+
+	local wmi = (self2.Walk_Mode == TFA.Enum.LOCOMOTION_HYBRID or self2.Walk_Mode == TFA.Enum.LOCOMOTION_ANI)
+		and self2.walking_updated
+
+	local cmi = (self2.Customize_Mode == TFA.Enum.LOCOMOTION_HYBRID or self2.Customize_Mode == TFA.Enum.LOCOMOTION_ANI)
+		and self2.customizing_updated == ct
+
+	if (smi or spi or wmi or cmi) and (self:GetStatus() == TFA.Enum.STATUS_IDLE or (self:GetStatus() == TFA.Enum.STATUS_SHOOTING and self:CanInterruptShooting())) and not self:GetShotgunCancel() then
+		local toggle_is = current_iron_sights ~= issighting
 
 		if issighting and self:GetSprinting() then
 			toggle_is = true
 		end
 
-		local success,_ = self:Locomote(toggle_is and (self2.Sights_Mode ~= TFA.Enum.LOCOMOTION_LUA), issighting, spi, issprinting, wmi, iswalking, cmi, self:GetCustomizing())
+		local success, _ = self:Locomote(toggle_is and (self2.Sights_Mode ~= TFA.Enum.LOCOMOTION_LUA), issighting, spi, issprinting, wmi, iswalking, cmi, self:GetCustomizing())
 
-		if ( not success ) and ( ( toggle_is and smi ) or spi or wmi or cmi ) then
+		if not success and (toggle_is and smi or spi or wmi or cmi) then
 			self:SetNextIdleAnim(-1)
 		end
 	end
 
-	self2.is_old_final = issighting
+	self:SetNW2Bool("IronSightsOldFinal", issighting)
 
 	self2._issighting_tmp = issighting_tmp
 	return issighting_tmp, issprinting, iswalking, self:GetCustomizing()
 end
 
-function SWEP:GetIronSights(ignorestatus)
-	local self2 = self:GetTable()
+function SWEP:GetIronSights()
+	-- Is this code supposed to do something other than duplicating code of function above?
+	--[==[local self2 = self:GetTable()
 
 	if ignorestatus or not self:GetNW2Bool("LastSightsStatusCached", false) then
-		local issighting = self:GetIronSightsRaw()
+		-- local issighting = self:GetIronSightsRaw()
+		local issighting = self:GetNW2Bool("IronSightsOldFinal")
 		local issprinting = self:GetSprinting()
 		local stat = self:GetStatus()
 
@@ -1022,7 +1020,9 @@ function SWEP:GetIronSights(ignorestatus)
 		return issighting
 	end
 
-	return self:GetNW2Bool("LastSightsStatus", false)
+	return self:GetNW2Bool("LastSightsStatus", false)]==]
+
+	return self:GetNW2Bool("IronSightsOldFinal")
 end
 
 function SWEP:GetIronSightsDirect()
