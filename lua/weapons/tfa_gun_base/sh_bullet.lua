@@ -241,8 +241,8 @@ function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet,
 
 		dmginfo:SetInflictor(self)
 
-		if self:GetStat("Primary.FalloffMetricBased") then
-			dmginfo:SetDamage(dmginfo:GetDamage() - self.MainBullet:CalculateFalloff(trace.HitPos))
+		if self:GetStat("Primary.FalloffMetricBased") or self.Primary.RangeFalloffLUTBuilt then
+			dmginfo:SetDamage(dmginfo:GetDamage() * self.MainBullet:CalculateFalloff(trace.HitPos))
 		end
 
 		if self.MainBullet.Callback2 then
@@ -530,7 +530,7 @@ function SWEP.MainBullet:CalculateFalloff(HitPos)
 	end
 
 	local minfalloff = self.Wep:GetStat("Primary.MinRangeStartFalloff") / 0.0254
-	if dist <= minfalloff then return 0 end
+	if dist <= minfalloff then return 1 end
 	return (self.Wep:GetStat("Primary.Damage") - l_mathClamp((dist - minfalloff) * (self.Wep:GetStat("Primary.FalloffByMeter") * 0.0254), 0, self.Wep:GetStat("Primary.MaxFalloff"))) / self.Wep:GetStat("Primary.Damage")
 end
 
