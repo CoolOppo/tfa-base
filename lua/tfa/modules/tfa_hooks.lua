@@ -210,38 +210,13 @@ if CLIENT then
 		end
 
 		if kd ~= kd_old and kd and cv_cm:GetBool() and not plyv:KeyDown(IN_USE) then
-			if sp then
-				RunConsoleCommand("impulse", tostring(TFA.INSPECTION_IMPULSE))
-			else
-				kd_switched = true
-			end
+			RunConsoleCommand("impulse", tostring(TFA.INSPECTION_IMPULSE))
 		end
 
 		kd_old = kd
 	end
 
-	local function StartCommand(ply, cusercmd)
-		local wepv = ply:GetActiveWeapon()
-		if not IsValid(wepv) or not wepv.ToggleInspect then return end
-
-		if kd_switched then
-			cusercmd:SetImpulse(TFA.INSPECTION_IMPULSE)
-		end
-	end
-
-	if sp then
-		local function ShareIfYouDontThink()
-			local ply = LocalPlayer()
-			if not IsValid(ply) then return end
-			local wep = ply:GetActiveWeapon()
-			if not IsValid(wep) or not wep.ToggleInspect then return end
-			TFAKPThink(ply, wep)
-		end
-
-		hook.Add("Think", "TFAInspectionMenu", ShareIfYouDontThink)
-	else
-		hook.Add("StartCommand", "TFAInspectionMenu", StartCommand)
-	end
+	hook.Add("Think", "TFAInspectionMenu", ShareIfYouDontThink)
 end
 
 local function FinishMove(ply, cmovedata)
