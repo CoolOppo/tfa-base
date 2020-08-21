@@ -1079,6 +1079,8 @@ function SWEP:DoDrawCrosshair()
 		x, y = pos.x, pos.y
 	end
 
+	TFA.LastCrosshairPosX, TFA.LastCrosshairPosY = x, y
+
 	local v = hook.Run("TFA_DrawCrosshair", self, x, y)
 
 	if v ~= nil then
