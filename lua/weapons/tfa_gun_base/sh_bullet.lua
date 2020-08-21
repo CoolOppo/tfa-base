@@ -51,45 +51,6 @@ local function BallisticFirebullet(ply, bul, ovr)
 	end
 end
 
-local function FinishMove(self)
-	if not IsFirstTimePredicted() then return end
-	local data = self.TFA_BulletEvents
-
-	if data and #data ~= 0 then
-		self:LagCompensation(true)
-
-		for _, event in ipairs(data) do
-			event(self)
-		end
-
-		self:LagCompensation(false)
-
-		self.TFA_BulletEvents = nil
-	end
-end
-
-local function PlayerPostThink(self)
-	local data = self.TFA_BulletEvents
-
-	if data and #data ~= 0 then
-		self:LagCompensation(true)
-
-		for _, event in ipairs(data) do
-			event(self)
-		end
-
-		self:LagCompensation(false)
-
-		self.TFA_BulletEvents = nil
-	end
-end
-
-if CLIENT then
-	hook.Add("FinishMove", "TFA.DelayedBulletEvents", FinishMove)
-else
-	hook.Add("PlayerPostThink", "TFA.DelayedBulletEvents", PlayerPostThink)
-end
-
 --[[
 Function Name:  ShootBulletInformation
 Syntax: self:ShootBulletInformation().
@@ -921,31 +882,11 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon, penetrated)
 	fx:SetRadius(bul.Damage / 32)
 	TFA.Effects.Create("tfa_penetrate", fx)
 
-	if IsValid(ply) then
-		if ply:IsPlayer() then
-			ply.TFA_BulletEvents = ply.TFA_BulletEvents or {}
-
-			table.insert(ply.TFA_BulletEvents, function()
-				if IsValid(ply) then
-					if cv_decalbul:GetBool() then
-						ply:FireBullets(decalbul)
-					end
-
-					BallisticFirebullet(ply, bul, true)
-				end
-			end)
-		else
-			timer.Simple(0, function()
-				if IsValid(ply) then
-					if cv_decalbul:GetBool() then
-						ply:FireBullets(decalbul)
-					end
-
-					BallisticFirebullet(ply, bul, true)
-				end
-			end)
-		end
+	if cv_decalbul:GetBool() then
+		ply:FireBullets(decalbul)
 	end
+
+	BallisticFirebullet(ply, bul, true)
 end
 
 local RicochetChanceEnum = {
@@ -996,22 +937,7 @@ function SWEP.MainBullet:Ricochet(ply, traceres, dmginfo, weapon)
 			TFA.Effects.Create("tfa_ricochet", fx)
 		end
 
-		if ply:IsPlayer() then
-			ply.TFA_BulletEvents = ply.TFA_BulletEvents or {}
-
-			table.insert(ply.TFA_BulletEvents, function()
-				if IsValid(ply) then
-					BallisticFirebullet(ply, ric, true)
-				end
-			end)
-		else
-			timer.Simple(0, function()
-				if IsValid(ply) then
-					BallisticFirebullet(ply, ric, true)
-				end
-			end)
-		end
-
+		BallisticFirebullet(ply, ric, true)
 
 		return true
 	end
