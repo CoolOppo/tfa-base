@@ -19,6 +19,9 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
+TFA.RangeFalloffLUTStep = 0.01
+TFA.RangeFalloffLUTStepInv = 1 / TFA.RangeFalloffLUTStep
+
 SWEP.AmmoRangeTable = {
 	["SniperPenetratedRound"] = 2,
 	["SniperPenetratedBullet"] = 2,
@@ -845,3 +848,72 @@ function SWEP:CheckVMSequence(seqname)
 
 	return self.VMSeqCache[mdl][seqname]
 end
+
+do
+	local function sorter(a, b)
+		return a.range < b.range
+	end
+
+	local function linear(a) return a end
+
+	function SWEP:BuildFalloffTable(input, step)
+		if step == nil then step = TFA.RangeFalloffLUTStep end
+
+		table.sort(input.lut, sorter)
+
+		if input.lut[1].range > 0 then
+			for i = #input.lut, 1, -1 do
+				input.lut[i + 1] = input.lut[i]
+			end
+
+			input.lut[1] = {range = 0, damage = 1}
+		end
+
+		local div = (input.units == "hammer" or input.units == "inches" or input.units == "inch" or input.units == "hu") and 1 or 0.0254
+
+		local build = {}
+		local minimal = input.lut[1].range
+		local maximal = input.lut[#input.lut].range
+		local delta = math.abs(maximal - minimal)
+		local fnrange = isfunction(input.range_func) and input.range_func or
+			input.range_func == "quintic" and TFA.Quintic or
+			input.range_func == "cubic" and TFA.Cubic or
+			input.range_func == "cosine" and TFA.Cosine or
+			input.range_func == "sinusine" and TFA.Sinusine or
+			linear
+
+		if input.bezier then
+			local build_range = {}
+			local build_damage = {}
+
+			for i, data in ipairs(input.lut) do
+				table.insert(build_range, data.range / div)
+				table.insert(build_damage, data.damage)
+			end
+
+			for i = 0, 1, step do
+				local value = fnrange(i)
+				table.insert(build, {TFA.tbezier(value, build_range), TFA.tbezier(value, build_damage)})
+			end
+		else
+			local current, next = input.lut[1], input.lut[2]
+			local nextindex = 1
+
+			for i = 0, 1, step do
+				local value = fnrange(i)
+				local interp = Lerp(value, minimal, maximal)
+
+				if next.range < interp then
+					nextindex = nextindex + 1
+					current, next = input.lut[nextindex], input.lut[nextindex + 1]
+				end
+
+				if not current or not next then break end -- safeguard
+				table.insert(build, {Lerp(value, current.range, next.range) / div, Lerp(value, current.damage, next.damage)})
+			end
+		end
+
+		return build
+	end
+end
+

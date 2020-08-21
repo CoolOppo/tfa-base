@@ -335,6 +335,10 @@ function SWEP:ClearStatCache(vn)
 		for k, v in pairs(temp) do
 			self2.Primary[k] = v
 		end
+
+		if self.Primary.RangeFalloffLUT then
+			self.Primary.RangeFalloffLUTBuilt = self:BuildFalloffTable(self.Primary.RangeFalloffLUT)
+		end
 	end
 
 	if vn == "Secondary" or not vn then

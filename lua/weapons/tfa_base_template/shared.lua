@@ -170,6 +170,31 @@ SWEP.Primary.FalloffByMeter = nil -- How much damage points will bullet loose wh
 SWEP.Primary.MinRangeStartFalloff = nil -- How long will bullet travel in Meters before starting to lose damage?
 SWEP.Primary.MaxFalloff = nil -- Maximal amount of damage to be lost
 
+--[[ -- without this table it will falloff to Metric or Legacy based range falloff
+SWEP.Primary.RangeFalloffLUT = {
+	bezier = true, -- Whenever to use Bezier or not to interpolate points?
+	-- you probably always want it to be set to true
+	range_func = "quintic", -- function to spline range
+	-- "linear" for linear splining.
+	-- Possible values are "quintic", "cubic", "cosine", "sinusine", "linear" or your own function
+	units = "meters", -- possible values are "inches", "inch", "hammer", "hu" (are all equal)
+	-- everything else is considered to be meters
+	lut = { -- providing zero point is not required
+		-- without zero point it is considered to be as {range = 0, damage = 1}
+		{range = 5, damage = 0.9},
+		{range = 12, damage = 0.8},
+		{range = 18, damage = 0.5},
+		{range = 24, damage = 0.2},
+		{range = 30, damage = 0.55},
+		{range = 38, damage = 0.76},
+		{range = 50, damage = 1},
+		{range = 52, damage = 0.96},
+		{range = 60, damage = 0.3},
+		{range = 70, damage = 0.1},
+	}
+}
+]]
+
 -- Penetration Related
 SWEP.MaxPenetrationCounter = 4 -- The maximum number of ricochets.  To prevent stack overflows.
 

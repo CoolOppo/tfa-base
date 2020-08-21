@@ -545,9 +545,32 @@ local MAX_CORRECTION_ITERATIONS = 20
 
 function SWEP.MainBullet:CalculateFalloff(HitPos)
 	local dist = self.InitialPosition:Distance(HitPos)
+
+	if self.Wep.Primary.RangeFalloffLUTBuilt then
+		local target = self.Wep.Primary.RangeFalloffLUTBuilt
+
+		if dist <= target[1][1] then
+			return target[1][2]
+		end
+
+		if dist >= target[#target][1] then
+			return target[#target][2]
+		end
+
+		for i = 1, #target - 1 do
+			local a, b = target[i], target[i + 1]
+
+			if a[1] <= dist and b[1] >= dist then
+				return Lerp((dist - a[1]) / (b[1] - a[1]), a[2], b[2])
+			end
+		end
+
+		return target[#target][2] -- wtf?
+	end
+
 	local minfalloff = self.Wep:GetStat("Primary.MinRangeStartFalloff") / 0.0254
 	if dist <= minfalloff then return 0 end
-	return l_mathClamp((dist - minfalloff) * (self.Wep:GetStat("Primary.FalloffByMeter") * 0.0254), 0, self.Wep:GetStat("Primary.MaxFalloff"))
+	return l_mathClamp((dist - minfalloff) * (self.Wep:GetStat("Primary.FalloffByMeter") * 0.0254), 0, self.Wep:GetStat("Primary.MaxFalloff")) / self.Wep:GetStat("Primary.Damage")
 end
 
 function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon, penetrated)
@@ -568,7 +591,7 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon, penetrated)
 	local hitent = traceres.Entity
 
 	if not self.HasAppliedRange then
-		if not weapon:GetStat("Primary.FalloffMetricBased") then
+		if not weapon:GetStat("Primary.FalloffMetricBased") and not weapon.Primary.RangeFalloffLUTBuilt then
 			local bulletdistance = traceres.HitPos:Distance(traceres.StartPos)
 			local damagescale = bulletdistance / weapon:GetStat("Primary.Range")
 			damagescale = l_mathClamp(damagescale - weapon:GetStat("Primary.RangeFalloff"), 0, 1)
@@ -586,7 +609,7 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon, penetrated)
 	end
 
 	if SERVER and develop:GetBool() and DLib and weapon:GetStat("Primary.FalloffMetricBased") then
-		DLib.debugoverlay.Text(traceres.HitPos + Vector(0, 0, 16), string.format('METRIC Damage falloff %.3f %.3f %.3f/%.3f', self.InitialPosition:Distance(traceres.HitPos), self:CalculateFalloff(traceres.HitPos), self.InitialDamage - self:CalculateFalloff(traceres.HitPos), self.Damage), 12)
+		DLib.debugoverlay.Text(traceres.HitPos + Vector(0, 0, 16), string.format('NEW Damage falloff %.3f %.3f %.3f/%.3f', self.InitialPosition:Distance(traceres.HitPos), self:CalculateFalloff(traceres.HitPos), self.InitialDamage * self:CalculateFalloff(traceres.HitPos), self.Damage), 12)
 	end
 
 	self:HandleDoor(ply, traceres, dmginfo, weapon)
@@ -810,14 +833,14 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon, penetrated)
 
 	local mfac = self.PenetrationPower / self.InitialPenetrationPower
 
-	if SERVER and develop:GetBool() and DLib and weapon:GetStat("Primary.FalloffMetricBased") then
-		DLib.debugoverlay.Text(traceres.HitPos + Vector(0, 0, 12), string.format('METRIC Damage falloff final %.3f %.3f %.3f %.3f', self.InitialPosition:Distance(traceres.HitPos), self:CalculateFalloff(traceres.HitPos), mfac * (self.InitialDamage - self:CalculateFalloff(traceres.HitPos)), mfac), 12)
+	if SERVER and develop:GetBool() and DLib and (weapon:GetStat("Primary.FalloffMetricBased") or weapon.Primary.RangeFalloffLUTBuilt ) then
+		DLib.debugoverlay.Text(traceres.HitPos + Vector(0, 0, 12), string.format('NEW Damage falloff final %.3f %.3f %.3f %.3f', self.InitialPosition:Distance(traceres.HitPos), self:CalculateFalloff(traceres.HitPos), mfac * self.InitialDamage * self:CalculateFalloff(traceres.HitPos), mfac), 12)
 	end
 
 	local Damage = self.InitialDamage * mfac
 
-	if weapon:GetStat("Primary.FalloffMetricBased") then
-		Damage = (self.InitialDamage - self:CalculateFalloff(realstartpos)) * mfac
+	if weapon:GetStat("Primary.FalloffMetricBased") or weapon.Primary.RangeFalloffLUTBuilt then
+		Damage = self.InitialDamage * self:CalculateFalloff(realstartpos) * mfac
 	end
 
 	local bul = {
@@ -857,8 +880,8 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon, penetrated)
 
 		dmginfo2:SetInflictor(IsValid(bul.Wep) and bul.Wep or IsValid(ply) and ply or Entity(0))
 
-		if IsValid(weapon) and weapon:GetStat("Primary.FalloffMetricBased") then
-			bul.Damage = (self.InitialDamage - self:CalculateFalloff(trace.HitPos)) * mfac
+		if IsValid(weapon) and (weapon:GetStat("Primary.FalloffMetricBased") or weapon.Primary.RangeFalloffLUTBuilt) then
+			bul.Damage = self.InitialDamage * self:CalculateFalloff(trace.HitPos) * mfac
 			dmginfo2:SetDamage(bul.Damage)
 		end
 

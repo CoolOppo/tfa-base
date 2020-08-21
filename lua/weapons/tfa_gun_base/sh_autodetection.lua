@@ -77,7 +77,7 @@ end
 
 function SWEP:AutoDetectRange()
 	local self2 = self:GetTable()
-	if self2.Primary_TFA.FalloffMetricBased then return end
+	if self2.Primary_TFA.FalloffMetricBased or self2.Primary_TFA.RangeFalloffLUT then return end
 
 	if self2.Primary_TFA.Range <= 0 and self2.Primary_TFA.RangeFalloff <= 0 or legacy_range_cv:GetBool() then
 		self2.Primary_TFA.FalloffMetricBased = true
