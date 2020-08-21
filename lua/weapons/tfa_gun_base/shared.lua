@@ -382,6 +382,8 @@ function SWEP:SetupDataTables()
 	self:NetworkVar("Int", 4, "ShootStatus")
 	self:NetworkVar("Entity", 0, "SwapTarget")
 	hook.Run("TFA_SetupDataTables", self)
+
+	self:NetworkVarNotify("Customizing", self.CustomizingUpdated)
 end
 
 --[[
@@ -1688,6 +1690,30 @@ SWEP.ToggleCustomize = SWEP.ToggleInspect
 
 function SWEP:GetIsInspecting()
 	return self:GetCustomizing()
+end
+
+function SWEP:CustomizingUpdated(_, old, new)
+	if old ~= new and self._inspect_hack ~= new then
+		self._inspect_hack = new
+
+		if new then
+			self:OnCustomizationOpen()
+		else
+			self:OnCustomizationClose()
+		end
+	end
+end
+
+function SWEP:OnCustomizationOpen()
+	-- override
+	-- example:
+	--[[
+		if CLIENT then surface.PlaySound("ui/buttonclickrelease.wav") end
+	]]
+end
+
+function SWEP:OnCustomizationClose()
+	-- override
 end
 
 function SWEP:EmitSoundNet(sound)
