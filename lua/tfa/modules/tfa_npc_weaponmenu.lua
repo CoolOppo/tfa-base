@@ -22,10 +22,14 @@
 -- AI Options
 if CLIENT then
 	hook.Add("PopulateMenuBar", "NPCOptions_MenuBar_TFA", function(menubarV)
-		local menuName = language.GetPhrase("menubar.npcs") == "menubar.npcs" and "NPCs" or "#menubar.npcs" -- chromium branch nonsense
-		local m = menubarV:AddOrGetMenu(menuName)
-		local wpns = m:AddSubMenu("TFA Weapon Override")
+		local m = menubarV:AddOrGetMenu("#menubar.npcs")
+		local wpns = m:AddSubMenu("#tfa.menubar.npcs.weapon")
 		wpns:SetDeleteSelf(false)
+
+		wpns:AddCVar("#menubar.npcs.defaultweapon", "gmod_npcweapon", "")
+		wpns:AddCVar("#menubar.npcs.noweapon", "gmod_npcweapon", "none")
+		wpns:AddSpacer()
+
 		local weaponCats = {}
 
 		for _, wep in pairs(weapons.GetList()) do
