@@ -814,7 +814,7 @@ end
 local penetration_hitmarker_cvar = GetConVar("sv_tfa_penetration_hitmarker")
 
 function SWEP:SendHitMarker(ply, traceres, dmginfo)
-	if not SERVER or not penetration_hitmarker_cvar:GetBool() then return end
+	if CLIENT or not penetration_hitmarker_cvar:GetBool() then return end
 	if not IsValid(ply) or not ply:IsPlayer() then return end
 
 	local hm3d = ply:GetInfoNum("cl_tfa_hud_hitmarker_3d_all", 0) > 0
@@ -828,7 +828,6 @@ function SWEP:SendHitMarker(ply, traceres, dmginfo)
 		net.Start("tfaHitmarker")
 		net.Send(ply)
 	end
-
 end
 
 SWEP.VMSeqCache = {}

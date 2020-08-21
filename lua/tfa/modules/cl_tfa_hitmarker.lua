@@ -29,16 +29,17 @@ local fadetimecvar = GetConVar("cl_tfa_hud_hitmarker_fadetime")
 local scalecvar = GetConVar("cl_tfa_hud_hitmarker_scale")
 local tricross_cvar = GetConVar("cl_tfa_hud_crosshair_triangular")
 
-local rcvar, gcvar, bcvar, acvar
-
-local w, h, pos, sprh
-local c = Color(255, 255, 255, 255)
+local rcvar = GetConVar("cl_tfa_hud_hitmarker_color_r")
+local gcvar = GetConVar("cl_tfa_hud_hitmarker_color_g")
+local bcvar = GetConVar("cl_tfa_hud_hitmarker_color_b")
+local acvar = GetConVar("cl_tfa_hud_hitmarker_color_a")
 
 net.Receive("tfaHitmarker", function()
 	if not enabledcvar:GetBool() then return end
 
-	local marker = {}
-	marker.time = CurTime()
+	local marker = {
+		time = RealTime()
+	}
 
 	table.insert(markers, marker)
 end)
@@ -46,9 +47,10 @@ end)
 net.Receive("tfaHitmarker3D", function()
 	if not enabledcvar:GetBool() then return end
 
-	local marker = {}
-	marker.pos = net.ReadVector()
-	marker.time = CurTime()
+	local marker = {
+		pos = net.ReadVector(),
+		time = RealTime()
+	}
 
 	table.insert(markers, marker)
 end)
@@ -59,48 +61,38 @@ local mat_triang = Material("vgui/tfa_hitmarker_triang.png", "smooth mips")
 hook.Add("HUDPaint", "tfaDrawHitmarker", function()
 	if not enabledcvar:GetBool() then return end
 
-	if not rcvar then
-		rcvar = GetConVar("cl_tfa_hud_hitmarker_color_r")
-	end
-
-	if not gcvar then
-		gcvar = GetConVar("cl_tfa_hud_hitmarker_color_g")
-	end
-
-	if not bcvar then
-		bcvar = GetConVar("cl_tfa_hud_hitmarker_color_b")
-	end
-
-	if not acvar then
-		acvar = GetConVar("cl_tfa_hud_hitmarker_color_a")
-	end
-
 	local solidtime = solidtimecvar:GetFloat()
 	local fadetime = math.max(fadetimecvar:GetFloat(), 0.001)
 
-	c.r = rcvar:GetFloat()
-	c.g = gcvar:GetFloat()
-	c.b = bcvar:GetFloat()
+	local r = rcvar:GetFloat()
+	local g = gcvar:GetFloat()
+	local b = bcvar:GetFloat()
+	local a = acvar:GetFloat()
 
-	w, h = ScrW(), ScrH()
-	sprh = math.floor((h / 1080) * 64 * scalecvar:GetFloat())
+	local w, h = ScrW(), ScrH()
+	local sprh = math.floor((h / 1080) * 64 * scalecvar:GetFloat())
+	local sprh2 = sprh / 2
+	local mX, mY = w / 2, h / 2
+	local ltime = RealTime()
 
 	for k, v in pairs(markers) do
 		if v.time then
-			local alpha = math.Clamp(v.time - CurTime() + solidtime + fadetime, 0, fadetime) / fadetime
-			c.a = acvar:GetFloat() * alpha
+			local alpha = math.Clamp(v.time - ltime + solidtime + fadetime, 0, fadetime) / fadetime
 
 			if alpha > 0 then
-				pos = {x = w * .5, y = h * .5}
+				local x, y = mX, mY
+				local visible = true
 
 				if v.pos then
-					pos = v.pos:ToScreen()
+					local pos = v.pos:ToScreen()
+					x, y = pos.x, pos.y
+					visible = pos.visible
 				end
 
-				if pos.visible then
-					surface.SetDrawColor(c)
+				if visible then
+					surface.SetDrawColor(r, g, b, a * alpha)
 					surface.SetMaterial(tricross_cvar:GetBool() and mat_triang or mat_regular)
-					surface.DrawTexturedRect(pos.x - sprh * .5, pos.y - sprh * .5, sprh, sprh)
+					surface.DrawTexturedRect(x - sprh2, y - sprh2, sprh, sprh)
 				end
 			else
 				markers[k] = nil
