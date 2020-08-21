@@ -309,7 +309,7 @@ function SWEP:CalculateViewModelOffset(delta)
 			target_ang.z = target_ang.z + vpa.r
 		else
 			target_ang.x = target_ang.x + self:GetNW2Float("ViewPunchP")
-			target_ang.x = target_ang.y + self:GetNW2Float("ViewPunchY")
+			target_ang.y = target_ang.y + self:GetNW2Float("ViewPunchY")
 		end
 	elseif not vmviewpunch_cv then
 		vmviewpunch_cv = GetConVar("cl_tfa_viewmodel_viewpunch")
