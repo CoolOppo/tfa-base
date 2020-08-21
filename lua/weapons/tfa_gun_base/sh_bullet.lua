@@ -531,7 +531,7 @@ function SWEP.MainBullet:CalculateFalloff(HitPos)
 
 	local minfalloff = self.Wep:GetStat("Primary.MinRangeStartFalloff") / 0.0254
 	if dist <= minfalloff then return 0 end
-	return l_mathClamp((dist - minfalloff) * (self.Wep:GetStat("Primary.FalloffByMeter") * 0.0254), 0, self.Wep:GetStat("Primary.MaxFalloff")) / self.Wep:GetStat("Primary.Damage")
+	return (self.Wep:GetStat("Primary.Damage") - l_mathClamp((dist - minfalloff) * (self.Wep:GetStat("Primary.FalloffByMeter") * 0.0254), 0, self.Wep:GetStat("Primary.MaxFalloff"))) / self.Wep:GetStat("Primary.Damage")
 end
 
 function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon, penetrated)
