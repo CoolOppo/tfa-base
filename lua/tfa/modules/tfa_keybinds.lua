@@ -183,18 +183,23 @@ end
 
 TFA.RegisterKeyBind({
 	bind = "bash",
-	onpress = function(plyv)
-		plyv:TFA_SetPerformAltAttack(true)
-	end,
-	onrelease = function(plyv)
-		plyv:TFA_SetPerformAltAttack(false)
-	end,
-	think = function(plyv)
-		local wepv = plyv:GetActiveWeapon()
 
-		if IsValid(wepv) and wepv.AltAttack then
-			wepv:AltAttack()
-		end
+	onpress = CLIENT and function(plyv)
+		if not plyv:IsValid() then return end
+
+		RunConsoleCommand("impulse", TFA.BASH_IMPULSE_STRING) -- idk
+	end,
+
+	onrelease = CLIENT and function(plyv)
+		if not plyv:IsValid() then return end
+
+		RunConsoleCommand("impulse", TFA.BASH_IMPULSE_STRING) -- idk
+	end,
+
+	think = CLIENT and function(plyv)
+		if not plyv:IsValid() then return end
+
+		RunConsoleCommand("impulse", TFA.BASH_IMPULSE_STRING) -- idk
 	end
 })
 
@@ -203,7 +208,7 @@ TFA.RegisterKeyBind({
 	onpress = CLIENT and function(plyv)
 		if not plyv:IsValid() then return end
 
-		plyv:ConCommand("impulse " .. TFA.INSPECTION_IMPULSE)
+		RunConsoleCommand("impulse", TFA.INSPECTION_IMPULSE_STRING)
 	end
 })
 
