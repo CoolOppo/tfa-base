@@ -224,6 +224,8 @@ if CLIENT then
 end
 
 local function FinishMove(ply, cmovedata)
+	if ply:InVehicle() and not ply:GetAllowWeaponsInVehicle() then return end
+
 	local wepv = ply:GetActiveWeapon()
 	if not IsValid(wepv) or not wepv.IsTFAWeapon then return end
 
@@ -235,8 +237,17 @@ local function FinishMove(ply, cmovedata)
 		wepv:ToggleInspect()
 	end
 
-	if cmovedata:GetImpulseCommand() == TFA.BASH_IMPULSE and wepv.AltAttack then
-		wepv:AltAttack()
+	local BashImpulse = cmovedata:GetImpulseCommand() == TFA.BASH_IMPULSE
+	wepv:SetNW2Bool("BashImpulse", BashImpulse)
+
+	if not sp or SERVER then
+		ply:TFA_SetZoomKeyDown(BashImpulse) -- this may or may not work
+	end
+
+	if BashImpulse then
+		if wepv.AltAttack then
+			wepv:AltAttack()
+		end
 	end
 end
 
@@ -291,8 +302,15 @@ hook.Add("PlayerTick", "TFABase_KD", KD_AmmoCheck)
 
 if CLIENT then
 	local function TFABashZoom(plyv, cusercmd)
-		if plyv:GetInfoNum("cl_tfa_keys_bash", 0) ~= 0 then return end
 		if plyv:InVehicle() and not plyv:GetAllowWeaponsInVehicle() then return end
+
+		if plyv:GetInfoNum("cl_tfa_keys_bash", 0) ~= 0 then
+			if plyv.tfa_bash_hack then
+				cusercmd:SetImpulse(TFA.BASH_IMPULSE)
+			end
+
+			return
+		end
 
 		local zoom = cusercmd:KeyDown(IN_ZOOM)
 
@@ -307,6 +325,17 @@ if CLIENT then
 	end
 
 	hook.Add("StartCommand", "TFABashZoom", TFABashZoom)
+elseif sp then
+	local function TFABash(plyv, cusercmd)
+		if plyv:GetInfoNum("cl_tfa_keys_bash", 0) == 0 then return end
+		if plyv:InVehicle() and not plyv:GetAllowWeaponsInVehicle() then return end
+
+		if ply:TFA_ZoomKeyDown() then
+			cusercmd:SetImpulse(TFA.BASH_IMPULSE)
+		end
+	end
+
+	hook.Add("StartCommand", "TFABash", TFABash)
 end
 
 --[[
@@ -333,7 +362,6 @@ hook.Add("SetupMove", "tfa_setupmove", function(plyv, movedata, commanddata)
 	local wepv = plyv:GetActiveWeapon()
 
 	if IsValid(wepv) and wepv.IsTFAWeapon then
-		wepv.IronSightsProgress = wepv:GetNW2Float("IronSightsProgress") or 0
 		speedmult = Lerp(wepv:GetNW2Float("IronSightsProgress"), wepv:GetStat("MoveSpeed"), wepv:GetStat("IronSightsMoveSpeed"))
 		movedata:SetMaxClientSpeed(movedata:GetMaxClientSpeed() * speedmult)
 		commanddata:SetForwardMove(commanddata:GetForwardMove() * speedmult)

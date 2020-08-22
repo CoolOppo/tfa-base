@@ -404,7 +404,7 @@ function SWEP:Think2(...)
 	if self.CanBlock then
 		local stat = self:GetStatus()
 
-		if self:GetOwner():TFA_PerformAltAttack() and TFA.Enum.ReadyStatus[stat] and not self:GetOwner():KeyDown(IN_USE) then
+		if self:GetNW2Bool("BashImpulse") and TFA.Enum.ReadyStatus[stat] and not self:GetOwner():KeyDown(IN_USE) then
 			self:SetStatus(TFA.GetStatus("blocking"))
 
 			if self.BlockAnimation["in"] then
@@ -415,7 +415,7 @@ function SWEP:Think2(...)
 
 			self:SetStatusEnd(math.huge)
 			self.BlockStart = CurTime()
-		elseif stat == TFA.GetStatus("blocking") and not self:GetOwner():TFA_PerformAltAttack() then
+		elseif stat == TFA.GetStatus("blocking") and not self:GetNW2Bool("BashImpulse") then
 			local _, tanim
 			self:SetStatus(TFA.GetStatus("blocking_end"))
 

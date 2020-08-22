@@ -181,25 +181,33 @@ end
 
 -- Default keybinds
 
+local reg_bash = CLIENT
+
+if sp then
+	reg_bash = SERVER
+end
+
 TFA.RegisterKeyBind({
 	bind = "bash",
 
-	onpress = CLIENT and function(plyv)
+	onpress = reg_bash and function(plyv)
 		if not plyv:IsValid() then return end
 
-		RunConsoleCommand("impulse", TFA.BASH_IMPULSE_STRING) -- idk
+		if CLIENT then
+			plyv.tfa_bash_hack = true
+		else
+			plyv:TFA_SetZoomKeyDown(true)
+		end
 	end,
 
-	onrelease = CLIENT and function(plyv)
+	onrelease = reg_bash and function(plyv)
 		if not plyv:IsValid() then return end
 
-		RunConsoleCommand("impulse", TFA.BASH_IMPULSE_STRING) -- idk
-	end,
-
-	think = CLIENT and function(plyv)
-		if not plyv:IsValid() then return end
-
-		RunConsoleCommand("impulse", TFA.BASH_IMPULSE_STRING) -- idk
+		if CLIENT then
+			plyv.tfa_bash_hack = false
+		else
+			plyv:TFA_SetZoomKeyDown(false)
+		end
 	end
 })
 
