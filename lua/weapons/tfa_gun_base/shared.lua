@@ -1727,6 +1727,7 @@ function SWEP:EmitSoundNet(sound)
 
 	local filter = RecipientFilter()
 	filter:AddPAS(self:GetPos())
+
 	if IsValid(self:GetOwner()) then
 		filter:RemovePlayer(self:GetOwner())
 	end

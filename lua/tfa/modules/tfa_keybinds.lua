@@ -184,10 +184,10 @@ end
 TFA.RegisterKeyBind({
 	bind = "bash",
 	onpress = function(plyv)
-		plyv:TFA_SetZoomKeyDown(true)
+		plyv:TFA_SetPerformAltAttack(true)
 	end,
 	onrelease = function(plyv)
-		plyv:TFA_SetZoomKeyDown(false)
+		plyv:TFA_SetPerformAltAttack(false)
 	end,
 	think = function(plyv)
 		local wepv = plyv:GetActiveWeapon()

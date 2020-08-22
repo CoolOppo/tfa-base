@@ -20,6 +20,7 @@
 -- SOFTWARE.
 
 TFA.INSPECTION_IMPULSE = 148
+TFA.BASH_IMPULSE = 149
 
 local sp = game.SinglePlayer()
 
@@ -221,15 +222,19 @@ end
 
 local function FinishMove(ply, cmovedata)
 	local wepv = ply:GetActiveWeapon()
-	if not IsValid(wepv) or not wepv.ToggleInspect then return end
+	if not IsValid(wepv) or not wepv.IsTFAWeapon then return end
 
 	if not sp and CLIENT and IsFirstTimePredicted() then
 		TFAKPThink(ply, wepv)
 	end
 
-	if cmovedata:GetImpulseCommand() ~= TFA.INSPECTION_IMPULSE then return end
+	if cmovedata:GetImpulseCommand() == TFA.INSPECTION_IMPULSE then
+		wepv:ToggleInspect()
+	end
 
-	wepv:ToggleInspect()
+	if cmovedata:GetImpulseCommand() == TFA.BASH_IMPULSE and wepv.AltAttack then
+		wepv:AltAttack()
+	end
 end
 
 hook.Add("FinishMove", "TFAInspectionMenu", FinishMove)
@@ -281,30 +286,25 @@ end
 
 hook.Add("PlayerTick", "TFABase_KD", KD_AmmoCheck)
 
-local function SC_PBZ(plyv, ucmd)
-	if not IsFirstTimePredicted() then return end
+if CLIENT then
+	local function TFABashZoom(plyv, cusercmd)
+		if plyv:GetInfoNum("cl_tfa_keys_bash", 0) ~= 0 then return end
+		if plyv:InVehicle() and not plyv:GetAllowWeaponsInVehicle() then return end
 
-	if plyv:GetInfoNum("cl_tfa_keys_bash", 0) > 0 then return end
-	if plyv:InVehicle() and not plyv:GetAllowWeaponsInVehicle() then return end
+		local zoom = cusercmd:KeyDown(IN_ZOOM)
 
-	plyv:TFA_SetZoomKeyDown(ucmd:KeyDown(IN_ZOOM))
+		if zoom then
+			local wepv = plyv:GetActiveWeapon()
 
-	if ucmd:KeyDown(IN_ZOOM) then
-		local wepv = plyv:GetActiveWeapon()
-
-		if IsValid(wepv) and wepv.AltAttack then
-			wepv:AltAttack()
-
-			if SERVER then
-				wepv:CallOnClient("AltAttack", "")
+			if IsValid(wepv) and wepv.IsTFAWeapon and wepv.AltAttack then
+				cusercmd:RemoveKey(IN_ZOOM)
+				cusercmd:SetImpulse(TFA.BASH_IMPULSE)
 			end
-
-			ucmd:RemoveKey(IN_ZOOM)
 		end
 	end
-end
 
-hook.Add("StartCommand", "TFABashZoom", SC_PBZ)
+	hook.Add("StartCommand", "TFABashZoom", TFABashZoom)
+end
 
 --[[
 Hook: PlayerSpawn

@@ -32,16 +32,16 @@ end
 local PLAYER = FindMetaTable("Player")
 
 if PLAYER then
-	function PLAYER:TFA_ZoomKeyDown()
+	function PLAYER:TFA_PerformAltAttack()
 		if not IsValid(self) then return false end
 
-		return self:GetNW2Bool("TFA_ZoomKeyDown", false)
+		return self:GetNW2Bool("TFA_PerformAltAttack", false)
 	end
 
-	function PLAYER:TFA_SetZoomKeyDown(isdown)
+	function PLAYER:TFA_SetPerformAltAttack(isdown)
 		if not IsValid(self) then return end
 
-		self:SetNW2Bool("TFA_ZoomKeyDown", isdown)
+		self:SetNW2Bool("TFA_PerformAltAttack", isdown)
 	end
 else
 	print("[TFA Base] Can't find player metatable!")
