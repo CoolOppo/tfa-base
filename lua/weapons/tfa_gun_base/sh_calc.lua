@@ -48,7 +48,7 @@ end
 local sprint_cv = GetConVar("sv_tfa_sprint_enabled")
 
 function SWEP:TFAFinishMove(ply, velocity, movedata)
-	local ft = TFA.FrameTime()
+	local ft = FrameTime()
 	local self2 = self:GetTable()
 	local isply = ply:IsPlayer()
 
@@ -114,7 +114,7 @@ function SWEP:CalculateRatios()
 		self2.ratios_calc = true
 	end
 
-	local ft = TFA.FrameTime()
+	local ft = FrameTime()
 
 	local is = self2.GetIronSights(self)
 	local spr = self2.GetSprinting(self)
