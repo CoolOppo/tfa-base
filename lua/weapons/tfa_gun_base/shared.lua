@@ -1848,7 +1848,9 @@ function SWEP:ProcessLoopSound()
 
 		local tgtSound = self:GetSilenced() and self:GetStat("Primary.LoopSoundSilenced", self:GetStat("Primary.LoopSound")) or self:GetStat("Primary.LoopSound")
 
-		self:StopSound(tgtSound)
+		if tgtSound then
+			self:StopSound(tgtSound)
+		end
 
 		tgtSound = self:GetSilenced() and self:GetStat("Primary.LoopSoundTailSilenced", self:GetStat("Primary.LoopSoundTail")) or self:GetStat("Primary.LoopSoundTail")
 

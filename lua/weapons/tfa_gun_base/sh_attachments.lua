@@ -366,6 +366,12 @@ function SWEP:ClearStatCache(vn)
 			self2.Secondary[k] = v
 		end
 	end
+
+	if CLIENT then
+		self:RebuildModsRenderOrder()
+	end
+
+	hook.Run("TFA_ClearStatCache", self)
 end
 
 local ccv = GetConVar("cl_tfa_debug_cache")

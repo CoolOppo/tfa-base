@@ -21,47 +21,62 @@
 
 TFA.ClientsideModels = TFA.ClientsideModels or {}
 
---this is for you, linter
-local function dummyfunc(ent)
-end
-
-TFA.RemoveCliensideModel = function(ent)
-	if ent and ent.Remove then
-		ent.Remove(ent)
-	end
-
-	ent = nil
-	dummyfunc(ent)
-end
-
-TFA.RegisterClientsideModel = function(cmdl, wepv)
-	TFA.ClientsideModels[#TFA.ClientsideModels + 1] = {
-		["mdl"] = cmdl,
-		["wep"] = wepv
-	}
-end
-
-local t, i
-
 timer.Create("TFA_UpdateClientsideModels", 0.1, 0, function()
-	i = 1
+	local i = 1
 
 	while i <= #TFA.ClientsideModels do
-		t = TFA.ClientsideModels[i]
+		local t = TFA.ClientsideModels[i]
 
 		if not t then
 			table.remove(TFA.ClientsideModels, i)
 		elseif not IsValid(t.wep) then
-			TFA.RemoveCliensideModel(t.mdl)
+			t.mdl:Remove()
 			table.remove(TFA.ClientsideModels, i)
 		elseif IsValid(t.wep:GetOwner()) and t.wep:GetOwner().GetActiveWeapon and t.wep ~= t.wep:GetOwner():GetActiveWeapon() then
-			TFA.RemoveCliensideModel(t.mdl)
+			t.mdl:Remove()
 			table.remove(TFA.ClientsideModels, i)
 		elseif t.wep.IsHidden and t.wep:IsHidden() then
-			TFA.RemoveCliensideModel(t.mdl)
+			t.mdl:Remove()
 			table.remove(TFA.ClientsideModels, i)
 		else
 			i = i + 1
 		end
 	end
+
+	if #TFA.ClientsideModels == 0 then
+		timer.Stop("TFA_UpdateClientsideModels")
+	end
 end)
+
+if #TFA.ClientsideModels == 0 then
+	timer.Stop("TFA_UpdateClientsideModels")
+end
+
+function TFA.RegisterClientsideModel(cmdl, wepv) -- DEPRECATED
+	-- don't use please
+	-- pleaz
+	TFA.ClientsideModels[#TFA.ClientsideModels + 1] = {
+		["mdl"] = cmdl,
+		["wep"] = wepv
+	}
+
+	timer.Start("TFA_UpdateClientsideModels")
+end
+
+local function NotifyShouldTransmit(ent, notdormant)
+	if notdormant or not ent.IsTFAWeapon then return end
+	if ent:GetOwner() == LocalPlayer() then return end
+
+	ent:CleanModels(ent.VElements)
+	ent:CleanModels(ent.WElements)
+end
+
+local function EntityRemoved(ent)
+	if not ent.IsTFAWeapon then return end
+
+	ent:CleanModels(ent.VElements)
+	ent:CleanModels(ent.WElements)
+end
+
+hook.Add("NotifyShouldTransmit", "TFA_ClientsideModels", NotifyShouldTransmit)
+hook.Add("EntityRemoved", "TFA_ClientsideModels", EntityRemoved)
