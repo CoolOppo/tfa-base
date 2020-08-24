@@ -104,23 +104,27 @@ function SWEP:RebuildModsRenderOrder()
 	self.VElementsBodygroupsCache = {}
 	self.WElementsBodygroupsCache = {}
 
-	local target = self.vRenderOrder
+	if istable(self.VElements) then
+		local target = self.vRenderOrder
 
-	for k, v in pairs(self.VElements) do
-		if v.type == "Model" then
-			table.insert(target, 1, k)
-		elseif v.type == "Sprite" or v.type == "Quad" then
-			table.insert(target, k)
+		for k, v in pairs(self.VElements) do
+			if v.type == "Model" then
+				table.insert(target, 1, k)
+			elseif v.type == "Sprite" or v.type == "Quad" then
+				table.insert(target, k)
+			end
 		end
 	end
 
-	local target2 = self.wRenderOrder
+	if istable(self.WElements) then
+		local target2 = self.wRenderOrder
 
-	for k, v in pairs(self.WElements) do
-		if v.type == "Model" then
-			table.insert(target2, 1, k)
-		elseif v.type == "Sprite" or v.type == "Quad" then
-			table.insert(target2, k)
+		for k, v in pairs(self.WElements) do
+			if v.type == "Model" then
+				table.insert(target2, 1, k)
+			elseif v.type == "Sprite" or v.type == "Quad" then
+				table.insert(target2, k)
+			end
 		end
 	end
 
