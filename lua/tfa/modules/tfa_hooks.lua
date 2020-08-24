@@ -189,15 +189,18 @@ end
 
 hook.Add("ContextMenuOpen", "TFAContextBlock", TFAContextBlock)
 
-local TFAKPThink
-
 if CLIENT then
 	local kd_old = false
 	local kd_switched = false
 
 	local cl_tfa_keys_customize
 
-	function TFAKPThink(plyv, wepv)
+	local function TFAKPThink()
+		local plyv = LocalPlayer()
+		if not plyv:IsValid() then return end
+		local wepv = plyv:GetActiveWeapon()
+		if not IsValid(wepv) then return end
+
 		kd_switched = false
 
 		if not cl_tfa_keys_customize then
@@ -220,7 +223,7 @@ if CLIENT then
 		kd_old = kd
 	end
 
-	hook.Add("Think", "TFAInspectionMenu", ShareIfYouDontThink)
+	hook.Add("Think", "TFAInspectionMenu", TFAKPThink)
 end
 
 local function FinishMove(ply, cmovedata)
@@ -228,10 +231,6 @@ local function FinishMove(ply, cmovedata)
 
 	local wepv = ply:GetActiveWeapon()
 	if not IsValid(wepv) or not wepv.IsTFAWeapon then return end
-
-	if not sp and CLIENT and IsFirstTimePredicted() then
-		TFAKPThink(ply, wepv)
-	end
 
 	if cmovedata:GetImpulseCommand() == TFA.INSPECTION_IMPULSE then
 		wepv:ToggleInspect()
