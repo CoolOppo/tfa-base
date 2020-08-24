@@ -953,7 +953,9 @@ function SWEP:IronSights()
 		and self2.walking_updated
 
 	local cmi = (self2.Customize_Mode == TFA.Enum.LOCOMOTION_HYBRID or self2.Customize_Mode == TFA.Enum.LOCOMOTION_ANI)
-		and self2.customizing_updated == ct
+		and self:GetNW2Bool("CustomizeUpdated", false)
+
+	self:SetNW2Bool("CustomizeUpdated", false)
 
 	if (smi or spi or wmi or cmi) and (self:GetStatus() == TFA.Enum.STATUS_IDLE or (self:GetStatus() == TFA.Enum.STATUS_SHOOTING and self:CanInterruptShooting())) and not self:GetShotgunCancel() then
 		local toggle_is = current_iron_sights ~= issighting
@@ -1675,7 +1677,7 @@ function SWEP:ToggleInspect()
 
 	self:SetCustomizing(not self:GetCustomizing())
 	self2.Inspecting = self:GetCustomizing()
-	self2.customizing_updated = CurTime()
+	self:SetNW2Bool("CustomizeUpdated", true)
 
 	--if self2.Inspecting then
 	--  gui.EnableScreenClicker(true)
