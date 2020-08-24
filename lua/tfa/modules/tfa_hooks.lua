@@ -329,7 +329,7 @@ elseif sp then
 		if plyv:GetInfoNum("cl_tfa_keys_bash", 0) == 0 then return end
 		if plyv:InVehicle() and not plyv:GetAllowWeaponsInVehicle() then return end
 
-		if ply:TFA_ZoomKeyDown() then
+		if plyv:TFA_ZoomKeyDown() then
 			cusercmd:SetImpulse(TFA.BASH_IMPULSE)
 		end
 	end
