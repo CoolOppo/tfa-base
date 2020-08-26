@@ -829,8 +829,10 @@ function SWEP:Think2(is_working_out_prediction_errors)
 	self2.ProcessLoopFire(self)
 	stat = self2.GetStatus(self)
 
-	if ct > self:GetNextIdleAnim() and (TFA.Enum.ReadyStatus[stat] or (stat == TFA.Enum.STATUS_SHOOTING and TFA.Enum.ShootLoopingStatus[self:GetShootStatus()])) then
-		self:ChooseIdleAnim()
+	if not sp or SERVER then
+		if ct > self:GetNextIdleAnim() and (TFA.Enum.ReadyStatus[stat] or (stat == TFA.Enum.STATUS_SHOOTING and TFA.Enum.ShootLoopingStatus[self:GetShootStatus()])) then
+			self:ChooseIdleAnim()
+		end
 	end
 end
 
