@@ -180,34 +180,19 @@ if CLIENT then -- Populate spawnmenu settings with registered keybinds
 end
 
 -- Default keybinds
-
-local reg_bash = CLIENT
-
-if sp then
-	reg_bash = SERVER
-end
-
 TFA.RegisterKeyBind({
 	bind = "bash",
 
-	onpress = reg_bash and function(plyv)
+	onpress = function(plyv)
 		if not plyv:IsValid() then return end
 
-		if CLIENT then
-			plyv.tfa_bash_hack = true
-		else
-			plyv:TFA_SetZoomKeyDown(true)
-		end
+		plyv.tfa_bash_hack = true
 	end,
 
-	onrelease = reg_bash and function(plyv)
+	onrelease = function(plyv)
 		if not plyv:IsValid() then return end
 
-		if CLIENT then
-			plyv.tfa_bash_hack = false
-		else
-			plyv:TFA_SetZoomKeyDown(false)
-		end
+		plyv.tfa_bash_hack = false
 	end
 })
 
