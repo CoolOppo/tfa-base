@@ -191,7 +191,7 @@ function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet,
 	local aimvector
 
 	if owner:IsPlayer() then
-		aimvector = owner:EyeAngles()
+		aimvector = owner:GetAimVector():Angle()
 
 		if sv_tfa_recoil_legacy:GetBool() then
 			aimvector:Add(owner:GetViewPunchAngles())

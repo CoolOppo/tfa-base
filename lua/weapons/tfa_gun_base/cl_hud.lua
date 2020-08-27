@@ -1064,7 +1064,7 @@ function SWEP:DoDrawCrosshair()
 		x, y = ply.interpposx, ply.interpposy
 		-- Center of screen
 	else
-		local ang = ply:EyeAngles()
+		local ang = ply:GetAimVector():Angle()
 
 		if sv_tfa_recoil_legacy:GetBool() then
 			ang:Add(ply:GetViewPunchAngles())
