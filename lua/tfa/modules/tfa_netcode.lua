@@ -22,6 +22,7 @@
 if SERVER then
 	--Pool netstrings
 	util.AddNetworkString("tfaSoundEvent")
+	util.AddNetworkString("tfaSoundEventStop")
 	util.AddNetworkString("tfa_base_muzzle_mp")
 	util.AddNetworkString("tfaShotgunInterrupt")
 	util.AddNetworkString("tfaRequestFidget")
@@ -101,6 +102,15 @@ else
 		end
 	end)
 
+	net.Receive("tfaSoundEventStop", function(length, ply)
+		local wep = net.ReadEntity()
+		local snd = net.ReadString()
+
+		if IsValid(wep) and snd and snd ~= "" then
+			wep:StopSound(snd)
+		end
+	end)
+
 	--Receive muzzleflashes on client
 	net.Receive("tfa_base_muzzle_mp", function(length, ply)
 		local wep = net.ReadEntity()
@@ -109,6 +119,7 @@ else
 			wep:ShootEffectsCustom(true)
 		end
 	end)
+
 	net.Receive("tfaBaseShellSV", function(length, ply)
 		local wep = net.ReadEntity()
 

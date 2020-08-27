@@ -916,3 +916,56 @@ do
 	end
 end
 
+function SWEP:EmitSoundNet(sound, ifp)
+	if ifp == nil then ifp = IsFirstTimePredicted() end
+	if not ifp then return end
+
+	if CLIENT and sp then return end
+
+	if CLIENT or sp then
+		self:EmitSound(sound)
+		return
+	end
+
+	local filter = RecipientFilter()
+
+	filter:AddPAS(self:GetPos())
+
+	if IsValid(self:GetOwner()) and self:GetOwner():IsPlayer() then
+		filter:RemovePlayer(self:GetOwner())
+	end
+
+	if filter:GetCount() == 0 then return end
+
+	net.Start("tfaSoundEvent")
+	net.WriteEntity(self)
+	net.WriteString(sound)
+	net.Send(filter)
+end
+
+function SWEP:StopSoundNet(sound, ifp)
+	if ifp == nil then ifp = IsFirstTimePredicted() end
+	if not ifp then return end
+
+	if CLIENT and sp then return end
+
+	if CLIENT or sp then
+		self:StopSound(sound)
+		return
+	end
+
+	local filter = RecipientFilter()
+
+	filter:AddPAS(self:GetPos())
+
+	if IsValid(self:GetOwner()) and self:GetOwner():IsPlayer() then
+		filter:RemovePlayer(self:GetOwner())
+	end
+
+	if filter:GetCount() == 0 then return end
+
+	net.Start("tfaSoundEventStop")
+	net.WriteEntity(self)
+	net.WriteString(sound)
+	net.Send(filter)
+end

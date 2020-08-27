@@ -1175,6 +1175,7 @@ function SWEP:EmitGunfireLoop()
 		end
 
 		self2.LastLoopSound = tgtSound
+		self2.GunfireLoopIFTPHack = true
 
 		self:EmitSound(tgtSound)
 	end
@@ -1840,25 +1841,22 @@ function SWEP:OnReloaded()
 end
 
 function SWEP:ProcessLoopSound()
-	if (SERVER or not sp) and (
-			self:GetNextLoopSoundCheck() >= 0
-			and ct > self:GetNextLoopSoundCheck()
-			and self:GetStatus() ~= TFA.Enum.STATUS_SHOOTING
-		) then
+	if sp and not SERVER then return end
+	if self:GetNextLoopSoundCheck() < 0 or ct < self:GetNextLoopSoundCheck() or self:GetStatus() == TFA.Enum.STATUS_SHOOTING then return end
 
-		self:SetNextLoopSoundCheck(-1)
+	self:SetNextLoopSoundCheck(-1)
 
-		local tgtSound = self:GetSilenced() and self:GetStat("Primary.LoopSoundSilenced", self:GetStat("Primary.LoopSound")) or self:GetStat("Primary.LoopSound")
+	local tgtSound = self:GetSilenced() and self:GetStat("Primary.LoopSoundSilenced", self:GetStat("Primary.LoopSound")) or self:GetStat("Primary.LoopSound")
 
-		if tgtSound then
-			self:StopSound(tgtSound)
-		end
+	if tgtSound then
+		self:StopSoundNet(tgtSound)
+	end
 
-		tgtSound = self:GetSilenced() and self:GetStat("Primary.LoopSoundTailSilenced", self:GetStat("Primary.LoopSoundTail")) or self:GetStat("Primary.LoopSoundTail")
+	tgtSound = self:GetSilenced() and self:GetStat("Primary.LoopSoundTailSilenced", self:GetStat("Primary.LoopSoundTail")) or self:GetStat("Primary.LoopSoundTail")
 
-		if tgtSound then
-			self:EmitSound(tgtSound)
-		end
+	if tgtSound and (SERVER or self.GunfireLoopIFTPHack) then
+		self:EmitSoundNet(tgtSound)
+		self.GunfireLoopIFTPHack = false
 	end
 end
 
