@@ -806,12 +806,10 @@ function SWEP:Think2(is_working_out_prediction_errors)
 		end
 
 		self2.InitAttachments(self)
-	end
 
-	self2.ProcessBodygroups(self)
-	self2.ProcessEvents(self)
+		self2.ProcessBodygroups(self)
 
-	if not is_working_out_prediction_errors then
+		self2.ProcessEvents(self)
 		self2.ProcessFireMode(self)
 		self2.ProcessHoldType(self)
 		self2.ReloadCV(self)
