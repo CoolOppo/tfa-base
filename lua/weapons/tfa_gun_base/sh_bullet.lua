@@ -446,7 +446,7 @@ end
 local decalbul = {
 	Num = 1,
 	Spread = vector_origin,
-	Tracer = 1,
+	Tracer = 0,
 	TracerName = "",
 	Force = 0,
 	Damage = 0,
