@@ -55,10 +55,12 @@ if SERVER then
 		end
 	end)
 
-	net.Receive("tfaSDLP",function(length,client)
-		local bool = net.ReadBool()
-		client.TFASDLP = bool
-	end)
+	if game.SinglePlayer() then
+		net.Receive("tfaSDLP",function(length,client)
+			local bool = net.ReadBool()
+			client.TFASDLP = bool
+		end)
+	end
 
 	--Enable alternate attacks
 	--[[
@@ -73,14 +75,6 @@ if SERVER then
 		end
 	end)
 	]]--
-	--Distribute muzzles from server to clients
-	net.Receive("tfa_base_muzzle_mp", function(length, plyv)
-		local wep = plyv:GetActiveWeapon()
-
-		if IsValid(wep) and wep.ShootEffectsCustom then
-			wep:ShootEffectsCustom()
-		end
-	end)
 else
 	--Arrow can follow entities clientside too
 	net.Receive("tfaArrowFollow",function()
