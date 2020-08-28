@@ -87,8 +87,8 @@ function SWEP:CalculateViewModelFlip()
 
 	self2.ViewModelFOV_OG = self2.ViewModelFOV_OG or self2.ViewModelFOV
 
-	local cam_fov = self2.LastTranslatedFOV or cv_fov:GetInt()
-	local iron_add = cam_fov * (1 - 90 / cam_fov) * math.max(1 - self2.GetStat(self, "Secondary.IronFOV") / 90, 0)
+	local cam_fov = self2.LastTranslatedFOV or cv_fov:GetInt() or 90
+	local iron_add = cam_fov * (1 - 90 / cam_fov) * math.max(1 - self2.GetStat(self, "Secondary.IronFOV", 90) / 90, 0)
 
 	self2.ViewModelFOV = l_Lerp(self:GetNW2Float("IronSightsProgress"), self2.ViewModelFOV_OG, self2.GetStat(self, "IronViewModelFOV", self2.ViewModelFOV_OG)) * fovmod_mult:GetFloat() + fovmod_add:GetFloat() + iron_add * self:GetNW2Float("IronSightsProgress")
 end
