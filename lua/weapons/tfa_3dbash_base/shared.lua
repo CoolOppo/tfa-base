@@ -222,9 +222,12 @@ SWEP.RTCode = function(self, rt, scrw, scrh)
 	self.LastOwnerPos = self:GetOwner():GetShootPos()
 	local scrpos
 	if self.RTScopeAttachment and self.RTScopeAttachment > 0 then
+		vm:SetupBones()
 		local att = vm:GetAttachment( self.RTScopeAttachment or 1 )
 		if not att then return end
 		local pos = att.Pos - owoff
+		cam.Start3D()
+		cam.End3D()
 		scrpos = pos:ToScreen()
 	else
 		self.defaultscrvec.x = scrw / 2
@@ -256,6 +259,7 @@ SWEP.RTCode = function(self, rt, scrw, scrh)
 	render.OverrideAlphaWriteEnable(true, true)
 	local ang = legacy and self:GetOwner():EyeAngles() or vm:GetAngles()
 	if self.RTScopeAttachment and self.RTScopeAttachment > 0 then
+		vm:SetupBones()
 		local AngPos = vm:GetAttachment( self.RTScopeAttachment )
 
 		if AngPos then

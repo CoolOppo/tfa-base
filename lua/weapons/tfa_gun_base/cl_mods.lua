@@ -87,6 +87,7 @@ function SWEP:PreDrawViewModel(vm, wep, ply)
 	self:ProcessBodygroups()
 
 	--vm:SetupBones()
+
 	if self:GetHidden() then
 		render.SetBlend(0)
 	end
