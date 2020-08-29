@@ -313,6 +313,11 @@ function SWEP:Recoil(recoil, ifp)
 	end
 
 	local factor = 1 - self:GetStat("Primary.StaticRecoilFactor")
+
+	if self:GetIronSights() then
+		factor = factor * self:GetStat("IronRecoilMultiplier", 0.5)
+	end
+
 	local punchY = kickY * factor
 
 	if isplayer then
@@ -326,8 +331,8 @@ function SWEP:Recoil(recoil, ifp)
 		local maxdist2 = l_mathClamp(30 - math.abs(self:GetNW2Float("ViewPunchP")), 0, 30)
 		local punchP2 = l_mathClamp(kickP, -maxdist2, maxdist2) * factor
 
-		self:SetNW2Float("ViewPunchP", self:GetNW2Float("ViewPunchP", 0) + punchP2 * 2)
-		self:SetNW2Float("ViewPunchY", self:GetNW2Float("ViewPunchY", 0) + punchY * 2)
+		self:SetNW2Float("ViewPunchP", self:GetNW2Float("ViewPunchP", 0) + punchP2 * 1.5)
+		self:SetNW2Float("ViewPunchY", self:GetNW2Float("ViewPunchY", 0) + punchY * 1.5)
 		self:SetNW2Float("ViewPunchBuild", math.min(3, self:GetNW2Float("ViewPunchBuild", 0) + math.sqrt(math.pow(punchP2, 2) + math.pow(punchY, 2)) / 3) + 0.2)
 	end
 
