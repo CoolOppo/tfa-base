@@ -69,7 +69,7 @@ SWEP.ViewModelPunch_MaxVertialOffset_IronSights = nil -- Default value is 1.95
 SWEP.ViewModelPunch_VertialMultiplier = nil -- Default value is 1
 SWEP.ViewModelPunch_VertialMultiplier_IronSights = nil -- Default value is 0.25
 
-SWEP.ViewModelPunchYawMultiplier = nil -- Default value is 0.75
+SWEP.ViewModelPunchYawMultiplier = nil -- Default value is 0.45
 SWEP.ViewModelPunchYawMultiplier_IronSights = nil -- Default value is 1.5
 
 SWEP.CanJam = true -- whenever weapon cam jam

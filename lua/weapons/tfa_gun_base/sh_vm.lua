@@ -176,7 +176,7 @@ SWEP.ViewModelPunch_MaxVertialOffset_IronSights = 1.95
 SWEP.ViewModelPunch_VertialMultiplier = 1
 SWEP.ViewModelPunch_VertialMultiplier_IronSights = 0.25
 
-SWEP.ViewModelPunchYawMultiplier = 0.75
+SWEP.ViewModelPunchYawMultiplier = 0.45
 SWEP.ViewModelPunchYawMultiplier_IronSights = 1.5
 
 function SWEP:CalculateViewModelOffset(delta)
