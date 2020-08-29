@@ -166,7 +166,6 @@ target_pos = Vector()
 target_ang = Vector()
 local centered_sprintpos = Vector(0, -1, 1)
 local centered_sprintang = Vector(-15, 0, 0)
-local vmviewpunch_cv
 local sv_tfa_recoil_legacy = GetConVar("sv_tfa_recoil_legacy")
 
 function SWEP:CalculateViewModelOffset(delta)
@@ -301,18 +300,10 @@ function SWEP:CalculateViewModelOffset(delta)
 		adstransitionspeed = adstransitionspeed + 15 * math.pow(self2.BlowbackCurrentRoot, 2)
 	end
 
-	if vmviewpunch_cv and not vmviewpunch_cv:GetBool() then
-		if sv_tfa_recoil_legacy:GetBool() then
-			local vpa = self:GetOwner():GetViewPunchAngles()
-			target_ang.x = target_ang.x + vpa.p
-			target_ang.y = target_ang.y + vpa.y
-			target_ang.z = target_ang.z + vpa.r
-		else
-			target_ang.x = target_ang.x + self:GetNW2Float("ViewPunchP")
-			target_ang.y = target_ang.y + self:GetNW2Float("ViewPunchY")
-		end
-	elseif not vmviewpunch_cv then
-		vmviewpunch_cv = GetConVar("cl_tfa_viewmodel_viewpunch")
+	if not sv_tfa_recoil_legacy:GetBool() then
+		target_ang.x = target_ang.x - self:GetNW2Float("ViewPunchP") * 0.5
+		target_ang.y = target_ang.y + self:GetNW2Float("ViewPunchY") * 1.5
+		target_pos.y = target_pos.y + math.Clamp(self:GetNW2Float("ViewPunchP"), -3, 3)
 	end
 
 	vm_offset_pos.x = math.Approach(vm_offset_pos.x, target_pos.x, (target_pos.x - vm_offset_pos.x) * delta * adstransitionspeed)

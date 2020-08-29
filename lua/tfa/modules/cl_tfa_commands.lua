@@ -27,10 +27,6 @@ if GetConVar("cl_tfa_gunbob_intensity") == nil then
 	CreateClientConVar("cl_tfa_gunbob_intensity", 1, true, false, "Gun bob intensity multiplier")
 end
 
-if GetConVar("cl_tfa_viewmodel_viewpunch") == nil then
-	CreateClientConVar("cl_tfa_viewmodel_viewpunch", 1, true, false, "Use viewmodel viewpunch?")
-end
-
 if GetConVar("cl_tfa_3dscope_quality") == nil then
 	CreateClientConVar("cl_tfa_3dscope_quality", -1, true, true, "3D scope quality (leave -1 for autodetected)")
 end
