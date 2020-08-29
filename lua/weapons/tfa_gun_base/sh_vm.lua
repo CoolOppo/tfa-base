@@ -168,6 +168,17 @@ local centered_sprintpos = Vector(0, -1, 1)
 local centered_sprintang = Vector(-15, 0, 0)
 local sv_tfa_recoil_legacy = GetConVar("sv_tfa_recoil_legacy")
 
+SWEP.ViewModelPunchPitchMultiplier = 0.5
+SWEP.ViewModelPunchPitchMultiplier_IronSights = 0.09
+
+SWEP.ViewModelPunch_MaxVertialOffset = 3
+SWEP.ViewModelPunch_MaxVertialOffset_IronSights = 1.95
+SWEP.ViewModelPunch_VertialMultiplier = 1
+SWEP.ViewModelPunch_VertialMultiplier_IronSights = 0.25
+
+SWEP.ViewModelPunchYawMultiplier = 0.75
+SWEP.ViewModelPunchYawMultiplier_IronSights = 1.5
+
 function SWEP:CalculateViewModelOffset(delta)
 	local self2 = self:GetTable()
 
@@ -301,9 +312,15 @@ function SWEP:CalculateViewModelOffset(delta)
 	end
 
 	if not sv_tfa_recoil_legacy:GetBool() then
-		target_ang.x = target_ang.x - self:GetNW2Float("ViewPunchP") * (is and 0.09 or 0.5)
-		target_ang.y = target_ang.y + self:GetNW2Float("ViewPunchY") * (is and 0.75 or 1.5)
-		target_pos.y = target_pos.y + math.Clamp(self:GetNW2Float("ViewPunchP") * (is and 0.35 or 1), -3, 3)
+		target_ang.x = target_ang.x - self:GetNW2Float("ViewPunchP") * (is and self:GetStat("ViewModelPunchPitchMultiplier_IronSights") or self:GetStat("ViewModelPunchPitchMultiplier"))
+		target_ang.y = target_ang.y + self:GetNW2Float("ViewPunchY") * (is and self:GetStat("ViewModelPunchYawMultiplier_IronSights") or self:GetStat("ViewModelPunchYawMultiplier"))
+
+		local ViewModelPunch_MaxVertialOffset = is and self:GetStat("ViewModelPunch_MaxVertialOffset_IronSights") or self:GetStat("ViewModelPunch_MaxVertialOffset")
+
+		target_pos.y = target_pos.y + math.Clamp(
+			self:GetNW2Float("ViewPunchP") * (is and self:GetStat("ViewModelPunch_VertialMultiplier_IronSights") or self:GetStat("ViewModelPunch_VertialMultiplier")),
+			-ViewModelPunch_MaxVertialOffset,
+			ViewModelPunch_MaxVertialOffset)
 	end
 
 	vm_offset_pos.x = math.Approach(vm_offset_pos.x, target_pos.x, (target_pos.x - vm_offset_pos.x) * delta * adstransitionspeed)

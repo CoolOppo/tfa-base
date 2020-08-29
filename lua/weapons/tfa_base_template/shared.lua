@@ -61,6 +61,17 @@ SWEP.Primary.LoopSoundTail = nil -- Loop end/tail sound, unsilenced
 SWEP.Primary.LoopSoundTailSilenced = nil -- Loop end/tail sound, silenced
 SWEP.Primary.LoopSoundAutoOnly = false -- Play loop sound for full-auto only? Fallbacks to Primary.Sound for semi/burst if true
 
+SWEP.ViewModelPunchPitchMultiplier = nil -- Default value is 0.5
+SWEP.ViewModelPunchPitchMultiplier_IronSights = nil -- Default value is 0.09
+
+SWEP.ViewModelPunch_MaxVertialOffset = nil -- Default value is 3
+SWEP.ViewModelPunch_MaxVertialOffset_IronSights = nil -- Default value is 1.95
+SWEP.ViewModelPunch_VertialMultiplier = nil -- Default value is 1
+SWEP.ViewModelPunch_VertialMultiplier_IronSights = nil -- Default value is 0.25
+
+SWEP.ViewModelPunchYawMultiplier = nil -- Default value is 0.75
+SWEP.ViewModelPunchYawMultiplier_IronSights = nil -- Default value is 1.5
+
 SWEP.CanJam = true -- whenever weapon cam jam
 SWEP.JamChance = 0.04 -- the (maximal) chance the weapon will jam. Newly spawned weapon will never jam on first shot for example.
 -- Default value is 0.04 (4%)
