@@ -20,6 +20,7 @@
 -- SOFTWARE.
 
 local l_mathClamp = math.Clamp
+local Lerp = Lerp
 SWEP.MainBullet = {}
 SWEP.MainBullet.Spread = Vector()
 
@@ -315,8 +316,10 @@ function SWEP:Recoil(recoil, ifp)
 	local factor = 1 - self:GetStat("Primary.StaticRecoilFactor")
 
 	if self:GetIronSights() then
-		factor = factor * self:GetStat("IronRecoilMultiplier", 0.5)
+		factor = factor * Lerp(self:GetNW2Float("IronSightsProgress", 0), 1, self:GetStat("IronRecoilMultiplier", 0.5))
 	end
+
+	factor = factor * Lerp(self:GetNW2Float("CrouchingRatio", 0), 1, self:GetStat("CrouchAccuracyMultiplier", 0.5))
 
 	local punchY = kickY * factor
 
