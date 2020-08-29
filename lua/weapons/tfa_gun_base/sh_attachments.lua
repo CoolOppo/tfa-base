@@ -302,10 +302,13 @@ end
 --
 function SWEP:ClearStatCache(vn)
 	local self2 = self:GetTable()
+	local getpath, getpath2
 
 	if vn then
 		self2.StatCache[vn] = nil
 		self2.StatCache2[vn] = nil
+		getpath2 = self2.GetStatPath(self, vn)
+		getpath = getpath2[1]
 	else
 		table.Empty(self2.StatCache)
 		table.Empty(self2.StatCache2)
@@ -339,6 +342,8 @@ function SWEP:ClearStatCache(vn)
 		if self.Primary.RangeFalloffLUT then
 			self.Primary.RangeFalloffLUTBuilt = self:BuildFalloffTable(self.Primary.RangeFalloffLUT)
 		end
+	elseif getpath == "Primary_TFA" and isstring(getpath2[2]) then
+		self2.Primary[getpath[2]] = self2.GetStat(self, vn)
 	end
 
 	if vn == "Secondary" or not vn then
@@ -365,6 +370,8 @@ function SWEP:ClearStatCache(vn)
 		for k, v in pairs(temp) do
 			self2.Secondary[k] = v
 		end
+	elseif getpath == "Secondary_TFA" and isstring(getpath2[2]) then
+		self2.Secondary[getpath[2]] = self2.GetStat(self, vn)
 	end
 
 	if CLIENT then
@@ -376,28 +383,33 @@ end
 
 local ccv = GetConVar("cl_tfa_debug_cache")
 
-function SWEP:GetStat(stat, default)
+function SWEP:GetStatPath(stat)
 	local self2 = self:GetTable()
 
-	if self2.StatStringCache[stat] == nil then
-		local t_stbl = string.Explode(".", stat, false)
+	if self2.StatStringCache[stat] ~= nil then return self2.StatStringCache[stat] end
 
-		if t_stbl[1] == "Primary" then
-			t_stbl[1] = "Primary_TFA"
-		end
+	local t_stbl = string.Explode(".", stat, false)
 
-		if t_stbl[1] == "Secondary" then
-			t_stbl[1] = "Secondary_TFA"
-		end
-
-		for k, v in ipairs(t_stbl) do
-			t_stbl[k] = tonumber(v) or v
-		end
-
-		self2.StatStringCache[stat] = t_stbl
+	if t_stbl[1] == "Primary" then
+		t_stbl[1] = "Primary_TFA"
 	end
 
-	local stbl = self2.StatStringCache[stat]
+	if t_stbl[1] == "Secondary" then
+		t_stbl[1] = "Secondary_TFA"
+	end
+
+	for k, v in ipairs(t_stbl) do
+		t_stbl[k] = tonumber(v) or v
+	end
+
+	self2.StatStringCache[stat] = t_stbl
+
+	return self2.StatStringCache[stat]
+end
+
+function SWEP:GetStat(stat, default)
+	local self2 = self:GetTable()
+	local stbl = self2.GetStatPath(self, stat)
 
 	if self2.StatCache2[stat] ~= nil then
 		local finalReturn
