@@ -19,8 +19,6 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
-DEFINE_BASECLASS("tfa_gun_base")
-
 SWEP.Secondary.ScopeZoom = 0
 SWEP.Secondary.UseACOG = false
 SWEP.Secondary.UseMilDot = false
@@ -49,6 +47,8 @@ SWEP.ScopeReticule_Scale = {1, 1}
 --[[End of Tweakable Parameters]]--
 SWEP.Scoped_3D = true
 SWEP.BoltAction_3D = false
+
+SWEP.Base = "tfa_gun_base"
 
 if SERVER then
 	AddCSLuaFile("tfa/3dscoped_base.lua")

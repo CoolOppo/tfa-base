@@ -19,6 +19,8 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
+local BaseClass = baseclass.Get("tfa_gun_base")
+
 local scopecvar = GetConVar("cl_tfa_3dscope")
 local scopeshadowcvar = GetConVar("cl_tfa_3dscope_overlay")
 
