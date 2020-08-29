@@ -301,9 +301,9 @@ function SWEP:CalculateViewModelOffset(delta)
 	end
 
 	if not sv_tfa_recoil_legacy:GetBool() then
-		target_ang.x = target_ang.x - self:GetNW2Float("ViewPunchP") * 0.5
-		target_ang.y = target_ang.y + self:GetNW2Float("ViewPunchY") * 1.5
-		target_pos.y = target_pos.y + math.Clamp(self:GetNW2Float("ViewPunchP"), -3, 3)
+		target_ang.x = target_ang.x - self:GetNW2Float("ViewPunchP") * (is and 0.09 or 0.5)
+		target_ang.y = target_ang.y + self:GetNW2Float("ViewPunchY") * (is and 0.75 or 1.5)
+		target_pos.y = target_pos.y + math.Clamp(self:GetNW2Float("ViewPunchP") * (is and 0.35 or 1), -3, 3)
 	end
 
 	vm_offset_pos.x = math.Approach(vm_offset_pos.x, target_pos.x, (target_pos.x - vm_offset_pos.x) * delta * adstransitionspeed)
