@@ -168,7 +168,8 @@ if do_load then
 	hook.Run("TFABase_PreInit")
 
 	flist = file.Find("tfa/modules/*.lua", "LUA")
-	local yell = false
+	local toload = {}
+	local toload2 = {}
 
 	for _, filename in pairs(flist) do
 		if not official_modules[filename] then
@@ -184,19 +185,35 @@ if do_load then
 				AddCSLuaFile("tfa/modules/" .. filename)
 			end
 
-			if SERVER and typev ~= "CLIENT" or CLIENT and typev ~= "SERVER" then
-				include("tfa/modules/" .. filename)
+			if SERVER and typev == "SERVER" or CLIENT and typev == "CLIENT" then
+				table.insert(toload2, filename)
+			elseif typev == "SHARED" then
+				table.insert(toload, filename)
 			end
-
-			print("[TFA Base] [!] Loaded unofficial module " .. string.sub(filename, 1, -5) .. ".")
-			yell = true
 		end
+	end
+
+	local yell = #toload ~= 0 or #toload2 ~= 0
+
+	table.sort(toload)
+	table.sort(toload2)
+
+	for i, filename in ipairs(toload) do
+		include("tfa/modules/" .. filename)
+		print("[TFA Base] [!] Loaded unofficial module " .. string.sub(filename, 1, -5) .. ".")
+	end
+
+	for i, filename in ipairs(toload2) do
+		include("tfa/modules/" .. filename)
+		print("[TFA Base] [!] Loaded unofficial module " .. string.sub(filename, 1, -5) .. ".")
 	end
 
 	hook.Run("TFABase_Init")
 	hook.Run("TFABase_PreFullInit")
 
-	flist = file.Find("tfa/external/*.lua","LUA")
+	flist = file.Find("tfa/external/*.lua", "LUA")
+	toload = {}
+	toload2 = {}
 
 	for _, filename in pairs(flist) do
 		local typev = "SHARED"
@@ -211,9 +228,22 @@ if do_load then
 			AddCSLuaFile("tfa/external/" .. filename)
 		end
 
-		if SERVER and typev ~= "CLIENT" or CLIENT and typev ~= "SERVER" then
-			include("tfa/external/" .. filename)
+		if SERVER and typev == "SERVER" or CLIENT and typev == "CLIENT" then
+			table.insert(toload2, filename)
+		elseif typev == "SHARED" then
+			table.insert(toload, filename)
 		end
+	end
+
+	table.sort(toload)
+	table.sort(toload2)
+
+	for i, filename in ipairs(toload) do
+		include("tfa/external/" .. filename)
+	end
+
+	for i, filename in ipairs(toload2) do
+		include("tfa/external/" .. filename)
 	end
 
 	if yell then
