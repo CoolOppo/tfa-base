@@ -1053,7 +1053,7 @@ function SWEP:GetIronSights()
 end
 
 function SWEP:GetIronSightsDirect()
-	return self:GetNW2Bool("LastSightsStatus", false)
+	return self:GetNW2Bool("IronSightsOldFinal", false)
 end
 
 SWEP.is_sndcache_old = false
