@@ -210,8 +210,8 @@ function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet,
 
 	self.MainBullet.Dir = aimvector
 	self.MainBullet.HullSize = self:GetStat("Primary.HullSize") or 0
-	-- self.MainBullet.Spread.x = aimcone
-	-- self.MainBullet.Spread.y = aimcone
+	self.MainBullet.Spread.x = aimcone
+	self.MainBullet.Spread.y = aimcone
 	self.MainBullet.Wep = self
 
 	if self.TracerPCF then
@@ -238,44 +238,51 @@ function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet,
 		self.MainBullet.Callback2 = nil
 	end
 
-	self.MainBullet.Num = 1
-	-- self.MainBullet.Num = num_bullets
+	self.MainBullet.Num = num_bullets
 
-	local ang_ = self.MainBullet.Dir:Angle()
-	local sharedRandomSeed = "TFA_ShootBullet" .. CurTime()
+	if self.MainBullet.Num > 1 then
+		self.MainBullet.Num = 1
+		self.MainBullet.Spread.x = 0
+		self.MainBullet.Spread.y = 0
 
-	-- single callback per multiple bullets fix
-	for i = 1, num_bullets do
-		local bullet = table.Copy(self.MainBullet)
+		local ang_ = self.MainBullet.Dir:Angle()
+		local sharedRandomSeed = "TFA_ShootBullet" .. CurTime()
 
-		local ang = Angle(ang_)
-		ang:RotateAroundAxis(ang:Up(), util.SharedRandom(sharedRandomSeed, -aimcone * 45, aimcone * 45, 0 + i))
-		ang:RotateAroundAxis(ang:Right(), util.SharedRandom(sharedRandomSeed, -aimcone * 45, aimcone * 45, 1 + i))
-		bullet.Dir = ang:Forward()
+		-- single callback per multiple bullets fix
+		for i = 1, num_bullets do
+			local bullet = table.Copy(self.MainBullet)
 
-		function bullet.Callback(attacker, trace, dmginfo)
-			if not IsValid(self) then return end
+			local ang = Angle(ang_)
+			ang:RotateAroundAxis(ang:Up(), util.SharedRandom(sharedRandomSeed, -aimcone * 45, aimcone * 45, 0 + i))
+			ang:RotateAroundAxis(ang:Right(), util.SharedRandom(sharedRandomSeed, -aimcone * 45, aimcone * 45, 1 + i))
+			bullet.Dir = ang:Forward()
 
-			dmginfo:SetInflictor(self)
+			function bullet.Callback(attacker, trace, dmginfo)
+				if not IsValid(self) then return end
 
-			if self:GetStat("Primary.FalloffMetricBased") or self.Primary.RangeFalloffLUTBuilt then
-				dmginfo:SetDamage(dmginfo:GetDamage() * bullet:CalculateFalloff(trace.HitPos))
+				dmginfo:SetInflictor(self)
+
+				if self:GetStat("Primary.FalloffMetricBased") or self.Primary.RangeFalloffLUTBuilt then
+					dmginfo:SetDamage(dmginfo:GetDamage() * bullet:CalculateFalloff(trace.HitPos))
+				end
+
+				if bullet.Callback2 then
+					bullet.Callback2(attacker, trace, dmginfo)
+				end
+
+				self:CallAttFunc("CustomBulletCallback", attacker, trace, dmginfo)
+
+				bullet:Penetrate(attacker, trace, dmginfo, self, {})
+				self:PCFTracer(bullet, trace.HitPos or vector_origin)
 			end
 
-			if bullet.Callback2 then
-				bullet.Callback2(attacker, trace, dmginfo)
-			end
-
-			self:CallAttFunc("CustomBulletCallback", attacker, trace, dmginfo)
-
-			bullet:Penetrate(attacker, trace, dmginfo, self, {})
-			self:PCFTracer(bullet, trace.HitPos or vector_origin)
+			BallisticFirebullet(owner, bullet)
 		end
 
-		BallisticFirebullet(owner, bullet)
+		return
 	end
 
-	--[[function self.MainBullet.Callback(attacker, trace, dmginfo)
+	function self.MainBullet.Callback(attacker, trace, dmginfo)
 		if not IsValid(self) then return end
 
 		dmginfo:SetInflictor(self)
@@ -294,7 +301,7 @@ function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet,
 		self:PCFTracer(self.MainBullet, trace.HitPos or vector_origin)
 	end
 
-	BallisticFirebullet(owner, self.MainBullet)]]
+	BallisticFirebullet(owner, self.MainBullet)
 end
 
 local sp = game.SinglePlayer()
