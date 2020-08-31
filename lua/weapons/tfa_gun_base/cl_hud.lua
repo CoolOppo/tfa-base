@@ -1029,13 +1029,13 @@ function SWEP:DoDrawCrosshair()
 	local stat = self2.GetStatus(self)
 
 	if not crosscustomenable_cvar:GetBool() then
-		return TFA.Enum.ReloadStatus[stat] or math.min(1 - self:GetNW2Float("IronSightsProgress"), 1 - self:GetNW2Float("SprintProgress"), 1 - self:GetNW2Float("InspectingProgress")) <= 0.5
+		return TFA.Enum.ReloadStatus[stat] or math.min(1 - (self2.IronSightsProgressUnpredicted or self:GetNW2Float("IronSightsProgress")), 1 - self:GetNW2Float("SprintProgress"), 1 - self:GetNW2Float("InspectingProgress")) <= 0.5
 	end
 
 	self2.clrelp = self2.clrelp or 0
 	self2.clrelp = math.Approach(self2.clrelp, TFA.Enum.ReloadStatus[stat] and 0 or 1, ((TFA.Enum.ReloadStatus[stat] and 0 or 1) - self2.clrelp) * RealFrameTime() * 15)
-	local crossa = crossa_cvar:GetFloat() * math.pow(math.min(1 - ((self:GetNW2Float("IronSightsProgress") and not self2.DrawCrosshairIS) and self:GetNW2Float("IronSightsProgress") or 0), 1 - self:GetNW2Float("SprintProgress"), 1 - self:GetNW2Float("InspectingProgress"), self2.clrelp), 2)
-	local outa = outa_cvar:GetFloat() * math.pow(math.min(1 - ((self:GetNW2Float("IronSightsProgress") and not self2.DrawCrosshairIS) and self:GetNW2Float("IronSightsProgress") or 0), 1 - self:GetNW2Float("SprintProgress"), 1 - self:GetNW2Float("InspectingProgress"), self2.clrelp), 2)
+	local crossa = crossa_cvar:GetFloat() * math.pow(math.min(1 - (((self2.IronSightsProgressUnpredicted or self:GetNW2Float("IronSightsProgress")) and not self2.DrawCrosshairIS) and (self2.IronSightsProgressUnpredicted or self:GetNW2Float("IronSightsProgress")) or 0), 1 - self:GetNW2Float("SprintProgress"), 1 - self:GetNW2Float("InspectingProgress"), self2.clrelp), 2)
+	local outa = outa_cvar:GetFloat() * math.pow(math.min(1 - (((self2.IronSightsProgressUnpredicted or self:GetNW2Float("IronSightsProgress")) and not self2.DrawCrosshairIS) and (self2.IronSightsProgressUnpredicted or self:GetNW2Float("IronSightsProgress")) or 0), 1 - self:GetNW2Float("SprintProgress"), 1 - self:GetNW2Float("InspectingProgress"), self2.clrelp), 2)
 	local ply = LocalPlayer()
 	if not ply:IsValid() or self:GetOwner() ~= ply then return false end
 

@@ -776,6 +776,27 @@ function SWEP:PlayerThinkCL(plyv)
 
 		self2.BlowbackCurrentRoot = l_mathApproach(self2.BlowbackCurrentRoot, 0, self2.BlowbackCurrentRoot * ft * 15)
 	end
+
+	local is = self2.GetIronSights(self)
+	local spr = self2.GetSprinting(self)
+	local walk = self2.GetWalking(self)
+
+	local ist = is and 1 or 0
+	local sprt = spr and 1 or 0
+	local walkt = walk and 1 or 0
+	local adstransitionspeed
+
+	if is then
+		adstransitionspeed = 12.5 / (self:GetStat("IronSightTime") / 0.3)
+	elseif spr or walk then
+		adstransitionspeed = 7.5
+	else
+		adstransitionspeed = 12.5
+	end
+
+	local ft = TFA.FrameTime()
+	self2.IronSightsProgressUnpredicted = l_mathApproach(self2.IronSightsProgressUnpredicted or 0, ist, (ist - (self2.IronSightsProgressUnpredicted or 0)) * ft * adstransitionspeed)
+	self2.SprintProgressUnpredicted = l_mathApproach(self2.SprintProgressUnpredicted or 0, sprt, (sprt - (self2.SprintProgressUnpredicted or 0)) * ft * adstransitionspeed)
 end
 
 --[[
@@ -1646,18 +1667,13 @@ function SWEP:TranslateFOV(fov)
 
 	self:CorrectScopeFOV()
 
-	local nfov = l_Lerp(self:GetNW2Float("IronSightsProgress"), fov, fov * math.min(self:GetStat("Secondary.IronFOV") / 90, 1))
-	local ret = l_Lerp(self:GetNW2Float("SprintProgress"), nfov, nfov + self2.SprintFOVOffset)
+	local nfov = l_Lerp(self2.IronSightsProgressUnpredicted or self:GetNW2Float("IronSightsProgress"), fov, fov * math.min(self:GetStat("Secondary.IronFOV") / 90, 1))
+	local ret = l_Lerp(self2.SprintProgressUnpredicted or self:GetNW2Float("SprintProgress"), nfov, nfov + self2.SprintFOVOffset)
 
 	if self:OwnerIsValid() and not self2.IsMelee then
 		local vpa = self:GetOwner():GetViewPunchAngles()
 
 		ret = ret + math.abs(vpa.p) / 4 + math.abs(vpa.y) / 4 + math.abs(vpa.r) / 4
-	end
-
-	if CLIENT then
-		self2.LastTranslatedFOV2 = Lerp(RealFrameTime() * 3, self2.LastTranslatedFOV2 or ret, ret)
-		ret = self2.LastTranslatedFOV2
 	end
 
 	ret = hook.Run("TFA_TranslateFOV", self,ret) or ret
