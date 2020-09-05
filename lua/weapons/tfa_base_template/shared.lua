@@ -61,6 +61,16 @@ SWEP.Primary.LoopSoundTail = nil -- Loop end/tail sound, unsilenced
 SWEP.Primary.LoopSoundTailSilenced = nil -- Loop end/tail sound, silenced
 SWEP.Primary.LoopSoundAutoOnly = false -- Play loop sound for full-auto only? Fallbacks to Primary.Sound for semi/burst if true
 
+-- WORLD/THIRDPERSON/NPC FIRING SOUNDS! Fallbacks to first person sound if not defined.
+
+SWEP.Primary.Sound_World = nil -- This is the sound of the weapon, when you shoot.
+SWEP.Primary.SilencedSound_World = nil -- This is the sound of the weapon, when silenced.
+
+SWEP.Primary.LoopSound_World = nil -- Looped fire sound, unsilenced
+SWEP.Primary.LoopSoundSilenced_World = nil -- Looped fire sound, silenced
+SWEP.Primary.LoopSoundTail_World = nil -- Loop end/tail sound, unsilenced
+SWEP.Primary.LoopSoundTailSilenced_World = nil -- Loop end/tail sound, silenced
+
 SWEP.ViewModelPunchPitchMultiplier = nil -- Default value is 0.5
 SWEP.ViewModelPunchPitchMultiplier_IronSights = nil -- Default value is 0.09
 
