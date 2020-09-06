@@ -42,7 +42,7 @@ for i = 1, 32 do
 	local strcomp = string.rep("%d", i)
 	local slice = {}
 
-	for i2 = 1, i do
+	for i2 = 0, i - 1 do
 		table.insert(slice, "band(rshift(state, " .. i2 .. "), 1) == 0 and 0 or 1")
 	end
 
@@ -67,28 +67,32 @@ local function DrawDebugInfo(w, h, ply, wep)
 	if not cv_dba or not cv_dba:GetBool() then return end
 
 	local x, y = w * .5, h * .2
+	local y2
 
-	draw.SimpleTextOutlined("Event table state:", "TFASleekSmall", x + 240, y, color_white, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP, 1, color_black)
-	local y2 = y + TFA.Fonts.SleekHeightSmall
+	if wep._EventSlotCount ~= 0 then
+		draw.SimpleTextOutlined("Event table state:", "TFASleekSmall", x + 240, y, color_white, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP, 1, color_black)
+		local y2 = y + TFA.Fonts.SleekHeightSmall
+
+		for i = 1, wep._EventSlotCount do
+			local state = wep["GetEventStatus" .. i](wep)
+			local stringbake
+
+			if i ~= wep._EventSlotCount then
+				stringbake = state_strings[32](state)
+			else
+				local fn = state_strings[wep._EventSlotNum % 32 + 1]
+
+				if not fn then break end
+				stringbake = fn(state)
+			end
+
+			draw.SimpleTextOutlined(stringbake, "TFASleekSmall", x + 240, y2, color_white, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP, 1, color_black)
+			y2 = y2 + TFA.Fonts.SleekHeightSmall
+		end
+	end
 
 	draw.SimpleTextOutlined(string.format("%s [%.2f, %.2f]", statusnames[wep:GetStatus()] or wep:GetStatus(), CurTime(), wep:GetStatusEnd()), "TFASleekSmall", x, y, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP, 1, color_black)
 	y = y + TFA.Fonts.SleekHeightSmall
-
-	for i = 1, wep._EventSlotCount do
-		local state = wep["GetEventStatus" .. i](wep)
-		local stringbake
-
-		if i ~= wep._EventSlotCount then
-			stringbake = state_strings[32](state)
-		elseif (wep._EventSlotNum % 32) ~= 0 then
-			stringbake = state_strings[wep._EventSlotNum % 32](state)
-		else
-			break
-		end
-
-		draw.SimpleTextOutlined(stringbake, "TFASleekSmall", x + 240, y2, color_white, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP, 1, color_black)
-		y2 = y2 + TFA.Fonts.SleekHeightSmall
-	end
 
 	local vm = ply:GetViewModel() or NULL
 

@@ -377,8 +377,8 @@ function SWEP:ClearStatCache(vn)
 			end
 		end
 
-		self._EventSlotCount = math.max(0, math.ceil((slot - 1) / 32))
-		self._EventSlotNum = math.max(0, slot - 1)
+		self._EventSlotCount = math.ceil(slot / 32)
+		self._EventSlotNum = slot - 1
 	end
 
 	if vn == "Primary" or not vn then
