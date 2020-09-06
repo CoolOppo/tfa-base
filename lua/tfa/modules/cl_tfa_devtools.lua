@@ -34,6 +34,30 @@ local function PopulateStatusNames()
 end
 
 cvars.AddChangeCallback("cl_tfa_debug_animations", PopulateStatusNames, "TFADevPopStatusNames")
+PopulateStatusNames()
+
+local state_strings = {}
+
+for i = 1, 32 do
+	local strcomp = string.rep("%d", i)
+	local slice = {}
+
+	for i2 = 1, i do
+		table.insert(slice, "band(rshift(state, " .. i2 .. "), 1) == 0 and 0 or 1")
+	end
+
+	local fn = CompileString([[
+		local rshift = bit.rshift
+		local band = bit.band
+		return function(state)
+			return ]] .. table.concat(slice, ", ") .. [[
+		end
+	]], "tfa_dev_tools")()
+
+	state_strings[i] = function(state)
+		return string.format(strcomp, fn(state))
+	end
+end
 
 local function DrawDebugInfo(w, h, ply, wep)
 	if not cv_dba then
@@ -44,8 +68,27 @@ local function DrawDebugInfo(w, h, ply, wep)
 
 	local x, y = w * .5, h * .2
 
+	draw.SimpleTextOutlined("Event table state:", "TFASleekSmall", x + 240, y, color_white, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP, 1, color_black)
+	local y2 = y + TFA.Fonts.SleekHeightSmall
+
 	draw.SimpleTextOutlined(string.format("%s [%.2f, %.2f]", statusnames[wep:GetStatus()] or wep:GetStatus(), CurTime(), wep:GetStatusEnd()), "TFASleekSmall", x, y, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP, 1, color_black)
 	y = y + TFA.Fonts.SleekHeightSmall
+
+	for i = 1, wep._EventSlotCount do
+		local state = wep["GetEventStatus" .. i](wep)
+		local stringbake
+
+		if i ~= wep._EventSlotCount then
+			stringbake = state_strings[32](state)
+		elseif (wep._EventSlotNum % 32) ~= 0 then
+			stringbake = state_strings[wep._EventSlotNum % 32](state)
+		else
+			break
+		end
+
+		draw.SimpleTextOutlined(stringbake, "TFASleekSmall", x + 240, y2, color_white, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP, 1, color_black)
+		y2 = y2 + TFA.Fonts.SleekHeightSmall
+	end
 
 	local vm = ply:GetViewModel() or NULL
 
@@ -81,7 +124,7 @@ hook.Add("HUDPaint", "tfa_drawdebughud", function()
 	if not ply:IsValid() or not ply:IsAdmin() then return end
 
 	local wep = ply:GetActiveWeapon() or NULL
-	if not wep:IsValid() or not wep:IsTFA() then return end
+	if not wep:IsValid() or not wep.IsTFAWeapon then return end
 
 	w, h = ScrW(), ScrH()
 

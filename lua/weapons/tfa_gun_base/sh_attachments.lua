@@ -288,6 +288,22 @@ SWEP.StatCache = {}
 SWEP.StatCache2 = {}
 SWEP.StatStringCache = {}
 
+local isstring = isstring
+
+local function eventtablesorter(a, b)
+	local sa, sb = isstring(a), isstring(b)
+
+	if sa and not sb or not sa and sb then
+		if sa then
+			return false
+		end
+
+		return true
+	end
+
+	return a < b
+end
+
 --[[
 local function mtbl(t1, t2)
 	local t = tableCopy(t1)
@@ -312,6 +328,57 @@ function SWEP:ClearStatCache(vn)
 	else
 		table.Empty(self2.StatCache)
 		table.Empty(self2.StatCache2)
+	end
+
+	if not vn or vn == "EventTable" then
+		local slot = 0
+
+		table.Empty(self2.EventTableBuilt)
+		self:ResetEvents()
+
+		local eventtable = self2.GetStat(self, "EventTable", {})
+		local keys = table.GetKeys(eventtable)
+		table.sort(keys, eventtablesorter)
+
+		for i_, key in ipairs(keys) do
+			local value = eventtable[key]
+
+			if istable(value) then
+				self2.EventTableBuilt[key] = {}
+
+				for index, value2 in SortedPairs(value) do
+					if istable(value2) then
+						local event = table.Copy(value2)
+						event.slot = slot
+						slot = slot + 1
+
+						if event.type == "lua" then
+							if event.server == nil then
+								event.server = true
+							end
+						elseif event.type == "snd" or event.type == "sound" then
+							if event.server == nil then
+								event.server = false
+							end
+						elseif event.type == "bg" or event.type == "bodygroup" then
+							if event.server == nil then event.server = true end
+							if event.view == nil then event.view = true end
+							if event.world == nil then event.world = true end
+						end
+
+						if event.client == nil then
+							event.client = true
+						end
+
+						assert(slot < 256, "Weapon " .. self:GetClass() .. " got too many events! 256 is maximum!")
+						table.insert(self2.EventTableBuilt[key], event)
+					end
+				end
+			end
+		end
+
+		self._EventSlotCount = math.max(0, math.ceil((slot - 1) / 32))
+		self._EventSlotNum = math.max(0, slot - 1)
 	end
 
 	if vn == "Primary" or not vn then

@@ -19,9 +19,13 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
+local lshift = bit.lshift
+local band = bit.band
+local bor = bit.bor
+local bxor = bit.bxor
+
 local sp = game.SinglePlayer()
 local l_CT = CurTime
-SWEP.EventTimer = -1
 
 local is, spr, wlk, cst
 
@@ -32,21 +36,68 @@ Returns:  Nothing.
 Purpose:  Cleans up events table.
 ]]--
 function SWEP:ResetEvents()
-	if not self:OwnerIsValid() then return end
+	self:SetEventStatus1(0x00000000)
+	self:SetEventStatus2(0x00000000)
+	self:SetEventStatus3(0x00000000)
+	self:SetEventStatus4(0x00000000)
+	self:SetEventStatus5(0x00000000)
+	self:SetEventStatus6(0x00000000)
+	self:SetEventStatus7(0x00000000)
+	self:SetEventStatus8(0x00000000)
 
-	if sp and not CLIENT then
-		self:CallOnClient("ResetEvents", "")
+	self:SetEventTimer(l_CT())
+end
+
+function SWEP:GetEventPlayed(event_slot)
+	local inner_index = event_slot % 32
+	local outer_index = (event_slot - inner_index) / 32
+	local lindex = lshift(1, inner_index)
+
+	if outer_index == 0 then
+		return band(lindex, self:GetEventStatus1()) ~= 0, inner_index, outer_index, lindex
+	elseif outer_index == 1 then
+		return band(lindex, self:GetEventStatus2()) ~= 0, inner_index, outer_index, lindex
+	elseif outer_index == 2 then
+		return band(lindex, self:GetEventStatus3()) ~= 0, inner_index, outer_index, lindex
+	elseif outer_index == 3 then
+		return band(lindex, self:GetEventStatus4()) ~= 0, inner_index, outer_index, lindex
+	elseif outer_index == 4 then
+		return band(lindex, self:GetEventStatus5()) ~= 0, inner_index, outer_index, lindex
+	elseif outer_index == 5 then
+		return band(lindex, self:GetEventStatus6()) ~= 0, inner_index, outer_index, lindex
+	elseif outer_index == 6 then
+		return band(lindex, self:GetEventStatus7()) ~= 0, inner_index, outer_index, lindex
+	elseif outer_index == 7 then
+		return band(lindex, self:GetEventStatus8()) ~= 0, inner_index, outer_index, lindex
 	end
 
-	if IsFirstTimePredicted() or game.SinglePlayer() then
-		self.EventTimer = l_CT()
+	return false, inner_index, outer_index, lindex
+end
 
-		for _, v in pairs(self.EventTable) do
-			for _, b in pairs(v) do
-				b.called = false
-			end
-		end
+function SWEP:SetEventPlayed(event_slot)
+	local inner_index = event_slot % 32
+	local outer_index = (event_slot - inner_index) / 32
+	local lindex = lshift(1, inner_index)
+
+	if outer_index == 0 then
+		self:SetEventStatus1(bor(self:GetEventStatus1(), lindex))
+	elseif outer_index == 1 then
+		self:SetEventStatus2(bor(self:GetEventStatus2(), lindex))
+	elseif outer_index == 2 then
+		self:SetEventStatus3(bor(self:GetEventStatus3(), lindex))
+	elseif outer_index == 3 then
+		self:SetEventStatus4(bor(self:GetEventStatus4(), lindex))
+	elseif outer_index == 4 then
+		self:SetEventStatus5(bor(self:GetEventStatus5(), lindex))
+	elseif outer_index == 5 then
+		self:SetEventStatus6(bor(self:GetEventStatus6(), lindex))
+	elseif outer_index == 6 then
+		self:SetEventStatus7(bor(self:GetEventStatus7(), lindex))
+	elseif outer_index == 7 then
+		self:SetEventStatus8(bor(self:GetEventStatus8(), lindex))
 	end
+
+	return inner_index, outer_index, lindex
 end
 
 --[[
@@ -57,52 +108,53 @@ Notes: Critical for the event table to function.
 Purpose:  Main SWEP function
 ]]--
 
-function SWEP:ProcessEvents()
+SWEP._EventSlotCount = 0
+SWEP.EventTableBuilt = {}
+
+function SWEP:ProcessEvents(firstprediction)
 	local viewmodel = self:VMIVNPC()
 	if not viewmodel then return end
 
 	local ply = self:GetOwner()
 	local isplayer = ply:IsPlayer()
 
-	if self.EventTimer < 0 then
-		self:ResetEvents()
-	end
-
-	local evtbl = self.EventTable[self:GetLastActivity() or -1] or self.EventTable[viewmodel:GetSequenceName(viewmodel:GetSequence())]
+	local evtbl = self.EventTableBuilt[self:GetLastActivity() or -1] or self.EventTableBuilt[viewmodel:GetSequenceName(viewmodel:GetSequence())]
 	if not evtbl then return end
 
-	for _, v in pairs(evtbl) do
-		if v.called or l_CT() < self.EventTimer + v.time / self:GetAnimationRate(self:GetLastActivity() or -1) then goto CONTINUE end
-		v.called = true
+	local curtime = l_CT()
+	local eventtimer = self:GetEventTimer()
+	local is_local = CLIENT and ply == LocalPlayer()
+	local animrate = self:GetAnimationRate(self:GetLastActivity() or -1)
 
-		if v.client == nil then
-			v.client = true
-		end
+	for i = 1, #evtbl do
+		local event = evtbl[i]
+		if self:GetEventPlayed(event.slot) or curtime < eventtimer + event.time / animrate then goto CONTINUE end
+		self:SetEventPlayed(event.slot)
 
-		if v.type == "lua" then
-			if v.server == nil then
-				v.server = true
+		if event.type == "lua" then
+			if event.server == nil then
+				event.server = true
 			end
 
-			if (v.client and CLIENT and (not v.client_predictedonly or ply == LocalPlayer())) or (v.server and SERVER) and v.value then
-				v.value(self, viewmodel)
+			if ((event.client and CLIENT and (not event.client_predictedonly or is_local)) or (event.server and SERVER)) and event.value then
+				event.value(self, viewmodel)
 			end
-		elseif v.type == "snd" or v.type == "sound" then
-			if v.server == nil then
-				v.server = false
+		elseif event.type == "snd" or event.type == "sound" then
+			if event.server == nil then
+				event.server = false
 			end
 
 			if SERVER then
-				if v.client then
+				if event.client then
 					if not isplayer and player.GetCount() ~= 0 then
 						net.Start("tfaSoundEvent")
 						net.WriteEntity(self)
-						net.WriteString(v.value or "")
+						net.WriteString(event.value or "")
 						net.SendPVS(self:GetPos())
 					elseif isplayer then
 						net.Start("tfaSoundEvent")
 						net.WriteEntity(self)
-						net.WriteString(v.value or "")
+						net.WriteString(event.value or "")
 
 						if sp then
 							net.SendPVS(self:GetPos())
@@ -110,28 +162,32 @@ function SWEP:ProcessEvents()
 							net.SendOmit(ply)
 						end
 					end
-				elseif v.server and v.value and v.value ~= "" then
-					self:EmitSound(v.value)
+				elseif event.server and event.value and event.value ~= "" then
+					self:EmitSound(event.value)
 				end
-			elseif v.client and ply == LocalPlayer() and ( not sp ) and v.value and v.value ~= "" then
-				if v.time <= 0.01 then
-					self:EmitSoundSafe(v.value)
-				else
-					self:EmitSound(v.value)
+			elseif event.client and is_local and not sp and event.value and event.value ~= "" then
+				if firstprediction or firstprediction == nil then
+					if event.time <= 0.01 then
+						self:EmitSoundSafe(event.value)
+					else
+						self:EmitSound(event.value)
+					end
 				end
 			end
-		elseif v.type == "bg" or v.type == "bodygroup" then
-			if v.server == nil then v.server = true end
-			if v.view == nil then v.view = true end
-			if v.world == nil then v.world = true end
+		elseif event.type == "bg" or event.type == "bodygroup" then
+			if event.server == nil then event.server = true end
+			if event.view == nil then event.view = true end
+			if event.world == nil then event.world = true end
 
-			if (v.client and CLIENT and (not v.client_predictedonly or ply == LocalPlayer())) or (v.server and SERVER) and (v.name and v.value and v.value ~= "") then
-				if v.view then
-					self.Bodygroups_V[v.name] = v.value
+			if ((event.client and CLIENT and (not event.client_predictedonly or is_local)) or
+				(event.server and SERVER)) and (event.name and event.value and event.value ~= "") then
+
+				if event.view then
+					self.Bodygroups_V[event.name] = event.value
 				end
 
-				if v.world then
-					self.Bodygroups_W[v.name] = v.value
+				if event.world then
+					self.Bodygroups_W[event.name] = event.value
 				end
 			end
 		end

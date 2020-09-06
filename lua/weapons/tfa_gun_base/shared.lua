@@ -371,15 +371,27 @@ function SWEP:SetupDataTables()
 	self:NetworkVar("Bool", 5, "Customizing")
 	self:NetworkVar("Bool", 18, "FlashlightEnabled")
 	self:NetworkVar("Bool", 19, "Jammed")
+
 	self:NetworkVar("Float", 0, "StatusEnd")
 	self:NetworkVar("Float", 1, "NextIdleAnim")
 	self:NetworkVar("Float", 18, "NextLoopSoundCheck")
 	self:NetworkVar("Float", 19, "JamFactor")
+	self:NetworkVar("Float", 20, "EventTimer")
+
 	self:NetworkVar("Int", 0, "Status")
 	self:NetworkVar("Int", 1, "FireMode")
 	self:NetworkVar("Int", 2, "LastActivity")
 	self:NetworkVar("Int", 3, "BurstCount")
 	self:NetworkVar("Int", 4, "ShootStatus")
+	self:NetworkVar("Int", 5, "EventStatus1")
+	self:NetworkVar("Int", 6, "EventStatus2")
+	self:NetworkVar("Int", 7, "EventStatus3")
+	self:NetworkVar("Int", 8, "EventStatus4")
+	self:NetworkVar("Int", 9, "EventStatus5")
+	self:NetworkVar("Int", 10, "EventStatus6")
+	self:NetworkVar("Int", 11, "EventStatus7")
+	self:NetworkVar("Int", 12, "EventStatus8")
+
 	self:NetworkVar("Entity", 0, "SwapTarget")
 	hook.Run("TFA_SetupDataTables", self)
 
@@ -754,6 +766,7 @@ function SWEP:Think()
 	end
 
 	self2.ProcessLoopFire(self)
+	self2.ProcessEvents(self, IsFirstTimePredicted())
 end
 
 function SWEP:PlayerThink(plyv, is_working_out_prediction_errors)
@@ -845,7 +858,6 @@ function SWEP:Think2(is_working_out_prediction_errors)
 		self2.ProcessLoopSound(self)
 	end
 
-	self2.ProcessEvents(self)
 	--if is_working_out_prediction_errors then return end
 
 	if not sp or SERVER then
