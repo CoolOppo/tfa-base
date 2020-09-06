@@ -348,10 +348,10 @@ function TFA.tbezier(t, values, amount)
 		return a + (b - a) * t
 	-- square
 	elseif amount == 3 then
-		return (1 - t):pow(2) * a + 2 * t * (1 - t) * b + t:pow(2) * values[3]
+		return math.pow(1 - t, 2) * a + 2 * t * (1 - t) * b + math.pow(t, 2) * values[3]
 	-- cube
 	elseif amount == 4 then
-		return (1 - t):pow(3) * a + 3 * t * (1 - t):pow(2) * b + 3 * t:pow(2) * (1 - t) * values[3] + t:pow(3) * values[4]
+		return math.pow(1 - t, 3) * a + 3 * t * math.pow(1 - t, 2) * b + 3 * math.pow(t, 2) * (1 - t) * values[3] + math.pow(t, 3) * values[4]
 	end
 
 	for point = 1, amount do
