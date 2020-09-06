@@ -874,17 +874,21 @@ function SWEP:IronSights()
 	local ironsights_resight_cvar = (isplayer and owent:GetInfoNum("cl_tfa_ironsights_resight", 0) or 0) == 1
 
 	if isplayer and (SERVER or not sp) and self2.GetStat(self, "data.ironsights") ~= 0 then
-		if not ironsights_toggle_cvar then
-			if owent:KeyDown(IN_ATTACK2) then
-				issighting = true
+		if not TFA.Enum.ReloadStatus[stat] then
+			if not ironsights_toggle_cvar then
+				if owent:KeyDown(IN_ATTACK2) then
+					issighting = true
+				end
+			else
+				issighting = self:GetIronSightsRaw()
+
+				if owent:KeyPressed(IN_ATTACK2) then
+					issighting = not issighting
+					self:SetIronSightsRaw(issighting)
+				end
 			end
 		else
-			issighting = self:GetIronSightsRaw()
-
-			if owent:KeyPressed(IN_ATTACK2) then
-				issighting = not issighting
-				self:SetIronSightsRaw(issighting)
-			end
+			issighting = current_iron_sights
 		end
 	end
 
@@ -934,7 +938,7 @@ function SWEP:IronSights()
 		issighting = false
 	end
 
-	if issighting and not TFA.Enum.IronStatus[stat] then
+	if issighting and not TFA.Enum.IronStatus[stat] and (not self:GetStat("IronSightsReloadEnabled") or not TFA.Enum.ReloadStatus[stat]) then
 		issighting = false
 	end
 

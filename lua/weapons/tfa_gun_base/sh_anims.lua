@@ -126,6 +126,26 @@ SWEP.BaseAnimations = {
 		["type"] = TFA.Enum.ANIMATION_ACT,
 		["value"] = ACT_SHOTGUN_RELOAD_FINISH
 	},
+	["reload_is"] = {
+		["type"] = TFA.Enum.ANIMATION_ACT,
+		["value"] = ACT_VM_RELOAD_ADS
+	},
+	["reload_empty_is"] = {
+		["type"] = TFA.Enum.ANIMATION_ACT,
+		["value"] = ACT_VM_RELOAD_EMPTY_ADS
+	},
+	["reload_silenced_is"] = {
+		["type"] = TFA.Enum.ANIMATION_ACT,
+		["value"] = ACT_VM_RELOAD_SILENCED_ADS
+	},
+	["reload_shotgun_start_is"] = {
+		["type"] = TFA.Enum.ANIMATION_ACT,
+		["value"] = ACT_SHOTGUN_RELOAD_START_ADS
+	},
+	["reload_shotgun_finish_is"] = {
+		["type"] = TFA.Enum.ANIMATION_ACT,
+		["value"] = ACT_SHOTGUN_RELOAD_FINISH_ADS
+	},
 	["holster"] = {
 		["type"] = TFA.Enum.ANIMATION_ACT, --Sequence or act
 		["value"] = ACT_VM_HOLSTER
@@ -197,6 +217,12 @@ end
 function SWEP:BuildAnimActivities()
 	local self2 = self:GetTable()
 	self2.AnimationActivities = self2.AnimationActivities or {}
+
+	for k, v in pairs(self2.BaseAnimations) do
+		if v.value then
+			self2.AnimationActivities[v.value] = k
+		end
+	end
 
 	for k, _ in pairs(self2.BaseAnimations) do
 		local kvt = self2.GetStat(self, "Animations." .. k)
@@ -451,7 +477,7 @@ end
 
 local tval
 
-function SWEP:PlayAnimation(data, fade)
+function SWEP:PlayAnimation(data, fade, rate, targ)
 	local self2 = self:GetTable()
 	if not self:VMIV() then return end
 	if not data then return false, -1 end
@@ -492,7 +518,7 @@ function SWEP:PlayAnimation(data, fade)
 			tval = tonumber(tval) or -1
 		end
 
-		if tval and tval > 0 then return self:SendViewModelAnim(tval, 1, false, fade or (data.transition and self2.Idle_Blend or self2.Idle_Smooth) ) end
+		if tval and tval > 0 then return self:SendViewModelAnim(tval, rate or 1, targ, fade or (data.transition and self2.Idle_Blend or self2.Idle_Smooth) ) end
 	elseif data.type == TFA.Enum.ANIMATION_SEQ then
 		tval = data.value
 
@@ -528,7 +554,7 @@ function SWEP:PlayAnimation(data, fade)
 			tval = vm:LookupSequence(tval)
 		end
 
-		if tval and tval > 0 then return self:SendViewModelSeq(tval, 1, false, fade or (data.transition and self2.Idle_Blend or self2.Idle_Smooth) ) end
+		if tval and tval > 0 then return self:SendViewModelSeq(tval, rate or 1, targ, fade or (data.transition and self2.Idle_Blend or self2.Idle_Smooth) ) end
 	end
 end
 
@@ -729,12 +755,14 @@ function SWEP:ChooseReloadAnim()
 	if not self:VMIV() then return false, 0 end
 	if self2.ProceduralReloadEnabled then return false, 0 end
 
+	local ads = self:GetStat("IronSightsReloadEnabled") and self:GetIronSightsDirect()
+
 	if self:GetActivityEnabled(ACT_VM_RELOAD_SILENCED) and self2.GetSilenced(self) then
-		typev, tanim = self:ChooseAnimation("reload_silenced")
-	elseif self:GetActivityEnabled(ACT_VM_RELOAD_EMPTY) and (self:Clip1() == 0 or self:IsJammed())and not self2.Shotgun then
-		typev, tanim = self:ChooseAnimation("reload_empty")
+		typev, tanim = self:ChooseAnimation((ads and self:GetActivityEnabled(ACT_VM_RELOAD_SILENCED_ADS)) and "reload_silenced_is" or "reload_silenced")
+	elseif self:GetActivityEnabled(ACT_VM_RELOAD_EMPTY) and (self:Clip1() == 0 or self:IsJammed()) and not self2.Shotgun then
+		typev, tanim = self:ChooseAnimation((ads and self:GetActivityEnabled(ACT_VM_RELOAD_EMPTY_ADS)) and "reload_empty_is" or "reload_empty")
 	else
-		typev, tanim = self:ChooseAnimation("reload")
+		typev, tanim = self:ChooseAnimation((ads and self:GetActivityEnabled(ACT_VM_RELOAD_ADS)) and "reload_is" or "reload")
 	end
 
 	local fac = 1
@@ -769,12 +797,14 @@ function SWEP:ChooseShotgunReloadAnim()
 	local self2 = self:GetTable()
 	if not self:VMIV() then return end
 
+	local ads = self:GetStat("IronSightsReloadEnabled") and self:GetIronSightsDirect()
+
 	if self:GetActivityEnabled(ACT_VM_RELOAD_SILENCED) and self2.GetSilenced(self) then
-		typev, tanim = self:ChooseAnimation("reload_silenced")
+		typev, tanim = self:ChooseAnimation((ads and self:GetActivityEnabled(ACT_VM_RELOAD_SILENCED_ADS)) and "reload_silenced_is" or "reload_silenced")
 	elseif self:GetActivityEnabled(ACT_VM_RELOAD_EMPTY) and self2.ShotgunEmptyAnim and (self:Clip1() == 0 or self:IsJammed()) then
-		typev, tanim = self:ChooseAnimation("reload_empty")
+		typev, tanim = self:ChooseAnimation((ads and self:GetActivityEnabled(ACT_VM_RELOAD_EMPTY_ADS)) and "reload_empty_is" or "reload_empty")
 	elseif self2.SequenceEnabled[ACT_SHOTGUN_RELOAD_START] then
-		typev, tanim = self:ChooseAnimation("reload_shotgun_start")
+		typev, tanim = self:ChooseAnimation((ads and self:GetActivityEnabled(ACT_SHOTGUN_RELOAD_START_ADS)) and "reload_shotgun_start_is" or "reload_shotgun_start")
 	else
 		local _
 		_, tanim = self:ChooseIdleAnim()
@@ -791,7 +821,10 @@ end
 
 function SWEP:ChooseShotgunPumpAnim()
 	if not self:VMIV() then return end
-	typev, tanim = self:ChooseAnimation("reload_shotgun_finish")
+
+	local ads = self:GetStat("IronSightsReloadEnabled") and self:GetIronSightsDirect()
+
+	typev, tanim = self:ChooseAnimation((ads and self:GetActivityEnabled(ACT_SHOTGUN_RELOAD_START_ADS)) and "reload_shotgun_finish_is" or "reload_shotgun_finish")
 
 	if typev ~= TFA.Enum.ANIMATION_SEQ then
 		return self:SendViewModelAnim(tanim)
