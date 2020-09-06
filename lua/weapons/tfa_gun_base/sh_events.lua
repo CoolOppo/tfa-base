@@ -46,6 +46,15 @@ function SWEP:ResetEvents()
 	self:SetEventStatus8(0x00000000)
 
 	self:SetEventTimer(l_CT())
+
+	if self.EventTable then
+		for k, eventtable in pairs(self.EventTable) do
+			for i = 1, #eventtable do
+				eventtable[i].called = false
+			end
+		end
+
+	end
 end
 
 function SWEP:GetEventPlayed(event_slot)
@@ -119,6 +128,7 @@ function SWEP:ProcessEvents(firstprediction)
 	local isplayer = ply:IsPlayer()
 
 	local evtbl = self.EventTableBuilt[self:GetLastActivity() or -1] or self.EventTableBuilt[viewmodel:GetSequenceName(viewmodel:GetSequence())]
+	local evtbl2 = self.EventTable[self:GetLastActivity() or -1] or self.EventTable[viewmodel:GetSequenceName(viewmodel:GetSequence())]
 	if not evtbl then return end
 
 	local curtime = l_CT()
@@ -130,6 +140,10 @@ function SWEP:ProcessEvents(firstprediction)
 		local event = evtbl[i]
 		if self:GetEventPlayed(event.slot) or curtime < eventtimer + event.time / animrate then goto CONTINUE end
 		self:SetEventPlayed(event.slot)
+
+		if evtbl2 and evtbl2[i] then
+			evtbl2[i].called = true
+		end
 
 		if event.type == "lua" then
 			if ((event.client and CLIENT and (not event.client_predictedonly or is_local)) or (event.server and SERVER)) and event.value then
