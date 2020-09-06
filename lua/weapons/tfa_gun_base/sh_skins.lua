@@ -56,6 +56,4 @@ function SWEP:ClearMaterialCache(view, world)
 			self.SCKMaterialCached_W = nil
 		end
 	end
-
-	self:ClearStatCache()
 end
