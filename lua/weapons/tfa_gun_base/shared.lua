@@ -886,6 +886,9 @@ function SWEP:Think2(is_working_out_prediction_errors)
 	self2.ProcessStatus(self)
 end
 
+SWEP.IronSightsReloadEnabled = false
+SWEP.IronSightsReloadLock = true
+
 function SWEP:IronSights()
 	local self2 = self:GetTable()
 	local owent = self:GetOwner()
@@ -918,7 +921,7 @@ function SWEP:IronSights()
 					self:SetIronSightsRaw(issighting)
 				end
 			end
-		else
+		elseif self2.GetStat(self, "IronSightsReloadLock", true) then
 			issighting = current_iron_sights
 		end
 	end

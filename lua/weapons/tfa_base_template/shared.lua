@@ -251,6 +251,7 @@ SWEP.Bodygroups_V = nil -- {
 SWEP.AllowIronSightsDoF = true -- whenever allow DoF effect on viewmodel when zoomed in with iron sights
 
 SWEP.IronSightsReloadEnabled = nil -- Enable ADS reload animations support (requires animations to be enabled in SWEP.Animations)
+SWEP.IronSightsReloadLock = true -- Lock ADS state when reloading
 
 -- WORLDMODEL
 SWEP.WorldModel         = "models/your/wmodel/path/here.mdl" -- Weapon world model path
