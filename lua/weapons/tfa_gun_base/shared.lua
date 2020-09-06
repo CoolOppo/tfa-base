@@ -392,6 +392,16 @@ function SWEP:SetupDataTables()
 	self:NetworkVar("Int", 11, "EventStatus7")
 	self:NetworkVar("Int", 12, "EventStatus8")
 
+	if not self.get_event_status_lut then
+		self.get_event_status_lut = {}
+		self.set_event_status_lut = {}
+
+		for i = 1, 8 do
+			self.get_event_status_lut[i] = self['GetEventStatus' .. i]
+			self.set_event_status_lut[i] = self['SetEventStatus' .. i]
+		end
+	end
+
 	self:NetworkVar("Entity", 0, "SwapTarget")
 	hook.Run("TFA_SetupDataTables", self)
 

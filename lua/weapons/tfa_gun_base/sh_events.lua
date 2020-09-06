@@ -59,53 +59,17 @@ end
 
 function SWEP:GetEventPlayed(event_slot)
 	local inner_index = event_slot % 32
-	local outer_index = (event_slot - inner_index) / 32
+	local outer_index = (event_slot - inner_index) / 32 + 1
 	local lindex = lshift(1, inner_index)
-
-	if outer_index == 0 then
-		return band(lindex, self:GetEventStatus1()) ~= 0, inner_index, outer_index, lindex
-	elseif outer_index == 1 then
-		return band(lindex, self:GetEventStatus2()) ~= 0, inner_index, outer_index, lindex
-	elseif outer_index == 2 then
-		return band(lindex, self:GetEventStatus3()) ~= 0, inner_index, outer_index, lindex
-	elseif outer_index == 3 then
-		return band(lindex, self:GetEventStatus4()) ~= 0, inner_index, outer_index, lindex
-	elseif outer_index == 4 then
-		return band(lindex, self:GetEventStatus5()) ~= 0, inner_index, outer_index, lindex
-	elseif outer_index == 5 then
-		return band(lindex, self:GetEventStatus6()) ~= 0, inner_index, outer_index, lindex
-	elseif outer_index == 6 then
-		return band(lindex, self:GetEventStatus7()) ~= 0, inner_index, outer_index, lindex
-	elseif outer_index == 7 then
-		return band(lindex, self:GetEventStatus8()) ~= 0, inner_index, outer_index, lindex
-	end
-
-	return false, inner_index, outer_index, lindex
+	return band(self.get_event_status_lut[outer_index](self), lindex) ~= 0, inner_index, outer_index, lindex
 end
 
 function SWEP:SetEventPlayed(event_slot)
 	local inner_index = event_slot % 32
-	local outer_index = (event_slot - inner_index) / 32
+	local outer_index = (event_slot - inner_index) / 32 + 1
 	local lindex = lshift(1, inner_index)
 
-	if outer_index == 0 then
-		self:SetEventStatus1(bor(self:GetEventStatus1(), lindex))
-	elseif outer_index == 1 then
-		self:SetEventStatus2(bor(self:GetEventStatus2(), lindex))
-	elseif outer_index == 2 then
-		self:SetEventStatus3(bor(self:GetEventStatus3(), lindex))
-	elseif outer_index == 3 then
-		self:SetEventStatus4(bor(self:GetEventStatus4(), lindex))
-	elseif outer_index == 4 then
-		self:SetEventStatus5(bor(self:GetEventStatus5(), lindex))
-	elseif outer_index == 5 then
-		self:SetEventStatus6(bor(self:GetEventStatus6(), lindex))
-	elseif outer_index == 6 then
-		self:SetEventStatus7(bor(self:GetEventStatus7(), lindex))
-	elseif outer_index == 7 then
-		self:SetEventStatus8(bor(self:GetEventStatus8(), lindex))
-	end
-
+	self.set_event_status_lut[outer_index](self, bor(self.get_event_status_lut[outer_index](self), lindex))
 	return inner_index, outer_index, lindex
 end
 
