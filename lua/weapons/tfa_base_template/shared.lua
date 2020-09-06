@@ -228,9 +228,9 @@ SWEP.MoveSpeed = 1 -- Multiply the player's movespeed by this.
 SWEP.IronSightsMoveSpeed = 0.8 -- Multiply the player's movespeed by this when sighting.
 
 -- PROJECTILES
-SWEP.ProjectileEntity = nil -- Entity to shoot
-SWEP.ProjectileVelocity = 0 -- Entity to shoot's velocity
-SWEP.ProjectileModel = nil -- Entity to shoot's model
+SWEP.Primary.Projectile = nil -- Entity to shoot
+SWEP.Primary.ProjectileVelocity = 0 -- Entity to shoot's velocity
+SWEP.Primary.ProjectileModel = nil -- Entity to shoot's model
 
 -- VIEWMODEL
 SWEP.ViewModel          = "models/your/path/here.mdl" -- Viewmodel path
