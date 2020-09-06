@@ -332,13 +332,15 @@ function TFA.FrameTime()
 	return engine.TickInterval() * game.GetTimeScale()
 end
 
-function TFA.tbezier(t, values)
+local buffer = {}
+
+function TFA.tbezier(t, values, amount)
 	if DLib then return math.tbezier(t, values) end
 
 	assert(type(t) == 'number', 'invalid T variable')
 	assert(t >= 0 and t <= 1, '0 <= t <= 1!')
 	assert(#values >= 2, 'at least two values must be provided')
-	local amount = #values
+	amount = amount or #values
 	local a, b = values[1], values[2]
 
 	-- linear
@@ -359,7 +361,7 @@ function TFA.tbezier(t, values)
 		buffer[point] = point1 + (point2 - point1) * t
 	end
 
-	return tbezier(t, buffer, amount - 1)
+	return TFA.tbezier(t, buffer, amount - 1)
 end
 
 function TFA.Quintic(t)
