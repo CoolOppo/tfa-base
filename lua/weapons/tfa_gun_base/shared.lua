@@ -371,6 +371,7 @@ function SWEP:SetupDataTables()
 	self:NetworkVar("Bool", 5, "Customizing")
 	self:NetworkVar("Bool", 18, "FlashlightEnabled")
 	self:NetworkVar("Bool", 19, "Jammed")
+	self:NetworkVar("Bool", 20, "FirstDeployEvent")
 
 	self:NetworkVar("Float", 0, "StatusEnd")
 	self:NetworkVar("Float", 1, "NextIdleAnim")
@@ -585,6 +586,7 @@ function SWEP:Deploy()
 	end
 
 	self:SetStatus(TFA.Enum.STATUS_DRAW)
+	self:SetFirstDeployEvent(true)
 
 	local len = self:GetActivityLength(tanim)
 
@@ -776,7 +778,10 @@ function SWEP:Think()
 	end
 
 	self2.ProcessLoopFire(self)
-	self2.ProcessEvents(self, IsFirstTimePredicted())
+
+	if not self:GetFirstDeployEvent() then
+		self2.ProcessEvents(self, IsFirstTimePredicted())
+	end
 end
 
 function SWEP:PlayerThink(plyv, is_working_out_prediction_errors)
@@ -866,6 +871,10 @@ function SWEP:Think2(is_working_out_prediction_errors)
 		self2.ReloadCV(self)
 		self2.IronSightSounds(self)
 		self2.ProcessLoopSound(self)
+	end
+
+	if self:GetFirstDeployEvent() then
+		self2.ProcessEvents(self, not is_working_out_prediction_errors)
 	end
 
 	--if is_working_out_prediction_errors then return end

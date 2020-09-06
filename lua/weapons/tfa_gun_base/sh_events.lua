@@ -46,6 +46,7 @@ function SWEP:ResetEvents()
 	self:SetEventStatus8(0x00000000)
 
 	self:SetEventTimer(l_CT())
+	-- self:SetFirstDeployEvent(false)
 
 	if self.EventTable then
 		for k, eventtable in pairs(self.EventTable) do
@@ -204,6 +205,7 @@ function SWEP:ProcessStatus()
 	ct = l_CT()
 
 	if stat ~= TFA.Enum.STATUS_IDLE and ct > statend then
+		self:SetFirstDeployEvent(false)
 		finalstat = TFA.Enum.STATUS_IDLE
 
 		--Holstering
