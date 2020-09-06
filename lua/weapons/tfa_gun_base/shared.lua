@@ -746,6 +746,14 @@ function SWEP:Think()
 		if self2.ThinkNPC then self2.ThinkNPC(self) end
 		self2.Think2(self, false)
 	end
+
+	stat = self2.GetStatus(self)
+
+	if ct > self:GetNextIdleAnim() and (TFA.Enum.ReadyStatus[stat] or (stat == TFA.Enum.STATUS_SHOOTING and TFA.Enum.ShootLoopingStatus[self:GetShootStatus()])) then
+		self:ChooseIdleAnim()
+	end
+
+	self2.ProcessLoopFire(self)
 end
 
 function SWEP:PlayerThink(plyv, is_working_out_prediction_errors)
@@ -830,7 +838,6 @@ function SWEP:Think2(is_working_out_prediction_errors)
 
 		self2.ProcessBodygroups(self)
 
-		self2.ProcessEvents(self)
 		self2.ProcessFireMode(self)
 		self2.ProcessHoldType(self)
 		self2.ReloadCV(self)
@@ -838,6 +845,7 @@ function SWEP:Think2(is_working_out_prediction_errors)
 		self2.ProcessLoopSound(self)
 	end
 
+	self2.ProcessEvents(self)
 	--if is_working_out_prediction_errors then return end
 
 	if not sp or SERVER then
@@ -845,14 +853,6 @@ function SWEP:Think2(is_working_out_prediction_errors)
 	end
 
 	self2.ProcessStatus(self)
-	self2.ProcessLoopFire(self)
-	stat = self2.GetStatus(self)
-
-	if not sp or SERVER then
-		if ct > self:GetNextIdleAnim() and (TFA.Enum.ReadyStatus[stat] or (stat == TFA.Enum.STATUS_SHOOTING and TFA.Enum.ShootLoopingStatus[self:GetShootStatus()])) then
-			self:ChooseIdleAnim()
-		end
-	end
 end
 
 function SWEP:IronSights()

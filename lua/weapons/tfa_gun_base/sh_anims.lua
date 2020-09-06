@@ -333,10 +333,11 @@ function SWEP:SendViewModelAnim(act, rate, targ, blend)
 		if seq < 0 then return false, act end
 	end
 
-	self2.LastAct = act
+	local preLastActivity = self:GetLastActivity()
+	self:SetLastActivity(act)
 	self:ResetEvents()
 
-	if self:GetLastActivity() == act and ServersideLooped[act] then
+	if preLastActivity == act and ServersideLooped[act] then
 		self:ChooseIdleAnim()
 		d = vm:SequenceDuration(seq)
 		pbr = targ and (d / (rate or 1)) or (rate or 1)
@@ -363,7 +364,6 @@ function SWEP:SendViewModelAnim(act, rate, targ, blend)
 
 					self:SetNextIdleAnim(CurTime() + d / pbr - blend)
 					self:SetLastActivity(act)
-					self2.LastAct = act
 				end
 			end)
 		end
@@ -382,8 +382,6 @@ function SWEP:SendViewModelAnim(act, rate, targ, blend)
 
 		self:SetNextIdleAnim(CurTime() + math.max(d / pbr - blend, self2.Idle_Smooth))
 	end
-
-	self:SetLastActivity(act)
 
 	return true, act
 end
@@ -425,10 +423,12 @@ function SWEP:SendViewModelSeq(seq, rate, targ, blend)
 	end
 
 	if seq < 0 then return false, act end
-	self2.LastAct = act
+
+	local preLastActivity = self:GetLastActivity()
+	self:SetLastActivity(act)
 	self:ResetEvents()
 
-	if self:GetLastActivity() == act and ServersideLooped[act] then
+	if preLastActivity == act and ServersideLooped[act] then
 		vm:SendViewModelMatchingSequence(act == 0 and 1 or 0)
 		vm:SetPlaybackRate(0)
 		vm:SetCycle(0)
@@ -448,7 +448,6 @@ function SWEP:SendViewModelSeq(seq, rate, targ, blend)
 
 					self:SetNextIdleAnim(CurTime() + d / pbr - blend)
 					self:SetLastActivity(act)
-					self2.LastAct = act
 				end
 			end)
 		end
@@ -469,8 +468,6 @@ function SWEP:SendViewModelSeq(seq, rate, targ, blend)
 			self:SetNextIdleAnim(CurTime() + d / pbr - blend)
 		end
 	end
-
-	self:SetLastActivity(act)
 
 	return true, act
 end

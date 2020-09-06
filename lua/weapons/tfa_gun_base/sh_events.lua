@@ -68,15 +68,11 @@ function SWEP:ProcessEvents()
 		self:ResetEvents()
 	end
 
-	if sp then
-		self.LastAct = self:GetLastActivity()
-	end
-
-	local evtbl = self.EventTable[self.LastAct or self:GetLastActivity()] or self.EventTable[viewmodel:GetSequenceName(viewmodel:GetSequence())]
+	local evtbl = self.EventTable[self:GetLastActivity() or -1] or self.EventTable[viewmodel:GetSequenceName(viewmodel:GetSequence())]
 	if not evtbl then return end
 
 	for _, v in pairs(evtbl) do
-		if v.called or l_CT() < self.EventTimer + v.time / self:GetAnimationRate(self.LastAct or self:GetLastActivity()) then goto CONTINUE end
+		if v.called or l_CT() < self.EventTimer + v.time / self:GetAnimationRate(self:GetLastActivity() or -1) then goto CONTINUE end
 		v.called = true
 
 		if v.client == nil then

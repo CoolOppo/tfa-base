@@ -93,8 +93,6 @@ function SWEP:ChoosePullAnim()
 		self:CallOnClient("AnimForce", tanim)
 	end
 
-	self.lastact = tanim
-
 	return success, tanim
 end
 
@@ -118,8 +116,6 @@ function SWEP:ChooseShootAnim()
 	if game.SinglePlayer() then
 		self:CallOnClient("AnimForce", tanim)
 	end
-
-	self.lastact = tanim
 
 	return success, tanim
 end
