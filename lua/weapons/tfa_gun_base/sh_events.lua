@@ -132,18 +132,10 @@ function SWEP:ProcessEvents(firstprediction)
 		self:SetEventPlayed(event.slot)
 
 		if event.type == "lua" then
-			if event.server == nil then
-				event.server = true
-			end
-
 			if ((event.client and CLIENT and (not event.client_predictedonly or is_local)) or (event.server and SERVER)) and event.value then
 				event.value(self, viewmodel)
 			end
 		elseif event.type == "snd" or event.type == "sound" then
-			if event.server == nil then
-				event.server = false
-			end
-
 			if SERVER then
 				if event.client then
 					if not isplayer and player.GetCount() ~= 0 then
@@ -175,10 +167,6 @@ function SWEP:ProcessEvents(firstprediction)
 				end
 			end
 		elseif event.type == "bg" or event.type == "bodygroup" then
-			if event.server == nil then event.server = true end
-			if event.view == nil then event.view = true end
-			if event.world == nil then event.world = true end
-
 			if ((event.client and CLIENT and (not event.client_predictedonly or is_local)) or
 				(event.server and SERVER)) and (event.name and event.value and event.value ~= "") then
 
