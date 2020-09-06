@@ -337,7 +337,7 @@ local buffer = {}
 function TFA.tbezier(t, values, amount)
 	if DLib then return math.tbezier(t, values) end
 
-	assert(type(t) == 'number', 'invalid T variable')
+	assert(isnumber(t), 't is not a number')
 	assert(t >= 0 and t <= 1, '0 <= t <= 1!')
 	assert(#values >= 2, 'at least two values must be provided')
 	amount = amount or #values
@@ -348,10 +348,10 @@ function TFA.tbezier(t, values, amount)
 		return a + (b - a) * t
 	-- square
 	elseif amount == 3 then
-		return (1 - t):pow(2) * a + 2 * t * (1 - t) * b + t:pow(2) * values[3]
+		return (1 - t) * (1 - t) * a + 2 * t * (1 - t) * b + t * t * values[3]
 	-- cube
 	elseif amount == 4 then
-		return (1 - t):pow(3) * a + 3 * t * (1 - t):pow(2) * b + 3 * t:pow(2) * (1 - t) * values[3] + t:pow(3) * values[4]
+		return (1 - t) * (1 - t) * (1 - t) * a + 3 * t * (1 - t) * (1 - t) * b + 3 * t * t * (1 - t) * values[3] + t * t * t * values[4]
 	end
 
 	for point = 1, amount do
