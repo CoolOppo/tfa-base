@@ -102,12 +102,14 @@ if CLIENT then
 		if LocalPlayer():IsValid() and IsValid(LocalPlayer():GetActiveWeapon()) and att_enabled_cv:GetBool() then
 			local w = LocalPlayer():GetActiveWeapon()
 
-			if not w.Attachments then
-				tfablurintensity = 0
-			elseif table.Count(w.Attachments) <= 0 then
-				tfablurintensity = 0
-			else
-				tfablurintensity = w:GetCustomizing() and 1 or 0
+			if w.IsTFAWeapon then
+				if not w.Attachments then
+					tfablurintensity = 0
+				elseif table.Count(w.Attachments) <= 0 then
+					tfablurintensity = 0
+				else
+					tfablurintensity = w:GetCustomizing() and 1 or 0
+				end
 			end
 		end
 
