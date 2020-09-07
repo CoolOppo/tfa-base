@@ -1232,7 +1232,7 @@ function SWEP:EmitGunfireLoop()
 		tgtSound = self:GetStat("Primary.LoopSoundSilenced", tgtSound)
 	end
 
-	if SERVER or not self:IsFirstPerson() then
+	if (not sp and SERVER) or not self:IsFirstPerson() then
 		tgtSound = self:GetSilenced() and self:GetStat("Primary.LoopSoundSilenced_World", tgtSound) or self:GetStat("Primary.LoopSound_World", tgtSound)
 	end
 
@@ -1335,7 +1335,7 @@ function SWEP:PrimaryAttack()
 				tgtSound = self:GetStat("Primary.SilencedSound", tgtSound)
 			end
 
-			if SERVER or not self:IsFirstPerson() then
+			if (not sp and SERVER) or not self:IsFirstPerson() then
 				tgtSound = self:GetSilenced() and self:GetStat("Primary.SilencedSound_World", tgtSound) or self:GetStat("Primary.Sound_World", tgtSound)
 			end
 
