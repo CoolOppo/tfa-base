@@ -110,8 +110,13 @@ function SWEP:AltAttack()
 
 	if self:IsSafety() or self:GetHolding() then return end
 
+	local retVal = hook.Run("TFA_CanBash", self)
+	if retVal == false then return end
+
 	local enabled, act = self:ChooseBashAnim()
 	if not enabled then return end
+
+	hook.Run("TFA_Bash", self)
 
 	if self:GetOwner().Vox and IsFirstTimePredicted() then
 		self:GetOwner():Vox("bash", 0)
@@ -131,6 +136,8 @@ function SWEP:AltAttack()
 	self:SetStatusEnd(time + (bashend or self:GetActivityLength(act, true)))
 
 	self:SetNW2Float("BashTTime", time + self:GetStat("Secondary.BashDelay"))
+
+	hook.Run("TFA_PostBash", self)
 end
 
 function SWEP:BashAnim()

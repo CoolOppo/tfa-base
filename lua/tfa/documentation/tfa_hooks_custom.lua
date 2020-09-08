@@ -75,4 +75,8 @@ TFA_IronSightSounds(wepom) --called when we actually play a sound; return to pre
 TFA_DrawCrosshair(wepom, x, y) -- crosshair; return false to draw only hl2 crosshair, true to prevent drawing both
 TFA_DrawHUDAmmo(wepom, x, y, alpha) -- 3d2d ammo indicator; return false to disable, true to override values (return true, x, y, alpha)
 TFA_DrawScopeOverlay(wepom) -- called when 2d scope overlay is drawn; return true to prevent
+--bash
+TFA_CanBash(wepom) -- called before bashing; return false to prevent bashing
+TFA_Bash(wepom) -- called after all checks, animation started playing
+TFA_PostBash(wepom) -- do things here
 ]]
