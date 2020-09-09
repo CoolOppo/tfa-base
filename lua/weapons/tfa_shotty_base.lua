@@ -19,6 +19,9 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
-AddCSLuaFile("cl_init.lua")
-AddCSLuaFile("shared.lua")
-include("shared.lua")
+if SERVER then
+	AddCSLuaFile()
+end
+
+DEFINE_BASECLASS("tfa_gun_base")
+SWEP.Shotgun = true

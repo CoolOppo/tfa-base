@@ -19,6 +19,10 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
+if SERVER then
+	AddCSLuaFile()
+end
+
 DEFINE_BASECLASS("tfa_nade_base")
 
 SWEP.MuzzleFlashEffect = ""

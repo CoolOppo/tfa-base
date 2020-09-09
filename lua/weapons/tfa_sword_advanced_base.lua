@@ -19,6 +19,14 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
+if SERVER then
+	AddCSLuaFile()
+end
+
+-- This base is kept for backward compatiblity purposes
+-- This should not, on any meaning, be utilized in newer SWEPS
+-- Look at melee base/knife base
+
 --[[
 PLEASE DON TUSE THIS ANYMIRE
 PLEASe
