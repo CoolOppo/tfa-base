@@ -1157,7 +1157,7 @@ function SWEP:CanPrimaryAttack()
 		return false
 	end
 
-	if self:GetSprinting() and not self:GetStat("AllowSprintAttack", false) then
+	if self:GetNW2Float("SprintProgress", 0) >= 0.1 and not self:GetStat("AllowSprintAttack", false) then
 		return false
 	end
 
