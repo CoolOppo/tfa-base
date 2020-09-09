@@ -19,13 +19,15 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
+local CurTime = CurTime
+
 DEFINE_BASECLASS("tfa_gun_base")
 SWEP.Type = "Grenade"
 SWEP.MuzzleFlashEffect = ""
 SWEP.data = {}
 SWEP.data.ironsights = 0
 SWEP.Delay = 0.3 -- Delay to fire entity
-SWEP.Delay_Underhand = 0.3 -- Delay to fire entity
+SWEP.Delay_Underhand = 0.3 -- Delay to fire entity when underhand
 SWEP.Primary.Round = "" -- Nade Entity
 SWEP.Velocity = 550 -- Entity Velocity
 SWEP.Underhanded = false
@@ -43,38 +45,76 @@ function SWEP:Initialize()
 		nzombies = engine.ActiveGamemode() == "nzombies"
 	end
 
-	self.ProjectileEntity = self.Primary.Round --Entity to shoot
-	self.ProjectileVelocity = self.Velocity and self.Velocity or 550 --Entity to shoot's velocity
-	self.ProjectileModel = nil --Entity to shoot's model
-	self:SetNW2Bool("Ready", false)
+	self.ProjectileEntity = self.ProjectileEntity or self.Primary.Round -- Entity to shoot
+	self.ProjectileVelocity = self.Velocity and self.Velocity or 550 	-- Entity to shoot's velocity
+	self.ProjectileModel = nil 											-- Entity to shoot's model
+
 	self:SetNW2Bool("Underhanded", false)
 
 	BaseClass.Initialize(self)
 end
 
+local cl_defaultweapon = GetConVar("cl_defaultweapon")
+
+function SWEP:SwitchToPreviousWeapon()
+	local wep = LocalPlayer():GetPreviousWeapon()
+
+	if IsValid(wep) and wep:IsWeapon() and wep:GetOwner() == LocalPlayer() then
+		input.SelectWeapon(wep)
+	else
+		wep = LocalPlayer():GetWeapon(cl_defaultweapon:GetString())
+
+		if IsValid(wep) then
+			input.SelectWeapon(wep)
+		else
+			local _
+			_, wep = next(LocalPlayer():GetWeapons())
+
+			if IsValid(wep) then
+				input.SelectWeapon(wep)
+			else
+				-- i have no idea
+			end
+		end
+	end
+end
+
 function SWEP:Deploy()
 	if self:Clip1() <= 0 then
 		if self:Ammo1() <= 0 then
-			timer.Simple(0, function()
-				if IsValid(self) and self:OwnerIsValid() and SERVER and not nzombies then
-					self:GetOwner():StripWeapon(self:GetClass())
+			if self:GetOwner():IsPlayer() then
+				if CLIENT and not sp then
+					self:SwitchToPreviousWeapon()
+				elseif SERVER and not nzombies then
+					if sp then
+						self:CallOnClient("SwitchToPreviousWeapon", "")
+						local ply = self:GetOwner()
+						local classname = self:GetClass()
+						timer.Simple(0, function() ply:StripWeapon(classname) end)
+					else
+						self:GetOwner():StripWeapon(self:GetClass())
+					end
 				end
-			end)
+			end
 		else
-			self:TakePrimaryAmmo(1,true)
+			self:TakePrimaryAmmo(1, true)
 			self:SetClip1(1)
 		end
 	end
 
-	self:SetNW2Bool("Ready", false)
 	self:SetNW2Bool("Underhanded", false)
+
 	self.oldang = self:GetOwner():EyeAngles()
 	self.anga = Angle()
 	self.angb = Angle()
 	self.angc = Angle()
+
 	self:CleanParticles()
-	BaseClass.Deploy(self)
+
+	return BaseClass.Deploy(self)
 end
+
+local sp = game.SinglePlayer()
 
 function SWEP:ChoosePullAnim()
 	if not self:OwnerIsValid() then return end
@@ -83,17 +123,17 @@ function SWEP:ChoosePullAnim()
 		self.Callback.ChoosePullAnim(self)
 	end
 
-	self:GetOwner():SetAnimation(PLAYER_RELOAD)
-	--self:ResetEvents()
-	local tanim = ACT_VM_PULLPIN
-	local success = true
-	self:SendViewModelAnim(ACT_VM_PULLPIN)
-
-	if game.SinglePlayer() then
-		self:CallOnClient("AnimForce", tanim)
+	if self:GetOwner():IsPlayer() then
+		self:GetOwner():SetAnimation(PLAYER_RELOAD)
 	end
 
-	return success, tanim
+	self:SendViewModelAnim(ACT_VM_PULLPIN)
+
+	if sp then
+		self:CallOnClient("AnimForce", ACT_VM_PULLPIN)
+	end
+
+	return true, ACT_VM_PULLPIN
 end
 
 function SWEP:ChooseShootAnim()
@@ -103,138 +143,92 @@ function SWEP:ChooseShootAnim()
 		self.Callback.ChooseShootAnim(self)
 	end
 
-	self:GetOwner():SetAnimation(PLAYER_ATTACK1)
-	--self:ResetEvents()
-	local mybool = self:GetNW2Bool("Underhanded", false)
-	local tanim = mybool and ACT_VM_RELEASE or ACT_VM_THROW
-	if not self.SequenceEnabled[ACT_VM_RELEASE] then
-		tanim = ACT_VM_THROW
+	if self:GetOwner():IsPlayer() then
+		self:GetOwner():SetAnimation(PLAYER_ATTACK1)
 	end
-	local success = true
+
+	local tanim = self:GetNW2Bool("Underhanded", false) and self.SequenceEnabled[ACT_VM_RELEASE] and ACT_VM_RELEASE or ACT_VM_THROW
 	self:SendViewModelAnim(tanim)
 
-	if game.SinglePlayer() then
+	if sp then
 		self:CallOnClient("AnimForce", tanim)
 	end
 
-	return success, tanim
+	return true, tanim
 end
 
 function SWEP:ThrowStart()
-	if self:Clip1() > 0 then
-		local _, tanim = self:ChooseShootAnim()
-		self:SetStatus( TFA.GetStatus("grenade_throw") )
-		self:SetStatusEnd( CurTime() + (self.SequenceLengthOverride[tanim] or self.OwnerViewModel:SequenceDuration()) )
-		local bool = self:GetNW2Bool("Underhanded", false)
+	if self:Clip1() <= 0 then return end
 
-		if bool then
-			timer.Simple(self.Delay_Underhand, function()
-				if IsValid(self) and self:OwnerIsValid() then
-					self:Throw()
-				end
-			end)
-		else
-			timer.Simple(self.Delay, function()
-				if IsValid(self) and self:OwnerIsValid() then
-					self:Throw()
-				end
-			end)
-		end
+	local _, tanim = self:ChooseShootAnim()
+
+	self:SetStatus(TFA.Enum.STATUS_GRENADE_THROW)
+	local delay = self:GetNW2Bool("Underhanded", false) and self.Delay_Underhand or self.Delay
+	self:SetStatusEnd(CurTime() + delay)
+
+	if IsFirstTimePredicted() then
+		self.LastNadeAnim = tanim
+		self.LastNadeDelay = delay
 	end
 end
 
 function SWEP:Throw()
-	if self:Clip1() > 0 then
-		local bool = self:GetNW2Bool("Underhanded", false)
+	if self:Clip1() <= 0 then return end
+	self.ProjectileVelocity = (self:GetNW2Bool("Underhanded", false) and self.Velocity_Underhand) or ((self.Velocity or 550) / 1.5)
 
-		if not bool then
-			self.ProjectileVelocity = self.Velocity and self.Velocity or 550 --Entity to shoot's velocity
-			--Entity to shoot's velocity
-		else
-			if self.Velocity_Underhand then
-				self.ProjectileVelocity = self.Velocity_Underhand
-			else
-				self.ProjectileVelocity = (self.Velocity and self.Velocity or 550) / 1.5
-			end
-		end
+	self:TakePrimaryAmmo(1)
+	self:ShootBulletInformation()
 
-		self:TakePrimaryAmmo(1)
-		self:ShootBulletInformation()
-		self:DoAmmoCheck()
-	end
+	local len = self:GetActivityLength(self.LastNadeAnim, true)
+	self:SetStatus(TFA.Enum.STATUS_GRENADE_THROW_WAIT)
+	self:SetStatusEnd(CurTime() + len - self.LastNadeDelay)
 end
-
-function SWEP:DoAmmoCheck()
-	if IsValid(self) and SERVER then
-		local vm = self:GetOwner():GetViewModel()
-		if not IsValid(vm) then return end
-		local delay = vm:SequenceDuration()
-		delay = delay * 1 - math.Clamp(vm:GetCycle(), 0, 1)
-
-		timer.Simple(delay, function()
-			if IsValid(self) then
-				self:Deploy()
-			end
-		end)
-	end
-end
-
-local stat
 
 function SWEP:Think2(...)
 	if not self:OwnerIsValid() then return end
 
-	stat = self:GetStatus()
+	local stat = self:GetStatus()
 
-	if stat == TFA.GetStatus("grenade_pull") then
-		if self:GetOwner():KeyDown(IN_ATTACK2) then
-			self:SetNW2Bool("Underhanded", true)
-		end
-		if CurTime() > self:GetStatusEnd() then
-			stat = TFA.GetStatus("grenade_ready")
-			self:SetStatus( stat )
-			self:SetStatusEnd(math.huge)
-		end
+	-- This is the best place to do this since Think2 is called inside FinishMove
+	self:SetNW2Bool("Underhanded", self:GetOwner():KeyDown(IN_ATTACK2))
+
+	local statusend = CurTime() >= self:GetStatusEnd()
+
+	if stat == TFA.Enum.STATUS_GRENADE_PULL and statusend then
+		stat = TFA.Enum.STATUS_GRENADE_READY
+		self:SetStatus(stat)
+		self:SetStatusEnd(math.huge)
 	end
 
-	if stat == TFA.GetStatus("grenade_ready") then
-		if self:GetOwner():KeyDown(IN_ATTACK2) then
-			self:SetNW2Bool("Underhanded", true)
-		end
-		if not self:GetOwner():KeyDown(IN_ATTACK2) and not self:GetOwner():KeyDown(IN_ATTACK) then
-			self:ThrowStart()
-		end
+	if stat == TFA.Enum.STATUS_GRENADE_READY and (self:GetOwner():IsNPC() or not self:GetOwner():KeyDown(IN_ATTACK2) and not self:GetOwner():KeyDown(IN_ATTACK)) then
+		self:ThrowStart()
 	end
 
-	BaseClass.Think2(self, ...)
+	if stat == TFA.Enum.STATUS_GRENADE_THROW and statusend then
+		self:Throw()
+	end
+
+	if stat == TFA.Enum.STATUS_GRENADE_THROW_WAIT and statusend then
+		self:Deploy()
+	end
+
+	return BaseClass.Think2(self, ...)
 end
 
 function SWEP:PrimaryAttack()
-	if self:Clip1() > 0 and self:OwnerIsValid() and self:CanFire() then
-		local _,tanim = self:ChoosePullAnim()
-		self:SetStatus(TFA.GetStatus("grenade_pull"))
-		self:SetStatusEnd( CurTime() + (self.SequenceLengthOverride[tanim] or self.OwnerViewModel:SequenceDuration()) )
-		self:SetNW2Bool("Charging", true)
-		self:SetNW2Bool("Underhanded", false)
+	if self:Clip1() <= 0 or not self:OwnerIsValid() or not self:CanFire() then return end
 
-		if IsFirstTimePredicted() then
-			timer.Simple(self:GetOwner():GetViewModel():SequenceDuration(), function()
-				if IsValid(self) then
-					self:SetNW2Bool("Ready", true)
-				end
-			end)
-		end
-	end
+	local _, tanim = self:ChoosePullAnim()
+
+	self:SetStatus(TFA.Enum.STATUS_GRENADE_PULL)
+	self:SetStatusEnd(CurTime() + self:GetActivityLength(tanim))
+
+	self:SetNW2Bool("Underhanded", false)
 end
 
 function SWEP:SecondaryAttack()
-	if self:Clip1() > 0 and self:OwnerIsValid() and self:CanFire() then
-		local _,tanim = self:ChoosePullAnim()
-		self:SetNW2Bool("Ready", false)
-		self:SetNW2Bool("Underhanded", true)
-		self:SetStatus(TFA.GetStatus("grenade_pull"))
-		self:SetStatusEnd( CurTime() + (self.SequenceLengthOverride[tanim] or self.OwnerViewModel:SequenceDuration()) )
-	end
+	self:PrimaryAttack()
+	self:SetNW2Bool("Underhanded", true)
 end
 
 function SWEP:Reload()
@@ -243,14 +237,12 @@ function SWEP:Reload()
 	end
 end
 
-function SWEP:CanFire()
+function SWEP:CanFire() -- what
 	if not self:CanPrimaryAttack() then return false end
 	return true
 end
 
-function SWEP:ChooseIdleAnim( ... )
-	if self:GetNW2Bool("Ready") then return end
-	BaseClass.ChooseIdleAnim(self,...)
+function SWEP:ChooseIdleAnim(...)
+	if self:GetStatus() == TFA.Enum.STATUS_GRENADE_READY then return end
+	return BaseClass.ChooseIdleAnim(self, ...)
 end
-
-SWEP.AllowSprintAttack = true

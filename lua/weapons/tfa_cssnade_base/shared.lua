@@ -19,7 +19,7 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
-DEFINE_BASECLASS("tfa_gun_base")
+DEFINE_BASECLASS("tfa_nade_base")
 
 SWEP.MuzzleFlashEffect = ""
 SWEP.data 				= {}
@@ -44,7 +44,7 @@ function SWEP:Deploy()
 	if self:Clip1() <= 0 then
 		if self:Ammo1() <= 0 then
 			timer.Simple(0, function()
-				if IsValid(self) and self:OwnerIsValid() and SERVER then
+				if IsValid(self) and self:OwnerIsValid() and SERVER and not nzombies then
 					self:GetOwner():StripWeapon(self:GetClass())
 				end
 			end)
@@ -54,7 +54,6 @@ function SWEP:Deploy()
 		end
 	end
 
-	self:SetNW2Bool("Charging", false)
 	self:SetNW2Bool("Ready", false)
 	self:SetNW2Bool("Underhanded", false)
 	self.oldang = self:GetOwner():EyeAngles()

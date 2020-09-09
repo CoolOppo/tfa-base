@@ -37,7 +37,10 @@ end
 function TFA.GetStatus( input )
 	local key = gen(input)
 	if not TFA.Enum[ key ] then
-		TFA.AddStatus( input )
+		TFA.AddStatus( input ) -- DANGEROUS:
+		-- Race condition:
+		-- If something go terribly wrong and order of addition of new statuses fuck up
+		-- everything will fail horribly!
 	end
 	return TFA.Enum[ key ]
 end
@@ -72,11 +75,17 @@ TFA.AddStatus( "blocking_end" )
 TFA.AddStatus( "bow_shoot" )
 TFA.AddStatus( "bow_cancel" )
 
+TFA.AddStatus( "grenade_pull" )
+TFA.AddStatus( "grenade_throw" )
+TFA.AddStatus( "grenade_ready" )
+TFA.AddStatus( "grenade_throw_wait" )
+
 TFA.Enum.HolsterStatus = {
 	[TFA.Enum.STATUS_HOLSTER] = true,
 	[TFA.Enum.STATUS_HOLSTER_FINAL] = true,
 	[TFA.Enum.STATUS_HOLSTER_READY] = true
 }
+
 TFA.Enum.ReloadStatus = {
 	[TFA.Enum.STATUS_RELOADING] = true,
 	[TFA.Enum.STATUS_RELOADING_WAIT] = true,
@@ -85,11 +94,13 @@ TFA.Enum.ReloadStatus = {
 	[TFA.Enum.STATUS_RELOADING_SHOTGUN_LOOP] = true,
 	[TFA.Enum.STATUS_RELOADING_SHOTGUN_END] = true
 }
+
 TFA.Enum.ReadyStatus = {
 	[TFA.Enum.STATUS_IDLE] = true,
 	[TFA.Enum.STATUS_INSPECTING] = true,
 	[TFA.Enum.STATUS_FIDGET] = true
 }
+
 TFA.Enum.IronStatus = {
 	[TFA.Enum.STATUS_IDLE] = true,
 	[TFA.Enum.STATUS_SHOOTING] = true,
@@ -97,6 +108,7 @@ TFA.Enum.IronStatus = {
 	[TFA.Enum.STATUS_FIREMODE] = true--,
 	--[TFA.Enum.STATUS_FIDGET] = true
 }
+
 TFA.Enum.HUDDisabledStatus = {
 	[TFA.Enum.STATUS_IDLE] = true,
 	[TFA.Enum.STATUS_SHOOTING] = true,
