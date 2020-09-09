@@ -97,6 +97,7 @@ function SWEP:Deploy()
 						timer.Simple(0, function() ply:StripWeapon(classname) end)
 					else
 						self:GetOwner():StripWeapon(self:GetClass())
+						return
 					end
 				end
 			end
