@@ -21,12 +21,12 @@
 
 TFA.ENUM_COUNTER = TFA.ENUM_COUNTER or 0
 
-local function gen( input )
-	local key = "STATUS_" .. string.upper( input )
+local function gen(input)
+	local key = "STATUS_" .. string.upper(input)
 	return key
 end
 
-function TFA.AddStatus( input )
+function TFA.AddStatus(input)
 	local key = gen(input)
 	if not TFA.Enum[key] then
 		TFA.Enum[key] = TFA.ENUM_COUNTER * 1
@@ -34,10 +34,10 @@ function TFA.AddStatus( input )
 	end
 end
 
-function TFA.GetStatus( input )
+function TFA.GetStatus(input)
 	local key = gen(input)
 	if not TFA.Enum[ key ] then
-		TFA.AddStatus( input ) -- DANGEROUS:
+		TFA.AddStatus(input) -- DANGEROUS:
 		-- Race condition:
 		-- If something go terribly wrong and order of addition of new statuses fuck up
 		-- everything will fail horribly!
@@ -45,40 +45,40 @@ function TFA.GetStatus( input )
 	return TFA.Enum[ key ]
 end
 
-TFA.AddStatus( "idle" )
-TFA.AddStatus( "draw" )
-TFA.AddStatus( "holster" )
-TFA.AddStatus( "holster_final" )
-TFA.AddStatus( "holster_ready" )
-TFA.AddStatus( "reloading" )
-TFA.AddStatus( "reloading_wait" )
-TFA.AddStatus( "reloading_shotgun_start" )
-TFA.AddStatus( "reloading_shotgun_start_shell" )
-TFA.AddStatus( "reloading_shotgun_loop" )
-TFA.AddStatus( "reloading_shotgun_end" )
-TFA.AddStatus( "shooting" )
-TFA.AddStatus( "silencer_toggle" )
-TFA.AddStatus( "bashing" )
-TFA.AddStatus( "inspecting" )
-TFA.AddStatus( "fidget" )
-TFA.AddStatus( "firemode" )
+TFA.AddStatus("idle")
+TFA.AddStatus("draw")
+TFA.AddStatus("holster")
+TFA.AddStatus("holster_final")
+TFA.AddStatus("holster_ready")
+TFA.AddStatus("reloading")
+TFA.AddStatus("reloading_wait")
+TFA.AddStatus("reloading_shotgun_start")
+TFA.AddStatus("reloading_shotgun_start_shell")
+TFA.AddStatus("reloading_shotgun_loop")
+TFA.AddStatus("reloading_shotgun_end")
+TFA.AddStatus("shooting")
+TFA.AddStatus("silencer_toggle")
+TFA.AddStatus("bashing")
+TFA.AddStatus("inspecting")
+TFA.AddStatus("fidget")
+TFA.AddStatus("firemode")
 
-TFA.AddStatus( "pump" )
+TFA.AddStatus("pump")
 
-TFA.AddStatus( "grenade_pull" )
-TFA.AddStatus( "grenade_ready" )
-TFA.AddStatus( "grenade_throw" )
+TFA.AddStatus("grenade_pull")
+TFA.AddStatus("grenade_ready")
+TFA.AddStatus("grenade_throw")
 
-TFA.AddStatus( "blocking" )
-TFA.AddStatus( "blocking_end" )
+TFA.AddStatus("blocking")
+TFA.AddStatus("blocking_end")
 
-TFA.AddStatus( "bow_shoot" )
-TFA.AddStatus( "bow_cancel" )
+TFA.AddStatus("bow_shoot")
+TFA.AddStatus("bow_cancel")
 
-TFA.AddStatus( "grenade_pull" )
-TFA.AddStatus( "grenade_throw" )
-TFA.AddStatus( "grenade_ready" )
-TFA.AddStatus( "grenade_throw_wait" )
+TFA.AddStatus("grenade_pull")
+TFA.AddStatus("grenade_throw")
+TFA.AddStatus("grenade_ready")
+TFA.AddStatus("grenade_throw_wait")
 
 TFA.Enum.HolsterStatus = {
 	[TFA.Enum.STATUS_HOLSTER] = true,
