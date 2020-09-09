@@ -19,6 +19,8 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
+local SWEP = {}
+
 local BaseClass = baseclass.Get("tfa_gun_base")
 
 local scopecvar = GetConVar("cl_tfa_3dscope")
@@ -328,3 +330,5 @@ function SWEP:RTCode(rt, scrw, scrh)
 	surface.DrawTexturedRectUV(rtow, rtoh, rtw, rth, 2, 0, 0, 2)
 	cam.End2D()
 end
+
+return SWEP

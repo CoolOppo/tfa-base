@@ -78,6 +78,7 @@ local official_modules_sorted = {
 	"tfa_melee_autorun.lua",
 	"tfa_meta.lua",
 	"tfa_netcode.lua",
+	"tfa_small_entities.lua",
 	"tfa_npc_weaponmenu.lua",
 	"tfa_nzombies.lua",
 	"tfa_particles.lua",
