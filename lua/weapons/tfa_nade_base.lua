@@ -40,6 +40,8 @@ SWEP.IronSightsPos = Vector(5,0,0)
 SWEP.IronSightsAng = Vector(0,0,0)
 SWEP.Callback = {}
 
+SWEP.AllowUnderhanded = true
+
 SWEP.AllowSprintAttack = true
 
 local nzombies = nil
@@ -195,7 +197,7 @@ function SWEP:Think2(...)
 	local stat = self:GetStatus()
 
 	-- This is the best place to do this since Think2 is called inside FinishMove
-	self:SetNW2Bool("Underhanded", self:GetOwner():KeyDown(IN_ATTACK2))
+	self:SetNW2Bool("Underhanded", self.AllowUnderhanded and self:GetOwner():KeyDown(IN_ATTACK2))
 
 	local statusend = CurTime() >= self:GetStatusEnd()
 
@@ -233,7 +235,7 @@ end
 
 function SWEP:SecondaryAttack()
 	self:PrimaryAttack()
-	self:SetNW2Bool("Underhanded", true)
+	self:SetNW2Bool("Underhanded", self.AllowUnderhanded)
 end
 
 function SWEP:Reload()

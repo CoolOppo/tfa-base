@@ -24,3 +24,4 @@ if SERVER then
 end
 
 SWEP.Base = "tfa_nade_base"
+SWEP.AllowUnderhanded = true
