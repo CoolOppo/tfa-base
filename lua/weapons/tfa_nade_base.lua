@@ -24,6 +24,7 @@ if SERVER then
 end
 
 local CurTime = CurTime
+local sp = game.SinglePlayer()
 
 DEFINE_BASECLASS("tfa_gun_base")
 SWEP.Type = "Grenade"
@@ -78,8 +79,6 @@ function SWEP:SwitchToPreviousWeapon()
 
 			if IsValid(wep) then
 				input.SelectWeapon(wep)
-			else
-				-- i have no idea
 			end
 		end
 	end
@@ -120,8 +119,6 @@ function SWEP:Deploy()
 
 	return BaseClass.Deploy(self)
 end
-
-local sp = game.SinglePlayer()
 
 function SWEP:ChoosePullAnim()
 	if not self:OwnerIsValid() then return end

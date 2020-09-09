@@ -122,7 +122,6 @@ function SWEP:CalculateRatios()
 
 	local ist = is and 1 or 0
 	local sprt = spr and 1 or 0
-	local walkt = walk and 1 or 0
 	local adstransitionspeed
 
 	if is then

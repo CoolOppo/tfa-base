@@ -22,8 +22,6 @@
 --[[Thanks to Clavus.  Like seriously, SCK was brilliant. Even though you didn't include a license anywhere I could find, it's only fit to credit you.]]
 --
 
-local sp = game.SinglePlayer()
-
 --[[
 Function Name:  InitMods
 Syntax: self:InitMods().  Should be called only once for best performance.
@@ -105,8 +103,10 @@ function SWEP:RebuildModsRenderOrder()
 	self.VElementsBodygroupsCache = {}
 	self.WElementsBodygroupsCache = {}
 
+	local target, target2
+
 	if istable(self.VElements) then
-		local target = self.vRenderOrder
+		target = self.vRenderOrder
 
 		for k, v in pairs(self.VElements) do
 			if v.type == "Model" then
@@ -118,7 +118,7 @@ function SWEP:RebuildModsRenderOrder()
 	end
 
 	if istable(self.WElements) then
-		local target2 = self.wRenderOrder
+		target2 = self.wRenderOrder
 
 		for k, v in pairs(self.WElements) do
 			if v.type == "Model" then

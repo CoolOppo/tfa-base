@@ -819,7 +819,6 @@ function SWEP:PlayerThinkCL(plyv)
 
 	local ist = is and 1 or 0
 	local sprt = spr and 1 or 0
-	local walkt = walk and 1 or 0
 	local adstransitionspeed
 
 	if is then
@@ -830,7 +829,6 @@ function SWEP:PlayerThinkCL(plyv)
 		adstransitionspeed = 12.5
 	end
 
-	local ft = TFA.FrameTime()
 	self2.IronSightsProgressUnpredicted = l_mathApproach(self2.IronSightsProgressUnpredicted or 0, ist, (ist - (self2.IronSightsProgressUnpredicted or 0)) * ft * adstransitionspeed)
 	self2.SprintProgressUnpredicted = l_mathApproach(self2.SprintProgressUnpredicted or 0, sprt, (sprt - (self2.SprintProgressUnpredicted or 0)) * ft * adstransitionspeed)
 end

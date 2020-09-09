@@ -873,7 +873,7 @@ do
 		local build = {}
 		local minimal = input.lut[1].range
 		local maximal = input.lut[#input.lut].range
-		local delta = math.abs(maximal - minimal)
+
 		local fnrange = isfunction(input.range_func) and input.range_func or
 			input.range_func == "quintic" and TFA.Quintic or
 			input.range_func == "cubic" and TFA.Cubic or
@@ -885,7 +885,7 @@ do
 			local build_range = {}
 			local build_damage = {}
 
-			for i, data in ipairs(input.lut) do
+			for _, data in ipairs(input.lut) do
 				table.insert(build_range, data.range / div)
 				table.insert(build_damage, data.damage)
 			end

@@ -193,7 +193,6 @@ hook.Add("ContextMenuOpen", "TFAContextBlock", TFAContextBlock)
 
 if CLIENT then
 	local kd_old = false
-	local kd_switched = false
 
 	local cl_tfa_keys_customize
 
@@ -202,8 +201,6 @@ if CLIENT then
 		if not plyv:IsValid() then return end
 		local wepv = plyv:GetActiveWeapon()
 		if not IsValid(wepv) then return end
-
-		kd_switched = false
 
 		if not cl_tfa_keys_customize then
 			cl_tfa_keys_customize = GetConVar("cl_tfa_keys_customize")

@@ -345,13 +345,13 @@ function SWEP:ClearStatCache(vn)
 		local keys = table.GetKeys(eventtable)
 		table.sort(keys, eventtablesorter)
 
-		for i_, key in ipairs(keys) do
+		for _, key in ipairs(keys) do
 			local value = eventtable[key]
 
 			if istable(value) then
 				self2.EventTableBuilt[key] = {}
 
-				for index, value2 in SortedPairs(value) do
+				for _, value2 in SortedPairs(value) do
 					if istable(value2) then
 						local event = table.Copy(value2)
 						event.slot = slot

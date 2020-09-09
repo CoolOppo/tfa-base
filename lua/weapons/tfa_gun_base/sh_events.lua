@@ -22,7 +22,6 @@
 local lshift = bit.lshift
 local band = bit.band
 local bor = bit.bor
-local bxor = bit.bxor
 
 local sp = game.SinglePlayer()
 local l_CT = CurTime
@@ -49,7 +48,7 @@ function SWEP:ResetEvents()
 	-- self:SetFirstDeployEvent(false)
 
 	if self.EventTable then
-		for k, eventtable in pairs(self.EventTable) do
+		for _, eventtable in pairs(self.EventTable) do
 			for i = 1, #eventtable do
 				eventtable[i].called = false
 			end
@@ -113,7 +112,7 @@ function SWEP:ProcessEvents(firstprediction)
 	local viewmodel = self:VMIVNPC()
 	if not viewmodel then return end
 
-	if sp and CLIEN then return end
+	if sp and CLIENT then return end
 	if sp and SERVER then return self:ProcessEventsSP() end
 
 	local ply = self:GetOwner()
@@ -195,16 +194,13 @@ function SWEP:ProcessEventsSP(firstprediction)
 	local viewmodel = self:VMIVNPC()
 	if not viewmodel then return end
 
-	local ply = self:GetOwner()
-	local isplayer = ply:IsPlayer()
-
 	local evtbl = self.EventTableBuilt[self:GetLastActivity() or -1] or self.EventTableBuilt[viewmodel:GetSequenceName(viewmodel:GetSequence())]
 	local evtbl2 = self.EventTable[self:GetLastActivity() or -1] or self.EventTable[viewmodel:GetSequenceName(viewmodel:GetSequence())]
 	if not evtbl then return end
 
 	local curtime = l_CT()
 	local eventtimer = self:GetEventTimer()
-	local is_local = ply == Entity(1)
+	local is_local = self:GetOwner() == Entity(1)
 	local animrate = self:GetAnimationRate(self:GetLastActivity() or -1)
 
 	for i = 1, #evtbl do

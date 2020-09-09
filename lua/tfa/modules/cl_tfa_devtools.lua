@@ -67,7 +67,6 @@ local function DrawDebugInfo(w, h, ply, wep)
 	if not cv_dba or not cv_dba:GetBool() then return end
 
 	local x, y = w * .5, h * .2
-	local y2
 
 	if wep._EventSlotCount ~= 0 then
 		draw.SimpleTextOutlined("Event table state:", "TFASleekSmall", x + 240, y, color_white, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP, 1, color_black)

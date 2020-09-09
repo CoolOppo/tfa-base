@@ -32,8 +32,6 @@ end
 local PLAYER = FindMetaTable("Player")
 
 if PLAYER then
-	local sp = game.SinglePlayer()
-
 	function PLAYER:TFA_ZoomKeyDown()
 		if not IsValid(self) then return false end
 

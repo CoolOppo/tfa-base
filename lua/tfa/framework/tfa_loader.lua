@@ -199,12 +199,12 @@ if do_load then
 	table.sort(toload)
 	table.sort(toload2)
 
-	for i, filename in ipairs(toload) do
+	for _, filename in ipairs(toload) do
 		include("tfa/modules/" .. filename)
 		print("[TFA Base] [!] Loaded unofficial module " .. string.sub(filename, 1, -5) .. ".")
 	end
 
-	for i, filename in ipairs(toload2) do
+	for _, filename in ipairs(toload2) do
 		include("tfa/modules/" .. filename)
 		print("[TFA Base] [!] Loaded unofficial module " .. string.sub(filename, 1, -5) .. ".")
 	end
@@ -239,11 +239,11 @@ if do_load then
 	table.sort(toload)
 	table.sort(toload2)
 
-	for i, filename in ipairs(toload) do
+	for _, filename in ipairs(toload) do
 		include("tfa/external/" .. filename)
 	end
 
-	for i, filename in ipairs(toload2) do
+	for _, filename in ipairs(toload2) do
 		include("tfa/external/" .. filename)
 	end
 
