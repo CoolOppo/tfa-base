@@ -773,15 +773,15 @@ function SWEP:Think()
 
 	stat = self2.GetStatus(self)
 
+	if (not sp or SERVER) and not self:GetFirstDeployEvent() then
+		self2.ProcessEvents(self, sp or IsFirstTimePredicted())
+	end
+
 	if ct > self:GetNextIdleAnim() and (TFA.Enum.ReadyStatus[stat] or (stat == TFA.Enum.STATUS_SHOOTING and TFA.Enum.ShootLoopingStatus[self:GetShootStatus()])) then
 		self:ChooseIdleAnim()
 	end
 
 	self2.ProcessLoopFire(self)
-
-	if not self:GetFirstDeployEvent() then
-		self2.ProcessEvents(self, sp or IsFirstTimePredicted())
-	end
 end
 
 function SWEP:PlayerThink(plyv, is_working_out_prediction_errors)
@@ -873,7 +873,7 @@ function SWEP:Think2(is_working_out_prediction_errors)
 		self2.ProcessLoopSound(self)
 	end
 
-	if self:GetFirstDeployEvent() then
+	if (not sp or SERVER) and self:GetFirstDeployEvent() then
 		self2.ProcessEvents(self, sp or not is_working_out_prediction_errors)
 	end
 

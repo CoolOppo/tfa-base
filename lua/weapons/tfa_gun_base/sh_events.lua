@@ -54,7 +54,10 @@ function SWEP:ResetEvents()
 				eventtable[i].called = false
 			end
 		end
+	end
 
+	if sp then
+		self:CallOnClient("ResetEvents", "")
 	end
 end
 
@@ -84,10 +87,34 @@ Purpose:  Main SWEP function
 
 SWEP._EventSlotCount = 0
 SWEP.EventTableBuilt = {}
+SWEP.EventTableEdict = {}
+
+function SWEP:DispatchLuaEvent(arg)
+	local fn = assert(assert(self.EventTableEdict[tonumber(arg)], "No such event with edict " .. arg).value, "Event is missing a function to call")
+	assert(isfunction(fn), "Event " .. arg .. " is not a Lua event")
+	fn(self, self:VMIV(), true)
+end
+
+function SWEP:DispatchBodygroupEvent(arg)
+	local event = assert(self.EventTableEdict[tonumber(arg)], "No such event with edict " .. arg)
+	assert(isstring(event.name), "Event " .. arg .. " is missing bodygroup name to set")
+	assert(isstring(event.value), "Event " .. arg .. " is missing bodygroup value to set")
+
+	if event.view then
+		self.Bodygroups_V[event.name] = event.value
+	end
+
+	if event.world then
+		self.Bodygroups_W[event.name] = event.value
+	end
+end
 
 function SWEP:ProcessEvents(firstprediction)
 	local viewmodel = self:VMIVNPC()
 	if not viewmodel then return end
+
+	if sp and CLIEN then return end
+	if sp and SERVER then return self:ProcessEventsSP() end
 
 	local ply = self:GetOwner()
 	local isplayer = ply:IsPlayer()
@@ -155,6 +182,73 @@ function SWEP:ProcessEvents(firstprediction)
 
 				if event.world then
 					self.Bodygroups_W[event.name] = event.value
+				end
+			end
+		end
+
+		::CONTINUE::
+	end
+end
+
+-- This function is exclusively targeting singleplayer
+function SWEP:ProcessEventsSP(firstprediction)
+	local viewmodel = self:VMIVNPC()
+	if not viewmodel then return end
+
+	local ply = self:GetOwner()
+	local isplayer = ply:IsPlayer()
+
+	local evtbl = self.EventTableBuilt[self:GetLastActivity() or -1] or self.EventTableBuilt[viewmodel:GetSequenceName(viewmodel:GetSequence())]
+	local evtbl2 = self.EventTable[self:GetLastActivity() or -1] or self.EventTable[viewmodel:GetSequenceName(viewmodel:GetSequence())]
+	if not evtbl then return end
+
+	local curtime = l_CT()
+	local eventtimer = self:GetEventTimer()
+	local is_local = ply == Entity(1)
+	local animrate = self:GetAnimationRate(self:GetLastActivity() or -1)
+
+	for i = 1, #evtbl do
+		local event = evtbl[i]
+		if self:GetEventPlayed(event.slot) or curtime < eventtimer + event.time / animrate then goto CONTINUE end
+		self:SetEventPlayed(event.slot)
+
+		if evtbl2 and evtbl2[i] then
+			evtbl2[i].called = true
+		end
+
+		if event.type == "lua" then
+			if event.value then
+				if event.server then
+					event.value(self, viewmodel, true)
+				end
+
+				if event.client and (not event.client_predictedonly or is_local) then
+					self:CallOnClient("DispatchLuaEvent", tostring(event.slot))
+				end
+			end
+		elseif event.type == "snd" or event.type == "sound" then
+			if event.client then
+				net.Start("tfaSoundEvent")
+				net.WriteEntity(self)
+				net.WriteString(event.value or "")
+				net.Broadcast()
+			elseif event.server and event.value and event.value ~= "" then
+				self:EmitSound(event.value)
+			end
+		elseif event.type == "bg" or event.type == "bodygroup" then
+			if event.name and event.value and event.value ~= "" then
+				if event.server then
+					if event.view then
+						self.Bodygroups_V[event.name] = event.value
+					end
+
+					if event.world then
+						self.Bodygroups_W[event.name] = event.value
+					end
+				end
+
+				if event.client and (not event.client_predictedonly or is_local) then
+					self:CallOnClient("DispatchBodygroupEvent", tostring(event.slot))
 				end
 			end
 		end

@@ -334,6 +334,11 @@ function SWEP:ClearStatCache(vn)
 		local slot = 0
 
 		table.Empty(self2.EventTableBuilt)
+
+		for i = 256, 1, -1 do
+			self2.EventTableEdict[i] = nil
+		end
+
 		self:ResetEvents()
 
 		local eventtable = self2.GetStat(self, "EventTable", {})
@@ -372,6 +377,7 @@ function SWEP:ClearStatCache(vn)
 
 						assert(slot < 256, "Weapon " .. self:GetClass() .. " got too many events! 256 is maximum!")
 						table.insert(self2.EventTableBuilt[key], event)
+						self2.EventTableEdict[event.slot] = event
 					end
 				end
 			end
