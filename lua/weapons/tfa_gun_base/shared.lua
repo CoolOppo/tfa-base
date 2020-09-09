@@ -780,7 +780,7 @@ function SWEP:Think()
 	self2.ProcessLoopFire(self)
 
 	if not self:GetFirstDeployEvent() then
-		self2.ProcessEvents(self, IsFirstTimePredicted())
+		self2.ProcessEvents(self, sp or IsFirstTimePredicted())
 	end
 end
 
@@ -874,7 +874,7 @@ function SWEP:Think2(is_working_out_prediction_errors)
 	end
 
 	if self:GetFirstDeployEvent() then
-		self2.ProcessEvents(self, not is_working_out_prediction_errors)
+		self2.ProcessEvents(self, sp or not is_working_out_prediction_errors)
 	end
 
 	--if is_working_out_prediction_errors then return end
