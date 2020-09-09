@@ -41,6 +41,7 @@ end
 
 local SWEP_ = include("tfa/3dscoped_base.lua")
 local SWEP = table.Copy(SWEP_)
+SWEP.Secondary = {}
 
 SWEP.Secondary.ScopeZoom = 1
 SWEP.Secondary.UseACOG = false
@@ -76,6 +77,7 @@ SWEP.Base = "tfa_bash_base"
 weapons.Register(SWEP, "tfa_3dbash_base")
 
 local SWEP = table.Copy(SWEP_)
+SWEP.Secondary = {}
 
 SWEP.Secondary.ScopeZoom = 0
 SWEP.Secondary.UseACOG = false
