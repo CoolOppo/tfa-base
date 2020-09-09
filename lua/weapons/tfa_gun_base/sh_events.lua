@@ -112,7 +112,7 @@ function SWEP:ProcessEvents(firstprediction)
 
 		if event.type == "lua" then
 			if ((event.client and CLIENT and (not event.client_predictedonly or is_local)) or (event.server and SERVER)) and event.value then
-				event.value(self, viewmodel)
+				event.value(self, viewmodel, firstprediction)
 			end
 		elseif event.type == "snd" or event.type == "sound" then
 			if SERVER then
