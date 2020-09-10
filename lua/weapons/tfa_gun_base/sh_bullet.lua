@@ -307,9 +307,9 @@ end
 local sp = game.SinglePlayer()
 
 function SWEP:TFAMove(ply, movedata)
-	local velocity = self:GetNW2Vector("QueuedRecoil", false)
+	local velocity = self:GetNW2Vector("QueuedRecoil", vector_origin)
 
-	if velocity and velocity:Length() ~= 0 then
+	if velocity:Length() ~= 0 then
 		movedata:SetVelocity(movedata:GetVelocity() + velocity)
 		self:SetNW2Vector("QueuedRecoil", vector_origin)
 	end
