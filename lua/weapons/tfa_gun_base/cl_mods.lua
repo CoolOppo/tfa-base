@@ -97,39 +97,72 @@ SWEP.CameraAttachments = {"camera", "attach_camera", "view", "cam", "look"}
 SWEP.CameraAngCache = nil
 local tmpvec = Vector(0, 0, -2000)
 
-function SWEP:RebuildModsRenderOrder()
-	self.vRenderOrder = {}
-	self.wRenderOrder = {}
-	self.VElementsBodygroupsCache = {}
-	self.WElementsBodygroupsCache = {}
+do
+	local lookup_table, reference_table
 
-	local target, target2
+	local function rendersorter(a, b)
+		local ar, br = reference_table[a], reference_table[b]
 
-	if istable(self.VElements) then
-		target = self.vRenderOrder
+		if ar == br then
+			return a > b
+		end
 
-		for k, v in pairs(self.VElements) do
-			if v.type == "Model" then
-				table.insert(target, 1, k)
-			elseif v.type == "Sprite" or v.type == "Quad" then
-				table.insert(target, k)
-			end
+		return ar > br
+	end
+
+	local function inc_references(lookup, name, entry, output, level)
+		output[name] = (output[name] or 0) + level
+		local elemother = lookup[entry.rel]
+
+		if elemother then
+			inc_references(lookup, entry.rel, elemother, output, level + 1)
 		end
 	end
 
-	if istable(self.WElements) then
-		target2 = self.wRenderOrder
+	function SWEP:RebuildModsRenderOrder()
+		self.vRenderOrder = {}
+		self.wRenderOrder = {}
+		self.VElementsBodygroupsCache = {}
+		self.WElementsBodygroupsCache = {}
 
-		for k, v in pairs(self.WElements) do
-			if v.type == "Model" then
-				table.insert(target2, 1, k)
-			elseif v.type == "Sprite" or v.type == "Quad" then
-				table.insert(target2, k)
+		if istable(self.VElements) then
+			local target = self.vRenderOrder
+			reference_table = {}
+
+			for k, v in pairs(self.VElements) do
+				if v.type == "Model" then
+					table.insert(target, k)
+					inc_references(self.VElements, k, v, reference_table, 10000)
+				elseif v.type == "Sprite" or v.type == "Quad" then
+					table.insert(target, k)
+					inc_references(self.VElements, k, v, reference_table, 1)
+				end
 			end
-		end
-	end
 
-	return target, target2
+			lookup_table = self.VElements
+			table.sort(target, rendersorter)
+		end
+
+		if istable(self.WElements) then
+			local target2 = self.wRenderOrder
+			reference_table = {}
+
+			for k, v in pairs(self.WElements) do
+				if v.type == "Model" then
+					table.insert(target2, 1, k)
+					inc_references(self.WElements, k, v, reference_table, 10000)
+				elseif v.type == "Sprite" or v.type == "Quad" then
+					table.insert(target2, k)
+					inc_references(self.WElements, k, v, reference_table, 1)
+				end
+			end
+
+			lookup_table = self.WElements
+			table.sort(target2, rendersorter)
+		end
+
+		return self.vRenderOrder, self.wRenderOrder
+	end
 end
 
 function SWEP:RemoveModsRenderOrder()
@@ -672,10 +705,10 @@ function SWEP:GetBoneOrientation(basetabl, tabl, ent, bone_override)
 	if tabl.rel and tabl.rel ~= "" and not tabl.bonemerge then
 		local v = basetabl[tabl.rel]
 		if (not v) then return end
+
 		local boneName = bone_override or tabl.bone
 
 		if v.curmodel and ent ~= v.curmodel and (v.bonemerge or (boneName and boneName ~= "" and v.curmodel:LookupBone(boneName))) then
-			v.curmodel:SetupBones()
 			pos, ang = self:GetBoneOrientation(basetabl, v, v.curmodel, boneName)
 			if pos and ang then return pos, ang end
 		else
@@ -702,6 +735,9 @@ function SWEP:GetBoneOrientation(basetabl, tabl, ent, bone_override)
 
 	if not bone or bone == -1 then return end
 	pos, ang = Vector(0, 0, 0), Angle(0, 0, 0)
+
+	ent:SetupBones()
+
 	local m = ent:GetBoneMatrix(bone)
 
 	if m then
