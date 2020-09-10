@@ -328,6 +328,9 @@ local sv_tfa_recoil_mul_p_npc = GetConVar("sv_tfa_recoil_mul_p_npc")
 local sv_tfa_recoil_mul_y = GetConVar("sv_tfa_recoil_mul_y")
 local sv_tfa_recoil_mul_y_npc = GetConVar("sv_tfa_recoil_mul_y_npc")
 
+local sv_tfa_recoil_viewpunch_mul = GetConVar("sv_tfa_recoil_viewpunch_mul")
+local sv_tfa_recoil_eyeangles_mul = GetConVar("sv_tfa_recoil_eyeangles_mul")
+
 function SWEP:Recoil(recoil, ifp)
 	if sp and type(recoil) == "string" then
 		local _, CurrentRecoil = self:CalculateConeRecoil()
@@ -370,9 +373,9 @@ function SWEP:Recoil(recoil, ifp)
 
 	if isplayer then
 		local maxdist = math.min(math.max(0, 89 + owner:EyeAngles().p - math.abs(owner:GetViewPunchAngles().p * 2)), 88.5)
-		local punchP = l_mathClamp(kickP, -maxdist, maxdist) * factor
+		local punchP = l_mathClamp(kickP * factor, -maxdist, maxdist)
 
-		owner:ViewPunch(Angle(punchP, punchY))
+		owner:ViewPunch(Angle(punchP * sv_tfa_recoil_viewpunch_mul:GetFloat(), punchY * sv_tfa_recoil_viewpunch_mul:GetFloat()))
 	end
 
 	if not isplayer or not sv_tfa_recoil_legacy:GetBool() then
@@ -386,7 +389,12 @@ function SWEP:Recoil(recoil, ifp)
 
 	if isplayer and ((game.SinglePlayer() and SERVER) or (CLIENT and ifp)) then
 		local neweyeang = owner:EyeAngles()
-		neweyeang:Add(Angle(kickP * self:GetStat("Primary.StaticRecoilFactor"), kickY * self:GetStat("Primary.StaticRecoilFactor")))
+
+		local ap, ay = kickP * self:GetStat("Primary.StaticRecoilFactor") * sv_tfa_recoil_eyeangles_mul:GetFloat(),
+						kickY * self:GetStat("Primary.StaticRecoilFactor") * sv_tfa_recoil_eyeangles_mul:GetFloat()
+
+		neweyeang.p = neweyeang.p + ap
+		neweyeang.y = neweyeang.y + ay
 		--neweyeang.p = l_mathClamp(neweyeang.p, -90 + math.abs(owner:GetViewPunchAngles().p), 90 - math.abs(owner:GetViewPunchAngles().p))
 		owner:SetEyeAngles(neweyeang)
 	end

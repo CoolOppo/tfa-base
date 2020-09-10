@@ -276,6 +276,14 @@ if GetConVar("sv_tfa_recoil_mul_y_npc") == nil then
 	CreateReplConVar("sv_tfa_recoil_mul_y_npc", "1", "Yaw kick multiplier for recoil for NPCs")
 end
 
+if GetConVar("sv_tfa_recoil_viewpunch_mul") == nil then
+	CreateReplConVar("sv_tfa_recoil_viewpunch_mul", "1", "Multiplier for viewpunch recoil (visual viewmodel recoil)")
+end
+
+if GetConVar("sv_tfa_recoil_eyeangles_mul") == nil then
+	CreateReplConVar("sv_tfa_recoil_eyeangles_mul", "1", "Multiplier for eye angles recoil (real angle change recoil)")
+end
+
 if GetConVar("sv_tfa_fx_penetration_decal") == nil then
 	CreateReplConVar("sv_tfa_fx_penetration_decal", "1", "Enable decals on the other side of a penetrated object?")
 end
