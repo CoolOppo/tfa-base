@@ -175,6 +175,8 @@ local function dodraw()
 	drawfn(drawself, fndrawpos, fndrawang, fndrawsize)
 end
 
+local next_setup_bones = 0
+
 function SWEP:ViewModelDrawn()
 	local self2 = self:GetTable()
 	render.SetBlend(1)
@@ -276,6 +278,10 @@ function SWEP:ViewModelDrawn()
 		if not self2.vRenderOrder then
 			self:RebuildModsRenderOrder()
 		end
+
+		vm:InvalidateBoneCache()
+		vm:SetupBones()
+		next_setup_bones = next_setup_bones + 1
 
 		for index = 1, #self2.vRenderOrder do
 			local name = self2.vRenderOrder[index]
@@ -382,6 +388,12 @@ function SWEP:ViewModelDrawn()
 
 				render.SetColorModulation(element.color.r / 255, element.color.g / 255, element.color.b / 255)
 				render.SetBlend(element.color.a / 255)
+
+				if model.tfa_next_setup_bones ~= next_setup_bones then
+					model:InvalidateBoneCache()
+					model:SetupBones()
+					model.tfa_next_setup_bones = next_setup_bones
+				end
 
 				model:DrawModel()
 
@@ -736,7 +748,11 @@ function SWEP:GetBoneOrientation(basetabl, tabl, ent, bone_override)
 	if not bone or bone == -1 then return end
 	pos, ang = Vector(0, 0, 0), Angle(0, 0, 0)
 
-	ent:SetupBones()
+	if ent.tfa_next_setup_bones ~= next_setup_bones then
+		ent:InvalidateBoneCache()
+		ent:SetupBones()
+		ent.tfa_next_setup_bones = next_setup_bones
+	end
 
 	local m = ent:GetBoneMatrix(bone)
 
