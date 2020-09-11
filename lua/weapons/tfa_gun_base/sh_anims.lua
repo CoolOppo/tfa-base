@@ -19,6 +19,8 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
+local sp = game.SinglePlayer()
+
 SWEP.Locomotion_Data_Queued = nil
 
 local ServersideLooped = {
@@ -770,7 +772,7 @@ function SWEP:ChooseReloadAnim()
 
 	self2.AnimCycle = self2.ViewModelFlip and 0 or 1
 
-	if SERVER and game.SinglePlayer() then
+	if SERVER and sp then
 		self2.SetNW2Int = self.SetNW2Int or self.SetNWInt
 		self:SetNW2Int("AnimCycle", self2.AnimCycle)
 	end
@@ -947,6 +949,7 @@ Notes:  Requires autodetection or otherwise the list of valid anims.
 Purpose:  Animation / Utility
 ]]
 --
+local shouldAnim, shouldBlowback
 function SWEP:ChooseShootAnim(ifp)
 	local self2 = self:GetTable()
 	if ifp == nil then ifp = IsFirstTimePredicted() end
@@ -980,10 +983,27 @@ function SWEP:ChooseShootAnim(ifp)
 		return self:PlayAnimation(self2.GetStat(self, "IronAnimation.shoot"))
 	end
 
-	if not self2.BlowbackEnabled or (not self:GetIronSights() and self2.Blowback_Only_Iron) then
+	shouldBlowback = self2.GetStat(self, "BlowbackEnabled") and (not self2.GetStat(self, "Blowback_Only_Iron") or self:GetIronSights())
+	shouldAnim = not shouldBlowback or self2.GetStat(self, "BlowbackAllowAnimation")
+
+	if shouldBlowback then
+		if sp and SERVER then
+			self:CallOnClient("BlowbackFull", "")
+		end
+
+		if ifp then
+			self:BlowbackFull(ifp)
+		end
+
+		if self2.GetStat(self, "Blowback_Shell_Enabled") and (ifp or sp) then
+			self:EventShell()
+		end
+	end
+
+	if shouldAnim then
 		success = true
 
-		if self2.LuaShellEject and (ifp or game.SinglePlayer()) then
+		if self2.LuaShellEject and (ifp or sp) then
 			self:EventShell()
 		end
 
@@ -1008,18 +1028,6 @@ function SWEP:ChooseShootAnim(ifp)
 		end
 
 		return self:SendViewModelSeq(tanim)
-	end
-
-	if game.SinglePlayer() and SERVER then
-		self:CallOnClient("BlowbackFull", "")
-	end
-
-	if ifp then
-		self:BlowbackFull(ifp)
-	end
-
-	if self2.Blowback_Shell_Enabled and (ifp or game.SinglePlayer()) then
-		self:EventShell()
 	end
 
 	self:SendViewModelAnim(ACT_VM_BLOWBACK)

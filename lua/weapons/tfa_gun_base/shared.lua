@@ -131,6 +131,7 @@ SWEP.BlowbackCurrent = 0 --Amount of blowback currently, for bones
 SWEP.BlowbackBoneMods = nil --Viewmodel bone mods via SWEP Creation Kit
 SWEP.Blowback_Only_Iron = true --Only do blowback on ironsights
 SWEP.Blowback_PistolMode = false --Do we recover from blowback when empty?
+SWEP.BlowbackAllowAnimation = false
 
 SWEP.ProceduralHolsterEnabled = nil
 SWEP.ProceduralHolsterTime = 0.3

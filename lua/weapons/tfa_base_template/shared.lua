@@ -334,6 +334,7 @@ SWEP.Blowback_Only_Iron = true -- Only do blowback on ironsights
 SWEP.Blowback_PistolMode = false -- Do we recover from blowback when empty?
 SWEP.Blowback_Shell_Enabled = true -- Shoot shells through blowback animations
 SWEP.Blowback_Shell_Effect = "ShellEject" -- Which shell effect to use
+SWEP.BlowbackAllowAnimation = nil -- Allow playing shoot animation with blowback?
 -- [[VIEWMODEL PROCEDURAL ANIMATION]] --
 SWEP.DoProceduralReload = false -- Animate first person reload using lua?
 SWEP.ProceduralReloadTime = 1 -- Procedural reload time?
