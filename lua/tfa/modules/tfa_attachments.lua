@@ -187,7 +187,14 @@ function TFA.Attachments.Register(id, ATTACHMENT)
 	local size = table.Count(ATTACHMENT)
 
 	if size == 0 or size == 1 and ATTACHMENT.ID ~= nil then
-		ErrorNoHalt("[TFA Base] Attempt to register an empty attachment\n")
+		local id2 = id or ATTACHMENT.ID
+
+		if id2 then
+			ErrorNoHalt("[TFA Base] Attempt to register an empty attachment " .. id2 .. "\n")
+		else
+			ErrorNoHalt("[TFA Base] Attempt to register an empty attachment\n")
+		end
+
 		ErrorNoHalt(debug.traceback() .. "\n")
 		MsgC("\n")
 		return
