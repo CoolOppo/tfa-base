@@ -1921,12 +1921,16 @@ function SWEP:ProcessLoopSound()
 		tgtSound = self:GetStat("Primary.LoopSoundSilenced", tgtSound)
 	end
 
-	if SERVER or not self:IsFirstPerson() then
-		tgtSound = self:GetSilenced() and self:GetStat("Primary.LoopSoundSilenced_World", tgtSound) or self:GetStat("Primary.LoopSound_World", tgtSound)
-	end
-
 	if tgtSound then
 		self:StopSoundNet(tgtSound)
+	end
+
+	if SERVER or not self:IsFirstPerson() then
+		tgtSound = self:GetSilenced() and self:GetStat("Primary.LoopSoundSilenced_World", tgtSound) or self:GetStat("Primary.LoopSound_World", tgtSound)
+
+		if tgtSound then
+			self:StopSoundNet(tgtSound)
+		end
 	end
 
 	tgtSound = self:GetStat("Primary.LoopSoundTail")
