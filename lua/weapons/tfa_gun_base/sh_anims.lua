@@ -1047,9 +1047,11 @@ function SWEP:BlowbackFull()
 		self2.BlowbackCurrent = 1
 		self2.BlowbackCurrentRoot = 1
 
-		minang, maxang = self2.GetStat(self, "BlowbackRandomAngleMin"), self2.GetStat(self, "BlowbackRandomAngleMax")
+		if CLIENT then
+			minang, maxang = self2.GetStat(self, "BlowbackRandomAngleMin"), self2.GetStat(self, "BlowbackRandomAngleMax")
 
-		self2.BlowbackRandomAngle = Angle(self2.SharedRandom(self, minang.p, maxang.p, "BlowbackRandomAngle_P"), self2.SharedRandom(self, minang.y, maxang.y, "BlowbackRandomAngle_Y"), self2.SharedRandom(self, minang.r, maxang.r, "BlowbackRandomAngle_R"))
+			self2.BlowbackRandomAngle = Angle(math.Rand(minang.p, maxang.p), math.Rand(minang.y, maxang.y), math.Rand(minang.r, maxang.r))
+		end
 	end
 end
 
