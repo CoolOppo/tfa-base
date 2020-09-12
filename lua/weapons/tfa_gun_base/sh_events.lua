@@ -55,12 +55,28 @@ function SWEP:ResetEvents()
 		end
 	end
 
+	if self.event_table_overflow then
+		local editcts = self.EventTableEdict
+
+		if editcts[0] then
+			editcts[0].called = false
+
+			for i = 1, #editcts do
+				editcts[i].called = false
+			end
+		end
+	end
+
 	if sp then
 		self:CallOnClient("ResetEvents", "")
 	end
 end
 
 function SWEP:GetEventPlayed(event_slot)
+	if self.event_table_overflow then
+		return assert(self.EventTableEdict[event_slot], string.format("Unknown event %d", event_slot)).called
+	end
+
 	local inner_index = event_slot % 32
 	local outer_index = (event_slot - inner_index) / 32 + 1
 	local lindex = lshift(1, inner_index)
@@ -68,6 +84,11 @@ function SWEP:GetEventPlayed(event_slot)
 end
 
 function SWEP:SetEventPlayed(event_slot)
+	if self.event_table_overflow then
+		assert(self.EventTableEdict[event_slot], string.format("Unknown event %d", event_slot)).called = true
+		return
+	end
+
 	local inner_index = event_slot % 32
 	local outer_index = (event_slot - inner_index) / 32 + 1
 	local lindex = lshift(1, inner_index)

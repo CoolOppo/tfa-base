@@ -335,7 +335,7 @@ function SWEP:ClearStatCache(vn)
 
 		table.Empty(self2.EventTableBuilt)
 
-		for i = 256, 1, -1 do
+		for i = #self2.EventTableEdict, 0, -1 do
 			self2.EventTableEdict[i] = nil
 		end
 
@@ -375,13 +375,22 @@ function SWEP:ClearStatCache(vn)
 							event.client = true
 						end
 
-						assert(slot < 256, "Weapon " .. self:GetClass() .. " got too many events! 256 is maximum!")
+						event.called = false
+
+						if slot > 256 and not self.event_table_warning then
+							ErrorNoHalt("[TFA Base] Weapon " .. self:GetClass() .. " got too many events! 256 is maximum! Event table would NOT be properly predicted this time!\n")
+							self.event_table_warning = true
+						end
+
 						table.insert(self2.EventTableBuilt[key], event)
 						self2.EventTableEdict[event.slot] = event
 					end
 				end
 			end
 		end
+
+		self.event_table_overflow = slot > 256
+		self._built_event_debug_string_fn = nil
 
 		self._EventSlotCount = math.ceil(slot / 32)
 		self._EventSlotNum = slot - 1

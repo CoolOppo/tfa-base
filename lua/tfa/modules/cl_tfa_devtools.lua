@@ -68,7 +68,43 @@ local function DrawDebugInfo(w, h, ply, wep)
 
 	local x, y = w * .5, h * .2
 
-	if wep._EventSlotCount ~= 0 then
+	if wep.event_table_overflow then
+		if wep.EventTableEdict[0] then
+			draw.SimpleTextOutlined("UNPREDICTED Event table state:", "TFASleekSmall", x + 240, y, color_white, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP, 1, color_black)
+			local y2 = y + TFA.Fonts.SleekHeightSmall
+
+			if not wep._built_event_debug_string_fn then
+				local str = ""
+				local str2 = ""
+
+				for i = 0, #wep.EventTableEdict do
+					str = str .. "%d"
+
+					if (i + 1) % 32 == 0 then
+						str = str .. "\n"
+					end
+
+					if str2 == "" then
+						str2 = "self.EventTableEdict[" .. i .. "].called and 1 or 0"
+					else
+						str2 = str2 .. ", self.EventTableEdict[" .. i .. "].called and 1 or 0"
+					end
+				end
+
+				wep._built_event_debug_string_fn = CompileString([[
+					local format = string.format
+					return function(self)
+						return format([==[]] .. str .. [[]==], ]] .. str2 .. [[)
+					end
+				]], "TFA Base Debug Tools")()
+			end
+
+			for line in string.gmatch(wep:_built_event_debug_string_fn(), "(%S+)") do
+				draw.SimpleTextOutlined(line, "TFASleekSmall", x + 240, y2, color_white, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP, 1, color_black)
+				y2 = y2 + TFA.Fonts.SleekHeightSmall
+			end
+		end
+	elseif wep._EventSlotCount ~= 0 then
 		draw.SimpleTextOutlined("Event table state:", "TFASleekSmall", x + 240, y, color_white, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP, 1, color_black)
 		local y2 = y + TFA.Fonts.SleekHeightSmall
 
