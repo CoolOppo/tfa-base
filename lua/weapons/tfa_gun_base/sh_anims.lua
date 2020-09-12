@@ -1035,12 +1035,21 @@ function SWEP:ChooseShootAnim(ifp)
 	return true, ACT_VM_IDLE
 end
 
+SWEP.BlowbackRandomAngleMin = Angle(.1, -.5, -1)
+SWEP.BlowbackRandomAngleMax = Angle(.2, .5, 1)
+
+local minang, maxang
+
 function SWEP:BlowbackFull()
 	local self2 = self:GetTable()
+
 	if IsValid(self) then
 		self2.BlowbackCurrent = 1
 		self2.BlowbackCurrentRoot = 1
-		self2.BlowbackRandomAngle = Angle(math.Rand(.1, .2), math.Rand(-.5, .5), math.Rand(-1, 1))
+
+		minang, maxang = self2.GetStat(self, "BlowbackRandomAngleMin"), self2.GetStat(self, "BlowbackRandomAngleMax")
+
+		self2.BlowbackRandomAngle = Angle(math.Rand(minang.p, maxang.p), math.Rand(minang.y, maxang.y), math.Rand(minang.r, maxang.r))
 	end
 end
 

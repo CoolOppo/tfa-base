@@ -327,6 +327,7 @@ SWEP.InspectAng = nil -- Vector(0, 0, 0) -- Replace with a vector, in style of i
 -- [[VIEWMODEL BLOWBACK]] --
 SWEP.BlowbackEnabled = false -- Enable Blowback?
 SWEP.BlowbackVector = Vector(0, -1, 0) -- Vector to move bone <or root> relative to bone <or view> orientation.
+SWEP.BlowbackAngle = nil -- Angle(0, 0, 0)
 SWEP.BlowbackCurrentRoot = 0 -- Amount of blowback currently, for root
 SWEP.BlowbackCurrent = 0 -- Amount of blowback currently, for bones
 SWEP.BlowbackBoneMods = nil -- Viewmodel bone mods via SWEP Creation Kit
