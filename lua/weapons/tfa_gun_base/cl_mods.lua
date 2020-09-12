@@ -133,7 +133,7 @@ do
 				if v.type == "Model" then
 					table.insert(target, k)
 					inc_references(self.VElements, k, v, reference_table, 10000)
-				elseif v.type == "Sprite" or v.type == "Quad" then
+				elseif v.type == "Sprite" or v.type == "Quad" or v.type == "Bodygroup" then
 					table.insert(target, k)
 					inc_references(self.VElements, k, v, reference_table, 1)
 				end
@@ -151,7 +151,7 @@ do
 				if v.type == "Model" then
 					table.insert(target2, 1, k)
 					inc_references(self.WElements, k, v, reference_table, 10000)
-				elseif v.type == "Sprite" or v.type == "Quad" then
+				elseif v.type == "Sprite" or v.type == "Quad" or v.type == "Bodygroup" then
 					table.insert(target2, k)
 					inc_references(self.WElements, k, v, reference_table, 1)
 				end
@@ -292,12 +292,20 @@ function SWEP:ViewModelDrawn()
 				break
 			end
 
+			if element.type == "Bodygroup" then
+				if element.index and element.value_active then
+					self2.Bodygroups_V[element.index] = self2.GetStat(self, "VElements." .. name .. ".active") and element.value_active or (element.value_inactive or 0)
+				end
+
+				goto CONTINUE
+			end
+
 			if element.hide then goto CONTINUE end
 
 			if element.type == "Quad" and element.draw_func_outer then goto CONTINUE end
 			if not element.bone then goto CONTINUE end
 
-			if self:GetStat("VElements." .. name .. ".active") == false then goto CONTINUE end
+			if self2.GetStat(self, "VElements." .. name .. ".active") == false then goto CONTINUE end
 
 			local pos, ang = self:GetBoneOrientation(self2.VElements, element, vm)
 			if not pos and not element.bonemerge then goto CONTINUE end
@@ -570,8 +578,16 @@ function SWEP:DrawWorldModel()
 				break
 			end
 
+			if element.type == "Bodygroup" then
+				if element.index and element.value_active then
+					self2.Bodygroups_V[element.index] = self2.GetStat(self, "WElements." .. name .. ".active") and element.value_active or (element.value_inactive or 0)
+				end
+
+				goto CONTINUE
+			end
+
 			if element.hide then goto CONTINUE end
-			if self:GetStat("WElements." .. name .. ".active") == false then goto CONTINUE end
+			if self2.GetStat(self, "WElements." .. name .. ".active") == false then goto CONTINUE end
 
 			local bone_ent = (validowner and ply:LookupBone(element.bone or "ValveBiped.Bip01_R_Hand")) and ply or self
 			local pos, ang
