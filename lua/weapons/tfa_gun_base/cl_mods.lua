@@ -580,7 +580,7 @@ function SWEP:DrawWorldModel()
 
 			if element.type == "Bodygroup" then
 				if element.index and element.value_active then
-					self2.Bodygroups_V[element.index] = self2.GetStat(self, "WElements." .. name .. ".active") and element.value_active or (element.value_inactive or 0)
+					self2.Bodygroups_W[element.index] = self2.GetStat(self, "WElements." .. name .. ".active") and element.value_active or (element.value_inactive or 0)
 				end
 
 				goto CONTINUE
