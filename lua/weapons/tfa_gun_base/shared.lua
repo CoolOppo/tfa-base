@@ -490,6 +490,8 @@ function SWEP:Initialize()
 
 	self2.ClearStatCache(self)
 
+	self2.InitAttachments(self)
+
 	if not self2.IronSightsMoveSpeed then
 		self2.IronSightsMoveSpeed = self2.MoveSpeed * 0.8
 	end
@@ -619,8 +621,6 @@ function SWEP:Deploy()
 		self2.OwnerViewModel:SetSkin(self:GetStat("Skin"))
 		self:SetSkin(self:GetStat("Skin"))
 	end
-
-	self:InitAttachments()
 
 	local v = hook.Run("TFA_Deploy", self)
 
