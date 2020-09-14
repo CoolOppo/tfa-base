@@ -89,27 +89,15 @@ if CLIENT then
 	local tfablurintensity
 	local its_old = 0
 	local ScreenClicker = false
-	local att_enabled_cv
 
 	hook.Add("Tick", "TFAInspectionScreenClicker", function()
-		if not att_enabled_cv then
-			att_enabled_cv = GetConVar("sv_tfa_attachments_enabled")
-		end
-
-		if not att_enabled_cv then return end
 		tfablurintensity = 0
 
-		if LocalPlayer():IsValid() and IsValid(LocalPlayer():GetActiveWeapon()) and att_enabled_cv:GetBool() then
+		if LocalPlayer():IsValid() and LocalPlayer():GetActiveWeapon():IsValid() then
 			local w = LocalPlayer():GetActiveWeapon()
 
 			if w.IsTFAWeapon then
-				if not w.Attachments then
-					tfablurintensity = 0
-				elseif table.Count(w.Attachments) <= 0 then
-					tfablurintensity = 0
-				else
-					tfablurintensity = w:GetCustomizing() and 1 or 0
-				end
+				tfablurintensity = w:GetCustomizing() and 1 or 0
 			end
 		end
 

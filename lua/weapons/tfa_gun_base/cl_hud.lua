@@ -232,9 +232,506 @@ SWEP.AmmoTypeStrings = {
 
 local att_enabled_cv = GetConVar("sv_tfa_attachments_enabled")
 
+SWEP.VGUIPaddingW = 32
+SWEP.VGUIPaddingH = 80
+
+function SWEP:InspectionVGUISideBars(mainpanel)
+	local barleft = vgui.Create("DPanel", mainpanel)
+	barleft:SetWidth(self.VGUIPaddingW)
+	barleft:Dock(LEFT)
+
+	barleft.Paint = function(myself, w, h)
+		local mycol = mainpanel.SecondaryColor
+
+		if not mycol then return end
+
+		surface.SetDrawColor(mycol)
+		surface.SetTexture(mainpanel.SideBar or 1)
+		surface.DrawTexturedRect(0, 0, w, h)
+	end
+
+	local barright = vgui.Create("DPanel", mainpanel)
+	barright:SetWidth(self.VGUIPaddingW)
+	barright:Dock(RIGHT)
+
+	barright.Paint = function(myself, w, h)
+		local mycol = mainpanel.SecondaryColor
+
+		if not mycol then return end
+
+		surface.SetDrawColor(mycol)
+		surface.SetTexture(mainpanel.SideBar or 1)
+		surface.DrawTexturedRectUV(0, 0, w, h, 1, 0, 0, 1)
+	end
+end
+
+function SWEP:InspectionVGUIMainInfo(contentpanel)
+	if hook.Run("TFA_InspectVGUI_InfoStart", self, contentpanel) ~= false then
+		local mainpanel = contentpanel:GetParent()
+
+		local titletext = contentpanel:Add("DPanel")
+		titletext.Text = self.PrintName or "TFA Weapon"
+
+		titletext.Think = function(myself)
+			myself.TextColor = mainpanel.PrimaryColor
+		end
+
+		titletext.Font = "TFA_INSPECTION_TITLE"
+		titletext:Dock(TOP)
+		titletext:SetSize(ScrW() * .5, spacing)
+		titletext.Paint = TextShadowPaint
+		local typetext = contentpanel:Add("DPanel")
+		typetext.Text = self:GetStat("Type_Displayed") or self:GetType()
+
+		typetext.Think = function(myself)
+			myself.TextColor = mainpanel.PrimaryColor
+		end
+
+		typetext.Font = "TFA_INSPECTION_DESCR"
+		typetext:Dock(TOP)
+		typetext:SetSize(ScrW() * .5, 32)
+		typetext.Paint = TextShadowPaint
+		--Space things out for block1
+		local spacer = contentpanel:Add("DPanel")
+		spacer:Dock(TOP)
+		spacer:SetSize(ScrW() * .5, spacing)
+		spacer.Paint = function() end
+		--First stat block
+		local descriptiontext = contentpanel:Add("DPanel")
+		descriptiontext.Text = (self.Description or self.Category) or self.Base
+
+		descriptiontext.Think = function(myself)
+			myself.TextColor = mainpanel.SecondaryColor
+		end
+
+		descriptiontext.Font = "TFA_INSPECTION_SMALL"
+		descriptiontext:Dock(TOP)
+		descriptiontext:SetSize(ScrW() * .5, 24)
+		descriptiontext.Paint = TextShadowPaint
+		local myauthor = self.Author
+		local authortext = contentpanel:Add("DPanel")
+
+		if not myauthor or string.Trim(myauthor) == "" then
+			myauthor = "The Forgotten Architect"
+		end
+
+		authortext.Text = infotextpad .. language.GetPhrase("tfa.inspect.creator"):format(myauthor)
+
+		authortext.Think = function(myself)
+			myself.TextColor = mainpanel.SecondaryColor
+		end
+
+		authortext.Font = "TFA_INSPECTION_SMALL"
+		authortext:Dock(TOP)
+		authortext:SetSize(ScrW() * .5, 24)
+		authortext.Paint = TextShadowPaint
+
+		if self.Manufacturer and string.Trim(self.Manufacturer) ~= "" then
+			local makertext = contentpanel:Add("DPanel")
+			makertext.Text = infotextpad .. language.GetPhrase("tfa.inspect.manufacturer"):format(self.Manufacturer)
+
+			makertext.Think = function(myself)
+				myself.TextColor = mainpanel.SecondaryColor
+			end
+
+			makertext.Font = "TFA_INSPECTION_SMALL"
+			makertext:Dock(TOP)
+			makertext:SetSize(ScrW() * .5, 24)
+			makertext.Paint = TextShadowPaint
+		end
+
+		local clip = self:GetStat("Primary.ClipSize")
+
+		if clip > 0 then
+			local capacitytext = contentpanel:Add("DPanel")
+			capacitytext.Text = infotextpad .. language.GetPhrase("tfa.inspect.capacity"):format(clip .. (self:CanChamber() and (self:GetStat("Akimbo") and " + 2" or " + 1") or ""))
+
+			capacitytext.Think = function(myself)
+				myself.TextColor = mainpanel.SecondaryColor
+			end
+
+			capacitytext.Font = "TFA_INSPECTION_SMALL"
+			capacitytext:Dock(TOP)
+			capacitytext:SetSize(ScrW() * .5, 24)
+			capacitytext.Paint = TextShadowPaint
+		end
+
+		local an = game.GetAmmoName(self:GetPrimaryAmmoType())
+
+		if an and an ~= "" and string.len(an) > 1 then
+			local ammotypetext = contentpanel:Add("DPanel")
+			ammotypetext.Text = infotextpad .. language.GetPhrase("tfa.inspect.ammotype"):format(language.GetPhrase(self.AmmoTypeStrings[an:lower()] or (an .. "_ammo")))
+
+			ammotypetext.Think = function(myself)
+				myself.TextColor = mainpanel.SecondaryColor
+			end
+
+			ammotypetext.Font = "TFA_INSPECTION_SMALL"
+			ammotypetext:Dock(TOP)
+			ammotypetext:SetSize(ScrW() * .5, 24)
+			ammotypetext.Paint = TextShadowPaint
+		end
+
+		if self.Purpose and string.Trim(self.Purpose) ~= "" then
+			local purpose = contentpanel:Add("DPanel")
+			purpose.Text = infotextpad .. language.GetPhrase("tfa.inspect.purpose"):format(self.Purpose)
+
+			purpose.Think = function(myself)
+				myself.TextColor = mainpanel.SecondaryColor
+			end
+
+			purpose.Font = "TFA_INSPECTION_SMALL"
+			purpose:Dock(TOP)
+			purpose:SetSize(ScrW() * .5, 24)
+			purpose.Paint = TextShadowPaint
+		end
+
+		hook.Run("TFA_InspectVGUI_InfoFinish", self, contentpanel)
+	end
+end
+
+function SWEP:InspectionVGUIStats(contentpanel)
+	if hook.Run("TFA_InspectVGUI_StatsStart", self, contentpanel) ~= false then
+		local mainpanel = contentpanel:GetParent()
+
+		local statspanel = contentpanel:Add("DPanel")
+		statspanel:SetSize(contentpanel:GetWide() * .5, 0)
+		statspanel.Paint = function() end
+		statspanel:Dock(BOTTOM)
+
+		-- Bash damage
+		if self.BashBase and self:GetStat("Secondary.CanBash") ~= false then
+			local bashdamagepanel = statspanel:Add("DPanel")
+			bashdamagepanel:SetSize(400, 24)
+			statspanel:SetTall(statspanel:GetTall() + 24)
+
+			bashdamagepanel.Think = function(myself)
+				if not IsValid(self) then return end
+				myself.Bar = self:GetStat("Secondary.BashDamage", 0) / bestdamage
+			end
+
+			bashdamagepanel.Paint = PanelPaintBars
+			bashdamagepanel:Dock(BOTTOM)
+			local bashdamagetext = bashdamagepanel:Add("DPanel")
+
+			bashdamagetext.Think = function(myself)
+				if not IsValid(self) then return end
+				myself.Text = language.GetPhrase("tfa.inspect.stat.bashdamage"):format(math.Round(self:GetStat("Secondary.BashDamage", 0)))
+				myself.TextColor = mainpanel.SecondaryColor
+			end
+
+			bashdamagetext.Font = "TFA_INSPECTION_SMALL"
+			bashdamagetext:Dock(LEFT)
+			bashdamagetext:SetSize(400, 24)
+			bashdamagetext.Paint = TextShadowPaint
+		end
+
+		--Stability
+		local stabilitypanel = statspanel:Add("DPanel")
+		stabilitypanel:SetSize(400, 24)
+		statspanel:SetTall(statspanel:GetTall() + 24)
+
+		stabilitypanel.Think = function(myself)
+			if not IsValid(self) then return end
+			myself.Bar = (1 - math.abs(self:GetStat("Primary.KickUp") + self:GetStat("Primary.KickDown")) / 2 / worstrecoil)
+		end
+
+		stabilitypanel.Paint = PanelPaintBars
+		stabilitypanel:Dock(BOTTOM)
+		local stabilitytext = stabilitypanel:Add("DPanel")
+		stabilitytext.Text = ""
+
+		stabilitytext.Think = function(myself)
+			if not IsValid(self) then return end
+			myself.Text = language.GetPhrase("tfa.inspect.stat.stability"):format(math.Clamp(math.Round((1 - math.abs(self:GetStat("Primary.KickUp") + self:GetStat("Primary.KickDown")) / 2 / 1) * 100), 0, 100))
+			myself.TextColor = mainpanel.SecondaryColor
+		end
+
+		stabilitytext.Font = "TFA_INSPECTION_SMALL"
+		stabilitytext:Dock(LEFT)
+		stabilitytext:SetSize(400, 24)
+		stabilitytext.Paint = TextShadowPaint
+
+		--Range
+		local rangepanel = statspanel:Add("DPanel")
+		rangepanel:SetSize(400, 24)
+		statspanel:SetTall(statspanel:GetTall() + 24)
+
+		rangepanel.Think = function(myself)
+			if not IsValid(self) then return end
+			myself.Bar = self:GetStat("Primary.Range") / bestrange
+		end
+
+		rangepanel.Paint = PanelPaintBars
+		rangepanel:Dock(BOTTOM)
+		local rangetext = rangepanel:Add("DPanel")
+		rangetext.Text = ""
+
+		rangetext.Think = function(myself)
+			if not IsValid(self) then return end
+			myself.Text = language.GetPhrase("tfa.inspect.stat.range"):format(math.Round(feettokm(sourcetofeet(self:GetStat("Primary.Range"))) * 100) / 100)
+			myself.TextColor = mainpanel.SecondaryColor
+		end
+
+		rangetext.Font = "TFA_INSPECTION_SMALL"
+		rangetext:Dock(LEFT)
+		rangetext:SetSize(400, 24)
+		rangetext.Paint = TextShadowPaint
+
+		--Damage
+		local damagepanel = statspanel:Add("DPanel")
+		damagepanel:SetSize(400, 24)
+		statspanel:SetTall(statspanel:GetTall() + 24)
+
+		damagepanel.Think = function(myself)
+			if not IsValid(self) then return end
+			myself.Bar = (self:GetStat("Primary.Damage") * math.Round(self:GetStat("Primary.NumShots") * 0.75)) / bestdamage
+		end
+
+		damagepanel.Paint = PanelPaintBars
+		damagepanel:Dock(BOTTOM)
+		local damagetext = damagepanel:Add("DPanel")
+
+		damagetext.Think = function(myself)
+			if not IsValid(self) then return end
+			local dmgstr = language.GetPhrase("tfa.inspect.stat.damage"):format(math.Round(self:GetStat("Primary.Damage")))
+
+			if self:GetStat("Primary.NumShots") ~= 1 then
+				dmgstr = dmgstr .. "x" .. math.Round(self:GetStat("Primary.NumShots"))
+			end
+
+			myself.Text = dmgstr
+			myself.TextColor = mainpanel.SecondaryColor
+		end
+
+		damagetext.Font = "TFA_INSPECTION_SMALL"
+		damagetext:Dock(LEFT)
+		damagetext:SetSize(400, 24)
+		damagetext.Paint = TextShadowPaint
+
+		--Mobility
+		local mobilitypanel = statspanel:Add("DPanel")
+		mobilitypanel:SetSize(400, 24)
+		statspanel:SetTall(statspanel:GetTall() + 24)
+
+		mobilitypanel.Think = function(myself)
+			if not IsValid(self) then return end
+			myself.Bar = (self:GetStat("MoveSpeed") - worstmove) / (1 - worstmove)
+		end
+
+		mobilitypanel.Paint = PanelPaintBars
+		mobilitypanel:Dock(BOTTOM)
+		local mobilitytext = mobilitypanel:Add("DPanel")
+
+		mobilitytext.Think = function(myself)
+			if not IsValid(self) then return end
+			myself.Text = language.GetPhrase("tfa.inspect.stat.mobility"):format(math.Round(self:GetStat("MoveSpeed") * 100))
+			myself.TextColor = mainpanel.SecondaryColor
+		end
+
+		mobilitytext.Font = "TFA_INSPECTION_SMALL"
+		mobilitytext:Dock(LEFT)
+		mobilitytext:SetSize(400, 24)
+		mobilitytext.Paint = TextShadowPaint
+
+		--Firerate
+		local fireratepanel = statspanel:Add("DPanel")
+		fireratepanel:SetSize(400, 24)
+		statspanel:SetTall(statspanel:GetTall() + 24)
+
+		fireratepanel.Think = function(myself)
+			if not IsValid(self) then return end
+			local rpmstat = self:GetStat("Primary.RPM_Displayed") or self:GetStat("Primary.RPM")
+			myself.Bar = rpmstat / bestrpm
+		end
+
+		fireratepanel.Paint = PanelPaintBars
+		fireratepanel:Dock(BOTTOM)
+		local fireratetext = fireratepanel:Add("DPanel")
+
+		fireratetext.Think = function(myself)
+			if not IsValid(self) then return end
+			local rpmstat = self:GetStat("Primary.RPM_Displayed") or self:GetStat("Primary.RPM")
+			local fireratestr = language.GetPhrase("tfa.inspect.stat.rpm"):format(rpmstat)
+			myself.Text = fireratestr
+			myself.TextColor = mainpanel.SecondaryColor
+		end
+
+		fireratetext.Font = "TFA_INSPECTION_SMALL"
+		fireratetext:Dock(LEFT)
+		fireratetext:SetSize(400, 24)
+		fireratetext.Paint = TextShadowPaint
+
+		--Accuracy
+		local accuracypanel = statspanel:Add("DPanel")
+		accuracypanel:SetSize(400, 24)
+		statspanel:SetTall(statspanel:GetTall() + 24)
+
+		accuracypanel.Think = function(myself)
+			if not IsValid(self) then return end
+			local accval
+			local waccval = worstaccuracy
+			local spread = self:GetStat("Primary.Spread")
+
+			if self:GetStat("data.ironsights") ~= 0 then
+				local iacc = self:GetStat("Primary.IronAccuracy", spread)
+				accval = (iacc * 2 + spread) / 3
+
+				if iacc < 0.005 then
+					accval = 0
+				end
+			else
+				accval = spread
+			end
+
+			myself.Bar = 1 - accval / waccval
+		end
+
+		accuracypanel.Paint = PanelPaintBars
+		accuracypanel:Dock(BOTTOM)
+		local accuracytext = accuracypanel:Add("DPanel")
+
+		accuracytext.Think = function(myself)
+			if not IsValid(self) then return end
+			local spread = self:GetStat("Primary.Spread")
+			local accuracystr = language.GetPhrase("tfa.inspect.stat.accuracy"):format(math.Round(spread * 180))
+
+			if self:GetStat("data.ironsights") ~= 0 then
+				accuracystr = accuracystr .. " || " .. math.Round(self:GetStat("Primary.IronAccuracy", spread) * 180) .. "°"
+			end
+
+			myself.Text = accuracystr
+			myself.TextColor = mainpanel.SecondaryColor
+		end
+
+		accuracytext.Font = "TFA_INSPECTION_SMALL"
+		accuracytext:Dock(LEFT)
+		accuracytext:SetSize(400, 24)
+		accuracytext.Paint = TextShadowPaint
+
+		-- Condition
+		if self:CanBeJammed() then
+			local conditionpanel = statspanel:Add("DPanel")
+			conditionpanel:SetSize(400, 24)
+			statspanel:SetTall(statspanel:GetTall() + 24)
+
+			local condition = 1 - self:GetJamFactor() * .01
+
+			conditionpanel.Think = function(myself)
+				if not IsValid(self) then return end
+				myself.Bar = condition
+			end
+
+			conditionpanel.Paint = PanelPaintBars
+			conditionpanel:Dock(BOTTOM)
+			local conditiontext = conditionpanel:Add("DPanel")
+
+			conditiontext.Think = function(myself)
+				myself.TextColor = mainpanel.SecondaryColor
+				myself.Text = language.GetPhrase("tfa.inspect.condition"):format(math.Clamp(math.Round(condition * 100), 0, 100))
+			end
+
+			conditiontext.Font = "TFA_INSPECTION_SMALL"
+			conditiontext:Dock(LEFT)
+			conditiontext:SetSize(400, 24)
+			conditiontext.Paint = TextShadowPaint
+		end
+
+		hook.Run("TFA_InspectVGUI_StatsFinish", self, contentpanel)
+	end
+end
+
+function SWEP:InspectionVGUIAttachments(contentpanel)
+	if not att_enabled_cv then
+		att_enabled_cv = GetConVar("sv_tfa_attachments_enabled")
+	end
+
+	if att_enabled_cv and att_enabled_cv:GetBool() and hook.Run("TFA_InspectVGUI_AttachmentsStart", self, contentpanel) ~= false then
+		local mainpanel = contentpanel:GetParent()
+
+		local scrollpanel, vbar
+
+		if self.Attachments then
+			scrollpanel = mainpanel:Add("DScrollPanel")
+
+			scrollpanel:SetSize(ScrW() * .5 - self.VGUIPaddingW * 2, mainpanel:GetTall() - self.VGUIPaddingH * 2)
+			scrollpanel:SetPos(ScrW() * .5, self.VGUIPaddingH)
+
+			vbar = scrollpanel:GetVBar()
+
+			vbar.Paint = function(myself, w, h)
+				if not mainpanel then return end
+				surface.SetDrawColor(mainpanel.BackgroundColor.r, mainpanel.BackgroundColor.g, mainpanel.BackgroundColor.b, mainpanel.BackgroundColor.a / 2)
+				surface.DrawRect(w * .65, 0, w * .35, h)
+			end
+
+			vbar.btnUp.Paint = function(myself, w, h)
+				if not mainpanel then return end
+				surface.SetDrawColor(mainpanel.PrimaryColor.r, mainpanel.PrimaryColor.g, mainpanel.PrimaryColor.b, mainpanel.PrimaryColor.a)
+				surface.DrawRect(w * .65, 0, w * .35, h)
+			end
+
+			vbar.btnDown.Paint = function(myself, w, h)
+				if not mainpanel then return end
+				surface.SetDrawColor(mainpanel.PrimaryColor.r, mainpanel.PrimaryColor.g, mainpanel.PrimaryColor.b, mainpanel.PrimaryColor.a)
+				surface.DrawRect(w * .65, 0, w * .35, h)
+			end
+
+			vbar.btnGrip.Paint = function(myself, w, h)
+				if not mainpanel then return end
+				surface.SetDrawColor(mainpanel.PrimaryColor.r, mainpanel.PrimaryColor.g, mainpanel.PrimaryColor.b, mainpanel.PrimaryColor.a)
+				surface.DrawRect(w * .65, 0, w * .35, h)
+			end
+		end
+
+		self:GenerateVGUIAttachmentTable()
+		local i = 0
+		local prevCat
+		local lineY = 0
+		local scrollWide = scrollpanel:GetWide() - (IsValid(vbar) and vbar:GetTall() or 0)
+		local lastTooltipPanel
+
+		local iconsize = math.Round(TFA.ScaleH(TFA.Attachments.IconSize))
+		local catspacing = math.Round(TFA.ScaleH(TFA.Attachments.CategorySpacing))
+		local padding = math.Round(TFA.ScaleH(TFA.Attachments.UIPadding))
+
+		for k, v in pairs(self.VGUIAttachments) do
+			if k ~= "BaseClass" then
+				if prevCat then
+					local isContinuing = prevCat == (v.cat or k)
+					lineY = lineY + (isContinuing and iconsize + padding or catspacing)
+
+					if not isContinuing then
+						lastTooltipPanel = nil
+					end
+				end
+
+				prevCat = v.cat or k
+				local testpanel = mainpanel:Add("TFAAttachmentPanel")
+				testpanel:SetParent(scrollpanel)
+				testpanel:SetContentPanel(scrollpanel)
+				i = i + 1
+				testpanel:SetWeapon(self)
+				testpanel:SetAttachment(k)
+				testpanel:SetCategory(v.cat or k)
+				testpanel:Initialize()
+				lastTooltipPanel = lastTooltipPanel or testpanel:InitializeTooltip()
+				testpanel:SetupTooltip(lastTooltipPanel)
+				testpanel:PopulateIcons()
+				testpanel:SetPos(scrollWide - testpanel:GetWide(), lineY)
+			end
+		end
+
+		hook.Run("TFA_InspectVGUI_AttachmentsFinish", self, contentpanel, scrollpanel)
+	end
+end
+
 function SWEP:GenerateInspectionDerma()
+	if hook.Run("TFA_InspectVGUI_Start", self) == false then return end
+
 	TFA_INSPECTIONPANEL = vgui.Create("DPanel")
 	TFA_INSPECTIONPANEL:SetSize(ScrW(), ScrH())
+	TFA_INSPECTIONPANEL:DockPadding(self.VGUIPaddingW, self.VGUIPaddingH, self.VGUIPaddingW, self.VGUIPaddingH)
 
 	TFA_INSPECTIONPANEL.Think = function(myself, w, h)
 		local ply = LocalPlayer()
@@ -270,481 +767,27 @@ function SWEP:GenerateInspectionDerma()
 			if not myself.SideBar then
 				myself.SideBar = surface.GetTextureID("vgui/inspectionhud/sidebar")
 			end
-
-			if not myself.Hex then
-				myself.Hex = surface.GetTextureID("vgui/inspectionhud/hex")
-			end
 		end
 	end
 
-	--Derma_DrawBackgroundBlur( myself, SysTime()-wep:GetNW2Float("InspectingProgress") )
-	--draw.NoTexture()
-	--surface.SetDrawColor(ColorAlpha(INSPECTION_BACKGROUND,TFA_INSPECTIONPANEL.Alpha*0.25))
-	--surface.DrawRect(0,0,w,h)
-	local screenwidth, screenheight = ScrW(), ScrH()
-	local hv = math.Round(screenheight * 0.8)
+	self:InspectionVGUISideBars(TFA_INSPECTIONPANEL)
+
 	local contentpanel = vgui.Create("DPanel", TFA_INSPECTIONPANEL)
-	contentpanel:SetPos(32, (screenheight - hv) / 2)
-	contentpanel:DockPadding(32 + pad, pad, pad, pad)
-	contentpanel:SetSize(screenwidth - 32, hv)
+	contentpanel:Dock(FILL)
+	contentpanel:DockPadding(pad, pad, pad, pad)
 
-	contentpanel.Paint = function(myself, w, h)
-		local mycol = TFA_INSPECTIONPANEL.SecondaryColor
-		if not mycol then return end
-		surface.SetDrawColor(mycol)
-		surface.SetTexture(TFA_INSPECTIONPANEL.SideBar or 1)
-		surface.DrawTexturedRect(0, 0, 32, h)
+	contentpanel.Paint = function() end
 
-		if IsValid(self) then
-			surface.DrawTexturedRectUV(ScrW() - 32 - 32 - 32, 0, 32, h, 1, 0, 0, 1)
-		end
-	end
+	-- Top block (gun name and info)
+	self:InspectionVGUIMainInfo(contentpanel)
 
-	local lbound = 32 + pad
-	local titletext = contentpanel:Add("DPanel")
-	titletext.Text = self.PrintName or "TFA Weapon"
+	-- Bottom block (stats)
+	self:InspectionVGUIStats(contentpanel)
 
-	titletext.Think = function(myself)
-		myself.TextColor = TFA_INSPECTIONPANEL.PrimaryColor
-	end
+	-- Attachments
+	self:InspectionVGUIAttachments(contentpanel)
 
-	titletext.Font = "TFA_INSPECTION_TITLE"
-	titletext:Dock(TOP)
-	titletext:SetSize(screenwidth - lbound, spacing)
-	titletext.Paint = TextShadowPaint
-	local typetext = contentpanel:Add("DPanel")
-	typetext.Text = self:GetStat("Type_Displayed") or self:GetType()
-
-	typetext.Think = function(myself)
-		myself.TextColor = TFA_INSPECTIONPANEL.PrimaryColor
-	end
-
-	typetext.Font = "TFA_INSPECTION_DESCR"
-	typetext:Dock(TOP)
-	typetext:SetSize(screenwidth - lbound, 32)
-	typetext.Paint = TextShadowPaint
-	--Space things out for block1
-	local spacer = contentpanel:Add("DPanel")
-	spacer:Dock(TOP)
-	spacer:SetSize(screenwidth - lbound, spacing)
-	spacer.Paint = function() end
-	--First stat block
-	local descriptiontext = contentpanel:Add("DPanel")
-	descriptiontext.Text = (self.Description or self.Category) or self.Base
-
-	descriptiontext.Think = function(myself)
-		myself.TextColor = TFA_INSPECTIONPANEL.SecondaryColor
-	end
-
-	descriptiontext.Font = "TFA_INSPECTION_SMALL"
-	descriptiontext:Dock(TOP)
-	descriptiontext:SetSize(screenwidth - lbound, 24)
-	descriptiontext.Paint = TextShadowPaint
-	local myauthor = self.Author
-	local authortext = contentpanel:Add("DPanel")
-
-	if not myauthor or string.Trim(myauthor) == "" then
-		myauthor = "The Forgotten Architect"
-	end
-
-	authortext.Text = infotextpad .. language.GetPhrase("tfa.inspect.creator"):format(myauthor)
-
-	authortext.Think = function(myself)
-		myself.TextColor = TFA_INSPECTIONPANEL.SecondaryColor
-	end
-
-	authortext.Font = "TFA_INSPECTION_SMALL"
-	authortext:Dock(TOP)
-	authortext:SetSize(screenwidth - lbound, 24)
-	authortext.Paint = TextShadowPaint
-
-	if self.Manufacturer and string.Trim(self.Manufacturer) ~= "" then
-		local makertext = contentpanel:Add("DPanel")
-		makertext.Text = infotextpad .. language.GetPhrase("tfa.inspect.manufacturer"):format(self.Manufacturer)
-
-		makertext.Think = function(myself)
-			myself.TextColor = TFA_INSPECTIONPANEL.SecondaryColor
-		end
-
-		makertext.Font = "TFA_INSPECTION_SMALL"
-		makertext:Dock(TOP)
-		makertext:SetSize(screenwidth - lbound, 24)
-		makertext.Paint = TextShadowPaint
-	end
-
-	local clip = self:GetStat("Primary.ClipSize")
-
-	if clip > 0 then
-		local capacitytext = contentpanel:Add("DPanel")
-		capacitytext.Text = infotextpad .. language.GetPhrase("tfa.inspect.capacity"):format(clip .. (self:CanChamber() and (self:GetStat("Akimbo") and " + 2" or " + 1") or ""))
-
-		capacitytext.Think = function(myself)
-			myself.TextColor = TFA_INSPECTIONPANEL.SecondaryColor
-		end
-
-		capacitytext.Font = "TFA_INSPECTION_SMALL"
-		capacitytext:Dock(TOP)
-		capacitytext:SetSize(screenwidth - lbound, 24)
-		capacitytext.Paint = TextShadowPaint
-	end
-
-	local an = game.GetAmmoName(self:GetPrimaryAmmoType())
-
-	if an and an ~= "" and string.len(an) > 1 then
-		local ammotypetext = contentpanel:Add("DPanel")
-		ammotypetext.Text = infotextpad .. language.GetPhrase("tfa.inspect.ammotype"):format(language.GetPhrase(self.AmmoTypeStrings[an:lower()] or (an .. "_ammo")))
-
-		ammotypetext.Think = function(myself)
-			myself.TextColor = TFA_INSPECTIONPANEL.SecondaryColor
-		end
-
-		ammotypetext.Font = "TFA_INSPECTION_SMALL"
-		ammotypetext:Dock(TOP)
-		ammotypetext:SetSize(screenwidth - lbound, 24)
-		ammotypetext.Paint = TextShadowPaint
-	end
-
-	if self.Purpose and string.Trim(self.Purpose) ~= "" then
-		local purpose = contentpanel:Add("DPanel")
-		purpose.Text = infotextpad .. language.GetPhrase("tfa.inspect.purpose"):format(self.Purpose)
-
-		purpose.Think = function(myself)
-			myself.TextColor = TFA_INSPECTIONPANEL.SecondaryColor
-		end
-
-		purpose.Font = "TFA_INSPECTION_SMALL"
-		purpose:Dock(TOP)
-		purpose:SetSize(screenwidth - lbound, 24)
-		purpose.Paint = TextShadowPaint
-	end
-
-	--Bottom block (bars and such)
-	local statspanel = contentpanel:Add("DPanel")
-	statspanel:SetSize(screenwidth - lbound, 192)
-	statspanel.Paint = function() end
-	statspanel:Dock(BOTTOM)
-
-	-- Condition
-
-	if self:CanBeJammed() then
-		local conditionpanel = statspanel:Add("DPanel")
-		conditionpanel:SetSize(400, 24)
-
-		local condition = 1 - self:GetJamFactor() * .01
-
-		conditionpanel.Think = function(myself)
-			if not IsValid(self) then return end
-			myself.Bar = condition
-		end
-
-		conditionpanel.Paint = PanelPaintBars
-		conditionpanel:Dock(TOP)
-		local conditiontext = conditionpanel:Add("DPanel")
-
-		conditiontext.Think = function(myself)
-			myself.TextColor = TFA_INSPECTIONPANEL.SecondaryColor
-			myself.Text = language.GetPhrase("tfa.inspect.condition"):format(math.Clamp(math.Round(condition * 100), 0, 100))
-		end
-
-		conditiontext.Font = "TFA_INSPECTION_SMALL"
-		conditiontext:Dock(LEFT)
-		conditiontext:SetSize(screenwidth - lbound, 24)
-		conditiontext.Paint = TextShadowPaint
-	end
-
-	--Accuracy
-	local accuracypanel = statspanel:Add("DPanel")
-	accuracypanel:SetSize(400, 24)
-
-	accuracypanel.Think = function(myself)
-		if not IsValid(self) then return end
-		local accval
-		local waccval = worstaccuracy
-		local spread = self:GetStat("Primary.Spread")
-
-		if self:GetStat("data.ironsights") ~= 0 then
-			local iacc = self:GetStat("Primary.IronAccuracy", spread)
-			accval = (iacc * 2 + spread) / 3
-
-			if iacc < 0.005 then
-				accval = 0
-			end
-		else
-			accval = spread
-		end
-
-		myself.Bar = 1 - accval / waccval
-	end
-
-	accuracypanel.Paint = PanelPaintBars
-	accuracypanel:Dock(TOP)
-	local accuracytext = accuracypanel:Add("DPanel")
-
-	accuracytext.Think = function(myself)
-		if not IsValid(self) then return end
-		local spread = self:GetStat("Primary.Spread")
-		local accuracystr = language.GetPhrase("tfa.inspect.stat.accuracy"):format(math.Round(spread * 180))
-
-		if self:GetStat("data.ironsights") ~= 0 then
-			accuracystr = accuracystr .. " || " .. math.Round(self:GetStat("Primary.IronAccuracy", spread) * 180) .. "°"
-		end
-
-		myself.Text = accuracystr
-		myself.TextColor = TFA_INSPECTIONPANEL.SecondaryColor
-	end
-
-	accuracytext.Font = "TFA_INSPECTION_SMALL"
-	accuracytext:Dock(LEFT)
-	accuracytext:SetSize(screenwidth - lbound, 24)
-	accuracytext.Paint = TextShadowPaint
-	--Firerate
-	local fireratepanel = statspanel:Add("DPanel")
-	fireratepanel:SetSize(400, 24)
-
-	fireratepanel.Think = function(myself)
-		if not IsValid(self) then return end
-		local rpmstat = self:GetStat("Primary.RPM_Displayed") or self:GetStat("Primary.RPM")
-		myself.Bar = rpmstat / bestrpm
-	end
-
-	fireratepanel.Paint = PanelPaintBars
-	fireratepanel:Dock(TOP)
-	local fireratetext = fireratepanel:Add("DPanel")
-
-	fireratetext.Think = function(myself)
-		if not IsValid(self) then return end
-		local rpmstat = self:GetStat("Primary.RPM_Displayed") or self:GetStat("Primary.RPM")
-		local fireratestr = language.GetPhrase("tfa.inspect.stat.rpm"):format(rpmstat)
-		myself.Text = fireratestr
-		myself.TextColor = TFA_INSPECTIONPANEL.SecondaryColor
-	end
-
-	fireratetext.Font = "TFA_INSPECTION_SMALL"
-	fireratetext:Dock(LEFT)
-	fireratetext:SetSize(screenwidth - lbound, 24)
-	fireratetext.Paint = TextShadowPaint
-	--Mobility
-	local mobilitypanel = statspanel:Add("DPanel")
-	mobilitypanel:SetSize(400, 24)
-
-	mobilitypanel.Think = function(myself)
-		if not IsValid(self) then return end
-		myself.Bar = (self:GetStat("MoveSpeed") - worstmove) / (1 - worstmove)
-	end
-
-	mobilitypanel.Paint = PanelPaintBars
-	mobilitypanel:Dock(TOP)
-	local mobilitytext = mobilitypanel:Add("DPanel")
-
-	mobilitytext.Think = function(myself)
-		if not IsValid(self) then return end
-		myself.Text = language.GetPhrase("tfa.inspect.stat.mobility"):format(math.Round(self:GetStat("MoveSpeed") * 100))
-		myself.TextColor = TFA_INSPECTIONPANEL.SecondaryColor
-	end
-
-	mobilitytext.Font = "TFA_INSPECTION_SMALL"
-	mobilitytext:Dock(LEFT)
-	mobilitytext:SetSize(screenwidth - lbound, 24)
-	mobilitytext.Paint = TextShadowPaint
-	--Damage
-	local damagepanel = statspanel:Add("DPanel")
-	damagepanel:SetSize(400, 24)
-
-	damagepanel.Think = function(myself)
-		if not IsValid(self) then return end
-		myself.Bar = (self:GetStat("Primary.Damage") * math.Round(self:GetStat("Primary.NumShots") * 0.75)) / bestdamage
-	end
-
-	damagepanel.Paint = PanelPaintBars
-	damagepanel:Dock(TOP)
-	local damagetext = damagepanel:Add("DPanel")
-
-	damagetext.Think = function(myself)
-		if not IsValid(self) then return end
-		local dmgstr = language.GetPhrase("tfa.inspect.stat.damage"):format(math.Round(self:GetStat("Primary.Damage")))
-
-		if self:GetStat("Primary.NumShots") ~= 1 then
-			dmgstr = dmgstr .. "x" .. math.Round(self:GetStat("Primary.NumShots"))
-		end
-
-		myself.Text = dmgstr
-		myself.TextColor = TFA_INSPECTIONPANEL.SecondaryColor
-	end
-
-	damagetext.Font = "TFA_INSPECTION_SMALL"
-	damagetext:Dock(LEFT)
-	damagetext:SetSize(screenwidth - lbound, 24)
-	damagetext.Paint = TextShadowPaint
-	--Range
-	local rangepanel = statspanel:Add("DPanel")
-	rangepanel:SetSize(400, 24)
-
-	rangepanel.Think = function(myself)
-		if not IsValid(self) then return end
-		myself.Bar = self:GetStat("Primary.Range") / bestrange
-	end
-
-	rangepanel.Paint = PanelPaintBars
-	rangepanel:Dock(TOP)
-	local rangetext = rangepanel:Add("DPanel")
-	rangetext.Text = ""
-
-	rangetext.Think = function(myself)
-		if not IsValid(self) then return end
-		myself.Text = language.GetPhrase("tfa.inspect.stat.range"):format(math.Round(feettokm(sourcetofeet(self:GetStat("Primary.Range"))) * 100) / 100)
-		myself.TextColor = TFA_INSPECTIONPANEL.SecondaryColor
-	end
-
-	rangetext.Font = "TFA_INSPECTION_SMALL"
-	rangetext:Dock(LEFT)
-	rangetext:SetSize(screenwidth - lbound, 24)
-	rangetext.Paint = TextShadowPaint
-	--Stability
-	local stabilitypanel = statspanel:Add("DPanel")
-	stabilitypanel:SetSize(400, 24)
-
-	stabilitypanel.Think = function(myself)
-		if not IsValid(self) then return end
-		myself.Bar = (1 - math.abs(self:GetStat("Primary.KickUp") + self:GetStat("Primary.KickDown")) / 2 / worstrecoil)
-	end
-
-	stabilitypanel.Paint = PanelPaintBars
-	stabilitypanel:Dock(TOP)
-	local stabilitytext = stabilitypanel:Add("DPanel")
-	stabilitytext.Text = ""
-
-	stabilitytext.Think = function(myself)
-		if not IsValid(self) then return end
-		myself.Text = language.GetPhrase("tfa.inspect.stat.stability"):format(math.Clamp(math.Round((1 - math.abs(self:GetStat("Primary.KickUp") + self:GetStat("Primary.KickDown")) / 2 / 1) * 100), 0, 100))
-		myself.TextColor = TFA_INSPECTIONPANEL.SecondaryColor
-	end
-
-	stabilitytext.Font = "TFA_INSPECTION_SMALL"
-	stabilitytext:Dock(LEFT)
-	stabilitytext:SetSize(screenwidth - lbound, 24)
-	stabilitytext.Paint = TextShadowPaint
-
-	-- Bash damage
-	if self.BashBase and self:GetStat("Secondary.CanBash") ~= false then
-		local bashdamagepanel = statspanel:Add("DPanel")
-		bashdamagepanel:SetSize(400, 24)
-
-		bashdamagepanel.Think = function(myself)
-			if not IsValid(self) then return end
-			myself.Bar = self:GetStat("Secondary.BashDamage", 0) / bestdamage
-		end
-
-		bashdamagepanel.Paint = PanelPaintBars
-		bashdamagepanel:Dock(TOP)
-		local bashdamagetext = bashdamagepanel:Add("DPanel")
-
-		bashdamagetext.Think = function(myself)
-			if not IsValid(self) then return end
-			myself.Text = language.GetPhrase("tfa.inspect.stat.bashdamage"):format(math.Round(self:GetStat("Secondary.BashDamage", 0)))
-			myself.TextColor = TFA_INSPECTIONPANEL.SecondaryColor
-		end
-
-		bashdamagetext.Font = "TFA_INSPECTION_SMALL"
-		bashdamagetext:Dock(LEFT)
-		bashdamagetext:SetSize(screenwidth - lbound, 24)
-		bashdamagetext.Paint = TextShadowPaint
-	end
-
-	if not att_enabled_cv then
-		att_enabled_cv = GetConVar("sv_tfa_attachments_enabled")
-	end
-
-	local scrollpanel
-
-	if (not att_enabled_cv) or att_enabled_cv:GetBool() then
-		if self.Attachments then
-			scrollpanel = contentpanel:Add("DScrollPanel")
-			scrollpanel:SetPos(0, 0)
-			scrollpanel:SetSize(ScrW() - spacing - 26, math.floor(contentpanel:GetTall()))
-			local vbar = scrollpanel:GetVBar()
-			scrollpanel:SetWide(scrollpanel:GetWide() + vbar:GetWide())
-
-			vbar.Paint = function(myself, w, h)
-				if not TFA_INSPECTIONPANEL then return end
-				surface.SetDrawColor(TFA_INSPECTIONPANEL.BackgroundColor.r, TFA_INSPECTIONPANEL.BackgroundColor.g, TFA_INSPECTIONPANEL.BackgroundColor.b, TFA_INSPECTIONPANEL.BackgroundColor.a / 2)
-				surface.DrawRect(0, 0, 5, h)
-			end
-
-			vbar.btnUp.Paint = function(myself, w, h)
-				if not TFA_INSPECTIONPANEL then return end
-				surface.SetDrawColor(TFA_INSPECTIONPANEL.PrimaryColor.r, TFA_INSPECTIONPANEL.PrimaryColor.g, TFA_INSPECTIONPANEL.PrimaryColor.b, TFA_INSPECTIONPANEL.PrimaryColor.a)
-				surface.DrawRect(0, 0, 5, h)
-			end
-
-			vbar.btnDown.Paint = function(myself, w, h)
-				if not TFA_INSPECTIONPANEL then return end
-				surface.SetDrawColor(TFA_INSPECTIONPANEL.PrimaryColor.r, TFA_INSPECTIONPANEL.PrimaryColor.g, TFA_INSPECTIONPANEL.PrimaryColor.b, TFA_INSPECTIONPANEL.PrimaryColor.a)
-				surface.DrawRect(0, 0, 5, h)
-			end
-
-			vbar.btnGrip.Paint = function(myself, w, h)
-				if not TFA_INSPECTIONPANEL then return end
-				surface.SetDrawColor(TFA_INSPECTIONPANEL.PrimaryColor.r, TFA_INSPECTIONPANEL.PrimaryColor.g, TFA_INSPECTIONPANEL.PrimaryColor.b, TFA_INSPECTIONPANEL.PrimaryColor.a)
-				surface.DrawRect(0, 0, 5, h)
-			end
-		end
-
-		--[[
-
-			myself.PrimaryColor = ColorAlpha(INSPECTION_PRIMARYCOLOR, TFA_INSPECTIONPANEL.Alpha)
-			myself.SecondaryColor = ColorAlpha(INSPECTION_SECONDARYCOLOR, TFA_INSPECTIONPANEL.Alpha)
-			myself.BackgroundColor = ColorAlpha(INSPECTION_BACKGROUND, TFA_INSPECTIONPANEL.Alpha)
-			myself.ActiveColor = ColorAlpha(INSPECTION_ACTIVECOLOR, TFA_INSPECTIONPANEL.Alpha)
-	]]
-		--
-		self:GenerateVGUIAttachmentTable()
-		local i = 0
-		local prevCat
-		local lineY = 0
-		local scrollWide = scrollpanel:GetWide()
-		local lastTooltipPanel
-
-		local iconsize = math.Round(TFA.ScaleH(TFA.Attachments.IconSize))
-		local catspacing = math.Round(TFA.ScaleH(TFA.Attachments.CategorySpacing))
-		local padding = math.Round(TFA.ScaleH(TFA.Attachments.UIPadding))
-
-		for k, v in pairs(self.VGUIAttachments) do
-			if k ~= "BaseClass" then
-				if prevCat then
-					local isContinuing = prevCat == (v.cat or k)
-					lineY = lineY + (isContinuing and iconsize + padding or catspacing)
-
-					if not isContinuing then
-						lastTooltipPanel = nil
-					end
-				end
-
-				prevCat = v.cat or k
-				local testpanel = TFA_INSPECTIONPANEL:Add("TFAAttachmentPanel")
-				testpanel:SetParent(scrollpanel)
-				testpanel:SetContentPanel(scrollpanel)
-				i = i + 1
-				testpanel:SetWeapon(self)
-				testpanel:SetAttachment(k)
-				testpanel:SetCategory(v.cat or k)
-				testpanel:Initialize()
-				lastTooltipPanel = lastTooltipPanel or testpanel:InitializeTooltip()
-				testpanel:SetupTooltip(lastTooltipPanel)
-				testpanel:PopulateIcons()
-				testpanel:SetPos(scrollWide - testpanel:GetWide() - 32, lineY)
-			end
-		end
-	end
-	--[[
-	testpanel:SetSize(128+4*2, spacing)
-	testpanel:SetPos( ScrW() / 2, ScrH() / 2 )
-	testpanel.Paint = function(myself,w,h)
-		draw.NoTexture()
-		surface.SetDrawColor(color_white)
-		surface.DrawRect(0,0,w,h)
-	end
-	]]
-	--
+	hook.Run("TFA_InspectVGUI_Finish", self, TFA_INSPECTIONPANEL, contentpanel)
 end
 
 function SWEP:DoInspectionDerma()

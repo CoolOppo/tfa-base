@@ -79,4 +79,13 @@ TFA_DrawScopeOverlay(wepom) -- called when 2d scope overlay is drawn; return tru
 TFA_CanBash(wepom) -- called before bashing; return false to prevent bashing
 TFA_Bash(wepom) -- called after all checks, animation started playing
 TFA_PostBash(wepom) -- do things here
+--Inspection VGUI
+TFA_InspectVGUI_Start(wepom) -- called before creating main panel; return false to prevent
+TFA_InspectVGUI_Finish(wepom, mainpanel, contentpanel) -- called after adding every panel
+TFA_InspectVGUI_InfoStart(wepom, contentpanel) -- called before adding main info (weapon name and stuff); return false to prevent
+TFA_InspectVGUI_InfoFinish(wepom, contentpanel) -- called after adding main info
+TFA_InspectVGUI_StatsStart(wepom, contentpanel) -- called before adding bottom info (stats); return false to prevent
+TFA_InspectVGUI_StatsFinish(wepom, contentpanel) -- called after adding bottom info
+TFA_InspectVGUI_AttachmentsStart(wepom, contentpanel) -- called before adding attachments panel; return false to prevent
+TFA_InspectVGUI_AttachmentsFinish(wepom, contentpanel, attachmentspanel) -- called after adding attachments panel
 ]]
