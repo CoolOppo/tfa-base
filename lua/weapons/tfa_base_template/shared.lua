@@ -314,6 +314,10 @@ SWEP.ShellTime = .35 -- For shotguns, how long it takes to insert a shell.
 -- [[SPRINTING]] --
 SWEP.RunSightsPos = Vector(0, 0, 0) -- Change this, using SWEP Creation Kit preferably
 SWEP.RunSightsAng = Vector(0, 0, 0) -- Change this, using SWEP Creation Kit preferably
+-- [[CROUCHING]] --
+-- Viewmodel offset when player is crouched
+-- SWEP.CrouchPos = Vector(0, 0, 0)
+-- SWEP.CrouchAng = Vector(0, 0, 0)
 -- [[IRONSIGHTS]] --
 SWEP.data = {}
 SWEP.data.ironsights = 1 -- Enable Ironsights

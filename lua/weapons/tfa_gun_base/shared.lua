@@ -178,6 +178,9 @@ SWEP.RunSightsPos = Vector(0,0,0)
 SWEP.RunSightsAng = Vector(0,0,0)
 SWEP.AllowSprintAttack = false --Shoot while sprinting?
 
+SWEP.CrouchPos = Vector(0, -1, -.5)
+SWEP.CrouchAng = Vector(0, 0, 0)
+
 SWEP.EventTable = {}
 
 SWEP.RTMaterialOverride = nil

@@ -216,6 +216,7 @@ function SWEP:CalculateViewModelOffset(delta)
 	local is = self:GetIronSights()
 	local spr = self:GetSprinting()
 	local stat = self:GetStatus()
+	local crouch = self:GetNW2Float("CrouchingRatio")
 	hls = (TFA.Enum.HolsterStatus[stat] and self2.ProceduralHolsterEnabled) or (TFA.Enum.ReloadStatus[stat] and self2.ProceduralReloadEnabled)
 
 	if hls then
@@ -245,6 +246,9 @@ function SWEP:CalculateViewModelOffset(delta)
 		end
 
 		adstransitionspeed = 7.5
+	elseif crouch > 0 then
+		target_pos = self2.GetStat(self, "CrouchPos") * crouch
+		target_ang = self2.GetStat(self, "CrouchAng") * crouch
 	end
 
 	if cl_tfa_viewmodel_offset_x and not is then
