@@ -137,6 +137,22 @@ function SWEP:DispatchBodygroupEvent(arg)
 	end
 end
 
+local isstring = isstring
+
+local function eventtablesorter(a, b)
+	local sa, sb = isstring(a), isstring(b)
+
+	if sa and not sb or not sa and sb then
+		if sa then
+			return false
+		end
+
+		return true
+	end
+
+	return a < b
+end
+
 function SWEP:RebuildEventEdictTable()
 	local self2 = self:GetTable()
 	local slot = 0

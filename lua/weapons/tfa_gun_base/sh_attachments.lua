@@ -288,22 +288,6 @@ SWEP.StatCache = {}
 SWEP.StatCache2 = {}
 SWEP.StatStringCache = {}
 
-local isstring = isstring
-
-local function eventtablesorter(a, b)
-	local sa, sb = isstring(a), isstring(b)
-
-	if sa and not sb or not sa and sb then
-		if sa then
-			return false
-		end
-
-		return true
-	end
-
-	return a < b
-end
-
 --[[
 local function mtbl(t1, t2)
 	local t = tableCopy(t1)
