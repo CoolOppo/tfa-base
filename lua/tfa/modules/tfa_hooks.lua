@@ -369,29 +369,61 @@ Used For: Fixing our stuff
 --
 
 local function FixInvalidPMHook()
-	hook.Remove("PostDrawViewModel", "Set player hand skin") -- just remove it for now
+	if not CLIENT then return end
+
+	local hookTable = hook.GetTable()
+
+	if hookTable["PostDrawViewModel"] and hookTable["PostDrawViewModel"]["Set player hand skin"] then
+		local targetFunc = hookTable["PostDrawViewModel"]["Set player hand skin"]
+		if not targetFunc then return end
+
+		local cv_shouldfix = GetConVar("cl_tfa_fix_mark2580") or CreateClientConVar("cl_tfa_fix_mark2580", "1", true, false, "Fix hands skin hook for MARK2580's playermodels (Change requires map restart)")
+
+		if not cv_shouldfix:GetBool() then return end
+
+		print("[TFA Base] The playermodels you have installed breaks the automatic rig parenting for Insurgency and CS:GO weapons. The fix is applied but it's more of a band-aid, the solution would be to either fix this properly on author's side or to uninstall the addon.")
+
+		if CLIENT and debug and debug.getinfo then
+			local funcPath = debug.getinfo(targetFunc).short_src
+
+			print("Type whereis " .. funcPath .. " in console to see the conflicting addon.")
+		end
+
+		hook.Remove("PostDrawViewModel", "Set player hand skin")
+		hook.Add("PreDrawPlayerHands", "Set player hand skin BUT FIXED", function(hands, vm, ply, weapon)
+			if hands:SkinCount() == ply:SkinCount() then
+				hands:SetSkin(ply:GetSkin())
+			end
+		end)
+	end
 end
 
 local function PatchSiminovSniperHook()
 	if not CLIENT then return end -- that hook is clientside only
 
-	local CMtbl = hook.GetTable()["CreateMove"] or {}
+	local hookTable = hook.GetTable()
 
-	local SniperCreateMove = CMtbl["SniperCreateMove"] -- getting the original function
-	if not SniperCreateMove then return end
+	if hookTable["CreateMove"] and hookTable["CreateMove"]["SniperCreateMove"] then
+		local SniperCreateMove = hookTable["CreateMove"]["SniperCreateMove"] -- getting the original function
+		if not SniperCreateMove then return end
 
-	local PatchedSniperCreateMove = function(cmd) -- wrapping their function with our check
-		local ply = LocalPlayer()
+		local cv_shouldfix = GetConVar("cl_tfa_fix_siminov_scopes") or CreateClientConVar("cl_tfa_fix_siminov_scopes", "1", true, false, "Patch Siminov's sniper overlay hook with weapon base check (Change requires map restart)")
 
-		if IsValid(ply) and IsValid(ply:GetActiveWeapon()) and ply:GetActiveWeapon().IsTFAWeapon then
-			return
+		if not cv_shouldfix:GetBool() then return end
+
+		local PatchedSniperCreateMove = function(cmd) -- wrapping their function with our check
+			local ply = LocalPlayer()
+
+			if IsValid(ply) and IsValid(ply:GetActiveWeapon()) and ply:GetActiveWeapon().IsTFAWeapon then
+				return
+			end
+
+			SniperCreateMove(cmd)
 		end
 
-		SniperCreateMove(cmd)
+		hook.Remove("CreateMove", "SniperCreateMove") -- removing original hook
+		hook.Add("CreateMove", "SniperCreateMove_PatchedByTFABase", PatchedSniperCreateMove) -- creating new hook with wrap
 	end
-
-	hook.Remove("CreateMove", "SniperCreateMove") -- removing original hook
-	hook.Add("CreateMove", "SniperCreateMove_PatchedByTFABase", PatchedSniperCreateMove) -- creating new hook with wrap
 end
 
 hook.Add("InitPostEntity", "tfa_unfuckeverything", function()
