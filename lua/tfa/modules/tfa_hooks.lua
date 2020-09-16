@@ -377,7 +377,7 @@ local function FixInvalidPMHook()
 		local targetFunc = hookTable["PostDrawViewModel"]["Set player hand skin"]
 		if not targetFunc then return end
 
-		local cv_shouldfix = GetConVar("cl_tfa_fix_mark2580") or CreateClientConVar("cl_tfa_fix_mark2580", "1", true, false, "Fix hands skin hook for MARK2580's playermodels (Change requires map restart)")
+		local cv_shouldfix = GetConVar("cl_tfa_fix_pmhands_hook") or CreateClientConVar("cl_tfa_fix_pmhands_hook", "1", true, false, "Fix hands skin hook for CaptainBigButt's (and others) playermodels (Change requires map restart)")
 
 		if not cv_shouldfix:GetBool() then return end
 
