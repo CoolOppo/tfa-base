@@ -110,12 +110,20 @@ SWEP.EventTableBuilt = {}
 SWEP.EventTableEdict = {}
 
 function SWEP:DispatchLuaEvent(arg)
+	if not self.event_table_built then
+		self:RebuildEventEdictTable()
+	end
+
 	local fn = assert(assert(self.EventTableEdict[tonumber(arg)], "No such event with edict " .. arg).value, "Event is missing a function to call")
 	assert(isfunction(fn), "Event " .. arg .. " is not a Lua event")
 	fn(self, self:VMIV(), true)
 end
 
 function SWEP:DispatchBodygroupEvent(arg)
+	if not self.event_table_built then
+		self:RebuildEventEdictTable()
+	end
+
 	local event = assert(self.EventTableEdict[tonumber(arg)], "No such event with edict " .. arg)
 	assert(isstring(event.name), "Event " .. arg .. " is missing bodygroup name to set")
 	assert(isstring(event.value), "Event " .. arg .. " is missing bodygroup value to set")
@@ -129,9 +137,75 @@ function SWEP:DispatchBodygroupEvent(arg)
 	end
 end
 
+function SWEP:RebuildEventEdictTable()
+	local self2 = self:GetTable()
+	local slot = 0
+
+	for i = #self2.EventTableEdict, 0, -1 do
+		self2.EventTableEdict[i] = nil
+	end
+
+	self:ResetEvents()
+
+	local eventtable = self2.EventTable
+	local keys = table.GetKeys(eventtable)
+	table.sort(keys, eventtablesorter)
+
+	for _, key in ipairs(keys) do
+		local value = eventtable[key]
+
+		if istable(value) then
+			for _, event in SortedPairs(value) do
+				if istable(event) then
+					event.slot = slot
+					slot = slot + 1
+
+					if event.type == "lua" then
+						if event.server == nil then
+							event.server = true
+						end
+					elseif event.type == "snd" or event.type == "sound" then
+						if event.server == nil then
+							event.server = false
+						end
+					elseif event.type == "bg" or event.type == "bodygroup" then
+						if event.server == nil then event.server = true end
+						if event.view == nil then event.view = true end
+						if event.world == nil then event.world = true end
+					end
+
+					if event.client == nil then
+						event.client = true
+					end
+
+					event.called = false
+
+					if slot > 256 and not self.event_table_warning then
+						ErrorNoHalt("[TFA Base] Weapon " .. self:GetClass() .. " got too many events! 256 is maximum! Event table would NOT be properly predicted this time!\n")
+						self.event_table_warning = true
+					end
+
+					self2.EventTableEdict[event.slot] = event
+				end
+			end
+		end
+	end
+
+	self.event_table_overflow = slot > 256
+	self._built_event_debug_string_fn = nil
+
+	self._EventSlotCount = math.ceil(slot / 32)
+	self._EventSlotNum = slot - 1
+	self.event_table_built = true
+end
+
 function SWEP:ProcessEvents(firstprediction)
 	local viewmodel = self:VMIVNPC()
 	if not viewmodel then return end
+
+	if not self.event_table_built then
+		self:RebuildEventEdictTable()
+	end
 
 	if sp and CLIENT then return end
 	if sp and SERVER then return self:ProcessEventsSP() end
@@ -139,8 +213,7 @@ function SWEP:ProcessEvents(firstprediction)
 	local ply = self:GetOwner()
 	local isplayer = ply:IsPlayer()
 
-	local evtbl = self.EventTableBuilt[self:GetLastActivity() or -1] or self.EventTableBuilt[viewmodel:GetSequenceName(viewmodel:GetSequence())]
-	local evtbl2 = self.EventTable[self:GetLastActivity() or -1] or self.EventTable[viewmodel:GetSequenceName(viewmodel:GetSequence())]
+	local evtbl = self.EventTable[self:GetLastActivity() or -1] or self.EventTable[viewmodel:GetSequenceName(viewmodel:GetSequence())]
 	if not evtbl then return end
 
 	local curtime = l_CT()
@@ -152,10 +225,7 @@ function SWEP:ProcessEvents(firstprediction)
 		local event = evtbl[i]
 		if self:GetEventPlayed(event.slot) or curtime < eventtimer + event.time / animrate then goto CONTINUE end
 		self:SetEventPlayed(event.slot)
-
-		if evtbl2 and evtbl2[i] then
-			evtbl2[i].called = true
-		end
+		event.called = true
 
 		if event.type == "lua" then
 			if ((event.client and CLIENT and (not event.client_predictedonly or is_local)) or (event.server and SERVER)) and event.value then

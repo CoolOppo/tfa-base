@@ -1901,6 +1901,7 @@ function SWEP:OnReloaded()
 	table.Merge(self.Secondary_TFA, self.Secondary)
 
 	self.event_table_warning = false
+	self.event_table_built = false
 
 	local self2 = self:GetTable()
 	self2.AutoDetectMuzzle(self)
