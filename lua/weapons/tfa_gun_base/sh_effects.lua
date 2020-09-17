@@ -19,7 +19,7 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
-local fx, sp
+local fx, sp = nil, game.SinglePlayer()
 local shelltype
 
 function SWEP:PCFTracer(bul, hitpos, ovrride)
@@ -74,8 +74,10 @@ function SWEP:MakeShellBridge(ifp)
 end
 
 SWEP.ShellEffectOverride = nil -- ???
+SWEP.ShellEjectionQueue = 0
 
-function SWEP:MakeShell()
+function SWEP:MakeShell(eject_now)
+	if not self:IsValid() then return end -- what
 	if self.current_event_iftp == false then return end
 
 	local retVal = hook.Run("TFA_MakeShell", self)
@@ -92,31 +94,41 @@ function SWEP:MakeShell()
 		shelltype = "tfa_shell"
 	end
 
-	if IsValid(self) then
-		self:EjectionSmoke(true)
-		local vm = (self:IsFirstPerson()) and self.OwnerViewModel or self
-		if type(shelltype) ~= "string" or shelltype == "" then return end -- allows to disable shells by setting override to "" - will shut up all rp fags
+	local vm = self
 
-		if IsValid(vm) then
-			fx = EffectData()
-			local attid = vm:LookupAttachment(self:GetStat("ShellAttachment"))
+	if self:IsFirstPerson() then
+		if not eject_now and not sp then
+			self.ShellEjectionQueue = self.ShellEjectionQueue + 1
+			return
+		end
 
-			if self:GetStat("Akimbo") then
-				attid = 3 + self.AnimCycle
-			end
+		vm = self.OwnerViewModel or self
+	end
 
-			attid = math.Clamp(attid and attid or 2, 1, 127)
-			local angpos = vm:GetAttachment(attid)
+	self:EjectionSmoke(true)
 
-			if angpos then
-				fx:SetEntity(self)
-				fx:SetAttachment(attid)
-				fx:SetMagnitude(1)
-				fx:SetScale(1)
-				fx:SetOrigin(angpos.Pos)
-				fx:SetNormal(angpos.Ang:Forward())
-				TFA.Effects.Create(shelltype, fx)
-			end
+	if not isstring(shelltype) or shelltype == "" then return end -- allows to disable shells by setting override to "" - will shut up all rp fags
+
+	if IsValid(vm) then
+		fx = EffectData()
+
+		local attid = vm:LookupAttachment(self:GetStat("ShellAttachment"))
+
+		if self:GetStat("Akimbo") then
+			attid = 3 + self.AnimCycle
+		end
+
+		attid = math.Clamp(attid and attid or 2, 1, 127)
+		local angpos = vm:GetAttachment(attid)
+
+		if angpos then
+			fx:SetEntity(self)
+			fx:SetAttachment(attid)
+			fx:SetMagnitude(1)
+			fx:SetScale(1)
+			fx:SetOrigin(angpos.Pos)
+			fx:SetNormal(angpos.Ang:Forward())
+			TFA.Effects.Create(shelltype, fx)
 		end
 	end
 end
@@ -261,10 +273,6 @@ function SWEP:ShootEffectsCustom(ifp)
 	if self:IsFirstPerson() and not self:VMIV() then return end
 	if not self:GetOwner().GetShootPos then return end
 	ifp = ifp or IsFirstTimePredicted()
-
-	if sp == nil then
-		sp = game.SinglePlayer()
-	end
 
 	if (SERVER and sp and self.ParticleMuzzleFlash) or (SERVER and not sp) then
 		net.Start("tfa_base_muzzle_mp")

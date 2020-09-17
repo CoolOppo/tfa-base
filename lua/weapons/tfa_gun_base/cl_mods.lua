@@ -444,6 +444,14 @@ function SWEP:ViewModelDrawn()
 	if not self2.UseHands and self2.ViewModelDrawnPost then
 		self:ViewModelDrawnPost()
 	end
+
+	if self2.ShellEjectionQueue ~= 0 then
+		for i = 1, self2.ShellEjectionQueue do
+			self:MakeShell(true)
+		end
+
+		self2.ShellEjectionQueue = 0
+	end
 end
 
 function SWEP:ViewModelDrawnPost()
