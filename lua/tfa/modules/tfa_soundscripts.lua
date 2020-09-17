@@ -106,7 +106,7 @@ sound.Add({
 	volume = 1.0,
 	level = 75,
 	pitch = 100,
-	sound = ")weapons/tfa/lowammo_indicator.wav"
+	sound = ")weapons/tfa/lowammo_indicator_automatic.wav"
 })
 sound.Add({
 	name = "TFA.LowAmmo.Handgun",
@@ -130,7 +130,7 @@ sound.Add({
 	volume = 1.0,
 	level = 75,
 	pitch = 100,
-	sound = ")weapons/tfa/lowammo_dry.wav"
+	sound = ")weapons/tfa/lowammo_dry_automatic.wav"
 })
 sound.Add({
 	name = "TFA.LowAmmo.Handgun_Dry",
