@@ -237,6 +237,8 @@ function SWEP:ProcessEvents(firstprediction)
 	local is_local = CLIENT and ply == LocalPlayer()
 	local animrate = self:GetAnimationRate(self:GetLastActivity() or -1)
 
+	self.current_event_iftp = firstprediction
+
 	for i = 1, #evtbl do
 		local event = evtbl[i]
 		if self:GetEventPlayed(event.slot) or curtime < eventtimer + event.time / animrate then goto CONTINUE end
@@ -294,6 +296,8 @@ function SWEP:ProcessEvents(firstprediction)
 
 		::CONTINUE::
 	end
+
+	self.current_event_iftp = nil
 end
 
 -- This function is exclusively targeting singleplayer

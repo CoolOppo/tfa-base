@@ -73,13 +73,17 @@ function SWEP:MakeShellBridge(ifp)
 	end
 end
 
-SWEP.ShellEffectOverride = nil
+SWEP.ShellEffectOverride = nil -- ???
 
 function SWEP:MakeShell()
-	local retVal = hook.Run("TFA_MakeShell",self)
+	if self.current_event_iftp == false then return end
+
+	local retVal = hook.Run("TFA_MakeShell", self)
+
 	if retVal ~= nil then
 		return retVal
 	end
+
 	if self:GetStat("ShellEffectOverride") then
 		shelltype = self:GetStat("ShellEffectOverride")
 	elseif TFA.GetLegacyShellsEnabled() then
