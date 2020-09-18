@@ -261,12 +261,7 @@ function SWEP:ProcessEvents(firstprediction)
 						net.Start("tfaSoundEvent")
 						net.WriteEntity(self)
 						net.WriteString(event.value or "")
-
-						if sp then
-							net.SendPVS(self:GetPos())
-						else
-							net.SendOmit(ply)
-						end
+						net.SendOmit(ply)
 					end
 				elseif event.server and event.value and event.value ~= "" then
 					self:EmitSound(event.value)
