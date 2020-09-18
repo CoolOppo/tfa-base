@@ -23,6 +23,10 @@ if GetConVar("cl_tfa_inspect_hide_in_screenshots") == nil then
 	CreateClientConVar("cl_tfa_inspect_hide_in_screenshots", 0, true, false, "Hide inspection panel in screenshots")
 end
 
+if GetConVar("cl_tfa_inspect_hide_hud") == nil then
+	CreateClientConVar("cl_tfa_inspect_hide_hud", 0, true, false, "Hide HUD when inspecting weapon (DLib required)")
+end
+
 if GetConVar("cl_tfa_viewbob_intensity") == nil then
 	CreateClientConVar("cl_tfa_viewbob_intensity", 1, true, false, "View bob intensity multiplier")
 end

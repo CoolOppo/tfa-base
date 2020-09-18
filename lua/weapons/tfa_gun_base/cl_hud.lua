@@ -727,6 +727,17 @@ function SWEP:InspectionVGUIAttachments(contentpanel)
 end
 
 local cl_tfa_inspect_hide_in_screenshots = GetConVar("cl_tfa_inspect_hide_in_screenshots")
+local cl_tfa_inspect_hide_hud = GetConVar("cl_tfa_inspect_hide_hud")
+
+local blacklist = {
+	CHudAmmo = false,
+	CHudBattery = false,
+	CHudHealth = false,
+}
+
+local function HUDShouldDraw(_, elem)
+	return blacklist[elem]
+end
 
 function SWEP:GenerateInspectionDerma()
 	if hook.Run("TFA_InspectVGUI_Start", self) == false then return end
@@ -736,6 +747,18 @@ function SWEP:GenerateInspectionDerma()
 	TFA_INSPECTIONPANEL:DockPadding(self.VGUIPaddingW, self.VGUIPaddingH, self.VGUIPaddingW, self.VGUIPaddingH)
 	TFA_INSPECTIONPANEL:SetRenderInScreenshots(not cl_tfa_inspect_hide_in_screenshots:GetBool())
 
+	if cl_tfa_inspect_hide_hud:GetBool() and DLib then
+		hook.DisableHook("HUDPaint")
+		hook.DisableHook("HUDPaintBackground")
+		hook.DisableHook("PreDrawHUD")
+		hook.DisableHook("PostDrawHUD")
+		hook.DisableHook("DrawDeathNotice")
+
+		hook.Add("HUDShouldDraw", TFA_INSPECTIONPANEL, HUDShouldDraw)
+	end
+
+	local lastcustomizing = true
+
 	TFA_INSPECTIONPANEL.Think = function(myself, w, h)
 		local ply = LocalPlayer()
 
@@ -743,6 +766,32 @@ function SWEP:GenerateInspectionDerma()
 			myself:Remove()
 
 			return
+		end
+
+		if cl_tfa_inspect_hide_hud:GetBool() and DLib then
+			local customizing = self:GetCustomizing()
+
+			if customizing ~= lastcustomizing then
+				lastcustomizing = customizing
+
+				if customizing then
+					hook.DisableHook("HUDPaint")
+					hook.DisableHook("HUDPaintBackground")
+					hook.DisableHook("PreDrawHUD")
+					hook.DisableHook("PostDrawHUD")
+					hook.DisableHook("DrawDeathNotice")
+
+					hook.Add("HUDShouldDraw", TFA_INSPECTIONPANEL, HUDShouldDraw)
+				else
+					hook.EnableHook("HUDPaint")
+					hook.EnableHook("HUDPaintBackground")
+					hook.EnableHook("PreDrawHUD")
+					hook.EnableHook("PostDrawHUD")
+					hook.EnableHook("DrawDeathNotice")
+
+					hook.Remove("HUDShouldDraw", TFA_INSPECTIONPANEL, HUDShouldDraw)
+				end
+			end
 		end
 
 		local wep = ply:GetActiveWeapon()
@@ -755,6 +804,16 @@ function SWEP:GenerateInspectionDerma()
 
 		myself.Player = ply
 		myself.Weapon = wep
+	end
+
+	function TFA_INSPECTIONPANEL:OnRemove()
+		if cl_tfa_inspect_hide_hud:GetBool() and DLib then
+			hook.EnableHook("HUDPaint")
+			hook.EnableHook("HUDPaintBackground")
+			hook.EnableHook("PreDrawHUD")
+			hook.EnableHook("PostDrawHUD")
+			hook.EnableHook("DrawDeathNotice")
+		end
 	end
 
 	TFA_INSPECTIONPANEL.Paint = function(myself, w, h)
