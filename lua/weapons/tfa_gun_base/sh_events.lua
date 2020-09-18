@@ -106,7 +106,6 @@ Purpose:  Main SWEP function
 ]]--
 
 SWEP._EventSlotCount = 0
-SWEP.EventTableBuilt = {}
 SWEP.EventTableEdict = {}
 
 function SWEP:DispatchLuaEvent(arg)
@@ -300,8 +299,7 @@ function SWEP:ProcessEventsSP(firstprediction)
 	local viewmodel = self:VMIVNPC()
 	if not viewmodel then return end
 
-	local evtbl = self.EventTableBuilt[self:GetLastActivity() or -1] or self.EventTableBuilt[viewmodel:GetSequenceName(viewmodel:GetSequence())]
-	local evtbl2 = self.EventTable[self:GetLastActivity() or -1] or self.EventTable[viewmodel:GetSequenceName(viewmodel:GetSequence())]
+	local evtbl = self.EventTable[self:GetLastActivity() or -1] or self.EventTable[viewmodel:GetSequenceName(viewmodel:GetSequence())]
 	if not evtbl then return end
 
 	local curtime = l_CT()
@@ -313,10 +311,7 @@ function SWEP:ProcessEventsSP(firstprediction)
 		local event = evtbl[i]
 		if self:GetEventPlayed(event.slot) or curtime < eventtimer + event.time / animrate then goto CONTINUE end
 		self:SetEventPlayed(event.slot)
-
-		if evtbl2 and evtbl2[i] then
-			evtbl2[i].called = true
-		end
+		event.called = true
 
 		if event.type == "lua" then
 			if event.value then
