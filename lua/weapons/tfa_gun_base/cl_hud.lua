@@ -726,12 +726,15 @@ function SWEP:InspectionVGUIAttachments(contentpanel)
 	end
 end
 
+local cl_tfa_inspect_hide_in_screenshots = GetConVar("cl_tfa_inspect_hide_in_screenshots")
+
 function SWEP:GenerateInspectionDerma()
 	if hook.Run("TFA_InspectVGUI_Start", self) == false then return end
 
 	TFA_INSPECTIONPANEL = vgui.Create("DPanel")
 	TFA_INSPECTIONPANEL:SetSize(ScrW(), ScrH())
 	TFA_INSPECTIONPANEL:DockPadding(self.VGUIPaddingW, self.VGUIPaddingH, self.VGUIPaddingW, self.VGUIPaddingH)
+	TFA_INSPECTIONPANEL:SetRenderInScreenshots(not cl_tfa_inspect_hide_in_screenshots:GetBool())
 
 	TFA_INSPECTIONPANEL.Think = function(myself, w, h)
 		local ply = LocalPlayer()

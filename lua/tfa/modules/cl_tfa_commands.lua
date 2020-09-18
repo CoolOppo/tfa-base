@@ -19,6 +19,10 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
+if GetConVar("cl_tfa_inspect_hide_in_screenshots") == nil then
+	CreateClientConVar("cl_tfa_inspect_hide_in_screenshots", 0, true, false, "Hide inspection panel in screenshots")
+end
+
 if GetConVar("cl_tfa_viewbob_intensity") == nil then
 	CreateClientConVar("cl_tfa_viewbob_intensity", 1, true, false, "View bob intensity multiplier")
 end
