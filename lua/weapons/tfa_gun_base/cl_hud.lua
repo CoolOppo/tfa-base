@@ -738,6 +738,13 @@ function SWEP:InspectionVGUIAttachments(contentpanel)
 			draw.SimpleText(text, font, x, y, color, ...)
 		end
 
+		local function shadowed_line(x, y, x2, y2, color, color2)
+			surface.SetDrawColor(color2)
+			surface.DrawLine(x + 1, y + 1, x2 + 1, y2 + 1)
+			surface.SetDrawColor(color)
+			surface.DrawLine(x, y, x2, y2)
+		end
+
 		function falloffpanel:Paint(w, h)
 			local lut = self2.Primary.RangeFalloffLUTBuilt
 			if not lut then return end
@@ -752,8 +759,6 @@ function SWEP:InspectionVGUIAttachments(contentpanel)
 			local ax, ay = 0, th + 8
 
 			surface.SetDrawColor(mainpanel.SecondaryColor)
-			surface.DrawLine(ax + 1, ay + 1, 1, h - 2 - ay)
-			surface.DrawLine(ax + 1, h - 2 - ay, w - 18, h - 2 - ay)
 
 			local range = 0
 
@@ -764,9 +769,12 @@ function SWEP:InspectionVGUIAttachments(contentpanel)
 			end
 
 			for pos = 1, 4 do
-				surface.DrawLine(ax + pos * w / 4 - 18, h - 2 - ay, ax + pos * w / 4 - 18, h - 12 - ay)
+				shadowed_line(ax + pos * w / 4 - 18, h - 2 - ay, ax + pos * w / 4 - 18, h - 12 - ay, mainpanel.SecondaryColor, mainpanel.BackgroundColor)
 				shadowed_text(string.format("%dm", range * 0.0254 * pos / 4), "TFASleekSmall", ax + pos * w / 4 - 18, h - ay, mainpanel.SecondaryColor, TEXT_ALIGN_CENTER)
 			end
+
+			shadowed_line(ax + 1, ay + 1, 1, h - 2 - ay, mainpanel.SecondaryColor, mainpanel.BackgroundColor)
+			shadowed_line(ax + 1, h - 2 - ay, w - 18, h - 2 - ay, mainpanel.SecondaryColor, mainpanel.BackgroundColor)
 
 			local lx, ly = self:LocalToScreen(0, 0)
 			local mx, my = input.GetCursorPos()
@@ -785,11 +793,7 @@ function SWEP:InspectionVGUIAttachments(contentpanel)
 					px, py = x, y
 				end
 
-				surface.SetDrawColor(mainpanel.BackgroundColor)
-				surface.DrawLine(px + 1, py + 1, x + 1, y + 1)
-
-				surface.SetDrawColor(mainpanel.PrimaryColor)
-				surface.DrawLine(px, py, x, y)
+				shadowed_line(px, py, x, y, mainpanel.PrimaryColor, mainpanel.BackgroundColor)
 
 				if x > mx and px < mx then
 					local t = (mx - px) / (x - px)
@@ -802,16 +806,17 @@ function SWEP:InspectionVGUIAttachments(contentpanel)
 				px, py = x, y
 			end
 
-			surface.SetDrawColor(mainpanel.BackgroundColor)
-			surface.DrawLine(px + 1, py + 1, w - ax - 17, py + 1)
-
-			surface.SetDrawColor(mainpanel.PrimaryColor)
-			surface.DrawLine(px, py, w - ax - 18, py)
+			shadowed_line(px, py, w - ax - 18, py, mainpanel.PrimaryColor, mainpanel.BackgroundColor)
 
 			if mx > 0 and my > 0 and mx < w and my < h and dmg then
-				surface.DrawLine(mx, ay, mx, h - ay)
+				shadowed_line(mx, ay, mx, h - ay, mainpanel.PrimaryColor, mainpanel.BackgroundColor)
 
 				if cirX then
+					surface.SetDrawColor(mainpanel.BackgroundColor)
+					surface.DrawLine(cirX - 7, cirY - 7, cirX + 9, cirY + 9)
+					surface.DrawLine(cirX + 9, cirY - 7, cirX - 7, cirY + 9)
+
+					surface.SetDrawColor(mainpanel.PrimaryColor)
 					surface.DrawLine(cirX - 8, cirY - 8, cirX + 8, cirY + 8)
 					surface.DrawLine(cirX + 8, cirY - 8, cirX - 8, cirY + 8)
 				end
