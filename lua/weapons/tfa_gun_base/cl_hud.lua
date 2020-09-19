@@ -802,6 +802,12 @@ function SWEP:InspectionVGUIAttachments(contentpanel)
 				px, py = x, y
 			end
 
+			surface.SetDrawColor(mainpanel.BackgroundColor)
+			surface.DrawLine(px + 1, py + 1, w - ax - 17, py + 1)
+
+			surface.SetDrawColor(mainpanel.PrimaryColor)
+			surface.DrawLine(px, py, w - ax - 18, py)
+
 			if mx > 0 and my > 0 and mx < w and my < h and dmg then
 				surface.DrawLine(mx, ay, mx, h - ay)
 
