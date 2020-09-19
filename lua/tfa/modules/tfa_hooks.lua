@@ -90,6 +90,7 @@ if CLIENT then
 	local its_old = 0
 	local ScreenClicker = false
 	local cl_tfa_inspect_hide = GetConVar("cl_tfa_inspect_hide")
+	local cl_drawhud = GetConVar("cl_drawhud")
 
 	hook.Add("Tick", "TFAInspectionScreenClicker", function()
 		tfablurintensity = 0
@@ -102,14 +103,12 @@ if CLIENT then
 			end
 		end
 
-		if not cl_tfa_inspect_hide:GetBool() then
-			if tfablurintensity > its_old and not ScreenClicker then
-				gui.EnableScreenClicker(true)
-				ScreenClicker = true
-			elseif tfablurintensity < its_old and ScreenClicker then
-				gui.EnableScreenClicker(false)
-				ScreenClicker = false
-			end
+		if tfablurintensity > its_old and not ScreenClicker and not cl_tfa_inspect_hide:GetBool() and cl_drawhud:GetBool() then
+			gui.EnableScreenClicker(true)
+			ScreenClicker = true
+		elseif tfablurintensity < its_old and ScreenClicker then
+			gui.EnableScreenClicker(false)
+			ScreenClicker = false
 		end
 
 		its_old = tfablurintensity

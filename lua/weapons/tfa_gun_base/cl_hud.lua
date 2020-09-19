@@ -729,6 +729,7 @@ end
 local cl_tfa_inspect_hide_in_screenshots = GetConVar("cl_tfa_inspect_hide_in_screenshots")
 local cl_tfa_inspect_hide_hud = GetConVar("cl_tfa_inspect_hide_hud")
 local cl_tfa_inspect_hide = GetConVar("cl_tfa_inspect_hide")
+local cl_drawhud = GetConVar("cl_drawhud")
 
 local blacklist = {
 	CHudAmmo = false,
@@ -749,15 +750,39 @@ function SWEP:GenerateInspectionDerma()
 	TFA_INSPECTIONPANEL:DockPadding(self.VGUIPaddingW, self.VGUIPaddingH, self.VGUIPaddingW, self.VGUIPaddingH)
 	TFA_INSPECTIONPANEL:SetRenderInScreenshots(not cl_tfa_inspect_hide_in_screenshots:GetBool())
 
-	if cl_tfa_inspect_hide_hud:GetBool() and DLib then
-		hook.DisableHook("HUDPaint")
-		hook.DisableHook("HUDPaintBackground")
-		hook.DisableHook("PreDrawHUD")
-		hook.DisableHook("PostDrawHUD")
-		hook.DisableHook("DrawDeathNotice")
+	local function update_visible(status)
+		if not cl_tfa_inspect_hide_hud:GetBool() or not DLib then return end
 
-		hook.Add("HUDShouldDraw", TFA_INSPECTIONPANEL, HUDShouldDraw)
+		if status then
+			hook.DisableHook("HUDPaint")
+			hook.DisableHook("HUDPaintBackground")
+			hook.DisableHook("PreDrawHUD")
+			hook.DisableHook("PostDrawHUD")
+			hook.DisableHook("DrawDeathNotice")
+
+			hook.Add("HUDShouldDraw", TFA_INSPECTIONPANEL, HUDShouldDraw)
+		else
+			hook.EnableHook("HUDPaint")
+			hook.EnableHook("HUDPaintBackground")
+			hook.EnableHook("PreDrawHUD")
+			hook.EnableHook("PostDrawHUD")
+			hook.EnableHook("DrawDeathNotice")
+
+			hook.Remove("HUDShouldDraw", TFA_INSPECTIONPANEL, HUDShouldDraw)
+		end
 	end
+
+	if not cl_drawhud:GetBool() then
+		TFA_INSPECTIONPANEL:SetVisible(false)
+	else
+		update_visible(true)
+	end
+
+	cvars.AddChangeCallback("cl_drawhud", function()
+		if not IsValid(TFA_INSPECTIONPANEL) then return end
+		TFA_INSPECTIONPANEL:SetVisible(cl_drawhud:GetBool())
+		update_visible(cl_drawhud:GetBool())
+	end, "TFA_INSPECTIONPANEL")
 
 	local lastcustomizing = true
 
@@ -775,24 +800,7 @@ function SWEP:GenerateInspectionDerma()
 
 			if customizing ~= lastcustomizing then
 				lastcustomizing = customizing
-
-				if customizing then
-					hook.DisableHook("HUDPaint")
-					hook.DisableHook("HUDPaintBackground")
-					hook.DisableHook("PreDrawHUD")
-					hook.DisableHook("PostDrawHUD")
-					hook.DisableHook("DrawDeathNotice")
-
-					hook.Add("HUDShouldDraw", TFA_INSPECTIONPANEL, HUDShouldDraw)
-				else
-					hook.EnableHook("HUDPaint")
-					hook.EnableHook("HUDPaintBackground")
-					hook.EnableHook("PreDrawHUD")
-					hook.EnableHook("PostDrawHUD")
-					hook.EnableHook("DrawDeathNotice")
-
-					hook.Remove("HUDShouldDraw", TFA_INSPECTIONPANEL, HUDShouldDraw)
-				end
+				update_visible(customizing)
 			end
 		end
 
@@ -809,16 +817,10 @@ function SWEP:GenerateInspectionDerma()
 	end
 
 	function TFA_INSPECTIONPANEL:OnRemove()
-		if cl_tfa_inspect_hide_hud:GetBool() and DLib then
-			hook.EnableHook("HUDPaint")
-			hook.EnableHook("HUDPaintBackground")
-			hook.EnableHook("PreDrawHUD")
-			hook.EnableHook("PostDrawHUD")
-			hook.EnableHook("DrawDeathNotice")
-		end
+		update_visible(false)
 	end
 
-	TFA_INSPECTIONPANEL.Paint = function(myself, w, h)
+	function TFA_INSPECTIONPANEL.Paint(myself, w, h)
 		local wep = self
 
 		if IsValid(wep) then
@@ -840,7 +842,7 @@ function SWEP:GenerateInspectionDerma()
 	contentpanel:Dock(FILL)
 	contentpanel:DockPadding(pad, pad, pad, pad)
 
-	contentpanel.Paint = function() end
+	function contentpanel.Paint() end
 
 	-- Top block (gun name and info)
 	self:InspectionVGUIMainInfo(contentpanel)
