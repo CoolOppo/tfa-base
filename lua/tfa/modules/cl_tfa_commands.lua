@@ -23,6 +23,10 @@ if GetConVar("cl_tfa_inspect_hide_in_screenshots") == nil then
 	CreateClientConVar("cl_tfa_inspect_hide_in_screenshots", 0, true, false, "Hide inspection panel in screenshots")
 end
 
+if GetConVar("cl_tfa_inspect_hide") == nil then
+	CreateClientConVar("cl_tfa_inspect_hide", 0, true, false, "Hide inspection panel")
+end
+
 if GetConVar("cl_tfa_inspect_hide_hud") == nil then
 	CreateClientConVar("cl_tfa_inspect_hide_hud", 0, true, false, "Hide HUD when inspecting weapon (DLib required)")
 end

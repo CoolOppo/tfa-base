@@ -89,6 +89,7 @@ if CLIENT then
 	local tfablurintensity
 	local its_old = 0
 	local ScreenClicker = false
+	local cl_tfa_inspect_hide = GetConVar("cl_tfa_inspect_hide")
 
 	hook.Add("Tick", "TFAInspectionScreenClicker", function()
 		tfablurintensity = 0
@@ -101,15 +102,17 @@ if CLIENT then
 			end
 		end
 
-		if tfablurintensity > its_old and not ScreenClicker then
-			gui.EnableScreenClicker(true)
-			ScreenClicker = true
-		elseif tfablurintensity < its_old and ScreenClicker then
-			gui.EnableScreenClicker(false)
-			ScreenClicker = false
+		if not cl_tfa_inspect_hide:GetBool() then
+			if tfablurintensity > its_old and not ScreenClicker then
+				gui.EnableScreenClicker(true)
+				ScreenClicker = true
+			elseif tfablurintensity < its_old and ScreenClicker then
+				gui.EnableScreenClicker(false)
+				ScreenClicker = false
+			end
 		end
 
-		its_old = tfablurintensity * 1
+		its_old = tfablurintensity
 	end)
 
 	hook.Add("Think", "TFABase_PlayerThinkCL", function()

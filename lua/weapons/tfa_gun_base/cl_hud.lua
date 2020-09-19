@@ -728,6 +728,7 @@ end
 
 local cl_tfa_inspect_hide_in_screenshots = GetConVar("cl_tfa_inspect_hide_in_screenshots")
 local cl_tfa_inspect_hide_hud = GetConVar("cl_tfa_inspect_hide_hud")
+local cl_tfa_inspect_hide = GetConVar("cl_tfa_inspect_hide")
 
 local blacklist = {
 	CHudAmmo = false,
@@ -741,6 +742,7 @@ end
 
 function SWEP:GenerateInspectionDerma()
 	if hook.Run("TFA_InspectVGUI_Start", self) == false then return end
+	if cl_tfa_inspect_hide:GetBool() then return end
 
 	TFA_INSPECTIONPANEL = vgui.Create("DPanel")
 	TFA_INSPECTIONPANEL:SetSize(ScrW(), ScrH())
