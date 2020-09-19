@@ -642,87 +642,178 @@ function SWEP:InspectionVGUIStats(contentpanel)
 end
 
 function SWEP:InspectionVGUIAttachments(contentpanel)
-	if not att_enabled_cv then
-		att_enabled_cv = GetConVar("sv_tfa_attachments_enabled")
+	if not att_enabled_cv:GetBool() then return end
+	if hook.Run("TFA_InspectVGUI_AttachmentsStart", self, contentpanel) == false then return end
+
+	local mainpanel = contentpanel:GetParent()
+	local scrollpanel, vbar
+
+	if self.Attachments then
+		scrollpanel = mainpanel:Add("DScrollPanel")
+
+		scrollpanel:SetSize(ScrW() * .5 - self.VGUIPaddingW * 2, mainpanel:GetTall() - self.VGUIPaddingH * 2)
+		scrollpanel:SetPos(ScrW() * .5, self.VGUIPaddingH)
+
+		vbar = scrollpanel:GetVBar()
+
+		vbar.Paint = function(myself, w, h)
+			if not mainpanel then return end
+			surface.SetDrawColor(mainpanel.BackgroundColor.r, mainpanel.BackgroundColor.g, mainpanel.BackgroundColor.b, mainpanel.BackgroundColor.a / 2)
+			surface.DrawRect(w * .65, 0, w * .35, h)
+		end
+
+		vbar.btnUp.Paint = function(myself, w, h)
+			if not mainpanel then return end
+			surface.SetDrawColor(mainpanel.PrimaryColor.r, mainpanel.PrimaryColor.g, mainpanel.PrimaryColor.b, mainpanel.PrimaryColor.a)
+			surface.DrawRect(w * .65, 0, w * .35, h)
+		end
+
+		vbar.btnDown.Paint = function(myself, w, h)
+			if not mainpanel then return end
+			surface.SetDrawColor(mainpanel.PrimaryColor.r, mainpanel.PrimaryColor.g, mainpanel.PrimaryColor.b, mainpanel.PrimaryColor.a)
+			surface.DrawRect(w * .65, 0, w * .35, h)
+		end
+
+		vbar.btnGrip.Paint = function(myself, w, h)
+			if not mainpanel then return end
+			surface.SetDrawColor(mainpanel.PrimaryColor.r, mainpanel.PrimaryColor.g, mainpanel.PrimaryColor.b, mainpanel.PrimaryColor.a)
+			surface.DrawRect(w * .65, 0, w * .35, h)
+		end
 	end
 
-	if att_enabled_cv and att_enabled_cv:GetBool() and hook.Run("TFA_InspectVGUI_AttachmentsStart", self, contentpanel) ~= false then
-		local mainpanel = contentpanel:GetParent()
+	self:GenerateVGUIAttachmentTable()
+	local i = 0
+	local prevCat
+	local lineY = 0
+	local scrollWide = scrollpanel:GetWide() - (IsValid(vbar) and vbar:GetTall() or 0)
+	local lastTooltipPanel
 
-		local scrollpanel, vbar
+	local iconsize = math.Round(TFA.ScaleH(TFA.Attachments.IconSize))
+	local catspacing = math.Round(TFA.ScaleH(TFA.Attachments.CategorySpacing))
+	local padding = math.Round(TFA.ScaleH(TFA.Attachments.UIPadding))
 
-		if self.Attachments then
-			scrollpanel = mainpanel:Add("DScrollPanel")
+	for k, v in pairs(self.VGUIAttachments) do
+		if k ~= "BaseClass" then
+			if prevCat then
+				local isContinuing = prevCat == (v.cat or k)
+				lineY = lineY + (isContinuing and iconsize + padding or catspacing)
 
-			scrollpanel:SetSize(ScrW() * .5 - self.VGUIPaddingW * 2, mainpanel:GetTall() - self.VGUIPaddingH * 2)
-			scrollpanel:SetPos(ScrW() * .5, self.VGUIPaddingH)
-
-			vbar = scrollpanel:GetVBar()
-
-			vbar.Paint = function(myself, w, h)
-				if not mainpanel then return end
-				surface.SetDrawColor(mainpanel.BackgroundColor.r, mainpanel.BackgroundColor.g, mainpanel.BackgroundColor.b, mainpanel.BackgroundColor.a / 2)
-				surface.DrawRect(w * .65, 0, w * .35, h)
+				if not isContinuing then
+					lastTooltipPanel = nil
+				end
 			end
 
-			vbar.btnUp.Paint = function(myself, w, h)
-				if not mainpanel then return end
-				surface.SetDrawColor(mainpanel.PrimaryColor.r, mainpanel.PrimaryColor.g, mainpanel.PrimaryColor.b, mainpanel.PrimaryColor.a)
-				surface.DrawRect(w * .65, 0, w * .35, h)
-			end
+			prevCat = v.cat or k
+			local testpanel = mainpanel:Add("TFAAttachmentPanel")
+			testpanel:SetParent(scrollpanel)
+			testpanel:SetContentPanel(scrollpanel)
+			i = i + 1
+			testpanel:SetWeapon(self)
+			testpanel:SetAttachment(k)
+			testpanel:SetCategory(v.cat or k)
+			testpanel:Initialize()
+			lastTooltipPanel = lastTooltipPanel or testpanel:InitializeTooltip()
+			testpanel:SetupTooltip(lastTooltipPanel)
+			testpanel:PopulateIcons()
+			testpanel:SetPos(scrollWide - testpanel:GetWide(), lineY)
+		end
+	end
 
-			vbar.btnDown.Paint = function(myself, w, h)
-				if not mainpanel then return end
-				surface.SetDrawColor(mainpanel.PrimaryColor.r, mainpanel.PrimaryColor.g, mainpanel.PrimaryColor.b, mainpanel.PrimaryColor.a)
-				surface.DrawRect(w * .65, 0, w * .35, h)
-			end
+	hook.Run("TFA_InspectVGUI_AttachmentsFinish", self, contentpanel, scrollpanel)
 
-			vbar.btnGrip.Paint = function(myself, w, h)
-				if not mainpanel then return end
-				surface.SetDrawColor(mainpanel.PrimaryColor.r, mainpanel.PrimaryColor.g, mainpanel.PrimaryColor.b, mainpanel.PrimaryColor.a)
-				surface.DrawRect(w * .65, 0, w * .35, h)
-			end
+	if self.Primary.RangeFalloffLUTBuilt then
+		local falloffpanel = vgui.Create("EditablePanel", mainpanel)
+		falloffpanel:SetSize(ScrW() * .5 - self.VGUIPaddingW * 2, mainpanel:GetTall() * 0.2)
+		scrollpanel:SetTall(scrollpanel:GetTall() - falloffpanel:GetTall())
+		falloffpanel:SetPos(ScrW() * .5, self.VGUIPaddingH + scrollpanel:GetTall())
+
+		falloffpanel:NoClipping(true)
+
+		local self2 = self
+		local shadow_color = Color(0, 0, 0)
+
+		-- it differ from function above
+		local function shadowed_text(text, font, x, y, color, ...)
+			draw.SimpleText(text, font, x + 2, y + 2, shadow_color, ...)
+			draw.SimpleText(text, font, x, y, color, ...)
 		end
 
-		self:GenerateVGUIAttachmentTable()
-		local i = 0
-		local prevCat
-		local lineY = 0
-		local scrollWide = scrollpanel:GetWide() - (IsValid(vbar) and vbar:GetTall() or 0)
-		local lastTooltipPanel
+		function falloffpanel:Paint(w, h)
+			local lut = self2.Primary.RangeFalloffLUTBuilt
+			if not lut then return end
+			local wepdmg = self2.Primary.Damage
 
-		local iconsize = math.Round(TFA.ScaleH(TFA.Attachments.IconSize))
-		local catspacing = math.Round(TFA.ScaleH(TFA.Attachments.CategorySpacing))
-		local padding = math.Round(TFA.ScaleH(TFA.Attachments.UIPadding))
+			shadow_color.a = mainpanel.PrimaryColor.a
 
-		for k, v in pairs(self.VGUIAttachments) do
-			if k ~= "BaseClass" then
-				if prevCat then
-					local isContinuing = prevCat == (v.cat or k)
-					lineY = lineY + (isContinuing and iconsize + padding or catspacing)
+			local text = "DAMAGE DROP"
+			shadowed_text(text, "TFASleekSmall", 6, 0, mainpanel.PrimaryColor, TEXT_ALIGN_LEFT)
+			local tw, th = surface.GetTextSize(text)
 
-					if not isContinuing then
-						lastTooltipPanel = nil
-					end
+			local ax, ay = 0, th + 8
+
+			surface.SetDrawColor(mainpanel.SecondaryColor)
+			surface.DrawLine(ax + 1, ay + 1, 1, h - 2 - ay)
+			surface.DrawLine(ax + 1, h - 2 - ay, w - 18, h - 2 - ay)
+
+			local range = 0
+
+			for i, data in ipairs(lut) do
+				if data[1] > range then
+					range = data[1]
+				end
+			end
+
+			for pos = 1, 4 do
+				surface.DrawLine(ax + pos * w / 4 - 18, h - 2 - ay, ax + pos * w / 4 - 18, h - 12 - ay)
+				shadowed_text(string.format("%dm", range * 0.0254 * pos / 4), "TFASleekSmall", ax + pos * w / 4 - 18, h - ay, mainpanel.SecondaryColor, TEXT_ALIGN_CENTER)
+			end
+
+			local lx, ly = self:LocalToScreen(0, 0)
+			local mx, my = input.GetCursorPos()
+			local rmx, rmy = mx, my
+			mx = mx - lx
+			my = my - ly
+
+			local px, py
+
+			local cirX, cirY, dmg, drange
+
+			for i, data in ipairs(lut) do
+				local x, y = ax + data[1] / range * (w - ax - 18), ay + (1 - data[2]) * (h - ay * 2)
+
+				if not px then
+					px, py = x, y
 				end
 
-				prevCat = v.cat or k
-				local testpanel = mainpanel:Add("TFAAttachmentPanel")
-				testpanel:SetParent(scrollpanel)
-				testpanel:SetContentPanel(scrollpanel)
-				i = i + 1
-				testpanel:SetWeapon(self)
-				testpanel:SetAttachment(k)
-				testpanel:SetCategory(v.cat or k)
-				testpanel:Initialize()
-				lastTooltipPanel = lastTooltipPanel or testpanel:InitializeTooltip()
-				testpanel:SetupTooltip(lastTooltipPanel)
-				testpanel:PopulateIcons()
-				testpanel:SetPos(scrollWide - testpanel:GetWide(), lineY)
+				surface.SetDrawColor(mainpanel.BackgroundColor)
+				surface.DrawLine(px + 1, py + 1, x + 1, y + 1)
+
+				surface.SetDrawColor(mainpanel.PrimaryColor)
+				surface.DrawLine(px, py, x, y)
+
+				if x > mx and px < mx then
+					local t = (mx - px) / (x - px)
+					cirX, cirY = Lerp(t, px, x), Lerp(t, py, y)
+					local ndmg = lut[i + 1] and lut[i + 1][2] or data[2]
+					local deltadmg = ndmg - data[2]
+					dmg = deltadmg * t + data[2]
+				end
+
+				px, py = x, y
+			end
+
+			if mx > 0 and my > 0 and mx < w and my < h and dmg then
+				surface.DrawLine(mx, ay, mx, h - ay)
+
+				if cirX then
+					surface.DrawLine(cirX - 8, cirY - 8, cirX + 8, cirY + 8)
+					surface.DrawLine(cirX + 8, cirY - 8, cirX - 8, cirY + 8)
+				end
+
+				shadowed_text(string.format("%dm", range * (mx / w) * 0.0254), "TFASleekSmall", mx - 4, my - 32, mainpanel.SecondaryColor, TEXT_ALIGN_RIGHT)
+				shadowed_text(string.format("%ddmg", dmg * wepdmg), "TFASleekSmall", mx + 4, my - 32, mainpanel.SecondaryColor, TEXT_ALIGN_LEFT)
 			end
 		end
-
-		hook.Run("TFA_InspectVGUI_AttachmentsFinish", self, contentpanel, scrollpanel)
 	end
 end
 

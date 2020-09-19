@@ -339,8 +339,8 @@ function SWEP:ClearStatCache(vn)
 			self2.Primary[k] = v
 		end
 
-		if self.Primary.RangeFalloffLUT then
-			self.Primary.RangeFalloffLUTBuilt = self:BuildFalloffTable(self.Primary.RangeFalloffLUT)
+		if self.Primary_TFA.RangeFalloffLUT then
+			self.Primary.RangeFalloffLUTBuilt = self:BuildFalloffTable(self.Primary_TFA.RangeFalloffLUT)
 		end
 	elseif getpath == "Primary_TFA" and isstring(getpath2[2]) then
 		self2.Primary[getpath[2]] = self2.GetStat(self, vn)
