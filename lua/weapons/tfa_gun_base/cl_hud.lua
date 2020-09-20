@@ -828,13 +828,15 @@ function SWEP:InspectionVGUIAttachments(contentpanel)
 				shadowed_line(mx, ay, mx, h - ay, mainpanel.PrimaryColor, mainpanel.BackgroundColor)
 
 				if cirX then
+					local Xsize = ScaleH(8)
+
 					surface.SetDrawColor(mainpanel.BackgroundColor)
-					surface.DrawLine(cirX - 7, cirY - 7, cirX + 9, cirY + 9)
-					surface.DrawLine(cirX + 9, cirY - 7, cirX - 7, cirY + 9)
+					surface.DrawLine(cirX - Xsize + 1, cirY - Xsize + 1, cirX + Xsize + 1, cirY + Xsize + 1)
+					surface.DrawLine(cirX + Xsize + 1, cirY - Xsize + 1, cirX - Xsize + 1, cirY + Xsize + 1)
 
 					surface.SetDrawColor(mainpanel.PrimaryColor)
-					surface.DrawLine(cirX - 8, cirY - 8, cirX + 8, cirY + 8)
-					surface.DrawLine(cirX + 8, cirY - 8, cirX - 8, cirY + 8)
+					surface.DrawLine(cirX - Xsize, cirY - Xsize, cirX + Xsize, cirY + Xsize)
+					surface.DrawLine(cirX + Xsize, cirY - Xsize, cirX - Xsize, cirY + Xsize)
 				end
 
 				shadowed_text(string.format("%dm", range * (mx / w) * 0.0254), "TFASleekSmall", mx - ScaleH(pad), my - TFA.Fonts.SleekHeightSmall, mainpanel.SecondaryColor, TEXT_ALIGN_RIGHT)
