@@ -777,6 +777,8 @@ function SWEP:InspectionVGUIAttachments(contentpanel)
 				end
 			end
 
+			range = range * 1.488
+
 			for pos = 1, 4 do
 				shadowed_line(ax + pos * w / 4 - 18, h - 2 - ay, ax + pos * w / 4 - 18, h - 12 - ay, mainpanel.SecondaryColor, mainpanel.BackgroundColor)
 				shadowed_text(string.format("%dm", range * 0.0254 * pos / 4), "TFASleekSmall", ax + pos * w / 4 - 18, h - ay, mainpanel.SecondaryColor, TEXT_ALIGN_CENTER)
@@ -816,6 +818,11 @@ function SWEP:InspectionVGUIAttachments(contentpanel)
 			end
 
 			shadowed_line(px, py, w - ax - 18, py, mainpanel.PrimaryColor, mainpanel.BackgroundColor)
+
+			if mx > px and (w - ax - 18) > mx then
+				cirX, cirY = mx, py
+				dmg = lut[#lut][2]
+			end
 
 			if mx > 0 and my > 0 and mx < w and my < h and dmg then
 				shadowed_line(mx, ay, mx, h - ay, mainpanel.PrimaryColor, mainpanel.BackgroundColor)
