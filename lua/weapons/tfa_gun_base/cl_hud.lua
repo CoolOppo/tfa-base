@@ -777,7 +777,7 @@ function SWEP:InspectionVGUIAttachments(contentpanel)
 				end
 			end
 
-			range = range * 1.488
+			range = range * 1.337
 
 			for pos = 1, 4 do
 				shadowed_line(ax + pos * w / 4 - 18, h - 2 - ay, ax + pos * w / 4 - 18, h - 12 - ay, mainpanel.SecondaryColor, mainpanel.BackgroundColor)
