@@ -908,7 +908,7 @@ do
 				end
 
 				if not current or not next then break end -- safeguard
-				table.insert(build, {Lerp(value, current.range, next.range) / div, Lerp(value, current.damage, next.damage)})
+				table.insert(build, {interp / div, Lerp(1 - (next.range - interp) / (next.range - current.range), current.damage, next.damage)})
 			end
 		end
 
