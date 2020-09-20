@@ -777,13 +777,15 @@ function SWEP:InspectionVGUIAttachments(contentpanel)
 
 			range = range * 1.337
 
+			local rightpadding = 18
+
 			for pos = 1, 4 do
-				shadowed_line(ax + pos * w / 4 - 18, h - 2 - ay, ax + pos * w / 4 - 18, h - 12 - ay, mainpanel.SecondaryColor, mainpanel.BackgroundColor)
-				shadowed_text(string.format("%dm", range * 0.0254 * pos / 4), "TFASleekSmall", ax + pos * w / 4 - 18, h - ay, mainpanel.SecondaryColor, TEXT_ALIGN_CENTER)
+				shadowed_line(ax + pos * w / 4 - rightpadding, h - 2 - ay, ax + pos * w / 4 - rightpadding, h - 12 - ay, mainpanel.SecondaryColor, mainpanel.BackgroundColor)
+				shadowed_text(string.format("%dm", range * 0.0254 * pos / 4), "TFASleekSmall", ax + pos * w / 4 - rightpadding, h - ay, mainpanel.SecondaryColor, TEXT_ALIGN_CENTER)
 			end
 
 			shadowed_line(ax + 1, ay + 1, 1, h - 2 - ay, mainpanel.SecondaryColor, mainpanel.BackgroundColor)
-			shadowed_line(ax + 1, h - 2 - ay, w - 18, h - 2 - ay, mainpanel.SecondaryColor, mainpanel.BackgroundColor)
+			shadowed_line(ax + 1, h - 2 - ay, w - rightpadding, h - 2 - ay, mainpanel.SecondaryColor, mainpanel.BackgroundColor)
 
 			local lx, ly = self:LocalToScreen(0, 0)
 			local mx, my = input.GetCursorPos()
@@ -796,7 +798,7 @@ function SWEP:InspectionVGUIAttachments(contentpanel)
 			local cirX, cirY, dmg, drange
 
 			for i, data in ipairs(lut) do
-				local x, y = ax + data[1] / range * (w - ax - 18), ay + (1 - data[2]) * (h - ay * 2)
+				local x, y = ax + data[1] / range * (w - ax - rightpadding), ay + (1 - data[2]) * (h - ay * 2)
 
 				if not px then
 					px, py = x, y
