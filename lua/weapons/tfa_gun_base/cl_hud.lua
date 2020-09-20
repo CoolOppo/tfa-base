@@ -127,16 +127,16 @@ Purpose:  Used to manage our Derma.
 local TFA_INSPECTIONPANEL
 local spacing = 64
 
+local ScaleH = TFA.ScaleH
+
 local cv_bars_exp = GetConVar("cl_tfa_exp_inspection_newbars") or CreateClientConVar("cl_tfa_exp_inspection_newbars", 0, true, true, "Enable new stat bars in the Inspection menu? (Experimental)")
 
 local function PanelPaintBars(myself, w, h)
 	if not myself.Bar or type(myself.Bar) ~= "number" then return end
 	myself.Bar = math.Clamp(myself.Bar, 0, 1)
 
-	w = w * 0 + 400--trick linter into letting me replace the argument lol
-
 	local xx, ww, blockw, padw
-	xx = w * 0.7
+	xx = w - ScaleH(120)
 	ww = w - xx
 
 	local bgcol = ColorAlpha(TFA_INSPECTIONPANEL.BackgroundColor or color_white, (TFA_INSPECTIONPANEL.Alpha or 0) / 2)
@@ -165,7 +165,7 @@ local function PanelPaintBars(myself, w, h)
 		xx = math.floor(xx + padw)
 	end
 
-	xx = w * 0.7
+	xx = w - ScaleH(120)
 	surface.SetDrawColor(TFA_INSPECTIONPANEL.BackgroundColor or color_white)
 
 	for _ = 0, myself.Bars - 1 do
@@ -173,7 +173,7 @@ local function PanelPaintBars(myself, w, h)
 		xx = math.floor(xx + padw)
 	end
 
-	xx = w * 0.7
+	xx = w - ScaleH(120)
 	surface.SetDrawColor(TFA_INSPECTIONPANEL.SecondaryColor or color_white)
 
 	for _ = 0, myself.Bars - 1 do
@@ -209,7 +209,7 @@ local function sourcetofeet(u)
 end
 
 local pad = 4
-local infotextpad = "  "
+local infotextpad = "\t"
 local INSPECTION_BACKGROUND = TFA.Attachments.Colors["background"]
 local INSPECTION_ACTIVECOLOR = TFA.Attachments.Colors["active"]
 local INSPECTION_PRIMARYCOLOR = TFA.Attachments.Colors["primary"]
@@ -237,7 +237,7 @@ SWEP.VGUIPaddingH = 80
 
 function SWEP:InspectionVGUISideBars(mainpanel)
 	local barleft = vgui.Create("DPanel", mainpanel)
-	barleft:SetWidth(self.VGUIPaddingW)
+	barleft:SetWidth(ScaleH(self.VGUIPaddingW))
 	barleft:Dock(LEFT)
 
 	barleft.Paint = function(myself, w, h)
@@ -251,7 +251,7 @@ function SWEP:InspectionVGUISideBars(mainpanel)
 	end
 
 	local barright = vgui.Create("DPanel", mainpanel)
-	barright:SetWidth(self.VGUIPaddingW)
+	barright:SetWidth(ScaleH(self.VGUIPaddingW))
 	barright:Dock(RIGHT)
 
 	barright.Paint = function(myself, w, h)
@@ -278,7 +278,7 @@ function SWEP:InspectionVGUIMainInfo(contentpanel)
 
 		titletext.Font = "TFA_INSPECTION_TITLE"
 		titletext:Dock(TOP)
-		titletext:SetSize(ScrW() * .5, spacing)
+		titletext:SetSize(ScrW() * .5, TFA.Fonts.InspectionHeightTitle)
 		titletext.Paint = TextShadowPaint
 		local typetext = contentpanel:Add("DPanel")
 		typetext.Text = self:GetStat("Type_Displayed") or self:GetType()
@@ -289,13 +289,15 @@ function SWEP:InspectionVGUIMainInfo(contentpanel)
 
 		typetext.Font = "TFA_INSPECTION_DESCR"
 		typetext:Dock(TOP)
-		typetext:SetSize(ScrW() * .5, 32)
+		typetext:SetSize(ScrW() * .5, TFA.Fonts.InspectionHeightDescription)
 		typetext.Paint = TextShadowPaint
+
 		--Space things out for block1
 		local spacer = contentpanel:Add("DPanel")
 		spacer:Dock(TOP)
-		spacer:SetSize(ScrW() * .5, spacing)
+		spacer:SetSize(ScrW() * .5, TFA.Fonts.InspectionHeightTitle)
 		spacer.Paint = function() end
+
 		--First stat block
 		local descriptiontext = contentpanel:Add("DPanel")
 		descriptiontext.Text = (self.Description or self.Category) or self.Base
@@ -306,7 +308,7 @@ function SWEP:InspectionVGUIMainInfo(contentpanel)
 
 		descriptiontext.Font = "TFA_INSPECTION_SMALL"
 		descriptiontext:Dock(TOP)
-		descriptiontext:SetSize(ScrW() * .5, 24)
+		descriptiontext:SetSize(ScrW() * .5, TFA.Fonts.InspectionHeightSmall)
 		descriptiontext.Paint = TextShadowPaint
 		local myauthor = self.Author
 		local authortext = contentpanel:Add("DPanel")
@@ -323,7 +325,7 @@ function SWEP:InspectionVGUIMainInfo(contentpanel)
 
 		authortext.Font = "TFA_INSPECTION_SMALL"
 		authortext:Dock(TOP)
-		authortext:SetSize(ScrW() * .5, 24)
+		authortext:SetSize(ScrW() * .5, TFA.Fonts.InspectionHeightSmall)
 		authortext.Paint = TextShadowPaint
 
 		if self.Manufacturer and string.Trim(self.Manufacturer) ~= "" then
@@ -336,7 +338,7 @@ function SWEP:InspectionVGUIMainInfo(contentpanel)
 
 			makertext.Font = "TFA_INSPECTION_SMALL"
 			makertext:Dock(TOP)
-			makertext:SetSize(ScrW() * .5, 24)
+			makertext:SetSize(ScrW() * .5, TFA.Fonts.InspectionHeightSmall)
 			makertext.Paint = TextShadowPaint
 		end
 
@@ -352,7 +354,7 @@ function SWEP:InspectionVGUIMainInfo(contentpanel)
 
 			capacitytext.Font = "TFA_INSPECTION_SMALL"
 			capacitytext:Dock(TOP)
-			capacitytext:SetSize(ScrW() * .5, 24)
+			capacitytext:SetSize(ScrW() * .5, TFA.Fonts.InspectionHeightSmall)
 			capacitytext.Paint = TextShadowPaint
 		end
 
@@ -368,7 +370,7 @@ function SWEP:InspectionVGUIMainInfo(contentpanel)
 
 			ammotypetext.Font = "TFA_INSPECTION_SMALL"
 			ammotypetext:Dock(TOP)
-			ammotypetext:SetSize(ScrW() * .5, 24)
+			ammotypetext:SetSize(ScrW() * .5, TFA.Fonts.InspectionHeightSmall)
 			ammotypetext.Paint = TextShadowPaint
 		end
 
@@ -382,7 +384,7 @@ function SWEP:InspectionVGUIMainInfo(contentpanel)
 
 			purpose.Font = "TFA_INSPECTION_SMALL"
 			purpose:Dock(TOP)
-			purpose:SetSize(ScrW() * .5, 24)
+			purpose:SetSize(ScrW() * .5, TFA.Fonts.InspectionHeightSmall)
 			purpose.Paint = TextShadowPaint
 		end
 
@@ -395,15 +397,19 @@ function SWEP:InspectionVGUIStats(contentpanel)
 		local mainpanel = contentpanel:GetParent()
 
 		local statspanel = contentpanel:Add("DPanel")
-		statspanel:SetSize(contentpanel:GetWide() * .5, 0)
-		statspanel.Paint = function() end
+
+		local preferredWidth = ScrW() * .4
+
+		statspanel:SetSize(0, 0)
 		statspanel:Dock(BOTTOM)
+		statspanel:DockMargin(0, 0, ScrW() - preferredWidth - ScaleH(self.VGUIPaddingW) * 4, 0)
+		statspanel.Paint = function() end
 
 		-- Bash damage
 		if self.BashBase and self:GetStat("Secondary.CanBash") ~= false then
 			local bashdamagepanel = statspanel:Add("DPanel")
-			bashdamagepanel:SetSize(400, 24)
-			statspanel:SetTall(statspanel:GetTall() + 24)
+			bashdamagepanel:SetSize(preferredWidth, TFA.Fonts.InspectionHeightSmall)
+			statspanel:SetTall(statspanel:GetTall() + TFA.Fonts.InspectionHeightSmall)
 
 			bashdamagepanel.Think = function(myself)
 				if not IsValid(self) then return end
@@ -422,14 +428,14 @@ function SWEP:InspectionVGUIStats(contentpanel)
 
 			bashdamagetext.Font = "TFA_INSPECTION_SMALL"
 			bashdamagetext:Dock(LEFT)
-			bashdamagetext:SetSize(400, 24)
+			bashdamagetext:SetSize(preferredWidth, TFA.Fonts.InspectionHeightSmall)
 			bashdamagetext.Paint = TextShadowPaint
 		end
 
 		--Stability
 		local stabilitypanel = statspanel:Add("DPanel")
-		stabilitypanel:SetSize(400, 24)
-		statspanel:SetTall(statspanel:GetTall() + 24)
+		stabilitypanel:SetSize(preferredWidth, TFA.Fonts.InspectionHeightSmall)
+		statspanel:SetTall(statspanel:GetTall() + TFA.Fonts.InspectionHeightSmall)
 
 		stabilitypanel.Think = function(myself)
 			if not IsValid(self) then return end
@@ -449,13 +455,13 @@ function SWEP:InspectionVGUIStats(contentpanel)
 
 		stabilitytext.Font = "TFA_INSPECTION_SMALL"
 		stabilitytext:Dock(LEFT)
-		stabilitytext:SetSize(400, 24)
+		stabilitytext:SetSize(preferredWidth, TFA.Fonts.InspectionHeightSmall)
 		stabilitytext.Paint = TextShadowPaint
 
 		--Range
 		local rangepanel = statspanel:Add("DPanel")
-		rangepanel:SetSize(400, 24)
-		statspanel:SetTall(statspanel:GetTall() + 24)
+		rangepanel:SetSize(preferredWidth, TFA.Fonts.InspectionHeightSmall)
+		statspanel:SetTall(statspanel:GetTall() + TFA.Fonts.InspectionHeightSmall)
 
 		rangepanel.Think = function(myself)
 			if not IsValid(self) then return end
@@ -475,13 +481,13 @@ function SWEP:InspectionVGUIStats(contentpanel)
 
 		rangetext.Font = "TFA_INSPECTION_SMALL"
 		rangetext:Dock(LEFT)
-		rangetext:SetSize(400, 24)
+		rangetext:SetSize(preferredWidth, TFA.Fonts.InspectionHeightSmall)
 		rangetext.Paint = TextShadowPaint
 
 		--Damage
 		local damagepanel = statspanel:Add("DPanel")
-		damagepanel:SetSize(400, 24)
-		statspanel:SetTall(statspanel:GetTall() + 24)
+		damagepanel:SetSize(preferredWidth, TFA.Fonts.InspectionHeightSmall)
+		statspanel:SetTall(statspanel:GetTall() + TFA.Fonts.InspectionHeightSmall)
 
 		damagepanel.Think = function(myself)
 			if not IsValid(self) then return end
@@ -506,13 +512,13 @@ function SWEP:InspectionVGUIStats(contentpanel)
 
 		damagetext.Font = "TFA_INSPECTION_SMALL"
 		damagetext:Dock(LEFT)
-		damagetext:SetSize(400, 24)
+		damagetext:SetSize(preferredWidth, TFA.Fonts.InspectionHeightSmall)
 		damagetext.Paint = TextShadowPaint
 
 		--Mobility
 		local mobilitypanel = statspanel:Add("DPanel")
-		mobilitypanel:SetSize(400, 24)
-		statspanel:SetTall(statspanel:GetTall() + 24)
+		mobilitypanel:SetSize(preferredWidth, TFA.Fonts.InspectionHeightSmall)
+		statspanel:SetTall(statspanel:GetTall() + TFA.Fonts.InspectionHeightSmall)
 
 		mobilitypanel.Think = function(myself)
 			if not IsValid(self) then return end
@@ -531,13 +537,13 @@ function SWEP:InspectionVGUIStats(contentpanel)
 
 		mobilitytext.Font = "TFA_INSPECTION_SMALL"
 		mobilitytext:Dock(LEFT)
-		mobilitytext:SetSize(400, 24)
+		mobilitytext:SetSize(preferredWidth, TFA.Fonts.InspectionHeightSmall)
 		mobilitytext.Paint = TextShadowPaint
 
 		--Firerate
 		local fireratepanel = statspanel:Add("DPanel")
-		fireratepanel:SetSize(400, 24)
-		statspanel:SetTall(statspanel:GetTall() + 24)
+		fireratepanel:SetSize(preferredWidth, TFA.Fonts.InspectionHeightSmall)
+		statspanel:SetTall(statspanel:GetTall() + TFA.Fonts.InspectionHeightSmall)
 
 		fireratepanel.Think = function(myself)
 			if not IsValid(self) then return end
@@ -559,13 +565,13 @@ function SWEP:InspectionVGUIStats(contentpanel)
 
 		fireratetext.Font = "TFA_INSPECTION_SMALL"
 		fireratetext:Dock(LEFT)
-		fireratetext:SetSize(400, 24)
+		fireratetext:SetSize(preferredWidth, TFA.Fonts.InspectionHeightSmall)
 		fireratetext.Paint = TextShadowPaint
 
 		--Accuracy
 		local accuracypanel = statspanel:Add("DPanel")
-		accuracypanel:SetSize(400, 24)
-		statspanel:SetTall(statspanel:GetTall() + 24)
+		accuracypanel:SetSize(preferredWidth, TFA.Fonts.InspectionHeightSmall)
+		statspanel:SetTall(statspanel:GetTall() + TFA.Fonts.InspectionHeightSmall)
 
 		accuracypanel.Think = function(myself)
 			if not IsValid(self) then return end
@@ -606,14 +612,14 @@ function SWEP:InspectionVGUIStats(contentpanel)
 
 		accuracytext.Font = "TFA_INSPECTION_SMALL"
 		accuracytext:Dock(LEFT)
-		accuracytext:SetSize(400, 24)
+		accuracytext:SetSize(preferredWidth, TFA.Fonts.InspectionHeightSmall)
 		accuracytext.Paint = TextShadowPaint
 
 		-- Condition
 		if self:CanBeJammed() then
 			local conditionpanel = statspanel:Add("DPanel")
-			conditionpanel:SetSize(400, 24)
-			statspanel:SetTall(statspanel:GetTall() + 24)
+			conditionpanel:SetSize(preferredWidth, TFA.Fonts.InspectionHeightSmall)
+			statspanel:SetTall(statspanel:GetTall() + TFA.Fonts.InspectionHeightSmall)
 
 			local condition = 1 - self:GetJamFactor() * .01
 
@@ -633,7 +639,7 @@ function SWEP:InspectionVGUIStats(contentpanel)
 
 			conditiontext.Font = "TFA_INSPECTION_SMALL"
 			conditiontext:Dock(LEFT)
-			conditiontext:SetSize(400, 24)
+			conditiontext:SetSize(preferredWidth, TFA.Fonts.InspectionHeightSmall)
 			conditiontext.Paint = TextShadowPaint
 		end
 
@@ -642,90 +648,93 @@ function SWEP:InspectionVGUIStats(contentpanel)
 end
 
 function SWEP:InspectionVGUIAttachments(contentpanel)
-	if not att_enabled_cv:GetBool() then return end
-	if hook.Run("TFA_InspectVGUI_AttachmentsStart", self, contentpanel) == false then return end
-
 	local mainpanel = contentpanel:GetParent()
 	local scrollpanel, vbar
 
-	if self.Attachments then
-		scrollpanel = mainpanel:Add("DScrollPanel")
+	if att_enabled_cv:GetBool() and hook.Run("TFA_InspectVGUI_AttachmentsStart", self, contentpanel) ~= false then
+		if self.Attachments then
+			scrollpanel = mainpanel:Add("DScrollPanel")
 
-		scrollpanel:SetSize(ScrW() * .5 - self.VGUIPaddingW * 2, mainpanel:GetTall() - self.VGUIPaddingH * 2)
-		scrollpanel:SetPos(ScrW() * .5, self.VGUIPaddingH)
+			scrollpanel:SetSize(ScrW() * .5 - ScaleH(self.VGUIPaddingW) * 2, mainpanel:GetTall() - ScaleH(self.VGUIPaddingH) * 2)
+			scrollpanel:SetPos(ScrW() * .5, ScaleH(self.VGUIPaddingH))
 
-		vbar = scrollpanel:GetVBar()
+			vbar = scrollpanel:GetVBar()
 
-		vbar.Paint = function(myself, w, h)
-			if not mainpanel then return end
-			surface.SetDrawColor(mainpanel.BackgroundColor.r, mainpanel.BackgroundColor.g, mainpanel.BackgroundColor.b, mainpanel.BackgroundColor.a / 2)
-			surface.DrawRect(w * .65, 0, w * .35, h)
-		end
-
-		vbar.btnUp.Paint = function(myself, w, h)
-			if not mainpanel then return end
-			surface.SetDrawColor(mainpanel.PrimaryColor.r, mainpanel.PrimaryColor.g, mainpanel.PrimaryColor.b, mainpanel.PrimaryColor.a)
-			surface.DrawRect(w * .65, 0, w * .35, h)
-		end
-
-		vbar.btnDown.Paint = function(myself, w, h)
-			if not mainpanel then return end
-			surface.SetDrawColor(mainpanel.PrimaryColor.r, mainpanel.PrimaryColor.g, mainpanel.PrimaryColor.b, mainpanel.PrimaryColor.a)
-			surface.DrawRect(w * .65, 0, w * .35, h)
-		end
-
-		vbar.btnGrip.Paint = function(myself, w, h)
-			if not mainpanel then return end
-			surface.SetDrawColor(mainpanel.PrimaryColor.r, mainpanel.PrimaryColor.g, mainpanel.PrimaryColor.b, mainpanel.PrimaryColor.a)
-			surface.DrawRect(w * .65, 0, w * .35, h)
-		end
-	end
-
-	self:GenerateVGUIAttachmentTable()
-	local i = 0
-	local prevCat
-	local lineY = 0
-	local scrollWide = scrollpanel:GetWide() - (IsValid(vbar) and vbar:GetTall() or 0)
-	local lastTooltipPanel
-
-	local iconsize = math.Round(TFA.ScaleH(TFA.Attachments.IconSize))
-	local catspacing = math.Round(TFA.ScaleH(TFA.Attachments.CategorySpacing))
-	local padding = math.Round(TFA.ScaleH(TFA.Attachments.UIPadding))
-
-	for k, v in pairs(self.VGUIAttachments) do
-		if k ~= "BaseClass" then
-			if prevCat then
-				local isContinuing = prevCat == (v.cat or k)
-				lineY = lineY + (isContinuing and iconsize + padding or catspacing)
-
-				if not isContinuing then
-					lastTooltipPanel = nil
-				end
+			vbar.Paint = function(myself, w, h)
+				if not mainpanel then return end
+				surface.SetDrawColor(mainpanel.BackgroundColor.r, mainpanel.BackgroundColor.g, mainpanel.BackgroundColor.b, mainpanel.BackgroundColor.a / 2)
+				surface.DrawRect(w * .65, 0, w * .35, h)
 			end
 
-			prevCat = v.cat or k
-			local testpanel = mainpanel:Add("TFAAttachmentPanel")
-			testpanel:SetParent(scrollpanel)
-			testpanel:SetContentPanel(scrollpanel)
-			i = i + 1
-			testpanel:SetWeapon(self)
-			testpanel:SetAttachment(k)
-			testpanel:SetCategory(v.cat or k)
-			testpanel:Initialize()
-			lastTooltipPanel = lastTooltipPanel or testpanel:InitializeTooltip()
-			testpanel:SetupTooltip(lastTooltipPanel)
-			testpanel:PopulateIcons()
-			testpanel:SetPos(scrollWide - testpanel:GetWide(), lineY)
-		end
-	end
+			vbar.btnUp.Paint = function(myself, w, h)
+				if not mainpanel then return end
+				surface.SetDrawColor(mainpanel.PrimaryColor.r, mainpanel.PrimaryColor.g, mainpanel.PrimaryColor.b, mainpanel.PrimaryColor.a)
+				surface.DrawRect(w * .65, 0, w * .35, h)
+			end
 
-	hook.Run("TFA_InspectVGUI_AttachmentsFinish", self, contentpanel, scrollpanel)
+			vbar.btnDown.Paint = function(myself, w, h)
+				if not mainpanel then return end
+				surface.SetDrawColor(mainpanel.PrimaryColor.r, mainpanel.PrimaryColor.g, mainpanel.PrimaryColor.b, mainpanel.PrimaryColor.a)
+				surface.DrawRect(w * .65, 0, w * .35, h)
+			end
+
+			vbar.btnGrip.Paint = function(myself, w, h)
+				if not mainpanel then return end
+				surface.SetDrawColor(mainpanel.PrimaryColor.r, mainpanel.PrimaryColor.g, mainpanel.PrimaryColor.b, mainpanel.PrimaryColor.a)
+				surface.DrawRect(w * .65, 0, w * .35, h)
+			end
+		end
+
+		self:GenerateVGUIAttachmentTable()
+		local i = 0
+		local prevCat
+		local lineY = 0
+		local scrollWide = scrollpanel:GetWide() - (IsValid(vbar) and vbar:GetTall() or 0)
+		local lastTooltipPanel
+
+		local iconsize = math.Round(TFA.ScaleH(TFA.Attachments.IconSize))
+		local catspacing = math.Round(TFA.ScaleH(TFA.Attachments.CategorySpacing))
+		local padding = math.Round(TFA.ScaleH(TFA.Attachments.UIPadding))
+
+		for k, v in pairs(self.VGUIAttachments) do
+			if k ~= "BaseClass" then
+				if prevCat then
+					local isContinuing = prevCat == (v.cat or k)
+					lineY = lineY + (isContinuing and iconsize + padding or catspacing)
+
+					if not isContinuing then
+						lastTooltipPanel = nil
+					end
+				end
+
+				prevCat = v.cat or k
+				local testpanel = mainpanel:Add("TFAAttachmentPanel")
+				testpanel:SetParent(scrollpanel)
+				testpanel:SetContentPanel(scrollpanel)
+				i = i + 1
+				testpanel:SetWeapon(self)
+				testpanel:SetAttachment(k)
+				testpanel:SetCategory(v.cat or k)
+				testpanel:Initialize()
+				lastTooltipPanel = lastTooltipPanel or testpanel:InitializeTooltip()
+				testpanel:SetupTooltip(lastTooltipPanel)
+				testpanel:PopulateIcons()
+				testpanel:SetPos(scrollWide - testpanel:GetWide(), lineY)
+			end
+		end
+
+		hook.Run("TFA_InspectVGUI_AttachmentsFinish", self, contentpanel, scrollpanel)
+	end
 
 	if self.Primary.RangeFalloffLUTBuilt then
 		local falloffpanel = vgui.Create("EditablePanel", mainpanel)
-		falloffpanel:SetSize(ScrW() * .5 - self.VGUIPaddingW * 2, mainpanel:GetTall() * 0.2)
-		scrollpanel:SetTall(scrollpanel:GetTall() - falloffpanel:GetTall())
-		falloffpanel:SetPos(ScrW() * .5, self.VGUIPaddingH + scrollpanel:GetTall())
+		falloffpanel:SetSize(ScrW() * .5 - ScaleH(self.VGUIPaddingW) * 2, mainpanel:GetTall() * 0.2)
+		falloffpanel:SetPos(ScrW() * .5, mainpanel:GetTall() - falloffpanel:GetTall() - ScaleH(self.VGUIPaddingH))
+
+		if scrollpanel then
+			scrollpanel:SetTall(scrollpanel:GetTall() - falloffpanel:GetTall())
+			falloffpanel:SetPos(ScrW() * .5, ScaleH(self.VGUIPaddingH) + scrollpanel:GetTall())
+		end
 
 		falloffpanel:NoClipping(true)
 
@@ -849,7 +858,7 @@ function SWEP:GenerateInspectionDerma()
 
 	TFA_INSPECTIONPANEL = vgui.Create("DPanel")
 	TFA_INSPECTIONPANEL:SetSize(ScrW(), ScrH())
-	TFA_INSPECTIONPANEL:DockPadding(self.VGUIPaddingW, self.VGUIPaddingH, self.VGUIPaddingW, self.VGUIPaddingH)
+	TFA_INSPECTIONPANEL:DockPadding(ScaleH(self.VGUIPaddingW), ScaleH(self.VGUIPaddingH), ScaleH(self.VGUIPaddingW), ScaleH(self.VGUIPaddingH))
 	TFA_INSPECTIONPANEL:SetRenderInScreenshots(not cl_tfa_inspect_hide_in_screenshots:GetBool())
 
 	local function update_visible(status)
@@ -942,7 +951,8 @@ function SWEP:GenerateInspectionDerma()
 
 	local contentpanel = vgui.Create("DPanel", TFA_INSPECTIONPANEL)
 	contentpanel:Dock(FILL)
-	contentpanel:DockPadding(pad, pad, pad, pad)
+	local spad = ScaleH(pad)
+	contentpanel:DockPadding(spad, spad, spad, spad)
 
 	function contentpanel.Paint() end
 

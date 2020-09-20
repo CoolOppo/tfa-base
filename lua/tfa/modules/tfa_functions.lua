@@ -325,7 +325,7 @@ function TFA.PlayerCarryingTFAWeapon(ply)
 end
 
 function TFA.ScaleH(num)
-	return num * (ScrH() / 1080)
+	return num * (ScrH() / 768)
 end
 
 function TFA.FrameTime()

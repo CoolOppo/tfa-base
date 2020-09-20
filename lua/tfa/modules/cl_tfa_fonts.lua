@@ -21,37 +21,56 @@
 
 TFA.Fonts = TFA.Fonts or {}
 
-if not TFA.Fonts.SleekFontCreated then
+local ScaleH = TFA.ScaleH
+
+local function GetFontHeight(fontname) -- UNCACHED!
+	surface.SetFont(fontname)
+
+	local _, h = surface.GetTextSize("W")
+
+	return h
+end
+
+local function CreateFonts()
 	local fontdata = {}
+
 	fontdata.font = "Roboto"
 	fontdata.shadow = false
 	fontdata.extended = true
-	fontdata.size = 36
+	fontdata.size = ScaleH(36)
 	surface.CreateFont("TFASleek", fontdata)
-	TFA.Fonts.SleekHeight = draw.GetFontHeight("TFASleek")
-	fontdata.size = 30
-	surface.CreateFont("TFASleekMedium", fontdata)
-	TFA.Fonts.SleekHeightMedium = draw.GetFontHeight("TFASleekMedium")
-	fontdata.size = 24
-	surface.CreateFont("TFASleekSmall", fontdata)
-	TFA.Fonts.SleekHeightSmall = draw.GetFontHeight("TFASleekSmall")
-	fontdata.size = 18
-	surface.CreateFont("TFASleekTiny", fontdata)
-	TFA.Fonts.SleekHeightTiny = draw.GetFontHeight("TFASleekTiny")
-	TFA.Fonts.SleekFontCreated = true
-end
+	TFA.Fonts.SleekHeight = GetFontHeight("TFASleek")
 
-if not TFA.InspectionFontsCreated then
-	local fontdata = {}
+	fontdata.size = ScaleH(30)
+	surface.CreateFont("TFASleekMedium", fontdata)
+	TFA.Fonts.SleekHeightMedium = GetFontHeight("TFASleekMedium")
+
+	fontdata.size = ScaleH(24)
+	surface.CreateFont("TFASleekSmall", fontdata)
+	TFA.Fonts.SleekHeightSmall = GetFontHeight("TFASleekSmall")
+
+	fontdata.size = ScaleH(18)
+	surface.CreateFont("TFASleekTiny", fontdata)
+	TFA.Fonts.SleekHeightTiny = GetFontHeight("TFASleekTiny")
+
+	fontdata = {}
+
 	fontdata.font = "Roboto"
 	fontdata.extended = true
 	fontdata.weight = 500
-	fontdata.size = 64
+	fontdata.size = ScaleH(64)
 	surface.CreateFont("TFA_INSPECTION_TITLE", fontdata)
-	fontdata.size = 32
-	surface.CreateFont("TFA_INSPECTION_DESCR", fontdata)
-	fontdata.size = 24
-	surface.CreateFont("TFA_INSPECTION_SMALL", fontdata)
+	TFA.Fonts.InspectionHeightTitle = GetFontHeight("TFA_INSPECTION_TITLE")
 
-	TFA.InspectionFontsCreated = true
+	fontdata.size = ScaleH(32)
+	surface.CreateFont("TFA_INSPECTION_DESCR", fontdata)
+	TFA.Fonts.InspectionHeightDescription = GetFontHeight("TFA_INSPECTION_DESCR")
+
+	fontdata.size = ScaleH(24)
+	surface.CreateFont("TFA_INSPECTION_SMALL", fontdata)
+	TFA.Fonts.InspectionHeightSmall = GetFontHeight("TFA_INSPECTION_SMALL")
 end
+
+CreateFonts()
+
+hook.Add("OnScreenSizeChanged", "TFA_Fonts_Regenerate", CreateFonts)
