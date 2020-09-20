@@ -295,7 +295,7 @@ function SWEP:InspectionVGUIMainInfo(contentpanel)
 		--Space things out for block1
 		local spacer = contentpanel:Add("DPanel")
 		spacer:Dock(TOP)
-		spacer:SetSize(ScrW() * .5, TFA.Fonts.InspectionHeightTitle)
+		spacer:SetSize(ScrW() * .5, TFA.Fonts.InspectionHeightDescription)
 		spacer.Paint = function() end
 
 		--First stat block
@@ -759,13 +759,11 @@ function SWEP:InspectionVGUIAttachments(contentpanel)
 			if not lut then return end
 			local wepdmg = self2.Primary.Damage
 
-			shadow_color.a = mainpanel.PrimaryColor.a
+			shadow_color.a = mainpanel.SecondaryColor.a
 
-			local text = "DAMAGE DROP"
-			shadowed_text(text, "TFASleekSmall", 6, 0, mainpanel.PrimaryColor, TEXT_ALIGN_LEFT)
-			local tw, th = surface.GetTextSize(text)
+			shadowed_text("#tfa.inspect.damagedrop", "TFASleekSmall", 0, ScaleH(pad), mainpanel.SecondaryColor, TEXT_ALIGN_LEFT)
 
-			local ax, ay = 0, th + 8
+			local ax, ay = 0, TFA.Fonts.SleekHeightSmall + ScaleH(pad) * 2
 
 			surface.SetDrawColor(mainpanel.SecondaryColor)
 
@@ -837,8 +835,8 @@ function SWEP:InspectionVGUIAttachments(contentpanel)
 					surface.DrawLine(cirX + 8, cirY - 8, cirX - 8, cirY + 8)
 				end
 
-				shadowed_text(string.format("%dm", range * (mx / w) * 0.0254), "TFASleekSmall", mx - 4, my - 32, mainpanel.SecondaryColor, TEXT_ALIGN_RIGHT)
-				shadowed_text(string.format("%ddmg", dmg * wepdmg), "TFASleekSmall", mx + 4, my - 32, mainpanel.SecondaryColor, TEXT_ALIGN_LEFT)
+				shadowed_text(string.format("%dm", range * (mx / w) * 0.0254), "TFASleekSmall", mx - ScaleH(pad), my - TFA.Fonts.SleekHeightSmall, mainpanel.SecondaryColor, TEXT_ALIGN_RIGHT)
+				shadowed_text(string.format("%ddmg", dmg * wepdmg), "TFASleekSmall", mx + ScaleH(pad), my - TFA.Fonts.SleekHeightSmall, mainpanel.SecondaryColor, TEXT_ALIGN_LEFT)
 			end
 		end
 	end
