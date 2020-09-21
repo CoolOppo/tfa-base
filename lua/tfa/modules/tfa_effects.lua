@@ -47,3 +47,7 @@ function Effects.Create(effectName, effectData, allowOverride, ignorePredictionO
 
 	util_Effect(effectName, effectData, allowOverride, ignorePredictionOrRecipientFilter)
 end
+
+if SERVER then
+	AddCSLuaFile("tfa/muzzleflash_base.lua")
+end
