@@ -24,6 +24,12 @@ EFFECT.VelocityRand = {-15, 40}
 EFFECT.VelocityAngle = Vector(1,1,10)
 EFFECT.VelocityRandAngle = Vector(10,10,5)
 
+local modelReplaceLookup = {
+	["models/hdweapons/rifleshell_hd.mdl"] = "models/hdweapons/shell.mdl",
+	["models/hdweapons/shell_hd.mdl"] = "models/hdweapons/shell.mdl",
+	["models/hdweapons/shotgun_shell_hd.mdl"] = "models/hdweapons/shell.mdl",
+}
+
 EFFECT.ShellPresets = {
 	["sniper"] = {"models/hdweapons/rifleshell.mdl", math.pow(0.487 / 1.236636, 1 / 3), 90}, --1.236636 is shell diameter, then divide base diameter into that for 7.62x54mm
 	["rifle"] = {"models/hdweapons/rifleshell.mdl", math.pow(0.4709 / 1.236636, 1 / 3), 90}, --1.236636 is shell diameter, then divide base diameter into that for standard nato rifle
@@ -136,6 +142,7 @@ function EFFECT:Init(data)
 
 	local model, scale, yaw = self:FindModel(self.WeaponEntOG)
 	model = self.WeaponEntOG:GetStat("ShellModel") or self.WeaponEntOG:GetStat("LuaShellModel") or model
+	model = modelReplaceLookup[model] or model
 	scale = self.WeaponEntOG:GetStat("ShellScale") or self.WeaponEntOG:GetStat("LuaShellScale") or scale
 	yaw = self.WeaponEntOG:GetStat("ShellYaw") or self.WeaponEntOG:GetStat("LuaShellYaw") or yaw
 
