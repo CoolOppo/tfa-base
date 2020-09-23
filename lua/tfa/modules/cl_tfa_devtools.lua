@@ -70,8 +70,8 @@ local function DrawDebugInfo(w, h, ply, wep)
 
 	if wep.event_table_overflow then
 		if wep.EventTableEdict[0] then
-			draw.SimpleTextOutlined("UNPREDICTED Event table state:", "TFASleekSmall", x + 240, y, color_white, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP, 1, color_black)
-			local y2 = y + TFA.Fonts.SleekHeightSmall
+			draw.SimpleTextOutlined("UNPREDICTED Event table state:", "TFASleekDebug", x + 240, y, color_white, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP, 1, color_black)
+			local y2 = y + TFA.Fonts.SleekHeightDebug
 
 			if not wep._built_event_debug_string_fn then
 				local str = ""
@@ -100,13 +100,13 @@ local function DrawDebugInfo(w, h, ply, wep)
 			end
 
 			for line in string.gmatch(wep:_built_event_debug_string_fn(), "(%S+)") do
-				draw.SimpleTextOutlined(line, "TFASleekSmall", x + 240, y2, color_white, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP, 1, color_black)
-				y2 = y2 + TFA.Fonts.SleekHeightSmall
+				draw.SimpleTextOutlined(line, "TFASleekDebug", x + 240, y2, color_white, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP, 1, color_black)
+				y2 = y2 + TFA.Fonts.SleekHeightDebug
 			end
 		end
 	elseif wep._EventSlotCount ~= 0 then
-		draw.SimpleTextOutlined("Event table state:", "TFASleekSmall", x + 240, y, color_white, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP, 1, color_black)
-		local y2 = y + TFA.Fonts.SleekHeightSmall
+		draw.SimpleTextOutlined("Event table state:", "TFASleekDebug", x + 240, y, color_white, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP, 1, color_black)
+		local y2 = y + TFA.Fonts.SleekHeightDebug
 
 		for i = 1, wep._EventSlotCount do
 			local state = wep["GetEventStatus" .. i](wep)
@@ -121,27 +121,27 @@ local function DrawDebugInfo(w, h, ply, wep)
 				stringbake = fn(state)
 			end
 
-			draw.SimpleTextOutlined(stringbake, "TFASleekSmall", x + 240, y2, color_white, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP, 1, color_black)
-			y2 = y2 + TFA.Fonts.SleekHeightSmall
+			draw.SimpleTextOutlined(stringbake, "TFASleekDebug", x + 240, y2, color_white, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP, 1, color_black)
+			y2 = y2 + TFA.Fonts.SleekHeightDebug
 		end
 	end
 
-	draw.SimpleTextOutlined(string.format("%s [%.2f, %.2f]", statusnames[wep:GetStatus()] or wep:GetStatus(), CurTime(), wep:GetStatusEnd()), "TFASleekSmall", x, y, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP, 1, color_black)
-	y = y + TFA.Fonts.SleekHeightSmall
+	draw.SimpleTextOutlined(string.format("%s [%.2f, %.2f]", statusnames[wep:GetStatus()] or wep:GetStatus(), CurTime(), wep:GetStatusEnd()), "TFASleekDebug", x, y, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP, 1, color_black)
+	y = y + TFA.Fonts.SleekHeightDebug
 
 	local vm = ply:GetViewModel() or NULL
 
 	if vm:IsValid() then
 		local seq = vm:GetSequence()
 
-		draw.SimpleTextOutlined(string.format("%s (%s/%d)", vm:GetSequenceName(seq), vm:GetSequenceActivityName(seq), vm:GetSequenceActivity(seq)), "TFASleekSmall", x, y, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP, 1, color_black)
-		y = y + TFA.Fonts.SleekHeightSmall
+		draw.SimpleTextOutlined(string.format("%s (%s/%d)", vm:GetSequenceName(seq), vm:GetSequenceActivityName(seq), vm:GetSequenceActivity(seq)), "TFASleekDebug", x, y, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP, 1, color_black)
+		y = y + TFA.Fonts.SleekHeightDebug
 
 		local cycle = vm:GetCycle()
 		local len = vm:SequenceDuration(seq)
 		local rate = vm:GetPlaybackRate()
 
-		draw.SimpleTextOutlined(string.format("%.2fs / %.2fs (%.2f) @ %d%%", cycle * len, len, cycle, rate * 100), "TFASleekSmall", x, y, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP, 1, color_black)
+		draw.SimpleTextOutlined(string.format("%.2fs / %.2fs (%.2f) @ %d%%", cycle * len, len, cycle, rate * 100), "TFASleekDebug", x, y, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP, 1, color_black)
 	end
 end
 

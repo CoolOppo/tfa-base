@@ -53,6 +53,10 @@ local function CreateFonts()
 	surface.CreateFont("TFASleekTiny", fontdata)
 	TFA.Fonts.SleekHeightTiny = GetFontHeight("TFASleekTiny")
 
+	fontdata.size = 24
+	surface.CreateFont("TFASleekDebug", fontdata)
+	TFA.Fonts.SleekHeightDebug = 24
+
 	fontdata = {}
 
 	fontdata.font = "Roboto"
