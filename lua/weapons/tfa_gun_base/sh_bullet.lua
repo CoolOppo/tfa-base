@@ -331,6 +331,22 @@ local sv_tfa_recoil_mul_y_npc = GetConVar("sv_tfa_recoil_mul_y_npc")
 local sv_tfa_recoil_viewpunch_mul = GetConVar("sv_tfa_recoil_viewpunch_mul")
 local sv_tfa_recoil_eyeangles_mul = GetConVar("sv_tfa_recoil_eyeangles_mul")
 
+function SWEP:SetRecoilVector(vector)
+	if self:GetOwner():IsPlayer() then
+		self:SetNW2Vector("QueuedRecoil", vector)
+	else
+		owner:SetVelocity(vector)
+	end
+end
+
+function SWEP:QueueRecoil(vector)
+	if self:GetOwner():IsPlayer() then
+		self:SetNW2Vector("QueuedRecoil", self:GetNW2Vector("QueuedRecoil", vector_origin))
+	else
+		owner:AddVelocity(vector)
+	end
+end
+
 function SWEP:Recoil(recoil, ifp)
 	if sp and type(recoil) == "string" then
 		local _, CurrentRecoil = self:CalculateConeRecoil()
@@ -343,12 +359,7 @@ function SWEP:Recoil(recoil, ifp)
 	local isplayer = owner:IsPlayer()
 
 	self:SetNW2Float("SpreadRatio", l_mathClamp(self:GetNW2Float("SpreadRatio") + self:GetStat("Primary.SpreadIncrement"), 1, self:GetStat("Primary.SpreadMultiplierMax")))
-
-	if isplayer then
-		self:SetNW2Vector("QueuedRecoil", -owner:EyeAngles():Forward() * self:GetStat("Primary.Knockback") * cv_forcemult:GetFloat() * recoil / 5)
-	else
-		owner:SetVelocity(owner:GetVelocity() - owner:EyeAngles():Forward() * self:GetStat("Primary.Knockback") * cv_forcemult:GetFloat() * recoil / 5)
-	end
+	self:QueueRecoil(-owner:GetAimVector():Forward() * self:GetStat("Primary.Knockback") * cv_forcemult:GetFloat() * recoil / 5)
 
 	local seed = self:GetSeed() + 1
 
