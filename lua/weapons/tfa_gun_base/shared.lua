@@ -1289,11 +1289,11 @@ function SWEP:PrimaryAttack()
 	local ply = self:GetOwner()
 	if not IsValid(ply) then return end
 
-	self:PrePrimaryAttack()
-
 	if not IsValid(self) then return end
 	if ply:IsPlayer() and not self:VMIV() then return end
 	if not self:CanPrimaryAttack() then return end
+
+	self:PrePrimaryAttack()
 
 	if hook.Run("TFA_PrimaryAttack", self) then return end
 
