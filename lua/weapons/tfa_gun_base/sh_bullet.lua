@@ -359,7 +359,7 @@ function SWEP:Recoil(recoil, ifp)
 	local isplayer = owner:IsPlayer()
 
 	self:SetNW2Float("SpreadRatio", l_mathClamp(self:GetNW2Float("SpreadRatio") + self:GetStat("Primary.SpreadIncrement"), 1, self:GetStat("Primary.SpreadMultiplierMax")))
-	self:QueueRecoil(-owner:GetAimVector():Forward() * self:GetStat("Primary.Knockback") * cv_forcemult:GetFloat() * recoil / 5)
+	self:QueueRecoil(-owner:GetAimVector() * self:GetStat("Primary.Knockback") * cv_forcemult:GetFloat() * recoil / 5)
 
 	local seed = self:GetSeed() + 1
 
