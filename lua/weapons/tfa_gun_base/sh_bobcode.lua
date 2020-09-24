@@ -58,9 +58,11 @@ SWEP.footstepTotal = 0
 SWEP.footstepTotalTarget = 0
 local upVec, riVec, fwVec = Vector(0, 0, 1), Vector(1, 0, 0), Vector(0, 1, 0)
 
+local l_Lerp = function(t, a, b) return a + (b - a) * t end
+
 function SWEP:WalkBob(pos, ang, breathIntensity, walkIntensity, rate, ftv)
 	local self2 = self:GetTable()
-	if not self:OwnerIsValid() then return end
+	if not self2.OwnerIsValid(self) then return end
 	rate = math.min(rate or 0.5, rate_clamp)
 	gunbob_intensity = gunbob_intensity_cvar:GetFloat()
 
@@ -87,18 +89,18 @@ function SWEP:WalkBob(pos, ang, breathIntensity, walkIntensity, rate, ftv)
 	end
 
 	--preceding calcs
-	walkIntensitySmooth = Lerp(delta * 10 * rateScaleFac, walkIntensitySmooth, walkIntensity)
-	breathIntensitySmooth = Lerp(delta * 10 * rateScaleFac, breathIntensitySmooth, breathIntensity)
+	walkIntensitySmooth = l_Lerp(delta * 10 * rateScaleFac, walkIntensitySmooth, walkIntensity)
+	breathIntensitySmooth = l_Lerp(delta * 10 * rateScaleFac, breathIntensitySmooth, breathIntensity)
 	walkVec = LerpVector(walkIntensitySmooth, vector_origin, self2.VMOffsetWalk)
 	ownerVelocity = self:GetOwner():GetVelocity()
 	zVelocity = ownerVelocity.z
-	zVelocitySmooth = Lerp(delta * 7 * rateScaleFac, zVelocitySmooth, zVelocity)
+	zVelocitySmooth = l_Lerp(delta * 7 * rateScaleFac, zVelocitySmooth, zVelocity)
 	ownerVelocityMod = ownerVelocity * flatVec
 	ownerVelocityMod:Normalize()
 	rightVec = ea:Right() * flatVec
 	rightVec:Normalize()
 	xVelocity = ownerVelocity:Length2D() * ownerVelocityMod:Dot(rightVec)
-	xVelocitySmooth = Lerp(delta * 5 * rateScaleFac, xVelocitySmooth, xVelocity)
+	xVelocitySmooth = l_Lerp(delta * 5 * rateScaleFac, xVelocitySmooth, xVelocity)
 	--multipliers
 	breathIntensity = breathIntensitySmooth * gunbob_intensity * 1.5
 	walkIntensity = walkIntensitySmooth * gunbob_intensity * 1.5
@@ -107,10 +109,10 @@ function SWEP:WalkBob(pos, ang, breathIntensity, walkIntensity, rate, ftv)
 	pos:Add(upLocal * math.sin(self2.ti * walkRate) * breathIntensity * 0.3)
 	--walk anims, danny method because i just can't
 	self2.walkTI = (self2.walkTI or 0) + delta * 160 / 60 * self:GetOwner():GetVelocity():Length2D() / self:GetOwner():GetWalkSpeed()
-	WalkPos.x = Lerp(delta * 5 * rateScaleFac, WalkPos.x, -math.sin(self2.ti * walkRate * 0.5) * gunbob_intensity * walkIntensity)
-	WalkPos.y = Lerp(delta * 5 * rateScaleFac, WalkPos.y, math.sin(self2.ti * walkRate) / 1.5 * gunbob_intensity * walkIntensity)
-	WalkPosLagged.x = Lerp(delta * 5 * rateScaleFac, WalkPosLagged.x, -math.sin((self2.ti * walkRate * 0.5) + math.pi / 3) * gunbob_intensity * walkIntensity)
-	WalkPosLagged.y = Lerp(delta * 5 * rateScaleFac, WalkPosLagged.y, math.sin(self2.ti * walkRate + math.pi / 3) / 1.5 * gunbob_intensity * walkIntensity)
+	WalkPos.x = l_Lerp(delta * 5 * rateScaleFac, WalkPos.x, -math.sin(self2.ti * walkRate * 0.5) * gunbob_intensity * walkIntensity)
+	WalkPos.y = l_Lerp(delta * 5 * rateScaleFac, WalkPos.y, math.sin(self2.ti * walkRate) / 1.5 * gunbob_intensity * walkIntensity)
+	WalkPosLagged.x = l_Lerp(delta * 5 * rateScaleFac, WalkPosLagged.x, -math.sin((self2.ti * walkRate * 0.5) + math.pi / 3) * gunbob_intensity * walkIntensity)
+	WalkPosLagged.y = l_Lerp(delta * 5 * rateScaleFac, WalkPosLagged.y, math.sin(self2.ti * walkRate + math.pi / 3) / 1.5 * gunbob_intensity * walkIntensity)
 	pos:Add(WalkPos.x * 0.33 * riLocal)
 	pos:Add(WalkPos.y * 0.25 * upLocal)
 	ang:RotateAroundAxis(ri, -WalkPosLagged.y)
@@ -173,4 +175,34 @@ function SWEP:SprintBob(pos, ang, intensity)
 	end
 
 	return pos, ang
+end
+
+local cv_customgunbob = GetConVar("cl_tfa_gunbob_custom")
+local fac, bscale
+
+function SWEP:UpdateEngineBob()
+	local self2 = self:GetTable()
+
+	if cv_customgunbob:GetBool() then
+		self2.BobScale = 0
+		self2.SwayScale = 0
+
+		return
+	end
+
+	local isp = self2.IronSightsProgressUnpredicted or self:GetNW2Float("IronSightsProgress", 0)
+	local wpr = self:GetNW2Float("WalkProgress", 0)
+	local spr = self:GetNW2Float("SprintProgress", 0)
+
+	fac = gunbob_intensity_cvar:GetFloat() * ((1 - isp) * 0.85 + 0.15)
+	bscale = fac
+
+	if spr > 0.005 then
+		bscale = bscale * l_Lerp(spr, 1, self2.SprintBobMult)
+	elseif wpr > 0.005 then
+		bscale = bscale * l_Lerp(wpr, 1, l_Lerp(isp, self2.WalkBobMult, self2.WalkBobMult_Iron or self2.WalkBobMult))
+	end
+
+	self2.BobScale = bscale
+	self2.SwayScale = fac
 end

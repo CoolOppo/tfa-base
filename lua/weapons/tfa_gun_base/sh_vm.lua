@@ -179,6 +179,8 @@ SWEP.ViewModelPunch_VertialMultiplier_IronSights = 0.25
 SWEP.ViewModelPunchYawMultiplier = 0.45
 SWEP.ViewModelPunchYawMultiplier_IronSights = 1.5
 
+local cv_customgunbob = GetConVar("cl_tfa_gunbob_custom")
+
 function SWEP:CalculateViewModelOffset(delta)
 	local self2 = self:GetTable()
 
@@ -334,6 +336,12 @@ function SWEP:CalculateViewModelOffset(delta)
 	vm_offset_ang.y = math.ApproachAngle(vm_offset_ang.y, target_ang.y, math.AngleDifference(target_ang.y, vm_offset_ang.y) * delta * adstransitionspeed)
 	vm_offset_ang.r = math.ApproachAngle(vm_offset_ang.r, target_ang.z, math.AngleDifference(target_ang.z, vm_offset_ang.r) * delta * adstransitionspeed)
 
+	if not cv_customgunbob:GetBool() then
+		self2.pos_cached, self2.ang_cached = vm_offset_pos, vm_offset_ang
+
+		return
+	end
+
 	intensityWalk = math.min(self:GetOwner():GetVelocity():Length2D() / self:GetOwner():GetWalkSpeed(), 1)
 
 	if self2.WalkBobMult_Iron and (self2.IronSightsProgressUnpredicted or self:GetNW2Float("IronSightsProgress")) > 0.01 then
@@ -418,15 +426,22 @@ end
 
 function SWEP:GetViewModelPosition(pos, ang)
 	local self2 = self:GetTable()
+
 	if not self2.pos_cached then return pos, ang end
+
 	ang:RotateAroundAxis(ang:Right(), self2.ang_cached.p)
 	ang:RotateAroundAxis(ang:Up(), self2.ang_cached.y)
 	ang:RotateAroundAxis(ang:Forward(), self2.ang_cached.r)
 	pos:Add(ang:Right() * self2.pos_cached.x)
 	pos:Add(ang:Forward() * self2.pos_cached.y)
 	pos:Add(ang:Up() * self2.pos_cached.z)
-	pos, ang = self:Sway(pos, ang)
-	return self:SprintBob(pos, ang, l_Lerp(self:GetNW2Float("SprintProgress"), 0, self2.SprintBobMult))
+
+	if cv_customgunbob:GetBool() then
+		pos, ang = self:Sway(pos, ang)
+		pos, ang = self:SprintBob(pos, ang, l_Lerp(self:GetNW2Float("SprintProgress"), 0, self2.SprintBobMult))
+	end
+
+	return pos, ang
 end
 
 local onevec = Vector(1, 1, 1)

@@ -520,6 +520,8 @@ if CLIENT then
 	hook.Add("PreDrawViewModel", "TFACalculateViewmodel", function(vm, plyv, wepv)
 		if not IsValid(wepv) or not wepv.IsTFAWeapon then return end
 
+		wepv:UpdateEngineBob()
+
 		local st = SysTime()
 		st_old = st_old or st
 

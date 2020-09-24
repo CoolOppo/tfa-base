@@ -228,8 +228,9 @@ local function tfaOptionVM(panel)
 
 	tfaOptionCL.Options["#preset.default"] = {
 		cl_tfa_viewbob_animated = "0",
-		cl_tfa_gunbob_intensity = "1",
 		cl_tfa_viewbob_intensity = "1",
+		cl_tfa_gunbob_intensity = "1",
+		cl_tfa_gunbob_custom = "1",
 		cl_tfa_viewmodel_offset_x = "0",
 		cl_tfa_viewmodel_offset_y = "0",
 		cl_tfa_viewmodel_offset_z = "0",
@@ -244,8 +245,9 @@ local function tfaOptionVM(panel)
 	panel:AddControl("ComboBox", tfaOptionCL)
 
 	panel:CheckBox("#tfa.vmsettings.viewbobanim", "cl_tfa_viewbob_animated")
-	panel:NumSlider("#tfa.vmsettings.gunbobmult", "cl_tfa_gunbob_intensity", 0, 2, 2)
 	panel:NumSlider("#tfa.vmsettings.viewbobmult", "cl_tfa_viewbob_intensity", 0, 2, 2)
+	panel:CheckBox("#tfa.vmsettings.gunbobcustom", "cl_tfa_gunbob_custom")
+	panel:NumSlider("#tfa.vmsettings.gunbobmult", "cl_tfa_gunbob_intensity", 0, 2, 2)
 
 	panel:NumSlider("#tfa.vmsettings.offset.x", "cl_tfa_viewmodel_offset_x", -2, 2, 2)
 	panel:NumSlider("#tfa.vmsettings.offset.y", "cl_tfa_viewmodel_offset_y", -2, 2, 2)

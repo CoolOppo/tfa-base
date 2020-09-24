@@ -347,6 +347,7 @@ SWEP.BoltDelay = 1
 SWEP.ProceduralHolsterProgress = 0
 SWEP.BurstCount = 0
 SWEP.DefaultFOV = 90
+SWEP.m_WeaponDeploySpeed = 255
 
 --[[ Localize Functions  ]]
 local function l_Lerp(v, f, t)

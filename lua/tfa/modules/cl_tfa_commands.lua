@@ -39,6 +39,10 @@ if GetConVar("cl_tfa_gunbob_intensity") == nil then
 	CreateClientConVar("cl_tfa_gunbob_intensity", 1, true, false, "Gun bob intensity multiplier")
 end
 
+if GetConVar("cl_tfa_gunbob_custom") == nil then
+	CreateClientConVar("cl_tfa_gunbob_custom", 1, true, false, "Use custom gun bob")
+end
+
 if GetConVar("cl_tfa_3dscope_quality") == nil then
 	CreateClientConVar("cl_tfa_3dscope_quality", -1, true, true, "3D scope quality (leave -1 for autodetected)")
 end
