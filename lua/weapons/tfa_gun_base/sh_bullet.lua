@@ -335,7 +335,7 @@ function SWEP:SetRecoilVector(vector)
 	if self:GetOwner():IsPlayer() then
 		self:SetNW2Vector("QueuedRecoil", vector)
 	else
-		owner:SetVelocity(vector)
+		self:GetOwner():SetVelocity(vector)
 	end
 end
 
@@ -343,7 +343,7 @@ function SWEP:QueueRecoil(vector)
 	if self:GetOwner():IsPlayer() then
 		self:SetNW2Vector("QueuedRecoil", vector + self:GetNW2Vector("QueuedRecoil", vector_origin))
 	else
-		owner:AddVelocity(vector)
+		self:GetOwner():AddVelocity(vector)
 	end
 end
 
