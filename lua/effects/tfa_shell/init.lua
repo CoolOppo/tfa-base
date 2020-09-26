@@ -25,17 +25,23 @@ EFFECT.VelocityAngle = Vector(1,1,10)
 EFFECT.VelocityRandAngle = Vector(10,10,5)
 
 local modelReplaceLookup = {
-	["models/hdweapons/rifleshell_hd.mdl"] = "models/hdweapons/shell.mdl",
-	["models/hdweapons/shell_hd.mdl"] = "models/hdweapons/shell.mdl",
-	["models/hdweapons/shotgun_shell_hd.mdl"] = "models/hdweapons/shell.mdl",
+	["models/hdweapons/rifleshell.mdl"] = "models/tfa/rifleshell.mdl",
+	["models/hdweapons/rifleshell_hd.mdl"] = "models/tfa/rifleshell.mdl",
+	["models/weapons/rifleshell_hd.mdl"] = "models/tfa/rifleshell.mdl",
+	["models/hdweapons/shell.mdl"] = "models/tfa/pistolshell.mdl",
+	["models/hdweapons/shell_hd.mdl"] = "models/tfa/pistolshell.mdl",
+	["models/weapons/shell_hd.mdl"] = "models/tfa/pistolshell.mdl",
+	["models/hdweapons/shotgun_shell.mdl"] = "models/tfa/shotgunshell.mdl",
+	["models/hdweapons/shotgun_shell_hd.mdl"] = "models/tfa/shotgunshell.mdl",
+	["models/weapons/shotgun_shell_hd.mdl"] = "models/tfa/shotgunshell.mdl",
 }
 
 EFFECT.ShellPresets = {
-	["sniper"] = {"models/hdweapons/rifleshell.mdl", math.pow(0.487 / 1.236636, 1 / 3), 90}, --1.236636 is shell diameter, then divide base diameter into that for 7.62x54mm
-	["rifle"] = {"models/hdweapons/rifleshell.mdl", math.pow(0.4709 / 1.236636, 1 / 3), 90}, --1.236636 is shell diameter, then divide base diameter into that for standard nato rifle
-	["pistol"] = {"models/hdweapons/shell.mdl", math.pow(0.391 / 0.955581, 1 / 3), 90}, --0.955581 is shell diameter, then divide base diameter into that for 9mm luger
-	["smg"] = {"models/hdweapons/shell.mdl", math.pow(.476 / 0.955581, 1 / 3), 90}, --.45 acp
-	["shotgun"] = {"models/hdweapons/shotgun_shell.mdl", 1, 90}
+	["sniper"] = {"models/tfa/rifleshell.mdl", math.pow(0.487 / 1.236636, 1 / 3), 90}, --1.236636 is shell diameter, then divide base diameter into that for 7.62x54mm
+	["rifle"] = {"models/tfa/rifleshell.mdl", math.pow(0.4709 / 1.236636, 1 / 3), 90}, --1.236636 is shell diameter, then divide base diameter into that for standard nato rifle
+	["pistol"] = {"models/tfa/pistolshell.mdl", math.pow(0.391 / 0.955581, 1 / 3), 90}, --0.955581 is shell diameter, then divide base diameter into that for 9mm luger
+	["smg"] = {"models/tfa/pistolshell.mdl", math.pow(.476 / 0.955581, 1 / 3), 90}, --.45 acp
+	["shotgun"] = {"models/tfa/shotgunshell.mdl", 1, 90}
 }
 
 EFFECT.SoundFiles = {Sound(")player/pl_shell1.wav"), Sound(")player/pl_shell2.wav"), Sound(")player/pl_shell3.wav")}
