@@ -219,6 +219,10 @@ SWEP.Primary.RangeFalloffLUT = {
 --[[
 SWEP.Primary.RecoilLUT_IronSightsMult = nil -- Defaults to 0.5
 -- controls how much effective LUT is when iron sighting
+SWEP.Primary.RecoilLUT_AnglePunchMult = nil -- Defaults to 0.25
+-- controls how much effective LUT at pushing EyeAngles of shooter
+SWEP.Primary.RecoilLUT_ViewPunchMult = nil -- Defaults to 1
+-- controls how much effective LUT at viewpunch
 
 SWEP.Primary.RecoilLUT = {
 	["in"] = {

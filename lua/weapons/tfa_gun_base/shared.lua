@@ -182,6 +182,8 @@ SWEP.CrouchPos = Vector(0, -1, -.5)
 SWEP.CrouchAng = Vector(0, 0, 0)
 
 SWEP.Primary.RecoilLUT_IronSightsMult = 0.5
+SWEP.Primary.RecoilLUT_AnglePunchMult = 0.25
+SWEP.Primary.RecoilLUT_ViewPunchMult = 1
 
 SWEP.EventTable = {}
 
