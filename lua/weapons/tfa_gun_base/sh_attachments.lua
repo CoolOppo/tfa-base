@@ -345,8 +345,8 @@ function SWEP:ClearStatCache(vn)
 
 		if self2.Primary_TFA.RecoilLUT then
 			if self2.Primary_TFA.RecoilLUT["in"] then
-				self2.Primary_TFA.RecoilLUT["in"].points_p = {}
-				self2.Primary_TFA.RecoilLUT["in"].points_y = {}
+				self2.Primary_TFA.RecoilLUT["in"].points_p = {0}
+				self2.Primary_TFA.RecoilLUT["in"].points_y = {0}
 
 				for i, point in ipairs(self2.Primary_TFA.RecoilLUT["in"].points) do
 					table.insert(self2.Primary_TFA.RecoilLUT["in"].points_p, point.p)
@@ -375,6 +375,9 @@ function SWEP:ClearStatCache(vn)
 					table.insert(self2.Primary_TFA.RecoilLUT["out"].points_p, point.p)
 					table.insert(self2.Primary_TFA.RecoilLUT["out"].points_y, point.y)
 				end
+
+				table.insert(self2.Primary_TFA.RecoilLUT["out"].points_p, 0)
+				table.insert(self2.Primary_TFA.RecoilLUT["out"].points_y, 0)
 			end
 		end
 	elseif getpath == "Primary_TFA" and isstring(getpath2[2]) then

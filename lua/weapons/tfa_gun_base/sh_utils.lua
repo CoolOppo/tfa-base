@@ -966,43 +966,56 @@ function SWEP:HasRecoilLUT()
 	return self.Primary_TFA.RecoilLUT ~= nil
 end
 
-function SWEP:GetRecoilLUTAngle()
-	if not self:GetRecoilThink() then
-		return Angle()
+do
+	local function linear(a) return a end
+
+	local function getfn(input)
+		return isfunction(input.func) and input.func or
+			input.func == "quintic" and TFA.Quintic or
+			input.func == "cubic" and TFA.Cubic or
+			input.func == "cosine" and TFA.Cosine or
+			input.func == "sinusine" and TFA.Sinusine or
+			linear
 	end
 
-	local self2 = self:GetTable()
-	local isp = 1 - self:GetNW2Float("IronSightsProgress", 0) * self2.GetStat(self, "Primary.RecoilLUT_IronSightsMult")
+	function SWEP:GetRecoilLUTAngle()
+		if not self:GetRecoilThink() then
+			return Angle()
+		end
 
-	if not self:GetRecoilLoop() then
-		-- currently, we only playing IN animation
+		local self2 = self:GetTable()
+		local isp = 1 - self:GetNW2Float("IronSightsProgress", 0) * self2.GetStat(self, "Primary.RecoilLUT_IronSightsMult")
 
-		local t = self:GetRecoilInProgress()
+		if not self:GetRecoilLoop() then
+			-- currently, we only playing IN animation
 
-		local pitch = TFA.tbezier(t, self2.Primary_TFA.RecoilLUT["in"].points_p)
-		local yaw = TFA.tbezier(t, self2.Primary_TFA.RecoilLUT["in"].points_y)
+			local t = getfn(self2.Primary_TFA.RecoilLUT["in"])(self:GetRecoilInProgress())
+
+			local pitch = TFA.tbezier(t, self2.Primary_TFA.RecoilLUT["in"].points_p)
+			local yaw = TFA.tbezier(t, self2.Primary_TFA.RecoilLUT["in"].points_y)
+
+			return Angle(pitch * isp, yaw * isp)
+		end
+
+		local out = getfn(self2.Primary_TFA.RecoilLUT["out"])(self:GetRecoilOutProgress())
+		local loop = getfn(self2.Primary_TFA.RecoilLUT["loop"])(self:GetRecoilLoopProgress())
+
+		local pitch = TFA.tbezier(loop, self2.Primary_TFA.RecoilLUT["loop"].points_p)
+		local yaw = TFA.tbezier(loop, self2.Primary_TFA.RecoilLUT["loop"].points_y)
+
+		if out ~= 0 then
+			-- cooling out
+			self2.Primary_TFA.RecoilLUT["out"].points_p[1] = pitch
+			self2.Primary_TFA.RecoilLUT["out"].points_y[1] = yaw
+
+			local pitch2 = TFA.tbezier(out, self2.Primary_TFA.RecoilLUT["out"].points_p)
+			local yaw2 = TFA.tbezier(out, self2.Primary_TFA.RecoilLUT["out"].points_y)
+
+			return Angle(pitch2 * isp, yaw2 * isp)
+		end
 
 		return Angle(pitch * isp, yaw * isp)
 	end
-
-	local out = self:GetRecoilOutProgress()
-	local loop = self:GetRecoilLoopProgress()
-
-	local pitch = TFA.tbezier(loop, self2.Primary_TFA.RecoilLUT["loop"].points_p)
-	local yaw = TFA.tbezier(loop, self2.Primary_TFA.RecoilLUT["loop"].points_y)
-
-	if out ~= 0 then
-		-- cooling out
-		self2.Primary_TFA.RecoilLUT["out"].points_p[1] = pitch
-		self2.Primary_TFA.RecoilLUT["out"].points_y[1] = yaw
-
-		local pitch2 = TFA.tbezier(out, self2.Primary_TFA.RecoilLUT["out"].points_p)
-		local yaw2 = TFA.tbezier(out, self2.Primary_TFA.RecoilLUT["out"].points_y)
-
-		return Angle(pitch2 * isp, yaw2 * isp)
-	end
-
-	return Angle(pitch * isp, yaw * isp)
 end
 
 local sv_tfa_recoil_legacy = GetConVar("sv_tfa_recoil_legacy")
