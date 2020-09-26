@@ -216,6 +216,7 @@ SWEP.Primary.RangeFalloffLUT = {
 }
 ]]
 
+--[[
 SWEP.Primary.RecoilLUT_IronSightsMult = nil -- Defaults to 0.5
 -- controls how much effective LUT is when iron sighting
 
@@ -288,6 +289,7 @@ SWEP.Primary.RecoilLUT = {
 		}
 	}
 }
+]]
 
 -- Penetration Related
 SWEP.MaxPenetrationCounter = 4 -- The maximum number of ricochets.  To prevent stack overflows.
