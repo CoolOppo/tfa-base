@@ -188,27 +188,7 @@ function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet,
 	self.MainBullet.Inflictor = self
 	self.MainBullet.Src = owner:GetShootPos()
 
-	local aimvector
-
-	if owner:IsPlayer() then
-		aimvector = owner:GetAimVector():Angle()
-
-		if sv_tfa_recoil_legacy:GetBool() then
-			aimvector:Add(owner:GetViewPunchAngles())
-		else
-			aimvector.p = aimvector.p + self:GetNW2Float("ViewPunchP")
-			aimvector.y = aimvector.y + self:GetNW2Float("ViewPunchY")
-		end
-
-		aimvector = aimvector:Forward()
-	else
-		aimvector = owner:GetAimVector():Angle()
-		aimvector.p = aimvector.p + self:GetNW2Float("ViewPunchP")
-		aimvector.y = aimvector.y + self:GetNW2Float("ViewPunchY")
-		aimvector = aimvector:Forward()
-	end
-
-	self.MainBullet.Dir = aimvector
+	self.MainBullet.Dir = self:GetAimVector()
 	self.MainBullet.HullSize = self:GetStat("Primary.HullSize") or 0
 	self.MainBullet.Spread.x = aimcone
 	self.MainBullet.Spread.y = aimcone
@@ -381,15 +361,26 @@ function SWEP:Recoil(recoil, ifp)
 	factor = factor * Lerp(self:GetNW2Float("CrouchingRatio", 0), 1, self:GetStat("CrouchAccuracyMultiplier", 0.5))
 
 	local punchY = kickY * factor
+	local ang = self:GetRecoilLUTAngle()
+
+	if self:GetNW2Float("PrevRecoilAngleTime", 0) < CurTime() then
+		self:SetNW2Float("PrevRecoilAngleTime", CurTime() + 0.1)
+		self:SetNW2Angle("PrevRecoilAngle", ang)
+	end
+
+	local prev_recoil_angle = self:GetNW2Angle("PrevRecoilAngle")
+	local deltaP = ang.p - prev_recoil_angle.p
+	local deltaY = ang.y - prev_recoil_angle.y
+	self:SetNW2Angle("PrevRecoilAngle", ang)
 
 	if isplayer then
 		local maxdist = math.min(math.max(0, 89 + owner:EyeAngles().p - math.abs(owner:GetViewPunchAngles().p * 2)), 88.5)
-		local punchP = l_mathClamp(kickP * factor, -maxdist, maxdist)
+		local punchP = l_mathClamp((kickP + deltaP) * factor, -maxdist, maxdist)
 
-		owner:ViewPunch(Angle(punchP * sv_tfa_recoil_viewpunch_mul:GetFloat(), punchY * sv_tfa_recoil_viewpunch_mul:GetFloat()))
+		owner:ViewPunch(Angle(punchP * sv_tfa_recoil_viewpunch_mul:GetFloat(), (punchY + deltaY) * sv_tfa_recoil_viewpunch_mul:GetFloat()))
 	end
 
-	if not isplayer or not sv_tfa_recoil_legacy:GetBool() then
+	if (not isplayer or not sv_tfa_recoil_legacy:GetBool()) and not self:HasRecoilLUT() then
 		local maxdist2 = l_mathClamp(30 - math.abs(self:GetNW2Float("ViewPunchP")), 0, 30)
 		local punchP2 = l_mathClamp(kickP, -maxdist2, maxdist2) * factor
 
@@ -401,8 +392,8 @@ function SWEP:Recoil(recoil, ifp)
 	if isplayer and ((game.SinglePlayer() and SERVER) or (CLIENT and ifp)) then
 		local neweyeang = owner:EyeAngles()
 
-		local ap, ay = kickP * self:GetStat("Primary.StaticRecoilFactor") * sv_tfa_recoil_eyeangles_mul:GetFloat(),
-						kickY * self:GetStat("Primary.StaticRecoilFactor") * sv_tfa_recoil_eyeangles_mul:GetFloat()
+		local ap, ay = (kickP + deltaP / 4) * self:GetStat("Primary.StaticRecoilFactor") * sv_tfa_recoil_eyeangles_mul:GetFloat(),
+						(kickY + deltaY / 4) * self:GetStat("Primary.StaticRecoilFactor") * sv_tfa_recoil_eyeangles_mul:GetFloat()
 
 		neweyeang.p = neweyeang.p + ap
 		neweyeang.y = neweyeang.y + ay

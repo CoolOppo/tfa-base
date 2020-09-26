@@ -181,6 +181,8 @@ SWEP.AllowSprintAttack = false --Shoot while sprinting?
 SWEP.CrouchPos = Vector(0, -1, -.5)
 SWEP.CrouchAng = Vector(0, 0, 0)
 
+SWEP.Primary.RecoilLUT_IronSightsMult = 0.5
+
 SWEP.EventTable = {}
 
 SWEP.RTMaterialOverride = nil
@@ -374,6 +376,7 @@ function SWEP:SetupDataTables()
 	self:NetworkVar("Bool", 3, "ShotgunCancel")
 	self:NetworkVar("Bool", 4, "Walking")
 	self:NetworkVar("Bool", 5, "Customizing")
+
 	self:NetworkVar("Bool", 18, "FlashlightEnabled")
 	self:NetworkVar("Bool", 19, "Jammed")
 	self:NetworkVar("Bool", 20, "FirstDeployEvent")
@@ -397,6 +400,15 @@ function SWEP:SetupDataTables()
 	self:NetworkVar("Int", 10, "EventStatus6")
 	self:NetworkVar("Int", 11, "EventStatus7")
 	self:NetworkVar("Int", 12, "EventStatus8")
+
+	self:NetworkVar("Bool", 6, "RecoilLoop")
+	self:NetworkVar("Bool", 7, "RecoilThink")
+
+	self:NetworkVar("Float", 2, "RecoilInProgress")
+	self:NetworkVar("Float", 3, "RecoilInWait")
+	self:NetworkVar("Float", 4, "RecoilLoopProgress")
+	self:NetworkVar("Float", 5, "RecoilLoopWait")
+	self:NetworkVar("Float", 6, "RecoilOutProgress")
 
 	if not self.get_event_status_lut then
 		self.get_event_status_lut = {}
@@ -1321,6 +1333,7 @@ function SWEP:PrimaryAttack()
 	self:SetStatus(TFA.Enum.STATUS_SHOOTING)
 	self:SetStatusEnd(self:GetNextPrimaryFire())
 	self:ToggleAkimbo()
+	self:IncreaseRecoilLUT()
 
 	local _, tanim = self:ChooseShootAnim(IsFirstTimePredicted())
 

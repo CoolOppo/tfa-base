@@ -318,15 +318,24 @@ function SWEP:CalculateViewModelOffset(delta)
 	end
 
 	if not sv_tfa_recoil_legacy:GetBool() then
-		target_ang.x = target_ang.x - self:GetNW2Float("ViewPunchP") * (is and self:GetStat("ViewModelPunchPitchMultiplier_IronSights") or self:GetStat("ViewModelPunchPitchMultiplier"))
-		target_ang.y = target_ang.y + self:GetNW2Float("ViewPunchY") * (is and self:GetStat("ViewModelPunchYawMultiplier_IronSights") or self:GetStat("ViewModelPunchYawMultiplier"))
+		if self:HasRecoilLUT() then
+			if not is then
+				local ang = self:GetRecoilLUTAngle()
 
-		local ViewModelPunch_MaxVertialOffset = is and self:GetStat("ViewModelPunch_MaxVertialOffset_IronSights") or self:GetStat("ViewModelPunch_MaxVertialOffset")
+				target_ang.x = target_ang.x - ang.p / 2
+				target_ang.y = target_ang.y + ang.y / 2
+			end
+		else
+			target_ang.x = target_ang.x - self:GetNW2Float("ViewPunchP") * (is and self:GetStat("ViewModelPunchPitchMultiplier_IronSights") or self:GetStat("ViewModelPunchPitchMultiplier"))
+			target_ang.y = target_ang.y + self:GetNW2Float("ViewPunchY") * (is and self:GetStat("ViewModelPunchYawMultiplier_IronSights") or self:GetStat("ViewModelPunchYawMultiplier"))
 
-		target_pos.y = target_pos.y + math.Clamp(
-			self:GetNW2Float("ViewPunchP") * (is and self:GetStat("ViewModelPunch_VertialMultiplier_IronSights") or self:GetStat("ViewModelPunch_VertialMultiplier")),
-			-ViewModelPunch_MaxVertialOffset,
-			ViewModelPunch_MaxVertialOffset)
+			local ViewModelPunch_MaxVertialOffset = is and self:GetStat("ViewModelPunch_MaxVertialOffset_IronSights") or self:GetStat("ViewModelPunch_MaxVertialOffset")
+
+			target_pos.y = target_pos.y + math.Clamp(
+				self:GetNW2Float("ViewPunchP") * (is and self:GetStat("ViewModelPunch_VertialMultiplier_IronSights") or self:GetStat("ViewModelPunch_VertialMultiplier")),
+				-ViewModelPunch_MaxVertialOffset,
+				ViewModelPunch_MaxVertialOffset)
+		end
 	end
 
 	vm_offset_pos.x = math.Approach(vm_offset_pos.x, target_pos.x, (target_pos.x - vm_offset_pos.x) * delta * adstransitionspeed)

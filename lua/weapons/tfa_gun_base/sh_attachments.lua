@@ -339,8 +339,43 @@ function SWEP:ClearStatCache(vn)
 			self2.Primary[k] = v
 		end
 
-		if self.Primary_TFA.RangeFalloffLUT then
-			self.Primary.RangeFalloffLUTBuilt = self:BuildFalloffTable(self.Primary_TFA.RangeFalloffLUT)
+		if self2.Primary_TFA.RangeFalloffLUT then
+			self2.Primary.RangeFalloffLUTBuilt = self:BuildFalloffTable(self2.Primary_TFA.RangeFalloffLUT)
+		end
+
+		if self2.Primary_TFA.RecoilLUT then
+			if self2.Primary_TFA.RecoilLUT["in"] then
+				self2.Primary_TFA.RecoilLUT["in"].points_p = {}
+				self2.Primary_TFA.RecoilLUT["in"].points_y = {}
+
+				for i, point in ipairs(self2.Primary_TFA.RecoilLUT["in"].points) do
+					table.insert(self2.Primary_TFA.RecoilLUT["in"].points_p, point.p)
+					table.insert(self2.Primary_TFA.RecoilLUT["in"].points_y, point.y)
+				end
+			end
+
+			if self2.Primary_TFA.RecoilLUT["loop"] then
+				self2.Primary_TFA.RecoilLUT["loop"].points_p = {}
+				self2.Primary_TFA.RecoilLUT["loop"].points_y = {}
+
+				for i, point in ipairs(self2.Primary_TFA.RecoilLUT["loop"].points) do
+					table.insert(self2.Primary_TFA.RecoilLUT["loop"].points_p, point.p)
+					table.insert(self2.Primary_TFA.RecoilLUT["loop"].points_y, point.y)
+				end
+
+				table.insert(self2.Primary_TFA.RecoilLUT["loop"].points_p, self2.Primary_TFA.RecoilLUT["loop"].points[1].p)
+				table.insert(self2.Primary_TFA.RecoilLUT["loop"].points_y, self2.Primary_TFA.RecoilLUT["loop"].points[1].y)
+			end
+
+			if self2.Primary_TFA.RecoilLUT["out"] then
+				self2.Primary_TFA.RecoilLUT["out"].points_p = {0}
+				self2.Primary_TFA.RecoilLUT["out"].points_y = {0}
+
+				for i, point in ipairs(self2.Primary_TFA.RecoilLUT["out"].points) do
+					table.insert(self2.Primary_TFA.RecoilLUT["out"].points_p, point.p)
+					table.insert(self2.Primary_TFA.RecoilLUT["out"].points_y, point.y)
+				end
+			end
 		end
 	elseif getpath == "Primary_TFA" and isstring(getpath2[2]) then
 		self2.Primary[getpath[2]] = self2.GetStat(self, vn)

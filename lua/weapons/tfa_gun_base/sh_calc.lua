@@ -115,6 +115,7 @@ function SWEP:CalculateRatios()
 	end
 
 	local ft = FrameTime()
+	local time = CurTime()
 
 	local is = self2.GetIronSights(self)
 	local spr = self2.GetSprinting(self)
@@ -148,6 +149,34 @@ function SWEP:CalculateRatios()
 		ft = ft * build * build
 		self:SetNW2Float("ViewPunchP", self:GetNW2Float("ViewPunchP") - self:GetNW2Float("ViewPunchP") * ft)
 		self:SetNW2Float("ViewPunchY", self:GetNW2Float("ViewPunchY") - self:GetNW2Float("ViewPunchY") * ft)
+	end
+
+	if self:GetRecoilThink() then
+		if self:GetRecoilLoop() then
+			-- loop or after loop
+
+			if self:GetRecoilLoopWait() < time then
+				self:SetRecoilOutProgress(l_mathMin(1, self:GetRecoilOutProgress() + ft / self2.Primary_TFA.RecoilLUT["out"].cooldown_speed))
+
+				if self:GetRecoilOutProgress() == 1 then
+					self:SetRecoilThink(false)
+					self:SetRecoilLoop(false)
+					self:SetRecoilLoopProgress(0)
+					self:SetRecoilInProgress(0)
+					self:SetRecoilOutProgress(0)
+				end
+			end
+		else
+			-- IN only
+
+			if self:GetRecoilInWait() < time then
+				self:SetRecoilInProgress(l_mathMax(0, self:GetRecoilInProgress() - ft / self2.Primary_TFA.RecoilLUT["in"].cooldown_speed))
+
+				if self:GetRecoilInProgress() == 0 then
+					self:SetRecoilThink(false)
+				end
+			end
+		end
 	end
 
 	self2.SpreadRatio = self:GetNW2Float("SpreadRatio", 0)

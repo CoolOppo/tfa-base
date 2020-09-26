@@ -216,6 +216,79 @@ SWEP.Primary.RangeFalloffLUT = {
 }
 ]]
 
+SWEP.Primary.RecoilLUT_IronSightsMult = nil -- Defaults to 0.5
+-- controls how much effective LUT is when iron sighting
+
+SWEP.Primary.RecoilLUT = {
+	["in"] = {
+		bezier = true,
+		func = "quintic", -- function to inerpolate progress when sampling points from table
+		-- Possible values are "quintic", "cubic", "cosine", "sinusine", "linear" or your own function
+		cooldown_speed = 1, -- how much to loose progress when we are at this stage
+		-- 1 means we lose entire progress in a second
+		increase = 0.1, -- how much to increase progress after shot
+		-- 0.1 means that this stage would be full after 10 shots
+		wait = 0.1, -- how much time do we wait in seconds after we stopped shooting
+		-- after this time, IN stage begin to cooldown until it reach zero
+
+		-- table is always prepended with an Angle()
+		-- only Pitch and Yaw are utilized
+		-- sampled point is added to aimvector of player
+		-- when they shoot
+		points = {
+			Angle(-1, 0.4),
+			Angle(-4, -2),
+			Angle(-6, -4),
+			Angle(-10, -6),
+		}
+	},
+
+	["loop"] = {
+		bezier = true,
+		func = "quintic",
+		-- this stage can not cooldown, so no cooldown_speed is defined
+		increase = 0.1, -- when LOOP stage reach 1, it is reset to 0
+		wait = 0.1, -- how much time do we wait in seconds after we stopped shooting
+		-- after this time, stage switch to OUT
+
+		-- table is NOT prepended with an Angle()
+		-- make sure it's starting point match the one from IN stage
+		-- last and first points are connected automatically
+		points = {
+			Angle(-10, -6),
+			Angle(-12, -0.4),
+			Angle(-8, 9),
+			Angle(-11, 12),
+			Angle(-13, 2),
+			Angle(-8, -4),
+		}
+	},
+
+	["out"] = {
+		bezier = true,
+		func = "quintic",
+		-- this stage is different
+		-- it is only started after LOOP took place
+		-- shooting in this stage will actually roll back it's state
+		-- until it reach zero and switch back to LOOP
+		-- cooling down actually increase stage's progress
+		cooldown_speed = 1,
+		-- increase act as negative number to reach zero in this stage
+		increase = 0.2,
+
+		-- after this stage reach 1, everything reset to IN and wait for next fire
+		-- table is always appended with an Angle()
+
+		-- starting point is dynamic
+		-- and will always match current LOOP's one
+		points = {
+			Angle(-7, -2),
+			Angle(-4, -1),
+			Angle(-2, 0),
+		}
+	}
+}
+
 -- Penetration Related
 SWEP.MaxPenetrationCounter = 4 -- The maximum number of ricochets.  To prevent stack overflows.
 

@@ -1294,15 +1294,7 @@ function SWEP:DoDrawCrosshair()
 		x, y = ply.interpposx, ply.interpposy
 		-- Center of screen
 	else
-		local ang = ply:GetAimVector():Angle()
-
-		if sv_tfa_recoil_legacy:GetBool() then
-			ang:Add(ply:GetViewPunchAngles())
-		else
-			ang.p = ang.p + self:GetNW2Float("ViewPunchP")
-			ang.y = ang.y + self:GetNW2Float("ViewPunchY")
-		end
-
+		local ang = self:GetAimAngle()
 		local tr = util.QuickTrace(ply:GetShootPos(), ang:Forward() * 0x7FFF, self2.selftbl)
 		targent = tr.Entity
 		local pos = tr.HitPos:ToScreen()

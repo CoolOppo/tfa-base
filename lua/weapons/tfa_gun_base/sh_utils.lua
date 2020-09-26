@@ -916,6 +916,117 @@ do
 	end
 end
 
+function SWEP:IncreaseRecoilLUT()
+	if not self:HasRecoilLUT() then return end
+
+	local self2 = self:GetTable()
+	local time = CurTime()
+
+	if not self:GetRecoilThink() then
+		self:SetRecoilThink(true)
+	end
+
+	if not self:GetRecoilLoop() then
+		local newvalue = self:GetRecoilInProgress() + self2.Primary_TFA.RecoilLUT["in"].increase
+
+		self:SetRecoilInProgress(math.min(1, newvalue))
+
+		self:SetRecoilInWait(time + self2.Primary_TFA.RecoilLUT["in"].wait)
+
+		if self:GetRecoilInProgress() >= 1 then
+			self:SetRecoilLoop(true)
+			self:SetRecoilLoopProgress(math.Clamp(newvalue % 1, 0, 1))
+			self:SetRecoilLoopWait(time + self2.Primary_TFA.RecoilLUT["loop"].wait)
+		end
+
+		return
+	end
+
+	local sub = 0
+
+	if self:GetRecoilOutProgress() ~= 0 then
+		local prev = self:GetRecoilOutProgress()
+		local newvalue = math.max(0, prev - self2.Primary_TFA.RecoilLUT["out"].increase)
+		self:SetRecoilOutProgress(newvalue)
+		self:SetRecoilLoopWait(time + self2.Primary_TFA.RecoilLUT["loop"].wait)
+
+		if newvalue ~= 0 then
+			return
+		end
+
+		sub = self2.Primary_TFA.RecoilLUT["out"].increase - prev
+	end
+
+	local newvalue = (self:GetRecoilLoopProgress() + self2.Primary_TFA.RecoilLUT["loop"].increase + sub) % 1
+	self:SetRecoilLoopProgress(newvalue)
+	self:SetRecoilLoopWait(time + self2.Primary_TFA.RecoilLUT["loop"].wait)
+end
+
+function SWEP:HasRecoilLUT()
+	return self.Primary_TFA.RecoilLUT ~= nil
+end
+
+function SWEP:GetRecoilLUTAngle()
+	if not self:GetRecoilThink() then
+		return Angle()
+	end
+
+	local self2 = self:GetTable()
+	local isp = 1 - self:GetNW2Float("IronSightsProgress", 0) * self2.GetStat(self, "Primary.RecoilLUT_IronSightsMult")
+
+	if not self:GetRecoilLoop() then
+		-- currently, we only playing IN animation
+
+		local t = self:GetRecoilInProgress()
+
+		local pitch = TFA.tbezier(t, self2.Primary_TFA.RecoilLUT["in"].points_p)
+		local yaw = TFA.tbezier(t, self2.Primary_TFA.RecoilLUT["in"].points_y)
+
+		return Angle(pitch * isp, yaw * isp)
+	end
+
+	local out = self:GetRecoilOutProgress()
+	local loop = self:GetRecoilLoopProgress()
+
+	local pitch = TFA.tbezier(loop, self2.Primary_TFA.RecoilLUT["loop"].points_p)
+	local yaw = TFA.tbezier(loop, self2.Primary_TFA.RecoilLUT["loop"].points_y)
+
+	if out ~= 0 then
+		-- cooling out
+		self2.Primary_TFA.RecoilLUT["out"].points_p[1] = pitch
+		self2.Primary_TFA.RecoilLUT["out"].points_y[1] = yaw
+
+		local pitch2 = TFA.tbezier(out, self2.Primary_TFA.RecoilLUT["out"].points_p)
+		local yaw2 = TFA.tbezier(out, self2.Primary_TFA.RecoilLUT["out"].points_y)
+
+		return Angle(pitch2 * isp, yaw2 * isp)
+	end
+
+	return Angle(pitch * isp, yaw * isp)
+end
+
+local sv_tfa_recoil_legacy = GetConVar("sv_tfa_recoil_legacy")
+
+function SWEP:GetAimVector()
+	return self:GetAimAngle():Forward()
+end
+
+function SWEP:GetAimAngle()
+	local ang = self:GetOwner():GetAimVector():Angle()
+
+	if sv_tfa_recoil_legacy:GetBool() and self:GetOwner():IsPlayer() then
+		ang:Add(ply:GetViewPunchAngles())
+	elseif self:HasRecoilLUT() then
+		ang:Add(self:GetRecoilLUTAngle())
+	else
+		ang.p = ang.p + self:GetNW2Float("ViewPunchP")
+		ang.y = ang.y + self:GetNW2Float("ViewPunchY")
+	end
+
+	ang:Normalize()
+	return ang
+end
+
 function SWEP:EmitSoundNet(sound, ifp)
 	if ifp == nil then ifp = IsFirstTimePredicted() end
 	if not ifp then return end
