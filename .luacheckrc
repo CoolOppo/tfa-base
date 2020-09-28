@@ -1,7 +1,9 @@
 
 std = "luajit+gmod+addon"
 ignore = {
+	"211", -- unused local variable
 	"212", -- unused argument
+	"213", -- unused loop variable
 	"631" -- line too long
 }
 
