@@ -754,7 +754,7 @@ function SWEP:InspectionVGUIAttachments(contentpanel)
 			surface.DrawLine(x, y, x2, y2)
 		end
 
-		function falloffpanel:Paint(w, h)
+		function falloffpanel.Paint(myself, w, h)
 			local lut = self2.Primary.RangeFalloffLUTBuilt
 			if not lut then return end
 			local wepdmg = self2.Primary.Damage
@@ -787,7 +787,7 @@ function SWEP:InspectionVGUIAttachments(contentpanel)
 			shadowed_line(ax + 1, ay + 1, 1, h - 2 - ay, mainpanel.SecondaryColor, mainpanel.BackgroundColor)
 			shadowed_line(ax + 1, h - 2 - ay, w - rightpadding, h - 2 - ay, mainpanel.SecondaryColor, mainpanel.BackgroundColor)
 
-			local lx, ly = self:LocalToScreen(0, 0)
+			local lx, ly = myself:LocalToScreen(0, 0)
 			local mx, my = input.GetCursorPos()
 			local rmx, rmy = mx, my
 			mx = mx - lx
@@ -906,7 +906,7 @@ function SWEP:GenerateInspectionDerma()
 
 	local lastcustomizing = true
 
-	TFA_INSPECTIONPANEL.Think = function(myself, w, h)
+	function TFA_INSPECTIONPANEL.Think(myself, w, h)
 		local ply = LocalPlayer()
 
 		if not IsValid(ply) then
@@ -936,7 +936,7 @@ function SWEP:GenerateInspectionDerma()
 		myself.Weapon = wep
 	end
 
-	function TFA_INSPECTIONPANEL:OnRemove()
+	function TFA_INSPECTIONPANEL.OnRemove(myself)
 		update_visible(false)
 	end
 

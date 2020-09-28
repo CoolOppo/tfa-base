@@ -98,7 +98,7 @@ SWEP.CameraAngCache = nil
 local tmpvec = Vector(0, 0, -2000)
 
 do
-	local lookup_table, reference_table
+	local reference_table
 
 	local function rendersorter(a, b)
 		local ar, br = reference_table[a], reference_table[b]
@@ -139,7 +139,6 @@ do
 				end
 			end
 
-			lookup_table = self.VElements
 			table.sort(target, rendersorter)
 		end
 
@@ -157,7 +156,6 @@ do
 				end
 			end
 
-			lookup_table = self.WElements
 			table.sort(target2, rendersorter)
 		end
 

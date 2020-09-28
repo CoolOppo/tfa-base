@@ -372,9 +372,9 @@ function SWEP:Recoil(recoil, ifp)
 			self:SetNW2Angle("PrevRecoilAngle", ang)
 		end
 
-		local prev_recoil_angle = self:GetNW2Angle("PrevRecoilAngle")
-		local deltaP = ang.p - prev_recoil_angle.p
-		local deltaY = ang.y - prev_recoil_angle.y
+		-- local prev_recoil_angle = self:GetNW2Angle("PrevRecoilAngle")
+		-- local deltaP = ang.p - prev_recoil_angle.p
+		-- local deltaY = ang.y - prev_recoil_angle.y
 		self:SetNW2Angle("PrevRecoilAngle", ang)
 	end
 
