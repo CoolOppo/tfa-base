@@ -1028,7 +1028,7 @@ function SWEP:GetAimAngle()
 	local ang = self:GetOwner():GetAimVector():Angle()
 
 	if sv_tfa_recoil_legacy:GetBool() and self:GetOwner():IsPlayer() then
-		ang:Add(ply:GetViewPunchAngles())
+		ang:Add(self:GetOwner():GetViewPunchAngles())
 	elseif self:HasRecoilLUT() then
 		ang:Add(self:GetRecoilLUTAngle())
 	else
