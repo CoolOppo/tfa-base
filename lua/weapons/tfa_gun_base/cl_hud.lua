@@ -768,10 +768,15 @@ function SWEP:InspectionVGUIAttachments(contentpanel)
 			surface.SetDrawColor(mainpanel.SecondaryColor)
 
 			local range = 0
+			local div = 1
 
 			for i, data in ipairs(lut) do
 				if data[1] > range then
 					range = data[1]
+				end
+
+				if data[2] > div then
+					div = data[2]
 				end
 			end
 
@@ -798,7 +803,7 @@ function SWEP:InspectionVGUIAttachments(contentpanel)
 			local cirX, cirY, dmg, drange
 
 			for i, data in ipairs(lut) do
-				local x, y = ax + data[1] / range * (w - ax - rightpadding), ay + (1 - data[2]) * (h - ay * 2)
+				local x, y = ax + data[1] / range * (w - ax - rightpadding), ay + (div - data[2]) * (h - ay * 2) / div
 
 				if not px then
 					px, py = x, y
