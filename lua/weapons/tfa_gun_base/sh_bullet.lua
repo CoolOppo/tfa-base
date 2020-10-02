@@ -91,6 +91,14 @@ function SWEP:ShootBulletInformation()
 	self:ShootBullet(dmg, rec, ns, con)
 end
 
+function SWEP:PreSpawnProjectile(ent)
+	-- override
+end
+
+function SWEP:PostSpawnProjectile(ent)
+	-- override
+end
+
 --[[
 Function Name:  ShootBullet
 Syntax: self:ShootBullet(damage, recoil, number of bullets, spray cone, disable ricochet, override the generated self.MainBullet table with this value if you send it).
@@ -134,6 +142,8 @@ function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet,
 				ent:SetModel(self:GetStat("Primary.ProjectileModel"))
 			end
 
+			self:PreSpawnProjectile(ent)
+
 			ent:Spawn()
 
 			local dir = ang:Forward()
@@ -151,6 +161,8 @@ function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet,
 			end
 
 			ent:SetOwner(self:GetOwner())
+
+			self:PostSpawnProjectile(ent)
 		end
 		-- Source
 		-- Dir of self.MainBullet
