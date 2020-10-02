@@ -41,6 +41,26 @@ SWEP.Weight             = 30            -- This controls how "good" the weapon i
 SWEP.Primary.Sound = Sound("") -- This is the sound of the weapon, when you shoot.
 SWEP.Primary.SilencedSound = nil -- This is the sound of the weapon, when silenced.
 SWEP.Primary.PenetrationMultiplier = 1 -- Change the amount of something this gun can penetrate through
+-- the LESSER this value is, the BETTER is penetration
+-- this is basically multiplier for next values
+-- you don't need to uncomment these if you are not going to modify them!
+--[[
+SWEP.PenetrationMaterials = {
+	[MAT_DEFAULT] = 1,
+	[MAT_VENT] = 0.4, --Since most is aluminum and stuff
+	[MAT_METAL] = 0.6, --Since most is aluminum and stuff
+	[MAT_WOOD] = 0.2,
+	[MAT_PLASTIC] = 0.23,
+	[MAT_FLESH] = 0.48,
+	[MAT_CONCRETE] = 0.87,
+	[MAT_GLASS] = 0.16,
+	[MAT_SAND] = 1,
+	[MAT_SLOSH] = 1,
+	[MAT_DIRT] = 0.95, --This is plaster, not dirt, in most cases.
+	[MAT_FOLIAGE] = 0.9
+}
+]]
+
 SWEP.Primary.Damage = 0.01 -- Damage, in standard damage points.
 SWEP.Primary.DamageTypeHandled = true -- true will handle damagetype in base
 SWEP.Primary.DamageType = nil -- See DMG enum.  This might be DMG_SHOCK, DMG_BURN, DMG_BULLET, etc.  Leave nil to autodetect.  DMG_AIRBOAT opens doors.
