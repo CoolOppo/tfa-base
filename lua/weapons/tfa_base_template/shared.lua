@@ -620,7 +620,8 @@ SWEP.EventTable = {} -- Event Table, used for custom events when an action is pl
 -- example:
 -- SWEP.EventTable = {
 --  [ACT_VM_RELOAD] = {
---      { ["time"] = 0.1, ["type"] = "lua", ["value"] = function( wep, viewmodel ) end, ["client"] = true, ["server"] = true},
+--																				-- ifp is IsFirstTimePredicted()
+--      { ["time"] = 0.1, ["type"] = "lua", ["value"] = function( wep, viewmodel, ifp ) end, ["client"] = true, ["server"] = true},
 --      { ["time"] = 0.1, ["type"] = "sound", ["value"] = Sound("x") }
 --  }
 -- }
