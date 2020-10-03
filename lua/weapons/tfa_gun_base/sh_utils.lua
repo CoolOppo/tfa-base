@@ -413,6 +413,9 @@ function SWEP:TakeSecondaryAmmo(num, pool)
 	self:SetClip2(math.max(self:Clip2() - num, 0))
 end
 
+SWEP.TakeAmmo1 = SWEP.TakePrimaryAmmo
+SWEP.TakeAmmo2 = SWEP.TakeSecondaryAmmo
+
 function SWEP:GetFireDelay()
 	if self:GetMaxBurst() > 1 and self:GetStat("Primary.RPM_Burst") and self:GetStat("Primary.RPM_Burst") > 0 then
 		return 60 / self:GetStat("Primary.RPM_Burst")

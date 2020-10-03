@@ -1299,18 +1299,11 @@ function SWEP:EmitLowAmmoSound()
 	end
 end
 
-function SWEP:PrimaryAttack()
+function SWEP:TriggerAttack(tableName, clipID)
 	local self2 = self:GetTable()
 	local ply = self:GetOwner()
-	if not IsValid(ply) then return end
 
-	if not IsValid(self) then return end
-	if ply:IsPlayer() and not self:VMIV() then return end
-	if not self:CanPrimaryAttack() then return end
-
-	self:PrePrimaryAttack()
-
-	if hook.Run("TFA_PrimaryAttack", self) then return end
+	local fnname = clipID == 2 and "Secondary" or "Primary"
 
 	if TFA.Enum.ShootReadyStatus[self:GetShootStatus()] then
 		self:SetShootStatus(TFA.Enum.SHOOT_IDLE)
@@ -1324,7 +1317,7 @@ function SWEP:PrimaryAttack()
 		return
 	end
 
-	self:SetNextPrimaryFire(l_CT() + self:GetFireDelay())
+	self["SetNext" .. fnname .. "Fire"](self, l_CT() + self:GetFireDelay())
 
 	if self:GetMaxBurst() > 1 then
 		self:SetBurstCount(math.max(1, self:GetBurstCount() + 1))
@@ -1333,28 +1326,30 @@ function SWEP:PrimaryAttack()
 	if self:GetStat("PumpAction") and self:GetShotgunCancel() then return end
 
 	self:SetStatus(TFA.Enum.STATUS_SHOOTING)
-	self:SetStatusEnd(self:GetNextPrimaryFire())
+	self:SetStatusEnd(self["GetNext" .. fnname .. "Fire"](self))
 	self:ToggleAkimbo()
 	self:IncreaseRecoilLUT()
 
-	local _, tanim = self:ChooseShootAnim(IsFirstTimePredicted())
+	local ifp = IsFirstTimePredicted()
+
+	local _, tanim = self:ChooseShootAnim(ifp)
 
 	if (not sp) or (not self:IsFirstPerson()) then
-		self:GetOwner():SetAnimation(PLAYER_ATTACK1)
+		ply:SetAnimation(PLAYER_ATTACK1)
 	end
 
-	if self:GetStat("Primary.Sound") and IsFirstTimePredicted() and not (sp and CLIENT) then
-		if self:GetOwner():IsPlayer() and self:GetStat("Primary.LoopSound") and (not self:GetStat("Primary.LoopSoundAutoOnly", false) or self2.Primary_TFA.Automatic) then
+	if self:GetStat(tableName .. ".Sound") and ifp and not (sp and CLIENT) then
+		if ply:IsPlayer() and self:GetStat(tableName .. ".LoopSound") and (not self:GetStat(tableName .. ".LoopSoundAutoOnly", false) or self2.Primary_TFA.Automatic) then
 			self:EmitGunfireLoop()
 		else
-			local tgtSound = self:GetStat("Primary.Sound")
+			local tgtSound = self:GetStat(tableName .. ".Sound")
 
 			if self:GetSilenced() then
-				tgtSound = self:GetStat("Primary.SilencedSound", tgtSound)
+				tgtSound = self:GetStat(tableName .. ".SilencedSound", tgtSound)
 			end
 
 			if (not sp and SERVER) or not self:IsFirstPerson() then
-				tgtSound = self:GetSilenced() and self:GetStat("Primary.SilencedSound_World", tgtSound) or self:GetStat("Primary.Sound_World", tgtSound)
+				tgtSound = self:GetSilenced() and self:GetStat(tableName .. ".SilencedSound_World", tgtSound) or self:GetStat(tableName .. ".Sound_World", tgtSound)
 			end
 
 			self:EmitGunfireSound(tgtSound)
@@ -1363,42 +1358,58 @@ function SWEP:PrimaryAttack()
 		self:EmitLowAmmoSound()
 	end
 
-	self:TakePrimaryAmmo(self:GetStat("Primary.AmmoConsumption"))
+	self2["Take" .. fnname .. "Ammo"](self, self:GetStat(tableName .. ".AmmoConsumption"))
 
-	if self:Clip1() == 0 and self:GetStat("Primary.ClipSize") > 0 then
-		self:SetNextPrimaryFire(math.max(self:GetNextPrimaryFire(), l_CT() + (self2.Primary_TFA.DryFireDelay or self:GetActivityLength(tanim, true))))
+	if self["Clip" .. clipID](self) == 0 and self:GetStat(tableName .. ".ClipSize") > 0 then
+		self["SetNext" .. fnname .. "Fire"](self, math.max(self["GetNext" .. fnname .. "Fire"](self), l_CT() + (self:GetStat(tableName .. ".DryFireDelay", self:GetActivityLength(tanim, true)))))
 	end
 
 	self:ShootBulletInformation()
 	self:UpdateJamFactor()
 	local _, CurrentRecoil = self:CalculateConeRecoil()
-	self:Recoil(CurrentRecoil, IsFirstTimePredicted())
+	self:Recoil(CurrentRecoil, ifp)
 
+	-- shouldn't this be not required since recoil state is completely networked?
 	if sp and SERVER then
 		self:CallOnClient("Recoil", "")
 	end
 
-	if self2.MuzzleFlashEnabled and (not self:IsFirstPerson() or not self2.AutoDetectMuzzleAttachment) then
+	if self:GetStat(tableName .. ".MuzzleFlashEnabled", self:GetStat("MuzzleFlashEnabled")) and (not self:IsFirstPerson() or not self:GetStat(tableName .. ".AutoDetectMuzzleAttachment", self:GetStat("AutoDetectMuzzleAttachment"))) then
 		self:ShootEffectsCustom()
 	end
 
-	if self2.EjectionSmoke and CLIENT and self:GetOwner() == LocalPlayer() and IsFirstTimePredicted() and not self2.LuaShellEject then
+	if self:GetStat(tableName .. ".EjectionSmoke", self:GetStat("EjectionSmoke")) and CLIENT and ply == LocalPlayer() and ifp and not self:GetStat(tableName .. ".LuaShellEject", self:GetStat("LuaShellEject")) then
 		self:EjectionSmoke()
 	end
 
-	self:DoAmmoCheck()
+	self:DoAmmoCheck(clipID)
 
-	if self:GetStatus() == TFA.GetStatus("shooting") and self:GetStat("PumpAction") then
-		if self:Clip1() == 0 and self:GetStat("PumpAction").value_empty then
+	-- Condition self:GetStatus() == TFA.Enum.STATUS_SHOOTING is always true?
+	if self:GetStatus() == TFA.Enum.STATUS_SHOOTING and self:GetStat("PumpAction") then
+		if self["Clip" .. clipID](self) == 0 and self:GetStat("PumpAction.value_empty") then
 			self:SetShotgunCancel(true)
-		elseif (self:GetStat("Primary.ClipSize") < 0 or self:Clip1() > 0) and self:GetStat("PumpAction").value then
+		elseif (self:GetStat(tableName .. ".ClipSize") < 0 or self["Clip" .. clipID](self) > 0) and self:GetStat("PumpAction.value") then
 			self:SetShotgunCancel(true)
 		end
 	end
 
-	if IsFirstTimePredicted() then
-		self:RollJamChance()
-	end
+	self:RollJamChance()
+end
+
+function SWEP:PrimaryAttack()
+	local self2 = self:GetTable()
+	local ply = self:GetOwner()
+	if not IsValid(ply) then return end
+
+	if not IsValid(self) then return end
+	if ply:IsPlayer() and not self:VMIV() then return end
+	if not self:CanPrimaryAttack() then return end
+
+	self:PrePrimaryAttack()
+
+	if hook.Run("TFA_PrimaryAttack", self) then return end
+
+	self:TriggerAttack("Primary", 1)
 
 	self:PostPrimaryAttack()
 	hook.Run("TFA_PostPrimaryAttack", self)
@@ -1670,11 +1681,12 @@ end
 
 local cv_strip = GetConVar("sv_tfa_weapon_strip")
 
-function SWEP:DoAmmoCheck()
+function SWEP:DoAmmoCheck(clipID)
 	if self:GetOwner():IsNPC() then return end
+	if clipID == nil then clipID = 1 end
 	local self2 = self:GetTable()
 
-	if IsValid(self) and SERVER and cv_strip:GetBool() and self:Clip1() == 0 and self:Ammo1() == 0 then
+	if IsValid(self) and SERVER and cv_strip:GetBool() and self["Clip" .. clipID]() == 0 and self["Ammo" .. clipID]() == 0 then
 		timer.Simple(.1, function()
 			if SERVER and IsValid(self) and self:OwnerIsValid() then
 				self:GetOwner():StripWeapon(self2.ClassName)
@@ -1874,7 +1886,11 @@ function SWEP:RollJamChance()
 
 	if roll <= chance * sv_tfa_jamming_mult:GetFloat() then
 		self:SetJammed(true)
-		self:NotifyJam()
+
+		if IsFirstTimePredicted() then
+			self:NotifyJam()
+		end
+
 		return true
 	end
 
