@@ -584,11 +584,11 @@ end
 
 local MAX_CORRECTION_ITERATIONS = 20
 
-function SWEP.MainBullet:CalculateFalloff(HitPos)
-	local dist = self.InitialPosition:Distance(HitPos)
+function SWEP:CalculateFalloff(InitialPosition, HitPos)
+	local dist = InitialPosition:Distance(HitPos)
 
-	if self.Wep.Primary.RangeFalloffLUTBuilt then
-		local target = self.Wep.Primary.RangeFalloffLUTBuilt
+	if self.Primary.RangeFalloffLUTBuilt then
+		local target = self.Primary.RangeFalloffLUTBuilt
 
 		if dist <= target[1][1] then
 			return target[1][2]
@@ -609,9 +609,13 @@ function SWEP.MainBullet:CalculateFalloff(HitPos)
 		return target[#target][2] -- wtf?
 	end
 
-	local minfalloff = self.Wep:GetStat("Primary.MinRangeStartFalloff") / 0.0254
+	local minfalloff = self:GetStat("Primary.MinRangeStartFalloff") / 0.0254
 	if dist <= minfalloff then return 1 end
-	return (self.Wep:GetStat("Primary.Damage") - l_mathClamp((dist - minfalloff) * (self.Wep:GetStat("Primary.FalloffByMeter") * 0.0254), 0, self.Wep:GetStat("Primary.MaxFalloff"))) / self.Wep:GetStat("Primary.Damage")
+	return (self:GetStat("Primary.Damage") - l_mathClamp((dist - minfalloff) * (self:GetStat("Primary.FalloffByMeter") * 0.0254), 0, self:GetStat("Primary.MaxFalloff"))) / self.Wep:GetStat("Primary.Damage")
+end
+
+function SWEP.MainBullet:CalculateFalloff(HitPos)
+	return self.Wep:CalculateFalloff(self.InitialPosition, HitPos)
 end
 
 function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon, penetrated)
