@@ -584,7 +584,8 @@ end
 
 local MAX_CORRECTION_ITERATIONS = 20
 
-function SWEP:CalculateFalloff(InitialPosition, HitPos)
+-- bullettable can be nil
+function SWEP:CalculateFalloff(InitialPosition, HitPos, bullettable)
 	local dist = InitialPosition:Distance(HitPos)
 
 	if self.Primary.RangeFalloffLUTBuilt then
@@ -615,7 +616,7 @@ function SWEP:CalculateFalloff(InitialPosition, HitPos)
 end
 
 function SWEP.MainBullet:CalculateFalloff(HitPos)
-	return self.Wep:CalculateFalloff(self.InitialPosition, HitPos)
+	return self.Wep:CalculateFalloff(self.InitialPosition, HitPos, self)
 end
 
 function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon, penetrated)
