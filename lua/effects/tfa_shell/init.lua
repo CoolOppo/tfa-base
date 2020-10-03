@@ -107,46 +107,9 @@ function EFFECT:Init(data)
 		return
 	end
 
-	local shouldChangeThings = not owent:IsPlayer()
-
-	if not shouldChangeThings then
-		if owent == GetViewEntity() and not owent:ShouldDrawLocalPlayer() then
-			self.WeaponEnt = owent:GetViewModel()
-			if not IsValid(self.WeaponEnt) then return end
-		else
-			shouldChangeThings = true
-		end
-	end
-
-	local angpos
-
-	if shouldChangeThings then
-		if IsValid(self.WeaponEntOG) and self.WeaponEntOG.ShellAttachment then
-			self.Attachment = self.WeaponEnt:LookupAttachment(self.WeaponEntOG.ShellAttachment)
-
-			if not self.Attachment or self.Attachment <= 0 then
-				self.Attachment = 2
-			end
-
-			if self.WeaponEntOG:GetStat("Akimbo") then
-				self.Attachment = 3 + (game.SinglePlayer() and self.WeaponEntOG:GetNW2Int("AnimCycle", 1) or self.WeaponEntOG.AnimCycle)
-			end
-
-			if self.WeaponEntOG.ShellAttachmentRaw then
-				self.Attachment = self.WeaponEntOG.ShellAttachmentRaw
-			end
-		end
-
-		angpos = self.WeaponEnt:GetAttachment(self.Attachment)
-
-		if not angpos or not angpos.Pos then
-			angpos = {
-				Pos = vector_origin,
-				Ang = angle_zero
-			}
-		end
-	else
-		angpos = {Pos = self.OriginalOrigin, Ang = self.DirAng}
+	if owent:IsPlayer() and owent == GetViewEntity() and not owent:ShouldDrawLocalPlayer() then
+		self.WeaponEnt = owent:GetViewModel()
+		if not IsValid(self.WeaponEnt) then return end
 	end
 
 	local model, scale, yaw = self:FindModel(self.WeaponEntOG)
@@ -161,8 +124,8 @@ function EFFECT:Init(data)
 
 	self:SetModel(model)
 	self:SetModelScale(scale, 0)
-	self:SetPos(angpos.Pos)
-	local mdlang = angpos.Ang * 1
+	self:SetPos(data:GetOrigin())
+	local mdlang = self.DirAng * 1
 	mdlang:RotateAroundAxis(mdlang:Up(), yaw)
 	local owang = IsValid(owent) and owent:EyeAngles() or mdlang
 	self:SetAngles(owang)
@@ -170,7 +133,7 @@ function EFFECT:Init(data)
 	self:SetCollisionGroup(COLLISION_GROUP_DEBRIS)
 	self:SetCollisionBounds(self:OBBMins(), self:OBBMaxs())
 	self:PhysicsInitBox(self:OBBMins(), self:OBBMaxs())
-	local velocity = angpos.Ang:Forward() * math.Rand(self.Velocity[1], self.Velocity[2]) + owang:Forward() * math.Rand(self.VelocityRand[1], self.VelocityRand[2])
+	local velocity = self.Dir * math.Rand(self.Velocity[1], self.Velocity[2]) + owang:Forward() * math.Rand(self.VelocityRand[1], self.VelocityRand[2])
 
 	if IsValid(owent) then
 		velocity = velocity + owent:GetVelocity()

@@ -76,31 +76,33 @@ end
 SWEP.ShellEffectOverride = nil -- ???
 SWEP.ShellEjectionQueue = 0
 
-function SWEP:GetShellAttachmentID(vm)
+function SWEP:GetShellAttachmentID(ent, isVM)
 	local raw = self:GetStat("ShellAttachmentRaw")
+	local israw = false
 	local attid
 
-	if raw and vm:GetAttachment(raw) then
+	if raw and ent:GetAttachment(raw) then
 		attid = raw
+		israw = true
 	else
-		attid = vm:LookupAttachment(self:GetStat("ShellAttachment"))
+		attid = ent:LookupAttachment(self:GetStat("ShellAttachment"))
+	end
 
+	if self:GetStat("Akimbo") and not israw then
+		return 3 + self:GetNW2Int("AnimCycle", 1)
 	end
 
 	if attid and attid <= 0 then attid = 2 end
+
 	attid = math.Clamp(attid and attid or 2, 1, 127)
 
 	return attid
 end
 
-function SWEP:GetShellEjectPosition(vm)
-	local attid = self:GetShellAttachmentID(vm)
+function SWEP:GetShellEjectPosition(ent, isVM)
+	local attid = self:GetShellAttachmentID(ent, isVM)
 
-	if self:GetStat("Akimbo") then
-		attid = 3 + self.AnimCycle
-	end
-
-	local angpos = vm:GetAttachment(attid)
+	local angpos = ent:GetAttachment(attid)
 
 	if angpos then return angpos.Pos, angpos.Ang, attid end
 end
@@ -123,7 +125,8 @@ function SWEP:MakeShell(eject_now)
 		shelltype = "tfa_shell"
 	end
 
-	local vm = self
+	local ent = self
+	local isVM = false
 
 	if self:IsFirstPerson() then
 		if not eject_now and CLIENT and not sp then
@@ -131,27 +134,27 @@ function SWEP:MakeShell(eject_now)
 			return
 		end
 
-		vm = self.OwnerViewModel or self
+		ent = self.OwnerViewModel or self
+		isVM = ent == self.OwnerViewModel
 	end
 
 	self:EjectionSmoke(true)
 
 	if not isstring(shelltype) or shelltype == "" then return end -- allows to disable shells by setting override to "" - will shut up all rp fags
 
-	if IsValid(vm) then
-		local pos, ang, attid = self:GetShellEjectPosition(vm)
+	if not IsValid(ent) then return end
+	local pos, ang, attid = self:GetShellEjectPosition(ent, isVM)
 
-		if pos then
-			fx = EffectData()
-			fx:SetEntity(self)
-			fx:SetAttachment(attid)
-			fx:SetMagnitude(1)
-			fx:SetScale(1)
-			fx:SetOrigin(pos)
-			fx:SetNormal(ang:Forward())
-			TFA.Effects.Create(shelltype, fx)
-		end
-	end
+	if not pos then return end
+
+	fx = EffectData()
+	fx:SetEntity(self)
+	fx:SetAttachment(attid)
+	fx:SetMagnitude(1)
+	fx:SetScale(1)
+	fx:SetOrigin(pos)
+	fx:SetNormal(ang:Forward())
+	TFA.Effects.Create(shelltype, fx)
 end
 
 --[[
