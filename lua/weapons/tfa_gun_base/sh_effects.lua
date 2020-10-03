@@ -110,7 +110,7 @@ function SWEP:MakeShell(eject_now)
 	local vm = self
 
 	if self:IsFirstPerson() then
-		if not eject_now and not sp then
+		if not eject_now and CLIENT and not sp then
 			self.ShellEjectionQueue = self.ShellEjectionQueue + 1
 			return
 		end
