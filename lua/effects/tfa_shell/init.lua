@@ -96,6 +96,8 @@ function EFFECT:Init(data)
 	if self.WeaponEntOG.LuaShellEffect and self.WeaponEntOG.LuaShellEffect == "" then return end
 	self.Attachment = data:GetAttachment()
 	self.Dir = data:GetNormal()
+	self.DirAng = data:GetNormal():Angle()
+	self.OriginalOrigin = data:GetOrigin()
 	local owent = self.WeaponEnt:GetOwner()
 
 	if self.LifeTime <= 0 or not IsValid(owent) then
@@ -105,45 +107,46 @@ function EFFECT:Init(data)
 		return
 	end
 
-	if owent:IsPlayer() then
-		if owent ~= GetViewEntity() or owent:ShouldDrawLocalPlayer() then
-			self.WeaponEnt = owent:GetActiveWeapon()
+	local shouldChangeThings = not owent:IsPlayer()
+
+	if not shouldChangeThings then
+		if owent == GetViewEntity() and not owent:ShouldDrawLocalPlayer() then
+			self.WeaponEnt = owent:GetViewModel()
 			if not IsValid(self.WeaponEnt) then return end
 		else
-			self.WeaponEnt = owent:GetViewModel()
-			local theirweapon = owent:GetActiveWeapon()
+			shouldChangeThings = true
+		end
+	end
 
-			if IsValid(theirweapon) and theirweapon.ViewModelFlip or theirweapon.ViewModelFlipped then
-				self.Flipped = true
+	local angpos
+
+	if shouldChangeThings then
+		if IsValid(self.WeaponEntOG) and self.WeaponEntOG.ShellAttachment then
+			self.Attachment = self.WeaponEnt:LookupAttachment(self.WeaponEntOG.ShellAttachment)
+
+			if not self.Attachment or self.Attachment <= 0 then
+				self.Attachment = 2
 			end
 
-			if not IsValid(self.WeaponEnt) then return end
-		end
-	end
+			if self.WeaponEntOG:GetStat("Akimbo") then
+				self.Attachment = 3 + (game.SinglePlayer() and self.WeaponEntOG:GetNW2Int("AnimCycle", 1) or self.WeaponEntOG.AnimCycle)
+			end
 
-	if IsValid(self.WeaponEntOG) and self.WeaponEntOG.ShellAttachment then
-		self.Attachment = self.WeaponEnt:LookupAttachment(self.WeaponEntOG.ShellAttachment)
-
-		if not self.Attachment or self.Attachment <= 0 then
-			self.Attachment = 2
+			if self.WeaponEntOG.ShellAttachmentRaw then
+				self.Attachment = self.WeaponEntOG.ShellAttachmentRaw
+			end
 		end
 
-		if self.WeaponEntOG:GetStat("Akimbo") then
-			self.Attachment = 3 + (game.SinglePlayer() and self.WeaponEntOG:GetNW2Int("AnimCycle", 1) or self.WeaponEntOG.AnimCycle)
+		angpos = self.WeaponEnt:GetAttachment(self.Attachment)
+
+		if not angpos or not angpos.Pos then
+			angpos = {
+				Pos = vector_origin,
+				Ang = angle_zero
+			}
 		end
-
-		if self.WeaponEntOG.ShellAttachmentRaw then
-			self.Attachment = self.WeaponEntOG.ShellAttachmentRaw
-		end
-	end
-
-	local angpos = self.WeaponEnt:GetAttachment(self.Attachment)
-
-	if not angpos or not angpos.Pos then
-		angpos = {
-			Pos = vector_origin,
-			Ang = angle_zero
-		}
+	else
+		angpos = {Pos = self.OriginalOrigin, Ang = self.DirAng}
 	end
 
 	local model, scale, yaw = self:FindModel(self.WeaponEntOG)

@@ -76,14 +76,30 @@ end
 SWEP.ShellEffectOverride = nil -- ???
 SWEP.ShellEjectionQueue = 0
 
+function SWEP:GetShellAttachmentID(vm)
+	local raw = self:GetStat("ShellAttachmentRaw")
+	local attid
+
+	if raw and vm:GetAttachment(raw) then
+		attid = raw
+	else
+		attid = vm:LookupAttachment(self:GetStat("ShellAttachment"))
+
+	end
+
+	if attid and attid <= 0 then attid = 2 end
+	attid = math.Clamp(attid and attid or 2, 1, 127)
+
+	return attid
+end
+
 function SWEP:GetShellEjectPosition(vm)
-	local attid = vm:LookupAttachment(self:GetStat("ShellAttachment"))
+	local attid = self:GetShellAttachmentID(vm)
 
 	if self:GetStat("Akimbo") then
 		attid = 3 + self.AnimCycle
 	end
 
-	attid = math.Clamp(attid and attid or 2, 1, 127)
 	local angpos = vm:GetAttachment(attid)
 
 	if angpos then return angpos.Pos, angpos.Ang, attid end
