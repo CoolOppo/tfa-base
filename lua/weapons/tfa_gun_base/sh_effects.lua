@@ -76,6 +76,19 @@ end
 SWEP.ShellEffectOverride = nil -- ???
 SWEP.ShellEjectionQueue = 0
 
+function SWEP:GetShellEjectPosition(vm)
+	local attid = vm:LookupAttachment(self:GetStat("ShellAttachment"))
+
+	if self:GetStat("Akimbo") then
+		attid = 3 + self.AnimCycle
+	end
+
+	attid = math.Clamp(attid and attid or 2, 1, 127)
+	local angpos = vm:GetAttachment(attid)
+
+	if angpos then return angpos.Pos, angpos.Ang, attid end
+end
+
 function SWEP:MakeShell(eject_now)
 	if not self:IsValid() then return end -- what
 	if self.current_event_iftp == false then return end
@@ -110,24 +123,16 @@ function SWEP:MakeShell(eject_now)
 	if not isstring(shelltype) or shelltype == "" then return end -- allows to disable shells by setting override to "" - will shut up all rp fags
 
 	if IsValid(vm) then
-		fx = EffectData()
+		local pos, ang, attid = self:GetShellEjectPosition(vm)
 
-		local attid = vm:LookupAttachment(self:GetStat("ShellAttachment"))
-
-		if self:GetStat("Akimbo") then
-			attid = 3 + self.AnimCycle
-		end
-
-		attid = math.Clamp(attid and attid or 2, 1, 127)
-		local angpos = vm:GetAttachment(attid)
-
-		if angpos then
+		if pos then
+			fx = EffectData()
 			fx:SetEntity(self)
 			fx:SetAttachment(attid)
 			fx:SetMagnitude(1)
 			fx:SetScale(1)
-			fx:SetOrigin(angpos.Pos)
-			fx:SetNormal(angpos.Ang:Forward())
+			fx:SetOrigin(pos)
+			fx:SetNormal(ang:Forward())
 			TFA.Effects.Create(shelltype, fx)
 		end
 	end
@@ -183,18 +188,14 @@ function SWEP:EjectionSmoke(ovrr)
 		local vm = self:IsFirstPerson() and self.OwnerViewModel or self
 
 		if IsValid(vm) then
-			local att = vm:LookupAttachment(self.ShellAttachment)
+			local att = vm:LookupAttachment(self:GetStat("ShellAttachment"))
 
 			if not att or att <= 0 then
 				att = 2
 			end
 
 			local oldatt = att
-
-			if self.ShellAttachmentRaw then
-				att = self.ShellAttachmentRaw
-			end
-
+			att = self:GetStat("ShellAttachmentRaw", att)
 			local angpos = vm:GetAttachment(att)
 
 			if not angpos then
