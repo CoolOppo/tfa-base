@@ -357,31 +357,28 @@ local selicon_final = {}
 
 function SWEP:IconFix()
 	local self2 = self:GetTable()
-	if not surface then return end
-	self2.Gun = self2.ClassName or self2.Folder
-	local tselicon
-	local proceed = true
 
-	if selicon_final[self2.Gun] then
-		self2.WepSelectIcon = selicon_final[self2.Gun]
+	if not surface then return end
+
+	local class = self2.ClassName
+
+	if selicon_final[class] then
+		self2.WepSelectIcon = selicon_final[class]
 
 		return
 	end
 
-	if self2.WepSelectIcon then
-		tselicon = type(self2.WepSelectIcon)
-	end
-
-	if self2.WepSelectIcon and tselicon == "string" then
+	if self2.WepSelectIcon and type(self2.WepSelectIcon) == "string" then
 		self2.WepSelectIcon = surface.GetTextureID(self2.WepSelectIcon)
-		proceed = false
+	else
+		if file.Exists("materials/vgui/hud/" .. class .. ".png", "GAME") then
+			self2.WepSelectIcon = Material("vgui/hud/" .. class .. ".png", "smooth noclamp") -- NOTHING should access this variable directly and our DrawWeaponSelection override supports IMaterial.
+		elseif file.Exists("materials/vgui/hud/" .. class .. ".vmt", "GAME") then
+			self2.WepSelectIcon = surface.GetTextureID("vgui/hud/" .. class)
+		end
 	end
 
-	if proceed and file.Exists("materials/vgui/hud/" .. self2.ClassName .. ".vmt", "GAME") then
-		self2.WepSelectIcon = surface.GetTextureID("vgui/hud/" .. self2.ClassName)
-	end
-
-	selicon_final[self2.Gun] = self2.WepSelectIcon
+	selicon_final[class] = self2.WepSelectIcon
 end
 
 --[[

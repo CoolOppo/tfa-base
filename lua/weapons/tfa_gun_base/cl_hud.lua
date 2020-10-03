@@ -1553,25 +1553,33 @@ local fsin, icon
 local matcache = {}
 
 function SWEP:DrawWeaponSelection(x, y, wide, tall, alpha)
+	local self2 = self:GetTable()
+
 	surface.SetDrawColor(255, 255, 255, alpha)
 
-	icon = self:GetStat("WepSelectIcon_Override") or self.WepSelectIcon
+	icon = self2.GetStat(self, "WepSelectIcon_Override", self2.WepSelectIcon)
 
 	if not icon then
-		self:IconFix()
+		self2.IconFix(self)
+
 		return
 	end
 
-	if type(icon) == "IMaterial" then
+	local ticon = type(icon)
+
+	if ticon == "IMaterial" then
 		surface.SetMaterial(icon)
-	elseif type(icon) == "string" then
-		matcache[icon] = matcache[icon] or Material(icon, "smooth noclamp")
+	elseif ticon == "string" then
+		if not matcache[icon] then
+			matcache[icon] = Material(icon, "smooth noclamp")
+		end
+
 		surface.SetMaterial(matcache[icon])
 	else
 		surface.SetTexture(icon)
 	end
 
-	fsin = self.BounceWeaponIcon and math.sin( RealTime() * 10 ) * 5 or 0
+	fsin = self2.BounceWeaponIcon and math.sin( RealTime() * 10 ) * 5 or 0
 
 	-- Borders
 	y = y + 10
@@ -1580,5 +1588,5 @@ function SWEP:DrawWeaponSelection(x, y, wide, tall, alpha)
 
 	surface.DrawTexturedRect(x + fsin, y - fsin, wide - fsin * 2, wide / 2 + fsin)
 
-	self:PrintWeaponInfo(x + wide + 20, y + tall * 0.95, alpha)
+	self2.PrintWeaponInfo(self, x + wide + 20, y + tall * 0.95, alpha)
 end
