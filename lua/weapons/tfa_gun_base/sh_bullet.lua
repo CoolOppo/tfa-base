@@ -110,6 +110,9 @@ Purpose:  Bullet
 local TracerName
 local cv_forcemult = GetConVar("sv_tfa_force_multiplier")
 local sv_tfa_bullet_penetration_power_mul = GetConVar("sv_tfa_bullet_penetration_power_mul")
+local sv_tfa_bullet_randomseed = GetConVar("sv_tfa_bullet_randomseed")
+
+local randomseed = "tfa_" .. tostring({})
 
 function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet, bulletoverride)
 	if not IsFirstTimePredicted() and not game.SinglePlayer() then return end
@@ -204,6 +207,19 @@ function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet,
 	self.MainBullet.HullSize = self:GetStat("Primary.HullSize") or 0
 	self.MainBullet.Spread.x = aimcone
 	self.MainBullet.Spread.y = aimcone
+
+	if self.MainBullet.Num == 1 and sv_tfa_bullet_randomseed:GetBool() then
+		self.MainBullet.Spread.x = 0
+		self.MainBullet.Spread.y = 0
+
+		local sharedRandomSeed = randomseed .. CurTime()
+
+		local ang = self.MainBullet.Dir:Angle()
+		ang:RotateAroundAxis(ang:Up(), util.SharedRandom(sharedRandomSeed, -aimcone * 45, aimcone * 45, 0))
+		ang:RotateAroundAxis(ang:Right(), util.SharedRandom(sharedRandomSeed, -aimcone * 45, aimcone * 45, 1))
+		self.MainBullet.Dir = ang:Forward()
+	end
+
 	self.MainBullet.Wep = self
 
 	if self.TracerPCF then
@@ -238,7 +254,13 @@ function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet,
 		self.MainBullet.Spread.y = 0
 
 		local ang_ = self.MainBullet.Dir:Angle()
-		local sharedRandomSeed = "TFA_ShootBullet" .. CurTime()
+		local sharedRandomSeed
+
+		if sv_tfa_bullet_randomseed:GetBool() then
+			sharedRandomSeed = randomseed .. CurTime()
+		else
+			sharedRandomSeed = "TFA_ShootBullet" .. CurTime()
+		end
 
 		-- single callback per multiple bullets fix
 		for i = 1, num_bullets do
