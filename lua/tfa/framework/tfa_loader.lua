@@ -24,11 +24,18 @@ if SERVER then AddCSLuaFile() end
 TFA = TFA or {}
 
 local do_load = true
-local version = 4.58
-local version_string = "4.5.8"
+local version = 4.6
+local version_string = "4.6"
 local changelog = [[
-	+ Added material proxy for tinting envmaps with ambient lighting (TFA_CubemapTint)
-	+ Added option to debug currently playing anination (Admin-only)
+	* HUGE optimization and prediction improvements
+	* Better recoil and viewpunch, all configurable
+	* New nearly-empty (and empty) magazine click sounds
+	* Proper NPC support (custom tracers/projectiles, random attachments)
+	* Redone Inspection GUI (scaled fonts and elements, hooks, overrides)
+	* Improved damage falloff (LUT falloff with variable calculation methods)
+	* ADS reload animation support (like in CAWODOOTY! favorite gaem!!!)
+	* Hybrid blowback animation (allowing model animation to play)
+	* Crouched viewmodel offset position
 ]]
 
 local function testFunc()
