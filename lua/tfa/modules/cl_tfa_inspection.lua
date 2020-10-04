@@ -20,8 +20,8 @@
 -- SOFTWARE.
 
 if CLIENT then
-	local doblur = CreateClientConVar("cl_tfa_inspection_bokeh", 0, true, false)
-	local blurdist = CreateClientConVar("cl_tfa_inspection_bokeh_radius", 0.1, true, false)
+	local doblur = GetConVar("cl_tfa_inspection_bokeh")
+	local blurdist = GetConVar("cl_tfa_inspection_bokeh_radius")
 	local tfablurintensity = 0
 	local blur_mat = Material("pp/bokehblur")
 	local tab = {}

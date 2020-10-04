@@ -19,6 +19,14 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
+if GetConVar("cl_tfa_inspection_bokeh") == nil then
+	CreateClientConVar("cl_tfa_inspection_bokeh", 0, true, false, "Enable inspection bokeh DOF")
+end
+
+if GetConVar("cl_tfa_inspection_bokeh_radius") == nil then
+	CreateClientConVar("cl_tfa_inspection_bokeh_radius", 0.1, true, false, "Inspection bokeh DOF radius", 0.01, 1)
+end
+
 if GetConVar("cl_tfa_inspect_hide_in_screenshots") == nil then
 	CreateClientConVar("cl_tfa_inspect_hide_in_screenshots", 0, true, false, "Hide inspection panel in screenshots")
 end

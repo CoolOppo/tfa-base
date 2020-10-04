@@ -284,7 +284,6 @@ local function tfaOptionPerformance(panel)
 		cl_tfa_fx_muzzlesmoke = "1",
 		cl_tfa_fx_muzzlesmoke_limited = "1",
 		cl_tfa_fx_muzzleflashsmoke = "1",
-		cl_tfa_inspection_bokeh = "0",
 		cl_tfa_fx_ejectionlife = "15",
 		cl_tfa_legacy_shells = "0",
 		cl_tfa_fx_ads_dof = "0",
@@ -304,8 +303,6 @@ local function tfaOptionPerformance(panel)
 	panel:CheckBox("#tfa.perfsettings.ricochetfx", "cl_tfa_fx_impact_ricochet_enabled")
 
 	panel:CheckBox("#tfa.perfsettings.oldshells", "cl_tfa_legacy_shells")
-
-	panel:CheckBox("#tfa.perfsettings.inspectdof", "cl_tfa_inspection_bokeh")
 
 	panel:CheckBox("#tfa.perfsettings.adsdof", "cl_tfa_fx_ads_dof")
 	panel:CheckBox("#tfa.perfsettings.adsdof.hd", "cl_tfa_fx_ads_dof_hd")
@@ -808,6 +805,39 @@ local function tfaOptionAbout(panel)
 	end
 end
 
+local function tfaOptionInspect(panel)
+	local presetTable = {
+		Options = {},
+		CVars = {},
+		MenuButton = "1",
+		Folder = "tfa_base_inspect"
+	}
+
+	presetTable.Options["#preset.default"] = {
+		cl_tfa_inspection_bokeh = "0",
+		cl_tfa_inspection_bokeh_radius = "0.1",
+		cl_tfa_inspect_hide = "0",
+		cl_tfa_inspect_hide_hud = "0",
+		cl_tfa_inspect_hide_in_screenshots = "0",
+		cl_tfa_inspect_newbars = "0",
+		cl_tfa_inspect_spreadinmoa = "0"
+	}
+
+	presetTable.CVars = table.GetKeys(presetTable.Options["#preset.default"])
+	panel:AddControl("ComboBox", presetTable)
+
+	panel:CheckBox("#tfa.inspectsettings.inspectdof.enabled", "cl_tfa_inspection_bokeh")
+	panel:NumSlider("#tfa.inspectsettings.inspectdof.radius", "cl_tfa_inspection_bokeh_radius", 0.01, 1, 3)
+
+	panel:CheckBox("#tfa.inspectsettings.hide", "cl_tfa_inspect_hide")
+	if DLib then
+		panel:CheckBox("#tfa.inspectsettings.hidehud", "cl_tfa_inspect_hide_hud")
+	end
+	panel:CheckBox("#tfa.inspectsettings.hideinscreenshots", "cl_tfa_inspect_hide_in_screenshots")
+	panel:CheckBox("#tfa.inspectsettings.newbars", "cl_tfa_inspect_newbars")
+	panel:CheckBox("#tfa.inspectsettings.spreadinmoa", "cl_tfa_inspect_spreadinmoa")
+end
+
 local function tfaAddOption()
 	spawnmenu.AddToolMenuOption("Utilities", "TFA SWEP Base Settings", "tfaOptionVM", "#tfa.smsettings.viewmodel", "", "", tfaOptionVM)
 	spawnmenu.AddToolMenuOption("Utilities", "TFA SWEP Base Settings", "tfaOptionSights", "#tfa.smsettings.sights", "", "", tfaOptionSights)
@@ -818,6 +848,7 @@ local function tfaAddOption()
 	spawnmenu.AddToolMenuOption("Utilities", "TFA SWEP Base Settings", "TFASwepBaseBallistics", "#tfa.smsettings.ballistics", "", "", tfaOptionBallistics)
 	spawnmenu.AddToolMenuOption("Utilities", "TFA SWEP Base Settings", "TFASwepBaseServer", "#tfa.smsettings.server", "", "", tfaOptionServer)
 	spawnmenu.AddToolMenuOption("Utilities", "TFA SWEP Base Settings", "TFASwepBaseAbout", "#tfa.smsettings.about", "", "", tfaOptionAbout)
+	spawnmenu.AddToolMenuOption("Utilities", "TFA SWEP Base Settings", "TFASwepBaseInspect", "#tfa.smsettings.inspect", "", "", tfaOptionInspect)
 end
 
 hook.Add("PopulateToolMenu", "tfaAddOption", tfaAddOption)
