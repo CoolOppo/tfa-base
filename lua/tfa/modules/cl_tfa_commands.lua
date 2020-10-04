@@ -31,6 +31,14 @@ if GetConVar("cl_tfa_inspect_hide_hud") == nil then
 	CreateClientConVar("cl_tfa_inspect_hide_hud", 0, true, false, "Hide HUD when inspecting weapon (DLib required)")
 end
 
+if GetConVar("cl_tfa_inspect_newbars") == nil then
+	CreateClientConVar("cl_tfa_inspect_newbars", 0, true, false, "Use new stat bars in inspection screen")
+end
+
+if GetConVar("cl_tfa_inspect_spreadinmoa") == nil then
+	CreateClientConVar("cl_tfa_inspect_spreadinmoa", 0, true, false, "Show accuracy in MOA instead of degrees on inspection screen")
+end
+
 if GetConVar("cl_tfa_viewbob_intensity") == nil then
 	CreateClientConVar("cl_tfa_viewbob_intensity", 1, true, false, "View bob intensity multiplier")
 end

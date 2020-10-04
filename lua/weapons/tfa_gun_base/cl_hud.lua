@@ -129,7 +129,7 @@ local spacing = 64
 
 local ScaleH = TFA.ScaleH
 
-local cv_bars_exp = GetConVar("cl_tfa_exp_inspection_newbars") or CreateClientConVar("cl_tfa_exp_inspection_newbars", 0, true, true, "Enable new stat bars in the Inspection menu? (Experimental)")
+local cv_bars_exp = GetConVar("cl_tfa_inspect_newbars")
 
 local function PanelPaintBars(myself, w, h)
 	if not myself.Bar or type(myself.Bar) ~= "number" then return end
@@ -392,7 +392,7 @@ function SWEP:InspectionVGUIMainInfo(contentpanel)
 	end
 end
 
-local cv_display_moa = GetConVar("cl_tfa_inspection_moa") or CreateClientConVar("cl_tfa_inspection_moa", "0", true, false)
+local cv_display_moa = GetConVar("cl_tfa_inspect_spreadinmoa")
 
 local AccuracyToDegrees = 1 / TFA.DegreesToAccuracy
 local AccuracyToMOA = 1 / TFA.DegreesToAccuracy * 60
@@ -591,7 +591,7 @@ function SWEP:InspectionVGUIStats(contentpanel)
 		accuracytext.Think = function(myself)
 			if not IsValid(self) then return end
 
-			local ismoa = cv_display_moa:GetBool()
+			local ismoa = cv_display_moa and cv_display_moa:GetBool()
 			local spread = self:GetStat("Primary.Spread")
 			local spreadtext
 
@@ -629,7 +629,7 @@ function SWEP:InspectionVGUIStats(contentpanel)
 			ironspreadtext.Think = function(myself)
 				if not IsValid(self) then return end
 
-				local ismoa = cv_display_moa:GetBool()
+				local ismoa = cv_display_moa and cv_display_moa:GetBool()
 				local spread = self:GetStat("Primary.IronAccuracy")
 				local spreadtext
 
