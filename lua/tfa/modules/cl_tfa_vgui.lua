@@ -47,6 +47,7 @@ local function tfaOptionServer(panel)
 		sv_tfa_bullet_ricochet = "0",
 		sv_tfa_bullet_doordestruction = "1",
 		sv_tfa_melee_doordestruction = "1",
+		sv_tfa_bullet_randomseed = "0",
 		sv_tfa_reloads_legacy = "0",
 		sv_tfa_reloads_enabled = "1",
 		sv_tfa_cmenu = "1",
@@ -77,6 +78,9 @@ local function tfaOptionServer(panel)
 	TFA.CheckBoxNet(panel, "#tfa.svsettings.jamming", "sv_tfa_jamming")
 	TFA.CheckBoxNet(panel, "#tfa.svsettings.nearlyempty", "sv_tfa_nearlyempty")
 	TFA.CheckBoxNet(panel, "#tfa.svsettings.legacyreloads", "sv_tfa_reloads_legacy")
+
+	TFA.CheckBoxNet(panel, "#tfa.svsettings.randomseed", "sv_tfa_bullet_randomseed")
+	panel:Help("#tfa.svsettings.randomseed_tip")
 
 	TFA.NumSliderNet(panel, "#tfa.svsettings.damagemult", "sv_tfa_damage_multiplier", 0, 10, 2)
 	TFA.NumSliderNet(panel, "#tfa.svsettings.damagemultnpc", "sv_tfa_damage_multiplier_npc", 0, 10, 2)
