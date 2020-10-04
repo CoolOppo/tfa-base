@@ -392,6 +392,11 @@ function SWEP:InspectionVGUIMainInfo(contentpanel)
 	end
 end
 
+local cv_display_moa = GetConVar("cl_tfa_inspection_moa") or CreateClientConVar("cl_tfa_inspection_moa", "0", true, false)
+
+local AccuracyToDegrees = 1 / TFA.DegreesToAccuracy
+local AccuracyToMOA = 1 / TFA.DegreesToAccuracy * 60
+
 function SWEP:InspectionVGUIStats(contentpanel)
 	if hook.Run("TFA_InspectVGUI_StatsStart", self, contentpanel) ~= false then
 		local mainpanel = contentpanel:GetParent()
@@ -568,29 +573,15 @@ function SWEP:InspectionVGUIStats(contentpanel)
 		fireratetext:SetSize(preferredWidth, TFA.Fonts.InspectionHeightSmall)
 		fireratetext.Paint = TextShadowPaint
 
-		--Accuracy
+		--Hipfire Spread
 		local accuracypanel = statspanel:Add("DPanel")
 		accuracypanel:SetSize(preferredWidth, TFA.Fonts.InspectionHeightSmall)
 		statspanel:SetTall(statspanel:GetTall() + TFA.Fonts.InspectionHeightSmall)
 
 		accuracypanel.Think = function(myself)
 			if not IsValid(self) then return end
-			local accval
-			local waccval = worstaccuracy
-			local spread = self:GetStat("Primary.Spread")
 
-			if self:GetStat("data.ironsights") ~= 0 then
-				local iacc = self:GetStat("Primary.IronAccuracy", spread)
-				accval = (iacc * 2 + spread) / 3
-
-				if iacc < 0.005 then
-					accval = 0
-				end
-			else
-				accval = spread
-			end
-
-			myself.Bar = 1 - accval / waccval
+			myself.Bar = 1 - self:GetStat("Primary.Spread") / worstaccuracy
 		end
 
 		accuracypanel.Paint = PanelPaintBars
@@ -599,14 +590,18 @@ function SWEP:InspectionVGUIStats(contentpanel)
 
 		accuracytext.Think = function(myself)
 			if not IsValid(self) then return end
-			local spread = self:GetStat("Primary.Spread")
-			local accuracystr = language.GetPhrase("tfa.inspect.stat.accuracy"):format(math.Round(spread * 180))
 
-			if self:GetStat("data.ironsights") ~= 0 then
-				accuracystr = accuracystr .. " || " .. math.Round(self:GetStat("Primary.IronAccuracy", spread) * 180) .. "°"
+			local ismoa = cv_display_moa:GetBool()
+			local spread = self:GetStat("Primary.Spread")
+			local spreadtext
+
+			if ismoa then
+				spreadtext = language.GetPhrase("tfa.inspect.val.moa"):format(spread * AccuracyToMOA)
+			else
+				spreadtext = language.GetPhrase("tfa.inspect.val.degrees"):format(spread * AccuracyToDegrees)
 			end
 
-			myself.Text = accuracystr
+			myself.Text = language.GetPhrase("tfa.inspect.stat.accuracy.hip"):format(spreadtext)
 			myself.TextColor = mainpanel.SecondaryColor
 		end
 
@@ -614,6 +609,45 @@ function SWEP:InspectionVGUIStats(contentpanel)
 		accuracytext:Dock(LEFT)
 		accuracytext:SetSize(preferredWidth, TFA.Fonts.InspectionHeightSmall)
 		accuracytext.Paint = TextShadowPaint
+
+		--Iron Spread
+		if self:GetStat("data.ironsights") ~= 0 then
+			local ironspreadpanel = statspanel:Add("DPanel")
+			ironspreadpanel:SetSize(preferredWidth, TFA.Fonts.InspectionHeightSmall)
+			statspanel:SetTall(statspanel:GetTall() + TFA.Fonts.InspectionHeightSmall)
+
+			ironspreadpanel.Think = function(myself)
+				if not IsValid(self) then return end
+
+				myself.Bar = 1 - self:GetStat("Primary.IronAccuracy") / worstaccuracy
+			end
+
+			ironspreadpanel.Paint = PanelPaintBars
+			ironspreadpanel:Dock(BOTTOM)
+			local ironspreadtext = ironspreadpanel:Add("DPanel")
+
+			ironspreadtext.Think = function(myself)
+				if not IsValid(self) then return end
+
+				local ismoa = cv_display_moa:GetBool()
+				local spread = self:GetStat("Primary.IronAccuracy")
+				local spreadtext
+
+				if ismoa then
+					spreadtext = language.GetPhrase("tfa.inspect.val.moa"):format(spread * AccuracyToMOA)
+				else
+					spreadtext = language.GetPhrase("tfa.inspect.val.degrees"):format(spread * AccuracyToDegrees)
+				end
+
+				myself.Text = language.GetPhrase("tfa.inspect.stat.accuracy"):format(spreadtext)
+				myself.TextColor = mainpanel.SecondaryColor
+			end
+
+			ironspreadtext.Font = "TFA_INSPECTION_SMALL"
+			ironspreadtext:Dock(LEFT)
+			ironspreadtext:SetSize(preferredWidth, TFA.Fonts.InspectionHeightSmall)
+			ironspreadtext.Paint = TextShadowPaint
+		end
 
 		-- Condition
 		if self:CanBeJammed() then

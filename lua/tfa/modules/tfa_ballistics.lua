@@ -19,6 +19,9 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
+-- Degrees to accuracy vector, Valve's formula from SDK 2013
+TFA.DegreesToAccuracy = math.sin((math.pi / 180) / 2) -- approx. 0.00873
+
 --default cvar integration
 local cv_gravity = GetConVar("sv_gravity")
 
