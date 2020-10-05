@@ -634,7 +634,7 @@ function SWEP:CalculateFalloff(InitialPosition, HitPos, bullettable)
 
 	local minfalloff = self:GetStat("Primary.MinRangeStartFalloff") / 0.0254
 	if dist <= minfalloff then return 1 end
-	return (self:GetStat("Primary.Damage") - l_mathClamp((dist - minfalloff) * (self:GetStat("Primary.FalloffByMeter") * 0.0254), 0, self:GetStat("Primary.MaxFalloff"))) / self.Wep:GetStat("Primary.Damage")
+	return (self:GetStat("Primary.Damage") - l_mathClamp((dist - minfalloff) * (self:GetStat("Primary.FalloffByMeter") * 0.0254), 0, self:GetStat("Primary.MaxFalloff"))) / self:GetStat("Primary.Damage")
 end
 
 function SWEP.MainBullet:CalculateFalloff(HitPos)
