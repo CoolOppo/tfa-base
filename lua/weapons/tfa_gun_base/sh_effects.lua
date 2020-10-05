@@ -37,7 +37,7 @@ function SWEP:PCFTracer(bul, hitpos, ovrride)
 				vent = self.OwnerViewModel
 			end
 
-			if game.SinglePlayer() and not self:IsFirstPerson() then
+			if sp and not self:IsFirstPerson() then
 				TFA.ParticleTracer(bul.PCFTracer, self:GetOwner():GetShootPos() + self:GetOwner():GetAimVector() * 32, hitpos, false)
 			else
 				TFA.ParticleTracer(bul.PCFTracer, mzp.Pos, hitpos, false, vent, self.MuzzleAttachmentRaw or 1)
@@ -47,29 +47,33 @@ function SWEP:PCFTracer(bul, hitpos, ovrride)
 end
 
 function SWEP:EventShell()
-	if SERVER and not game.SinglePlayer() then
+	if SERVER then
 		net.Start("tfaBaseShellSV")
 		net.WriteEntity(self)
 
 		if self:GetOwner():IsPlayer() then
-			net.SendOmit(self:GetOwner())
+			if sp then
+				net.Broadcast()
+			else
+				net.SendOmit(self:GetOwner())
+			end
 		else
 			net.SendPVS(self:GetPos())
 		end
-	else
-		self:MakeShellBridge(true)
+
+		return
 	end
+
+	self:MakeShellBridge()
 end
 
 function SWEP:MakeShellBridge(ifp)
-	if game.SinglePlayer() and CLIENT then return end
+	if ifp == false then return end
 
-	if ifp then
-		if self.LuaShellEjectDelay > 0 then
-			self.LuaShellRequestTime = CurTime() + self.LuaShellEjectDelay / self:GetAnimationRate(ACT_VM_PRIMARYATTACK)
-		else
-			self:MakeShell()
-		end
+	if self.LuaShellEjectDelay > 0 then
+		self.LuaShellRequestTime = CurTime() + self.LuaShellEjectDelay / self:GetAnimationRate(ACT_VM_PRIMARYATTACK)
+	else
+		self:MakeShell()
 	end
 end
 
@@ -129,7 +133,7 @@ function SWEP:MakeShell(eject_now)
 	local isVM = false
 
 	if self:IsFirstPerson() then
-		if not eject_now and CLIENT and not sp then
+		if not eject_now and CLIENT then
 			self.ShellEjectionQueue = self.ShellEjectionQueue + 1
 			return
 		end

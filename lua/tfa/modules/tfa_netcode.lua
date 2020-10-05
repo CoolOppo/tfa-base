@@ -118,7 +118,7 @@ else
 		local wep = net.ReadEntity()
 
 		if IsValid(wep) and wep.MakeShellBridge then
-			wep:MakeShellBridge(true)
+			wep:MakeShellBridge()
 		end
 	end)
 
