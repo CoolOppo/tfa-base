@@ -175,22 +175,26 @@ function SWEP:RebuildEventEdictTable()
 					event.slot = slot
 					slot = slot + 1
 
-					if event.type == "lua" then
-						if event.server == nil then
-							event.server = true
+					if not event.autodetect then
+						if event.type == "lua" then
+							if event.server == nil then
+								event.server = true
+							end
+						elseif event.type == "snd" or event.type == "sound" then
+							if event.server == nil then
+								event.server = false
+							end
+						elseif event.type == "bg" or event.type == "bodygroup" then
+							if event.server == nil then event.server = true end
+							if event.view == nil then event.view = true end
+							if event.world == nil then event.world = true end
 						end
-					elseif event.type == "snd" or event.type == "sound" then
-						if event.server == nil then
-							event.server = false
-						end
-					elseif event.type == "bg" or event.type == "bodygroup" then
-						if event.server == nil then event.server = true end
-						if event.view == nil then event.view = true end
-						if event.world == nil then event.world = true end
-					end
 
-					if event.client == nil then
-						event.client = true
+						if event.client == nil then
+							event.client = true
+						end
+
+						event.autodetect = true
 					end
 
 					event.called = false
@@ -244,6 +248,28 @@ function SWEP:ProcessEvents(firstprediction)
 		if self:GetEventPlayed(event.slot) or curtime < eventtimer + event.time / animrate then goto CONTINUE end
 		self:SetEventPlayed(event.slot)
 		event.called = true
+
+		if not event.autodetect then
+			if event.type == "lua" then
+				if event.server == nil then
+					event.server = true
+				end
+			elseif event.type == "snd" or event.type == "sound" then
+				if event.server == nil then
+					event.server = false
+				end
+			elseif event.type == "bg" or event.type == "bodygroup" then
+				if event.server == nil then event.server = true end
+				if event.view == nil then event.view = true end
+				if event.world == nil then event.world = true end
+			end
+
+			if event.client == nil then
+				event.client = true
+			end
+
+			event.autodetect = true
+		end
 
 		if event.type == "lua" then
 			if ((event.client and CLIENT and (not event.client_predictedonly or is_local)) or (event.server and SERVER)) and event.value then
@@ -316,6 +342,28 @@ function SWEP:ProcessEventsSP(firstprediction)
 		if self:GetEventPlayed(event.slot) or curtime < eventtimer + event.time / animrate then goto CONTINUE end
 		self:SetEventPlayed(event.slot)
 		event.called = true
+
+		if not event.autodetect then
+			if event.type == "lua" then
+				if event.server == nil then
+					event.server = true
+				end
+			elseif event.type == "snd" or event.type == "sound" then
+				if event.server == nil then
+					event.server = false
+				end
+			elseif event.type == "bg" or event.type == "bodygroup" then
+				if event.server == nil then event.server = true end
+				if event.view == nil then event.view = true end
+				if event.world == nil then event.world = true end
+			end
+
+			if event.client == nil then
+				event.client = true
+			end
+
+			event.autodetect = true
+		end
 
 		if event.type == "lua" then
 			if event.value then
