@@ -58,7 +58,11 @@ SWEP.footstepTotal = 0
 SWEP.footstepTotalTarget = 0
 local upVec, riVec, fwVec = Vector(0, 0, 1), Vector(1, 0, 0), Vector(0, 1, 0)
 
-local l_Lerp = function(t, a, b) return a + (b - a) * t end
+local function l_Lerp(t, a, b)
+	if t <= 0 then return a end
+	if t >= 1 then return b end
+	return a + (b - a) * t
+end
 
 function SWEP:WalkBob(pos, ang, breathIntensity, walkIntensity, rate, ftv)
 	local self2 = self:GetTable()
