@@ -47,6 +47,8 @@ function SWEP:PCFTracer(bul, hitpos, ovrride)
 end
 
 function SWEP:EventShell()
+	if SERVER and self.processing_events and sp then return end
+
 	if SERVER then
 		net.Start("tfaBaseShellSV")
 		net.WriteEntity(self)

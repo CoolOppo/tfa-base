@@ -237,6 +237,7 @@ function SWEP:ProcessEvents(firstprediction)
 	local animrate = self:GetAnimationRate(self:GetLastActivity() or -1)
 
 	self.current_event_iftp = firstprediction
+	self.processing_events = true
 
 	for i = 1, #evtbl do
 		local event = evtbl[i]
@@ -291,6 +292,7 @@ function SWEP:ProcessEvents(firstprediction)
 		::CONTINUE::
 	end
 
+	self.processing_events = false
 	self.current_event_iftp = nil
 end
 
@@ -306,6 +308,8 @@ function SWEP:ProcessEventsSP(firstprediction)
 	local eventtimer = self:GetEventTimer()
 	local is_local = self:GetOwner() == Entity(1)
 	local animrate = self:GetAnimationRate(self:GetLastActivity() or -1)
+
+	self.processing_events = true
 
 	for i = 1, #evtbl do
 		local event = evtbl[i]
@@ -352,6 +356,8 @@ function SWEP:ProcessEventsSP(firstprediction)
 
 		::CONTINUE::
 	end
+
+	self.processing_events = false
 end
 
 function SWEP:EmitSoundSafe(snd)
