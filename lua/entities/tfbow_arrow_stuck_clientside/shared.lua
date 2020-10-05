@@ -203,7 +203,6 @@ function ENT:Think()
 		par.HasUseMod = true
 		par.ArrowUseOld = par.ArrowUseOld or par.Use
 		par.Use = function( parent, ... )
-			print(parent)
 			for _,v in pairs( par:GetChildren() ) do
 				if v.Use then v:Use(...) end
 			end
