@@ -126,25 +126,27 @@ function TFA.Particles.FollowMuzzle(self, first)
 		firvel = vector_origin
 	end
 
-	if self.Att and self.OffPos then
-		if self.FollowEnt == vm then
-			local angpos = VMAttachments[self.Att]
+	if not self.Att or not self.OffPos then return end
 
-			if angpos then
-				local tmppos = LocalToWorld(self.OffPos, self:GetAngles(), angpos.Pos, angpos.Ang)
-				local npos = tmppos + self:GetVelocity() * FrameTime()
-				self.OffPos = WorldToLocal(npos + firvel, self:GetAngles(), angpos.Pos, angpos.Ang)
-				self:SetPos(npos + firvel)
-			end
-		else
-			local angpos = self.FollowEnt:GetAttachment(self.Att)
+	if self.FollowEnt == vm then
+		local angpos = VMAttachments[self.Att]
 
-			if angpos then
-				local tmppos = LocalToWorld(self.OffPos, self:GetAngles(), angpos.Pos, angpos.Ang)
-				local npos = tmppos + self:GetVelocity() * FrameTime()
-				self.OffPos = WorldToLocal(npos + firvel * 0.5, self:GetAngles(), angpos.Pos, angpos.Ang)
-				self:SetPos(npos + firvel)
-			end
+		if angpos then
+			local tmppos = LocalToWorld(self.OffPos, self:GetAngles(), angpos.Pos, angpos.Ang)
+			local npos = tmppos + self:GetVelocity() * FrameTime()
+			self.OffPos = WorldToLocal(npos + firvel, self:GetAngles(), angpos.Pos, angpos.Ang)
+			self:SetPos(npos + firvel)
 		end
+
+		return
+	end
+
+	local angpos = self.FollowEnt:GetAttachment(self.Att)
+
+	if angpos then
+		local tmppos = LocalToWorld(self.OffPos, self:GetAngles(), angpos.Pos, angpos.Ang)
+		local npos = tmppos + self:GetVelocity() * FrameTime()
+		self.OffPos = WorldToLocal(npos + firvel * 0.5, self:GetAngles(), angpos.Pos, angpos.Ang)
+		self:SetPos(npos + firvel)
 	end
 end
