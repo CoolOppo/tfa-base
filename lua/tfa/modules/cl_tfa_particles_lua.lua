@@ -23,96 +23,128 @@ TFA.Particles = TFA.Particles or {}
 TFA.Particles.FlareParts = {}
 TFA.Particles.VMAttachments = {}
 
-local ply,vm,wep
+local VMAttachments = TFA.Particles.VMAttachments
+local FlareParts = TFA.Particles.FlareParts
 
-if CLIENT then
-	hook.Add("PreDrawEffects", "TFAMuzzleUpdate", function()
-		if not IsValid(ply) then ply = LocalPlayer() end
-		if IsValid(ply) then
-			if not IsValid(vm) then vm = ply:GetViewModel() return end
-			local tbl = vm:GetAttachments()
+local ply, vm, wep
 
-			if tbl then
-				local i = 1
+local IsValid_ = FindMetaTable("Entity").IsValid
+local GetModel = FindMetaTable("Entity").GetModel
+local lastVMModel, lastVMAtts
 
-				while i <= #tbl do
-					TFA.Particles.VMAttachments[i] = vm:GetAttachment(i)
-					i = i + 1
-				end
-			end
+local lastRequired = 0
+local RealTime = RealTime
+local FrameTime = FrameTime
+local LocalPlayer = LocalPlayer
+local ipairs = ipairs
+local istable = istable
+local isfunction = isfunction
+local WorldToLocal = WorldToLocal
+local table = table
 
-			for _, v in pairs(TFA.Particles.FlareParts) do
-				if v and v.ThinkFunc then
-					v:ThinkFunc()
-				end
-			end
+hook.Add("PreDrawEffects", "TFAMuzzleUpdate", function()
+	if lastRequired < RealTime() then return end
+
+	if not ply then
+		ply = LocalPlayer()
+	end
+
+	if not IsValid_(vm) then
+		vm = ply:GetViewModel()
+	end
+
+	local vmmodel = GetModel(vm)
+
+	if vmmodel ~= lastVMModel then
+		lastVMModel = vmmodel
+		lastVMAtts = vm:GetAttachments()
+	end
+
+	if not lastVMAtts then return end
+
+	for i = 1, #lastVMAtts do
+		VMAttachments[i] = vm:GetAttachment(i)
+	end
+
+	for _, v in ipairs(FlareParts) do
+		if v and v.ThinkFunc then
+			v:ThinkFunc()
+		end
+	end
+end)
+
+function TFA.Particles.RegisterParticleThink(particle, partfunc)
+	if not particle or not isfunction(partfunc) then return end
+
+	particle.ThinkFunc = partfunc
+
+	if IsValid(particle.FollowEnt) and particle.Att then
+		local angpos = particle.FollowEnt:GetAttachment(particle.Att)
+
+		if angpos then
+			particle.OffPos = WorldToLocal(particle:GetPos(), particle:GetAngles(), angpos.Pos, angpos.Ang)
+		end
+	end
+
+	table.insert(FlareParts, particle)
+
+	timer.Simple(particle:GetDieTime(), function()
+		if particle then
+			table.RemoveByValue(FlareParts, particle)
 		end
 	end)
 
-	function TFA.Particles.RegisterParticleThink(particle, partfunc)
-		if not particle or not partfunc then return end
-		particle.ThinkFunc = partfunc
+	lastRequired = RealTime() + 0.5
+end
 
-		if IsValid(particle.FollowEnt) and particle.Att then
-			local angpos = particle.FollowEnt:GetAttachment(particle.Att)
+function TFA.Particles.FollowMuzzle(self, first)
+	if lastRequired < RealTime() then
+		lastRequired = RealTime() + 0.5
+		return
+	end
+
+	lastRequired = RealTime() + 0.5
+
+	if self.isfirst == nil then
+		self.isfirst = false
+		first = true
+	end
+
+	if not IsValid_(ply) or not IsValid_(vm) then return end
+	wep = ply:GetActiveWeapon()
+	if IsValid(wep) and wep.IsCurrentlyScoped and wep:IsCurrentlyScoped() then return end
+
+	if not IsValid(self.FollowEnt) then return end
+	local owent = self.FollowEnt:GetOwner() or self.FollowEnt
+	if not IsValid(owent) then return end
+
+	local firvel
+
+	if first then
+		firvel = owent:GetVelocity() * FrameTime() * 1.1
+	else
+		firvel = vector_origin
+	end
+
+	if self.Att and self.OffPos then
+		if self.FollowEnt == vm then
+			local angpos = VMAttachments[self.Att]
 
 			if angpos then
-				particle.OffPos = WorldToLocal(particle:GetPos(), particle:GetAngles(), angpos.Pos, angpos.Ang)
+				local tmppos = LocalToWorld(self.OffPos, self:GetAngles(), angpos.Pos, angpos.Ang)
+				local npos = tmppos + self:GetVelocity() * FrameTime()
+				self.OffPos = WorldToLocal(npos + firvel, self:GetAngles(), angpos.Pos, angpos.Ang)
+				self:SetPos(npos + firvel)
 			end
-		end
+		else
+			local angpos = self.FollowEnt:GetAttachment(self.Att)
 
-		table.insert(TFA.Particles.FlareParts, #TFA.Particles.FlareParts + 1, particle)
-
-		timer.Simple(particle:GetDieTime(), function()
-			if particle then
-				table.RemoveByValue(TFA.Particles.FlareParts, particle)
-			end
-		end)
-	end
-
-	function TFA.Particles.FollowMuzzle(self, first)
-		if self.isfirst == nil then
-			self.isfirst = false
-			first = true
-		end
-
-		if not ply:IsValid() or not vm:IsValid() then return end
-		wep = ply:GetActiveWeapon()
-		if IsValid(wep) and wep.IsCurrentlyScoped and wep:IsCurrentlyScoped() then return end
-
-		if IsValid(self.FollowEnt) then
-			local owent = self.FollowEnt:GetOwner() or self.FollowEnt
-			if not IsValid(owent) then return end
-			local firvel
-
-			if first then
-				firvel = owent:GetVelocity() * FrameTime() * 1.1
-			else
-				firvel = vector_origin
-			end
-
-			if self.Att and self.OffPos then
-				if self.FollowEnt == vm then
-					local angpos = TFA.Particles.VMAttachments[self.Att]
-
-					if angpos then
-						local tmppos = LocalToWorld(self.OffPos, self:GetAngles(), angpos.Pos, angpos.Ang)
-						local npos = tmppos + self:GetVelocity() * FrameTime()
-						self.OffPos = WorldToLocal(npos + firvel, self:GetAngles(), angpos.Pos, angpos.Ang)
-						self:SetPos(npos + firvel)
-					end
-				else
-					local angpos = self.FollowEnt:GetAttachment(self.Att)
-
-					if angpos then
-						local tmppos = LocalToWorld(self.OffPos, self:GetAngles(), angpos.Pos, angpos.Ang)
-						local npos = tmppos + self:GetVelocity() * FrameTime()
-						self.OffPos = WorldToLocal(npos + firvel * 0.5, self:GetAngles(), angpos.Pos, angpos.Ang)
-						self:SetPos(npos + firvel)
-					end
-				end
+			if angpos then
+				local tmppos = LocalToWorld(self.OffPos, self:GetAngles(), angpos.Pos, angpos.Ang)
+				local npos = tmppos + self:GetVelocity() * FrameTime()
+				self.OffPos = WorldToLocal(npos + firvel * 0.5, self:GetAngles(), angpos.Pos, angpos.Ang)
+				self:SetPos(npos + firvel)
 			end
 		end
 	end
-
 end
