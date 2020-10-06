@@ -42,6 +42,9 @@ local isfunction = isfunction
 local WorldToLocal = WorldToLocal
 local table = table
 
+local thinkAttachments = {}
+local slowThinkers = 0
+
 hook.Add("PreDrawEffects", "TFAMuzzleUpdate", function()
 	if lastRequired < RealTime() then return end
 
@@ -62,8 +65,14 @@ hook.Add("PreDrawEffects", "TFAMuzzleUpdate", function()
 
 	if not lastVMAtts then return end
 
-	for i = 1, #lastVMAtts do
-		VMAttachments[i] = vm:GetAttachment(i)
+	if slowThinkers == 0 then
+		for i in pairs(thinkAttachments) do
+			VMAttachments[i] = vm:GetAttachment(i)
+		end
+	else
+		for i = 1, #lastVMAtts do
+			VMAttachments[i] = vm:GetAttachment(i)
+		end
 	end
 
 	for _, v in ipairs(FlareParts) do
@@ -76,6 +85,14 @@ end)
 function TFA.Particles.RegisterParticleThink(particle, partfunc)
 	if not particle or not isfunction(partfunc) then return end
 
+	if not ply then
+		ply = LocalPlayer()
+	end
+
+	if not IsValid_(vm) then
+		vm = ply:GetViewModel()
+	end
+
 	particle.ThinkFunc = partfunc
 
 	if IsValid(particle.FollowEnt) and particle.Att then
@@ -86,11 +103,31 @@ function TFA.Particles.RegisterParticleThink(particle, partfunc)
 		end
 	end
 
+	local att = particle.Att
+
+	local isFast = partfunc == TFA.Particles.FollowMuzzle and att ~= nil
+	local isVM = particle.FollowEnt == vm
+
+	if isFast then
+		if isVM then
+			thinkAttachments[att] = (thinkAttachments[att] or 0) + 1
+		end
+	else
+		slowThinkers = slowThinkers + 1
+	end
+
 	table.insert(FlareParts, particle)
 
 	timer.Simple(particle:GetDieTime(), function()
 		if particle then
 			table.RemoveByValue(FlareParts, particle)
+		end
+
+		if not isFast then
+			slowThinkers = slowThinkers - 1
+		elseif isVM and att then
+			thinkAttachments[att] = thinkAttachments[att] - 1
+			if thinkAttachments[att] <= 0 then thinkAttachments[att] = nil end
 		end
 	end)
 
