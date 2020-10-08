@@ -84,11 +84,11 @@ end
 
 local function BlockDamageNew( ent, dmginfo )
 	if not ent:IsPlayer() then return end
-	if dmginfo:IsDamageType( DMG_DROWNRECOVER ) then return end
+	if dmginfo:IsDamageType( DMG_DROWNRECOVER ) or dmginfo:IsDamageType(DMG_DIRECT) then return end
 	local wep
 	wep = ent:GetActiveWeapon()
 
-	if (wep.IsTFAWeapon and wep.BlockDamageTypes and wep:GetStatus() == TFA.GetStatus("blocking") ) then
+	if (wep.IsTFAWeapon and wep.BlockDamageTypes and wep:GetStatus() == TFA.Enum.STATUS_BLOCKING) then
 		local canblock = false
 		for _,v in ipairs(wep.BlockDamageTypes) do
 			if dmginfo:IsDamageType(v) then canblock = true end

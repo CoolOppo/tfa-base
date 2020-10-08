@@ -753,7 +753,7 @@ function SWEP:Holster(target)
 	stat = self:GetStatus()
 
 	if not TFA.Enum.HolsterStatus[stat] then
-		if stat == TFA.GetStatus("reloading_wait") and self:Clip1() <= self:GetStat("Primary.ClipSize") and (not self:GetStat("DisableChambering")) and (not self:GetStat("Shotgun")) then
+		if stat == TFA.Enum.STATUS_RELOADING_WAIT and self:Clip1() <= self:GetStat("Primary.ClipSize") and (not self:GetStat("DisableChambering")) and (not self:GetStat("Shotgun")) then
 			self:ResetFirstDeploy()
 
 			if sp then
@@ -1709,7 +1709,7 @@ function SWEP:DoPump()
 
 	local _, tanim = self:PlayAnimation(self:GetStat("PumpAction"))
 
-	self:SetStatus(TFA.GetStatus("pump"))
+	self:SetStatus(TFA.Enum.STATUS_PUMP)
 	self:SetStatusEnd(l_CT() + self:GetActivityLength(tanim, true))
 	self:SetNextPrimaryFire(l_CT() + self:GetActivityLength(tanim, false))
 	self:SetNextIdleAnim(math.max(self:GetNextIdleAnim(), l_CT() + self:GetActivityLength(tanim, false)))
@@ -1759,7 +1759,7 @@ function SWEP:CheckAmmo()
 
 	if (self:GetActivityEnabled(ACT_VM_FIDGET) or self2.InspectionActions) and self:GetStatus() == TFA.Enum.STATUS_IDLE then--and CurTime() > self2.NextInspectAnim then
 		local _, tanim = self:ChooseInspectAnim()
-		self:SetStatus(TFA.GetStatus("fidget"))
+		self:SetStatus(TFA.Enum.STATUS_FIDGET)
 		self:SetStatusEnd(l_CT() + self:GetActivityLength(tanim))
 	end
 end

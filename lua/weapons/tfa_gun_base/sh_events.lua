@@ -553,10 +553,10 @@ function SWEP:ProcessStatus()
 			self:SetShotgunCancel(false)
 		elseif stat == TFA.Enum.STATUS_SHOOTING and self2.GetStat(self, "PumpAction") then
 			if self:Clip1() == 0 and self2.GetStat(self, "PumpAction").value_empty then
-				--finalstat = TFA.GetStatus("pump_ready")
+				--finalstat = TFA.Enum.STATUS_PUMP_READY
 				self:SetShotgunCancel(true)
 			elseif (self2.GetStat(self, "Primary.ClipSize") < 0 or self:Clip1() > 0) and self2.GetStat(self, "PumpAction").value then
-				--finalstat = TFA.GetStatus("pump_ready")
+				--finalstat = TFA.Enum.STATUS_PUMP_READY
 				self:SetShotgunCancel(true)
 			end
 		end

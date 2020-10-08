@@ -409,7 +409,7 @@ function SWEP:Think2(...)
 		local stat = self:GetStatus()
 
 		if self:GetBashImpulse() and TFA.Enum.ReadyStatus[stat] and not self:GetOwner():KeyDown(IN_USE) then
-			self:SetStatus(TFA.GetStatus("blocking"))
+			self:SetStatus(TFA.Enum.STATUS_BLOCKING)
 
 			if self.BlockAnimation["in"] then
 				self:PlayAnimation(self.BlockAnimation["in"])
@@ -419,9 +419,9 @@ function SWEP:Think2(...)
 
 			self:SetStatusEnd(math.huge)
 			self.BlockStart = CurTime()
-		elseif stat == TFA.GetStatus("blocking") and not self:GetBashImpulse() then
+		elseif stat == TFA.Enum.STATUS_BLOCKING and not self:GetBashImpulse() then
 			local _, tanim
-			self:SetStatus(TFA.GetStatus("blocking_end"))
+			self:SetStatus(TFA.Enum.STATUS_BLOCKING_END)
 
 			if self.BlockAnimation["out"] then
 				_, tanim = self:PlayAnimation(self.BlockAnimation["out"])
@@ -430,7 +430,7 @@ function SWEP:Think2(...)
 			end
 
 			self:SetStatusEnd(CurTime() + (self.BlockFadeOut or (self:GetActivityLength(tanim) - self.BlockFadeOutEnd)))
-		elseif stat == TFA.GetStatus("blocking") and CurTime() > self:GetNextIdleAnim() then
+		elseif stat == TFA.Enum.STATUS_BLOCKING and CurTime() > self:GetNextIdleAnim() then
 			self:ChooseIdleAnim()
 		end
 	end
@@ -440,7 +440,7 @@ function SWEP:Think2(...)
 end
 
 function SWEP:ProcessHoldType(...)
-	if self:GetStatus() == TFA.GetStatus("blocking") then
+	if self:GetStatus() == TFA.Enum.STATUS_BLOCKING then
 		self:SetHoldType(self.BlockHoldType or "magic")
 
 		return self.BlockHoldType or "magic"
@@ -462,7 +462,7 @@ function SWEP:ChooseBlockAnimation()
 end
 
 function SWEP:ChooseIdleAnim(...)
-	if self.CanBlock and self:GetStatus() == TFA.GetStatus("blocking") and self.BlockAnimation["loop"] then
+	if self.CanBlock and self:GetStatus() == TFA.Enum.STATUS_BLOCKING and self.BlockAnimation["loop"] then
 		return self:PlayAnimation(self.BlockAnimation["loop"])
 	else
 		return BaseClass.ChooseIdleAnim(self, ...)

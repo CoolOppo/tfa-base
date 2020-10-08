@@ -1113,8 +1113,8 @@ function SWEP:DrawHUDAmmo()
 	fm = self:GetFireMode()
 	targbool = (not TFA.Enum.HUDDisabledStatus[stat]) or fm ~= lfm
 	targbool = targbool or (stat == TFA.Enum.STATUS_SHOOTING and self2.LastBoltShoot and l_CT() > self2.LastBoltShoot + self2.BoltTimerOffset)
-	targbool = targbool or (self2.GetStat(self, "PumpAction") and (stat == TFA.GetStatus("pump") or (stat == TFA.Enum.STATUS_SHOOTING and self:Clip1() == 0)))
-	targbool = targbool or (stat == TFA.GetStatus("fidget"))
+	targbool = targbool or (self2.GetStat(self, "PumpAction") and (stat == TFA.Enum.STATUS_PUMP or (stat == TFA.Enum.STATUS_SHOOTING and self:Clip1() == 0)))
+	targbool = targbool or (stat == TFA.Enum.STATUS_FIDGET)
 
 	targ = targbool and 1 or 0
 	lfm = fm

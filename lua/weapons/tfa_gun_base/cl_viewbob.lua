@@ -98,17 +98,17 @@ function SWEP:CalcView(ply, pos, ang, fov)
 	else
 		local vb_d, vb_r, vb_s, idraw, ireload, ihols, stat
 		stat = self:GetStatus()
-		idraw = stat == TFA.GetStatus("draw")
+		idraw = stat == TFA.Enum.STATUS_DRAW
 		ihols = TFA.Enum.HolsterStatus[stat]
 		ireload = TFA.Enum.ReloadStatus[stat]
 		vb_d = viewbob_animated_cvar:GetBool()
 		vb_r = viewbob_animated_cvar:GetBool()
 		vb_s = viewbob_animated_cvar:GetBool()
-		targbool = (vb_d and idraw) or (vb_r and ireload) or (self2.GetBashing and self2.GetBashing(self)) or (vb_s and stat == TFA.Enum.STATUS_SHOOTING and (self2.ViewBob_Shoot or not self:CanInterruptShooting())) or stat == TFA.GetStatus("pump")
+		targbool = (vb_d and idraw) or (vb_r and ireload) or (self2.GetBashing and self2.GetBashing(self)) or (vb_s and stat == TFA.Enum.STATUS_SHOOTING and (self2.ViewBob_Shoot or not self:CanInterruptShooting())) or stat == TFA.Enum.STATUS_PUMP
 		targbool = targbool and not (ihols and self2.ProceduralHolsterEnabled)
 		targint = targbool and 1 or 0
 
-		if stat == TFA.Enum.STATUS_RELOADING_SHOTGUN_END or stat == TFA.Enum.STATUS_RELOADING or stat == TFA.GetStatus("pump") or (stat == TFA.Enum.STATUS_RELOADING_WAIT and not self2.Shotgun) or stat == TFA.Enum.STATUS_SHOOTING or (idraw and vb_d) then
+		if stat == TFA.Enum.STATUS_RELOADING_SHOTGUN_END or stat == TFA.Enum.STATUS_RELOADING or stat == TFA.Enum.STATUS_PUMP or (stat == TFA.Enum.STATUS_RELOADING_WAIT and not self2.Shotgun) or stat == TFA.Enum.STATUS_SHOOTING or (idraw and vb_d) then
 			targint = math.min(targint, 1 - math.pow(math.max(vm:GetCycle() - 0.5, 0) * 2, 2))
 		end
 
