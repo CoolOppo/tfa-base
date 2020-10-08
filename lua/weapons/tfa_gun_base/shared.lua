@@ -483,8 +483,7 @@ function SWEP:SetupDataTables()
 		end
 	end
 
-	self:NetworkVar("Entity", 0, "SwapTarget")
-	hook.Run("TFA_SetupDataTables", self)
+	self:NetworkVarTFA("Entity", "SwapTarget")
 
 	self:NetworkVarNotify("Customizing", self.CustomizingUpdated)
 
@@ -511,6 +510,8 @@ function SWEP:SetupDataTables()
 
 	self:NetworkVarTFA("Bool", "CustomizeUpdated")
 	self:NetworkVarTFA("Bool", "IronSightsOldFinal")
+
+	hook.Run("TFA_SetupDataTables", self)
 end
 
 --[[

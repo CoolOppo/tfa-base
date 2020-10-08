@@ -70,8 +70,9 @@ SWEP.BowAnimations = {
 --["idle_charged"] = {["type"] = TFA.Enum.ANIMATION_SEQ, ["value"] = "idle_charged", ["enabled"] = true }
 function SWEP:SetupDataTables(...)
 	BaseClass.SetupDataTables(self, ...)
-	self:NetworkVar("Bool", 31, "Shaking")
-	self:NetworkVar("Float", 31, "Charge")
+
+	self:NetworkVarTFA("Bool", "Shaking")
+	self:NetworkVarTFA("Float", "Charge")
 end
 
 function SWEP:GetChargeTime()

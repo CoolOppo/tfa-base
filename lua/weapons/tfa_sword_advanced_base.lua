@@ -241,8 +241,9 @@ function SWEP:Deploy()
 end
 
 function SWEP:SetupDataTables()
-	self:NetworkVar("Float", 20, "BlockStart")
 	BaseClass.SetupDataTables(self)
+
+	self:NetworkVarTFA("Float", "BlockStart")
 end
 
 function SWEP:DoImpactEffect(tr, dmg)
