@@ -130,16 +130,15 @@ function SWEP:AltAttack()
 	if sp and SERVER then self:CallOnClient("BashAnim", "") end
 
 	local bashend = self:GetStat("Secondary.BashEnd")
+	local nextTime = time + (bashend or self:GetActivityLength(act, false))
 
-	self:SetNextPrimaryFire(time + (bashend or self:GetActivityLength(act, false)))
-	self:SetNextSecondaryFire(time + (bashend or self:GetActivityLength(act, true)))
+	self:SetNextPrimaryFire(nextTime)
+	self:SetNextSecondaryFire(nextTime)
 
 	self:EmitSoundNet(self:GetStat("Secondary.BashSound"))
 
 	self:SetStatus(TFA.Enum.STATUS_BASHING)
-	self:SetStatusEnd(time + (bashend or self:GetActivityLength(act, true)))
-
-	self:SetNW2Float("BashTTime", time + self:GetStat("Secondary.BashDelay"))
+	self:SetStatusEnd(time + self:GetStat("Secondary.BashDelay"))
 
 	hook.Run("TFA_PostBash", self)
 end
@@ -219,10 +218,9 @@ function SWEP:HandleBashAttack()
 end
 
 function SWEP:Think2(...)
-	ttime = self:GetNW2Float("BashTTime", -1)
-
-	if ttime ~= -1 and l_CT() > ttime then
-		self:SetNW2Float("BashTTime", -1)
+	if self:GetStatus() == TFA.Enum.STATUS_BASHING and self:GetStatusEnd() < l_CT() then
+		self:SetStatus(TFA.Enum.STATUS_BASHING_WAIT)
+		self:SetStatusEnd(self:GetNextSecondaryFire())
 
 		if IsFirstTimePredicted() then
 			self:HandleBashAttack()
