@@ -363,6 +363,67 @@ local l_CT = CurTime
 local stat --Weapon status
 local ct, ft  = 0, 0.01--Curtime, frametime, real frametime
 local sp = game.SinglePlayer() --Singleplayer
+local developer = GetConVar("developer")
+
+function SWEP:NetworkVarTFA(typeIn, nameIn)
+	if not self.TrackedDTTypes then
+		self.TrackedDTTypes = {
+			Angle = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31},
+			Bool = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31},
+			Entity = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31},
+			Float = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31},
+			Int = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31},
+			String = {0, 1, 2, 3},
+			Vector = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31},
+		}
+
+		if istable(self.dt) then
+			local meta = getmetatable(self.dt)
+
+			if istable(meta) and isfunction(meta.__index) then
+				local name, value = debug.getupvalue(meta.__index, 1)
+
+				if name == "datatable" and istable(value) then
+					for variableName, variableData in SortedPairs(value) do
+						if istable(variableData) and isstring(variableData.typename) and isnumber(variableData.index) then
+							local trackedData = self.TrackedDTTypes[variableData.typename]
+
+							if trackedData then
+								table.RemoveByValue(trackedData, variableData.index)
+							end
+						end
+					end
+				end
+			end
+		end
+	end
+
+	if not self.TrackedDTTypes[typeIn] then
+		error("Variable type " .. typeIn .. " is invalid")
+	end
+
+	local gatherindex = table.remove(self.TrackedDTTypes[typeIn], 1)
+
+	if gatherindex then
+		self:NetworkVar(typeIn, gatherindex, nameIn)
+		return
+	end
+
+	local get = self["GetNW2" .. typeIn]
+	local set = self["SetNW2" .. typeIn]
+
+	self["Set" .. nameIn] = function(self, value)
+		set(self, nameIn, value)
+	end
+
+	self["Get" .. nameIn] = function(self, def)
+		return get(self, nameIn, def)
+	end
+
+	if developer:GetBool() then
+		print("[TFA Base] developer 1: Variable " .. nameIn .. " can not use DTVars due to " .. typeIn .. " index exhaust")
+	end
+end
 
 --[[
 Function Name:  SetupDataTables
@@ -371,46 +432,46 @@ Returns:  Nothing.  Simple sets up DTVars to be networked.
 Purpose:  Networking.
 ]]
 function SWEP:SetupDataTables()
-	--self:NetworkVar("Bool", 0, "IronSights")
-	self:NetworkVar("Bool", 0, "IronSightsRaw")
-	self:NetworkVar("Bool", 1, "Sprinting")
-	self:NetworkVar("Bool", 2, "Silenced")
-	self:NetworkVar("Bool", 3, "ShotgunCancel")
-	self:NetworkVar("Bool", 4, "Walking")
-	self:NetworkVar("Bool", 5, "Customizing")
+	--self:NetworkVarTFA("Bool", "IronSights")
+	self:NetworkVarTFA("Bool", "IronSightsRaw")
+	self:NetworkVarTFA("Bool", "Sprinting")
+	self:NetworkVarTFA("Bool", "Silenced")
+	self:NetworkVarTFA("Bool", "ShotgunCancel")
+	self:NetworkVarTFA("Bool", "Walking")
+	self:NetworkVarTFA("Bool", "Customizing")
 
-	self:NetworkVar("Bool", 18, "FlashlightEnabled")
-	self:NetworkVar("Bool", 19, "Jammed")
-	self:NetworkVar("Bool", 20, "FirstDeployEvent")
+	self:NetworkVarTFA("Bool", "FlashlightEnabled")
+	self:NetworkVarTFA("Bool", "Jammed")
+	self:NetworkVarTFA("Bool", "FirstDeployEvent")
 
-	self:NetworkVar("Float", 0, "StatusEnd")
-	self:NetworkVar("Float", 1, "NextIdleAnim")
-	self:NetworkVar("Float", 18, "NextLoopSoundCheck")
-	self:NetworkVar("Float", 19, "JamFactor")
-	self:NetworkVar("Float", 20, "EventTimer")
+	self:NetworkVarTFA("Float", "StatusEnd")
+	self:NetworkVarTFA("Float", "NextIdleAnim")
+	self:NetworkVarTFA("Float", "NextLoopSoundCheck")
+	self:NetworkVarTFA("Float", "JamFactor")
+	self:NetworkVarTFA("Float", "EventTimer")
 
-	self:NetworkVar("Int", 0, "Status")
-	self:NetworkVar("Int", 1, "FireMode")
-	self:NetworkVar("Int", 2, "LastActivity")
-	self:NetworkVar("Int", 3, "BurstCount")
-	self:NetworkVar("Int", 4, "ShootStatus")
-	self:NetworkVar("Int", 5, "EventStatus1")
-	self:NetworkVar("Int", 6, "EventStatus2")
-	self:NetworkVar("Int", 7, "EventStatus3")
-	self:NetworkVar("Int", 8, "EventStatus4")
-	self:NetworkVar("Int", 9, "EventStatus5")
-	self:NetworkVar("Int", 10, "EventStatus6")
-	self:NetworkVar("Int", 11, "EventStatus7")
-	self:NetworkVar("Int", 12, "EventStatus8")
+	self:NetworkVarTFA("Int", "Status")
+	self:NetworkVarTFA("Int", "FireMode")
+	self:NetworkVarTFA("Int", "LastActivity")
+	self:NetworkVarTFA("Int", "BurstCount")
+	self:NetworkVarTFA("Int", "ShootStatus")
+	self:NetworkVarTFA("Int", "EventStatus1")
+	self:NetworkVarTFA("Int", "EventStatus2")
+	self:NetworkVarTFA("Int", "EventStatus3")
+	self:NetworkVarTFA("Int", "EventStatus4")
+	self:NetworkVarTFA("Int", "EventStatus5")
+	self:NetworkVarTFA("Int", "EventStatus6")
+	self:NetworkVarTFA("Int", "EventStatus7")
+	self:NetworkVarTFA("Int", "EventStatus8")
 
-	self:NetworkVar("Bool", 6, "RecoilLoop")
-	self:NetworkVar("Bool", 7, "RecoilThink")
+	self:NetworkVarTFA("Bool", "RecoilLoop")
+	self:NetworkVarTFA("Bool", "RecoilThink")
 
-	self:NetworkVar("Float", 2, "RecoilInProgress")
-	self:NetworkVar("Float", 3, "RecoilInWait")
-	self:NetworkVar("Float", 4, "RecoilLoopProgress")
-	self:NetworkVar("Float", 5, "RecoilLoopWait")
-	self:NetworkVar("Float", 6, "RecoilOutProgress")
+	self:NetworkVarTFA("Float", "RecoilInProgress")
+	self:NetworkVarTFA("Float", "RecoilInWait")
+	self:NetworkVarTFA("Float", "RecoilLoopProgress")
+	self:NetworkVarTFA("Float", "RecoilLoopWait")
+	self:NetworkVarTFA("Float", "RecoilOutProgress")
 
 	if not self.get_event_status_lut then
 		self.get_event_status_lut = {}
