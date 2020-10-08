@@ -487,6 +487,30 @@ function SWEP:SetupDataTables()
 	hook.Run("TFA_SetupDataTables", self)
 
 	self:NetworkVarNotify("Customizing", self.CustomizingUpdated)
+
+	self:NetworkVarTFA("Float", "SpreadRatio")
+	self:NetworkVarTFA("Float", "IronSightsProgress")
+	self:NetworkVarTFA("Float", "ProceduralHolsterProgress")
+	self:NetworkVarTFA("Float", "InspectingProgress")
+	self:NetworkVarTFA("Float", "JumpRatio")
+	self:NetworkVarTFA("Float", "CrouchingRatio")
+
+	self:NetworkVarTFA("Float", "ViewPunchBuild")
+	self:NetworkVarTFA("Float", "ViewPunchP")
+	self:NetworkVarTFA("Float", "ViewPunchY")
+
+	self:NetworkVarTFA("Float", "SprintProgress")
+	self:NetworkVarTFA("Float", "WalkProgress")
+	self:NetworkVarTFA("Float", "LastVelocity")
+
+	self:NetworkVarTFA("Int", "AnimCycle")
+
+	self:NetworkVarTFA("Vector", "QueuedRecoil")
+	self:NetworkVarTFA("Float", "PrevRecoilAngleTime")
+	self:NetworkVarTFA("Angle", "PrevRecoilAngle")
+
+	self:NetworkVarTFA("Bool", "CustomizeUpdated")
+	self:NetworkVarTFA("Bool", "IronSightsOldFinal")
 end
 
 --[[
@@ -682,10 +706,10 @@ function SWEP:Deploy()
 
 	self:SetBurstCount(0)
 
-	self:SetNW2Float("IronSightsProgress", 0)
-	self:SetNW2Float("SprintProgress", 0)
-	self:SetNW2Float("InspectingProgress", 0)
-	self:SetNW2Float("ProceduralHolsterProgress", 0)
+	self:SetIronSightsProgress(0)
+	self:SetSprintProgress(0)
+	self:SetInspectingProgress(0)
+	self:SetProceduralHolsterProgress(0)
 
 	if self:GetCustomizing() then
 		self:ToggleCustomize()
@@ -1039,7 +1063,7 @@ function SWEP:IronSights()
 		self:SetIronSightsRaw(false)
 	end
 
-	-- self:SetNW2Float("LastSightsStatusCached", false)
+	-- self:SetLastSightsStatusCached(false)
 	local userstatus = issighting
 
 	if current_iron_sights ~= issighting then
@@ -1074,7 +1098,7 @@ function SWEP:IronSights()
 		end
 	end
 
-	local old_iron_sights_final = self:GetNW2Bool("IronSightsOldFinal", false)
+	local old_iron_sights_final = self:GetIronSightsOldFinal()
 
 	if old_iron_sights_final ~= issighting and self2.Sights_Mode == TFA.Enum.LOCOMOTION_LUA then -- and stat == TFA.Enum.STATUS_IDLE then
 		self:SetNextIdleAnim(-1)
@@ -1090,9 +1114,9 @@ function SWEP:IronSights()
 		and self2.walking_updated
 
 	local cmi = (self2.Customize_Mode == TFA.Enum.LOCOMOTION_HYBRID or self2.Customize_Mode == TFA.Enum.LOCOMOTION_ANI)
-		and self:GetNW2Bool("CustomizeUpdated", false)
+		and self:GetCustomizeUpdated()
 
-	self:SetNW2Bool("CustomizeUpdated", false)
+	self:SetCustomizeUpdated(false)
 
 	if (smi or spi or wmi or cmi) and (self:GetStatus() == TFA.Enum.STATUS_IDLE or (self:GetStatus() == TFA.Enum.STATUS_SHOOTING and self:CanInterruptShooting())) and not self:GetShotgunCancel() then
 		local toggle_is = current_iron_sights ~= issighting
@@ -1108,7 +1132,7 @@ function SWEP:IronSights()
 		end
 	end
 
-	self:SetNW2Bool("IronSightsOldFinal", issighting)
+	self:SetIronSightsOldFinal(issighting)
 
 	return userstatus, issighting
 end
@@ -1117,9 +1141,9 @@ function SWEP:GetIronSights()
 	-- Is this code supposed to do something other than duplicating code of function above?
 	--[==[local self2 = self:GetTable()
 
-	if ignorestatus or not self:GetNW2Bool("LastSightsStatusCached", false) then
+	if ignorestatus or not self:GetLastSightsStatusCached() then
 		-- local issighting = self:GetIronSightsRaw()
-		local issighting = self:GetNW2Bool("IronSightsOldFinal")
+		local issighting = self:GetIronSightsOldFinal()
 		local issprinting = self:GetSprinting()
 		local stat = self:GetStatus()
 
@@ -1144,8 +1168,8 @@ function SWEP:GetIronSights()
 		end
 
 		if not ignorestatus then
-			self:SetNW2Bool("LastSightsStatus", issighting)
-			self:SetNW2Bool("LastSightsStatusCached", true)
+			self:SetLastSightsStatus(issighting)
+			self:SetLastSightsStatusCached(true)
 
 			--[[
 			if (self2.is_cached_old ~= issighting) and not ( sp and CLIENT ) then
@@ -1157,19 +1181,19 @@ function SWEP:GetIronSights()
 			end
 			]]--
 
-			self:SetNW2Bool("LastSightsStatusOld", issighting)
+			self:SetLastSightsStatusOld(issighting)
 		end
 
 		return issighting
 	end
 
-	return self:GetNW2Bool("LastSightsStatus", false)]==]
+	return self:GetLastSightsStatus()]==]
 
-	return self:GetNW2Bool("IronSightsOldFinal")
+	return self:GetIronSightsOldFinal()
 end
 
 function SWEP:GetIronSightsDirect()
-	return self:GetNW2Bool("IronSightsOldFinal", false)
+	return self:GetIronSightsOldFinal()
 end
 
 SWEP.is_sndcache_old = false
@@ -1237,7 +1261,7 @@ function SWEP:CanPrimaryAttack()
 		return false
 	end
 
-	if self:GetNW2Float("SprintProgress", 0) >= 0.1 and not self:GetStat("AllowSprintAttack", false) then
+	if self:GetSprintProgress() >= 0.1 and not self:GetStat("AllowSprintAttack", false) then
 		return false
 	end
 
@@ -1790,7 +1814,7 @@ function SWEP:AdjustMouseSensitivity()
 		end
 	end
 
-	sensval = sensval * l_Lerp(self:GetNW2Float("IronSightsProgress"), 1, self:GetStat( "IronSightsSensitivity" ) )
+	sensval = sensval * l_Lerp(self:GetIronSightsProgress(), 1, self:GetStat( "IronSightsSensitivity" ) )
 	return sensval
 end
 
@@ -1812,8 +1836,8 @@ function SWEP:TranslateFOV(fov)
 
 	self:CorrectScopeFOV()
 
-	local nfov = l_Lerp(self2.IronSightsProgressUnpredicted or self:GetNW2Float("IronSightsProgress"), fov, fov * math.min(self:GetStat("Secondary.IronFOV") / 90, 1))
-	local ret = l_Lerp(self2.SprintProgressUnpredicted or self:GetNW2Float("SprintProgress"), nfov, nfov + self2.SprintFOVOffset)
+	local nfov = l_Lerp(self2.IronSightsProgressUnpredicted or self:GetIronSightsProgress(), fov, fov * math.min(self:GetStat("Secondary.IronFOV") / 90, 1))
+	local ret = l_Lerp(self2.SprintProgressUnpredicted or self:GetSprintProgress(), nfov, nfov + self2.SprintFOVOffset)
 
 	if self:OwnerIsValid() and not self2.IsMelee then
 		local vpa = self:GetOwner():GetViewPunchAngles()
@@ -1839,7 +1863,7 @@ function SWEP:ToggleInspect()
 
 	self:SetCustomizing(not self:GetCustomizing())
 	self2.Inspecting = self:GetCustomizing()
-	self:SetNW2Bool("CustomizeUpdated", true)
+	self:SetCustomizeUpdated(true)
 
 	--if self2.Inspecting then
 	--  gui.EnableScreenClicker(true)

@@ -218,8 +218,8 @@ function SWEP:RTCode(rt, scrw, scrh)
 	scrpos.y = scrpos.y / scrw * 1920
 	scrpos.x = math.Clamp(scrpos.x, -1024, 1024)
 	scrpos.y = math.Clamp(scrpos.y, -1024, 1024)
-	--scrpos.x = scrpos.x * ( 2 - self:GetNW2Float("IronSightsProgress")*1 )
-	--scrpos.y = scrpos.y * ( 2 - self:GetNW2Float("IronSightsProgress")*1 )
+	--scrpos.x = scrpos.x * ( 2 - self:GetIronSightsProgress()*1 )
+	--scrpos.y = scrpos.y * ( 2 - self:GetIronSightsProgress()*1 )
 	scrpos.x = scrpos.x * self.ScopeOverlayTransformMultiplier
 	scrpos.y = scrpos.y * self.ScopeOverlayTransformMultiplier
 
@@ -284,7 +284,7 @@ function SWEP:RTCode(rt, scrw, scrh)
 	render.Clear(0, 0, 0, 255, true, true)
 	render.SetScissorRect(0 + rtow, 0 + rtoh, rtw + rtow, rth + rtoh, true)
 
-	if self:GetNW2Float("IronSightsProgress") > 0.01 and self.Scoped_3D then
+	if self:GetIronSightsProgress() > 0.01 and self.Scoped_3D then
 		render.RenderView(cd)
 	end
 
@@ -321,7 +321,7 @@ function SWEP:RTCode(rt, scrw, scrh)
 		surface.DrawRect(-1024 + rtow, scrpos.y + rth + rtoh, 2048, 2048)
 	end
 
-	surface.SetDrawColor(ColorAlpha(color_black, 255 - 255 * (math.Clamp(self:GetNW2Float("IronSightsProgress") - 0.75, 0, 0.25) * 4)))
+	surface.SetDrawColor(ColorAlpha(color_black, 255 - 255 * (math.Clamp(self:GetIronSightsProgress() - 0.75, 0, 0.25) * 4)))
 	surface.DrawRect(-1024 + rtow, -1024 + rtoh, 2048, 2048)
 	surface.SetMaterial(self.mydirt)
 	surface.SetDrawColor(ColorAlpha(color_white, 128))

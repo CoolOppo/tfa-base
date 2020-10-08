@@ -76,7 +76,7 @@ function PANEL:Initialize()
 	toppanel:SetHeight( self:GetTall() )
 	toppanel:DockPadding( padding,padding, padding, padding )
 	toppanel.Paint = function(myself,w,h)
-		draw.RoundedBox( 0, 0, 0, w, h, ColorAlpha( TFA.Attachments.Colors["secondary"], ( self.Wep:GetNW2Float("InspectingProgress") or 0 ) * 128 ) )
+		draw.RoundedBox( 0, 0, 0, w, h, ColorAlpha( TFA.Attachments.Colors["secondary"], ( self.Wep:GetInspectingProgress() or 0 ) * 128 ) )
 	end
 
 	self.FinalWidth = finalwidth
@@ -268,7 +268,7 @@ function PANEL:Paint( w, h )
 		or not IsValid(self.Wep:GetOwner())
 		or not self.Wep:GetOwner():IsPlayer()
 		or self.Wep:GetOwner():GetActiveWeapon() ~= self.Wep
-		or (self.Wep:GetNW2Float("InspectingProgress") or 0) < 0.01 then
+		or (self.Wep:GetInspectingProgress() or 0) < 0.01 then
 		if IsValid(self.ToolTip) then
 			self.ToolTip:Remove()
 		end

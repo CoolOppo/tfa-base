@@ -390,7 +390,7 @@ end
 function SWEP:Think2(...)
 	BaseClass.Think2(self, ...)
 
-	local isr = self:GetNW2Float("IronSightsProgress")
+	local isr = self:GetIronSightsProgress()
 
 	ply = self:GetOwner()
 

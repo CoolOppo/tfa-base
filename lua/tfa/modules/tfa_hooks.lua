@@ -226,8 +226,11 @@ local function FinishMove(ply, cmovedata)
 	end
 
 	local BashImpulse = cmovedata:GetImpulseCommand() == TFA.BASH_IMPULSE
-	wepv:SetNW2Bool("BashImpulse", BashImpulse)
 	ply:TFA_SetZoomKeyDown(BashImpulse) -- this may or may not work
+
+	if wepv.SetBashImpulse then
+		wepv:SetBashImpulse(BashImpulse)
+	end
 
 	if BashImpulse then
 		if wepv.AltAttack then
@@ -334,7 +337,7 @@ hook.Add("SetupMove", "tfa_setupmove", function(plyv, movedata, commanddata)
 	local wepv = plyv:GetActiveWeapon()
 
 	if IsValid(wepv) and wepv.IsTFAWeapon then
-		speedmult = Lerp(wepv:GetNW2Float("IronSightsProgress"), wepv:GetStat("MoveSpeed"), wepv:GetStat("IronSightsMoveSpeed"))
+		speedmult = Lerp(wepv:GetIronSightsProgress(), wepv:GetStat("MoveSpeed"), wepv:GetStat("IronSightsMoveSpeed"))
 		movedata:SetMaxClientSpeed(movedata:GetMaxClientSpeed() * speedmult)
 		commanddata:SetForwardMove(commanddata:GetForwardMove() * speedmult)
 		commanddata:SetSideMove(commanddata:GetSideMove() * speedmult)

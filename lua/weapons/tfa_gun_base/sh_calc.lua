@@ -53,10 +53,10 @@ function SWEP:TFAFinishMove(ply, velocity, movedata)
 	local isply = ply:IsPlayer()
 
 	local jr_targ = math.min(math.abs(velocity.z) / 500, 1)
-	self:SetNW2Float("JumpRatio", l_mathApproach(self:GetNW2Float("JumpRatio", 0), jr_targ, (jr_targ - self:GetNW2Float("JumpRatio", 0)) * ft * 20))
-	self2.JumpRatio = self:GetNW2Float("JumpRatio", 0)
-	self:SetNW2Float("CrouchingRatio", l_mathApproach(self:GetNW2Float("CrouchingRatio", 0), ((isply and ply:Crouching()) and ply:OnGround()) and 1 or 0, ft / self2.ToCrouchTime))
-	self2.CrouchingRatio = self:GetNW2Float("CrouchingRatio", 0)
+	self:SetJumpRatio(l_mathApproach(self:GetJumpRatio(), jr_targ, (jr_targ - self:GetJumpRatio()) * ft * 20))
+	self2.JumpRatio = self:GetJumpRatio()
+	self:SetCrouchingRatio(l_mathApproach(self:GetCrouchingRatio(), ((isply and ply:Crouching()) and ply:OnGround()) and 1 or 0, ft / self2.ToCrouchTime))
+	self2.CrouchingRatio = self:GetCrouchingRatio()
 
 	local status = self2.GetStatus(self)
 	local oldsprinting, oldwalking = self:GetSprinting(), self:GetWalking()
@@ -79,17 +79,17 @@ function SWEP:TFAFinishMove(ply, velocity, movedata)
 		self:ToggleCustomize()
 	end
 
-	local spr = self:GetSprinting(self)
-	local walk = self:GetWalking(self)
+	local spr = self:GetSprinting()
+	local walk = self:GetWalking()
 
 	local sprt = spr and 1 or 0
 	local walkt = walk and 1 or 0
 	local adstransitionspeed = (spr or walk) and 7.5 or 12.5
 
-	self:SetNW2Float("SprintProgress", l_mathApproach(self:GetNW2Float("SprintProgress", 0), sprt, (sprt - self:GetNW2Float("SprintProgress", 0)) * ft * adstransitionspeed))
-	self:SetNW2Float("WalkProgress", l_mathApproach(self:GetNW2Float("WalkProgress", 0), walkt, (walkt - self:GetNW2Float("WalkProgress", 0)) * ft * adstransitionspeed))
+	self:SetSprintProgress(l_mathApproach(self:GetSprintProgress(), sprt, (sprt - self:GetSprintProgress()) * ft * adstransitionspeed))
+	self:SetWalkProgress(l_mathApproach(self:GetWalkProgress(), walkt, (walkt - self:GetWalkProgress()) * ft * adstransitionspeed))
 
-	self:SetNW2Float("LastVelocity", vellen)
+	self:SetLastVelocity(vellen)
 end
 
 hook.Add("FinishMove", "TFAFinishMove", function(self, movedata)
@@ -137,10 +137,10 @@ function SWEP:CalculateRatios()
 		self:TFAFinishMove(owent, owent:GetVelocity())
 	end
 
-	self:SetNW2Float("SpreadRatio", l_mathClamp(self:GetNW2Float("SpreadRatio", 0) - self2.GetStat(self, "Primary.SpreadRecovery") * ft, 1, self2.GetStat(self, "Primary.SpreadMultiplierMax")))
-	self:SetNW2Float("IronSightsProgress", l_mathApproach(self:GetNW2Float("IronSightsProgress", 0), ist, (ist - self:GetNW2Float("IronSightsProgress", 0)) * ft * adstransitionspeed))
-	self:SetNW2Float("ProceduralHolsterProgress", l_mathApproach(self:GetNW2Float("ProceduralHolsterProgress", 0), sprt, (sprt - self:GetNW2Float("SprintProgress", 0)) * ft * self2.ProceduralHolsterTime * 15))
-	self:SetNW2Float("InspectingProgress", l_mathApproach(self:GetNW2Float("InspectingProgress", 0), self:GetCustomizing() and 1 or 0, ((self:GetCustomizing() and 1 or 0) - self:GetNW2Float("InspectingProgress", 0)) * (ft / game.GetTimeScale()) * 10))
+	self:SetSpreadRatio(l_mathClamp(self:GetSpreadRatio() - self2.GetStat(self, "Primary.SpreadRecovery") * ft, 1, self2.GetStat(self, "Primary.SpreadMultiplierMax")))
+	self:SetIronSightsProgress(l_mathApproach(self:GetIronSightsProgress(), ist, (ist - self:GetIronSightsProgress()) * ft * adstransitionspeed))
+	self:SetProceduralHolsterProgress(l_mathApproach(self:GetProceduralHolsterProgress(), sprt, (sprt - self:GetSprintProgress()) * ft * self2.ProceduralHolsterTime * 15))
+	self:SetInspectingProgress(l_mathApproach(self:GetInspectingProgress(), self:GetCustomizing() and 1 or 0, ((self:GetCustomizing() and 1 or 0) - self:GetInspectingProgress()) * ft * 10))
 
 	if self:GetRecoilThink() then
 		if self:GetRecoilLoop() then
@@ -172,25 +172,25 @@ function SWEP:CalculateRatios()
 
 	if not sv_tfa_recoil_legacy:GetBool() then
 		ft = l_mathClamp(ft, 0, 1)
-		self:SetNW2Float("ViewPunchBuild", l_mathMax(0, self:GetNW2Float("ViewPunchBuild") - self:GetNW2Float("ViewPunchBuild") * ft))
-		local build = l_mathMax(0, 4.5 - self:GetNW2Float("ViewPunchBuild"))
+		self:SetViewPunchBuild(l_mathMax(0, self:GetViewPunchBuild() - self:GetViewPunchBuild() * ft))
+		local build = l_mathMax(0, 4.5 - self:GetViewPunchBuild())
 		ft = ft * build * build
-		self:SetNW2Float("ViewPunchP", self:GetNW2Float("ViewPunchP") - self:GetNW2Float("ViewPunchP") * ft)
-		self:SetNW2Float("ViewPunchY", self:GetNW2Float("ViewPunchY") - self:GetNW2Float("ViewPunchY") * ft)
+		self:SetViewPunchP(self:GetViewPunchP() - self:GetViewPunchP() * ft)
+		self:SetViewPunchY(self:GetViewPunchY() - self:GetViewPunchY() * ft)
 	end
 
-	self2.SpreadRatio = self:GetNW2Float("SpreadRatio", 0)
-	self2.IronSightsProgress = self:GetNW2Float("IronSightsProgress", 0)
-	self2.SprintProgress = self:GetNW2Float("SprintProgress", 0)
-	self2.WalkProgress = self:GetNW2Float("WalkProgress", 0)
-	self2.ProceduralHolsterProgress = self:GetNW2Float("ProceduralHolsterProgress", 0)
-	self2.InspectingProgress = self:GetNW2Float("InspectingProgress", 0)
+	self2.SpreadRatio = self:GetSpreadRatio()
+	self2.IronSightsProgress = self:GetIronSightsProgress()
+	self2.SprintProgress = self:GetSprintProgress()
+	self2.WalkProgress = self:GetWalkProgress()
+	self2.ProceduralHolsterProgress = self:GetProceduralHolsterProgress()
+	self2.InspectingProgress = self:GetInspectingProgress()
 
 	if sp and CLIENT then
 		self2.Inspecting = self:GetCustomizing() --compatibility
 	end
 
-	self2.CLIronSightsProgress = self:GetNW2Float("IronSightsProgress") --compatibility
+	self2.CLIronSightsProgress = self:GetIronSightsProgress() --compatibility
 end
 
 SWEP.IronRecoilMultiplier = 0.5 --Multiply recoil by this factor when we're in ironsights.  This is proportional, not inversely.
@@ -213,7 +213,7 @@ SWEP.JumpRatio = 0
 function SWEP:CalculateConeRecoil()
 	local dynacc = false
 	local self2 = self:GetTable()
-	local isr = self:GetNW2Float("IronSightsProgress", 0)
+	local isr = self:GetIronSightsProgress()
 
 	if dynacc_cvar:GetBool() and (self2.GetStat(self, "Primary.NumShots") <= 1) then
 		dynacc = true
@@ -232,8 +232,8 @@ function SWEP:CalculateConeRecoil()
 		crec = l_Lerp(isr, recv, recv * self2.GetStat(self, "IronRecoilMultiplier"))
 	end
 
-	local crc_1 = l_mathClamp(self:GetNW2Float("CrouchingRatio") * 2, 0, 1)
-	local crc_2 = l_mathClamp((self:GetNW2Float("CrouchingRatio") - 0.5) * 2, 0, 1)
+	local crc_1 = l_mathClamp(self:GetCrouchingRatio() * 2, 0, 1)
+	local crc_2 = l_mathClamp((self:GetCrouchingRatio() - 0.5) * 2, 0, 1)
 
 	if dynacc then
 		ccon = l_Lerp(crc_2, l_Lerp(crc_1, ccon, ccon * self2.GetStat(self, "ChangeStateAccuracyMultiplier")), ccon * self2.GetStat(self, "CrouchAccuracyMultiplier"))
@@ -246,7 +246,7 @@ function SWEP:CalculateConeRecoil()
 
 	if IsValid(owner) then
 		if owner:IsPlayer() then
-			ovel = self:GetNW2Float("LastVelocity")
+			ovel = self:GetLastVelocity()
 		else
 			ovel = owner:GetVelocity():Length2D()
 		end
@@ -261,14 +261,14 @@ function SWEP:CalculateConeRecoil()
 		crec = l_Lerp(vfc_1, crec, crec * self2.GetStat(self, "WallRecoilMultiplier"))
 	end
 
-	local jr = self:GetNW2Float("JumpRatio")
+	local jr = self:GetJumpRatio()
 
 	if dynacc then
 		ccon = l_Lerp(jr, ccon, ccon * self2.GetStat(self, "JumpAccuracyMultiplier"))
 		crec = l_Lerp(jr, crec, crec * self2.GetStat(self, "JumpRecoilMultiplier"))
 	end
 
-	ccon = ccon * self:GetNW2Float("SpreadRatio")
+	ccon = ccon * self:GetSpreadRatio()
 
 	if mult_cvar then
 		ccon = ccon * mult_cvar:GetFloat()

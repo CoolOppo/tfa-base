@@ -275,8 +275,8 @@ function TFA.Ballistics:FireBullets(wep, bulletStruct, angIn, bulletOverride)
 			if sv_tfa_recoil_legacy:GetBool() and not isnpc then
 				ang:Add(owner:GetViewPunchAngles())
 			else
-				ang.p = ang.p + wep:GetNW2Float("ViewPunchP")
-				ang.y = ang.y + wep:GetNW2Float("ViewPunchY")
+				ang.p = ang.p + wep:GetViewPunchP()
+				ang.y = ang.y + wep:GetViewPunchY()
 			end
 		end
 

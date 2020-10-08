@@ -517,7 +517,7 @@ Purpose:  Utility
 ]]
 --
 function SWEP:IsCurrentlyScoped()
-	return (self:GetNW2Float("IronSightsProgress") > self:GetStat("ScopeOverlayThreshold")) and self:GetStat("Scoped")
+	return (self:GetIronSightsProgress() > self:GetStat("ScopeOverlayThreshold")) and self:GetStat("Scoped")
 end
 
 --[[
@@ -987,7 +987,7 @@ do
 		end
 
 		local self2 = self:GetTable()
-		local isp = 1 - self:GetNW2Float("IronSightsProgress", 0) * self2.GetStat(self, "Primary.RecoilLUT_IronSightsMult")
+		local isp = 1 - self:GetIronSightsProgress() * self2.GetStat(self, "Primary.RecoilLUT_IronSightsMult")
 
 		if not self:GetRecoilLoop() then
 			-- currently, we only playing IN animation
@@ -1035,8 +1035,8 @@ function SWEP:GetAimAngle()
 	elseif self:HasRecoilLUT() then
 		ang:Add(self:GetRecoilLUTAngle())
 	else
-		ang.p = ang.p + self:GetNW2Float("ViewPunchP")
-		ang.y = ang.y + self:GetNW2Float("ViewPunchY")
+		ang.p = ang.p + self:GetViewPunchP()
+		ang.y = ang.y + self:GetViewPunchY()
 	end
 
 	ang:Normalize()

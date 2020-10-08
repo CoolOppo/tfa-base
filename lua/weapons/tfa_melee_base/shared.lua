@@ -143,13 +143,19 @@ SWEP.AttackSoundTime = -1
 SWEP.VoxSoundTime = -1
 
 function SWEP:SetupDataTables()
-	self:NetworkVar("Bool", 30, "VP")
-	self:NetworkVar("Float", 27, "VPTime")
-	self:NetworkVar("Float", 28, "VPPitch")
-	self:NetworkVar("Float", 29, "VPYaw")
-	self:NetworkVar("Float", 30, "VPRoll")
-	self:NetworkVar("Int", 30, "ComboCount")
-	self:NetworkVar("Int", 31, "MelAttackID")
+	BaseClass.SetupDataTables(self)
+
+	self:NetworkVarTFA("Bool", "VP")
+	self:NetworkVarTFA("Bool", "BashImpulse")
+
+	self:NetworkVarTFA("Float", "VPTime")
+	self:NetworkVarTFA("Float", "VPPitch")
+	self:NetworkVarTFA("Float", "VPYaw")
+	self:NetworkVarTFA("Float", "VPRoll")
+
+	self:NetworkVarTFA("Int", "ComboCount")
+	self:NetworkVarTFA("Int", "MelAttackID")
+
 	self:SetMelAttackID(1)
 	self:SetVP(false)
 	self:SetVPPitch(0)
@@ -157,8 +163,6 @@ function SWEP:SetupDataTables()
 	self:SetVPRoll(0)
 	self:SetVPTime(-1)
 	self:SetComboCount(0)
-
-	return BaseClass.SetupDataTables(self)
 end
 
 function SWEP:Deploy()
@@ -404,7 +408,7 @@ function SWEP:Think2(...)
 	if self.CanBlock then
 		local stat = self:GetStatus()
 
-		if self:GetNW2Bool("BashImpulse") and TFA.Enum.ReadyStatus[stat] and not self:GetOwner():KeyDown(IN_USE) then
+		if self:GetBashImpulse() and TFA.Enum.ReadyStatus[stat] and not self:GetOwner():KeyDown(IN_USE) then
 			self:SetStatus(TFA.GetStatus("blocking"))
 
 			if self.BlockAnimation["in"] then
@@ -415,7 +419,7 @@ function SWEP:Think2(...)
 
 			self:SetStatusEnd(math.huge)
 			self.BlockStart = CurTime()
-		elseif stat == TFA.GetStatus("blocking") and not self:GetNW2Bool("BashImpulse") then
+		elseif stat == TFA.GetStatus("blocking") and not self:GetBashImpulse() then
 			local _, tanim
 			self:SetStatus(TFA.GetStatus("blocking_end"))
 

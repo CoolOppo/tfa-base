@@ -90,7 +90,7 @@ function SWEP:CalculateViewModelFlip()
 	local cam_fov = self2.LastTranslatedFOV or cv_fov:GetInt() or 90
 	local iron_add = cam_fov * (1 - 90 / cam_fov) * math.max(1 - self2.GetStat(self, "Secondary.IronFOV", 90) / 90, 0)
 
-	self2.ViewModelFOV = l_Lerp((self2.IronSightsProgressUnpredicted or self:GetNW2Float("IronSightsProgress")), self2.ViewModelFOV_OG, self2.GetStat(self, "IronViewModelFOV", self2.ViewModelFOV_OG)) * fovmod_mult:GetFloat() + fovmod_add:GetFloat() + iron_add * (self2.IronSightsProgressUnpredicted or self:GetNW2Float("IronSightsProgress"))
+	self2.ViewModelFOV = l_Lerp((self2.IronSightsProgressUnpredicted or self:GetIronSightsProgress()), self2.ViewModelFOV_OG, self2.GetStat(self, "IronViewModelFOV", self2.ViewModelFOV_OG)) * fovmod_mult:GetFloat() + fovmod_add:GetFloat() + iron_add * (self2.IronSightsProgressUnpredicted or self:GetIronSightsProgress())
 end
 
 SWEP.WeaponLength = 0
@@ -218,7 +218,7 @@ function SWEP:CalculateViewModelOffset(delta)
 	local is = self:GetIronSights()
 	local spr = self:GetSprinting()
 	local stat = self:GetStatus()
-	local crouch = self:GetNW2Float("CrouchingRatio")
+	local crouch = self:GetCrouchingRatio()
 	hls = (TFA.Enum.HolsterStatus[stat] and self2.ProceduralHolsterEnabled) or (TFA.Enum.ReloadStatus[stat] and self2.ProceduralReloadEnabled)
 
 	if hls then
@@ -294,7 +294,7 @@ function SWEP:CalculateViewModelOffset(delta)
 		target_ang.z = target_ang.z + self2.VMAng.z
 	end
 
-	target_ang.z = target_ang.z + -7.5 * (1 - math.abs(0.5 - (self2.IronSightsProgressUnpredicted or self:GetNW2Float("IronSightsProgress"))) * 2) * (self:GetIronSights() and 1 or 0.5) * (self2.ViewModelFlip and 1 or -1)
+	target_ang.z = target_ang.z + -7.5 * (1 - math.abs(0.5 - (self2.IronSightsProgressUnpredicted or self:GetIronSightsProgress())) * 2) * (self:GetIronSights() and 1 or 0.5) * (self2.ViewModelFlip and 1 or -1)
 
 	if self:GetHidden() then
 		target_pos.z = target_pos.z - 5
@@ -309,7 +309,7 @@ function SWEP:CalculateViewModelOffset(delta)
 		bbvec.y = bbang.y
 		bbvec.z = bbang.r
 		target_ang = target_ang + bbvec * self2.BlowbackCurrentRoot
-		bbang = self2.BlowbackRandomAngle * (1 - math.max(0, (self2.IronSightsProgressUnpredicted or self:GetNW2Float("IronSightsProgress"))) * .8)
+		bbang = self2.BlowbackRandomAngle * (1 - math.max(0, (self2.IronSightsProgressUnpredicted or self:GetIronSightsProgress())) * .8)
 		bbvec.x = bbang.p
 		bbvec.y = bbang.y
 		bbvec.z = bbang.r
@@ -326,13 +326,13 @@ function SWEP:CalculateViewModelOffset(delta)
 				target_ang.y = target_ang.y + ang.y / 2
 			end
 		else
-			target_ang.x = target_ang.x - self:GetNW2Float("ViewPunchP") * (is and self:GetStat("ViewModelPunchPitchMultiplier_IronSights") or self:GetStat("ViewModelPunchPitchMultiplier"))
-			target_ang.y = target_ang.y + self:GetNW2Float("ViewPunchY") * (is and self:GetStat("ViewModelPunchYawMultiplier_IronSights") or self:GetStat("ViewModelPunchYawMultiplier"))
+			target_ang.x = target_ang.x - self:GetViewPunchP() * (is and self:GetStat("ViewModelPunchPitchMultiplier_IronSights") or self:GetStat("ViewModelPunchPitchMultiplier"))
+			target_ang.y = target_ang.y + self:GetViewPunchY() * (is and self:GetStat("ViewModelPunchYawMultiplier_IronSights") or self:GetStat("ViewModelPunchYawMultiplier"))
 
 			local ViewModelPunch_MaxVertialOffset = is and self:GetStat("ViewModelPunch_MaxVertialOffset_IronSights") or self:GetStat("ViewModelPunch_MaxVertialOffset")
 
 			target_pos.y = target_pos.y + math.Clamp(
-				self:GetNW2Float("ViewPunchP") * (is and self:GetStat("ViewModelPunch_VertialMultiplier_IronSights") or self:GetStat("ViewModelPunch_VertialMultiplier")),
+				self:GetViewPunchP() * (is and self:GetStat("ViewModelPunch_VertialMultiplier_IronSights") or self:GetStat("ViewModelPunch_VertialMultiplier")),
 				-ViewModelPunch_MaxVertialOffset,
 				ViewModelPunch_MaxVertialOffset)
 		end
@@ -353,15 +353,15 @@ function SWEP:CalculateViewModelOffset(delta)
 
 	intensityWalk = math.min(self:GetOwner():GetVelocity():Length2D() / self:GetOwner():GetWalkSpeed(), 1)
 
-	if self2.WalkBobMult_Iron and (self2.IronSightsProgressUnpredicted or self:GetNW2Float("IronSightsProgress")) > 0.01 then
-		intensityWalk = intensityWalk * self2.WalkBobMult_Iron * (self2.IronSightsProgressUnpredicted or self:GetNW2Float("IronSightsProgress"))
+	if self2.WalkBobMult_Iron and (self2.IronSightsProgressUnpredicted or self:GetIronSightsProgress()) > 0.01 then
+		intensityWalk = intensityWalk * self2.WalkBobMult_Iron * (self2.IronSightsProgressUnpredicted or self:GetIronSightsProgress())
 	else
 		intensityWalk = intensityWalk * self2.WalkBobMult
 	end
 
-	intensityBreath = l_Lerp((self2.IronSightsProgressUnpredicted or self:GetNW2Float("IronSightsProgress")), self2.GetStat(self, "BreathScale", 0.2), self2.GetStat(self, "IronBobMultWalk", 0.5) * intensityWalk)
-	intensityWalk = intensityWalk * (1 - (self2.IronSightsProgressUnpredicted or self:GetNW2Float("IronSightsProgress")))
-	intensityRun = l_Lerp(self:GetNW2Float("SprintProgress"), 0, self2.SprintBobMult)
+	intensityBreath = l_Lerp((self2.IronSightsProgressUnpredicted or self:GetIronSightsProgress()), self2.GetStat(self, "BreathScale", 0.2), self2.GetStat(self, "IronBobMultWalk", 0.5) * intensityWalk)
+	intensityWalk = intensityWalk * (1 - (self2.IronSightsProgressUnpredicted or self:GetIronSightsProgress()))
+	intensityRun = l_Lerp(self:GetSprintProgress(), 0, self2.SprintBobMult)
 	local velocity = math.max(self:GetOwner():GetVelocity():Length2D() * self:AirWalkScale() - self:GetOwner():GetVelocity().z * 0.5, 0)
 	local rate = math.min(math.max(0.15, math.sqrt(velocity / self:GetOwner():GetRunSpeed()) * 1.75), self:GetSprinting() and 5 or 3)
 
@@ -385,7 +385,7 @@ function SWEP:Sway(pos, ang, ftv)
 	--sanity check
 	if not self:OwnerIsValid() then return pos, ang end
 	--convar
-	fac = gunswaycvar:GetFloat() * 3 * ((1 - ((self2.IronSightsProgressUnpredicted or self:GetNW2Float("IronSightsProgress")) or 0)) * 0.85 + 0.15)
+	fac = gunswaycvar:GetFloat() * 3 * ((1 - ((self2.IronSightsProgressUnpredicted or self:GetIronSightsProgress()) or 0)) * 0.85 + 0.15)
 	flipFactor = (self2.ViewModelFlip and -1 or 1)
 	--init vars
 	delta = delta or Angle()
@@ -417,7 +417,7 @@ function SWEP:Sway(pos, ang, ftv)
 	end
 
 	--modify position/angle
-	positionCompensation = 0.2 + 0.2 * ((self2.IronSightsProgressUnpredicted or self:GetNW2Float("IronSightsProgress")) or 0)
+	positionCompensation = 0.2 + 0.2 * ((self2.IronSightsProgressUnpredicted or self:GetIronSightsProgress()) or 0)
 	pos:Add(-motion.y * positionCompensation * 0.66 * fac * ang:Right() * flipFactor) --compensate position for yaw
 	pos:Add(-motion.p * positionCompensation * fac * ang:Up()) --compensate position for pitch
 	ang:RotateAroundAxis(ang:Right(), motion.p * fac)
@@ -447,7 +447,7 @@ function SWEP:GetViewModelPosition(pos, ang)
 
 	if cv_customgunbob:GetBool() then
 		pos, ang = self:Sway(pos, ang)
-		pos, ang = self:SprintBob(pos, ang, l_Lerp(self:GetNW2Float("SprintProgress"), 0, self2.SprintBobMult))
+		pos, ang = self:SprintBob(pos, ang, l_Lerp(self:GetSprintProgress(), 0, self2.SprintBobMult))
 	end
 
 	return pos, ang

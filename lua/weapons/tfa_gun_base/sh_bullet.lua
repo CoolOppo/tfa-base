@@ -128,8 +128,8 @@ function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet,
 			local ang = self:GetOwner():GetAimVector():Angle()
 
 			if not sv_tfa_recoil_legacy:GetBool() then
-				ang.p = ang.p + self:GetNW2Float("ViewPunchP")
-				ang.y = ang.y + self:GetNW2Float("ViewPunchY")
+				ang.p = ang.p + self:GetViewPunchP()
+				ang.y = ang.y + self:GetViewPunchY()
 			end
 
 			ang:RotateAroundAxis(ang:Right(), -aimcone / 2 + math.Rand(0, aimcone))
@@ -321,11 +321,11 @@ end
 local sp = game.SinglePlayer()
 
 function SWEP:TFAMove(ply, movedata)
-	local velocity = self:GetNW2Vector("QueuedRecoil", vector_origin)
+	local velocity = self:GetQueuedRecoil()
 
 	if velocity:Length() ~= 0 then
 		movedata:SetVelocity(movedata:GetVelocity() + velocity)
-		self:SetNW2Vector("QueuedRecoil", vector_origin)
+		self:SetQueuedRecoil(vector_origin)
 	end
 end
 
@@ -347,7 +347,7 @@ local sv_tfa_recoil_eyeangles_mul = GetConVar("sv_tfa_recoil_eyeangles_mul")
 
 function SWEP:SetRecoilVector(vector)
 	if self:GetOwner():IsPlayer() then
-		self:SetNW2Vector("QueuedRecoil", vector)
+		self:SetQueuedRecoil(vector)
 	else
 		self:GetOwner():SetVelocity(vector)
 	end
@@ -355,7 +355,7 @@ end
 
 function SWEP:QueueRecoil(vector)
 	if self:GetOwner():IsPlayer() then
-		self:SetNW2Vector("QueuedRecoil", vector + self:GetNW2Vector("QueuedRecoil", vector_origin))
+		self:SetQueuedRecoil(vector + self:GetQueuedRecoil())
 	else
 		self:GetOwner():SetVelocity(vector)
 	end
@@ -372,7 +372,7 @@ function SWEP:Recoil(recoil, ifp)
 	local owner = self:GetOwner()
 	local isplayer = owner:IsPlayer()
 
-	self:SetNW2Float("SpreadRatio", l_mathClamp(self:GetNW2Float("SpreadRatio") + self:GetStat("Primary.SpreadIncrement"), 1, self:GetStat("Primary.SpreadMultiplierMax")))
+	self:SetSpreadRatio(l_mathClamp(self:GetSpreadRatio() + self:GetStat("Primary.SpreadIncrement"), 1, self:GetStat("Primary.SpreadMultiplierMax")))
 	self:QueueRecoil(-owner:GetAimVector() * self:GetStat("Primary.Knockback") * cv_forcemult:GetFloat() * recoil / 5)
 
 	local seed = self:GetSeed() + 1
@@ -389,10 +389,10 @@ function SWEP:Recoil(recoil, ifp)
 	local factor = 1 - self:GetStat("Primary.StaticRecoilFactor")
 
 	if self:GetIronSights() then
-		factor = factor * Lerp(self:GetNW2Float("IronSightsProgress", 0), 1, self:GetStat("IronRecoilMultiplier", 0.5))
+		factor = factor * Lerp(self:GetIronSightsProgress(), 1, self:GetStat("IronRecoilMultiplier", 0.5))
 	end
 
-	factor = factor * Lerp(self:GetNW2Float("CrouchingRatio", 0), 1, self:GetStat("CrouchAccuracyMultiplier", 0.5))
+	factor = factor * Lerp(self:GetCrouchingRatio(), 1, self:GetStat("CrouchAccuracyMultiplier", 0.5))
 
 	local punchY = kickY * factor
 	local deltaP = 0
@@ -401,15 +401,15 @@ function SWEP:Recoil(recoil, ifp)
 	if self:HasRecoilLUT() then
 		local ang = self:GetRecoilLUTAngle()
 
-		if self:GetNW2Float("PrevRecoilAngleTime", 0) < CurTime() then
-			self:SetNW2Float("PrevRecoilAngleTime", CurTime() + 0.1)
-			self:SetNW2Angle("PrevRecoilAngle", ang)
+		if self:GetPrevRecoilAngleTime() < CurTime() then
+			self:SetPrevRecoilAngleTime(CurTime() + 0.1)
+			self:SetPrevRecoilAngle(ang)
 		end
 
-		local prev_recoil_angle = self:GetNW2Angle("PrevRecoilAngle")
+		local prev_recoil_angle = self:GetPrevRecoilAngle()
 		deltaP = ang.p - prev_recoil_angle.p
 		deltaY = ang.y - prev_recoil_angle.y
-		self:SetNW2Angle("PrevRecoilAngle", ang)
+		self:SetPrevRecoilAngle(ang)
 	end
 
 	if isplayer then
@@ -420,12 +420,12 @@ function SWEP:Recoil(recoil, ifp)
 	end
 
 	if (not isplayer or not sv_tfa_recoil_legacy:GetBool()) and not self:HasRecoilLUT() then
-		local maxdist2 = l_mathClamp(30 - math.abs(self:GetNW2Float("ViewPunchP")), 0, 30)
+		local maxdist2 = l_mathClamp(30 - math.abs(self:GetViewPunchP()), 0, 30)
 		local punchP2 = l_mathClamp(kickP, -maxdist2, maxdist2) * factor
 
-		self:SetNW2Float("ViewPunchP", self:GetNW2Float("ViewPunchP", 0) + punchP2 * 1.5)
-		self:SetNW2Float("ViewPunchY", self:GetNW2Float("ViewPunchY", 0) + punchY * 1.5)
-		self:SetNW2Float("ViewPunchBuild", math.min(3, self:GetNW2Float("ViewPunchBuild", 0) + math.sqrt(math.pow(punchP2, 2) + math.pow(punchY, 2)) / 3) + 0.2)
+		self:SetViewPunchP(self:GetViewPunchP() + punchP2 * 1.5)
+		self:SetViewPunchY(self:GetViewPunchY() + punchY * 1.5)
+		self:SetViewPunchBuild(math.min(3, self:GetViewPunchBuild() + math.sqrt(math.pow(punchP2, 2) + math.pow(punchY, 2)) / 3) + 0.2)
 	end
 
 	if isplayer and ((game.SinglePlayer() and SERVER) or (CLIENT and ifp)) then

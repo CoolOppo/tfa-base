@@ -90,7 +90,7 @@ hook.Add("PreDrawViewModel", "TFA_DrawViewModel", function(vm, plyv, wep)
 
 	if not cl_tfa_fx_dof or not cl_tfa_fx_dof:GetBool() then return end
 	if not wep.AllowIronSightsDoF then return end
-	local aimingDown = wep:GetNW2Float("IronSightsProgress") > 0.4
+	local aimingDown = wep:GetIronSightsProgress() > 0.4
 	local scoped = TFA.LastRTUpdate > UnPredictedCurTime() or wep:GetStat("Scoped")
 
 	if aimingDown and not scoped then
@@ -173,13 +173,13 @@ hook.Add("PostDrawViewModel", "TFA_DrawViewModel", function(vm, plyv, wep)
 		return
 	end
 
-	local aimingDown = wep:GetNW2Float("IronSightsProgress") > 0.4
+	local aimingDown = wep:GetIronSightsProgress() > 0.4
 	local eangles = EyeAngles()
 	local fwd2 = vm:GetAngles():Forward()
 	local scoped = TFA.LastRTUpdate > UnPredictedCurTime()
 
 	if aimingDown and not scoped and wep.__TFA_AimDoFFrame == FrameNumber() then
-		fmat:SetFloat("$alpha", wep:GetNW2Float("IronSightsProgress"))
+		fmat:SetFloat("$alpha", wep:GetIronSightsProgress())
 		local muzzle = hook.Run("TFA_GetDoFMuzzleAttachmentID", wep, plyv, vm) or vm:LookupAttachment("muzzle")
 		local muzzleflash = vm:LookupAttachment("muzzleflash")
 		local muzzledata
@@ -256,5 +256,5 @@ hook.Add("PreDrawPlayerHands", "TFA_DrawViewModel", function(hands, vm, plyv, we
 	if not cl_tfa_fx_dof or not cl_tfa_fx_dof:GetBool() then return end
 	if not wep.AllowIronSightsDoF then return end
 	if TFA.LastRTUpdate > UnPredictedCurTime() then return end
-	if wep:GetNW2Float("IronSightsProgress") > 0.4 then return true end
+	if wep:GetIronSightsProgress() > 0.4 then return true end
 end)
