@@ -244,6 +244,10 @@ if GetConVar("sv_tfa_bullet_randomseed") == nil then
 	CreateReplConVar("sv_tfa_bullet_randomseed", "0", "Populate extra seed serverside? This will cause spread to be out of sync with server!")
 end
 
+if GetConVar("sv_tfa_debug") == nil then
+	CreateReplConVar("sv_tfa_debug", "0", "Enable debug mode?")
+end
+
 if GetConVar("sv_tfa_holdtype_dynamic") == nil then
 	CreateReplConVar("sv_tfa_holdtype_dynamic", "1", "Allow dynamic holdtype?")
 end

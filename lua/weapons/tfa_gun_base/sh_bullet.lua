@@ -563,6 +563,7 @@ local cv_rangemod = GetConVar("sv_tfa_range_modifier")
 local cv_decalbul = GetConVar("sv_tfa_fx_penetration_decal")
 local atype
 local develop = GetConVar("developer")
+local sv_tfa_debug = GetConVar("sv_tfa_debug")
 
 function SWEP:SetBulletTracerName(nm)
 	self.BulletTracerName = nm or self.BulletTracerName or ""
@@ -641,6 +642,10 @@ function SWEP.MainBullet:CalculateFalloff(HitPos)
 	return self.Wep:CalculateFalloff(self.InitialPosition, HitPos, self)
 end
 
+local function shouldDisplayDebug()
+	return SERVER and sv_tfa_debug:GetBool() and develop:GetBool() and DLib
+end
+
 function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon, penetrated)
 	--debugoverlay.Sphere( self.Src, 5, 5, color_white, true)
 
@@ -666,7 +671,7 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon, penetrated)
 			damagescale = l_mathClamp(damagescale / math.max(1 - weapon:GetStat("Primary.RangeFalloff"), 0.01), 0, 1)
 			damagescale = (1 - cv_rangemod:GetFloat()) + (l_mathClamp(1 - damagescale, 0, 1) * cv_rangemod:GetFloat())
 
-			if SERVER and develop:GetBool() and DLib then
+			if shouldDisplayDebug() then
 				DLib.debugoverlay.Text(traceres.HitPos + Vector(0, 0, 12), string.format('Damage falloff %.3f %.3f %.3f', damagescale, bulletdistance, bulletdistance / weapon:GetStat("Primary.Range")), 12)
 			end
 
@@ -676,7 +681,7 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon, penetrated)
 		self.HasAppliedRange = true
 	end
 
-	if SERVER and develop:GetBool() and DLib and weapon:GetStat("Primary.FalloffMetricBased") then
+	if shouldDisplayDebug() and weapon:GetStat("Primary.FalloffMetricBased") then
 		DLib.debugoverlay.Text(traceres.HitPos + Vector(0, 0, 16), string.format('NEW Damage falloff %.3f %.3f %.3f/%.3f', self.InitialPosition:Distance(traceres.HitPos), self:CalculateFalloff(traceres.HitPos), self.InitialDamage * self:CalculateFalloff(traceres.HitPos), self.Damage), 12)
 	end
 
@@ -744,7 +749,7 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon, penetrated)
 	end
 
 	if self:Ricochet(ply, traceres, dmginfo, weapon) then
-		if SERVER and develop:GetBool() and DLib then
+		if shouldDisplayDebug() then
 			DLib.debugoverlay.Text(traceres.HitPos - Vector(0, 0, 12), 'ricochet', 10)
 		end
 
@@ -796,7 +801,7 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon, penetrated)
 
 			pentrace.start = pentraceres.HitPos + newdir * 8
 
-			if SERVER and develop:GetBool() and DLib then
+			if shouldDisplayDebug() then
 				DLib.debugoverlay.Cross(pentrace.start, 8, 10, Color(iter / MAX_CORRECTION_ITERATIONS * 255, iter / MAX_CORRECTION_ITERATIONS * 255, iter / MAX_CORRECTION_ITERATIONS * 255), true)
 			end
 
@@ -839,7 +844,7 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon, penetrated)
 
 		decalstartpos = pentraceres2.HitPos + newdir * 3
 
-		if SERVER and develop:GetBool() and DLib then
+		if shouldDisplayDebug() then
 			nextdebugcol = (nextdebugcol + 1) % #debugcolors
 			DLib.debugoverlay.Line(pentrace.start, pentrace.endpos, 10, debugcolors[nextdebugcol + 1], true)
 			DLib.debugoverlay.Cross(pentrace.start, 8, 10, debugsphere1, true)
@@ -857,7 +862,7 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon, penetrated)
 		decalstartpos = startpos + newdir * 2
 		loss = startpos:Distance(pentrace.start) * mult
 
-		if SERVER and develop:GetBool() and DLib then
+		if shouldDisplayDebug() then
 			nextdebugcol = (nextdebugcol + 1) % #debugcolors
 			DLib.debugoverlay.Line(pentrace.start, pentrace.endpos, 10, debugcolors[nextdebugcol + 1], true)
 			DLib.debugoverlay.Cross(pentrace.start, 8, 10, debugsphere1, true)
@@ -888,7 +893,7 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon, penetrated)
 	end
 
 	if self.PenetrationPower - loss <= 0 then
-		if SERVER and develop:GetBool() and DLib then
+		if shouldDisplayDebug() then
 			DLib.debugoverlay.Text(startpos, string.format('Lost penetration power %.3f %.3f', self.PenetrationPower, loss), 10)
 		end
 
@@ -901,7 +906,7 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon, penetrated)
 
 	local mfac = self.PenetrationPower / self.InitialPenetrationPower
 
-	if SERVER and develop:GetBool() and DLib and (weapon:GetStat("Primary.FalloffMetricBased") or weapon.Primary.RangeFalloffLUTBuilt ) then
+	if shouldDisplayDebug() and (weapon:GetStat("Primary.FalloffMetricBased") or weapon.Primary.RangeFalloffLUTBuilt ) then
 		DLib.debugoverlay.Text(traceres.HitPos + Vector(0, 0, 12), string.format('NEW Damage falloff final %.3f %.3f %.3f %.3f', self.InitialPosition:Distance(traceres.HitPos), self:CalculateFalloff(traceres.HitPos), mfac * self.InitialDamage * self:CalculateFalloff(traceres.HitPos), mfac), 12)
 	end
 
@@ -936,12 +941,12 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon, penetrated)
 		Wep = weapon,
 	}
 
-	if SERVER and develop:GetBool() and DLib  then
+	if shouldDisplayDebug()  then
 		DLib.debugoverlay.Text(startpos, string.format('penetrate %.3f->%.3f %d %.3f', prev, self.PenetrationPower, self.PenetrationCount, mfac), 10)
 	end
 
 	function bul.Callback(attacker, trace, dmginfo2)
-		if SERVER and develop:GetBool() and DLib  then
+		if shouldDisplayDebug()  then
 			DLib.debugoverlay.Cross(trace.HitPos, 8, 10, debugsphere3, true)
 			DLib.debugoverlay.Text(trace.HitPos - Vector(0, 0, 7), string.format('hit %.3f %d', mfac, bul.PenetrationCount, bul.PenetrationPower), 10)
 		end
@@ -966,7 +971,7 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon, penetrated)
 	decalbul.Src = decalstartpos
 	decalbul.Callback = DisableOwnerDamage
 
-	if SERVER and develop:GetBool() and DLib  then
+	if shouldDisplayDebug()  then
 		DLib.debugoverlay.Cross(decalbul.Src, 8, 10, debugsphere4, true)
 		DLib.debugoverlay.Cross(decalbul.Src + decalbul.Dir * decalbul.Distance, 8, 10, debugsphere5, true)
 	end
