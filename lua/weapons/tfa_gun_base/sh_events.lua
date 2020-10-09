@@ -568,7 +568,13 @@ function SWEP:ProcessStatus()
 		local wmi = self2.Walk_Mode == TFA.Enum.LOCOMOTION_HYBRID or self2.Walk_Mode == TFA.Enum.LOCOMOTION_ANI
 		local cmi = self2.Customize_Mode == TFA.Enum.LOCOMOTION_HYBRID or self2.Customize_Mode == TFA.Enum.LOCOMOTION_ANI
 
-		if (not TFA.Enum.ReadyStatus[stat]) and stat ~= TFA.Enum.STATUS_SHOOTING and stat ~= TFA.Enum.STATUS_PUMP and finalstat == TFA.Enum.STATUS_IDLE and ((smi or spi) or (cst and cmi)) then
+		if
+			not TFA.Enum.ReadyStatus[stat] and
+			stat ~= TFA.Enum.STATUS_SHOOTING and
+			stat ~= TFA.Enum.STATUS_PUMP and
+			finalstat == TFA.Enum.STATUS_IDLE and
+			((smi or spi) or (cst and cmi))
+		then
 			is = self2.GetIronSights(self, true)
 
 			if (is and smi) or (spr and spi) or (wlk and wmi) or (cst and cmi) then
@@ -596,6 +602,7 @@ function SWEP:ProcessStatus()
 		end
 	end
 
+	--if stat == TFA.Enum.STATUS_IDLE and self:GetReloadLoopCancel() and (self2.GetStat(self, "AllowSprintAttack") or self:GetSprintProgress() < 0.1) then
 	if stat == TFA.Enum.STATUS_IDLE and self:GetReloadLoopCancel() then
 		if self2.GetStat(self, "PumpAction") then
 			if ct > self:GetNextPrimaryFire() and (not isplayer or not ply:KeyDown(IN_ATTACK)) then

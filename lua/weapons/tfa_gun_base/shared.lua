@@ -1122,7 +1122,12 @@ function SWEP:IronSights()
 
 	self:SetCustomizeUpdated(false)
 
-	if (smi or spi or wmi or cmi) and (self:GetStatus() == TFA.Enum.STATUS_IDLE or (self:GetStatus() == TFA.Enum.STATUS_SHOOTING and self:CanInterruptShooting())) and not self:GetReloadLoopCancel() then
+	if
+		(smi or spi or wmi or cmi) and
+		(self:GetStatus() == TFA.Enum.STATUS_IDLE or
+			(self:GetStatus() == TFA.Enum.STATUS_SHOOTING and self:CanInterruptShooting()))
+		and not self:GetReloadLoopCancel()
+	then
 		local toggle_is = current_iron_sights ~= issighting
 
 		if issighting and self:GetSprinting() then
