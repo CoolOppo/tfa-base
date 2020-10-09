@@ -412,12 +412,12 @@ function SWEP:NetworkVarTFA(typeIn, nameIn)
 	local get = self["GetNW2" .. typeIn]
 	local set = self["SetNW2" .. typeIn]
 
-	self["Set" .. nameIn] = function(self, value)
-		set(self, nameIn, value)
+	self["Set" .. nameIn] = function(_self, value)
+		set(_self, nameIn, value)
 	end
 
-	self["Get" .. nameIn] = function(self, def)
-		return get(self, nameIn, def)
+	self["Get" .. nameIn] = function(_self, def)
+		return get(_self, nameIn, def)
 	end
 
 	if developer:GetBool() then
