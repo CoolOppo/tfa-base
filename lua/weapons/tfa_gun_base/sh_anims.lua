@@ -770,12 +770,8 @@ function SWEP:ChooseReloadAnim()
 		fac = self2.ShellTime
 	end
 
-	self2.AnimCycle = self2.ViewModelFlip and 0 or 1
-
-	if SERVER and sp then
-		self2.SetNW2Int = self.SetNW2Int or self.SetNWInt
-		self:SetNW2Int("AnimCycle", self2.AnimCycle)
-	end
+	self:SetAnimCycle(self2.ViewModelFlip and 0 or 1)
+	self2.AnimCycle = self:GetAnimCycle()
 
 	if typev ~= TFA.Enum.ANIMATION_SEQ then
 		return self:SendViewModelAnim(tanim, fac, fac ~= 1)
@@ -1015,7 +1011,7 @@ function SWEP:ChooseShootAnim(ifp)
 			typev, tanim = self:ChooseAnimation("shoot1_last")
 		elseif self:Clip1() == 0 and self:GetActivityEnabled(ACT_VM_DRYFIRE) and not self2.ForceDryFireOff then
 			typev, tanim = self:ChooseAnimation("shoot1_empty")
-		elseif self2.GetStat(self, "Akimbo") and self:GetActivityEnabled(ACT_VM_SECONDARYATTACK) and ((self2.AnimCycle == 0 and not self2.Akimbo_Inverted) or (self2.AnimCycle == 1 and self2.Akimbo_Inverted)) then
+		elseif self2.GetStat(self, "Akimbo") and self:GetActivityEnabled(ACT_VM_SECONDARYATTACK) and ((self:GetAnimCycle() == 0 and not self2.Akimbo_Inverted) or (self:GetAnimCycle() == 1 and self2.Akimbo_Inverted)) then
 			typev, tanim = self:ChooseAnimation((self:GetIronSights() and self:GetActivityEnabled(ACT_VM_ISHOOT_M203)) and "shoot2_is" or "shoot2")
 		elseif self:GetIronSights() and self:GetActivityEnabled(ACT_VM_PRIMARYATTACK_1) then
 			typev, tanim = self:ChooseAnimation("shoot1_is")

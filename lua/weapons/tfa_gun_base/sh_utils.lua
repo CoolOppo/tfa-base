@@ -571,12 +571,7 @@ function SWEP:GetMuzzleAttachment()
 	local att = math.max(1, self.MuzzleAttachmentRaw or (sp and vmod or self):LookupAttachment(self.MuzzleAttachment))
 
 	if self:GetStat("Akimbo") then
-		if sp and CLIENT then
-			self.GetNW2Int = self.GetNW2Int or self.GetNWInt
-			att = 1 + self:GetNW2Int("AnimCycle")
-		else
-			att = 1 + self.AnimCycle
-		end
+		att = 1 + self:GetAnimCycle()
 	end
 
 	return att

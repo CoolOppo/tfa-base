@@ -22,31 +22,27 @@
 SWEP.AnimCycle = SWEP.ViewModelFlip and 0 or 1
 
 function SWEP:FixAkimbo()
-	if self:GetStat("Akimbo") and self.Secondary_TFA.ClipSize > 0 then
-		self.Primary_TFA.ClipSize = self.Primary_TFA.ClipSize + self.Secondary_TFA.ClipSize
-		self.Secondary_TFA.ClipSize = -1
-		self.Primary_TFA.RPM = self.Primary_TFA.RPM * 2
-		self.Akimbo_Inverted = self.ViewModelFlip
-		self.AnimCycle = self.ViewModelFlip and 0 or 1
-		self:ClearStatCache()
+	if not self:GetStat("Akimbo") or self.Secondary_TFA.ClipSize <= 0 then return end
 
-		timer.Simple(FrameTime(), function()
-			timer.Simple(0.01, function()
-				if IsValid(self) and self:OwnerIsValid() then
-					self:SetClip1(self.Primary_TFA.ClipSize)
-				end
-			end)
+	self.Primary_TFA.ClipSize = self.Primary_TFA.ClipSize + self.Secondary_TFA.ClipSize
+	self.Secondary_TFA.ClipSize = -1
+	self.Primary_TFA.RPM = self.Primary_TFA.RPM * 2
+	self.Akimbo_Inverted = self.ViewModelFlip
+	self.AnimCycle = self.ViewModelFlip and 0 or 1
+	self:SetAnimCycle(self.AnimCycle)
+	self:ClearStatCache()
+
+	timer.Simple(FrameTime(), function()
+		timer.Simple(0.01, function()
+			if IsValid(self) and self:OwnerIsValid() then
+				self:SetClip1(self.Primary_TFA.ClipSize)
+			end
 		end)
-	end
+	end)
 end
 
 function SWEP:ToggleAkimbo(arg1)
-	if self:GetStat("Akimbo") and (IsFirstTimePredicted() or (arg1 and arg1 == "asdf")) then
-		self.AnimCycle = 1 - self.AnimCycle
-	end
-
-	if SERVER and game.SinglePlayer() then
-		self.SetNW2Int = self.SetNW2Int or self.SetNWInt
-		self:SetNW2Int("AnimCycle", self.AnimCycle)
+	if self:GetStat("Akimbo") then
+		self:SetAnimCycle(1 - self:GetAnimCycle())
 	end
 end

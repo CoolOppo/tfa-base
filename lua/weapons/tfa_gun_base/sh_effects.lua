@@ -95,7 +95,7 @@ function SWEP:GetShellAttachmentID(ent, isVM)
 	end
 
 	if self:GetStat("Akimbo") and not israw then
-		return 3 + self:GetNW2Int("AnimCycle", 1)
+		return 3 + self:GetAnimCycle()
 	end
 
 	if attid and attid <= 0 then attid = 2 end
