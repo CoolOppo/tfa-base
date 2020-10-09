@@ -789,6 +789,8 @@ function SWEP:InspectionVGUIAttachments(contentpanel)
 		end
 
 		function falloffpanel.Paint(myself, w, h)
+			if not IsValid(self2) then return end
+
 			local lut = self2.Primary.RangeFalloffLUTBuilt
 			if not lut then return end
 			local wepdmg = self2.Primary.Damage
