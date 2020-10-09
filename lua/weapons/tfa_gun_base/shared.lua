@@ -436,9 +436,12 @@ function SWEP:SetupDataTables()
 	self:NetworkVarTFA("Bool", "IronSightsRaw")
 	self:NetworkVarTFA("Bool", "Sprinting")
 	self:NetworkVarTFA("Bool", "Silenced")
-	self:NetworkVarTFA("Bool", "ShotgunCancel")
+	self:NetworkVarTFA("Bool", "ReloadLoopCancel")
 	self:NetworkVarTFA("Bool", "Walking")
 	self:NetworkVarTFA("Bool", "Customizing")
+
+	self.GetShotgunCancel = self.GetReloadLoopCancel
+	self.SetShotgunCancel = self.SetReloadLoopCancel
 
 	self:NetworkVarTFA("Bool", "FlashlightEnabled")
 	self:NetworkVarTFA("Bool", "Jammed")
@@ -702,7 +705,7 @@ function SWEP:Deploy()
 	self:SetIronSightsRaw(false)
 
 	if not self:GetStat("PumpAction") then
-		self:SetShotgunCancel( false )
+		self:SetReloadLoopCancel( false )
 	end
 
 	self:SetBurstCount(0)
@@ -1051,7 +1054,7 @@ function SWEP:IronSights()
 				if l_CT() > self2.LastBoltShoot + self2.BoltTimerOffset then
 					issighting = false
 				end
-			elseif (stat == TFA.Enum.STATUS_IDLE and self:GetShotgunCancel(true)) or stat == TFA.Enum.STATUS_PUMP then
+			elseif (stat == TFA.Enum.STATUS_IDLE and self:GetReloadLoopCancel(true)) or stat == TFA.Enum.STATUS_PUMP then
 				issighting = false
 			else
 				self2.LastBoltShoot = nil
@@ -1092,7 +1095,7 @@ function SWEP:IronSights()
 			if l_CT() > self2.LastBoltShoot + self2.BoltTimerOffset then
 				issighting = false
 			end
-		elseif (stat == TFA.Enum.STATUS_IDLE and self:GetShotgunCancel(true)) or stat == TFA.Enum.STATUS_PUMP then
+		elseif (stat == TFA.Enum.STATUS_IDLE and self:GetReloadLoopCancel(true)) or stat == TFA.Enum.STATUS_PUMP then
 			issighting = false
 		else
 			self2.LastBoltShoot = nil
@@ -1119,7 +1122,7 @@ function SWEP:IronSights()
 
 	self:SetCustomizeUpdated(false)
 
-	if (smi or spi or wmi or cmi) and (self:GetStatus() == TFA.Enum.STATUS_IDLE or (self:GetStatus() == TFA.Enum.STATUS_SHOOTING and self:CanInterruptShooting())) and not self:GetShotgunCancel() then
+	if (smi or spi or wmi or cmi) and (self:GetStatus() == TFA.Enum.STATUS_IDLE or (self:GetStatus() == TFA.Enum.STATUS_SHOOTING and self:CanInterruptShooting())) and not self:GetReloadLoopCancel() then
 		local toggle_is = current_iron_sights ~= issighting
 
 		if issighting and self:GetSprinting() then
@@ -1161,7 +1164,7 @@ function SWEP:GetIronSights()
 				if l_CT() > self2.LastBoltShoot + self2.BoltTimerOffset then
 					issighting = false
 				end
-			elseif (stat == TFA.Enum.STATUS_IDLE and self:GetShotgunCancel(true)) or stat == TFA.Enum.STATUS_PUMP then
+			elseif (stat == TFA.Enum.STATUS_IDLE and self:GetReloadLoopCancel(true)) or stat == TFA.Enum.STATUS_PUMP then
 				issighting = false
 			else
 				self2.LastBoltShoot = nil
@@ -1238,7 +1241,7 @@ function SWEP:CanPrimaryAttack()
 
 	if not TFA.Enum.ReadyStatus[stat] and stat ~= TFA.Enum.STATUS_SHOOTING then
 		if self2.Shotgun and TFA.Enum.ReloadStatus[stat] then
-			self:SetShotgunCancel(true)
+			self:SetReloadLoopCancel(true)
 		end
 
 		return false
@@ -1409,7 +1412,7 @@ function SWEP:TriggerAttack(tableName, clipID)
 		self:SetBurstCount(math.max(1, self:GetBurstCount() + 1))
 	end
 
-	if self:GetStat("PumpAction") and self:GetShotgunCancel() then return end
+	if self:GetStat("PumpAction") and self:GetReloadLoopCancel() then return end
 
 	self:SetStatus(TFA.Enum.STATUS_SHOOTING)
 	self:SetStatusEnd(self["GetNext" .. fnname .. "Fire"](self))
@@ -1473,9 +1476,9 @@ function SWEP:TriggerAttack(tableName, clipID)
 	-- Condition self:GetStatus() == TFA.Enum.STATUS_SHOOTING is always true?
 	if self:GetStatus() == TFA.Enum.STATUS_SHOOTING and self:GetStat("PumpAction") then
 		if self["Clip" .. clipID](self) == 0 and self:GetStat("PumpAction.value_empty") then
-			self:SetShotgunCancel(true)
+			self:SetReloadLoopCancel(true)
 		elseif (self:GetStat(tableName .. ".ClipSize") < 0 or self["Clip" .. clipID](self) > 0) and self:GetStat("PumpAction.value") then
-			self:SetShotgunCancel(true)
+			self:SetReloadLoopCancel(true)
 		end
 	end
 
@@ -1563,7 +1566,7 @@ function SWEP:Reload(released)
 	ct = l_CT()
 	stat = self:GetStatus()
 
-	if self:GetStat("PumpAction") and self:GetShotgunCancel() then
+	if self:GetStat("PumpAction") and self:GetReloadLoopCancel() then
 		if stat == TFA.Enum.STATUS_IDLE then
 			self:DoPump()
 		end
@@ -1654,7 +1657,7 @@ function SWEP:Reload2(released)
 	ct = l_CT()
 	stat = self:GetStatus()
 
-	if self:GetStat("PumpAction") and self:GetShotgunCancel() then
+	if self:GetStat("PumpAction") and self:GetReloadLoopCancel() then
 		if stat == TFA.Enum.STATUS_IDLE then
 			self:DoPump()
 		end
