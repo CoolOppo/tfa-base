@@ -19,22 +19,8 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
-local cv_dba, cv_dbc
-
-local statusnames = {}
-
-local function PopulateStatusNames()
-	if #statusnames > 0 then return end
-
-	for k, v in pairs(TFA.Enum) do
-		if (k:StartWith("STATUS")) and type(v) == "number" then
-			statusnames[v] = k
-		end
-	end
-end
-
-cvars.AddChangeCallback("cl_tfa_debug_animations", PopulateStatusNames, "TFADevPopStatusNames")
-PopulateStatusNames()
+local cv_dba = GetConVar("cl_tfa_debug_animations")
+local cv_dbc = GetConVar("cl_tfa_debug_crosshair")
 
 local state_strings = {}
 
@@ -60,11 +46,7 @@ for i = 1, 32 do
 end
 
 local function DrawDebugInfo(w, h, ply, wep)
-	if not cv_dba then
-		cv_dba = GetConVar("cl_tfa_debug_animations")
-	end
-
-	if not cv_dba or not cv_dba:GetBool() then return end
+	if not cv_dba:GetBool() then return end
 
 	local x, y = w * .5, h * .2
 
@@ -126,7 +108,7 @@ local function DrawDebugInfo(w, h, ply, wep)
 		end
 	end
 
-	draw.SimpleTextOutlined(string.format("%s [%.2f, %.2f]", statusnames[wep:GetStatus()] or wep:GetStatus(), CurTime(), wep:GetStatusEnd()), "TFASleekDebug", x, y, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP, 1, color_black)
+	draw.SimpleTextOutlined(string.format("%s [%.2f, %.2f]", TFA.Enum.InverseStatus[wep:GetStatus()] or wep:GetStatus(), CurTime(), wep:GetStatusEnd()), "TFASleekDebug", x, y, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP, 1, color_black)
 	y = y + TFA.Fonts.SleekHeightDebug
 
 	local vm = ply:GetViewModel() or NULL
@@ -146,11 +128,7 @@ local function DrawDebugInfo(w, h, ply, wep)
 end
 
 local function DrawDebugCrosshair(w, h)
-	if not cv_dbc then
-		cv_dbc = GetConVar("cl_tfa_debug_crosshair")
-	end
-
-	if not cv_dbc or not cv_dbc:GetBool() then return end
+	if not cv_dbc:GetBool() then return end
 
 	surface.SetDrawColor(color_white)
 	surface.DrawRect(w * .5 - 1, h * .5 - 1, 2, 2)

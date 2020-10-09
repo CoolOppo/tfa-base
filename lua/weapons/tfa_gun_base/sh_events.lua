@@ -461,7 +461,7 @@ function SWEP:ProcessStatus()
 			self2.FinishHolster(self)
 			finalstat = TFA.Enum.STATUS_HOLSTER_FINAL
 			self:SetStatusEnd(ct + 0.6)
-		elseif stat == TFA.Enum.STATUS_RELOADING_SHOTGUN_START_SHELL then
+		elseif stat == TFA.Enum.STATUS_RELOADING_LOOP_START_EMPTY then
 			--Shotgun Reloading from empty
 			if not self2.IsJammed(self) then
 				self2.TakePrimaryAmmo(self, 1, true)
@@ -469,7 +469,7 @@ function SWEP:ProcessStatus()
 			end
 
 			if self2.Ammo1(self) <= 0 or self:Clip1() >= self2.GetPrimaryClipSize(self) or self:GetShotgunCancel() then
-				finalstat = TFA.Enum.STATUS_RELOADING_SHOTGUN_END
+				finalstat = TFA.Enum.STATUS_RELOADING_LOOP_END
 				local _, tanim = self2.ChooseShotgunPumpAnim(self)
 				self:SetStatusEnd(ct + self:GetActivityLength(tanim))
 				self:SetShotgunCancel(false)
@@ -492,10 +492,10 @@ function SWEP:ProcessStatus()
 				--finalstat = self:LoadShell()
 				--self:SetStatusEnd( self:GetNextPrimaryFire() )
 			end
-		elseif stat == TFA.Enum.STATUS_RELOADING_SHOTGUN_START then
+		elseif stat == TFA.Enum.STATUS_RELOADING_LOOP_START then
 			--Shotgun Reloading
 			finalstat = self2.LoadShell(self)
-		elseif stat == TFA.Enum.STATUS_RELOADING_SHOTGUN_LOOP then
+		elseif stat == TFA.Enum.STATUS_RELOADING_LOOP then
 			self2.TakePrimaryAmmo(self, 1, true)
 			self2.TakePrimaryAmmo(self, -1)
 			lact = self:GetLastActivity()
@@ -517,7 +517,7 @@ function SWEP:ProcessStatus()
 				self:SetStatusEnd(ct + waittime)
 			else
 				if self2.Ammo1(self) <= 0 or self:Clip1() >= self:GetPrimaryClipSize() or self:GetShotgunCancel() then
-					finalstat = TFA.Enum.STATUS_RELOADING_SHOTGUN_END
+					finalstat = TFA.Enum.STATUS_RELOADING_LOOP_END
 					local _, tanim = self2.ChooseShotgunPumpAnim(self)
 					self:SetStatusEnd(ct + self:GetActivityLength(tanim))
 					self:SetShotgunCancel(false)
@@ -540,14 +540,14 @@ function SWEP:ProcessStatus()
 			self2.Silenced = self:GetSilenced()
 		elseif stat == TFA.Enum.STATUS_RELOADING_WAIT and self2.Shotgun then
 			if self2.Ammo1(self) <= 0 or self:Clip1() >= self:GetPrimaryClipSize() or self:GetShotgunCancel() then
-				finalstat = TFA.Enum.STATUS_RELOADING_SHOTGUN_END
+				finalstat = TFA.Enum.STATUS_RELOADING_LOOP_END
 				local _, tanim = self2.ChooseShotgunPumpAnim(self)
 				self:SetStatusEnd(ct + self:GetActivityLength(tanim))
 				--self:SetShotgunCancel( false )
 			else
 				finalstat = self2.LoadShell(self)
 			end
-		elseif stat == TFA.Enum.STATUS_RELOADING_SHOTGUN_END and self2.Shotgun then
+		elseif stat == TFA.Enum.STATUS_RELOADING_LOOP_END and self2.Shotgun then
 			self:SetShotgunCancel(false)
 		elseif self2.GetStat(self, "PumpAction") and stat == TFA.Enum.STATUS_PUMP then
 			self:SetShotgunCancel(false)

@@ -1576,7 +1576,7 @@ function SWEP:Reload(released)
 				local _, tanim = self:ChooseShotgunReloadAnim()
 
 				if self:GetStat("ShotgunStartAnimShell") then
-					self:SetStatus(TFA.Enum.STATUS_RELOADING_SHOTGUN_START_SHELL)
+					self:SetStatus(TFA.Enum.STATUS_RELOADING_LOOP_START_EMPTY)
 				elseif self2.ShotgunEmptyAnim then
 					local _, tg = self:ChooseAnimation( "reload_empty" )
 					local action = tanim
@@ -1586,12 +1586,12 @@ function SWEP:Reload(released)
 					end
 
 					if action == tg and self:GetStat("ShotgunEmptyAnim_Shell") then
-						self:SetStatus(TFA.Enum.STATUS_RELOADING_SHOTGUN_START_SHELL)
+						self:SetStatus(TFA.Enum.STATUS_RELOADING_LOOP_START_EMPTY)
 					else
-						self:SetStatus(TFA.Enum.STATUS_RELOADING_SHOTGUN_START)
+						self:SetStatus(TFA.Enum.STATUS_RELOADING_LOOP_START)
 					end
 				else
-					self:SetStatus(TFA.Enum.STATUS_RELOADING_SHOTGUN_START)
+					self:SetStatus(TFA.Enum.STATUS_RELOADING_LOOP_START)
 				end
 
 				self:SetStatusEnd(ct + self:GetActivityLength( tanim, true ))
@@ -1667,12 +1667,12 @@ function SWEP:Reload2(released)
 					local _, tg = self:ChooseAnimation( "reload_empty" )
 
 					if tanim == tg and self2.ShotgunEmptyAnim_Shell then
-						self:SetStatus(TFA.Enum.STATUS_RELOADING_SHOTGUN_START_SHELL)
+						self:SetStatus(TFA.Enum.STATUS_RELOADING_LOOP_START_EMPTY)
 					else
-						self:SetStatus(TFA.Enum.STATUS_RELOADING_SHOTGUN_START)
+						self:SetStatus(TFA.Enum.STATUS_RELOADING_LOOP_START)
 					end
 				else
-					self:SetStatus(TFA.Enum.STATUS_RELOADING_SHOTGUN_START)
+					self:SetStatus(TFA.Enum.STATUS_RELOADING_LOOP_START)
 				end
 
 				self:SetStatusEnd(ct + self:GetActivityLength( tanim, true ))
@@ -1729,7 +1729,7 @@ function SWEP:LoadShell()
 		self:SetStatusEnd(ct + ( sht or self:GetActivityLength(tanim, true)))
 	end
 
-	return TFA.Enum.STATUS_RELOADING_SHOTGUN_LOOP
+	return TFA.Enum.STATUS_RELOADING_LOOP
 end
 
 function SWEP:CompleteReload()

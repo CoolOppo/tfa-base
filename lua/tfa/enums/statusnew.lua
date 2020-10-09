@@ -21,28 +21,40 @@
 
 TFA.ENUM_COUNTER = TFA.ENUM_COUNTER or 0
 
+TFA.Enum.InverseStatus = TFA.Enum.InverseStatus or {}
+local upper = string.upper
+
 local function gen(input)
-	local key = "STATUS_" .. string.upper(input)
-	return key
+	return "STATUS_" .. upper(input)
 end
 
 function TFA.AddStatus(input)
 	local key = gen(input)
-	if not TFA.Enum[key] then
-		TFA.Enum[key] = TFA.ENUM_COUNTER * 1
+	local getkey = TFA.Enum[key]
+
+	if not getkey then
+		getkey = TFA.ENUM_COUNTER
 		TFA.ENUM_COUNTER = TFA.ENUM_COUNTER + 1
+		TFA.Enum[key] = getkey
 	end
+
+	TFA.Enum.InverseStatus[getkey] = key
+
+	return getkey
 end
 
 function TFA.GetStatus(input)
 	local key = gen(input)
-	if not TFA.Enum[ key ] then
-		TFA.AddStatus(input) -- DANGEROUS:
+	local getkey = TFA.Enum[key]
+
+	if not getkey then
+		return TFA.AddStatus(input) -- DANGEROUS:
 		-- Race condition:
 		-- If something go terribly wrong and order of addition of new statuses fuck up
 		-- everything will fail horribly!
 	end
-	return TFA.Enum[ key ]
+
+	return getkey
 end
 
 TFA.AddStatus("idle")
@@ -52,10 +64,17 @@ TFA.AddStatus("holster_final")
 TFA.AddStatus("holster_ready")
 TFA.AddStatus("reloading")
 TFA.AddStatus("reloading_wait")
-TFA.AddStatus("reloading_shotgun_start")
-TFA.AddStatus("reloading_shotgun_start_shell")
-TFA.AddStatus("reloading_shotgun_loop")
-TFA.AddStatus("reloading_shotgun_end")
+
+TFA.AddStatus("reloading_loop_start")
+TFA.AddStatus("reloading_loop_start_empty")
+TFA.AddStatus("reloading_loop")
+TFA.AddStatus("reloading_loop_end")
+
+TFA.Enum.STATUS_RELOADING_SHOTGUN_START = TFA.Enum.STATUS_RELOADING_LOOP_START
+TFA.Enum.STATUS_RELOADING_SHOTGUN_START_SHELL = TFA.Enum.STATUS_RELOADING_LOOP_START_EMPTY
+TFA.Enum.STATUS_RELOADING_SHOTGUN_LOOP = TFA.Enum.STATUS_RELOADING_LOOP
+TFA.Enum.STATUS_RELOADING_SHOTGUN_END = TFA.Enum.STATUS_RELOADING_LOOP_END
+
 TFA.AddStatus("shooting")
 TFA.AddStatus("silencer_toggle")
 TFA.AddStatus("bashing")
@@ -90,10 +109,10 @@ TFA.Enum.HolsterStatus = {
 TFA.Enum.ReloadStatus = {
 	[TFA.Enum.STATUS_RELOADING] = true,
 	[TFA.Enum.STATUS_RELOADING_WAIT] = true,
-	[TFA.Enum.STATUS_RELOADING_SHOTGUN_START] = true,
-	[TFA.Enum.STATUS_RELOADING_SHOTGUN_START_SHELL] = true,
-	[TFA.Enum.STATUS_RELOADING_SHOTGUN_LOOP] = true,
-	[TFA.Enum.STATUS_RELOADING_SHOTGUN_END] = true
+	[TFA.Enum.STATUS_RELOADING_LOOP_START] = true,
+	[TFA.Enum.STATUS_RELOADING_LOOP_START_EMPTY] = true,
+	[TFA.Enum.STATUS_RELOADING_LOOP] = true,
+	[TFA.Enum.STATUS_RELOADING_LOOP_END] = true
 }
 
 TFA.Enum.ReadyStatus = {
