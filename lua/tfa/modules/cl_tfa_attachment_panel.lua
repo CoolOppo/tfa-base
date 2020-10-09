@@ -76,6 +76,7 @@ function PANEL:Initialize()
 	toppanel:SetHeight( self:GetTall() )
 	toppanel:DockPadding( padding,padding, padding, padding )
 	toppanel.Paint = function(myself,w,h)
+		if not IsValid(self.Wep) then return end
 		draw.RoundedBox( 0, 0, 0, w, h, ColorAlpha( TFA.Attachments.Colors["secondary"], ( self.Wep:GetInspectingProgress() or 0 ) * 128 ) )
 	end
 
