@@ -646,7 +646,7 @@ local function shouldDisplayDebug()
 	return SERVER and sv_tfa_debug:GetBool() and develop:GetBool() and DLib
 end
 
-function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon, penetrated)
+function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon, penetrated, previousStartPos)
 	--debugoverlay.Sphere( self.Src, 5, 5, color_white, true)
 
 	DisableOwnerDamage(ply, traceres, dmginfo)
@@ -758,6 +758,11 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon, penetrated)
 
 	if penetration_cvar and not penetration_cvar:GetBool() then return end
 	if self.PenetrationCount > math.min(penetration_max_cvar:GetInt(100), weapon.Primary.MaxPenetration) then return end
+	-- source engine quirk - if bullet is fired too close to brush surface
+	-- it is assumed to be fired right in front of it, rather than exact
+	-- position you specified.
+	if previousStartPos and previousStartPos:Distance(traceres.HitPos) < 0.05 then return end
+	local oldTraceResHitPos = Vector(traceres.HitPos)
 
 	local mult = weapon:GetPenetrationMultiplier(traceres.MatType)
 	local newdir = (traceres.HitPos - traceres.StartPos):GetNormalized()
@@ -790,13 +795,14 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon, penetrated)
 
 	if not isent then
 		local acc_length = pentraceres.HitPos:Distance(pentraceres.StartPos)
+
 		local ostart = pentrace.start
 		local FractionLeftSolid = pentraceres.FractionLeftSolid
 		local iter = 0
 
 		local cond = (pentraceres.AllSolid or not IsInWorld2(pentraceres.HitPos)) and acc_length < desired_length
 
-		while (pentraceres.AllSolid or not IsInWorld2(pentraceres.HitPos)) and acc_length < desired_length and iter < MAX_CORRECTION_ITERATIONS do
+		while (pentraceres.AllSolid or not IsInWorld2(pentraceres.HitPos)) and acc_length <= desired_length and iter < MAX_CORRECTION_ITERATIONS do
 			iter = iter + 1
 
 			pentrace.start = pentraceres.HitPos + newdir * 8
@@ -963,7 +969,7 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon, penetrated)
 		-- TODO: User died while bullet make penetration
 		-- handle further penetrations even when user is dead
 		if IsValid(bul.Wep) then
-			bul:Penetrate(attacker, trace, dmginfo2, bul.Wep, penetrated)
+			bul:Penetrate(attacker, trace, dmginfo2, bul.Wep, penetrated, oldTraceResHitPos)
 		end
 	end
 
