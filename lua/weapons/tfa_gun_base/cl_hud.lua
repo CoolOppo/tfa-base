@@ -1302,9 +1302,27 @@ function SWEP:DoDrawCrosshair()
 	end
 
 	self2.clrelp = self2.clrelp or 0
-	self2.clrelp = math.Approach(self2.clrelp, TFA.Enum.ReloadStatus[stat] and 0 or 1, ((TFA.Enum.ReloadStatus[stat] and 0 or 1) - self2.clrelp) * RealFrameTime() * 15)
-	local crossa = crossa_cvar:GetFloat() * math.pow(math.min(1 - (((self2.IronSightsProgressUnpredicted or self:GetIronSightsProgress()) and not self2.DrawCrosshairIS) and (self2.IronSightsProgressUnpredicted or self:GetIronSightsProgress()) or 0), 1 - self:GetSprintProgress(), 1 - self:GetInspectingProgress(), self2.clrelp), 2)
-	local outa = outa_cvar:GetFloat() * math.pow(math.min(1 - (((self2.IronSightsProgressUnpredicted or self:GetIronSightsProgress()) and not self2.DrawCrosshairIS) and (self2.IronSightsProgressUnpredicted or self:GetIronSightsProgress()) or 0), 1 - self:GetSprintProgress(), 1 - self:GetInspectingProgress(), self2.clrelp), 2)
+	self2.clrelp = math.Approach(
+		self2.clrelp,
+		TFA.Enum.ReloadStatus[stat] and 0 or 1,
+		((TFA.Enum.ReloadStatus[stat] and 0 or 1) - self2.clrelp) * RealFrameTime() * 7)
+
+	local crossa = crossa_cvar:GetFloat() *
+		math.pow(math.min(1 - (((self2.IronSightsProgressUnpredicted or self:GetIronSightsProgress()) and
+			not self2.DrawCrosshairIS) and (self2.IronSightsProgressUnpredicted or self:GetIronSightsProgress()) or 0),
+			1 - self:GetSprintProgress(),
+			1 - self:GetInspectingProgress(),
+			self2.clrelp),
+		2)
+
+	local outa = outa_cvar:GetFloat() *
+		math.pow(math.min(1 - (((self2.IronSightsProgressUnpredicted or self:GetIronSightsProgress()) and
+			not self2.DrawCrosshairIS) and (self2.IronSightsProgressUnpredicted or self:GetIronSightsProgress()) or 0),
+			1 - self:GetSprintProgress(),
+			1 - self:GetInspectingProgress(),
+			self2.clrelp),
+		2)
+
 	local ply = LocalPlayer()
 	if not ply:IsValid() or self:GetOwner() ~= ply then return false end
 
@@ -1372,6 +1390,15 @@ function SWEP:DoDrawCrosshair()
 	crosshairwidth = crosshairwidth_cvar:GetFloat()
 	drawdot = drawdot_cvar:GetBool()
 	local scale = (s_cone * 90) / self:GetOwner():GetFOV() * ScrH() / 1.44 * cgapscale_cvar:GetFloat()
+
+	if self:GetSprintProgress() >= 0.1 and not self:GetStat("AllowSprintAttack", false) then
+		scale = scale * (1 + TFA.Cubic(self:GetSprintProgress() - 0.1) * 6)
+	end
+
+	if self2.clrelp < 0.9 then
+		scale = scale * Lerp(TFA.Cubic(0.9 - self2.clrelp) * 1.111, 1, 8)
+	end
+
 	local gap = math.Round(scale / 2) * 2
 	local length
 
