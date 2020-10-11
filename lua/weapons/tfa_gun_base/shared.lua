@@ -1274,23 +1274,25 @@ function SWEP:CanPrimaryAttack()
 		return false
 	end
 
-	if self:GetPrimaryClipSize(true) > 0 and self:Clip1() < self:GetStat("Primary.AmmoConsumption") and not self2.HasPlayedEmptyClick then
-		self2.HasPlayedEmptyClick = true
+	if self:GetPrimaryClipSize(true) > 0 and self:Clip1() < self:GetStat("Primary.AmmoConsumption") then
+		if not self2.HasPlayedEmptyClick then
+			self2.HasPlayedEmptyClick = true
 
-		if self:GetOwner():IsNPC() or self:GetOwner():KeyPressed(IN_ATTACK) then
-			local enabled, act = self:ChooseDryFireAnim()
+			if self:GetOwner():IsNPC() or self:GetOwner():KeyPressed(IN_ATTACK) then
+				local enabled, act = self:ChooseDryFireAnim()
 
-			if enabled then
-				self:SetNextPrimaryFire(l_CT() + self:GetStat("Primary.DryFireDelay", self:GetActivityLength(act, true)))
+				if enabled then
+					self:SetNextPrimaryFire(l_CT() + self:GetStat("Primary.DryFireDelay", self:GetActivityLength(act, true)))
 
-				return false
+					return false
+				end
 			end
-		end
 
-		self:EmitSound(self:GetStat("Primary.Sound_DryFire"))
+			self:EmitSound(self:GetStat("Primary.Sound_DryFire"))
 
-		if not dryfire_cvar:GetBool() then
-			self:Reload(true)
+			if not dryfire_cvar:GetBool() then
+				self:Reload(true)
+			end
 		end
 
 		return false
