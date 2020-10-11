@@ -832,7 +832,9 @@ function SWEP:IterateBodygroups(entity, tablename)
 
 	bgt = self2.GetStat(self, tablename, self2[tablename])
 
-	for k, v in ipairs(bgt) do
+	for k, v in pairs(bgt) do
+		if type(k) == "string" then continue end
+
 		local bgn = entity:GetBodygroupName(k)
 
 		if bgt[bgn] then
