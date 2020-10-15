@@ -482,7 +482,15 @@ function SWEP:GetStat(stat, default)
 			return finalReturn
 		end
 
+		local shouldCache = (not self2.StatCache_Blacklist[stat]) and (not self2.StatCache_Blacklist[stbl[1]]) and (not nc) and not (ccv and ccv:GetBool())
+
 		local cs = self2.GetStatRecursive(self, self2, stbl, istable(default) and tableCopy(default) or default)
+		local cs2 = cs
+
+		if default ~= nil and shouldCache then
+			cs2 = self2.GetStatRecursive(self, self2, stbl)
+		end
+
 		local ns, nc = self2.GetStatRecursive(self, self2.AttachmentTableCache, stbl, istable(cs) and tableCopy(cs) or cs)
 
 		if istable(ns) and istable(cs) then
@@ -491,8 +499,8 @@ function SWEP:GetStat(stat, default)
 			cs = ns
 		end
 
-		if (not self2.StatCache_Blacklist[stat]) and (not self2.StatCache_Blacklist[stbl[1]]) and (not nc) and not (ccv and ccv:GetBool()) then
-			self2.StatCache[stat] = cs
+		if shouldCache then
+			self2.StatCache[stat] = cs2
 			self2.StatCache2[stat] = true
 		end
 
