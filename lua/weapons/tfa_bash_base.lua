@@ -240,11 +240,16 @@ function SWEP:SecondaryAttack()
 end
 
 function SWEP:GetBashing()
-	if not self:VMIV() then
-		return self:GetStatus() == TFA.Enum.STATUS_BASHING
-	end
-
 	local stat = self:GetStatus()
 
-	return (stat == TFA.Enum.STATUS_BASHING) and self.OwnerViewModel:GetCycle() > 0 and self.OwnerViewModel:GetCycle() < 0.65
+	if not self:VMIV() then
+		return stat == TFA.Enum.STATUS_BASHING or stat == TFA.Enum.STATUS_BASHING_WAIT
+	end
+
+	return (stat == TFA.Enum.STATUS_BASHING or stat == TFA.Enum.STATUS_BASHING_WAIT) and self.OwnerViewModel:GetCycle() > 0 and self.OwnerViewModel:GetCycle() < 0.65
+end
+
+function SWEP:GetBashingStrict()
+	local stat = self:GetStatus()
+	return stat == TFA.Enum.STATUS_BASHING or stat == TFA.Enum.STATUS_BASHING_WAIT
 end

@@ -134,6 +134,7 @@ TFA.Enum.HUDDisabledStatus = {
 	[TFA.Enum.STATUS_SHOOTING] = true,
 	[TFA.Enum.STATUS_FIREMODE] = true,
 	[TFA.Enum.STATUS_BASHING] = true,
+	[TFA.Enum.STATUS_BASHING_WAIT] = true,
 	[TFA.Enum.STATUS_HOLSTER] = true,
 	[TFA.Enum.STATUS_HOLSTER_FINAL] = true,
 	[TFA.Enum.STATUS_HOLSTER_READY] = true,
