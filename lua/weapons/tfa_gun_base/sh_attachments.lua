@@ -230,46 +230,47 @@ function SWEP:GetStatRecursive(srctbl, stbl, ...)
 				srctbl = srctbl[stbl[1]]
 				table.remove(stbl, 1)
 			else
-				return ...
+				return true, ...
 			end
 		end
 	end
 
 	local val = srctbl[stbl[1]]
 
+	if val == nil then
+		return true, ...
+	end
+
 	if istable(val) and val.functionTable then
-		local t, final, nocache
+		local currentStat, isFinal, nocache, nct
 		nocache = false
 
-		for i = 1, table.Count(val) do
+		for i = 1, #val do
 			local v = val[i]
 
 			if isfunction(v) then
-				local nct
-
-				if not t then
-					t, final, nct = v(self, ...)
+				if currentStat == nil then
+					currentStat, isFinal, nct = v(self, ...)
 				else
-					t, final, nct = v(self, t)
+					currentStat, isFinal, nct = v(self, currentStat)
 				end
 
 				nocache = nocache or nct
-				if final then break end
+
+				if isFinal then break end
 			elseif v then
-				t = v
+				currentStat = v
 			end
 		end
 
-		if t then
-			return t, nocache
-		else
-			return ...
+		if currentStat ~= nil then
+			return false, currentStat, nocache
 		end
-	elseif val ~= nil then
-		return val
-	else
-		return ...
+
+		return true, ...
 	end
+
+	return false, val
 end
 
 SWEP.StatCache_Blacklist = {
@@ -283,7 +284,6 @@ SWEP.StatCache_Blacklist = {
 	["Skin"] = true
 }
 
-local retval
 SWEP.StatCache = {}
 SWEP.StatCache2 = {}
 SWEP.StatStringCache = {}
@@ -447,7 +447,7 @@ end
 
 function SWEP:GetStat(stat, default)
 	local self2 = self:GetTable()
-	local stbl = self2.GetStatPath(self, stat)
+	local statPath = self2.GetStatPath(self, stat)
 
 	if self2.StatCache2[stat] ~= nil then
 		local finalReturn
@@ -455,10 +455,13 @@ function SWEP:GetStat(stat, default)
 		if self2.StatCache[stat] ~= nil then
 			finalReturn = self2.StatCache[stat]
 		else
-			retval = self2.GetStatRecursive(self, self2, stbl)
+			local isDefault, retval = self2.GetStatRecursive(self, self2, statPath)
 
 			if retval ~= nil then
-				self2.StatCache[stat] = retval
+				if not isDefault then
+					self2.StatCache[stat] = retval
+				end
+
 				finalReturn = retval
 			else
 				finalReturn = istable(default) and tableCopy(default) or default
@@ -469,46 +472,43 @@ function SWEP:GetStat(stat, default)
 		if getstat ~= nil then return getstat end
 
 		return finalReturn
-	else
-		if not self2.OwnerIsValid(self) then
-			local finalReturn = default
-
-			if IsValid(self) then
-				finalReturn = self2.GetStatRecursive(self, self2, stbl, istable(default) and tableCopy(default) or default)
-			end
-
-			local getstat = hook.Run("TFA_GetStat", self, stat, finalReturn)
-			if getstat ~= nil then return getstat end
-			return finalReturn
-		end
-
-		local shouldCache = (not self2.StatCache_Blacklist[stat]) and (not self2.StatCache_Blacklist[stbl[1]]) and (not nc) and not (ccv and ccv:GetBool())
-
-		local cs = self2.GetStatRecursive(self, self2, stbl, istable(default) and tableCopy(default) or default)
-		local cs2 = cs
-
-		if default ~= nil and shouldCache then
-			cs2 = self2.GetStatRecursive(self, self2, stbl)
-		end
-
-		local ns, nc = self2.GetStatRecursive(self, self2.AttachmentTableCache, stbl, istable(cs) and tableCopy(cs) or cs)
-
-		if istable(ns) and istable(cs) then
-			cs = table.Merge(tableCopy(cs), ns)
-		else
-			cs = ns
-		end
-
-		if shouldCache then
-			self2.StatCache[stat] = cs2
-			self2.StatCache2[stat] = true
-		end
-
-		local getstat = hook.Run("TFA_GetStat", self, stat, cs)
-		if getstat ~= nil then return getstat end
-
-		return cs
 	end
+
+	if not self2.OwnerIsValid(self) then
+		local finalReturn = default
+		local isDefault
+
+		if IsValid(self) then
+			isDefault, finalReturn = self2.GetStatRecursive(self, self2, statPath, istable(default) and tableCopy(default) or default)
+		end
+
+		local getstat = hook.Run("TFA_GetStat", self, stat, finalReturn)
+		if getstat ~= nil then return getstat end
+		return finalReturn
+	end
+
+	local isDefault, statSelf = self2.GetStatRecursive(self, self2, statPath, istable(default) and tableCopy(default) or default)
+	local isDefaultAtt, statAttachment, noCache = self2.GetStatRecursive(self, self2.AttachmentTableCache, statPath, istable(statSelf) and tableCopy(statSelf) or statSelf)
+	local shouldCache = not noCache and not self2.StatCache_Blacklist[stat] and not self2.StatCache_Blacklist[statPath[1]] and not (ccv and ccv:GetBool())
+
+	if istable(statAttachment) and istable(statSelf) then
+		statSelf = table.Merge(tableCopy(statSelf), statAttachment)
+	else
+		statSelf = statAttachment
+	end
+
+	if shouldCache then
+		if not isDefault then
+			self2.StatCache[stat] = statSelf
+		end
+
+		self2.StatCache2[stat] = true
+	end
+
+	local getstat = hook.Run("TFA_GetStat", self, stat, statSelf)
+	if getstat ~= nil then return getstat end
+
+	return statSelf
 end
 
 local ATTACHMENT_SORTING_DEPENDENCIES = false
