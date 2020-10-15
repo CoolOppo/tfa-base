@@ -44,5 +44,6 @@ end
 function SWEP:ToggleAkimbo(arg1)
 	if self:GetStat("Akimbo") then
 		self:SetAnimCycle(1 - self:GetAnimCycle())
+		self.AnimCycle = self:GetAnimCycle()
 	end
 end

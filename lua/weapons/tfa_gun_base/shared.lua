@@ -885,6 +885,9 @@ function SWEP:Think()
 		self2.ProcessEvents(self, sp or IsFirstTimePredicted())
 	end
 
+	-- backward compatibility
+	self2.AnimCycle = self:GetAnimCycle()
+
 	if ct > self:GetNextIdleAnim() and (TFA.Enum.ReadyStatus[stat] or (stat == TFA.Enum.STATUS_SHOOTING and TFA.Enum.ShootLoopingStatus[self:GetShootStatus()])) then
 		self:ChooseIdleAnim()
 	end

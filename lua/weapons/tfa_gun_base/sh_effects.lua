@@ -110,7 +110,9 @@ function SWEP:GetShellEjectPosition(ent, isVM)
 
 	local angpos = ent:GetAttachment(attid)
 
-	if angpos then return angpos.Pos, angpos.Ang, attid end
+	if angpos then
+		return angpos.Pos, angpos.Ang, attid
+	end
 end
 
 function SWEP:MakeShell(eject_now)
