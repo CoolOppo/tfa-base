@@ -498,7 +498,7 @@ function SWEP:GetStat(stat, default)
 	end
 
 	if shouldCache then
-		if not isDefault then
+		if not isDefault or not isDefaultAtt then
 			self2.StatCache[stat] = statSelf
 		end
 
