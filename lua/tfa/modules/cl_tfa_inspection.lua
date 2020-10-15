@@ -61,7 +61,7 @@ if CLIENT then
 		local wep = ply:GetActiveWeapon()
 		if not IsValid(wep) or not wep.IsTFAWeapon then return end
 
-		tfablurintensity = wep:GetNW2Float("InspectingProgress", 0)
+		tfablurintensity = wep:GetInspectingProgress()
 
 		if tfablurintensity > 0.01 then
 			if doblur and doblur:GetBool() then
