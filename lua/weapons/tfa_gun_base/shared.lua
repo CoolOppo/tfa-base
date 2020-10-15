@@ -405,7 +405,7 @@ function SWEP:NetworkVarTFA(typeIn, nameIn)
 	local gatherindex = table.remove(self.TrackedDTTypes[typeIn], 1)
 
 	if gatherindex then
-		self:NetworkVar(typeIn, gatherindex, nameIn)
+		(self["NetworkVar_TFA"] or self["NetworkVar"])(self, typeIn, gatherindex, nameIn)
 		return
 	end
 
@@ -432,6 +432,8 @@ Returns:  Nothing.  Simple sets up DTVars to be networked.
 Purpose:  Networking.
 ]]
 function SWEP:SetupDataTables()
+	self.NetworkVar_TFA = self.NetworkVar
+
 	--self:NetworkVarTFA("Bool", "IronSights")
 	self:NetworkVarTFA("Bool", "IronSightsRaw")
 	self:NetworkVarTFA("Bool", "Sprinting")
@@ -513,6 +515,10 @@ function SWEP:SetupDataTables()
 
 	self:NetworkVarTFA("Bool", "CustomizeUpdated")
 	self:NetworkVarTFA("Bool", "IronSightsOldFinal")
+
+	function self.NetworkVar(self2, typeIn, slotIn, nameIn)
+		return self2:NetworkVarTFA(typeIn, nameIn)
+	end
 
 	hook.Run("TFA_SetupDataTables", self)
 end
