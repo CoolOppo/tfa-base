@@ -894,7 +894,7 @@ function SWEP:Think()
 	-- backward compatibility
 	self2.AnimCycle = self:GetAnimCycle()
 
-	if ct > self:GetNextIdleAnim() and (TFA.Enum.ReadyStatus[stat] or (stat == TFA.Enum.STATUS_SHOOTING and TFA.Enum.ShootLoopingStatus[self:GetShootStatus()])) then
+	if (not sp or SERVER) and ct > self:GetNextIdleAnim() and (TFA.Enum.ReadyStatus[stat] or (stat == TFA.Enum.STATUS_SHOOTING and TFA.Enum.ShootLoopingStatus[self:GetShootStatus()])) then
 		self:ChooseIdleAnim()
 	end
 
