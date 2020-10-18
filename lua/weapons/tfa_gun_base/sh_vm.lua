@@ -61,8 +61,7 @@ local function util_NormalizeAngles(a)
 end
 ]]
 --
-local vm_offset_pos = Vector()
-local vm_offset_ang = Angle()
+
 --local fps_max_cvar = GetConVar("fps_max")
 local righthanded, shouldflip, cl_vm_flip_cv, cl_vm_nearwall, fovmod_add, fovmod_mult
 
@@ -448,24 +447,8 @@ function SWEP:CalculateViewModelOffset(delta)
 		end
 	end
 
-	--local offsetMult = Lerp(ironSightsProgress, 2, 4)
-
-	--[[vm_offset_pos.x = math.Approach(vm_offset_pos.x, target_pos.x, (target_pos.x - vm_offset_pos.x) * delta * adstransitionspeed * offsetMult)
-	vm_offset_pos.y = math.Approach(vm_offset_pos.y, target_pos.y, (target_pos.y - vm_offset_pos.y) * delta * adstransitionspeed * offsetMult)
-	vm_offset_pos.z = math.Approach(vm_offset_pos.z, target_pos.z, (target_pos.z - vm_offset_pos.z) * delta * adstransitionspeed * offsetMult)]]
-
-	vm_offset_pos:Set(target_pos)
-
-	--[[vm_offset_ang.p = math.ApproachAngle(vm_offset_ang.p, target_ang.x, math.AngleDifference(target_ang.x, vm_offset_ang.p) * delta * adstransitionspeed)
-	vm_offset_ang.y = math.ApproachAngle(vm_offset_ang.y, target_ang.y, math.AngleDifference(target_ang.y, vm_offset_ang.y) * delta * adstransitionspeed)
-	vm_offset_ang.r = math.ApproachAngle(vm_offset_ang.r, target_ang.z, math.AngleDifference(target_ang.z, vm_offset_ang.r) * delta * adstransitionspeed)]]
-
-	vm_offset_ang.p = target_ang.x
-	vm_offset_ang.y = target_ang.y
-	vm_offset_ang.r = target_ang.z
-
 	if not cv_customgunbob:GetBool() then
-		self2.pos_cached, self2.ang_cached = vm_offset_pos, vm_offset_ang
+		self2.pos_cached, self2.ang_cached = Vector(target_pos), Angle(target_ang.x, target_ang.y, target_ang.z)
 
 		return
 	end
@@ -484,7 +467,11 @@ function SWEP:CalculateViewModelOffset(delta)
 	local velocity = math.max(self:GetOwner():GetVelocity():Length2D() * self:AirWalkScale() - self:GetOwner():GetVelocity().z * 0.5, 0)
 	local rate = math.min(math.max(0.15, math.sqrt(velocity / self:GetOwner():GetRunSpeed()) * 1.75), self:GetSprinting() and 5 or 3)
 
-	self2.pos_cached, self2.ang_cached = self:WalkBob(vm_offset_pos * 1, vm_offset_ang * 1, math.max(intensityBreath - intensityWalk - intensityRun, 0), math.max(intensityWalk - intensityRun, 0), rate, delta)
+	self2.pos_cached, self2.ang_cached = self:WalkBob(
+		Vector(target_pos),
+		Angle(target_ang.x, target_ang.y, target_ang.z),
+		math.max(intensityBreath - intensityWalk - intensityRun, 0),
+		math.max(intensityWalk - intensityRun, 0), rate, delta)
 end
 
 --[[
