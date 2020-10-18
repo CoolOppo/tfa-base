@@ -918,6 +918,8 @@ function SWEP:PlayerThinkCL(plyv)
 		self:Think2(false)
 	end
 
+	local ft = RealFrameTime() * game.GetTimeScale()
+
 	if self2.GetStat(self, "BlowbackEnabled") then
 		if not self2.Blowback_PistolMode or self:Clip1() == -1 or self:Clip1() > 0.1 or self2.Blowback_PistolMode_Disabled[self:GetLastActivity()] then
 			self2.BlowbackCurrent = l_mathApproach(self2.BlowbackCurrent, 0, self2.BlowbackCurrent * ft * 15)
@@ -941,8 +943,6 @@ function SWEP:PlayerThinkCL(plyv)
 	else
 		adstransitionspeed = 12.5
 	end
-
-	local ft = RealFrameTime() * game.GetTimeScale()
 
 	self2.IronSightsProgressUnpredicted = l_mathApproach(self2.IronSightsProgressUnpredicted or 0, ist, (ist - (self2.IronSightsProgressUnpredicted or 0)) * ft * adstransitionspeed * 0.8)
 	self2.IronSightsProgressUnpredicted2 = l_mathApproach(self2.IronSightsProgressUnpredicted2 or 0, ist, (ist - (self2.IronSightsProgressUnpredicted2 or 0)) * ft * adstransitionspeed * 0.4)
