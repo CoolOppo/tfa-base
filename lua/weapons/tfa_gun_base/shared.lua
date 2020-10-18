@@ -361,7 +361,7 @@ local l_mathApproach = math.Approach
 local l_CT = CurTime
 --[[Frequently Reused Local Vars]]
 local stat --Weapon status
-local ct, ft  = 0, 0.01--Curtime, frametime, real frametime
+local ct  = 0--Curtime, frametime, real frametime
 local sp = game.SinglePlayer() --Singleplayer
 local developer = GetConVar("developer")
 
@@ -902,8 +902,6 @@ function SWEP:Think()
 end
 
 function SWEP:PlayerThink(plyv, is_working_out_prediction_errors)
-	ft = TFA.FrameTime()
-
 	if not self:NullifyOIV() then return end
 
 	self:Think2(is_working_out_prediction_errors)
@@ -911,8 +909,6 @@ end
 
 function SWEP:PlayerThinkCL(plyv)
 	local self2 = self:GetTable()
-
-	ft = TFA.FrameTime()
 
 	if not self:NullifyOIV() then return end
 
@@ -946,7 +942,10 @@ function SWEP:PlayerThinkCL(plyv)
 		adstransitionspeed = 12.5
 	end
 
-	self2.IronSightsProgressUnpredicted = l_mathApproach(self2.IronSightsProgressUnpredicted or 0, ist, (ist - (self2.IronSightsProgressUnpredicted or 0)) * ft * adstransitionspeed)
+	local ft = RealFrameTime() * game.GetTimeScale()
+
+	self2.IronSightsProgressUnpredicted = l_mathApproach(self2.IronSightsProgressUnpredicted or 0, ist, (ist - (self2.IronSightsProgressUnpredicted or 0)) * ft * adstransitionspeed * 0.8)
+	self2.IronSightsProgressUnpredicted2 = l_mathApproach(self2.IronSightsProgressUnpredicted2 or 0, ist, (ist - (self2.IronSightsProgressUnpredicted2 or 0)) * ft * adstransitionspeed * 0.4)
 	self2.SprintProgressUnpredicted = l_mathApproach(self2.SprintProgressUnpredicted or 0, sprt, (sprt - (self2.SprintProgressUnpredicted or 0)) * ft * adstransitionspeed)
 end
 
@@ -1854,7 +1853,7 @@ function SWEP:TranslateFOV(fov)
 
 	self:CorrectScopeFOV()
 
-	local nfov = l_Lerp(self2.IronSightsProgressUnpredicted or self:GetIronSightsProgress(), fov, fov * math.min(self:GetStat("Secondary.IronFOV") / 90, 1))
+	local nfov = l_Lerp(self2.IronSightsProgressUnpredicted2 or self:GetIronSightsProgress(), fov, fov * math.min(self:GetStat("Secondary.IronFOV") / 90, 1))
 	local ret = l_Lerp(self2.SprintProgressUnpredicted or self:GetSprintProgress(), nfov, nfov + self2.SprintFOVOffset)
 
 	if self:OwnerIsValid() and not self2.IsMelee then

@@ -1300,7 +1300,7 @@ function SWEP:DoDrawCrosshair()
 	local stat = self2.GetStatus(self)
 
 	if not crosscustomenable_cvar:GetBool() then
-		return TFA.Enum.ReloadStatus[stat] or math.min(1 - (self2.IronSightsProgressUnpredicted or self:GetIronSightsProgress()), 1 - self:GetSprintProgress(), 1 - self:GetInspectingProgress()) <= 0.5
+		return TFA.Enum.ReloadStatus[stat] or math.min(1 - (self2.IronSightsProgressUnpredicted2 or self:GetIronSightsProgress()), 1 - self:GetSprintProgress(), 1 - self:GetInspectingProgress()) <= 0.5
 	end
 
 	self2.clrelp = self2.clrelp or 0
@@ -1310,16 +1310,16 @@ function SWEP:DoDrawCrosshair()
 		((TFA.Enum.ReloadStatus[stat] and 0 or 1) - self2.clrelp) * RealFrameTime() * 7)
 
 	local crossa = crossa_cvar:GetFloat() *
-		math.pow(math.min(1 - (((self2.IronSightsProgressUnpredicted or self:GetIronSightsProgress()) and
-			not self2.DrawCrosshairIS) and (self2.IronSightsProgressUnpredicted or self:GetIronSightsProgress()) or 0),
+		math.pow(math.min(1 - (((self2.IronSightsProgressUnpredicted2 or self:GetIronSightsProgress()) and
+			not self2.DrawCrosshairIS) and (self2.IronSightsProgressUnpredicted2 or self:GetIronSightsProgress()) or 0),
 			1 - self:GetSprintProgress(),
 			1 - self:GetInspectingProgress(),
 			self2.clrelp),
 		2)
 
 	local outa = outa_cvar:GetFloat() *
-		math.pow(math.min(1 - (((self2.IronSightsProgressUnpredicted or self:GetIronSightsProgress()) and
-			not self2.DrawCrosshairIS) and (self2.IronSightsProgressUnpredicted or self:GetIronSightsProgress()) or 0),
+		math.pow(math.min(1 - (((self2.IronSightsProgressUnpredicted2 or self:GetIronSightsProgress()) and
+			not self2.DrawCrosshairIS) and (self2.IronSightsProgressUnpredicted2 or self:GetIronSightsProgress()) or 0),
 			1 - self:GetSprintProgress(),
 			1 - self:GetInspectingProgress(),
 			self2.clrelp),
