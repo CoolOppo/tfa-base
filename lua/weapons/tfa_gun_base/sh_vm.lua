@@ -24,12 +24,17 @@ local Angle = Angle
 local math = math
 local LerpVector = LerpVector
 
-local l_Lerp = function(t, a, b) return a + (b - a) * t end
+local function Lerp(t, a, b)
+	return a + (b - a) * t
+end
+
 local function Clamp(a, b, c)
 	if a < b then return b end
 	if a > c then return c end
 	return a
 end
+
+local math_max = math.max
 
 --[[
 local l_mathMin = function(a, b) return (a < b) and a or b end
@@ -102,7 +107,7 @@ function SWEP:CalculateViewModelFlip()
 	local iron_add = cam_fov * (1 - 90 / cam_fov) * math.max(1 - self2.GetStat(self, "Secondary.IronFOV", 90) / 90, 0)
 
 	local ironSightsProgress = TFA.Cosine(self2.IronSightsProgressUnpredicted or self:GetIronSightsProgress())
-	self2.ViewModelFOV = l_Lerp(ironSightsProgress, self2.ViewModelFOV_OG, self2.GetStat(self, "IronViewModelFOV", self2.ViewModelFOV_OG)) * fovmod_mult:GetFloat() + fovmod_add:GetFloat() + iron_add * ironSightsProgress
+	self2.ViewModelFOV = Lerp(ironSightsProgress, self2.ViewModelFOV_OG, self2.GetStat(self, "IronViewModelFOV", self2.ViewModelFOV_OG)) * fovmod_mult:GetFloat() + fovmod_add:GetFloat() + iron_add * ironSightsProgress
 end
 
 SWEP.WeaponLength = 0
@@ -245,8 +250,9 @@ function SWEP:CalculateViewModelOffset(delta)
 	local self2 = self:GetTable()
 
 	local target_pos, target_ang
+	local additivePos = self2.GetStat(self, "VMPos_Additive")
 
-	if self2.GetStat(self, "VMPos_Additive") then
+	if additivePos then
 		target_pos, target_ang = Vector(), Vector()
 	else
 		target_pos = Vector(self2.GetStat(self, "VMPos"))
@@ -281,67 +287,95 @@ function SWEP:CalculateViewModelOffset(delta)
 		target_ang:Set(targetAngCenter)
 	end
 
+	local stat = self:GetStatus()
+
+	local holsterStatus = (TFA.Enum.HolsterStatus[stat] and self2.ProceduralHolsterEnabled) or (TFA.Enum.ReloadStatus[stat] and self2.ProceduralReloadEnabled)
+	local holsterProgress = holsterStatus and TFA.Quintic(Clamp(self:GetStatusProgress() * 1.1, 0, 1)) or 0
+
 	local adstransitionspeed = 10
 	local ironSights = self:GetIronSights()
 	local isSprinting = self:GetSprinting()
-	local stat = self:GetStatus()
-	local crouchRatio = self:GetCrouchingRatio()
-	local holsterStatus = (TFA.Enum.HolsterStatus[stat] and self2.ProceduralHolsterEnabled) or (TFA.Enum.ReloadStatus[stat] and self2.ProceduralReloadEnabled)
-	local ironSightsProgress = Clamp(TFA.Cubic(self2.IronSightsProgressUnpredicted2 or self2.IronSightsProgressUnpredicted or self:GetIronSightsProgress()), 0, 1)
+	local sprintProgress = TFA.Cubic(self:GetSprintProgress())
+
+	local ironSightsProgress = Clamp(
+		Lerp(
+			math_max(holsterProgress, sprintProgress),
+			TFA.Cubic(self2.IronSightsProgressUnpredicted2 or self2.IronSightsProgressUnpredicted or self:GetIronSightsProgress()),
+			0)
+		, 0, 1)
+
 	--local ironSightsProgress = TFA.tbezier(self2.IronSightsProgressUnpredicted or self:GetIronSightsProgress(), IRON_SIGHTS_BEZIER)
 
+	local crouchRatio = Lerp(math_max(ironSightsProgress, holsterProgress, Clamp(sprintProgress * 2, 0, 1)), self:GetCrouchingRatio(), 0)
+
+	if crouchRatio > 0 then
+		target_pos = LerpVector(crouchRatio, target_pos, self2.GetStat(self, "CrouchPos"))
+		target_ang = LerpVector(crouchRatio, target_ang, self2.GetStat(self, "CrouchAng"))
+	end
+
 	if holsterStatus then
-		target_pos = Vector(self2.GetStat(self, "ProceduralHolsterPos"))
-		target_ang = Vector(self2.GetStat(self, "ProceduralHolsterAng"))
+		local targetHolsterPos = Vector(self2.GetStat(self, "ProceduralHolsterPos"))
+		local targetHolsterAng = Vector(self2.GetStat(self, "ProceduralHolsterAng"))
 
 		if self2.ViewModelFlip then
-			target_pos.x = -target_pos.x
+			targetHolsterPos.x = -targetHolsterPos.x
 
-			target_ang.y = -target_ang.y
-			target_ang.z = -target_ang.z
+			targetHolsterAng.y = -targetHolsterAng.y
+			targetHolsterAng.z = -targetHolsterAng.z
 
 			--target_pos = target_pos:Mul(flip_vec)
 			--target_ang = target_ang:Mul(flip_ang)
 		end
 
+		target_pos = LerpVector(holsterProgress, target_pos, targetHolsterPos)
+		target_ang = LerpVector(holsterProgress, target_ang, targetHolsterAng)
+
 		adstransitionspeed = self2.GetStat(self, "ProceduralHolsterTime") * 15
-	elseif ironSightsProgress > 0.02 and (self2.Sights_Mode == TFA.Enum.LOCOMOTION_LUA or self2.Sights_Mode == TFA.Enum.LOCOMOTION_HYBRID) then
+	end
+
+	local isSafety = self:IsSafety()
+
+	if
+		(sprintProgress > 0.01 or isSprinting or isSafety) and
+		(self2.Sprint_Mode == TFA.Enum.LOCOMOTION_LUA or self2.Sprint_Mode == TFA.Enum.LOCOMOTION_HYBRID or (self:IsSafety() and (not isSprinting and sprintProgress <= 0.01)))
+		and stat ~= TFA.Enum.STATUS_FIDGET and
+		stat ~= TFA.Enum.STATUS_BASHING
+	then
+		if cl_tfa_viewmodel_centered:GetBool() then
+			target_pos = target_pos + centered_sprintpos
+			target_ang = target_ang + centered_sprintang
+		elseif isSafety and self2.GetStat(self, "SafetyPos") and not isSprinting then
+			target_pos = Vector(self2.GetStat(self, "SafetyPos"))
+			target_ang = Vector(self2.GetStat(self, "SafetyAng"))
+		else
+			target_pos = LerpVector(sprintProgress, target_pos, self2.GetStat(self, "RunSightsPos"))
+			target_ang = LerpVector(sprintProgress, target_ang, self2.GetStat(self, "RunSightsAng"))
+		end
+
+		adstransitionspeed = 7.5
+	end
+
+	if ironSightsProgress > 0.02 and (self2.Sights_Mode == TFA.Enum.LOCOMOTION_LUA or self2.Sights_Mode == TFA.Enum.LOCOMOTION_HYBRID) then
 		if targetPosCenter then
 			target_pos = bezierVector(ironSightsProgress, target_pos, targetPosCenter, IronSightsPos or self2.GetStat(self, "SightsPos", vector_origin))
 		else
 			target_pos = LerpVector(ironSightsProgress, target_pos, IronSightsPos or self2.GetStat(self, "SightsPos", vector_origin))
 		end
 
-		target_ang = LerpVector(ironSightsProgress, target_pos, IronSightsAng or self2.GetStat(self, "SightsAng", vector_origin))
+		target_ang = LerpVector(ironSightsProgress, target_ang, IronSightsAng or self2.GetStat(self, "SightsAng", vector_origin))
 
 		adstransitionspeed = 15 / (self2.GetStat(self, "IronSightTime") / 0.3)
-	elseif (isSprinting or self:IsSafety()) and (self2.Sprint_Mode == TFA.Enum.LOCOMOTION_LUA or self2.Sprint_Mode == TFA.Enum.LOCOMOTION_HYBRID or (self:IsSafety() and not spr)) and stat ~= TFA.Enum.STATUS_FIDGET and stat ~= TFA.Enum.STATUS_BASHING then
-		if cl_tfa_viewmodel_centered and cl_tfa_viewmodel_centered:GetBool() then
-			target_pos = target_pos + centered_sprintpos
-			target_ang = target_ang + centered_sprintang
-		elseif self:IsSafety() and self2.GetStat(self, "SafetyPos") and not spr then
-			target_pos = Vector(self2.GetStat(self, "SafetyPos"))
-			target_ang = Vector(self2.GetStat(self, "SafetyAng"))
-		else
-			target_pos = Vector(self2.GetStat(self, "RunSightsPos"))
-			target_ang = Vector(self2.GetStat(self, "RunSightsAng"))
-		end
-
-		adstransitionspeed = 7.5
-	elseif crouchRatio > 0 then
-		target_pos = self2.GetStat(self, "CrouchPos") * crouchRatio
-		target_ang = self2.GetStat(self, "CrouchAng") * crouchRatio
 	end
 
-	if cl_tfa_viewmodel_offset_x and not ironSights then
-		target_pos.x = target_pos.x + cl_tfa_viewmodel_offset_x:GetFloat()
-		target_pos.y = target_pos.y + cl_tfa_viewmodel_offset_y:GetFloat()
-		target_pos.z = target_pos.z + cl_tfa_viewmodel_offset_z:GetFloat()
-	end
+	target_pos.x = target_pos.x + cl_tfa_viewmodel_offset_x:GetFloat() * (1 - ironSightsProgress)
+	target_pos.y = target_pos.y + cl_tfa_viewmodel_offset_y:GetFloat() * (1 - ironSightsProgress)
+	target_pos.z = target_pos.z + cl_tfa_viewmodel_offset_z:GetFloat() * (1 - ironSightsProgress)
 
-	if self2.GetCustomizing(self) and self2.Customize_Mode ~= TFA.Enum.LOCOMOTION_ANI then
+	local customizationProgress = TFA.Cosine(self:GetInspectingProgress())
+
+	if customizationProgress > 0.01 and self2.Customize_Mode ~= TFA.Enum.LOCOMOTION_ANI then
 		if not self2.InspectPos then
-			self2.InspectPos = self2.InspectPosDef * 1
+			self2.InspectPos = Vector(self2.InspectPosDef)
 
 			if self2.ViewModelFlip then
 				self2.InspectPos.x = self2.InspectPos.x * -1
@@ -349,29 +383,25 @@ function SWEP:CalculateViewModelOffset(delta)
 		end
 
 		if not self2.InspectAng then
-			self2.InspectAng = self2.InspectAngDef * 1
+			self2.InspectAng = Vector(self2.InspectAngDef)
 
 			if self2.ViewModelFlip then
-				self2.InspectAng.x = self2.InspectAngDef.x * 1
 				self2.InspectAng.y = self2.InspectAngDef.y * -1
 				self2.InspectAng.z = self2.InspectAngDef.z * -1
 			end
 		end
 
-		target_pos = self2.GetStat(self, "InspectPos") * 1
-		target_ang = self2.GetStat(self, "InspectAng") * 1
+		target_pos = LerpVector(customizationProgress, target_pos, self2.GetStat(self, "InspectPos"))
+		target_ang = LerpVector(customizationProgress, target_ang, self2.GetStat(self, "InspectAng"))
+
 		adstransitionspeed = 10
 	end
 
 	target_pos, target_ang = self:CalculateNearWall(target_pos, target_ang)
 
-	if self2.VMPos_Additive then
-		target_pos.x = target_pos.x + self2.VMPos.x
-		target_pos.y = target_pos.y + self2.VMPos.y
-		target_pos.z = target_pos.z + self2.VMPos.z
-		target_ang.x = target_ang.x + self2.VMAng.x
-		target_ang.y = target_ang.y + self2.VMAng.y
-		target_ang.z = target_ang.z + self2.VMAng.z
+	if additivePos then
+		target_pos:Add(self2.VMPos)
+		target_ang:Add(self2.VMAng)
 	end
 
 	target_ang.z = target_ang.z + -7.5 * (1 - math.abs(0.5 - ironSightsProgress) * 2) * (self:GetIronSights() and 1 or 0.5) * (self2.ViewModelFlip and 1 or -1)
@@ -418,18 +448,21 @@ function SWEP:CalculateViewModelOffset(delta)
 		end
 	end
 
-	local offsetMult = l_Lerp(ironSightsProgress, 2, 4)
+	--local offsetMult = Lerp(ironSightsProgress, 2, 4)
 
-	vm_offset_pos.x = math.Approach(vm_offset_pos.x, target_pos.x, (target_pos.x - vm_offset_pos.x) * delta * adstransitionspeed * offsetMult)
+	--[[vm_offset_pos.x = math.Approach(vm_offset_pos.x, target_pos.x, (target_pos.x - vm_offset_pos.x) * delta * adstransitionspeed * offsetMult)
 	vm_offset_pos.y = math.Approach(vm_offset_pos.y, target_pos.y, (target_pos.y - vm_offset_pos.y) * delta * adstransitionspeed * offsetMult)
-	vm_offset_pos.z = math.Approach(vm_offset_pos.z, target_pos.z, (target_pos.z - vm_offset_pos.z) * delta * adstransitionspeed * offsetMult)
+	vm_offset_pos.z = math.Approach(vm_offset_pos.z, target_pos.z, (target_pos.z - vm_offset_pos.z) * delta * adstransitionspeed * offsetMult)]]
 
-	--vm_offset_pos:Set(target_pos)
-	vm_offset_ang.p = math.ApproachAngle(vm_offset_ang.p, target_ang.x, math.AngleDifference(target_ang.x, vm_offset_ang.p) * delta * adstransitionspeed)
+	vm_offset_pos:Set(target_pos)
+
+	--[[vm_offset_ang.p = math.ApproachAngle(vm_offset_ang.p, target_ang.x, math.AngleDifference(target_ang.x, vm_offset_ang.p) * delta * adstransitionspeed)
 	vm_offset_ang.y = math.ApproachAngle(vm_offset_ang.y, target_ang.y, math.AngleDifference(target_ang.y, vm_offset_ang.y) * delta * adstransitionspeed)
-	vm_offset_ang.r = math.ApproachAngle(vm_offset_ang.r, target_ang.z, math.AngleDifference(target_ang.z, vm_offset_ang.r) * delta * adstransitionspeed)
+	vm_offset_ang.r = math.ApproachAngle(vm_offset_ang.r, target_ang.z, math.AngleDifference(target_ang.z, vm_offset_ang.r) * delta * adstransitionspeed)]]
 
-	--vm_offset_ang
+	vm_offset_ang.p = target_ang.x
+	vm_offset_ang.y = target_ang.y
+	vm_offset_ang.r = target_ang.z
 
 	if not cv_customgunbob:GetBool() then
 		self2.pos_cached, self2.ang_cached = vm_offset_pos, vm_offset_ang
@@ -445,9 +478,9 @@ function SWEP:CalculateViewModelOffset(delta)
 		intensityWalk = intensityWalk * self2.WalkBobMult
 	end
 
-	intensityBreath = l_Lerp(ironSightsProgress, self2.GetStat(self, "BreathScale", 0.2), self2.GetStat(self, "IronBobMultWalk", 0.5) * intensityWalk)
+	intensityBreath = Lerp(ironSightsProgress, self2.GetStat(self, "BreathScale", 0.2), self2.GetStat(self, "IronBobMultWalk", 0.5) * intensityWalk)
 	intensityWalk = intensityWalk * (1 - ironSightsProgress)
-	intensityRun = l_Lerp(self:GetSprintProgress(), 0, self2.SprintBobMult)
+	intensityRun = Lerp(self:GetSprintProgress(), 0, self2.SprintBobMult)
 	local velocity = math.max(self:GetOwner():GetVelocity():Length2D() * self:AirWalkScale() - self:GetOwner():GetVelocity().z * 0.5, 0)
 	local rate = math.min(math.max(0.15, math.sqrt(velocity / self:GetOwner():GetRunSpeed()) * 1.75), self:GetSprinting() and 5 or 3)
 
@@ -533,7 +566,7 @@ function SWEP:GetViewModelPosition(pos, ang)
 
 	if cv_customgunbob:GetBool() then
 		pos, ang = self:Sway(pos, ang)
-		pos, ang = self:SprintBob(pos, ang, l_Lerp(self:GetSprintProgress(), 0, self2.SprintBobMult))
+		pos, ang = self:SprintBob(pos, ang, Lerp(self:GetSprintProgress(), 0, self2.SprintBobMult))
 	end
 
 	return pos, ang
