@@ -455,7 +455,7 @@ function SWEP:SetupDataTables()
 	self:NetworkVarTFA("Float", "JamFactor")
 	self:NetworkVarTFA("Float", "EventTimer")
 
-	self:NetworkVarTFA("Int", "Status")
+	self:NetworkVarTFA("Int", "StatusRaw")
 	self:NetworkVarTFA("Int", "FireMode")
 	self:NetworkVarTFA("Int", "LastActivity")
 	self:NetworkVarTFA("Int", "BurstCount")
@@ -520,7 +520,46 @@ function SWEP:SetupDataTables()
 		return self2:NetworkVarTFA(typeIn, nameIn)
 	end
 
+	self:NetworkVarTFA("Float", "StatusStart")
+
+	self.GetStatus = self.GetStatusRaw
+
 	hook.Run("TFA_SetupDataTables", self)
+end
+
+function SWEP:GetStatusProgress()
+	if self:GetStatus() == TFA.Enum.STATUS_IDLE then return 1 end
+	local StatusStart = self:GetStatusStart()
+
+	if StatusStart <= 0 then return end
+	local StatusEnd = self:GetStatusEnd()
+
+	if StatusStart > StatusEnd then return 1 end
+
+	local time = l_CT()
+	if StatusStart >= time then return 0 end
+	if StatusEnd <= time then return 1 end
+
+	return (time - StatusStart) / (StatusEnd - StatusStart)
+end
+
+function SWEP:SetStatus(statusIn)
+	self:SetStatusRaw(statusIn)
+	self:SetStatusStart(l_CT())
+end
+
+function SWEP:RestartStatus(statusIn, timeFor)
+	self:SetStatusRaw(statusIn)
+	self:SetStatusStart(l_CT())
+	self:SetStatusEnd(l_CT() + timeFor)
+end
+
+function SWEP:ExtendStatus(timeFor)
+	self:SetStatusEnd(self:GetStatusEnd() + timeFor)
+end
+
+function SWEP:ExtendStatusTo(timeFor)
+	self:SetStatusEnd(math.max(self:GetStatusEnd(), timeFor))
 end
 
 --[[

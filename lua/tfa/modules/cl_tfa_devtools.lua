@@ -108,7 +108,14 @@ local function DrawDebugInfo(w, h, ply, wep)
 		end
 	end
 
-	draw.SimpleTextOutlined(string.format("%s [%.2f, %.2f]", TFA.Enum.InverseStatus[wep:GetStatus()] or wep:GetStatus(), CurTime(), wep:GetStatusEnd()), "TFASleekDebug", x, y, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP, 1, color_black)
+	draw.SimpleTextOutlined(string.format(
+		"%s [%.2f, %.2f, %.2f, %.2f]",
+		TFA.Enum.InverseStatus[wep:GetStatus()] or wep:GetStatus(),
+		CurTime(),
+		wep:GetStatusProgress(),
+		wep:GetStatusStart(),
+		wep:GetStatusEnd()), "TFASleekDebug", x, y, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP, 1, color_black)
+
 	y = y + TFA.Fonts.SleekHeightDebug
 
 	local vm = ply:GetViewModel() or NULL
