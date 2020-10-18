@@ -294,7 +294,7 @@ function SWEP:CalculateViewModelOffset(delta)
 	local adstransitionspeed = 10
 	local ironSights = self:GetIronSights()
 	local isSprinting = self:GetSprinting()
-	local sprintProgress = TFA.Cubic(self:GetSprintProgress())
+	local sprintProgress = TFA.Cubic(self2.SprintProgressUnpredicted or self:GetSprintProgress())
 
 	local ironSightsProgress = Clamp(
 		Lerp(
@@ -468,7 +468,7 @@ function SWEP:CalculateViewModelOffset(delta)
 	local rate = math.min(math.max(0.15, math.sqrt(velocity / self:GetOwner():GetRunSpeed()) * 1.75), self:GetSprinting() and 5 or 3)
 
 	self2.pos_cached, self2.ang_cached = self:WalkBob(
-		Vector(target_pos),
+		target_pos,
 		Angle(target_ang.x, target_ang.y, target_ang.z),
 		math.max(intensityBreath - intensityWalk - intensityRun, 0),
 		math.max(intensityWalk - intensityRun, 0), rate, delta)
@@ -543,6 +543,7 @@ function SWEP:GetViewModelPosition(pos, ang)
 	local self2 = self:GetTable()
 
 	if not self2.pos_cached then return pos, ang end
+	local pos2, ang2 = Vector(pos2), Angle(ang2)
 
 	ang:RotateAroundAxis(ang:Right(), self2.ang_cached.p)
 	ang:RotateAroundAxis(ang:Up(), self2.ang_cached.y)
@@ -553,7 +554,7 @@ function SWEP:GetViewModelPosition(pos, ang)
 
 	if cv_customgunbob:GetBool() then
 		pos, ang = self:Sway(pos, ang)
-		pos, ang = self:SprintBob(pos, ang, Lerp(self:GetSprintProgress(), 0, self2.SprintBobMult))
+		pos, ang = self:SprintBob(pos, ang, Lerp(self2.SprintProgressUnpredicted or self:GetSprintProgress(), 0, self2.SprintBobMult), pos2, ang2)
 	end
 
 	return pos, ang
