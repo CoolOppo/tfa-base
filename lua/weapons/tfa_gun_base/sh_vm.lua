@@ -295,8 +295,13 @@ function SWEP:CalculateViewModelOffset(delta)
 		target_ang = Vector(self2.GetStat(self, "ProceduralHolsterAng"))
 
 		if self2.ViewModelFlip then
-			target_pos = target_pos:Mul(flip_vec)
-			target_ang = target_ang:Mul(flip_ang)
+			target_pos.x = -target_pos.x
+
+			target_ang.y = -target_ang.y
+			target_ang.z = -target_ang.z
+
+			--target_pos = target_pos:Mul(flip_vec)
+			--target_ang = target_ang:Mul(flip_ang)
 		end
 
 		adstransitionspeed = self2.GetStat(self, "ProceduralHolsterTime") * 15
