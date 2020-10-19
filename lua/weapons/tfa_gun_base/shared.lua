@@ -672,7 +672,7 @@ function SWEP:Initialize()
 		end
 
 		if self:GetOwner():GetClass() == "npc_citizen" then
-			self:GetOwner():Fire( "DisableWeaponPickup" )
+			self:GetOwner():Fire( "DisableWeaponPickup", "", 0 )
 		end
 
 		self:GetOwner():SetKeyValue( "spawnflags", "256" )
