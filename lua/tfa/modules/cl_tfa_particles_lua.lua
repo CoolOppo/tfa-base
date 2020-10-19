@@ -19,6 +19,8 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
+local vector_origin = Vector()
+
 TFA.Particles = TFA.Particles or {}
 TFA.Particles.FlareParts = {}
 TFA.Particles.VMAttachments = {}

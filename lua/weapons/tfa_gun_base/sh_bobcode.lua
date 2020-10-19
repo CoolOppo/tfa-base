@@ -19,6 +19,8 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
+local vector_origin = Vector()
+
 SWEP.ti = 0
 SWEP.LastCalcBob = 0
 SWEP.tiView = 0

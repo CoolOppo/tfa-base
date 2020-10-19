@@ -19,6 +19,8 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
+local vector_origin = Vector()
+
 local att, angpos, attname, elemname, targetent
 SWEP.FlashlightDistance = 12 * 50 -- default 50 feet
 SWEP.FlashlightAttachment = 0

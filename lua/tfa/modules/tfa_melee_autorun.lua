@@ -19,6 +19,8 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
+local vector_origin = Vector()
+
 local timed_blocking_cv = GetConVar("sv_tfa_melee_blocking_timed")
 local angle_mult_cv = GetConVar("sv_tfa_melee_blocking_anglemult")
 local deflect_cv = GetConVar("sv_tfa_melee_blocking_deflection")

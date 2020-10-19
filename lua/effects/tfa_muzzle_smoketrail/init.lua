@@ -19,6 +19,8 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
+local vector_origin = Vector()
+
 local smokecol = Color(225, 225, 225, 200)
 local smokemat = Material("trails/smoke")
 smokemat:SetInt("$nocull", 1)

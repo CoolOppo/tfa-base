@@ -19,6 +19,8 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
+local vector_origin = Vector()
+
 EFFECT.Life = 0.1
 EFFECT.XFlashSize = 1
 EFFECT.FlashSize = 1

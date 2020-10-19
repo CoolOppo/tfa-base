@@ -19,6 +19,8 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
+local vector_origin = Vector()
+
 EFFECT.Thickness = 16
 EFFECT.Life = 0.25
 EFFECT.RotVelocity = 30

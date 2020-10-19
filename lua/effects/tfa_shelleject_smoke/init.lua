@@ -19,6 +19,8 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
+local vector_origin = Vector()
+
 EFFECT.SmokeParticle = "tfa_ins2_shell_eject"
 local upVec = Vector(0, 0, 1)
 

@@ -21,6 +21,8 @@
 
 local blankvec = Vector(0, 0, 0)
 
+local vector_origin = Vector()
+
 function EFFECT:Init(data)
 	self.Position = blankvec
 	self.WeaponEnt = data:GetEntity()

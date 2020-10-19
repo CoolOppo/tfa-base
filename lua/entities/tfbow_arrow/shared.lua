@@ -19,6 +19,8 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
+local vector_origin = Vector()
+
 ENT.Type = "anim"
 ENT.PrintName = "TFBow Arrow"
 ENT.Author = "TheForgottenArchitect"

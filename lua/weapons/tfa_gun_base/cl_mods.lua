@@ -22,6 +22,8 @@
 --[[Thanks to Clavus.  Like seriously, SCK was brilliant. Even though you didn't include a license anywhere I could find, it's only fit to credit you.]]
 --
 
+local vector_origin = Vector()
+
 --[[
 Function Name:  InitMods
 Syntax: self:InitMods().  Should be called only once for best performance.

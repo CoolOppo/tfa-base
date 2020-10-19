@@ -19,6 +19,8 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
+local vector_origin = Vector()
+
 local l_mathClamp = math.Clamp
 local Lerp = Lerp
 SWEP.MainBullet = {}
