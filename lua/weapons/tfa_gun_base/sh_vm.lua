@@ -293,7 +293,6 @@ function SWEP:CalculateViewModelOffset(delta)
 	local holsterStatus = (TFA.Enum.HolsterStatus[stat] and self2.ProceduralHolsterEnabled) or (TFA.Enum.ReloadStatus[stat] and self2.ProceduralReloadEnabled)
 	local holsterProgress = holsterStatus and TFA.Quintic(Clamp(self:GetStatusProgress() * 1.1, 0, 1)) or 0
 
-	local adstransitionspeed = 10
 	local ironSights = self:GetIronSights()
 	local isSprinting = self:GetSprinting()
 	local sprintProgress = TFA.Cubic(self2.SprintProgressUnpredicted or self:GetSprintProgress())
@@ -330,8 +329,6 @@ function SWEP:CalculateViewModelOffset(delta)
 
 		target_pos = LerpVector(holsterProgress, target_pos, targetHolsterPos)
 		target_ang = LerpVector(holsterProgress, target_ang, targetHolsterAng)
-
-		adstransitionspeed = self2.GetStat(self, "ProceduralHolsterTime") * 15
 	end
 
 	local isSafety = self:IsSafety()
@@ -352,8 +349,6 @@ function SWEP:CalculateViewModelOffset(delta)
 			target_pos = LerpVector(sprintProgress, target_pos, self2.GetStat(self, "RunSightsPos"))
 			target_ang = LerpVector(sprintProgress, target_ang, self2.GetStat(self, "RunSightsAng"))
 		end
-
-		adstransitionspeed = 7.5
 	end
 
 	if ironSightsProgress > 0.02 and (self2.Sights_Mode == TFA.Enum.LOCOMOTION_LUA or self2.Sights_Mode == TFA.Enum.LOCOMOTION_HYBRID) then
@@ -364,8 +359,6 @@ function SWEP:CalculateViewModelOffset(delta)
 		end
 
 		target_ang = LerpVector(ironSightsProgress, target_ang, IronSightsAng or self2.GetStat(self, "SightsAng", vector_origin))
-
-		adstransitionspeed = 15 / (self2.GetStat(self, "IronSightTime") / 0.3)
 	end
 
 	target_pos.x = target_pos.x + cl_tfa_viewmodel_offset_x:GetFloat() * (1 - ironSightsProgress)
@@ -394,8 +387,6 @@ function SWEP:CalculateViewModelOffset(delta)
 
 		target_pos = LerpVector(customizationProgress, target_pos, self2.GetStat(self, "InspectPos"))
 		target_ang = LerpVector(customizationProgress, target_ang, self2.GetStat(self, "InspectAng"))
-
-		adstransitionspeed = 10
 	end
 
 	target_pos, target_ang = self:CalculateNearWall(target_pos, target_ang)
@@ -425,7 +416,6 @@ function SWEP:CalculateViewModelOffset(delta)
 		bbvec.y = bbang.y
 		bbvec.z = bbang.r
 		target_ang = target_ang + bbvec * self2.BlowbackCurrentRoot
-		adstransitionspeed = adstransitionspeed + 15 * math.pow(self2.BlowbackCurrentRoot, 2)
 	end
 
 	if not sv_tfa_recoil_legacy:GetBool() then
