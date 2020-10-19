@@ -247,6 +247,10 @@ if GetConVar("cl_tfa_hud_enabled") == nil then
 	CreateClientConVar("cl_tfa_hud_enabled", 1, true, false, "Enable 3D2D hud?")
 end
 
+if GetConVar("cl_tfa_hud_scale") == nil then
+	CreateClientConVar("cl_tfa_hud_scale", 1, true, false, "Size multiplier of HUD elements", .25, 4)
+end
+
 if GetConVar("cl_tfa_fx_gasblur") == nil then
 	CreateClientConVar("cl_tfa_fx_gasblur", 0, true, true, "Enable muzzle gas blur?")
 end

@@ -364,7 +364,8 @@ local function tfaOptionHUD(panel)
 		cl_tfa_hud_hitmarker_color_r = "225",
 		cl_tfa_hud_hitmarker_color_g = "225",
 		cl_tfa_hud_hitmarker_color_b = "225",
-		cl_tfa_hud_hitmarker_color_a = "225"
+		cl_tfa_hud_hitmarker_color_a = "225",
+		cl_tfa_hud_scale = "1"
 	}
 
 	tfaTBLOptionHUD.Options["#tfa.hudpreset.cross"] = {
@@ -398,7 +399,8 @@ local function tfaOptionHUD(panel)
 		cl_tfa_hud_hitmarker_color_r = "225",
 		cl_tfa_hud_hitmarker_color_g = "225",
 		cl_tfa_hud_hitmarker_color_b = "225",
-		cl_tfa_hud_hitmarker_color_a = "225"
+		cl_tfa_hud_hitmarker_color_a = "225",
+		cl_tfa_hud_scale = "1"
 	}
 
 	tfaTBLOptionHUD.Options["#tfa.hudpreset.dot"] = {
@@ -432,7 +434,8 @@ local function tfaOptionHUD(panel)
 		cl_tfa_hud_hitmarker_color_r = "225",
 		cl_tfa_hud_hitmarker_color_g = "225",
 		cl_tfa_hud_hitmarker_color_b = "225",
-		cl_tfa_hud_hitmarker_color_a = "225"
+		cl_tfa_hud_hitmarker_color_a = "225",
+		cl_tfa_hud_scale = "1"
 	}
 
 	tfaTBLOptionHUD.Options["#tfa.hudpreset.rockstar"] = {
@@ -466,7 +469,8 @@ local function tfaOptionHUD(panel)
 		cl_tfa_hud_hitmarker_color_r = "225",
 		cl_tfa_hud_hitmarker_color_g = "225",
 		cl_tfa_hud_hitmarker_color_b = "225",
-		cl_tfa_hud_hitmarker_color_a = "8"
+		cl_tfa_hud_hitmarker_color_a = "8",
+		cl_tfa_hud_scale = "1"
 	}
 
 	tfaTBLOptionHUD.Options["#tfa.hudpreset.hl2"] = {
@@ -500,7 +504,8 @@ local function tfaOptionHUD(panel)
 		cl_tfa_hud_hitmarker_color_r = "225",
 		cl_tfa_hud_hitmarker_color_g = "225",
 		cl_tfa_hud_hitmarker_color_b = "225",
-		cl_tfa_hud_hitmarker_color_a = "225"
+		cl_tfa_hud_hitmarker_color_a = "225",
+		cl_tfa_hud_scale = "1"
 	}
 
 	tfaTBLOptionHUD.Options["#tfa.hudpreset.hl2plus"] = {
@@ -534,7 +539,8 @@ local function tfaOptionHUD(panel)
 		cl_tfa_hud_hitmarker_color_r = "225",
 		cl_tfa_hud_hitmarker_color_g = "225",
 		cl_tfa_hud_hitmarker_color_b = "225",
-		cl_tfa_hud_hitmarker_color_a = "225"
+		cl_tfa_hud_hitmarker_color_a = "225",
+		cl_tfa_hud_scale = "1"
 	}
 
 	tfaTBLOptionHUD.Options["#tfa.hudpreset.crysis2"] = {
@@ -568,7 +574,8 @@ local function tfaOptionHUD(panel)
 		cl_tfa_hud_hitmarker_color_r = "231",
 		cl_tfa_hud_hitmarker_color_g = "255",
 		cl_tfa_hud_hitmarker_color_b = "255",
-		cl_tfa_hud_hitmarker_color_a = "255"
+		cl_tfa_hud_hitmarker_color_a = "255",
+		cl_tfa_hud_scale = "1"
 	}
 
 	tfaTBLOptionHUD.CVars = table.GetKeys(tfaTBLOptionHUD.Options["#preset.default"])
@@ -577,6 +584,7 @@ local function tfaOptionHUD(panel)
 	panel:CheckBox("#tfa.hudsettings.enabled", "cl_tfa_hud_enabled")
 	panel:NumSlider("#tfa.hudsettings.fadein", "cl_tfa_hud_ammodata_fadein", 0.01, 1, 2)
 	panel:NumSlider("#tfa.hudsettings.hangtime", "cl_tfa_hud_hangtime", 0, 5, 2)
+	panel:NumSlider("#tfa.hudsettings.scalemul", "cl_tfa_hud_scale", 0.25, 4, 3)
 
 	panel:CheckBox("#tfa.hudsettings.crosshair.enabled", "cl_tfa_hud_crosshair_enable_custom")
 	panel:CheckBox("#tfa.hudsettings.crosshair.dot", "cl_tfa_hud_crosshair_dot")

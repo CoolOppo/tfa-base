@@ -324,9 +324,23 @@ function TFA.PlayerCarryingTFAWeapon(ply)
 	return false, ply, nil
 end
 
+local cvar_scale = GetConVar("cl_tfa_hud_scale")
+local sscache = {}
+
 function TFA.ScaleH(num)
-	return num * (ScrH() / 1080)
+	if not sscache[num] then
+		sscache[num] = num * (ScrH() / 1080) * cvar_scale:GetFloat()
+	end
+
+	return sscache[num]
 end
+
+local function EmptyCache()
+	sscache = {}
+end
+
+cvars.AddChangeCallback("cl_tfa_hud_scale", EmptyCache, "TFA_ClearSScaleCache")
+hook.Add("OnScreenSizeChanged", "_TFA_DropSScaleCache", EmptyCache)
 
 local sv_cheats = GetConVar("sv_cheats")
 local host_timescale = GetConVar("host_timescale")

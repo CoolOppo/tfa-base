@@ -78,3 +78,4 @@ end
 CreateFonts()
 
 hook.Add("OnScreenSizeChanged", "TFA_Fonts_Regenerate", CreateFonts)
+cvars.AddChangeCallback("cl_tfa_hud_scale", CreateFonts, "TFA_RecreateFonts")
