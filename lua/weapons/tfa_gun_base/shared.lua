@@ -946,6 +946,9 @@ function SWEP:PlayerThink(plyv, is_working_out_prediction_errors)
 	self:Think2(is_working_out_prediction_errors)
 end
 
+local sv_cheats = GetConVar("sv_cheats")
+local host_timescale = GetConVar("host_timescale")
+
 function SWEP:PlayerThinkCL(plyv)
 	local self2 = self:GetTable()
 
@@ -957,7 +960,7 @@ function SWEP:PlayerThinkCL(plyv)
 		self:Think2(false)
 	end
 
-	local ft = RealFrameTime() * game.GetTimeScale()
+	local ft = RealFrameTime() * game.GetTimeScale() * (sv_cheats:GetBool() and host_timescale:GetFloat() or 1)
 
 	if self2.GetStat(self, "BlowbackEnabled") then
 		if not self2.Blowback_PistolMode or self:Clip1() == -1 or self:Clip1() > 0.1 or self2.Blowback_PistolMode_Disabled[self:GetLastActivity()] then

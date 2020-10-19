@@ -328,8 +328,11 @@ function TFA.ScaleH(num)
 	return num * (ScrH() / 1080)
 end
 
+local sv_cheats = GetConVar("sv_cheats")
+local host_timescale = GetConVar("host_timescale")
+
 function TFA.FrameTime()
-	return engine.TickInterval() * game.GetTimeScale()
+	return engine.TickInterval() * game.GetTimeScale() * (sv_cheats:GetBool() and host_timescale:GetFloat() or 1)
 end
 
 local buffer = {}
