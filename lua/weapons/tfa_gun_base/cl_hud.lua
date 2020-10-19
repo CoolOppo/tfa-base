@@ -403,7 +403,7 @@ function SWEP:InspectionVGUIStats(contentpanel)
 
 		local statspanel = contentpanel:Add("DPanel")
 
-		local preferredWidth = ScaleH(400)
+		local preferredWidth = math.min(ScaleH(400), ScrW() * .4)
 
 		statspanel:SetSize(0, 0)
 		statspanel:Dock(BOTTOM)
