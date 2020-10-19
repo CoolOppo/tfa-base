@@ -545,7 +545,6 @@ function SWEP:GetViewModelPosition(pos, ang)
 	local self2 = self:GetTable()
 
 	if not self2.pos_cached then return pos, ang end
-	local pos2, ang2 = Vector(pos2), Angle(ang2)
 
 	ang:RotateAroundAxis(ang:Right(), self2.ang_cached.p)
 	ang:RotateAroundAxis(ang:Up(), self2.ang_cached.y)
