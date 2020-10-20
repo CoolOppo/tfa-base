@@ -45,6 +45,12 @@ for i = 1, 32 do
 	end
 end
 
+local lastStatusBarWidth = 300
+local lastAnimStatusWidth = 300
+
+local STATUS_BAR_COLOR = Color(255, 255, 255)
+local STATUS_BAR_COLOR_BG = Color(74, 74, 74)
+
 local function DrawDebugInfo(w, h, ply, wep)
 	if not cv_dba:GetBool() then return end
 
@@ -108,15 +114,31 @@ local function DrawDebugInfo(w, h, ply, wep)
 		end
 	end
 
-	draw.SimpleTextOutlined(string.format(
+	local statusText = string.format(
 		"%s [%.2f, %.2f, %.2f, %.2f]",
 		TFA.Enum.InverseStatus[wep:GetStatus()] or wep:GetStatus(),
 		CurTime(),
 		wep:GetStatusProgress(),
 		wep:GetStatusStart(),
-		wep:GetStatusEnd()), "TFASleekDebug", x, y, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP, 1, color_black)
+		wep:GetStatusEnd())
 
-	y = y + TFA.Fonts.SleekHeightDebug
+	draw.SimpleTextOutlined(statusText, "TFASleekDebug", x, y, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP, 1, color_black)
+
+	--[[if wep:GetStatusProgress() >= 1 then
+		local stW, stH = surface.GetTextSize(statusText)
+
+		lastStatusBarWidth = math.max(300, stW)
+	end]]
+
+	y = y + TFA.Fonts.SleekHeightDebug + 2
+
+	surface.SetDrawColor(STATUS_BAR_COLOR_BG)
+	surface.DrawRect(x - lastStatusBarWidth / 2, y, lastStatusBarWidth, 4)
+
+	surface.SetDrawColor(STATUS_BAR_COLOR)
+	surface.DrawRect(x - lastStatusBarWidth / 2, y, lastStatusBarWidth * wep:GetStatusProgress(), 4)
+
+	y = y + 8
 
 	local vm = ply:GetViewModel() or NULL
 
@@ -130,7 +152,21 @@ local function DrawDebugInfo(w, h, ply, wep)
 		local len = vm:SequenceDuration(seq)
 		local rate = vm:GetPlaybackRate()
 
-		draw.SimpleTextOutlined(string.format("%.2fs / %.2fs (%.2f) @ %d%%", cycle * len, len, cycle, rate * 100), "TFASleekDebug", x, y, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP, 1, color_black)
+		local animStatus = string.format("%.2fs / %.2fs (%.2f) @ %d%%", cycle * len, len, cycle, rate * 100)
+
+		draw.SimpleTextOutlined(animStatus, "TFASleekDebug", x, y, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP, 1, color_black)
+		--local stW, stH = surface.GetTextSize(animStatus)
+		--lastAnimStatusWidth = math.max(300, stW)
+
+		y = y + TFA.Fonts.SleekHeightDebug + 2
+
+		surface.SetDrawColor(STATUS_BAR_COLOR_BG)
+		surface.DrawRect(x - lastAnimStatusWidth / 2, y, lastAnimStatusWidth, 4)
+
+		if len * rate >= 0.2 then
+			surface.SetDrawColor(STATUS_BAR_COLOR)
+			surface.DrawRect(x - lastAnimStatusWidth / 2, y, lastAnimStatusWidth * cycle, 4)
+		end
 	end
 end
 
