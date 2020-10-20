@@ -108,8 +108,7 @@ function SWEP:Think2(...)
 	if TFA.Enum.ReadyStatus[self:GetStatus()] and self:CanPrimaryAttack() then
 		if self:GetOwner():KeyDown(IN_ATTACK2) and self:GetCharge() > self.ChargeThreshold then
 			self:PlayAnimation(self.BowAnimations.cancel)
-			self:SetStatus(TFA.Enum.STATUS_BOW_CANCEL)
-			self:SetStatusEnd(CurTime() + self:GetActivityLength())
+			self:ScheduleStatus(TFA.Enum.STATUS_BOW_CANCEL, self:GetActivityLength())
 		elseif self:GetOwner():KeyDown(IN_ATTACK) then
 			if self:GetCharge() <= 0 then
 				self:PlayAnimation(self.BowAnimations.draw)
@@ -136,8 +135,7 @@ function SWEP:Think2(...)
 		if TFA.Enum.ReadyStatus[self:GetStatus()] then
 			if self:GetCharge() > self.ChargeThreshold then
 				self:PlayAnimation(self.BowAnimations.cancel)
-				self:SetStatus(TFA.Enum.STATUS_BOW_CANCEL)
-				self:SetStatusEnd(CurTime() + self:GetActivityLength())
+				self:ScheduleStatus(TFA.Enum.STATUS_BOW_CANCEL, self:GetActivityLength())
 			else
 				self.Idle_ModeOld = self.Idle_Mode
 				self:ClearStatCache("Idle_Mode")
@@ -174,8 +172,7 @@ function SWEP:Shoot()
 	self:ShootBulletInformation()
 	self:SetCharge(0)
 	self:SetShaking(false)
-	self:SetStatus(TFA.Enum.STATUS_BOW_SHOOT)
-	self:SetStatusEnd(CurTime() + 0.1)
+	self:ScheduleStatus(TFA.Enum.STATUS_BOW_SHOOT, 0.1)
 end
 
 function SWEP:ChooseIdleAnim(...)

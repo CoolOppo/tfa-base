@@ -456,7 +456,7 @@ function SWEP:ProcessStatus()
 		--Holstering
 		if stat == TFA.Enum.STATUS_HOLSTER then
 			finalstat = TFA.Enum.STATUS_HOLSTER_READY
-			self:SetStatusEnd(ct + 0.0)
+			self:SetStatusEnd(ct)
 		elseif stat == TFA.Enum.STATUS_HOLSTER_READY then
 			self2.FinishHolster(self)
 			finalstat = TFA.Enum.STATUS_HOLSTER_FINAL

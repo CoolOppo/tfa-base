@@ -219,8 +219,7 @@ function SWEP:Slash(bPrimary)
 	self:SlashSound(tr)
 	self:SmackDamage(tr, fw, bPrimary)
 	self:SmackEffect(tr, fw, bPrimary)
-	self:SetStatus(TFA.Enum.STATUS_SHOOTING)
-	self:SetStatusEnd(CurTime() + 60 / rpm - delay)
+	self:ScheduleStatus(TFA.Enum.STATUS_SHOOTING, 60 / rpm - delay)
 end
 
 function SWEP:CanAttack()
@@ -244,8 +243,7 @@ function SWEP:PrimaryAttack()
 		self:GetOwner():SetAnimation(PLAYER_ATTACK1)
 		self:SetNextPrimaryFire(CurTime() + 1 / (self.Primary_TFA.RPM / 60))
 		self:SetNextSecondaryFire(CurTime() + 1 / (self.Primary_TFA.RPM / 60))
-		self:SetStatus(TFA.Enum.STATUS_RELOADING)
-		self:SetStatusEnd(CurTime() + self.Primary_TFA.Delay)
+		self:ScheduleStatus(TFA.Enum.STATUS_RELOADING, self.Primary_TFA.Delay)
 	end
 end
 
@@ -288,8 +286,7 @@ function SWEP:SecondaryAttack()
 	self:GetOwner():SetAnimation(PLAYER_ATTACK1)
 	self:SetNextPrimaryFire(CurTime() + 60 / self.Secondary_TFA.RPM)
 	self:SetNextSecondaryFire(CurTime() + 60 / self.Secondary_TFA.RPM )
-	self:SetStatus(TFA.Enum.STATUS_SILENCER_TOGGLE)
-	self:SetStatusEnd(CurTime() + self.Secondary_TFA.Delay)
+	self:ScheduleStatus(TFA.Enum.STATUS_SILENCER_TOGGLE, self.Secondary_TFA.Delay)
 end
 
 function SWEP:ThrowKnife()

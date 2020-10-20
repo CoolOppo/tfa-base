@@ -212,8 +212,7 @@ TFA.RegisterKeyBind({
 
 		if (IsValid(wepv) and wepv.GetStat) and (wepv:GetActivityEnabled(ACT_VM_FIDGET) or wepv.InspectionActions) and wepv:GetStatus() == TFA.Enum.STATUS_IDLE then
 			local _, tanim = wepv:ChooseInspectAnim()
-			wepv:SetStatus(TFA.Enum.STATUS_FIDGET)
-			wepv:SetStatusEnd(CurTime() + wepv:GetActivityLength(tanim))
+			wepv:ScheduleStatus(TFA.Enum.STATUS_FIDGET, wepv:GetActivityLength(tanim))
 		end
 	end
 })

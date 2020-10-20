@@ -543,15 +543,20 @@ function SWEP:GetStatusProgress()
 	return (time - StatusStart) / (StatusEnd - StatusStart)
 end
 
-function SWEP:SetStatus(statusIn)
+function SWEP:SetStatus(statusIn, timeOn)
 	self:SetStatusRaw(statusIn)
 	self:SetStatusStart(l_CT())
+
+	if timeOn ~= nil then
+		self:SetStatusEnd(timeOn)
+	end
 end
 
-function SWEP:RestartStatus(statusIn, timeFor)
+function SWEP:ScheduleStatus(statusIn, timeFor)
 	self:SetStatusRaw(statusIn)
-	self:SetStatusStart(l_CT())
-	self:SetStatusEnd(l_CT() + timeFor)
+	local time = l_CT()
+	self:SetStatusStart(time)
+	self:SetStatusEnd(time + timeFor)
 end
 
 function SWEP:ExtendStatus(timeFor)
@@ -740,12 +745,11 @@ function SWEP:Deploy()
 		self:CallOnClient("ChooseDrawAnim", "")
 	end
 
-	self:SetStatus(TFA.Enum.STATUS_DRAW)
-	self:SetFirstDeployEvent(true)
-
 	local len = self:GetActivityLength(tanim)
 
-	self:SetStatusEnd(ct + len)
+	self:ScheduleStatus(TFA.Enum.STATUS_DRAW, len)
+	self:SetFirstDeployEvent(true)
+
 	self:SetNextPrimaryFire(ct + len)
 	self:SetIronSightsRaw(false)
 
@@ -816,13 +820,7 @@ function SWEP:Holster(target)
 			self:SetSwapTarget(target)
 		end
 
-		self:SetStatus(TFA.Enum.STATUS_HOLSTER)
-
-		if success then
-			self:SetStatusEnd(ct + self:GetActivityLength(tanim))
-		else
-			self:SetStatusEnd(ct + self:GetStat("ProceduralHolsterTime") / self:GetAnimationRate(ACT_VM_HOLSTER))
-		end
+		self:ScheduleStatus(TFA.Enum.STATUS_HOLSTER, success and self:GetActivityLength(tanim) or (self:GetStat("ProceduralHolsterTime") / self:GetAnimationRate(ACT_VM_HOLSTER)))
 
 		return false
 	elseif stat == TFA.Enum.STATUS_HOLSTER_READY or stat == TFA.Enum.STATUS_HOLSTER_FINAL then
@@ -1454,9 +1452,8 @@ function SWEP:TriggerAttack(tableName, clipID)
 	end
 
 	if self2.CanBeSilenced and (ply.KeyDown and ply:KeyDown(IN_USE)) and (SERVER or not sp) then
-		self:ChooseSilenceAnim(not self:GetSilenced())
-		local _, tanim = self:SetStatus(TFA.Enum.STATUS_SILENCER_TOGGLE)
-		self:SetStatusEnd(l_CT() + self:GetActivityLength(tanim, true))
+		local _, tanim = self:ChooseSilenceAnim(not self:GetSilenced())
+		self:ScheduleStatus(TFA.Enum.STATUS_SILENCER_TOGGLE, self:GetActivityLength(tanim, true))
 
 		return
 	end
@@ -1469,8 +1466,7 @@ function SWEP:TriggerAttack(tableName, clipID)
 
 	if self:GetStat("PumpAction") and self:GetReloadLoopCancel() then return end
 
-	self:SetStatus(TFA.Enum.STATUS_SHOOTING)
-	self:SetStatusEnd(self["GetNext" .. fnname .. "Fire"](self))
+	self:SetStatus(TFA.Enum.STATUS_SHOOTING, self["GetNext" .. fnname .. "Fire"](self))
 	self:ToggleAkimbo()
 	self:IncreaseRecoilLUT()
 
@@ -1768,8 +1764,7 @@ function SWEP:DoPump()
 
 	local _, tanim = self:PlayAnimation(self:GetStat("PumpAction"))
 
-	self:SetStatus(TFA.Enum.STATUS_PUMP)
-	self:SetStatusEnd(l_CT() + self:GetActivityLength(tanim, true))
+	self:ScheduleStatus(TFA.Enum.STATUS_PUMP, self:GetActivityLength(tanim, true))
 	self:SetNextPrimaryFire(l_CT() + self:GetActivityLength(tanim, false))
 	self:SetNextIdleAnim(math.max(self:GetNextIdleAnim(), l_CT() + self:GetActivityLength(tanim, false)))
 end
@@ -1818,8 +1813,7 @@ function SWEP:CheckAmmo()
 
 	if (self:GetActivityEnabled(ACT_VM_FIDGET) or self2.InspectionActions) and self:GetStatus() == TFA.Enum.STATUS_IDLE then--and CurTime() > self2.NextInspectAnim then
 		local _, tanim = self:ChooseInspectAnim()
-		self:SetStatus(TFA.Enum.STATUS_FIDGET)
-		self:SetStatusEnd(l_CT() + self:GetActivityLength(tanim))
+		self:ScheduleStatus(TFA.Enum.STATUS_FIDGET, self:GetActivityLength(tanim))
 	end
 end
 

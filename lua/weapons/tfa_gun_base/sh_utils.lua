@@ -717,8 +717,7 @@ function SWEP:CycleFireMode()
 	end
 
 	self.BurstCount = 0
-	self:SetStatus(TFA.Enum.STATUS_FIREMODE)
-	self:SetStatusEnd(self:GetNextPrimaryFire())
+	self:SetStatus(TFA.Enum.STATUS_FIREMODE, self:GetNextPrimaryFire())
 
 	self.Primary.Automatic = self:GetStat("FireModesAutomatic." .. self:GetStat("FireModes." .. fm)) ~= nil
 	self.Primary_TFA.Automatic =self.Primary.Automatic
@@ -747,8 +746,7 @@ function SWEP:CycleSafety()
 	self:EmitSound(self:GetStat("FireModeSound"))
 	self:SetNextPrimaryFire(ct + math.max(self:GetFireDelay(), 0.25))
 	self.BurstCount = 0
-	--self:SetStatus(TFA.Enum.STATUS_FIREMODE)
-	--self:SetStatusEnd( self:GetNextPrimaryFire() )
+	--self:SetStatus(TFA.Enum.STATUS_FIREMODE, self:GetNextPrimaryFire())
 end
 
 --[[

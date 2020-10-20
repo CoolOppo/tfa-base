@@ -411,7 +411,7 @@ function SWEP:Think2(...)
 		local stat = self:GetStatus()
 
 		if self:GetBashImpulse() and TFA.Enum.ReadyStatus[stat] and not self:GetOwner():KeyDown(IN_USE) then
-			self:SetStatus(TFA.Enum.STATUS_BLOCKING)
+			self:SetStatus(TFA.Enum.STATUS_BLOCKING, math.huge)
 
 			if self.BlockAnimation["in"] then
 				self:PlayAnimation(self.BlockAnimation["in"])
@@ -419,19 +419,16 @@ function SWEP:Think2(...)
 				self:PlayAnimation(self.BlockAnimation["loop"])
 			end
 
-			self:SetStatusEnd(math.huge)
 			self.BlockStart = CurTime()
 		elseif stat == TFA.Enum.STATUS_BLOCKING and not self:GetBashImpulse() then
 			local _, tanim
-			self:SetStatus(TFA.Enum.STATUS_BLOCKING_END)
+			self:ScheduleStatus(TFA.Enum.STATUS_BLOCKING_END, self.BlockFadeOut or (self:GetActivityLength(tanim) - self.BlockFadeOutEnd))
 
 			if self.BlockAnimation["out"] then
 				_, tanim = self:PlayAnimation(self.BlockAnimation["out"])
 			else
 				_, tanim = self:ChooseIdleAnim()
 			end
-
-			self:SetStatusEnd(CurTime() + (self.BlockFadeOut or (self:GetActivityLength(tanim) - self.BlockFadeOutEnd)))
 		elseif stat == TFA.Enum.STATUS_BLOCKING and CurTime() > self:GetNextIdleAnim() then
 			self:ChooseIdleAnim()
 		end
@@ -515,8 +512,7 @@ function SWEP:StrikeThink()
 		self.DamageType = attack.dmgtype
 		--Just attacked, so don't do it again
 		self.up_hat = true
-		self:SetStatus(TFA.Enum.STATUS_IDLE)
-		self:SetStatusEnd(math.huge)
+		self:SetStatus(TFA.Enum.STATUS_IDLE, math.huge)
 
 		if self:GetComboCount() > 0 then
 			self:SetNextPrimaryFire(self:GetNextPrimaryFire() - (attack.combotime or 0))
@@ -839,9 +835,8 @@ function SWEP:PrimaryAttack()
 	end
 
 	self.up_hat = false
-	self:SetStatus(TFA.Enum.STATUS_SHOOTING)
+	self:ScheduleStatus(TFA.Enum.STATUS_SHOOTING, attack.delay / self:GetAnimationRate(attack.act))
 	self:SetMelAttackID(ind)
-	self:SetStatusEnd(CurTime() + attack.delay / self:GetAnimationRate(attack.act))
 	self:SetNextPrimaryFire(CurTime() + attack["end"] / self:GetAnimationRate(attack.act))
 	self:GetOwner():SetAnimation(PLAYER_ATTACK1)
 	self:SetComboCount(self:GetComboCount() + 1)
@@ -960,9 +955,8 @@ function SWEP:SecondaryAttack()
 	end
 
 	self.up_hat = false
-	self:SetStatus(TFA.Enum.STATUS_SHOOTING)
+	self:ScheduleStatus(TFA.Enum.STATUS_SHOOTING, attack.delay / self:GetAnimationRate(attack.act))
 	self:SetMelAttackID(-ind)
-	self:SetStatusEnd(CurTime() + attack.delay / self:GetAnimationRate(attack.act))
 	self:SetNextPrimaryFire(CurTime() + attack["end"] / self:GetAnimationRate(attack.act))
 	self:GetOwner():SetAnimation(PLAYER_ATTACK1)
 	self:SetComboCount(self:GetComboCount() + 1)
@@ -994,9 +988,8 @@ function SWEP:Reload(released, ovr, ...)
 	end
 
 	if (self.SequenceEnabled[ACT_VM_FIDGET] or self.InspectionActions) and self:GetStatus() == TFA.Enum.STATUS_IDLE then
-		self:SetStatus(TFA.Enum.STATUS_FIDGET)
 		local _, tanim = self:ChooseInspectAnim()
-		self:SetStatusEnd(l_CT() + self:GetActivityLength(tanim))
+		self:ScheduleStatus(TFA.Enum.STATUS_FIDGET, self:GetActivityLength(tanim))
 	end
 end
 

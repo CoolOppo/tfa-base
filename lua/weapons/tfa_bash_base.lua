@@ -137,8 +137,7 @@ function SWEP:AltAttack()
 
 	self:EmitSoundNet(self:GetStat("Secondary.BashSound"))
 
-	self:SetStatus(TFA.Enum.STATUS_BASHING)
-	self:SetStatusEnd(time + self:GetStat("Secondary.BashDelay"))
+	self:ScheduleStatus(TFA.Enum.STATUS_BASHING, self:GetStat("Secondary.BashDelay"))
 
 	hook.Run("TFA_PostBash", self)
 end
@@ -219,8 +218,7 @@ end
 
 function SWEP:Think2(...)
 	if self:GetStatus() == TFA.Enum.STATUS_BASHING and self:GetStatusEnd() < l_CT() then
-		self:SetStatus(TFA.Enum.STATUS_BASHING_WAIT)
-		self:SetStatusEnd(self:GetNextSecondaryFire())
+		self:SetStatus(TFA.Enum.STATUS_BASHING_WAIT, self:GetNextSecondaryFire())
 
 		if IsFirstTimePredicted() then
 			self:HandleBashAttack()

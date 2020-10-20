@@ -166,9 +166,8 @@ function SWEP:ThrowStart()
 
 	local _, tanim = self:ChooseShootAnim()
 
-	self:SetStatus(TFA.Enum.STATUS_GRENADE_THROW)
 	local delay = self:GetNW2Bool("Underhanded", false) and self.Delay_Underhand or self.Delay
-	self:SetStatusEnd(CurTime() + delay)
+	self:ScheduleStatus(TFA.Enum.STATUS_GRENADE_THROW, delay)
 
 	if IsFirstTimePredicted() then
 		self.LastNadeAnim = tanim
@@ -184,8 +183,7 @@ function SWEP:Throw()
 	self:ShootBulletInformation()
 
 	local len = self:GetActivityLength(self.LastNadeAnim, true)
-	self:SetStatus(TFA.Enum.STATUS_GRENADE_THROW_WAIT)
-	self:SetStatusEnd(CurTime() + len - self.LastNadeDelay)
+	self:ScheduleStatus(TFA.Enum.STATUS_GRENADE_THROW_WAIT, len - self.LastNadeDelay)
 end
 
 function SWEP:Think2(...)
@@ -200,8 +198,7 @@ function SWEP:Think2(...)
 
 	if stat == TFA.Enum.STATUS_GRENADE_PULL and statusend then
 		stat = TFA.Enum.STATUS_GRENADE_READY
-		self:SetStatus(stat)
-		self:SetStatusEnd(math.huge)
+		self:SetStatus(stat, math.huge)
 	end
 
 	if stat == TFA.Enum.STATUS_GRENADE_READY and (self:GetOwner():IsNPC() or not self:GetOwner():KeyDown(IN_ATTACK2) and not self:GetOwner():KeyDown(IN_ATTACK)) then
@@ -224,9 +221,7 @@ function SWEP:PrimaryAttack()
 
 	local _, tanim = self:ChoosePullAnim()
 
-	self:SetStatus(TFA.Enum.STATUS_GRENADE_PULL)
-	self:SetStatusEnd(CurTime() + self:GetActivityLength(tanim))
-
+	self:ScheduleStatus(TFA.Enum.STATUS_GRENADE_PULL, self:GetActivityLength(tanim))
 	self:SetNW2Bool("Underhanded", false)
 end
 
