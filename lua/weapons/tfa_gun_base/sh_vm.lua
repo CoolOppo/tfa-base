@@ -325,7 +325,7 @@ function SWEP:CalculateViewModelOffset(delta)
 
 	--local ironSightsProgress = TFA.tbezier(self2.IronSightsProgressUnpredicted or self:GetIronSightsProgress(), IRON_SIGHTS_BEZIER)
 
-	local crouchRatio = Lerp(math_max(ironSightsProgress, holsterProgress, Clamp(sprintProgress * 2, 0, 1), safetyProgress), TFA.Cubic(self2.CrouchingRatioUnpredicted or self:GetCrouchingRatio()), 0)
+	local crouchRatio = Lerp(math_max(ironSightsProgress, holsterProgress, Clamp(sprintProgress * 2, 0, 1), safetyProgress), TFA.Quintic(self2.CrouchingRatioUnpredicted or self:GetCrouchingRatio()), 0)
 
 	if crouchRatio > 0.01 then
 		target_pos = LerpVector(crouchRatio, target_pos, self2.GetStat(self, "CrouchPos"))
