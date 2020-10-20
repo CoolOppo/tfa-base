@@ -1290,6 +1290,11 @@ end
 
 local sv_tfa_recoil_legacy = GetConVar("sv_tfa_recoil_legacy")
 
+local crosshairMatrix = Matrix()
+local crosshairMatrixLeft = Matrix()
+local crosshairMatrixRight = Matrix()
+local crosshairRotation = Angle()
+
 function SWEP:DoDrawCrosshair()
 	local self2 = self:GetTable()
 	local x, y
@@ -1410,17 +1415,42 @@ function SWEP:DoDrawCrosshair()
 		length = gap + crosslen * 100
 	end
 
-	local lmatrix, rmatrix
+	local extraRotation = 0
+	local cPos = Vector(x, y)
+
+	if stat == TFA.Enum.STATUS_PUMP then
+		extraRotation = TFA.Cubic(math.sqrt(self:GetStatusProgress()))
+		local mul = tricross_cvar:GetBool() and 360 or 180
+
+		if extraRotation < 0.5 then
+			extraRotation = extraRotation * mul
+		else
+			extraRotation = (1 - extraRotation) * mul
+		end
+	end
 
 	if tricross_cvar:GetBool() then
-		lmatrix = Matrix()
-		lmatrix:SetTranslation(Vector(x - gap, y + gap, 0))
-		lmatrix:SetAngles(Angle(0, -135, 0))
+		crosshairMatrixLeft:Identity()
+		crosshairMatrixRight:Identity()
 
-		rmatrix = Matrix()
-		rmatrix:SetTranslation(Vector(x + gap, y + gap, 0))
-		rmatrix:SetAngles(Angle(0, 135, 0))
+		crosshairMatrixLeft:Translate(cPos)
+		crosshairMatrixRight:Translate(cPos)
+
+		crosshairRotation.y = extraRotation + 135
+		crosshairMatrixRight:SetAngles(crosshairRotation)
+		crosshairRotation.y = extraRotation - 135
+		crosshairMatrixLeft:SetAngles(crosshairRotation)
 	end
+
+	crosshairMatrix:Identity()
+	crosshairMatrix:Translate(cPos)
+	crosshairRotation.y = extraRotation
+	crosshairMatrix:Rotate(crosshairRotation)
+
+	DisableClipping(true)
+
+	render.PushFilterMag(TEXFILTER.ANISOTROPIC)
+	render.PushFilterMin(TEXFILTER.ANISOTROPIC)
 
 	--Outline
 	if outline_enabled_cvar:GetBool() then
@@ -1429,31 +1459,29 @@ function SWEP:DoDrawCrosshair()
 		outg = outg_cvar:GetFloat()
 		outb = outb_cvar:GetFloat()
 		outlinewidth = outlinewidth_cvar:GetFloat()
+
+		cam.PushModelMatrix(crosshairMatrix)
 		surface.SetDrawColor(outr, outg, outb, outa)
-		surface.DrawRect(math.Round(x - outlinewidth) - crosshairwidth / 2, math.Round(y - length - outlinewidth) - crosshairwidth / 2, math.Round(outlinewidth * 2) + crosshairwidth, math.Round(length - gap + outlinewidth * 2) + crosshairwidth) -- Top
+		local tA, tB, tC, tD = math.Round(-outlinewidth) - crosshairwidth / 2, math.Round(-length - outlinewidth) - crosshairwidth / 2, math.Round(outlinewidth * 2) + crosshairwidth, math.Round(length - gap + outlinewidth * 2) + crosshairwidth
+		surface.DrawRect(tA, tB, tC, tD) -- Top
+		cam.PopModelMatrix()
 
 		if tricross_cvar:GetBool() then
 			local ourlinew, outlinel = math.Round(outlinewidth * 2) + crosshairwidth, math.Round(length - gap) + outlinewidth + crosshairwidth
 
-			render.PushFilterMag(TEXFILTER.ANISOTROPIC)
-			render.PushFilterMin(TEXFILTER.ANISOTROPIC)
-			surface.DisableClipping(true)
-
-			cam.PushModelMatrix(lmatrix)
-			surface.DrawRect(-ourlinew * .5, -outlinel, ourlinew, outlinel + outlinewidth)
+			cam.PushModelMatrix(crosshairMatrixLeft)
+			surface.DrawRect(tA, tB, tC, tD)
 			cam.PopModelMatrix()
 
-			cam.PushModelMatrix(rmatrix)
-			surface.DrawRect(-ourlinew * .5, -outlinel, ourlinew, outlinel + outlinewidth)
+			cam.PushModelMatrix(crosshairMatrixRight)
+			surface.DrawRect(tA, tB, tC, tD)
 			cam.PopModelMatrix()
-
-			surface.DisableClipping(false)
-			render.PopFilterMag()
-			render.PopFilterMin()
 		else
-			surface.DrawRect(math.Round(x - length - outlinewidth) - crosshairwidth / 2, math.Round(y - outlinewidth) - crosshairwidth / 2, math.Round(length - gap + outlinewidth * 2) + crosshairwidth, math.Round(outlinewidth * 2) + crosshairwidth) -- Left
-			surface.DrawRect(math.Round(x + gap - outlinewidth) - crosshairwidth / 2, math.Round(y - outlinewidth) - crosshairwidth / 2, math.Round(length - gap + outlinewidth * 2) + crosshairwidth, math.Round(outlinewidth * 2) + crosshairwidth) -- Right
-			surface.DrawRect(math.Round(x - outlinewidth) - crosshairwidth / 2, math.Round(y + gap - outlinewidth) - crosshairwidth / 2, math.Round(outlinewidth * 2) + crosshairwidth, math.Round(length - gap + outlinewidth * 2) + crosshairwidth) -- Bottom
+			cam.PushModelMatrix(crosshairMatrix)
+			surface.DrawRect(math.Round(-length - outlinewidth) - crosshairwidth / 2, math.Round(-outlinewidth) - crosshairwidth / 2, math.Round(length - gap + outlinewidth * 2) + crosshairwidth, math.Round(outlinewidth * 2) + crosshairwidth) -- Left
+			surface.DrawRect(math.Round(gap - outlinewidth) - crosshairwidth / 2, math.Round(-outlinewidth) - crosshairwidth / 2, math.Round(length - gap + outlinewidth * 2) + crosshairwidth, math.Round(outlinewidth * 2) + crosshairwidth) -- Right
+			surface.DrawRect(math.Round(-outlinewidth) - crosshairwidth / 2, math.Round(gap - outlinewidth) - crosshairwidth / 2, math.Round(outlinewidth * 2) + crosshairwidth, math.Round(length - gap + outlinewidth * 2) + crosshairwidth) -- Bottom
+			cam.PopModelMatrix()
 		end
 
 		if drawdot then
@@ -1462,32 +1490,34 @@ function SWEP:DoDrawCrosshair()
 	end
 
 	--Main Crosshair
+	cam.PushModelMatrix(crosshairMatrix)
 	surface.SetDrawColor(crossr, crossg, crossb, crossa)
-	surface.DrawRect(math.Round(x) - crosshairwidth / 2, math.Round(y - length) - crosshairwidth / 2, crosshairwidth, math.Round(length - gap) + crosshairwidth) -- Top
+	local tA, tB, tC, tD = -crosshairwidth / 2, math.Round(-length) - crosshairwidth / 2, crosshairwidth, math.Round(length - gap) + crosshairwidth
+	surface.DrawRect(tA, tB, tC, tD) -- Top
+	cam.PopModelMatrix()
 
 	if tricross_cvar:GetBool() then
 		local xhl = math.Round(length - gap) + crosshairwidth
 
-		render.PushFilterMag(TEXFILTER.ANISOTROPIC)
-		render.PushFilterMin(TEXFILTER.ANISOTROPIC)
-		surface.DisableClipping(true)
-
-		cam.PushModelMatrix(lmatrix)
-		surface.DrawRect(-crosshairwidth * .5, -xhl, crosshairwidth, xhl)
+		cam.PushModelMatrix(crosshairMatrixLeft)
+		surface.DrawRect(tA, tB, tC, tD)
 		cam.PopModelMatrix()
 
-		cam.PushModelMatrix(rmatrix)
-		surface.DrawRect(-crosshairwidth * .5, -xhl, crosshairwidth, xhl)
+		cam.PushModelMatrix(crosshairMatrixRight)
+		surface.DrawRect(tA, tB, tC, tD)
 		cam.PopModelMatrix()
-
-		surface.DisableClipping(false)
-		render.PopFilterMag()
-		render.PopFilterMin()
 	else
-		surface.DrawRect(math.Round(x - length) - crosshairwidth / 2, math.Round(y) - crosshairwidth / 2, math.Round(length - gap) + crosshairwidth, crosshairwidth) -- Left
-		surface.DrawRect(math.Round(x + gap) - crosshairwidth / 2, math.Round(y) - crosshairwidth / 2, math.Round(length - gap) + crosshairwidth, crosshairwidth) -- Right
-		surface.DrawRect(math.Round(x) - crosshairwidth / 2, math.Round(y + gap) - crosshairwidth / 2, crosshairwidth, math.Round(length - gap) + crosshairwidth) -- Bottom
+		cam.PushModelMatrix(crosshairMatrix)
+		surface.DrawRect(math.Round( - length) - crosshairwidth / 2, - crosshairwidth / 2, math.Round(length - gap) + crosshairwidth, crosshairwidth) -- Left
+		surface.DrawRect(math.Round(gap) - crosshairwidth / 2,  - crosshairwidth / 2, math.Round(length - gap) + crosshairwidth, crosshairwidth) -- Right
+		surface.DrawRect(-crosshairwidth / 2, math.Round(gap) - crosshairwidth / 2, crosshairwidth, math.Round(length - gap) + crosshairwidth) -- Bottom
+		cam.PopModelMatrix()
 	end
+
+	render.PopFilterMag()
+	render.PopFilterMin()
+
+	DisableClipping(false)
 
 	if drawdot then
 		surface.DrawRect(math.Round(x) - crosshairwidth / 2, math.Round(y) - crosshairwidth / 2, crosshairwidth, crosshairwidth) --dot
