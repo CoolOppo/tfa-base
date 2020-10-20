@@ -976,9 +976,11 @@ function SWEP:PlayerThinkCL(plyv)
 	local is = self2.GetIronSights(self)
 	local spr = self2.GetSprinting(self)
 	local walk = self2.GetWalking(self)
+	local status = self2.GetStatus(self)
 
 	local ist = is and 1 or 0
 	local sprt = spr and 1 or 0
+	local sprt2 = (spr and stat ~= TFA.Enum.STATUS_FIDGET) and 1 or 0
 	local walkt = walk and 1 or 0
 	local adstransitionspeed
 
@@ -1002,13 +1004,14 @@ function SWEP:PlayerThinkCL(plyv)
 	self2.IronSightsProgressUnpredicted = l_mathApproach(self2.IronSightsProgressUnpredicted or 0, ist, (ist - (self2.IronSightsProgressUnpredicted or 0)) * ft * adstransitionspeed * 1.2)
 	self2.IronSightsProgressUnpredicted2 = l_mathApproach(self2.IronSightsProgressUnpredicted2 or 0, ist, (ist - (self2.IronSightsProgressUnpredicted2 or 0)) * ft * adstransitionspeed * 0.4)
 	self2.SprintProgressUnpredicted = l_mathApproach(self2.SprintProgressUnpredicted or 0, sprt, (sprt - (self2.SprintProgressUnpredicted or 0)) * ft * adstransitionspeed)
+	self2.SprintProgressUnpredicted2 = l_mathApproach(self2.SprintProgressUnpredicted2 or 0, sprt2, (sprt2 - (self2.SprintProgressUnpredicted2 or 0)) * ft * adstransitionspeed)
 
 	self2.WalkProgressUnpredicted = l_mathApproach((self2.WalkProgressUnpredicted or 0), walkt, (walkt - (self2.WalkProgressUnpredicted or 0)) * ft * adstransitionspeed)
 
-	if self:GetStatus() ~= TFA.Enum.STATUS_FIREMODE or not self:GetIsCyclingSafety() then
+	if status ~= TFA.Enum.STATUS_FIREMODE or not self:GetIsCyclingSafety() then
 		local safetyTarget = self:IsSafety() and 1 or 0
 		self2.SafetyProgressUnpredicted = l_mathApproach(self2.SafetyProgressUnpredicted or 0, safetyTarget, (safetyTarget - (self2.SafetyProgressUnpredicted or 0)) * ft * adstransitionspeed * 0.7)
-	elseif self:GetStatus() == TFA.Enum.STATUS_FIREMODE and self:GetIsCyclingSafety() then
+	elseif status == TFA.Enum.STATUS_FIREMODE and self:GetIsCyclingSafety() then
 		if not self:IsSafety() then
 			local safetyTarget = 0
 

@@ -313,7 +313,7 @@ function SWEP:CalculateViewModelOffset(delta)
 
 	local ironSights = self:GetIronSights()
 	local isSprinting = self:GetSprinting()
-	local sprintProgress = sprintAnimAllowed and TFA.Cubic(self2.SprintProgressUnpredicted or self:GetSprintProgress()) or 0
+	local sprintProgress = sprintAnimAllowed and TFA.Cubic(self2.SprintProgressUnpredicted2 or self2.SprintProgressUnpredicted or self:GetSprintProgress()) or 0
 	local safetyProgress = Lerp(sprintProgress, TFA.Cubic(self2.SafetyProgressUnpredicted or 0), 0)
 
 	local ironSightsProgress = Clamp(
