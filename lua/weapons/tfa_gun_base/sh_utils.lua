@@ -699,6 +699,7 @@ SWEP.FireModesAutomatic = {
 SWEP.FireModeSound = Sound("Weapon_AR2.Empty") -- firemode toggle sound
 
 function SWEP:CycleFireMode()
+	local ct = l_CT()
 	local fm = self:GetFireMode()
 	fm = fm + 1
 
@@ -710,13 +711,14 @@ function SWEP:CycleFireMode()
 	local a = self:ChooseROFAnim()
 
 	if a then
-		self:SetNextPrimaryFire(l_CT() + self:GetActivityLength())
+		self:SetNextPrimaryFire(ct + self:GetActivityLength())
 	else
 		self:EmitSound(self:GetStat("FireModeSound"))
-		self:SetNextPrimaryFire(l_CT() + math.max(self:GetFireDelay(), 0.25))
+		self:SetNextPrimaryFire(ct + math.max(self:GetFireDelay(), 0.25))
 	end
 
 	self.BurstCount = 0
+	self:SetIsCyclingSafety(false)
 	self:SetStatus(TFA.Enum.STATUS_FIREMODE, self:GetNextPrimaryFire())
 
 	self.Primary.Automatic = self:GetStat("FireModesAutomatic." .. self:GetStat("FireModes." .. fm)) ~= nil
@@ -736,6 +738,9 @@ function SWEP:CycleSafety()
 	local fm = self:GetFireMode()
 	local fmt = self:GetStat("FireModes")
 
+	self.BurstCount = 0
+	self:SetIsCyclingSafety(true)
+
 	if fm ~= #fmt then
 		self.LastFireMode = fm
 		self:SetFireMode(#fmt)
@@ -743,10 +748,18 @@ function SWEP:CycleSafety()
 		self:SetFireMode(self.LastFireMode or 1)
 	end
 
-	self:EmitSound(self:GetStat("FireModeSound"))
-	self:SetNextPrimaryFire(ct + math.max(self:GetFireDelay(), 0.25))
-	self.BurstCount = 0
-	--self:SetStatus(TFA.Enum.STATUS_FIREMODE, self:GetNextPrimaryFire())
+	local a = self:ChooseROFAnim()
+
+	if a then
+		self:SetSafetyCycleAnimated(true)
+		self:SetNextPrimaryFire(ct + self:GetActivityLength())
+	else
+		self:SetSafetyCycleAnimated(false)
+		self:EmitSound(self:GetStat("FireModeSound"))
+		self:SetNextPrimaryFire(ct + math.max(self:GetFireDelay(), 0.25))
+	end
+
+	self:SetStatus(TFA.Enum.STATUS_FIREMODE, self:GetNextPrimaryFire())
 end
 
 --[[

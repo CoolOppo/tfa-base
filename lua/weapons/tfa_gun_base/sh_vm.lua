@@ -293,11 +293,13 @@ function SWEP:CalculateViewModelOffset(delta)
 	local holsterStatus = (TFA.Enum.HolsterStatus[stat] and self2.ProceduralHolsterEnabled) or (TFA.Enum.ReloadStatus[stat] and self2.ProceduralReloadEnabled)
 	local holsterProgress = holsterStatus and TFA.Quintic(Clamp(self:GetStatusProgress() * 1.1, 0, 1)) or 0
 
+	local sprintAnimAllowed = self2.Sprint_Mode == TFA.Enum.LOCOMOTION_LUA or self2.Sprint_Mode == TFA.Enum.LOCOMOTION_HYBRID
+
 	local isSafety = self:IsSafety()
 
 	local ironSights = self:GetIronSights()
 	local isSprinting = self:GetSprinting()
-	local sprintProgress = TFA.Cubic(self2.SprintProgressUnpredicted or self:GetSprintProgress())
+	local sprintProgress = sprintAnimAllowed and TFA.Cubic(self2.SprintProgressUnpredicted or self:GetSprintProgress()) or 0
 	local safetyProgress = Lerp(sprintProgress, TFA.Cubic(self2.SafetyProgressUnpredicted or 0), 0)
 
 	local ironSightsProgress = Clamp(
@@ -336,7 +338,7 @@ function SWEP:CalculateViewModelOffset(delta)
 
 	if
 		(sprintProgress > 0.01 or safetyProgress > 0.01) and
-		(self2.Sprint_Mode == TFA.Enum.LOCOMOTION_LUA or self2.Sprint_Mode == TFA.Enum.LOCOMOTION_HYBRID or (sprintProgress <= 0.01 and safetyProgress > 0.01))
+		(sprintAnimAllowed and sprintProgress > 0.01 or safetyProgress > 0.01)
 		and stat ~= TFA.Enum.STATUS_FIDGET and
 		stat ~= TFA.Enum.STATUS_BASHING
 	then
@@ -347,8 +349,10 @@ function SWEP:CalculateViewModelOffset(delta)
 			target_pos = LerpVector(safetyProgress, target_pos, self2.GetStat(self, "SafetyPos", self2.GetStat(self, "RunSightsPos")))
 			target_ang = LerpVector(safetyProgress, target_ang, self2.GetStat(self, "SafetyAng", self2.GetStat(self, "RunSightsAng")))
 
-			target_pos = LerpVector(sprintProgress, target_pos, self2.GetStat(self, "RunSightsPos"))
-			target_ang = LerpVector(sprintProgress, target_ang, self2.GetStat(self, "RunSightsAng"))
+			if sprintAnimAllowed then
+				target_pos = LerpVector(sprintProgress, target_pos, self2.GetStat(self, "RunSightsPos"))
+				target_ang = LerpVector(sprintProgress, target_ang, self2.GetStat(self, "RunSightsAng"))
+			end
 		end
 	end
 

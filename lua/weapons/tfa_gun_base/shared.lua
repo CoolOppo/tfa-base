@@ -448,6 +448,8 @@ function SWEP:SetupDataTables()
 	self:NetworkVarTFA("Bool", "FlashlightEnabled")
 	self:NetworkVarTFA("Bool", "Jammed")
 	self:NetworkVarTFA("Bool", "FirstDeployEvent")
+	self:NetworkVarTFA("Bool", "IsCyclingSafety")
+	self:NetworkVarTFA("Bool", "SafetyCycleAnimated")
 
 	self:NetworkVarTFA("Float", "StatusEnd")
 	self:NetworkVarTFA("Float", "NextIdleAnim")
@@ -988,8 +990,26 @@ function SWEP:PlayerThinkCL(plyv)
 	self2.IronSightsProgressUnpredicted2 = l_mathApproach(self2.IronSightsProgressUnpredicted2 or 0, ist, (ist - (self2.IronSightsProgressUnpredicted2 or 0)) * ft * adstransitionspeed * 0.4)
 	self2.SprintProgressUnpredicted = l_mathApproach(self2.SprintProgressUnpredicted or 0, sprt, (sprt - (self2.SprintProgressUnpredicted or 0)) * ft * adstransitionspeed)
 
-	local safetyTarget = self:IsSafety() and 1 or 0
-	self2.SafetyProgressUnpredicted = l_mathApproach(self2.SafetyProgressUnpredicted or 0, safetyTarget, (safetyTarget - (self2.SafetyProgressUnpredicted or 0)) * ft * adstransitionspeed * 0.7)
+	if self:GetStatus() ~= TFA.Enum.STATUS_FIREMODE or not self:GetIsCyclingSafety() then
+		local safetyTarget = self:IsSafety() and 1 or 0
+		self2.SafetyProgressUnpredicted = l_mathApproach(self2.SafetyProgressUnpredicted or 0, safetyTarget, (safetyTarget - (self2.SafetyProgressUnpredicted or 0)) * ft * adstransitionspeed * 0.7)
+	elseif self:GetStatus() == TFA.Enum.STATUS_FIREMODE and self:GetIsCyclingSafety() then
+		if not self:IsSafety() then
+			local safetyTarget = 0
+
+			if self:GetSafetyCycleAnimated() then
+				self2.SafetyProgressUnpredicted = l_mathApproach(self2.SafetyProgressUnpredicted or 0, safetyTarget, (safetyTarget - (self2.SafetyProgressUnpredicted or 0)) * ft * adstransitionspeed * 1.1)
+			else
+				self2.SafetyProgressUnpredicted = l_mathApproach(self2.SafetyProgressUnpredicted or 0, safetyTarget, (safetyTarget - (self2.SafetyProgressUnpredicted or 0)) * ft * adstransitionspeed)
+			end
+		else
+			local safetyTarget = 1
+
+			if not self:GetSafetyCycleAnimated() then
+				self2.SafetyProgressUnpredicted = l_mathApproach(self2.SafetyProgressUnpredicted or 0, safetyTarget, (safetyTarget - (self2.SafetyProgressUnpredicted or 0)) * ft * adstransitionspeed * 0.7)
+			end
+		end
+	end
 end
 
 --[[
