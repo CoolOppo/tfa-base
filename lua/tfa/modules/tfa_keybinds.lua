@@ -219,14 +219,14 @@ TFA.RegisterKeyBind({
 
 TFA.RegisterKeyBind({
 	bind = "firemode",
-	onpress = function(plyv)
+	onpress = CLIENT and function(plyv)
 		local wepv = plyv:GetActiveWeapon()
 
 		if IsValid(wepv) and wepv.GetStat and wepv:GetStatus() == TFA.Enum.STATUS_IDLE and (SERVER or not sp) then
 			if wepv:GetStat("SelectiveFire") and not wepv:GetOwner():KeyDown(IN_SPEED) then
-				wepv:CycleFireMode()
+				RunConsoleCommand("impulse", TFA.CYCLE_FIREMODE_IMPULSE_STRING)
 			elseif wepv:GetOwner():KeyDown(IN_SPEED) then
-				wepv:CycleSafety()
+				RunConsoleCommand("impulse", TFA.CYCLE_SAFETY_IMPULSE_STRING)
 			end
 		end
 	end

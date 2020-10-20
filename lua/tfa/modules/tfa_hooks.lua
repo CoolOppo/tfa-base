@@ -21,9 +21,13 @@
 
 TFA.INSPECTION_IMPULSE = 148
 TFA.BASH_IMPULSE = 149
+TFA.CYCLE_FIREMODE_IMPULSE = 150
+TFA.CYCLE_SAFETY_IMPULSE = 151
 
 TFA.INSPECTION_IMPULSE_STRING = "148"
 TFA.BASH_IMPULSE_STRING = "149"
+TFA.CYCLE_FIREMODE_IMPULSE_STRING = "150"
+TFA.CYCLE_SAFETY_IMPULSE_STRING = "151"
 
 local sp = game.SinglePlayer()
 
@@ -221,8 +225,14 @@ local function FinishMove(ply, cmovedata)
 	local wepv = ply:GetActiveWeapon()
 	if not IsValid(wepv) or not wepv.IsTFAWeapon then return end
 
-	if cmovedata:GetImpulseCommand() == TFA.INSPECTION_IMPULSE then
+	local impulse = cmovedata:GetImpulseCommand()
+
+	if impulse == TFA.INSPECTION_IMPULSE then
 		wepv:ToggleInspect()
+	elseif impulse == TFA.CYCLE_FIREMODE_IMPULSE and wepv:GetStatus() == TFA.Enum.STATUS_IDLE and wepv:GetStat("SelectiveFire") then
+		wepv:CycleFireMode()
+	elseif impulse == TFA.CYCLE_SAFETY_IMPULSE and wepv:GetStatus() == TFA.Enum.STATUS_IDLE then
+		wepv:CycleSafety()
 	end
 
 	local BashImpulse = cmovedata:GetImpulseCommand() == TFA.BASH_IMPULSE

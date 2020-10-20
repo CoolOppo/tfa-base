@@ -1046,12 +1046,13 @@ function SWEP:Think2(is_working_out_prediction_errors)
 
 		self2.ProcessBodygroups(self)
 
-		self2.ProcessFireMode(self)
 		self2.ProcessHoldType(self)
 		self2.ReloadCV(self)
 		self2.IronSightSounds(self)
 		self2.ProcessLoopSound(self)
 	end
+
+	self2.ProcessFireMode(self)
 
 	if (not sp or SERVER) and self:GetFirstDeployEvent() then
 		self2.ProcessEvents(self, sp or not is_working_out_prediction_errors)
