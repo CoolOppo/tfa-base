@@ -65,9 +65,10 @@ end
 --
 
 --local fps_max_cvar = GetConVar("fps_max")
-local righthanded, shouldflip, cl_vm_flip_cv, cl_vm_nearwall, fovmod_add, fovmod_mult
+local righthanded, shouldflip, cl_vm_flip_cv, fovmod_add, fovmod_mult
 
 local cv_fov = GetConVar("fov_desired")
+local cl_vm_nearwall = GetConVar("cl_tfa_viewmodel_nearwall")
 
 function SWEP:CalculateViewModelFlip()
 	local self2 = self:GetTable()
@@ -128,29 +129,42 @@ end
 SWEP.NearWallVector = Vector(0.1, -0.5, -0.2):GetNormalized() * 0.5
 SWEP.NearWallVectorADS = Vector(0, 0, 0)
 
+local sv_cheats = GetConVar("sv_cheats")
+local host_timescale = GetConVar("host_timescale")
+
 function SWEP:CalculateNearWall(p, a)
 	local self2 = self:GetTable()
 	if not self:OwnerIsValid() then return p, a end
 
-	if not cl_vm_nearwall then
-		cl_vm_nearwall = GetConVar("cl_tfa_viewmodel_nearwall")
-	end
+	if not cl_vm_nearwall:GetBool() then return p, a end
 
-	if not cl_vm_nearwall or not cl_vm_nearwall:GetBool() then return p, a end
+	local ply = self:GetOwner()
 
-	local sp = self:GetOwner():GetShootPos()
-	local ea = self:GetOwner():EyeAngles()
-	local et = util.QuickTrace(sp,ea:Forward()*128,{self,self:GetOwner()})--self:GetOwner():GetEyeTrace()
+	local sp = ply:GetShootPos()
+	local ea = ply:EyeAngles()
+	local et = util.QuickTrace(sp,ea:Forward()*128,{self,ply})--self:GetOwner():GetEyeTrace()
 	local dist = et.HitPos:Distance(sp)
+
 	if dist<1 then
-		et=util.QuickTrace(sp,ea:Forward()*128,{self,self:GetOwner(),et.Entity})
+		et=util.QuickTrace(sp,ea:Forward()*128,{self,ply,et.Entity})
 		dist = et.HitPos:Distance(sp)
 	end
 
 	self:UpdateWeaponLength()
 
-	local nw_offset_vec = self:GetIronSights() and self2.NearWallVectorADS or self2.NearWallVector
+	local nw_offset_vec = LerpVector(self2.IronSightsProgressUnpredicted or self:GetIronSightsProgress(), self2.NearWallVector, self2.NearWallVectorADS)
 	local off = self2.WeaponLength - dist
+	self2.LastNearWallOffset = self2.LastNearWallOffset or 0
+
+	local ft = RealFrameTime() * game.GetTimeScale() * (sv_cheats:GetBool() and host_timescale:GetFloat() or 1)
+
+	if off > self2.LastNearWallOffset then
+		self2.LastNearWallOffset = math.min(self2.LastNearWallOffset + math.max(ft * 66, off * 0.1), off, 34)
+	elseif off < self2.LastNearWallOffset then
+		self2.LastNearWallOffset = math.max(self2.LastNearWallOffset - ft * 66, off, 0)
+	end
+
+	off = TFA.Cosine(self2.LastNearWallOffset / 34) * 34
 
 	if off > 0 then
 		p = p + nw_offset_vec * off / 2
