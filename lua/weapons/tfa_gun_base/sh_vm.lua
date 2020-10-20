@@ -293,20 +293,23 @@ function SWEP:CalculateViewModelOffset(delta)
 	local holsterStatus = (TFA.Enum.HolsterStatus[stat] and self2.ProceduralHolsterEnabled) or (TFA.Enum.ReloadStatus[stat] and self2.ProceduralReloadEnabled)
 	local holsterProgress = holsterStatus and TFA.Quintic(Clamp(self:GetStatusProgress() * 1.1, 0, 1)) or 0
 
+	local isSafety = self:IsSafety()
+
 	local ironSights = self:GetIronSights()
 	local isSprinting = self:GetSprinting()
 	local sprintProgress = TFA.Cubic(self2.SprintProgressUnpredicted or self:GetSprintProgress())
+	local safetyProgress = Lerp(sprintProgress, TFA.Cubic(self2.SafetyProgressUnpredicted or 0), 0)
 
 	local ironSightsProgress = Clamp(
 		Lerp(
-			math_max(holsterProgress, sprintProgress),
+			math_max(holsterProgress, sprintProgress, safetyProgress),
 			TFA.Cubic(self2.IronSightsProgressUnpredicted2 or self2.IronSightsProgressUnpredicted or self:GetIronSightsProgress()),
 			0)
 		, 0, 1)
 
 	--local ironSightsProgress = TFA.tbezier(self2.IronSightsProgressUnpredicted or self:GetIronSightsProgress(), IRON_SIGHTS_BEZIER)
 
-	local crouchRatio = Lerp(math_max(ironSightsProgress, holsterProgress, Clamp(sprintProgress * 2, 0, 1)), self:GetCrouchingRatio(), 0)
+	local crouchRatio = Lerp(math_max(ironSightsProgress, holsterProgress, Clamp(sprintProgress * 2, 0, 1), safetyProgress), TFA.Cubic(self:GetCrouchingRatio()), 0)
 
 	if crouchRatio > 0 then
 		target_pos = LerpVector(crouchRatio, target_pos, self2.GetStat(self, "CrouchPos"))
@@ -331,21 +334,19 @@ function SWEP:CalculateViewModelOffset(delta)
 		target_ang = LerpVector(holsterProgress, target_ang, targetHolsterAng)
 	end
 
-	local isSafety = self:IsSafety()
-
 	if
-		(sprintProgress > 0.01 or isSprinting or isSafety) and
-		(self2.Sprint_Mode == TFA.Enum.LOCOMOTION_LUA or self2.Sprint_Mode == TFA.Enum.LOCOMOTION_HYBRID or (self:IsSafety() and (not isSprinting and sprintProgress <= 0.01)))
+		(sprintProgress > 0.01 or safetyProgress > 0.01) and
+		(self2.Sprint_Mode == TFA.Enum.LOCOMOTION_LUA or self2.Sprint_Mode == TFA.Enum.LOCOMOTION_HYBRID or (sprintProgress <= 0.01 and safetyProgress > 0.01))
 		and stat ~= TFA.Enum.STATUS_FIDGET and
 		stat ~= TFA.Enum.STATUS_BASHING
 	then
 		if cl_tfa_viewmodel_centered:GetBool() then
 			target_pos = target_pos + centered_sprintpos
 			target_ang = target_ang + centered_sprintang
-		elseif isSafety and self2.GetStat(self, "SafetyPos") and not isSprinting then
-			target_pos = Vector(self2.GetStat(self, "SafetyPos"))
-			target_ang = Vector(self2.GetStat(self, "SafetyAng"))
 		else
+			target_pos = LerpVector(safetyProgress, target_pos, self2.GetStat(self, "SafetyPos", self2.GetStat(self, "RunSightsPos")))
+			target_ang = LerpVector(safetyProgress, target_ang, self2.GetStat(self, "SafetyAng", self2.GetStat(self, "RunSightsAng")))
+
 			target_pos = LerpVector(sprintProgress, target_pos, self2.GetStat(self, "RunSightsPos"))
 			target_ang = LerpVector(sprintProgress, target_ang, self2.GetStat(self, "RunSightsAng"))
 		end
