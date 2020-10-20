@@ -1289,6 +1289,7 @@ function SWEP:DrawHUDAmmo()
 end
 
 local sv_tfa_recoil_legacy = GetConVar("sv_tfa_recoil_legacy")
+local cl_tfa_hud_crosshair_pump = GetConVar("cl_tfa_hud_crosshair_pump")
 
 local crosshairMatrix = Matrix()
 local crosshairMatrixLeft = Matrix()
@@ -1418,7 +1419,7 @@ function SWEP:DoDrawCrosshair()
 	local extraRotation = 0
 	local cPos = Vector(x, y)
 
-	if stat == TFA.Enum.STATUS_PUMP then
+	if stat == TFA.Enum.STATUS_PUMP and cl_tfa_hud_crosshair_pump:GetBool() then
 		extraRotation = TFA.Cubic(math.sqrt(self:GetStatusProgress()))
 		local mul = tricross_cvar:GetBool() and 360 or 180
 

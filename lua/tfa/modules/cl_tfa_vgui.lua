@@ -355,6 +355,7 @@ local function tfaOptionHUD(panel)
 		cl_tfa_hud_crosshair_outline_width = "1",
 		cl_tfa_hud_crosshair_dot = "0",
 		cl_tfa_hud_crosshair_triangular = "0",
+		cl_tfa_hud_crosshair_pump = "0",
 		cl_tfa_hud_hitmarker_enabled = "1",
 		cl_tfa_hud_hitmarker_3d_all = "0",
 		cl_tfa_hud_hitmarker_3d_shotguns = "1",
@@ -390,6 +391,7 @@ local function tfaOptionHUD(panel)
 		cl_tfa_hud_crosshair_outline_width = "1",
 		cl_tfa_hud_crosshair_dot = "0",
 		cl_tfa_hud_crosshair_triangular = "0",
+		cl_tfa_hud_crosshair_pump = "0",
 		cl_tfa_hud_hitmarker_enabled = "1",
 		cl_tfa_hud_hitmarker_3d_all = "0",
 		cl_tfa_hud_hitmarker_3d_shotguns = "1",
@@ -425,6 +427,7 @@ local function tfaOptionHUD(panel)
 		cl_tfa_hud_crosshair_outline_width = "1",
 		cl_tfa_hud_crosshair_dot = "0",
 		cl_tfa_hud_crosshair_triangular = "0",
+		cl_tfa_hud_crosshair_pump = "0",
 		cl_tfa_hud_hitmarker_enabled = "0",
 		cl_tfa_hud_hitmarker_3d_all = "0",
 		cl_tfa_hud_hitmarker_3d_shotguns = "0",
@@ -460,6 +463,7 @@ local function tfaOptionHUD(panel)
 		cl_tfa_hud_crosshair_outline_width = "1",
 		cl_tfa_hud_crosshair_dot = "0",
 		cl_tfa_hud_crosshair_triangular = "0",
+		cl_tfa_hud_crosshair_pump = "0",
 		cl_tfa_hud_hitmarker_enabled = "1",
 		cl_tfa_hud_hitmarker_3d_all = "0",
 		cl_tfa_hud_hitmarker_3d_shotguns = "0",
@@ -495,6 +499,7 @@ local function tfaOptionHUD(panel)
 		cl_tfa_hud_crosshair_outline_width = "0",
 		cl_tfa_hud_crosshair_dot = "1",
 		cl_tfa_hud_crosshair_triangular = "0",
+		cl_tfa_hud_crosshair_pump = "0",
 		cl_tfa_hud_hitmarker_enabled = "0",
 		cl_tfa_hud_hitmarker_3d_all = "0",
 		cl_tfa_hud_hitmarker_3d_shotguns = "0",
@@ -530,6 +535,7 @@ local function tfaOptionHUD(panel)
 		cl_tfa_hud_crosshair_outline_width = "0",
 		cl_tfa_hud_crosshair_dot = "1",
 		cl_tfa_hud_crosshair_triangular = "0",
+		cl_tfa_hud_crosshair_pump = "0",
 		cl_tfa_hud_hitmarker_enabled = "1",
 		cl_tfa_hud_hitmarker_3d_all = "0",
 		cl_tfa_hud_hitmarker_3d_shotguns = "1",
@@ -565,6 +571,7 @@ local function tfaOptionHUD(panel)
 		cl_tfa_hud_crosshair_outline_width = "0",
 		cl_tfa_hud_crosshair_dot = "0",
 		cl_tfa_hud_crosshair_triangular = "1",
+		cl_tfa_hud_crosshair_pump = "1",
 		cl_tfa_hud_hitmarker_enabled = "1",
 		cl_tfa_hud_hitmarker_3d_all = "0",
 		cl_tfa_hud_hitmarker_3d_shotguns = "1",
@@ -589,6 +596,7 @@ local function tfaOptionHUD(panel)
 	panel:CheckBox("#tfa.hudsettings.crosshair.enabled", "cl_tfa_hud_crosshair_enable_custom")
 	panel:CheckBox("#tfa.hudsettings.crosshair.dot", "cl_tfa_hud_crosshair_dot")
 	panel:CheckBox("#tfa.hudsettings.crosshair.triangular", "cl_tfa_hud_crosshair_triangular")
+	panel:CheckBox("#tfa.hudsettings.crosshair.pump", "cl_tfa_hud_crosshair_pump")
 	panel:NumSlider("#tfa.hudsettings.crosshair.length", "cl_tfa_hud_crosshair_length", 0, 10, 2)
 	panel:CheckBox("#tfa.hudsettings.crosshair.length.usepixels", "cl_tfa_hud_crosshair_length_use_pixels")
 	panel:NumSlider("#tfa.hudsettings.crosshair.gapscale", "cl_tfa_hud_crosshair_gap_scale", 0, 2, 2)
