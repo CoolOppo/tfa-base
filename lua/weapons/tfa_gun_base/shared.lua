@@ -525,6 +525,8 @@ function SWEP:SetupDataTables()
 	self:NetworkVarTFA("Float", "StatusStart")
 
 	self.GetStatus = self.GetStatusRaw
+	self.GetIronSights = self.GetIronSightsOldFinal
+	self.GetIronSightsDirect = self.GetIronSightsOldFinal
 
 	hook.Run("TFA_SetupDataTables", self)
 end
@@ -1215,65 +1217,6 @@ function SWEP:IronSights()
 	self:SetIronSightsOldFinal(issighting)
 
 	return userstatus, issighting
-end
-
-function SWEP:GetIronSights()
-	-- Is this code supposed to do something other than duplicating code of function above?
-	--[==[local self2 = self:GetTable()
-
-	if ignorestatus or not self:GetLastSightsStatusCached() then
-		-- local issighting = self:GetIronSightsRaw()
-		local issighting = self:GetIronSightsOldFinal()
-		local issprinting = self:GetSprinting()
-		local stat = self:GetStatus()
-
-		if issprinting then
-			issighting = false
-		end
-
-		if self:GetStat("BoltAction") or self:GetStat("BoltAction_Forced") then
-			if stat == TFA.Enum.STATUS_SHOOTING then
-				if not self2.LastBoltShoot then
-					self2.LastBoltShoot = l_CT()
-				end
-
-				if l_CT() > self2.LastBoltShoot + self2.BoltTimerOffset then
-					issighting = false
-				end
-			elseif (stat == TFA.Enum.STATUS_IDLE and self:GetReloadLoopCancel(true)) or stat == TFA.Enum.STATUS_PUMP then
-				issighting = false
-			else
-				self2.LastBoltShoot = nil
-			end
-		end
-
-		if not ignorestatus then
-			self:SetLastSightsStatus(issighting)
-			self:SetLastSightsStatusCached(true)
-
-			--[[
-			if (self2.is_cached_old ~= issighting) and not ( sp and CLIENT ) then
-				if (issighting == false) then--and ((CLIENT and IsFirstTimePredicted()) or (SERVER and sp)) then
-					self:EmitSound(self2.IronOutSound or "TFA.IronOut")
-				elseif issighting == true then--and ((CLIENT and IsFirstTimePredicted()) or (SERVER and sp)) then
-					self:EmitSound(self2.IronInSound or "TFA.IronIn")
-				end
-			end
-			]]--
-
-			self:SetLastSightsStatusOld(issighting)
-		end
-
-		return issighting
-	end
-
-	return self:GetLastSightsStatus()]==]
-
-	return self:GetIronSightsOldFinal()
-end
-
-function SWEP:GetIronSightsDirect()
-	return self:GetIronSightsOldFinal()
 end
 
 SWEP.is_sndcache_old = false
