@@ -345,3 +345,7 @@ end
 if GetConVar("sv_tfa_nearlyempty") == nil then
 	CreateReplConVar("sv_tfa_nearlyempty", "1", "Enable nearly-empty sounds")
 end
+
+if GetConVar("sv_tfa_fixed_crosshair") == nil then
+	CreateReplConVar("sv_tfa_fixed_crosshair", "0", "Fix crosshair position on center of the screen (CS:GO style)")
+end

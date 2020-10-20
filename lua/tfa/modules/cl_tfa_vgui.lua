@@ -49,6 +49,7 @@ local function tfaOptionServer(panel)
 		sv_tfa_melee_doordestruction = "1",
 		sv_tfa_bullet_randomseed = "0",
 		sv_tfa_reloads_legacy = "0",
+		sv_tfa_fixed_crosshair = "0",
 		sv_tfa_reloads_enabled = "1",
 		sv_tfa_cmenu = "1",
 		sv_tfa_penetration_hardlimit = "100",
@@ -78,6 +79,7 @@ local function tfaOptionServer(panel)
 	TFA.CheckBoxNet(panel, "#tfa.svsettings.jamming", "sv_tfa_jamming")
 	TFA.CheckBoxNet(panel, "#tfa.svsettings.nearlyempty", "sv_tfa_nearlyempty")
 	TFA.CheckBoxNet(panel, "#tfa.svsettings.legacyreloads", "sv_tfa_reloads_legacy")
+	TFA.CheckBoxNet(panel, "#tfa.svsettings.fixedcrosshair", "sv_tfa_fixed_crosshair")
 
 	TFA.CheckBoxNet(panel, "#tfa.svsettings.randomseed", "sv_tfa_bullet_randomseed")
 	panel:Help("#tfa.svsettings.randomseed_tip")

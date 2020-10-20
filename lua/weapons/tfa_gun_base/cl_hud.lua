@@ -1290,13 +1290,14 @@ end
 
 local sv_tfa_recoil_legacy = GetConVar("sv_tfa_recoil_legacy")
 local cl_tfa_hud_crosshair_pump = GetConVar("cl_tfa_hud_crosshair_pump")
+local sv_tfa_fixed_crosshair = GetConVar("sv_tfa_fixed_crosshair")
 
 local crosshairMatrix = Matrix()
 local crosshairMatrixLeft = Matrix()
 local crosshairMatrixRight = Matrix()
 local crosshairRotation = Angle()
 
-function SWEP:DoDrawCrosshair()
+function SWEP:DoDrawCrosshair(xOrig, yOrig)
 	local self2 = self:GetTable()
 	local x, y
 
@@ -1358,6 +1359,10 @@ function SWEP:DoDrawCrosshair()
 		ply.interpposy = math.Approach(ply.interpposy, coords.y, (ply.interpposy - coords.y) * RealFrameTime() * 7.5)
 		x, y = ply.interpposx, ply.interpposy
 		-- Center of screen
+	elseif sv_tfa_fixed_crosshair:GetBool() then
+		x, y = xOrig, yOrig
+		local tr = util.QuickTrace(ply:GetShootPos(), EyeAngles():Forward() * 0x7FFF, self2.selftbl)
+		targent = tr.Entity
 	else
 		local ang = self:GetAimAngle()
 		local tr = util.QuickTrace(ply:GetShootPos(), ang:Forward() * 0x7FFF, self2.selftbl)
