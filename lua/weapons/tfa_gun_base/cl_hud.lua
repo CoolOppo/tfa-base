@@ -1297,7 +1297,7 @@ local crosshairMatrixLeft = Matrix()
 local crosshairMatrixRight = Matrix()
 local crosshairRotation = Angle()
 
-function SWEP:DoDrawCrosshair(xOrig, yOrig)
+function SWEP:DoDrawCrosshair()
 	local self2 = self:GetTable()
 	local x, y
 
@@ -1360,7 +1360,7 @@ function SWEP:DoDrawCrosshair(xOrig, yOrig)
 		x, y = ply.interpposx, ply.interpposy
 		-- Center of screen
 	elseif sv_tfa_fixed_crosshair:GetBool() then
-		x, y = xOrig, yOrig
+		x, y = ScrW() / 2, ScrH() / 2
 		local tr = util.QuickTrace(ply:GetShootPos(), EyeAngles():Forward() * 0x7FFF, self2.selftbl)
 		targent = tr.Entity
 	else
