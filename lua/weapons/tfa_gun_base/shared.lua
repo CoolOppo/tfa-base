@@ -523,6 +523,7 @@ function SWEP:SetupDataTables()
 	end
 
 	self:NetworkVarTFA("Float", "StatusStart")
+	self:NetworkVarTFA("Float", "LastSafetyShoot")
 
 	self.GetStatus = self.GetStatusRaw
 	self.GetIronSights = self.GetIronSightsOldFinal
@@ -1271,15 +1272,16 @@ function SWEP:CanPrimaryAttack()
 	end
 
 	if self:IsSafety() then
-		self:EmitSound(self:GetStat("Primary.Sound_DrySafety"))
-		self2.LastSafetyShoot = self2.LastSafetyShoot or 0
-
-		if l_CT() < self2.LastSafetyShoot + 0.2 then
-			self:CycleSafety()
-			self:SetNextPrimaryFire(l_CT() + 0.1)
+		if IsFirstTimePredicted() then
+			self:EmitSound(self:GetStat("Primary.Sound_DrySafety"))
 		end
 
-		self2.LastSafetyShoot = l_CT()
+		if l_CT() < self:GetLastSafetyShoot() + 0.2 then
+			self:CycleSafety()
+			-- self:SetNextPrimaryFire(l_CT() + 0.1)
+		end
+
+		self:SetLastSafetyShoot(l_CT() + 0.2)
 
 		return
 	end
