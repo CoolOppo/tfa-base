@@ -327,7 +327,7 @@ function SWEP:CalculateViewModelOffset(delta)
 
 	local crouchRatio = Lerp(math_max(ironSightsProgress, holsterProgress, Clamp(sprintProgress * 2, 0, 1), safetyProgress), TFA.Cubic(self2.CrouchingRatioUnpredicted or self:GetCrouchingRatio()), 0)
 
-	if crouchRatio > 0 then
+	if crouchRatio > 0.01 then
 		target_pos = LerpVector(crouchRatio, target_pos, self2.GetStat(self, "CrouchPos"))
 		target_ang = LerpVector(crouchRatio, target_ang, self2.GetStat(self, "CrouchAng"))
 	end
