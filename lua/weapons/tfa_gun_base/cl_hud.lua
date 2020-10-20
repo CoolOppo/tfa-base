@@ -1429,6 +1429,8 @@ function SWEP:DoDrawCrosshair()
 		end
 	end
 
+	extraRotation = extraRotation - EyeAngles().r
+
 	if tricross_cvar:GetBool() then
 		crosshairMatrixLeft:Identity()
 		crosshairMatrixRight:Identity()
