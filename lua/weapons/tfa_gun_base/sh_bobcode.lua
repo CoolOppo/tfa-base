@@ -220,7 +220,7 @@ function SWEP:UpdateEngineBob()
 	end
 
 	local isp = self2.IronSightsProgressUnpredicted or self:GetIronSightsProgress()
-	local wpr = self:GetWalkProgress()
+	local wpr = self2.WalkProgressUnpredicted or self:GetWalkProgress()
 	local spr = self:GetSprintProgress()
 
 	fac = gunbob_intensity_cvar:GetFloat() * ((1 - isp) * 0.85 + 0.15)

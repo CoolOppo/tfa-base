@@ -52,6 +52,10 @@ function SWEP:TFAFinishMove(ply, velocity, movedata)
 	local self2 = self:GetTable()
 	local isply = ply:IsPlayer()
 
+	if CLIENT then
+		self2.LastUnpredictedVelocity = velocity
+	end
+
 	local jr_targ = math.min(math.abs(velocity.z) / 500, 1)
 	self:SetJumpRatio(l_mathApproach(self:GetJumpRatio(), jr_targ, (jr_targ - self:GetJumpRatio()) * ft * 20))
 	self2.JumpRatio = self:GetJumpRatio()
