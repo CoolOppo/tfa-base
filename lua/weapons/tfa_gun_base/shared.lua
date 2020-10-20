@@ -1159,6 +1159,10 @@ function SWEP:IronSights()
 		issighting = false
 	end
 
+	if stat == TFA.Enum.STATUS_FIREMODE and self:GetIsCyclingSafety() then
+		issighting = false
+	end
+
 	if self2.GetStat(self, "BoltAction") or self2.GetStat(self, "BoltAction_Forced") then
 		if stat == TFA.Enum.STATUS_SHOOTING then
 			if not self2.LastBoltShoot then
