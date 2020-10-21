@@ -1005,7 +1005,7 @@ function SWEP:PlayerThinkCL(plyv)
 
 	local reloadBlendMult = 1
 
-	if (status == TFA.Enum.STATUS_RELOADING or status == TFA.Enum.STATUS_RELOADING_WAIT) and self2.ReloadAnimationEnd and self2.ReloadAnimationStart then
+	if not self2.Shotgun and (status == TFA.Enum.STATUS_RELOADING or status == TFA.Enum.STATUS_RELOADING_WAIT) and self2.ReloadAnimationEnd and self2.ReloadAnimationStart then
 		local time = l_CT()
 		local progress = Clamp((time - self2.ReloadAnimationStart) / (self2.ReloadAnimationEnd - self2.ReloadAnimationStart), 0, 1)
 
