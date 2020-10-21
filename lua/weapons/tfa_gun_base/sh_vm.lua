@@ -288,10 +288,10 @@ function SWEP:CalculateViewModelOffset(delta)
 			targetAngCenter = Vector(CenteredAng)
 		end
 	elseif IronSightsPos then
-		targetPosCenter = Vector(IronSightsPos.x, target_pos.y, target_pos.z - 3)
+		targetPosCenter = Vector((self2.IronSightsPosCurrent or IronSightsPos).x, target_pos.y, target_pos.z - 3)
 
 		if IronSightsAng then
-			targetAngCenter = Vector(0, IronSightsAng.y, 0)
+			targetAngCenter = Vector(0, (self2.IronSightsAngCurrent or IronSightsAng).y, 0)
 		end
 	else
 		targetPosCenter, targetAngCenter = target_pos, target_ang
@@ -371,12 +371,12 @@ function SWEP:CalculateViewModelOffset(delta)
 
 	if ironSightsProgress > 0.02 and (self2.Sights_Mode == TFA.Enum.LOCOMOTION_LUA or self2.Sights_Mode == TFA.Enum.LOCOMOTION_HYBRID) then
 		if targetPosCenter then
-			target_pos = bezierVector(ironSightsProgress, target_pos, targetPosCenter, IronSightsPos or self2.GetStat(self, "SightsPos", vector_origin))
+			target_pos = bezierVector(ironSightsProgress, target_pos, targetPosCenter, self2.IronSightsPosCurrent or IronSightsPos or self2.GetStat(self, "SightsPos", vector_origin))
 		else
-			target_pos = LerpVector(ironSightsProgress, target_pos, IronSightsPos or self2.GetStat(self, "SightsPos", vector_origin))
+			target_pos = LerpVector(ironSightsProgress, target_pos, self2.IronSightsPosCurrent or IronSightsPos or self2.GetStat(self, "SightsPos", vector_origin))
 		end
 
-		target_ang = LerpVector(ironSightsProgress, target_ang, IronSightsAng or self2.GetStat(self, "SightsAng", vector_origin))
+		target_ang = LerpVector(ironSightsProgress, target_ang, self2.IronSightsAngCurrent or IronSightsAng or self2.GetStat(self, "SightsAng", vector_origin))
 	end
 
 	target_pos.x = target_pos.x + cl_tfa_viewmodel_offset_x:GetFloat() * (1 - ironSightsProgress)

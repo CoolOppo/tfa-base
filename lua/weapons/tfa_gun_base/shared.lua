@@ -1026,6 +1026,22 @@ function SWEP:PlayerThinkCL(plyv)
 
 	local adstransitionspeed = (spr or walk) and 7.5 or 12.5
 
+	local IronSightsPos = self2.GetStat(self, "IronSightsPos", self2.SightsPos)
+	local IronSightsAng = self2.GetStat(self, "IronSightsAng", self2.SightsAng)
+
+	if IronSightsPos then
+		self2.IronSightsPosCurrent = self2.IronSightsPosCurrent or Vector(IronSightsPos)
+		self2.IronSightsAngCurrent = self2.IronSightsAngCurrent or Vector(IronSightsAng)
+
+		self2.IronSightsPosCurrent.x = Lerp(ft * 11, self2.IronSightsPosCurrent.x, IronSightsPos.x)
+		self2.IronSightsPosCurrent.y = Lerp(ft * 11, self2.IronSightsPosCurrent.y, IronSightsPos.y)
+		self2.IronSightsPosCurrent.z = Lerp(ft * 11, self2.IronSightsPosCurrent.z, IronSightsPos.z)
+
+		self2.IronSightsAngCurrent.x = Lerp(ft * 11, self2.IronSightsAngCurrent.x, self2.IronSightsAngCurrent.x - math.AngleDifference(self2.IronSightsAngCurrent.x, IronSightsAng.x))
+		self2.IronSightsAngCurrent.y = Lerp(ft * 11, self2.IronSightsAngCurrent.y, self2.IronSightsAngCurrent.y - math.AngleDifference(self2.IronSightsAngCurrent.y, IronSightsAng.y))
+		self2.IronSightsAngCurrent.z = Lerp(ft * 11, self2.IronSightsAngCurrent.z, self2.IronSightsAngCurrent.z - math.AngleDifference(self2.IronSightsAngCurrent.z, IronSightsAng.z))
+	end
+
 	if is then
 		adstransitionspeed = 12.5 / (self:GetStat("IronSightTime") / 0.3)
 	elseif spr or walk then
