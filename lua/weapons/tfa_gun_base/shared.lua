@@ -1711,7 +1711,7 @@ function SWEP:Reload(released)
 
 				if CLIENT then
 					self2.ReloadAnimationStart = ct
-					self2.ReloadAnimationEnd = ct + self:GetActivityLength(tanim, true)
+					self2.ReloadAnimationEnd = ct + self:GetActivityLength(tanim, false)
 				end
 			end
 
@@ -1797,7 +1797,7 @@ function SWEP:Reload2(released)
 
 				if CLIENT then
 					self2.ReloadAnimationStart = ct
-					self2.ReloadAnimationEnd = ct + self:GetActivityLength(tanim, true)
+					self2.ReloadAnimationEnd = ct + self:GetActivityLength(tanim, false)
 				end
 			end
 
