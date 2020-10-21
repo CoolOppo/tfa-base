@@ -548,6 +548,21 @@ function SWEP:GetStatusProgress()
 	return (time - StatusStart) / (StatusEnd - StatusStart)
 end
 
+function SWEP:GetStatusProgressTime()
+	if self:GetStatus() == TFA.Enum.STATUS_IDLE then return 0 end
+	local StatusStart = self:GetStatusStart()
+
+	if StatusStart <= 0 then return end
+	local StatusEnd = self:GetStatusEnd()
+
+	if StatusStart > StatusEnd then return 0 end
+
+	local time = l_CT()
+	if StatusEnd <= time then return 0 end
+
+	return StatusEnd - time
+end
+
 function SWEP:SetStatus(statusIn, timeOn)
 	self:SetStatusRaw(statusIn)
 	self:SetStatusStart(l_CT())
@@ -952,6 +967,14 @@ end
 local sv_cheats = GetConVar("sv_cheats")
 local host_timescale = GetConVar("host_timescale")
 
+local function Clamp(a, b, c)
+	if a < b then return b end
+	if a > c then return c end
+	return a
+end
+
+local Lerp = Lerp
+
 function SWEP:PlayerThinkCL(plyv)
 	local self2 = self:GetTable()
 
@@ -980,7 +1003,9 @@ function SWEP:PlayerThinkCL(plyv)
 
 	local ist = is and 1 or 0
 	local sprt = spr and 1 or 0
-	local sprt2 = (spr and stat ~= TFA.Enum.STATUS_FIDGET) and 1 or 0
+	local fidgetBlendMult = status ~= TFA.Enum.STATUS_FIDGET and 1 or TFA.Cubic(Clamp(self:GetStatusProgress() - 0.8, 0, 0.2) * 5)
+	local sprt2 = spr and fidgetBlendMult or 0
+
 	local walkt = walk and 1 or 0
 	local adstransitionspeed
 
@@ -1006,10 +1031,13 @@ function SWEP:PlayerThinkCL(plyv)
 	self2.SprintProgressUnpredicted = l_mathApproach(self2.SprintProgressUnpredicted or 0, sprt, (sprt - (self2.SprintProgressUnpredicted or 0)) * ft * adstransitionspeed)
 	self2.SprintProgressUnpredicted2 = l_mathApproach(self2.SprintProgressUnpredicted2 or 0, sprt2, (sprt2 - (self2.SprintProgressUnpredicted2 or 0)) * ft * adstransitionspeed)
 
+	local customizingTarget = self:GetCustomizing() and 1 or 0
+	self2.CustomizingProgressUnpredicted = l_mathApproach((self2.CustomizingProgressUnpredicted or 0), customizingTarget, (customizingTarget - (self2.CustomizingProgressUnpredicted or 0)) * ft * 5)
+
 	self2.WalkProgressUnpredicted = l_mathApproach((self2.WalkProgressUnpredicted or 0), walkt, (walkt - (self2.WalkProgressUnpredicted or 0)) * ft * adstransitionspeed)
 
 	if status ~= TFA.Enum.STATUS_FIREMODE or not self:GetIsCyclingSafety() then
-		local safetyTarget = self:IsSafety() and 1 or 0
+		local safetyTarget = self:IsSafety() and fidgetBlendMult or 0
 		self2.SafetyProgressUnpredicted = l_mathApproach(self2.SafetyProgressUnpredicted or 0, safetyTarget, (safetyTarget - (self2.SafetyProgressUnpredicted or 0)) * ft * adstransitionspeed * 0.7)
 	elseif status == TFA.Enum.STATUS_FIREMODE and self:GetIsCyclingSafety() then
 		if not self:IsSafety() then
@@ -1021,7 +1049,7 @@ function SWEP:PlayerThinkCL(plyv)
 				self2.SafetyProgressUnpredicted = l_mathApproach(self2.SafetyProgressUnpredicted or 0, safetyTarget, (safetyTarget - (self2.SafetyProgressUnpredicted or 0)) * ft * adstransitionspeed)
 			end
 		else
-			local safetyTarget = 1
+			local safetyTarget = fidgetBlendMult
 
 			if not self:GetSafetyCycleAnimated() then
 				self2.SafetyProgressUnpredicted = l_mathApproach(self2.SafetyProgressUnpredicted or 0, safetyTarget, (safetyTarget - (self2.SafetyProgressUnpredicted or 0)) * ft * adstransitionspeed * 0.7)

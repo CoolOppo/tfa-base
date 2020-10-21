@@ -353,8 +353,7 @@ function SWEP:CalculateViewModelOffset(delta)
 	if
 		(sprintProgress > 0.01 or safetyProgress > 0.01) and
 		(sprintAnimAllowed and sprintProgress > 0.01 or safetyProgress > 0.01)
-		and stat ~= TFA.Enum.STATUS_FIDGET and
-		stat ~= TFA.Enum.STATUS_BASHING
+		and stat ~= TFA.Enum.STATUS_BASHING
 	then
 		if cl_tfa_viewmodel_centered:GetBool() then
 			target_pos = target_pos + centered_sprintpos
@@ -384,7 +383,7 @@ function SWEP:CalculateViewModelOffset(delta)
 	target_pos.y = target_pos.y + cl_tfa_viewmodel_offset_y:GetFloat() * (1 - ironSightsProgress)
 	target_pos.z = target_pos.z + cl_tfa_viewmodel_offset_z:GetFloat() * (1 - ironSightsProgress)
 
-	local customizationProgress = TFA.Cosine(self:GetInspectingProgress())
+	local customizationProgress = TFA.Quintic(self2.CustomizingProgressUnpredicted or self:GetInspectingProgress())
 
 	if customizationProgress > 0.01 and self2.Customize_Mode ~= TFA.Enum.LOCOMOTION_ANI then
 		if not self2.InspectPos then
