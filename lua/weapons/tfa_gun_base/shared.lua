@@ -1002,9 +1002,24 @@ function SWEP:PlayerThinkCL(plyv)
 	local status = self2.GetStatus(self)
 
 	local ist = is and 1 or 0
-	local sprt = spr and 1 or 0
+
+	local reloadBlendMult = 1
+
+	if (status == TFA.Enum.STATUS_RELOADING or status == TFA.Enum.STATUS_RELOADING_WAIT) and self2.ReloadAnimationEnd and self2.ReloadAnimationStart then
+		local time = l_CT()
+		local progress = Clamp((time - self2.ReloadAnimationStart) / (self2.ReloadAnimationEnd - self2.ReloadAnimationStart), 0, 1)
+
+		reloadBlendMult = TFA.Cubic(math.max(
+			Clamp(progress - 0.7, 0, 0.3) / 0.3,
+			Clamp(0.1 - progress, 0, 0.1) / 0.1
+		))
+	elseif TFA.Enum.ReloadStatus[status] then
+		reloadBlendMult = 0
+	end
+
+	local sprt = spr and reloadBlendMult or 0
 	local fidgetBlendMult = status ~= TFA.Enum.STATUS_FIDGET and 1 or TFA.Cubic(Clamp(self:GetStatusProgress() - 0.8, 0, 0.2) * 5)
-	local sprt2 = spr and fidgetBlendMult or 0
+	local sprt2 = spr and (fidgetBlendMult * reloadBlendMult) or 0
 
 	local walkt = walk and 1 or 0
 	local adstransitionspeed
@@ -1037,7 +1052,7 @@ function SWEP:PlayerThinkCL(plyv)
 	self2.WalkProgressUnpredicted = l_mathApproach((self2.WalkProgressUnpredicted or 0), walkt, (walkt - (self2.WalkProgressUnpredicted or 0)) * ft * adstransitionspeed)
 
 	if status ~= TFA.Enum.STATUS_FIREMODE or not self:GetIsCyclingSafety() then
-		local safetyTarget = self:IsSafety() and fidgetBlendMult or 0
+		local safetyTarget = self:IsSafety() and (fidgetBlendMult * reloadBlendMult) or 0
 		self2.SafetyProgressUnpredicted = l_mathApproach(self2.SafetyProgressUnpredicted or 0, safetyTarget, (safetyTarget - (self2.SafetyProgressUnpredicted or 0)) * ft * adstransitionspeed * 0.7)
 	elseif status == TFA.Enum.STATUS_FIREMODE and self:GetIsCyclingSafety() then
 		if not self:IsSafety() then
@@ -1049,7 +1064,7 @@ function SWEP:PlayerThinkCL(plyv)
 				self2.SafetyProgressUnpredicted = l_mathApproach(self2.SafetyProgressUnpredicted or 0, safetyTarget, (safetyTarget - (self2.SafetyProgressUnpredicted or 0)) * ft * adstransitionspeed)
 			end
 		else
-			local safetyTarget = fidgetBlendMult
+			local safetyTarget = fidgetBlendMult * reloadBlendMult
 
 			if not self:GetSafetyCycleAnimated() then
 				self2.SafetyProgressUnpredicted = l_mathApproach(self2.SafetyProgressUnpredicted or 0, safetyTarget, (safetyTarget - (self2.SafetyProgressUnpredicted or 0)) * ft * adstransitionspeed * 0.7)
@@ -1674,8 +1689,13 @@ function SWEP:Reload(released)
 				if self:GetStat("ProceduralReloadEnabled") then
 					self:SetStatusEnd(ct + self:GetStat("ProceduralReloadTime"))
 				else
-					self:SetStatusEnd(ct + self:GetActivityLength( tanim, true ) )
-					self:SetNextPrimaryFire(ct + self:GetActivityLength( tanim, false ) )
+					self:SetStatusEnd(ct + self:GetActivityLength(tanim, true))
+					self:SetNextPrimaryFire(ct + self:GetActivityLength(tanim, false))
+				end
+
+				if CLIENT then
+					self2.ReloadAnimationStart = ct
+					self2.ReloadAnimationEnd = ct + self:GetActivityLength(tanim, true)
 				end
 			end
 
@@ -1755,8 +1775,13 @@ function SWEP:Reload2(released)
 				if self:GetStat("ProceduralReloadEnabled") then
 					self:SetStatusEnd(ct + self:GetStat("ProceduralReloadTime"))
 				else
-					self:SetStatusEnd(ct + self:GetActivityLength( tanim, true ) )
-					self:SetNextPrimaryFire(ct + self:GetActivityLength( tanim, false ) )
+					self:SetStatusEnd(ct + self:GetActivityLength(tanim, true))
+					self:SetNextPrimaryFire(ct + self:GetActivityLength(tanim, false))
+				end
+
+				if CLIENT then
+					self2.ReloadAnimationStart = ct
+					self2.ReloadAnimationEnd = ct + self:GetActivityLength(tanim, true)
 				end
 			end
 

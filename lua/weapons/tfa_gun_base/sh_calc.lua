@@ -66,9 +66,10 @@ function SWEP:TFAFinishMove(ply, velocity, movedata)
 	local oldsprinting, oldwalking = self:GetSprinting(), self:GetWalking()
 	local vellen = velocity:Length2D()
 
-	if TFA.Enum.ReloadStatus[status] then
-		self:SetSprinting(false)
-	elseif sprint_cv:GetBool() and not self:GetStat("AllowSprintAttack", false) and movedata then
+	--if TFA.Enum.ReloadStatus[status] then
+	--	self:SetSprinting(false)
+	--elseif sprint_cv:GetBool() and not self:GetStat("AllowSprintAttack", false) and movedata then
+	if sprint_cv:GetBool() and not self:GetStat("AllowSprintAttack", false) and movedata then
 		self:SetSprinting(vellen > ply:GetRunSpeed() * 0.6 and movedata:KeyDown(IN_SPEED) and ply:OnGround())
 	else
 		self:SetSprinting(false)
