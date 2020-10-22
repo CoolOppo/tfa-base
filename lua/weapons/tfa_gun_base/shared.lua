@@ -1072,6 +1072,13 @@ function SWEP:PlayerThinkCL(plyv)
 	self2.SprintProgressUnpredicted = l_mathApproach(self2.SprintProgressUnpredicted or 0, sprt, (sprt - (self2.SprintProgressUnpredicted or 0)) * ft * adstransitionspeed)
 	self2.SprintProgressUnpredicted2 = l_mathApproach(self2.SprintProgressUnpredicted2 or 0, sprt2, (sprt2 - (self2.SprintProgressUnpredicted2 or 0)) * ft * adstransitionspeed)
 
+	if self2.IronSightsProgressUnpredicted2 >= 0.8 and not self2.VM_IsScopedIn then
+		self2.VM_IsScopedIn = true
+	--elseif self2.IronSightsProgressUnpredicted2 <= 0.1 and self2.VM_IsScopedIn then
+	elseif self2.IronSightsProgressUnpredicted2 <= 0.15 then
+		self2.VM_IsScopedIn = false
+	end
+
 	local customizingTarget = self:GetCustomizing() and 1 or 0
 	self2.CustomizingProgressUnpredicted = l_mathApproach((self2.CustomizingProgressUnpredicted or 0), customizingTarget, (customizingTarget - (self2.CustomizingProgressUnpredicted or 0)) * ft * 5)
 
