@@ -1425,13 +1425,19 @@ function SWEP:DoDrawCrosshair()
 	local cPos = Vector(x, y)
 
 	if stat == TFA.Enum.STATUS_PUMP and cl_tfa_hud_crosshair_pump:GetBool() then
-		extraRotation = TFA.Cubic(math.sqrt(self:GetStatusProgress()))
-		local mul = tricross_cvar:GetBool() and 360 or 180
-
-		if extraRotation < 0.5 then
+		if tricross_cvar:GetBool() then
+			extraRotation =  TFA.Quintic(self:GetStatusProgress()) 
+			local mul = 360
 			extraRotation = extraRotation * mul
 		else
-			extraRotation = (1 - extraRotation) * mul
+			extraRotation = TFA.Quintic(TFA.Cosine(self:GetStatusProgress()))
+			local mul = -45
+	
+			if extraRotation < 0.5 then
+				extraRotation = extraRotation * mul
+			else
+				extraRotation = (1 - extraRotation) * mul
+			end
 		end
 	end
 
