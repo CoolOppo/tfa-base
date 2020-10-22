@@ -118,7 +118,7 @@ local function DrawDebugInfo(w, h, ply, wep)
 		"%s [%.2f, %.2f, %.2f, %.2f]",
 		TFA.Enum.InverseStatus[wep:GetStatus()] or wep:GetStatus(),
 		CurTime(),
-		wep:GetStatusProgress(),
+		wep:GetStatusProgress(true),
 		wep:GetStatusStart(),
 		wep:GetStatusEnd())
 
@@ -136,7 +136,7 @@ local function DrawDebugInfo(w, h, ply, wep)
 	surface.DrawRect(x - lastStatusBarWidth / 2, y, lastStatusBarWidth, 4)
 
 	surface.SetDrawColor(STATUS_BAR_COLOR)
-	surface.DrawRect(x - lastStatusBarWidth / 2, y, lastStatusBarWidth * wep:GetStatusProgress(), 4)
+	surface.DrawRect(x - lastStatusBarWidth / 2, y, lastStatusBarWidth * wep:GetStatusProgress(true), 4)
 
 	y = y + 8
 

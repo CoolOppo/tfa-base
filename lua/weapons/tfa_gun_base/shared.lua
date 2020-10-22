@@ -541,7 +541,7 @@ function SWEP:GetStatusProgress(unpredicted)
 
 	if StatusStart > StatusEnd then return 1 end
 
-	local time = unpredicted and UnPredictedCurTime() or l_CT()
+	local time = unpredicted and (l_CT() + self.CurTimePredictionAdvance) or l_CT()
 	if StatusStart >= time then return 0 end
 	if StatusEnd <= time then return 1 end
 
@@ -557,7 +557,7 @@ function SWEP:GetStatusProgressTime(unpredicted)
 
 	if StatusStart > StatusEnd then return 0 end
 
-	local time = unpredicted and UnPredictedCurTime() or l_CT()
+	local time = unpredicted and (l_CT() + self.CurTimePredictionAdvance) or l_CT()
 	if StatusEnd <= time then return 0 end
 
 	return StatusEnd - time
@@ -1018,7 +1018,7 @@ function SWEP:PlayerThinkCL(plyv)
 	end
 
 	local sprt = spr and reloadBlendMult or 0
-	local fidgetBlendMult = status ~= TFA.Enum.STATUS_FIDGET and 1 or TFA.Cubic(Clamp(self:GetStatusProgress() - 0.8, 0, 0.2) * 5)
+	local fidgetBlendMult = status ~= TFA.Enum.STATUS_FIDGET and 1 or TFA.Cubic(Clamp(self:GetStatusProgress(true) - 0.8, 0, 0.2) * 5)
 	local sprt2 = spr and (fidgetBlendMult * reloadBlendMult) or 0
 
 	local walkt = walk and 1 or 0
@@ -1089,6 +1089,8 @@ function SWEP:PlayerThinkCL(plyv)
 	end
 end
 
+local UnPredictedCurTime = UnPredictedCurTime
+
 --[[
 Function Name:  Think2
 Syntax: self:Think2().  Called from Think.
@@ -1102,6 +1104,10 @@ function SWEP:Think2(is_working_out_prediction_errors)
 	ct = l_CT()
 
 	if not is_working_out_prediction_errors then
+		if CLIENT then
+			self2.CurTimePredictionAdvance = ct - UnPredictedCurTime()
+		end
+
 		if self2.LuaShellRequestTime > 0 and ct > self2.LuaShellRequestTime then
 			self2.LuaShellRequestTime = -1
 			self2.MakeShell(self)
