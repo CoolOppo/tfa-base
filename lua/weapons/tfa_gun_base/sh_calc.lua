@@ -26,11 +26,13 @@ local function l_mathMin(a, b) return (a < b) and a or b end
 local function l_mathMax(a, b) return (a > b) and a or b end
 local function l_ABS(a) return (a < 0) and -a or a end
 local function l_mathClamp(t, a, b)
+	if a > b then return b end
+
 	if t > b then
 		return b
 	end
 
-	if t < a and a < b then
+	if t < a then
 		return a
 	end
 
