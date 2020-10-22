@@ -1018,7 +1018,17 @@ function SWEP:PlayerThinkCL(plyv)
 	end
 
 	local sprt = spr and reloadBlendMult or 0
-	local fidgetBlendMult = status ~= TFA.Enum.STATUS_FIDGET and 1 or TFA.Cubic(Clamp(self:GetStatusProgress(true) - 0.8, 0, 0.2) * 5)
+	local fidgetBlendMult = 1
+
+	if status == TFA.Enum.STATUS_FIDGET then
+		local progress = self:GetStatusProgress(true)
+
+		fidgetBlendMult = TFA.Cubic(math.max(
+			Clamp(progress - 0.8, 0, 0.2) / 0.2,
+			Clamp(0.1 - progress, 0, 0.1) / 0.1
+		))
+	end
+
 	local sprt2 = spr and (fidgetBlendMult * reloadBlendMult) or 0
 
 	local walkt = walk and 1 or 0
