@@ -376,7 +376,11 @@ function SWEP:CalculateViewModelOffset(delta)
 			target_pos = LerpVector(ironSightsProgress, target_pos, self2.IronSightsPosCurrent or IronSightsPos or self2.GetStat(self, "SightsPos", vector_origin))
 		end
 
-		target_ang = LerpVector(ironSightsProgress, target_ang, self2.IronSightsAngCurrent or IronSightsAng or self2.GetStat(self, "SightsAng", vector_origin))
+		if targetAngCenter then
+			target_ang = bezierVector(ironSightsProgress, target_ang, targetAngCenter, self2.IronSightsAngCurrent or IronSightsAng or self2.GetStat(self, "SightsAng", vector_origin))
+		else
+			target_ang = LerpVector(ironSightsProgress, target_ang, self2.IronSightsAngCurrent or IronSightsAng or self2.GetStat(self, "SightsAng", vector_origin))
+		end
 	end
 
 	target_pos.x = target_pos.x + cl_tfa_viewmodel_offset_x:GetFloat() * (1 - ironSightsProgress)
