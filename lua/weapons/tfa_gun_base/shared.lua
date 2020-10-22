@@ -532,7 +532,7 @@ function SWEP:SetupDataTables()
 	hook.Run("TFA_SetupDataTables", self)
 end
 
-function SWEP:GetStatusProgress()
+function SWEP:GetStatusProgress(unpredicted)
 	if self:GetStatus() == TFA.Enum.STATUS_IDLE then return 1 end
 	local StatusStart = self:GetStatusStart()
 
@@ -541,14 +541,14 @@ function SWEP:GetStatusProgress()
 
 	if StatusStart > StatusEnd then return 1 end
 
-	local time = l_CT()
+	local time = unpredicted and UnPredictedCurTime() or l_CT()
 	if StatusStart >= time then return 0 end
 	if StatusEnd <= time then return 1 end
 
 	return (time - StatusStart) / (StatusEnd - StatusStart)
 end
 
-function SWEP:GetStatusProgressTime()
+function SWEP:GetStatusProgressTime(unpredicted)
 	if self:GetStatus() == TFA.Enum.STATUS_IDLE then return 0 end
 	local StatusStart = self:GetStatusStart()
 
@@ -557,7 +557,7 @@ function SWEP:GetStatusProgressTime()
 
 	if StatusStart > StatusEnd then return 0 end
 
-	local time = l_CT()
+	local time = unpredicted and UnPredictedCurTime() or l_CT()
 	if StatusEnd <= time then return 0 end
 
 	return StatusEnd - time
