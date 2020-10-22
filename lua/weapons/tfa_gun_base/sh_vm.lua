@@ -377,7 +377,8 @@ function SWEP:CalculateViewModelOffset(delta)
 		end
 
 		if targetAngCenter then
-			target_ang = bezierVector(ironSightsProgress, target_ang, targetAngCenter, self2.IronSightsAngCurrent or IronSightsAng or self2.GetStat(self, "SightsAng", vector_origin))
+			local targetAngCenter2 = Vector(targetAngCenter.x, targetAngCenter.y, targetAngCenter.z + (self2.ViewModelFlip and -30 or 30))
+			target_ang = bezierVector(ironSightsProgress, target_ang, targetAngCenter2, self2.IronSightsAngCurrent or IronSightsAng or self2.GetStat(self, "SightsAng", vector_origin))
 		else
 			target_ang = LerpVector(ironSightsProgress, target_ang, self2.IronSightsAngCurrent or IronSightsAng or self2.GetStat(self, "SightsAng", vector_origin))
 		end
