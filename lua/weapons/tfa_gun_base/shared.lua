@@ -541,7 +541,7 @@ function SWEP:GetStatusProgress(unpredicted)
 
 	if StatusStart > StatusEnd then return 1 end
 
-	local time = unpredicted and (l_CT() + self.CurTimePredictionAdvance) or l_CT()
+	local time = unpredicted and (l_CT() + (self.CurTimePredictionAdvance or 0)) or l_CT()
 	if StatusStart >= time then return 0 end
 	if StatusEnd <= time then return 1 end
 
@@ -557,7 +557,7 @@ function SWEP:GetStatusProgressTime(unpredicted)
 
 	if StatusStart > StatusEnd then return 0 end
 
-	local time = unpredicted and (l_CT() + self.CurTimePredictionAdvance) or l_CT()
+	local time = unpredicted and (l_CT() + (self.CurTimePredictionAdvance or 0)) or l_CT()
 	if StatusEnd <= time then return 0 end
 
 	return StatusEnd - time
