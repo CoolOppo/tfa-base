@@ -30,7 +30,7 @@ local function l_mathClamp(t, a, b)
 		return b
 	end
 
-	if t < a then
+	if t < a and a < b then
 		return a
 	end
 
