@@ -150,7 +150,7 @@ end
 ]]
 --
 --, seq )
-function SWEP:GetActivityLengthRaw(tanim, status)
+function SWEP:GetActivityLengthRaw(tanim, status, animType)
 	local vm = self:VMIVNPC()
 	if not vm then return 0 end
 
@@ -158,11 +158,17 @@ function SWEP:GetActivityLengthRaw(tanim, status)
 
 	if tanim < 0 then return 0 end
 
-	nm = vm:GetSequenceName(vm:SelectWeightedSequence(tanim))
+	if animType == nil or animType == TFA.Enum.ANIMATION_ACT then
+		nm = vm:GetSequenceName(vm:SelectWeightedSequence(tanim))
+	else
+		nm = vm:GetSequenceName(tanim)
+	end
 
 	local sqlen
 
-	if tanim == vm:GetSequenceActivity(vm:GetSequence()) then
+	if animType == TFA.Enum.ANIMATION_SEQ then
+		sqlen = vm:SequenceDuration(tanim)
+	elseif tanim == vm:GetSequenceActivity(vm:GetSequence()) then
 		sqlen = vm:SequenceDuration(vm:GetSequence())
 	else
 		sqlen = vm:SequenceDuration(vm:SelectWeightedSequenceSeeded(math.max(tanim or 1, 1), self:GetSeed()))
@@ -180,9 +186,9 @@ function SWEP:GetActivityLengthRaw(tanim, status)
 	return sqlen
 end
 
-function SWEP:GetActivityLength(tanim, status)
+function SWEP:GetActivityLength(tanim, status, animType)
 	if not self:VMIVNPC() then return 0 end
-	local sqlen = self:GetActivityLengthRaw(tanim, status)
+	local sqlen = self:GetActivityLengthRaw(tanim, status, animType)
 	if sqlen <= 0 then return 0 end
 	return sqlen / self:GetAnimationRate(tanim)
 end

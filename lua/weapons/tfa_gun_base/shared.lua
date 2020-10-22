@@ -1842,11 +1842,11 @@ end
 function SWEP:DoPump()
 	if hook.Run("TFA_Pump", self) then return end
 
-	local _, tanim = self:PlayAnimation(self:GetStat("PumpAction"))
+	local _, tanim, activityType = self:PlayAnimation(self:GetStat("PumpAction"))
 
-	self:ScheduleStatus(TFA.Enum.STATUS_PUMP, self:GetActivityLength(tanim, true))
-	self:SetNextPrimaryFire(l_CT() + self:GetActivityLength(tanim, false))
-	self:SetNextIdleAnim(math.max(self:GetNextIdleAnim(), l_CT() + self:GetActivityLength(tanim, false)))
+	self:ScheduleStatus(TFA.Enum.STATUS_PUMP, self:GetActivityLength(tanim, true, activityType))
+	self:SetNextPrimaryFire(l_CT() + self:GetActivityLength(tanim, false, activityType))
+	self:SetNextIdleAnim(math.max(self:GetNextIdleAnim(), l_CT() + self:GetActivityLength(tanim, false, activityType)))
 end
 
 function SWEP:LoadShell()

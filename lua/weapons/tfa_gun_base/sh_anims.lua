@@ -517,7 +517,10 @@ function SWEP:PlayAnimation(data, fade, rate, targ)
 			tval = tonumber(tval) or -1
 		end
 
-		if tval and tval > 0 then return self:SendViewModelAnim(tval, rate or 1, targ, fade or (data.transition and self2.Idle_Blend or self2.Idle_Smooth) ) end
+		if tval and tval > 0 then
+			local success, activityID = self:SendViewModelAnim(tval, rate or 1, targ, fade or (data.transition and self2.Idle_Blend or self2.Idle_Smooth))
+			return success, activityID, TFA.Enum.ANIMATION_ACT
+		end
 	elseif data.type == TFA.Enum.ANIMATION_SEQ then
 		tval = data.value
 
@@ -553,8 +556,14 @@ function SWEP:PlayAnimation(data, fade, rate, targ)
 			tval = vm:LookupSequence(tval)
 		end
 
-		if tval and tval > 0 then return self:SendViewModelSeq(tval, rate or 1, targ, fade or (data.transition and self2.Idle_Blend or self2.Idle_Smooth) ) end
+		if tval and tval > 0 then
+			local success, activityID = self:SendViewModelSeq(tval, rate or 1, targ, fade or (data.transition and self2.Idle_Blend or self2.Idle_Smooth) )
+			return uccess, activityID > -1 and activityID or tval, activityID > -1 and TFA.Enum.ANIMATION_ACT or TFA.Enum.ANIMATION_SEQ
+		end
 	end
+
+	-- error("Can't play animation")
+	return -- ????
 end
 
 local success, tanim, typev
