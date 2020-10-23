@@ -605,7 +605,7 @@ function SWEP:ProcessStatus()
 	--if stat == TFA.Enum.STATUS_IDLE and self:GetReloadLoopCancel() and (self2.GetStat(self, "AllowSprintAttack") or self:GetSprintProgress() < 0.1) then
 	if stat == TFA.Enum.STATUS_IDLE and self:GetReloadLoopCancel() then
 		if self2.GetStat(self, "PumpAction") then
-			if ct > self:GetNextPrimaryFire() and (not isplayer or not ply:KeyDown(IN_ATTACK)) then
+			if ct > self:GetNextPrimaryFire() and not self:KeyDown(IN_ATTACK) then
 				self2.DoPump(self)
 			end
 		else

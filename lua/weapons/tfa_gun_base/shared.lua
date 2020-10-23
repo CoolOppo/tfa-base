@@ -526,6 +526,10 @@ function SWEP:SetupDataTables()
 	self:NetworkVarTFA("Float", "LastSafetyShoot")
 
 	self:NetworkVarTFA("Int", "LastSequence")
+	self:NetworkVarTFA("Int", "DownButtons")
+	self:NetworkVarTFA("Int", "LastPressedButtons")
+
+	self:NetworkVarTFA("Float", "LastReloadPressed")
 
 	self.GetStatus = self.GetStatusRaw
 	self.GetIronSights = self.GetIronSightsOldFinal
@@ -1190,13 +1194,13 @@ function SWEP:IronSights()
 	if isplayer and (SERVER or not sp) and self2.GetStat(self, "data.ironsights") ~= 0 then
 		if not TFA.Enum.ReloadStatus[stat] then
 			if not ironsights_toggle_cvar then
-				if owent:KeyDown(IN_ATTACK2) then
+				if self:KeyDown(IN_ATTACK2) then
 					issighting = true
 				end
 			else
 				issighting = self:GetIronSightsRaw()
 
-				if owent:KeyPressed(IN_ATTACK2) then
+				if self:KeyPressed(IN_ATTACK2) then
 					issighting = not issighting
 					self:SetIronSightsRaw(issighting)
 				end
@@ -1398,7 +1402,7 @@ function SWEP:CanPrimaryAttack()
 		if not self2.HasPlayedEmptyClick then
 			self2.HasPlayedEmptyClick = true
 
-			if self:GetOwner():IsNPC() or self:GetOwner():KeyPressed(IN_ATTACK) then
+			if self:GetOwner():IsNPC() or self:KeyPressed(IN_ATTACK) then
 				local enabled, tanim, ttype = self:ChooseDryFireAnim()
 
 				if enabled then
@@ -1523,7 +1527,7 @@ function SWEP:TriggerAttack(tableName, clipID)
 		self:SetShootStatus(TFA.Enum.SHOOT_IDLE)
 	end
 
-	if self2.CanBeSilenced and (ply.KeyDown and ply:KeyDown(IN_USE)) and (SERVER or not sp) then
+	if self2.CanBeSilenced and (ply.KeyDown and self:KeyDown(IN_USE)) and (SERVER or not sp) then
 		local _, tanim = self:ChooseSilenceAnim(not self:GetSilenced())
 		self:ScheduleStatus(TFA.Enum.STATUS_SILENCER_TOGGLE, self:GetActivityLength(tanim, true))
 
@@ -1665,6 +1669,18 @@ function SWEP:GetLegacyReloads()
 	return legacy_reloads_cv:GetBool()
 end
 
+do
+	local bit_band = bit.band
+
+	function SWEP:KeyDown(keyIn)
+		return bit_band(self:GetDownButtons(), keyIn) == keyIn
+	end
+
+	function SWEP:KeyPressed(keyIn)
+		return bit_band(self:GetLastPressedButtons(), keyIn) == keyIn
+	end
+end
+
 function SWEP:Reload(released)
 	local self2 = self:GetTable()
 
@@ -1683,8 +1699,8 @@ function SWEP:Reload(released)
 	end
 
 	if not released and not self:GetLegacyReloads() then return end
-	if self:GetLegacyReloads() and not dryfire_cvar:GetBool() and not self:GetOwner():KeyDown(IN_RELOAD) then return end
-	if self:GetOwner():KeyDown(IN_USE) then return end
+	if self:GetLegacyReloads() and not dryfire_cvar:GetBool() and not self:KeyDown(IN_RELOAD) then return end
+	if self:KeyDown(IN_USE) then return end
 
 	ct = l_CT()
 	stat = self:GetStatus()
@@ -1693,7 +1709,7 @@ function SWEP:Reload(released)
 		if stat == TFA.Enum.STATUS_IDLE then
 			self:DoPump()
 		end
-	elseif TFA.Enum.ReadyStatus[stat] or ( stat == TFA.Enum.STATUS_SHOOTING and self:CanInterruptShooting() ) or self:IsJammed() then
+	elseif TFA.Enum.ReadyStatus[stat] or (stat == TFA.Enum.STATUS_SHOOTING and self:CanInterruptShooting()) or self:IsJammed() then
 		if self:Clip1() < self:GetPrimaryClipSize() or self:IsJammed() then
 			if hook.Run("TFA_Reload", self) then return end
 			self:SetBurstCount(0)
@@ -1753,7 +1769,7 @@ function SWEP:Reload(released)
 			end
 
 			self:SetNextPrimaryFire( -1 )
-		elseif released or self:GetOwner():KeyPressed(IN_RELOAD) then--if self:GetOwner():KeyPressed(IN_RELOAD) or not self:GetLegacyReloads() then
+		elseif released or self:KeyPressed(IN_RELOAD) then--if self:GetOwner():KeyPressed(IN_RELOAD) or not self:GetLegacyReloads() then
 			self:CheckAmmo()
 		end
 	end
@@ -1783,8 +1799,8 @@ function SWEP:Reload2(released)
 	if self:Ammo2() <= 0 then return end
 	if self:GetStat("Secondary.ClipSize") < 0 then return end
 	if not released and not self:GetLegacyReloads() then return end
-	if self:GetLegacyReloads() and not  dryfire_cvar:GetBool() and not ply:KeyDown(IN_RELOAD) then return end
-	if isplayer and ply:KeyDown(IN_USE) then return end
+	if self:GetLegacyReloads() and not dryfire_cvar:GetBool() and not self:KeyDown(IN_RELOAD) then return end
+	if self:KeyDown(IN_USE) then return end
 
 	ct = l_CT()
 	stat = self:GetStatus()
@@ -1848,7 +1864,7 @@ function SWEP:Reload2(released)
 			end
 
 			self:SetNextPrimaryFire( -1 )
-		elseif released or ply:KeyPressed(IN_RELOAD) then--if ply:KeyPressed(IN_RELOAD) or not self:GetLegacyReloads() then
+		elseif released or self:KeyPressed(IN_RELOAD) then--if ply:KeyPressed(IN_RELOAD) or not self:GetLegacyReloads() then
 			self:CheckAmmo()
 		end
 	end

@@ -99,14 +99,6 @@ function SWEP:TFAFinishMove(ply, velocity, movedata)
 	self:SetLastVelocity(vellen)
 end
 
-hook.Add("FinishMove", "TFAFinishMove", function(self, movedata)
-	local weapon = self:GetActiveWeapon()
-
-	if IsValid(weapon) and weapon:IsTFA() then
-		weapon:TFAFinishMove(self, movedata:GetVelocity(), movedata)
-	end
-end)
-
 local sp = game.SinglePlayer()
 local sv_tfa_recoil_legacy = GetConVar("sv_tfa_recoil_legacy")
 

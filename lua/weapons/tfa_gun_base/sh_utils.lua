@@ -798,8 +798,8 @@ function SWEP:ProcessFireMode()
 		return
 	end
 
-	if self:OwnerIsValid() and self:GetOwner():KeyPressed(IN_RELOAD) and self:GetOwner():KeyDown(IN_USE) and self:GetStatus() == TFA.Enum.STATUS_IDLE and (SERVER or not sp) then
-		if self:GetStat("SelectiveFire") and not self:GetOwner():KeyDown(IN_SPEED) then
+	if self:OwnerIsValid() and self:KeyPressed(IN_RELOAD) and self:KeyDown(IN_USE) and self:GetStatus() == TFA.Enum.STATUS_IDLE and (SERVER or not sp) then
+		if self:GetStat("SelectiveFire") and not self:KeyDown(IN_SPEED) then
 			self:CycleFireMode()
 		elseif self:GetOwner():KeyDown(IN_SPEED) then
 			self:CycleSafety()

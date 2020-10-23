@@ -30,6 +30,7 @@ TFA.CYCLE_FIREMODE_IMPULSE_STRING = "150"
 TFA.CYCLE_SAFETY_IMPULSE_STRING = "151"
 
 local sp = game.SinglePlayer()
+local CurTime = CurTime
 
 --[[
 Hook: PlayerFootstep
@@ -219,11 +220,16 @@ if CLIENT then
 	hook.Add("Think", "TFAInspectionMenu", TFAKPThink)
 end
 
+local cv_lr = GetConVar("sv_tfa_reloads_legacy")
+local reload_threshold = 0.3
+
 local function FinishMove(ply, cmovedata)
 	if ply:InVehicle() and not ply:GetAllowWeaponsInVehicle() then return end
 
 	local wepv = ply:GetActiveWeapon()
 	if not IsValid(wepv) or not wepv.IsTFAWeapon then return end
+
+	wepv:TFAFinishMove(ply, cmovedata:GetVelocity(), cmovedata)
 
 	local impulse = cmovedata:GetImpulseCommand()
 
@@ -242,6 +248,32 @@ local function FinishMove(ply, cmovedata)
 		wepv:SetBashImpulse(BashImpulse)
 	end
 
+	local lastButtons = wepv:GetDownButtons()
+	local buttons = cmovedata:GetButtons()
+	local stillPressed = bit.band(lastButtons, buttons)
+	local changed = bit.bxor(lastButtons, buttons)
+	local pressed = bit.band(changed, bit.bnot(lastButtons), buttons)
+	local depressed = bit.band(changed, lastButtons, bit.bnot(buttons))
+
+	wepv:SetDownButtons(buttons)
+	wepv:SetLastPressedButtons(pressed)
+
+	local time = CurTime()
+
+	if
+		bit.band(depressed, IN_RELOAD) == IN_RELOAD and
+		not cv_lr:GetBool()
+		and bit.band(buttons, IN_USE) == 0
+		and time <= (wepv:GetLastReloadPressed() + reload_threshold)
+	then
+		wepv:SetLastReloadPressed(-1)
+		wepv:Reload(true)
+	elseif bit.band(pressed, IN_RELOAD) == IN_RELOAD then
+		wepv:SetLastReloadPressed(time)
+	elseif bit.band(buttons, IN_RELOAD) ~= 0 and bit.band(buttons, IN_USE) == 0 and time > (wepv:GetLastReloadPressed() + reload_threshold) then
+		wepv:CheckAmmo()
+	end
+
 	if BashImpulse then
 		if wepv.AltAttack then
 			wepv:AltAttack()
@@ -249,54 +281,7 @@ local function FinishMove(ply, cmovedata)
 	end
 end
 
-hook.Add("FinishMove", "TFAInspectionMenu", FinishMove)
-
---[[
-Hook: KeyPress
-Function: Allows player to bash
-Used For:  Predicted bashing
-]]
---
-local cv_lr = GetConVar("sv_tfa_reloads_legacy")
-
-local function KP_Bash(plyv, key)
-	if (key == IN_RELOAD) then
-		plyv.HasTFAAmmoChek = false
-		plyv.LastReloadPressed = CurTime()
-	end
-end
-
-local reload_threshold = 0.3
-hook.Add("KeyPress", "TFABase_KP", KP_Bash)
-
-local function KR_Reload(plyv, key)
-	if key == IN_RELOAD and cv_lr and (not cv_lr:GetBool()) and (not plyv:KeyDown(IN_USE)) and CurTime() <= (plyv.LastReloadPressed or CurTime()) + reload_threshold then
-		plyv.LastReloadPressed = nil
-		plyv.HasTFAAmmoChek = false
-		local wepv = plyv:GetActiveWeapon()
-
-		if IsValid(wepv) and wepv.IsTFAWeapon then
-			plyv:GetActiveWeapon():Reload(true)
-		end
-	end
-end
-
-hook.Add("KeyRelease", "TFABase_KR", KR_Reload)
-
-local function KD_AmmoCheck(plyv)
-	if plyv.HasTFAAmmoChek then return end
-
-	if plyv:KeyDown(IN_RELOAD) and (not plyv:KeyDown(IN_USE)) and CurTime() > (plyv.LastReloadPressed or CurTime()) + reload_threshold then
-		local wepv = plyv:GetActiveWeapon()
-
-		if IsValid(wepv) and wepv.IsTFAWeapon then
-			plyv.HasTFAAmmoChek = true
-			plyv:GetActiveWeapon():CheckAmmo()
-		end
-	end
-end
-
-hook.Add("PlayerTick", "TFABase_KD", KD_AmmoCheck)
+hook.Add("FinishMove", "TFAFinishMove", FinishMove)
 
 local function TFABashZoom(plyv, cusercmd)
 	if plyv:InVehicle() and not plyv:GetAllowWeaponsInVehicle() then return end
