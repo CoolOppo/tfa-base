@@ -39,6 +39,7 @@ local changelog = [[
 	* Full sequence-based weapons support
 	* Silenced empty/last fire animation support
 	* Each animation can contain values for each case (like in SWEP.PumpAction, etc)
+	* New viewmodel position/angles interpolation techniques
 ]]
 
 local function testFunc()
