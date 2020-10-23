@@ -349,9 +349,9 @@ function SWEP:ChooseAnimation(keyOrData)
 		end
 	end
 
-	if retType == TFA.Enum.ANIMATION_ACT and isstring(tval) then
+	if retType == TFA.Enum.ANIMATION_ACT and isstring(retValue) then
 		retValue = tonumber(tval) or -1
-	elseif retType == TFA.Enum.ANIMATION_SEQ and isstring(tval) then
+	elseif retType == TFA.Enum.ANIMATION_SEQ and isstring(retValue) then
 		retValue = self2.OwnerViewModel:LookupSequence(retValue)
 	end
 
