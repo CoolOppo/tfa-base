@@ -1709,7 +1709,7 @@ function SWEP:Reload(released)
 
 					if type(tg) == "string" and tonumber(tanim) and tonumber(tanim) > 0 and isplayer then
 						if ttype == TFA.Enum.ANIMATION_ACT then
-							action = vm:GetSequenceName(vm:SelectWeightedSequenceSeeded(tanim, self:GetSeed()))
+							action = vm:GetSequenceName(vm:SelectWeightedSequenceSeeded(tanim, self:GetSeedIrradical()))
 						else
 							action = vm:GetSequenceName(tanim)
 						end
@@ -1804,7 +1804,7 @@ function SWEP:Reload2(released)
 
 					if type(tg) == "string" and tonumber(tanim) and tonumber(tanim) > 0 and isplayer then
 						if ttype == TFA.Enum.ANIMATION_ACT then
-							action = vm:GetSequenceName(vm:SelectWeightedSequenceSeeded(tanim, self:GetSeed()))
+							action = vm:GetSequenceName(vm:SelectWeightedSequenceSeeded(tanim, self:GetSeedIrradical()))
 						else
 							action = vm:GetSequenceName(tanim)
 						end

@@ -413,13 +413,13 @@ function SWEP:SendViewModelAnim(act, rate, targ, blend)
 
 	if act < 0 then return false, act end
 	if not self:VMIV() then return false, act end
-	local seq = vm:SelectWeightedSequenceSeeded(act, CurTime())
+	local seq = vm:SelectWeightedSequenceSeeded(act, self:GetSeedIrradical())
 
 	if seq < 0 then
 		if act == ACT_VM_IDLE_EMPTY then
-			seq = vm:SelectWeightedSequenceSeeded(ACT_VM_IDLE, CurTime())
+			seq = vm:SelectWeightedSequenceSeeded(ACT_VM_IDLE, self:GetSeedIrradical())
 		elseif act == ACT_VM_PRIMARYATTACK_EMPTY then
-			seq = vm:SelectWeightedSequenceSeeded(ACT_VM_PRIMARYATTACK, CurTime())
+			seq = vm:SelectWeightedSequenceSeeded(ACT_VM_PRIMARYATTACK, self:GetSeedIrradical())
 		else
 			return false, 0
 		end

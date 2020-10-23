@@ -86,6 +86,10 @@ function SWEP:GetSeed()
 	return math.Round(sd)
 end
 
+function SWEP:GetSeedIrradical()
+	return math.floor(self:Clip1() + self:Ammo1() + self:Clip2() + self:Ammo2() + self:GetLastActivity()) + self:GetNextIdleAnim() + self:GetNextPrimaryFire() + self:GetNextSecondaryFire()
+end
+
 SWEP.SharedRandomValues = {}
 local seed
 
@@ -170,7 +174,7 @@ function SWEP:GetActivityLengthRaw(tanim, status, animType)
 	if tanim < 0 then return 0 end
 
 	if animType == nil or animType == TFA.Enum.ANIMATION_ACT then
-		nm = vm:GetSequenceName(vm:SelectWeightedSequence(tanim))
+		nm = vm:GetSequenceName(vm:SelectWeightedSequenceSeeded(tanim, self:GetSeedIrradical()))
 	else
 		nm = vm:GetSequenceName(tanim)
 	end
@@ -182,7 +186,7 @@ function SWEP:GetActivityLengthRaw(tanim, status, animType)
 	elseif tanim == vm:GetSequenceActivity(vm:GetSequence()) then
 		sqlen = vm:SequenceDuration(vm:GetSequence())
 	else
-		sqlen = vm:SequenceDuration(vm:SelectWeightedSequenceSeeded(math.max(tanim or 1, 1), self:GetSeed()))
+		sqlen = vm:SequenceDuration(vm:SelectWeightedSequenceSeeded(math.max(tanim or 1, 1), self:GetSeedIrradical()))
 	end
 
 	slo = self:GetStat("StatusLengthOverride." .. nm) or self:GetStat("StatusLengthOverride." .. (tanim or "0"))
