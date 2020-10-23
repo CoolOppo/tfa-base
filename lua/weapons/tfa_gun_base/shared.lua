@@ -525,6 +525,8 @@ function SWEP:SetupDataTables()
 	self:NetworkVarTFA("Float", "StatusStart")
 	self:NetworkVarTFA("Float", "LastSafetyShoot")
 
+	self:NetworkVarTFA("Int", "LastSequence")
+
 	self.GetStatus = self.GetStatusRaw
 	self.GetIronSights = self.GetIronSightsOldFinal
 	self.GetIronSightsDirect = self.GetIronSightsOldFinal
@@ -759,13 +761,13 @@ function SWEP:Deploy()
 		self:CacheAnimations()
 	end
 
-	local _, tanim = self:ChooseDrawAnim()
+	local _, tanim, ttype = self:ChooseDrawAnim()
 
 	if sp then
 		self:CallOnClient("ChooseDrawAnim", "")
 	end
 
-	local len = self:GetActivityLength(tanim)
+	local len = self:GetActivityLength(tanim, false, ttype)
 
 	self:ScheduleStatus(TFA.Enum.STATUS_DRAW, len)
 	self:SetFirstDeployEvent(true)
@@ -834,13 +836,13 @@ function SWEP:Holster(target)
 			end
 		end
 
-		local success, tanim = self:ChooseHolsterAnim()
+		local success, tanim, ttype = self:ChooseHolsterAnim()
 
 		if IsFirstTimePredicted() then
 			self:SetSwapTarget(target)
 		end
 
-		self:ScheduleStatus(TFA.Enum.STATUS_HOLSTER, success and self:GetActivityLength(tanim) or (self:GetStat("ProceduralHolsterTime") / self:GetAnimationRate(ACT_VM_HOLSTER)))
+		self:ScheduleStatus(TFA.Enum.STATUS_HOLSTER, success and self:GetActivityLength(tanim, false, ttype) or (self:GetStat("ProceduralHolsterTime") / self:GetAnimationRate(ACT_VM_HOLSTER)))
 
 		return false
 	elseif stat == TFA.Enum.STATUS_HOLSTER_READY or stat == TFA.Enum.STATUS_HOLSTER_FINAL then
@@ -989,7 +991,7 @@ function SWEP:PlayerThinkCL(plyv)
 	local ft = RealFrameTime() * game.GetTimeScale() * (sv_cheats:GetBool() and host_timescale:GetFloat() or 1)
 
 	if self2.GetStat(self, "BlowbackEnabled") then
-		if not self2.Blowback_PistolMode or self:Clip1() == -1 or self:Clip1() > 0.1 or self2.Blowback_PistolMode_Disabled[self:GetLastActivity()] then
+		if not self2.Blowback_PistolMode or self:Clip1() == -1 or self:Clip1() > 0.1 or self2.Blowback_PistolMode_Disabled[self:GetLastActivity()] or self2.Blowback_PistolMode_Disabled[self:GetLastSequence()] or self2.Blowback_PistolMode_Disabled[self:GetLastSequenceString()] then
 			self2.BlowbackCurrent = l_mathApproach(self2.BlowbackCurrent, 0, self2.BlowbackCurrent * ft * 15)
 		end
 
@@ -1397,10 +1399,10 @@ function SWEP:CanPrimaryAttack()
 			self2.HasPlayedEmptyClick = true
 
 			if self:GetOwner():IsNPC() or self:GetOwner():KeyPressed(IN_ATTACK) then
-				local enabled, act = self:ChooseDryFireAnim()
+				local enabled, tanim, ttype = self:ChooseDryFireAnim()
 
 				if enabled then
-					self:SetNextPrimaryFire(l_CT() + self:GetStat("Primary.DryFireDelay", self:GetActivityLength(act, true)))
+					self:SetNextPrimaryFire(l_CT() + self:GetStat("Primary.DryFireDelay", self:GetActivityLength(tanim, true, ttype)))
 
 					return false
 				end
@@ -1697,16 +1699,20 @@ function SWEP:Reload(released)
 			self:SetBurstCount(0)
 
 			if self2.Shotgun then
-				local _, tanim = self:ChooseShotgunReloadAnim()
+				local _, tanim, ttype = self:ChooseShotgunReloadAnim()
 
 				if self:GetStat("ShotgunStartAnimShell") then
 					self:SetStatus(TFA.Enum.STATUS_RELOADING_LOOP_START_EMPTY)
 				elseif self2.ShotgunEmptyAnim then
-					local _, tg = self:ChooseAnimation( "reload_empty" )
+					local _, tg = self:ChooseAnimation("reload_empty")
 					local action = tanim
 
 					if type(tg) == "string" and tonumber(tanim) and tonumber(tanim) > 0 and isplayer then
-						action = vm:GetSequenceName(vm:SelectWeightedSequenceSeeded(tanim, self:GetSeed()))
+						if ttype == TFA.Enum.ANIMATION_ACT then
+							action = vm:GetSequenceName(vm:SelectWeightedSequenceSeeded(tanim, self:GetSeed()))
+						else
+							action = vm:GetSequenceName(tanim)
+						end
 					end
 
 					if action == tg and self:GetStat("ShotgunEmptyAnim_Shell") then
@@ -1718,23 +1724,23 @@ function SWEP:Reload(released)
 					self:SetStatus(TFA.Enum.STATUS_RELOADING_LOOP_START)
 				end
 
-				self:SetStatusEnd(ct + self:GetActivityLength( tanim, true ))
+				self:SetStatusEnd(ct + self:GetActivityLength(tanim, true, ttype))
 				--self:SetNextPrimaryFire(ct + self:GetActivityLength( tanim, false ) )
 			else
-				local _, tanim = self:ChooseReloadAnim()
+				local _, tanim, ttype = self:ChooseReloadAnim()
 
 				self:SetStatus(TFA.Enum.STATUS_RELOADING)
 
 				if self:GetStat("ProceduralReloadEnabled") then
 					self:SetStatusEnd(ct + self:GetStat("ProceduralReloadTime"))
 				else
-					self:SetStatusEnd(ct + self:GetActivityLength(tanim, true))
-					self:SetNextPrimaryFire(ct + self:GetActivityLength(tanim, false))
+					self:SetStatusEnd(ct + self:GetActivityLength(tanim, true, ttype))
+					self:SetNextPrimaryFire(ct + self:GetActivityLength(tanim, false, ttype))
 				end
 
 				if CLIENT then
 					self2.ReloadAnimationStart = ct
-					self2.ReloadAnimationEnd = ct + self:GetActivityLength(tanim, false)
+					self2.ReloadAnimationEnd = ct + self:GetActivityLength(tanim, false, ttype)
 				end
 			end
 
@@ -1790,12 +1796,21 @@ function SWEP:Reload2(released)
 	elseif TFA.Enum.ReadyStatus[stat] or ( stat == TFA.Enum.STATUS_SHOOTING and self:CanInterruptShooting() ) then
 		if self:Clip2() < self:GetSecondaryClipSize() then
 			if self2.Shotgun then
-				local _, tanim = self:ChooseShotgunReloadAnim()
+				local _, tanim, ttype = self:ChooseShotgunReloadAnim()
 
 				if self2.ShotgunEmptyAnim  then
-					local _, tg = self:ChooseAnimation( "reload_empty" )
+					local _, tg = self:ChooseAnimation("reload_empty")
+					local action = tanim
 
-					if tanim == tg and self2.ShotgunEmptyAnim_Shell then
+					if type(tg) == "string" and tonumber(tanim) and tonumber(tanim) > 0 and isplayer then
+						if ttype == TFA.Enum.ANIMATION_ACT then
+							action = vm:GetSequenceName(vm:SelectWeightedSequenceSeeded(tanim, self:GetSeed()))
+						else
+							action = vm:GetSequenceName(tanim)
+						end
+					end
+
+					if action == tg and self:GetStat("ShotgunEmptyAnim_Shell") then
 						self:SetStatus(TFA.Enum.STATUS_RELOADING_LOOP_START_EMPTY)
 					else
 						self:SetStatus(TFA.Enum.STATUS_RELOADING_LOOP_START)
@@ -1804,23 +1819,23 @@ function SWEP:Reload2(released)
 					self:SetStatus(TFA.Enum.STATUS_RELOADING_LOOP_START)
 				end
 
-				self:SetStatusEnd(ct + self:GetActivityLength( tanim, true ))
+				self:SetStatusEnd(ct + self:GetActivityLength(tanim, true, ttype))
 				--self:SetNextPrimaryFire(ct + self:GetActivityLength( tanim, false ) )
 			else
-				local _, tanim = self:ChooseReloadAnim()
+				local _, tanim, ttype = self:ChooseReloadAnim()
 
 				self:SetStatus(TFA.Enum.STATUS_RELOADING)
 
 				if self:GetStat("ProceduralReloadEnabled") then
 					self:SetStatusEnd(ct + self:GetStat("ProceduralReloadTime"))
 				else
-					self:SetStatusEnd(ct + self:GetActivityLength(tanim, true))
-					self:SetNextPrimaryFire(ct + self:GetActivityLength(tanim, false))
+					self:SetStatusEnd(ct + self:GetActivityLength(tanim, true, ttype))
+					self:SetNextPrimaryFire(ct + self:GetActivityLength(tanim, false, ttype))
 				end
 
 				if CLIENT then
 					self2.ReloadAnimationStart = ct
-					self2.ReloadAnimationEnd = ct + self:GetActivityLength(tanim, false)
+					self2.ReloadAnimationEnd = ct + self:GetActivityLength(tanim, false, ttype)
 				end
 			end
 
@@ -1852,14 +1867,14 @@ end
 function SWEP:LoadShell()
 	if hook.Run("TFA_LoadShell", self) then return end
 
-	local _, tanim = self:ChooseReloadAnim()
+	local _, tanim, ttype = self:ChooseReloadAnim()
 
-	if self:GetActivityLength(tanim,true) < self:GetActivityLength(tanim,false) then
-		self:SetStatusEnd(ct + self:GetActivityLength(tanim, true))
+	if self:GetActivityLength(tanim,true) < self:GetActivityLength(tanim, false, ttype) then
+		self:SetStatusEnd(ct + self:GetActivityLength(tanim, true, ttype))
 	else
 		local sht = self:GetStat("ShellTime")
 		if sht then sht = sht / self:GetAnimationRate(ACT_VM_RELOAD) end
-		self:SetStatusEnd(ct + ( sht or self:GetActivityLength(tanim, true)))
+		self:SetStatusEnd(ct + ( sht or self:GetActivityLength(tanim, true, ttype)))
 	end
 
 	return TFA.Enum.STATUS_RELOADING_LOOP
@@ -1892,8 +1907,8 @@ function SWEP:CheckAmmo()
 	end
 
 	if (self:GetActivityEnabled(ACT_VM_FIDGET) or self2.InspectionActions) and self:GetStatus() == TFA.Enum.STATUS_IDLE then--and CurTime() > self2.NextInspectAnim then
-		local _, tanim = self:ChooseInspectAnim()
-		self:ScheduleStatus(TFA.Enum.STATUS_FIDGET, self:GetActivityLength(tanim))
+		local _, tanim, ttype = self:ChooseInspectAnim()
+		self:ScheduleStatus(TFA.Enum.STATUS_FIDGET, self:GetActivityLength(tanim, false, ttype))
 	end
 end
 

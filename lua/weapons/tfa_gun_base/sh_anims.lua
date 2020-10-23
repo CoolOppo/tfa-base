@@ -358,26 +358,33 @@ function SWEP:ChooseAnimation(keyOrData)
 	return retType, retValue
 end
 
-local sqto, sqro
-
-function SWEP:GetAnimationRate(ani)
+function SWEP:GetAnimationRate(ani, animationType)
 	local self2 = self:GetTable()
 	local rate = 1
 	if not ani or ani < 0 or not self:VMIV() then return rate end
-	local nm = self2.OwnerViewModel:GetSequenceName(self2.OwnerViewModel:SelectWeightedSequence(ani))
 
-	if IsValid(self) then
-		sqto = self2.GetStat(self, "SequenceTimeOverride." .. nm) or self2.GetStat(self, "SequenceTimeOverride." .. (ani or "0"))
-		sqro = self2.GetStat(self, "SequenceRateOverride." .. nm) or self2.GetStat(self, "SequenceRateOverride." .. (ani or "0"))
+	local nm
 
-		if sqro then
-			rate = rate * sqro
-		elseif sqto then
-			local t = self:GetActivityLengthRaw(ani, false)
+	if animationType == TFA.Enum.ANIMATION_ACT or animationType == nil then
+		nm = self2.OwnerViewModel:GetSequenceName(self2.OwnerViewModel:SelectWeightedSequence(ani))
+	elseif isnumber(ani) then
+		nm = self2.OwnerViewModel:GetSequenceName(ani)
+	elseif isstring(ani) then
+		nm = ani
+	else
+		error("ani argument is typeof " .. type(ani))
+	end
 
-			if t then
-				rate = rate * t / sqto
-			end
+	local sqto = self2.GetStat(self, "SequenceTimeOverride." .. nm) or self2.GetStat(self, "SequenceTimeOverride." .. (ani or "0"))
+	local sqro = self2.GetStat(self, "SequenceRateOverride." .. nm) or self2.GetStat(self, "SequenceRateOverride." .. (ani or "0"))
+
+	if sqro then
+		rate = rate * sqro
+	elseif sqto then
+		local t = self:GetActivityLengthRaw(ani, false)
+
+		if t then
+			rate = rate * t / sqto
 		end
 	end
 
@@ -414,14 +421,16 @@ function SWEP:SendViewModelAnim(act, rate, targ, blend)
 		elseif act == ACT_VM_PRIMARYATTACK_EMPTY then
 			seq = vm:SelectWeightedSequenceSeeded(ACT_VM_PRIMARYATTACK, CurTime())
 		else
-			return
+			return false, 0
 		end
 
 		if seq < 0 then return false, act end
 	end
 
 	local preLastActivity = self:GetLastActivity()
+	--local preLastSequence = self:GetLastActivity()
 	self:SetLastActivity(act)
+	self:SetLastSequence(seq)
 	self:ResetEvents()
 
 	if preLastActivity == act and ServersideLooped[act] then
@@ -476,8 +485,9 @@ end
 function SWEP:SendViewModelSeq(seq, rate, targ, blend)
 	local self2 = self:GetTable()
 	local seqold = seq
-	local vm = self2.OwnerViewModel
+
 	if not self:VMIV() then return false, 0 end
+	local vm = self2.OwnerViewModel
 
 	if isstring(seq) then
 		seq = vm:LookupSequence(seq) or 0
@@ -504,15 +514,17 @@ function SWEP:SendViewModelSeq(seq, rate, targ, blend)
 	end
 
 	if targ then
-		rate = rate / self:GetAnimationRate(act)
+		rate = rate / self:GetAnimationRate(seq, TFA.Enum.ANIMATION_SEQ)
 	else
-		rate = rate * self:GetAnimationRate(act)
+		rate = rate * self:GetAnimationRate(seq, TFA.Enum.ANIMATION_SEQ)
 	end
 
-	if seq < 0 then return false, act end
+	if seq < 0 then return false, seq end
 
 	local preLastActivity = self:GetLastActivity()
+	--local preLastSequence = self:GetLastSequence()
 	self:SetLastActivity(act)
+	self:SetLastSequence(seq)
 	self:ResetEvents()
 
 	if preLastActivity == act and ServersideLooped[act] then
@@ -556,10 +568,8 @@ function SWEP:SendViewModelSeq(seq, rate, targ, blend)
 		end
 	end
 
-	return true, act
+	return true, seq
 end
-
-local tval
 
 function SWEP:PlayAnimation(data, fade, rate, targ)
 	local self2 = self:GetTable()
@@ -570,11 +580,11 @@ function SWEP:PlayAnimation(data, fade, rate, targ)
 
 	if ttype == TFA.Enum.ANIMATION_SEQ then
 		local success, activityID = self:SendViewModelSeq(tval, rate or 1, targ, fade or (data.transition and self2.Idle_Blend or self2.Idle_Smooth))
-		return uccess, activityID > -1 and activityID or tval, activityID > -1 and TFA.Enum.ANIMATION_ACT or TFA.Enum.ANIMATION_SEQ
+		return success, activityID, TFA.Enum.ANIMATION_SEQ
 	end
 
 	local success, activityID = self:SendViewModelAnim(tval, rate or 1, targ, fade or (data.transition and self2.Idle_Blend or self2.Idle_Smooth))
-	return uccess, activityID, TFA.Enum.ANIMATION_ACT
+	return success, activityID, TFA.Enum.ANIMATION_ACT
 end
 
 local success, tanim, typev
@@ -641,6 +651,12 @@ Purpose:  Animation / Utility
 ]]
 SWEP.IsFirstDeploy = true
 
+local function PlayChoosenAnimation(self, typev, tanim, ...)
+	local fnName = typev == TFA.Enum.ANIMATION_SEQ and "SendViewModelSeq" or "SendViewModelAnim"
+	local a, b = self[fnName](self, tanim, ...)
+	return a, b, typev
+end
+
 function SWEP:ChooseDrawAnim()
 	local self2 = self:GetTable()
 	if not self:VMIV() then return end
@@ -664,11 +680,7 @@ function SWEP:ChooseDrawAnim()
 
 	self2.LastDeployAnim = CurTime()
 
-	if typev ~= TFA.Enum.ANIMATION_SEQ then
-		return self:SendViewModelAnim(tanim)
-	else
-		return self:SendViewModelSeq(tanim)
-	end
+	return PlayChoosenAnimation(self, typev, tanim)
 end
 
 function SWEP:ResetFirstDeploy()
@@ -703,11 +715,7 @@ function SWEP:ChooseInspectAnim()
 		success = false
 	end
 
-	if typev ~= TFA.Enum.ANIMATION_SEQ then
-		return self:SendViewModelAnim(tanim)
-	else
-		return self:SendViewModelSeq(tanim)
-	end
+	return PlayChoosenAnimation(self, typev, tanim)
 end
 
 --[[
@@ -729,17 +737,10 @@ function SWEP:ChooseHolsterAnim()
 	elseif self:GetActivityEnabled(ACT_VM_HOLSTER) then
 		typev, tanim = self:ChooseAnimation("holster")
 	else
-		local _
-		_, tanim = self:ChooseIdleAnim()
-
-		return false, tanim
+		return false, select(2, self:ChooseIdleAnim())
 	end
 
-	if typev ~= TFA.Enum.ANIMATION_SEQ then
-		return self:SendViewModelAnim(tanim)
-	else
-		return self:SendViewModelSeq(tanim)
-	end
+	return PlayChoosenAnimation(self, typev, tanim)
 end
 
 --[[
@@ -793,11 +794,7 @@ function SWEP:ChooseReloadAnim()
 	self:SetAnimCycle(self2.ViewModelFlip and 0 or 1)
 	self2.AnimCycle = self:GetAnimCycle()
 
-	if typev ~= TFA.Enum.ANIMATION_SEQ then
-		return self:SendViewModelAnim(tanim, fac, fac ~= 1)
-	else
-		return self:SendViewModelSeq(tanim, fac, fac ~= 1)
-	end
+	return PlayChoosenAnimation(self, typev, tanim, fac, fac ~= 1)
 end
 
 --[[
@@ -821,31 +818,21 @@ function SWEP:ChooseShotgunReloadAnim()
 	elseif self:GetActivityEnabled(ACT_SHOTGUN_RELOAD_START) then
 		typev, tanim = self:ChooseAnimation((ads and self:GetActivityEnabled(ACT_SHOTGUN_RELOAD_START_ADS)) and "reload_shotgun_start_is" or "reload_shotgun_start")
 	else
-		local _
-		_, tanim = self:ChooseIdleAnim()
-
-		return false, tanim
+		return false, select(2, self:ChooseIdleAnim())
 	end
 
-	if typev ~= TFA.Enum.ANIMATION_SEQ then
-		return self:SendViewModelAnim(tanim)
-	else
-		return self:SendViewModelSeq(tanim)
-	end
+	return PlayChoosenAnimation(self, typev, tanim)
 end
 
 function SWEP:ChooseShotgunPumpAnim()
 	if not self:VMIV() then return end
 
-	local ads = self:GetStat("IronSightsReloadEnabled") and self:GetIronSightsDirect()
+	typev, tanim = self:ChooseAnimation(
+		(self:GetStat("IronSightsReloadEnabled") and
+		self:GetIronSightsDirect() and
+		self:GetActivityEnabled(ACT_SHOTGUN_RELOAD_START_ADS)) and "reload_shotgun_finish_is" or "reload_shotgun_finish")
 
-	typev, tanim = self:ChooseAnimation((ads and self:GetActivityEnabled(ACT_SHOTGUN_RELOAD_START_ADS)) and "reload_shotgun_finish_is" or "reload_shotgun_finish")
-
-	if typev ~= TFA.Enum.ANIMATION_SEQ then
-		return self:SendViewModelAnim(tanim)
-	else
-		return self:SendViewModelSeq(tanim)
-	end
+	return PlayChoosenAnimation(self, typev, tanim)
 end
 
 --[[
@@ -901,11 +888,7 @@ function SWEP:ChooseIdleAnim()
 	--else
 	--	return
 	--end
-	if typev ~= TFA.Enum.ANIMATION_SEQ then
-		return self:SendViewModelAnim(tanim)
-	else
-		return self:SendViewModelSeq(tanim)
-	end
+	return PlayChoosenAnimation(self, typev, tanim)
 end
 
 function SWEP:ChooseFlatAnim()
@@ -920,11 +903,7 @@ function SWEP:ChooseFlatAnim()
 		typev, tanim = self:ChooseAnimation("idle_empty")
 	end
 
-	if typev ~= TFA.Enum.ANIMATION_SEQ then
-		return self:SendViewModelAnim(tanim, 0.000001)
-	else
-		return self:SendViewModelSeq(tanim, 0.000001)
-	end
+	return PlayChoosenAnimation(self, typev, tanim, 0.000001)
 end
 
 function SWEP:ChooseADSAnim()
@@ -1039,11 +1018,7 @@ function SWEP:ChooseShootAnim(ifp)
 			typev, tanim = self:ChooseAnimation("shoot1")
 		end
 
-		if typev ~= TFA.Enum.ANIMATION_SEQ then
-			return self:SendViewModelAnim(tanim)
-		end
-
-		return self:SendViewModelSeq(tanim)
+		return PlayChoosenAnimation(self, typev, tanim)
 	end
 
 	self:SendViewModelAnim(ACT_VM_BLOWBACK)
@@ -1096,17 +1071,10 @@ function SWEP:ChooseSilenceAnim(val)
 	end
 
 	if not success then
-		local _
-		_, tanim = self:ChooseIdleAnim()
-
-		return false, tanim
+		return false, select(2, self:ChooseIdleAnim())
 	end
 
-	if typev ~= TFA.Enum.ANIMATION_SEQ then
-		return self:SendViewModelAnim(tanim)
-	else
-		return self:SendViewModelSeq(tanim)
-	end
+	return PlayChoosenAnimation(self, typev, tanim)
 end
 
 --[[
@@ -1135,15 +1103,11 @@ function SWEP:ChooseDryFireAnim()
 			local _
 			_, tanim = nil, nil
 
-			return success, tanim
+			return success, tanim -- ???
 		end
 	end
 
-	if typev ~= TFA.Enum.ANIMATION_SEQ then
-		return self:SendViewModelAnim(tanim)
-	else
-		return self:SendViewModelSeq(tanim)
-	end
+	return PlayChoosenAnimation(self, typev, tanim)
 end
 
 --[[
@@ -1170,14 +1134,10 @@ function SWEP:ChooseROFAnim()
 		local _
 		_, tanim = nil, nil
 
-		return success, tanim
+		return success, tanim -- ???
 	end
 
-	if typev ~= TFA.Enum.ANIMATION_SEQ then
-		return self:SendViewModelAnim(tanim)
-	else
-		return self:SendViewModelSeq(tanim)
-	end
+	return PlayChoosenAnimation(self, typev, tanim)
 end
 
 --[[
@@ -1217,11 +1177,7 @@ function SWEP:ChooseBashAnim()
 		return success, tanim
 	end
 
-	if typev ~= TFA.Enum.ANIMATION_SEQ then
-		return self:SendViewModelAnim(tanim)
-	else
-		return self:SendViewModelSeq(tanim)
-	end
+	return PlayChoosenAnimation(self, typev, tanim)
 end
 
 --[[THIRDPERSON]]

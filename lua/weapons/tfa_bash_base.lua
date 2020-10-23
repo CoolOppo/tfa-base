@@ -117,7 +117,7 @@ function SWEP:AltAttack()
 	local retVal = hook.Run("TFA_CanBash", self)
 	if retVal == false then return end
 
-	local enabled, act = self:ChooseBashAnim()
+	local enabled, tanim, ttype = self:ChooseBashAnim()
 	if not enabled then return end
 
 	hook.Run("TFA_Bash", self)
@@ -130,7 +130,7 @@ function SWEP:AltAttack()
 	if sp and SERVER then self:CallOnClient("BashAnim", "") end
 
 	local bashend = self:GetStat("Secondary.BashEnd")
-	local nextTime = time + (bashend or self:GetActivityLength(act, false))
+	local nextTime = time + (bashend or self:GetActivityLength(tanim, false, ttype))
 
 	self:SetNextPrimaryFire(nextTime)
 	self:SetNextSecondaryFire(nextTime)

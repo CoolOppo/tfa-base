@@ -421,14 +421,15 @@ function SWEP:Think2(...)
 
 			self.BlockStart = CurTime()
 		elseif stat == TFA.Enum.STATUS_BLOCKING and not self:GetBashImpulse() then
-			local _, tanim
-			self:ScheduleStatus(TFA.Enum.STATUS_BLOCKING_END, self.BlockFadeOut or (self:GetActivityLength(tanim) - self.BlockFadeOutEnd))
+			local _, tanim, ttype
 
 			if self.BlockAnimation["out"] then
-				_, tanim = self:PlayAnimation(self.BlockAnimation["out"])
+				_, tanim, ttype = self:PlayAnimation(self.BlockAnimation["out"])
 			else
-				_, tanim = self:ChooseIdleAnim()
+				_, tanim, ttype = self:ChooseIdleAnim()
 			end
+
+			self:ScheduleStatus(TFA.Enum.STATUS_BLOCKING_END, self.BlockFadeOut or (self:GetActivityLength(tanim, false, ttype) - self.BlockFadeOutEnd))
 		elseif stat == TFA.Enum.STATUS_BLOCKING and CurTime() > self:GetNextIdleAnim() then
 			self:ChooseIdleAnim()
 		end
@@ -988,8 +989,8 @@ function SWEP:Reload(released, ovr, ...)
 	end
 
 	if (self.SequenceEnabled[ACT_VM_FIDGET] or self.InspectionActions) and self:GetStatus() == TFA.Enum.STATUS_IDLE then
-		local _, tanim = self:ChooseInspectAnim()
-		self:ScheduleStatus(TFA.Enum.STATUS_FIDGET, self:GetActivityLength(tanim))
+		local _, tanim, ttype = self:ChooseInspectAnim()
+		self:ScheduleStatus(TFA.Enum.STATUS_FIDGET, self:GetActivityLength(tanim, false, ttype))
 	end
 end
 

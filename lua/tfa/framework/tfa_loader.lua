@@ -24,8 +24,8 @@ if SERVER then AddCSLuaFile() end
 TFA = TFA or {}
 
 local do_load = true
-local version = 4.6
-local version_string = "4.6"
+local version = 4.63
+local version_string = "4.63"
 local changelog = [[
 	* HUGE optimization and prediction improvements
 	* Better recoil and viewpunch, all configurable
@@ -36,6 +36,9 @@ local changelog = [[
 	* ADS reload animation support (like in CAWODOOTY! favorite gaem!!!)
 	* Hybrid blowback animation (allowing model animation to play)
 	* Crouched viewmodel offset position
+	* Full sequence-based weapons support
+	* Silenced empty/last fire animation support
+	* Each animation can contain values for each case (like in SWEP.PumpAction, etc)
 ]]
 
 local function testFunc()

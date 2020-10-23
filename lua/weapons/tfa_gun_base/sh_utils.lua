@@ -40,6 +40,13 @@ function SWEP:MetersToUnits(x)
 	return x * 39.3701 * 4 / 3
 end
 
+function SWEP:GetLastSequenceString()
+	if not IsValid(self.OwnerViewModel) then return "" end
+
+	if self:GetLastSequence() < 0 then return "" end
+	return self.OwnerViewModel:GetSequenceName(self:GetLastSequence())
+end
+
 local cv_3dmode = GetConVar("cl_tfa_scope_sensitivity_3d")
 
 SWEP.SensitivtyFunctions = {
@@ -154,7 +161,11 @@ function SWEP:GetActivityLengthRaw(tanim, status, animType)
 	local vm = self:VMIVNPC()
 	if not vm then return 0 end
 
-	tanim = tanim or self:GetLastActivity()
+	if tanim == nil then
+		-- we already track last sequence so, we can account sequence
+		tanim = self:GetLastSequence()
+		animType = TFA.Enum.ANIMATION_SEQ
+	end
 
 	if tanim < 0 then return 0 end
 
@@ -714,10 +725,10 @@ function SWEP:CycleFireMode()
 	end
 
 	self:SetFireMode(fm)
-	local a = self:ChooseROFAnim()
+	local sucess, tanim, ttype = self:ChooseROFAnim()
 
-	if a then
-		self:SetNextPrimaryFire(ct + self:GetActivityLength())
+	if sucess then
+		self:SetNextPrimaryFire(ct + self:GetActivityLength(tanim, false, ttype))
 	else
 		self:EmitSound(self:GetStat("FireModeSound"))
 		self:SetNextPrimaryFire(ct + math.max(self:GetFireDelay(), 0.25))
@@ -754,11 +765,11 @@ function SWEP:CycleSafety()
 		self:SetFireMode(self.LastFireMode or 1)
 	end
 
-	local a = self:ChooseROFAnim()
+	local sucess, tanim, ttype = self:ChooseROFAnim()
 
 	if a then
 		self:SetSafetyCycleAnimated(true)
-		self:SetNextPrimaryFire(ct + self:GetActivityLength())
+		self:SetNextPrimaryFire(ct + self:GetActivityLength(tanim, false, ttype))
 	else
 		self:SetSafetyCycleAnimated(false)
 		self:EmitSound(self:GetStat("FireModeSound"))
