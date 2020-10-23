@@ -263,14 +263,99 @@ function SWEP:GetActivityEnabled(act)
 	end
 end
 
-function SWEP:ChooseAnimation(key)
+function SWEP:ChooseAnimation(keyOrData)
 	local self2 = self:GetTable()
-	local kv = self2.GetStat(self, "Animations." .. key)
-	if not kv then return 0, 0 end
-	if not kv["type"] then return 0, 0 end
-	if not kv["value"] then return 0, 0 end
 
-	return kv["type"], kv["value"]
+	local data
+
+	if isstring(keyOrData) then
+		data = self2.GetStat(self, "Animations." .. keyOrData)
+	elseif istable(keyOrData) then
+		data = keyOrData
+	else
+		error("Unknown value type " .. type(keyOrData) .. " passed!")
+	end
+
+	if not data then return 0, 0 end
+	if not data["type"] then return 0, 0 end
+	if not data["value"] then return 0, 0 end
+
+	local retType, retValue = data["type"], data["value"]
+
+	if self:Clip1() <= 0 and self2.GetStat(self, "Primary.ClipSize") >= 0 then
+		if data.value_empty then
+			retValue = data.value_empty
+			retType = data.type_empty or retType
+		end
+	end
+
+	if self2.GetSilenced(self) then
+		local previousRetType = retType
+
+		if data.value_sil then
+			retValue = data.value_sil
+			retType = data.type_sil or previousRetType
+		end
+
+		if self:Clip1() <= 0 and self2.GetStat(self, "Primary.ClipSize") >= 0 then
+			if data.value_sil_empty then
+				retValue = data.value_sil_empty
+				retType = data.type_sil_empty or previousRetType
+			end
+		end
+	end
+
+	if self:GetIronSights() then
+		local previousRetType = retType
+
+		if data.value_is then
+			retValue = data.value_is
+			retType = data.type_is or previousRetType
+		end
+
+		if self:Clip1() <= 0 and self2.Primary_TFA.ClipSize >= 0 then
+			if data.value_is_empty then
+				retValue = data.value_is_empty
+				retType = data.type_is_empty or previousRetType
+			end
+		end
+
+		if self:Clip1() == 1 and self2.Primary_TFA.ClipSize >= 0 then
+			if data.value_is_last then
+				retValue = data.value_is_last
+				retType = data.type_is_last or previousRetType
+			end
+		end
+
+		if self2.GetSilenced(self) then
+			if data.value_is_sil then
+				retValue = data.value_is_sil
+				retType = data.type_is_sil or previousRetType
+			end
+
+			if self:Clip1() <= 0 and self2.Primary_TFA.ClipSize >= 0 then
+				if data.value_is_sil_empty then
+					retValue = data.value_is_sil_empty
+					retType = data.type_is_sil_empty or previousRetType
+				end
+			end
+
+			if self:Clip1() == 1 and self2.Primary_TFA.ClipSize >= 0 then
+				if data.value_is_sil_last then
+					retValue = data.value_is_sil_last
+					retType = data.type_is_sil_last or previousRetType
+				end
+			end
+		end
+	end
+
+	if retType == TFA.Enum.ANIMATION_ACT and isstring(tval) then
+		retValue = tonumber(tval) or -1
+	elseif retType == TFA.Enum.ANIMATION_SEQ and isstring(tval) then
+		retValue = self2.OwnerViewModel:LookupSequence(retValue)
+	end
+
+	return retType, retValue
 end
 
 local sqto, sqro
@@ -480,90 +565,16 @@ function SWEP:PlayAnimation(data, fade, rate, targ)
 	local self2 = self:GetTable()
 	if not self:VMIV() then return end
 	if not data then return false, -1 end
-	local vm = self2.OwnerViewModel
 
-	if data.type == TFA.Enum.ANIMATION_ACT then
-		tval = data.value
+	local ttype, tval = self:ChooseAnimation(data)
 
-		if self:Clip1() <= 0 and self2.Primary_TFA.ClipSize >= 0 then
-			tval = data.value_empty or tval
-		end
-
-		if self:Clip1() == 1 and self2.Primary_TFA.ClipSize >= 0 then
-			tval = data.value_last or tval
-		end
-
-		if self2.GetSilenced(self) then
-			tval = data.value_sil or tval
-		end
-
-		if self:GetIronSightsDirect() then
-			tval = data.value_is or tval
-
-			if self:Clip1() <= 0 and self2.Primary_TFA.ClipSize >= 0 then
-				tval = data.value_is_empty or tval
-			end
-
-			if self:Clip1() == 1 and self2.Primary_TFA.ClipSize >= 0 then
-				tval = data.value_is_last or tval
-			end
-
-			if self2.GetSilenced(self) then
-				tval = data.value_is_sil or tval
-			end
-		end
-
-		if isstring(tval) then
-			tval = tonumber(tval) or -1
-		end
-
-		if tval and tval > 0 then
-			local success, activityID = self:SendViewModelAnim(tval, rate or 1, targ, fade or (data.transition and self2.Idle_Blend or self2.Idle_Smooth))
-			return success, activityID, TFA.Enum.ANIMATION_ACT
-		end
-	elseif data.type == TFA.Enum.ANIMATION_SEQ then
-		tval = data.value
-
-		if self:Clip1() <= 0 and self2.Primary_TFA.ClipSize >= 0 then
-			tval = data.value_empty or tval
-		end
-
-		if self:Clip1() == 1 and self2.Primary_TFA.ClipSize >= 0 then
-			tval = data.value_last or tval
-		end
-
-		if self2.GetSilenced(self) then
-			tval = data.value_sil or tval
-		end
-
-		if self:GetIronSightsDirect() then
-			tval = data.value_is or tval
-
-			if self:Clip1() <= 0 and self2.Primary_TFA.ClipSize >= 0 then
-				tval = data.value_is_empty or tval
-			end
-
-			if self:Clip1() == 1 and self2.Primary_TFA.ClipSize >= 0 then
-				tval = data.value_is_last or tval
-			end
-
-			if self2.GetSilenced(self) then
-				tval = data.value_is_sil or tval
-			end
-		end
-
-		if isstring(tval) then
-			tval = vm:LookupSequence(tval)
-		end
-
-		if tval and tval > 0 then
-			local success, activityID = self:SendViewModelSeq(tval, rate or 1, targ, fade or (data.transition and self2.Idle_Blend or self2.Idle_Smooth) )
-			return uccess, activityID > -1 and activityID or tval, activityID > -1 and TFA.Enum.ANIMATION_ACT or TFA.Enum.ANIMATION_SEQ
-		end
+	if ttype == TFA.Enum.ANIMATION_SEQ then
+		local success, activityID = self:SendViewModelSeq(tval, rate or 1, targ, fade or (data.transition and self2.Idle_Blend or self2.Idle_Smooth))
+		return uccess, activityID > -1 and activityID or tval, activityID > -1 and TFA.Enum.ANIMATION_ACT or TFA.Enum.ANIMATION_SEQ
 	end
 
-	-- error("Can't play animation")
-	return -- ????
+	local success, activityID = self:SendViewModelAnim(tval, rate or 1, targ, fade or (data.transition and self2.Idle_Blend or self2.Idle_Smooth))
+	return uccess, activityID, TFA.Enum.ANIMATION_ACT
 end
 
 local success, tanim, typev
