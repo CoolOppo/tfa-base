@@ -657,6 +657,8 @@ local function PlayChoosenAnimation(self, typev, tanim, ...)
 	return a, b, typev
 end
 
+SWEP.PlayChoosenAnimation = PlayChoosenAnimation
+
 function SWEP:ChooseDrawAnim()
 	local self2 = self:GetTable()
 	if not self:VMIV() then return end
