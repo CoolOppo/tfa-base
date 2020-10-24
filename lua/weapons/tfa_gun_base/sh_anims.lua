@@ -651,13 +651,13 @@ Purpose:  Animation / Utility
 ]]
 SWEP.IsFirstDeploy = true
 
-local function PlayChoosenAnimation(self, typev, tanim, ...)
+local function PlayChosenAnimation(self, typev, tanim, ...)
 	local fnName = typev == TFA.Enum.ANIMATION_SEQ and "SendViewModelSeq" or "SendViewModelAnim"
 	local a, b = self[fnName](self, tanim, ...)
 	return a, b, typev
 end
 
-SWEP.PlayChoosenAnimation = PlayChoosenAnimation
+SWEP.PlayChosenAnimation = PlayChosenAnimation
 
 function SWEP:ChooseDrawAnim()
 	local self2 = self:GetTable()
@@ -682,7 +682,7 @@ function SWEP:ChooseDrawAnim()
 
 	self2.LastDeployAnim = CurTime()
 
-	return PlayChoosenAnimation(self, typev, tanim)
+	return PlayChosenAnimation(self, typev, tanim)
 end
 
 function SWEP:ResetFirstDeploy()
@@ -717,7 +717,7 @@ function SWEP:ChooseInspectAnim()
 		success = false
 	end
 
-	return PlayChoosenAnimation(self, typev, tanim)
+	return PlayChosenAnimation(self, typev, tanim)
 end
 
 --[[
@@ -742,7 +742,7 @@ function SWEP:ChooseHolsterAnim()
 		return false, select(2, self:ChooseIdleAnim())
 	end
 
-	return PlayChoosenAnimation(self, typev, tanim)
+	return PlayChosenAnimation(self, typev, tanim)
 end
 
 --[[
@@ -796,7 +796,7 @@ function SWEP:ChooseReloadAnim()
 	self:SetAnimCycle(self2.ViewModelFlip and 0 or 1)
 	self2.AnimCycle = self:GetAnimCycle()
 
-	return PlayChoosenAnimation(self, typev, tanim, fac, fac ~= 1)
+	return PlayChosenAnimation(self, typev, tanim, fac, fac ~= 1)
 end
 
 --[[
@@ -823,7 +823,7 @@ function SWEP:ChooseShotgunReloadAnim()
 		return false, select(2, self:ChooseIdleAnim())
 	end
 
-	return PlayChoosenAnimation(self, typev, tanim)
+	return PlayChosenAnimation(self, typev, tanim)
 end
 
 function SWEP:ChooseShotgunPumpAnim()
@@ -834,7 +834,7 @@ function SWEP:ChooseShotgunPumpAnim()
 		self:GetIronSightsDirect() and
 		self:GetActivityEnabled(ACT_SHOTGUN_RELOAD_START_ADS)) and "reload_shotgun_finish_is" or "reload_shotgun_finish")
 
-	return PlayChoosenAnimation(self, typev, tanim)
+	return PlayChosenAnimation(self, typev, tanim)
 end
 
 --[[
@@ -890,7 +890,7 @@ function SWEP:ChooseIdleAnim()
 	--else
 	--	return
 	--end
-	return PlayChoosenAnimation(self, typev, tanim)
+	return PlayChosenAnimation(self, typev, tanim)
 end
 
 function SWEP:ChooseFlatAnim()
@@ -905,7 +905,7 @@ function SWEP:ChooseFlatAnim()
 		typev, tanim = self:ChooseAnimation("idle_empty")
 	end
 
-	return PlayChoosenAnimation(self, typev, tanim, 0.000001)
+	return PlayChosenAnimation(self, typev, tanim, 0.000001)
 end
 
 function SWEP:ChooseADSAnim()
@@ -1020,7 +1020,7 @@ function SWEP:ChooseShootAnim(ifp)
 			typev, tanim = self:ChooseAnimation("shoot1")
 		end
 
-		return PlayChoosenAnimation(self, typev, tanim)
+		return PlayChosenAnimation(self, typev, tanim)
 	end
 
 	self:SendViewModelAnim(ACT_VM_BLOWBACK)
@@ -1076,7 +1076,7 @@ function SWEP:ChooseSilenceAnim(val)
 		return false, select(2, self:ChooseIdleAnim())
 	end
 
-	return PlayChoosenAnimation(self, typev, tanim)
+	return PlayChosenAnimation(self, typev, tanim)
 end
 
 --[[
@@ -1109,7 +1109,7 @@ function SWEP:ChooseDryFireAnim()
 		end
 	end
 
-	return PlayChoosenAnimation(self, typev, tanim)
+	return PlayChosenAnimation(self, typev, tanim)
 end
 
 --[[
@@ -1139,7 +1139,7 @@ function SWEP:ChooseROFAnim()
 		return success, tanim -- ???
 	end
 
-	return PlayChoosenAnimation(self, typev, tanim)
+	return PlayChosenAnimation(self, typev, tanim)
 end
 
 --[[
@@ -1179,7 +1179,7 @@ function SWEP:ChooseBashAnim()
 		return success, tanim
 	end
 
-	return PlayChoosenAnimation(self, typev, tanim)
+	return PlayChosenAnimation(self, typev, tanim)
 end
 
 --[[THIRDPERSON]]
