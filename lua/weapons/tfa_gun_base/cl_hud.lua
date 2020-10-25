@@ -1431,7 +1431,7 @@ function SWEP:DoDrawCrosshair()
 			extraRotation = extraRotation * mul
 		else
 			extraRotation = TFA.Quintic(TFA.Cosine(self:GetStatusProgress(true)))
-			local mul = -45
+			local mul = -180
 
 			if extraRotation < 0.5 then
 				extraRotation = extraRotation * mul
