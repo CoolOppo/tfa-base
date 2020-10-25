@@ -1009,7 +1009,7 @@ function SWEP:PlayerThinkCL(plyv)
 
 	local ist = is and 1 or 0
 
-	local reloadBlendMult = 1
+	local reloadBlendMult, reloadBlendMult2 = 1, 1
 
 	if not self2.Shotgun and (status == TFA.Enum.STATUS_RELOADING or status == TFA.Enum.STATUS_RELOADING_WAIT) and self2.ReloadAnimationEnd and self2.ReloadAnimationStart then
 		local time = l_CT()
@@ -1019,11 +1019,13 @@ function SWEP:PlayerThinkCL(plyv)
 			Clamp(progress - 0.7, 0, 0.3) / 0.3,
 			Clamp(0.1 - progress, 0, 0.1) / 0.1
 		))
+
+		reloadBlendMult2 = (1 + reloadBlendMult) / 2
 	elseif TFA.Enum.ReloadStatus[status] then
 		reloadBlendMult = 0
+		reloadBlendMult2 = 0.5
 	end
 
-	local sprt = spr and reloadBlendMult or 0
 	local fidgetBlendMult = 1
 
 	if status == TFA.Enum.STATUS_FIDGET then
@@ -1035,7 +1037,9 @@ function SWEP:PlayerThinkCL(plyv)
 		))
 	end
 
+	local sprt = spr and reloadBlendMult or 0
 	local sprt2 = spr and (fidgetBlendMult * reloadBlendMult) or 0
+	local sprt3 = spr and reloadBlendMult2 or 0
 
 	local walkt = walk and 1 or 0
 
@@ -1068,6 +1072,7 @@ function SWEP:PlayerThinkCL(plyv)
 	self2.IronSightsProgressUnpredicted2 = l_mathApproach(self2.IronSightsProgressUnpredicted2 or 0, ist, (ist - (self2.IronSightsProgressUnpredicted2 or 0)) * ft * adstransitionspeed * 0.4)
 	self2.SprintProgressUnpredicted = l_mathApproach(self2.SprintProgressUnpredicted or 0, sprt, (sprt - (self2.SprintProgressUnpredicted or 0)) * ft * adstransitionspeed)
 	self2.SprintProgressUnpredicted2 = l_mathApproach(self2.SprintProgressUnpredicted2 or 0, sprt2, (sprt2 - (self2.SprintProgressUnpredicted2 or 0)) * ft * adstransitionspeed)
+	self2.SprintProgressUnpredicted3 = l_mathApproach(self2.SprintProgressUnpredicted3 or 0, sprt3, (sprt3 - (self2.SprintProgressUnpredicted3 or 0)) * ft * adstransitionspeed)
 
 	if self2.IronSightsProgressUnpredicted2 >= 0.8 and not self2.VM_IsScopedIn then
 		self2.VM_IsScopedIn = true

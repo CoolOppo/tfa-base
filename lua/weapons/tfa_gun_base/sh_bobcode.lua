@@ -178,7 +178,7 @@ function SWEP:SprintBob(pos, ang, intensity, origPos, origAng)
 	intensity = intensity * gunbob_intensity * 1.5
 	gunbob_intensity = gunbob_intensity_cvar:GetFloat()
 
-	if self2.SprintProgressUnpredicted > 0.005 then
+	if intensity > 0.005 then
 		if self2.SprintStyle == 1 then
 			local intensity3 = math.max(intensity - 0.3, 0) / (1 - 0.3)
 			ang:RotateAroundAxis(ang:Up(), math.sin(self2.ti * pist_rate) * pist_scale * intensity3 * 0.33 * 0.75)

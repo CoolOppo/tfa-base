@@ -480,7 +480,7 @@ function SWEP:CalculateViewModelOffset(delta)
 
 	intensityWalk = math.min(self:GetOwner():GetVelocity():Length2D() / self:GetOwner():GetWalkSpeed(), 1) * Lerp(ironSightsProgress, self2.WalkBobMult, self2.WalkBobMult_Iron or self2.WalkBobMult)
 	intensityBreath = Lerp(ironSightsProgress, self2.GetStat(self, "BreathScale", 0.2), self2.GetStat(self, "IronBobMultWalk", 0.5) * intensityWalk)
-	intensityRun = Lerp(self2.SprintProgressUnpredicted or self:GetSprintProgress(), 0, self2.SprintBobMult)
+	intensityRun = Lerp(self2.SprintProgressUnpredicted3 or self2.SprintProgressUnpredicted or self:GetSprintProgress(), 0, self2.SprintBobMult)
 	local velocity = math.max(self:GetOwner():GetVelocity():Length2D() * self:AirWalkScale() - self:GetOwner():GetVelocity().z * 0.5, 0)
 	local rate = math.min(math.max(0.15, math.sqrt(velocity / self:GetOwner():GetRunSpeed()) * 1.75), self:GetSprinting() and 5 or 3)
 
@@ -570,7 +570,7 @@ function SWEP:GetViewModelPosition(pos, ang)
 
 	if cv_customgunbob:GetBool() then
 		pos, ang = self:Sway(pos, ang)
-		pos, ang = self:SprintBob(pos, ang, Lerp(self2.SprintProgressUnpredicted or self:GetSprintProgress(), 0, self2.SprintBobMult))
+		pos, ang = self:SprintBob(pos, ang, Lerp(self2.SprintProgressUnpredicted3 or self2.SprintProgressUnpredicted or self:GetSprintProgress(), 0, self2.SprintBobMult))
 	end
 
 	return pos, ang
