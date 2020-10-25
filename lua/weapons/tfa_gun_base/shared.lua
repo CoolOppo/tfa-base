@@ -1039,8 +1039,6 @@ function SWEP:PlayerThinkCL(plyv)
 
 	local walkt = walk and 1 or 0
 
-	local adstransitionspeed = (spr or walk) and 7.5 or 12.5
-
 	local IronSightsPos = self2.GetStat(self, "IronSightsPos", self2.SightsPos)
 	local IronSightsAng = self2.GetStat(self, "IronSightsAng", self2.SightsAng)
 
@@ -1057,13 +1055,7 @@ function SWEP:PlayerThinkCL(plyv)
 		self2.IronSightsAngCurrent.z = Lerp(ft * 11, self2.IronSightsAngCurrent.z, self2.IronSightsAngCurrent.z - math.AngleDifference(self2.IronSightsAngCurrent.z, IronSightsAng.z))
 	end
 
-	if is then
-		adstransitionspeed = 12.5 / (self:GetStat("IronSightTime") / 0.3)
-	elseif spr or walk then
-		adstransitionspeed = 7.5
-	else
-		adstransitionspeed = 12.5
-	end
+	local adstransitionspeed = is and (12.5 / (self:GetStat("IronSightTime") / 0.3)) or (spr or walk) and 7.5 or 12.5
 
 	local ply = self:GetOwner()
 	local velocity = self2.LastUnpredictedVelocity or ply:GetVelocity()
