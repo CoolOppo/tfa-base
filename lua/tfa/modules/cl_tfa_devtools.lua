@@ -145,7 +145,7 @@ local function DrawDebugInfo(w, h, ply, wep)
 	if vm:IsValid() then
 		local seq = vm:GetSequence()
 
-		draw.SimpleTextOutlined(string.format("%s (%s/%d)", vm:GetSequenceName(seq), vm:GetSequenceActivityName(seq), vm:GetSequenceActivity(seq)), "TFASleekDebug", x, y, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP, 1, color_black)
+		draw.SimpleTextOutlined(string.format("%s [%d] (%s/%d)", vm:GetSequenceName(seq), seq, vm:GetSequenceActivityName(seq), vm:GetSequenceActivity(seq)), "TFASleekDebug", x, y, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP, 1, color_black)
 		y = y + TFA.Fonts.SleekHeightDebug
 
 		local cycle = vm:GetCycle()
