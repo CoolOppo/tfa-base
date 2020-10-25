@@ -61,7 +61,7 @@ function SWEP:TFAFinishMove(ply, velocity, movedata)
 	local jr_targ = math.min(math.abs(velocity.z) / 500, 1)
 	self:SetJumpRatio(l_mathApproach(self:GetJumpRatio(), jr_targ, (jr_targ - self:GetJumpRatio()) * ft * 20))
 	self2.JumpRatio = self:GetJumpRatio()
-	self:SetCrouchingRatio(l_mathApproach(self:GetCrouchingRatio(), ((isply and ply:Crouching()) and ply:OnGround()) and 1 or 0, ft / self2.ToCrouchTime))
+	self:SetCrouchingRatio(l_mathApproach(self:GetCrouchingRatio(), (self:IsOwnerCrouching()) and 1 or 0, ft / self2.ToCrouchTime))
 	self2.CrouchingRatio = self:GetCrouchingRatio()
 
 	local status = self2.GetStatus(self)
@@ -201,7 +201,7 @@ SWEP.CrouchAccuracyMultiplier = 0.5 --Less is more.  Accuracy * 0.5 = Twice as a
 SWEP.ChangeStateAccuracyMultiplier = 1.5 --Less is more.  A change of state is when we're in the progress of doing something, like crouching or ironsighting.  Accuracy * 2 = Half as accurate.  Accuracy * 5 = 1/5 as accurate
 SWEP.JumpAccuracyMultiplier = 2 --Less is more.  Accuracy * 2 = Half as accurate.  Accuracy * 5 = 1/5 as accurate
 SWEP.WalkAccuracyMultiplier = 1.35 --Less is more.  Accuracy * 2 = Half as accurate.  Accuracy * 5 = 1/5 as accurate
-SWEP.ToCrouchTime = 0.2
+SWEP.ToCrouchTime = 0.25
 
 local mult_cvar = GetConVar("sv_tfa_spread_multiplier")
 local dynacc_cvar = GetConVar("sv_tfa_dynamicaccuracy")
