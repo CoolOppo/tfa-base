@@ -350,7 +350,7 @@ function SWEP:ChooseAnimation(keyOrData)
 	end
 
 	if retType == TFA.Enum.ANIMATION_ACT and isstring(retValue) then
-		retValue = tonumber(tval) or -1
+		retValue = tonumber(retValue) or -1
 	elseif retType == TFA.Enum.ANIMATION_SEQ and isstring(retValue) then
 		retValue = self2.OwnerViewModel:LookupSequence(retValue)
 	end
@@ -587,7 +587,6 @@ function SWEP:PlayAnimation(data, fade, rate, targ)
 	return success, activityID, TFA.Enum.ANIMATION_ACT
 end
 
-local success, tanim, typev
 --[[
 Function Name:  Locomote
 Syntax: self:Locomote( flip ironsights, new is, flip sprint, new sprint, flip walk, new walk).
@@ -658,6 +657,8 @@ local function PlayChosenAnimation(self, typev, tanim, ...)
 end
 
 SWEP.PlayChosenAnimation = PlayChosenAnimation
+
+local success, tanim, typev
 
 function SWEP:ChooseDrawAnim()
 	local self2 = self:GetTable()

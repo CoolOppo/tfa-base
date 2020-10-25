@@ -578,7 +578,7 @@ function SWEP:GetViewModelPosition(pos, ang)
 
 	if cv_customgunbob:GetBool() then
 		pos, ang = self:Sway(pos, ang)
-		pos, ang = self:SprintBob(pos, ang, Lerp(self2.SprintProgressUnpredicted or self:GetSprintProgress(), 0, self2.SprintBobMult), pos2, ang2)
+		pos, ang = self:SprintBob(pos, ang, Lerp(self2.SprintProgressUnpredicted or self:GetSprintProgress(), 0, self2.SprintBobMult))
 	end
 
 	return pos, ang

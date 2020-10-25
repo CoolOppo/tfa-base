@@ -1038,7 +1038,6 @@ function SWEP:PlayerThinkCL(plyv)
 	local sprt2 = spr and (fidgetBlendMult * reloadBlendMult) or 0
 
 	local walkt = walk and 1 or 0
-	local adstransitionspeed
 
 	local adstransitionspeed = (spr or walk) and 7.5 or 12.5
 

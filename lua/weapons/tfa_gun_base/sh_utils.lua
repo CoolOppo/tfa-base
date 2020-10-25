@@ -729,9 +729,9 @@ function SWEP:CycleFireMode()
 	end
 
 	self:SetFireMode(fm)
-	local sucess, tanim, ttype = self:ChooseROFAnim()
+	local success, tanim, ttype = self:ChooseROFAnim()
 
-	if sucess then
+	if success then
 		self:SetNextPrimaryFire(ct + self:GetActivityLength(tanim, false, ttype))
 	else
 		self:EmitSound(self:GetStat("FireModeSound"))
@@ -769,9 +769,9 @@ function SWEP:CycleSafety()
 		self:SetFireMode(self.LastFireMode or 1)
 	end
 
-	local sucess, tanim, ttype = self:ChooseROFAnim()
+	local success, tanim, ttype = self:ChooseROFAnim()
 
-	if a then
+	if success then
 		self:SetSafetyCycleAnimated(true)
 		self:SetNextPrimaryFire(ct + self:GetActivityLength(tanim, false, ttype))
 	else
