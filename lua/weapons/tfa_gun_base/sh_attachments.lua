@@ -300,9 +300,34 @@ local function mtbl(t1, t2)
 end
 ]]
 --
+SWEP.LastClearStatCache = 0
+SWEP.ClearStatCacheWarnCount = 0
+SWEP.ClearStatCacheWarned = false
+
+local IdealCSCDeltaTime = engine.TickInterval() * 2
+
 function SWEP:ClearStatCache(vn)
 	local self2 = self:GetTable()
 	local getpath, getpath2
+
+	if not vn and not self2.ClearStatCacheWarned then
+		local ct = CurTime()
+		local delta = ct - self2.LastClearStatCache
+
+		if delta < IdealCSCDeltaTime and debug.traceback():find("Think2") then
+			self2.ClearStatCacheWarnCount = self2.ClearStatCacheWarnCount + 1
+
+			if self2.ClearStatCacheWarnCount >= 5 then
+				self2.ClearStatCacheWarned = true
+
+				print(("[TFA Base] Weapon %s (%s) is abusing ClearStatCache function from Think2! This will lead to really bad performance issues, tell weapon's author to fix it ASAP!"):format(self2.PrintName, self:GetClass()))
+			end
+		elseif self2.ClearStatCacheWarnCount > 0 then
+			self2.ClearStatCacheWarnCount = 0
+		end
+
+		self2.LastClearStatCache = ct
+	end
 
 	if vn then
 		self2.StatCache[vn] = nil
