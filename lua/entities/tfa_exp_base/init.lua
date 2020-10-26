@@ -23,6 +23,8 @@ AddCSLuaFile("cl_init.lua")
 AddCSLuaFile("shared.lua")
 include("shared.lua")
 
+ENT.DefaultModel = Model("models/weapons/w_eq_fraggrenade.mdl")
+
 ENT.Damage = 100
 ENT.Delay = 3
 
@@ -30,7 +32,7 @@ function ENT:Initialize()
 	local mdl = self:GetModel()
 
 	if not mdl or mdl == "" or mdl == "models/error.mdl" then
-		self:SetModel("models/weapons/w_eq_fraggrenade.mdl")
+		self:SetModel(self.DefaultModel)
 	end
 
 	self:PhysicsInit(SOLID_VPHYSICS)
