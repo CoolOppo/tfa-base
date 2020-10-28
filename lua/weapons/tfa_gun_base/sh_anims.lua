@@ -289,6 +289,13 @@ function SWEP:ChooseAnimation(keyOrData)
 		end
 	end
 
+	if self:Clip1() == 1 and self2.GetStat(self, "Primary.ClipSize") >= 0 then
+		if data.value_last then
+			retValue = data.value_last
+			retType = data.type_last or previousRetType
+		end
+	end
+
 	if self2.GetSilenced(self) then
 		local previousRetType = retType
 
@@ -313,14 +320,14 @@ function SWEP:ChooseAnimation(keyOrData)
 			retType = data.type_is or previousRetType
 		end
 
-		if self:Clip1() <= 0 and self2.Primary_TFA.ClipSize >= 0 then
+		if self:Clip1() <= 0 and self2.GetStat(self, "Primary.ClipSize") >= 0 then
 			if data.value_is_empty then
 				retValue = data.value_is_empty
 				retType = data.type_is_empty or previousRetType
 			end
 		end
 
-		if self:Clip1() == 1 and self2.Primary_TFA.ClipSize >= 0 then
+		if self:Clip1() == 1 and self2.GetStat(self, "Primary.ClipSize") >= 0 then
 			if data.value_is_last then
 				retValue = data.value_is_last
 				retType = data.type_is_last or previousRetType
@@ -333,14 +340,14 @@ function SWEP:ChooseAnimation(keyOrData)
 				retType = data.type_is_sil or previousRetType
 			end
 
-			if self:Clip1() <= 0 and self2.Primary_TFA.ClipSize >= 0 then
+			if self:Clip1() <= 0 and self2.GetStat(self, "Primary.ClipSize") >= 0 then
 				if data.value_is_sil_empty then
 					retValue = data.value_is_sil_empty
 					retType = data.type_is_sil_empty or previousRetType
 				end
 			end
 
-			if self:Clip1() == 1 and self2.Primary_TFA.ClipSize >= 0 then
+			if self:Clip1() == 1 and self2.GetStat(self, "Primary.ClipSize") >= 0 then
 				if data.value_is_sil_last then
 					retValue = data.value_is_sil_last
 					retType = data.type_is_sil_last or previousRetType
