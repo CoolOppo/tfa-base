@@ -792,32 +792,48 @@ local function tfaOptionAbout(panel)
 
 	panel:Help("")
 
+	panel:Help("#tfa.about.changelog.label")
+	local btnGitLabChangelog = panel:Button("#tfa.about.changelog.btn.gitlab")
+	btnGitLabChangelog.DoClick = function()
+		gui.OpenURL("https://gitlab.com/tfa-devs/tfa-base/-/blob/master/CHANGELOG.md")
+	end
+	local btnSteamChangeNotes = panel:Button("#tfa.about.changelog.btn.steam")
+	btnSteamChangeNotes.DoClick = function()
+		gui.OpenURL("https://steamcommunity.com/sharedfiles/filedetails/changelog/415143062")
+	end
+
+	panel:Help("")
+
 	panel:Help("#tfa.about.help.label")
-	local btnGitLabIssues = panel:Button("GitLab Issues")
+	local btnGitLabIssues = panel:Button("#tfa.about.help.btn.gitlab")
 	btnGitLabIssues.DoClick = function()
 		gui.OpenURL("https://gitlab.com/tfa-devs/tfa-base/-/issues")
 	end
-	local btnDiscordHelp = panel:Button("Help channel in Discord")
+	local btnDiscordHelp = panel:Button("#tfa.about.help.btn.discord")
 	btnDiscordHelp.DoClick = function()
 		gui.OpenURL("https://discord.gg/U38pBcP")
+	end
+	local btnSteamGroupBugReport = panel:Button("#tfa.about.help.btn.steam")
+	btnSteamGroupBugReport.DoClick = function()
+		gui.OpenURL("https://steamcommunity.com/groups/tfa-mods/discussions/2/")
 	end
 
 	panel:Help("")
 
 	panel:Help("#tfa.about.chat.label")
-	local btnSteam = panel:Button("Steam Group")
-	btnSteam.DoClick = function()
+	local btnChatSteam = panel:Button("#tfa.about.chat.btn.steam")
+	btnChatSteam.DoClick = function()
 		gui.OpenURL("https://steamcommunity.com/groups/tfa-mods")
 	end
-	local btnDiscord = panel:Button("Discord")
-	btnDiscord.DoClick = function()
+	local btnChatDiscord = panel:Button("#tfa.about.chat.btn.discord")
+	btnChatDiscord.DoClick = function()
 		gui.OpenURL("https://discord.gg/Gxqx67n")
 	end
 
 	panel:Help("")
 
 	panel:Help("#tfa.about.contrib.label")
-	local btnGitLab = panel:Button("TFA Base GitLab Repository")
+	local btnGitLab = panel:Button("#tfa.about.contrib.btn.gitlab")
 	btnGitLab.DoClick = function()
 		gui.OpenURL("https://gitlab.com/tfa-devs/tfa-base")
 	end
