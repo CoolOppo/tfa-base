@@ -292,7 +292,7 @@ function SWEP:ChooseAnimation(keyOrData)
 	if self:Clip1() == 1 and self2.GetStat(self, "Primary.ClipSize") >= 0 then
 		if data.value_last then
 			retValue = data.value_last
-			retType = data.type_last or previousRetType
+			retType = data.type_last or retType
 		end
 	end
 
