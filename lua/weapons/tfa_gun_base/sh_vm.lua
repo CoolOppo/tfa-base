@@ -456,17 +456,17 @@ function SWEP:CalculateViewModelOffset(delta)
 			if not ironSights then
 				local ang = self:GetRecoilLUTAngle()
 
-				target_ang.x = target_ang.x - ang.p / 2 * ironSightsProgress
-				target_ang.y = target_ang.y + ang.y / 2 * ironSightsProgress
+				target_ang.x = target_ang.x - ang.p / 2 * (1 - ironSightsProgress)
+				target_ang.y = target_ang.y + ang.y / 2 * (1 - ironSightsProgress)
 			end
 		else
-			target_ang.x = target_ang.x - self:GetViewPunchP() * Lerp(ironSightsProgress, self:GetStat("ViewModelPunchPitchMultiplier_IronSights"), self:GetStat("ViewModelPunchPitchMultiplier"))
-			target_ang.y = target_ang.y + self:GetViewPunchY() * Lerp(ironSightsProgress, self:GetStat("ViewModelPunchYawMultiplier_IronSights"), self:GetStat("ViewModelPunchYawMultiplier"))
+			target_ang.x = target_ang.x - self:GetViewPunchP() * Lerp(ironSightsProgress, self:GetStat("ViewModelPunchPitchMultiplier"), self:GetStat("ViewModelPunchPitchMultiplier_IronSights"))
+			target_ang.y = target_ang.y + self:GetViewPunchY() * Lerp(ironSightsProgress, self:GetStat("ViewModelPunchYawMultiplier"), self:GetStat("ViewModelPunchYawMultiplier_IronSights"))
 
-			local ViewModelPunch_MaxVertialOffset = Lerp(ironSightsProgress, self:GetStat("ViewModelPunch_MaxVertialOffset_IronSights"), self:GetStat("ViewModelPunch_MaxVertialOffset"))
+			local ViewModelPunch_MaxVertialOffset = Lerp(ironSightsProgress, self:GetStat("ViewModelPunch_MaxVertialOffset"), self:GetStat("ViewModelPunch_MaxVertialOffset_IronSights"))
 
 			target_pos.y = target_pos.y + math.Clamp(
-				self:GetViewPunchP() * Lerp(ironSightsProgress, self:GetStat("ViewModelPunch_VertialMultiplier_IronSights"), self:GetStat("ViewModelPunch_VertialMultiplier")),
+				self:GetViewPunchP() * Lerp(ironSightsProgress, self:GetStat("ViewModelPunch_VertialMultiplier"), self:GetStat("ViewModelPunch_VertialMultiplier_IronSights")),
 				-ViewModelPunch_MaxVertialOffset,
 				ViewModelPunch_MaxVertialOffset)
 		end
