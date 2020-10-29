@@ -116,6 +116,8 @@ function SWEP:CalculateRatios()
 	local ft = FrameTime()
 	local time = CurTime()
 
+	if ft <= 0 then return end
+
 	local is = self2.GetIronSights(self)
 	local spr = self2.GetSprinting(self)
 	local walk = self2.GetWalking(self)
