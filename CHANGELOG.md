@@ -1,4 +1,18 @@
 # This is an archive of changelog messages from `tfa_loader.lua`. For proper changes list refer to the Git history.
+## 4.6.0.0
+* HUGE optimization and prediction improvements
+* Better recoil and viewpunch, all configurable
+* New nearly-empty (and empty) magazine click sounds
+* Proper NPC support (custom tracers/projectiles, random attachments)
+* Redone Inspection GUI (scaled fonts and elements, hooks, overrides)
+* Improved damage falloff (LUT falloff with variable calculation methods)
+* ADS reload animation support (like in CAWODOOTY! favorite gaem!!!)
+* Hybrid blowback animation (allowing model animation to play)
+* Crouched viewmodel offset position
+* Full sequence-based weapons support
+* Silenced empty/last fire animation support
+* Each animation can contain values for each case (like in SWEP.PumpAction, etc)
+* New viewmodel position/angles interpolation techniques
 
 ## 4.5.8.0
 * Added material proxy for tinting envmaps with ambient lighting (TFA_CubemapTint)
@@ -237,7 +251,7 @@
 
 ## 3.0.0.0
 * Entire TFA Base linted and micro-optimized
-* Performance holding a TFA Base gun is better compared to a HL2 gun 
+* Performance holding a TFA Base gun is better compared to a HL2 gun
 
 ## 2.88.0.0
 * Added SWEP.Primary.AmmoConsumption

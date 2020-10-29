@@ -17,6 +17,7 @@ A customizable, modular, feature-rich weapon base for Garry's Mod.
 * INCONCEIVABLE — Assets for scope overlays
 * Clavus — SWEP Construction Kit code and reference
 * Wystan — Attachments models
+* 『クリスチャン』 — Nearly-empty click sounds
 * Valve — Shell casings models
 
 # Contact us
