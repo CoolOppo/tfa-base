@@ -23,6 +23,8 @@ local FT = FrameTime
 
 local tfablurintensity = 0
 
+local cv_3dscopes = GetConVar("cl_tfa_3dscope")
+
 local cv_mode = CreateClientConVar("cl_tfa_fx_rtscopeblur_mode", "1", true, false)
 local funcs = {}
 
@@ -63,6 +65,8 @@ end
 hook.Add("PostDrawTranslucentRenderables", "tfa_draw_rt_blur", function()
 	if TFA.DrawingRenderTarget then return end
 
+	if not cv_3dscopes:GetBool() then return end
+
 	local mode = cv_mode:GetInt()
 	if not isfunction(funcs[mode]) then return end
 
@@ -88,6 +92,8 @@ end)
 
 hook.Add("NeedsDepthPass", "aaaaaaaaaaaaaaaaaaNeedsDepthPass_TJA_IronSight", function()
 	if tfablurintensity > 0.05 and cv_mode:GetInt() == 2 then
+		if not cv_3dscopes:GetBool() then return end
+
 		DOFModeHack(true)
 
 		return true
