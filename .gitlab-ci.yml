@@ -18,3 +18,11 @@ gluacheck:
     - luarocks make
     - cd $CI_PROJECT_DIR
     - luacheck .
+
+  only:
+    refs:
+      - branches
+      - external_pull_requests
+      - merge_requests
+    changes:
+      - "lua/**/*.lua"
