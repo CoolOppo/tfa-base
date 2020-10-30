@@ -22,7 +22,7 @@
 local WEAPON = FindMetaTable("Weapon")
 
 if WEAPON then
-	function WEAPON:IsTFA()
+	function WEAPON:IsTFA() -- please do not use, just check for IsTFAWeapon directly
 		return self.IsTFAWeapon
 	end
 else

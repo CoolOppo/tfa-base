@@ -78,6 +78,14 @@ if nzombies then
 		end
 		wep.OldSpCola = spd2
 	end)
+	hook.Add("TFA_Initialize", "NZBase", function(wep)
+		timer.Simple(0.1, function() -- timers for everything YAY
+			if not IsValid(wep) then return end
+
+			wep.Primary_TFA.Ammo = game.GetAmmoName(wep:GetPrimaryAmmoType())
+			wep:ClearStatCache("Primary.Ammo")
+		end)
+	end)
 end
 --[[
 local function SpreadFix()

@@ -1,4 +1,10 @@
 # This is an archive of changelog messages from `tfa_loader.lua`. For proper changes list refer to the Git history.
+## 4.6.0.4
+* Fixed nZombies weapons sharing ammo types
+
+## 4.6.0.3
+* Fixed viewmodel snapping to idle position on procedural holster end
+
 ## 4.6.0.2
 * Fixed nZombies compatibility (only original nZ version was tested)
 
