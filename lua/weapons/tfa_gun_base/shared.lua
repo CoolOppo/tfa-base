@@ -1931,7 +1931,7 @@ function SWEP:DoAmmoCheck(clipID)
 	if clipID == nil then clipID = 1 end
 	local self2 = self:GetTable()
 
-	if IsValid(self) and SERVER and cv_strip:GetBool() and self["Clip" .. clipID]() == 0 and self["Ammo" .. clipID]() == 0 then
+	if IsValid(self) and SERVER and cv_strip:GetBool() and self["Clip" .. clipID](self) == 0 and self["Ammo" .. clipID](self) == 0 then
 		timer.Simple(.1, function()
 			if SERVER and IsValid(self) and self:OwnerIsValid() then
 				self:GetOwner():StripWeapon(self2.ClassName)
