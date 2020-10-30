@@ -20,6 +20,7 @@
 -- SOFTWARE.
 
 local vector_origin = Vector()
+local angle_zero = Angle()
 
 local l_mathClamp = math.Clamp
 local Lerp = Lerp
@@ -34,7 +35,7 @@ end
 
 local ballistics_distcv = GetConVar("sv_tfa_ballistics_mindist")
 
-local function BallisticFirebullet(ply, bul, ovr)
+local function BallisticFirebullet(ply, bul, ovr, angPreserve)
 	local wep = ply:GetActiveWeapon()
 
 	if TFA.Ballistics and TFA.Ballistics:ShouldUse(wep) then
@@ -42,9 +43,9 @@ local function BallisticFirebullet(ply, bul, ovr)
 			bul.SmokeParticle = bul.SmokeParticle or wep.BulletTracer or wep.TracerBallistic or wep.BallisticTracer or wep.BallisticsTracer
 
 			if ovr then
-				TFA.Ballistics:FireBullets(wep, bul, angle_zero, true)
+				TFA.Ballistics:FireBullets(wep, bul, angPreserve or angle_zero, true)
 			else
-				TFA.Ballistics:FireBullets(wep, bul)
+				TFA.Ballistics:FireBullets(wep, bul, angPreserve)
 			end
 		else
 			ply:FireBullets(bul)
@@ -292,7 +293,7 @@ function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet,
 				self:PCFTracer(bullet, trace.HitPos or vector_origin)
 			end
 
-			BallisticFirebullet(owner, bullet)
+			BallisticFirebullet(owner, bullet, nil, ang)
 		end
 
 		return
