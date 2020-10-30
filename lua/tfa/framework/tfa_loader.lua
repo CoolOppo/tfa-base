@@ -24,8 +24,8 @@ if SERVER then AddCSLuaFile() end
 TFA = TFA or {}
 
 local do_load = true
-local version = 4.602
-local version_string = "4.6.0.2"
+local version = 4.603
+local version_string = "4.6.0.3"
 local changelog = [[
 	* HUGE optimization and prediction improvements
 	* Better recoil and viewpunch, all configurable

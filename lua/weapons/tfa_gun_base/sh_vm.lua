@@ -305,7 +305,7 @@ function SWEP:CalculateViewModelOffset(delta)
 	local stat = self:GetStatus()
 
 	local holsterStatus = (TFA.Enum.HolsterStatus[stat] and self2.ProceduralHolsterEnabled) or (TFA.Enum.ReloadStatus[stat] and self2.ProceduralReloadEnabled)
-	local holsterProgress = holsterStatus and TFA.Quintic(Clamp(self:GetStatusProgress() * 1.1, 0, 1)) or 0
+	local holsterProgress = TFA.Enum.HolsterStatusFinal[stat] and 1 or holsterStatus and TFA.Quintic(Clamp(self:GetStatusProgress() * 1.1, 0, 1)) or 0
 
 	local sprintAnimAllowed = self2.Sprint_Mode == TFA.Enum.LOCOMOTION_LUA or self2.Sprint_Mode == TFA.Enum.LOCOMOTION_HYBRID
 

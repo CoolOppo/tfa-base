@@ -106,6 +106,11 @@ TFA.Enum.HolsterStatus = {
 	[TFA.Enum.STATUS_HOLSTER_READY] = true
 }
 
+TFA.Enum.HolsterStatusFinal = {
+	[TFA.Enum.STATUS_HOLSTER_FINAL] = true,
+	[TFA.Enum.STATUS_HOLSTER_READY] = true
+}
+
 TFA.Enum.ReloadStatus = {
 	[TFA.Enum.STATUS_RELOADING] = true,
 	[TFA.Enum.STATUS_RELOADING_WAIT] = true,
