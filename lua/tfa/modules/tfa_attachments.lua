@@ -45,6 +45,8 @@ if SERVER then
 	util.AddNetworkString("TFA_Attachment_Request")
 
 	local function UpdateWeapon(wep, ply)
+		if not istable(wep.Attachments) then return end
+
 		for category, data in pairs(wep.Attachments) do
 			if type(category) ~= "string" then
 				net.Start("TFA_Attachment_Set")
@@ -81,7 +83,7 @@ if SERVER then
 	net.Receive("TFA_Attachment_Request", function(len, ply)
 		if not IsValid(ply) then return end
 		local wep = net.ReadEntity()
-		if not IsValid(wep) then return end
+		if not IsValid(wep) or not wep.IsTFAWeapon or not istable(wep.Attachments) then return end
 		UpdateWeapon(wep, ply)
 	end)
 
