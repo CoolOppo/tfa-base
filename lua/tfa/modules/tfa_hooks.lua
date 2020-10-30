@@ -561,3 +561,74 @@ hook.Add("HUDPaint", "TFA_TRIGGERCLIENTLOAD", function()
 		hook.Run("TFA_ClientLoad")
 	end
 end)
+
+--[[
+Hook: InitPostEntity
+Function: Wraps SWEP:Think functions
+Used For: Patching old, broken weapons that override SWEP:Think without calling baseclass
+]]
+--
+local PatchClassBlacklisted = {
+    tfa_gun_base = true,
+    tfa_melee_base = true,
+    tfa_bash_base = true,
+    tfa_bow_base = true,
+    tfa_knife_base = true,
+    tfa_nade_base = true,
+    tfa_sword_advanced_base = true,
+    tfa_cssnade_base = true,
+    tfa_shotty_base = true,
+    tfa_akimbo_base = true,
+    tfa_3dbash_base = true,
+    tfa_3dscoped_base = true,
+    tfa_scoped_base = true,
+}
+
+hook.Add("InitPostEntity", "TFA_PatchThinkOverride", function()
+    for _, wepRefTable in ipairs(weapons.GetList()) do
+        local class = wepRefTable.ClassName
+
+        if PatchClassBlacklisted[class] or not weapons.IsBasedOn(class, "tfa_gun_base") then
+            continue
+        end
+
+        local wepRealTbl = weapons.GetStored(class)
+
+        if wepRealTbl.Think then
+            local info = debug.getinfo(wepRealTbl.Think, "S")
+            if not info then continue end
+
+            local src = info.short_src
+
+            if src:StartWith("addons/") then
+                src = src:gsub("^addons/[^%0:/]+/", "")
+            end
+
+            local luafile = file.Read(src:sub(5), "LUA")
+            if not luafile then continue end
+
+            local lua = luafile:Split("\n")
+
+            for i = info.linedefined, info.lastlinedefined do
+                local line = lua[i]
+
+                if line:find("BaseClass%s*.%s*Think%s*%(") then
+                    goto THINK1FOUND
+                end
+            end
+
+            print(("[TFA Base] Weapon %s (%s) is overriding SWEP:Think() function without calling baseclass!"):format(wepRefTable.ClassName, info.short_src))
+
+            local BaseClass = baseclass.Get(wepRealTbl.Base)
+
+            wepRealTbl.ThinkFuncUnwrapped = wepRealTbl.ThinkFuncUnwrapped or wepRealTbl.Think
+            function wepRealTbl:Think(...)
+                self:ThinkFuncUnwrapped(...)
+
+                return BaseClass.Think(self, ...)
+            end
+        end
+
+        ::THINK1FOUND::
+    end
+end)

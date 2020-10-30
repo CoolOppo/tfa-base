@@ -24,8 +24,8 @@ if SERVER then AddCSLuaFile() end
 TFA = TFA or {}
 
 local do_load = true
-local version = 4.604
-local version_string = "4.6.0.4"
+local version = 4.605
+local version_string = "4.6.0.5"
 local changelog = [[
 	* HUGE optimization and prediction improvements
 	* Better recoil and viewpunch, all configurable
@@ -45,6 +45,7 @@ local changelog = [[
 	* Fixed DoAmmoCheck error when weapon stripping is enabled
 	* Fixed nZombies compatibility (only original nZ version was tested)
 	* Fixed viewmodel snapping to idle position on procedural holster end
+	* Added a workaround for old weapons that override SWEP:Think function without baseclass call
 ]]
 
 local function testFunc()

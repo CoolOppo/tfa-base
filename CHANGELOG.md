@@ -1,4 +1,7 @@
 # This is an archive of changelog messages from `tfa_loader.lua`. For proper changes list refer to the Git history.
+## 4.6.0.5
+* Added a workaround for old weapons that override SWEP:Think function without baseclass call
+
 ## 4.6.0.4
 * Fixed nZombies weapons sharing ammo types
 
