@@ -71,7 +71,7 @@ if SERVER then
 
 		if sp or not ply.TFA_RequestAll then
 			for _, v in ipairs(ents.GetAll()) do
-				if v:IsWeapon() and v:IsTFA() and v.HasInitAttachments then
+				if v:IsWeapon() and v.IsTFAWeapon and v.HasInitAttachments then
 					UpdateWeapon(v, ply)
 				end
 			end

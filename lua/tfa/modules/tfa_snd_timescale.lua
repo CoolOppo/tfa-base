@@ -36,7 +36,7 @@ hook.Add("EntityEmitSound", "zzz_TFA_EntityEmitSound", function(soundData)
 		weapon = ent:GetActiveWeapon()
 	end
 
-	if IsValid(weapon) and weapon.IsTFA and weapon:IsTFA() then
+	if IsValid(weapon) and weapon.IsTFA and weapon.IsTFAWeapon then
 		if weapon.GonnaAdjuctPitch then
 			soundData.Pitch = soundData.Pitch * weapon.RequiredPitch
 			weapon.GonnaAdjuctPitch = false

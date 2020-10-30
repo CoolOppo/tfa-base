@@ -30,7 +30,7 @@ hook.Add("PreRender", "TFACleanupProjectedTextures", function()
 
 	local wep = ply:GetActiveWeapon()
 
-	if not IsValid(wep) or not wep:IsTFA() then
+	if not IsValid(wep) or not wep.IsTFAWeapon then
 		if IsValid(ply.TFAFlashlightGun) then
 			ply.TFAFlashlightGun:Remove()
 		end
@@ -44,7 +44,7 @@ end)
 hook.Add("PrePlayerDraw", "TFACleanupProjectedTextures", function(plyv)
 	local wep = plyv:GetActiveWeapon()
 
-	if not IsValid(wep) or not wep:IsTFA() then
+	if not IsValid(wep) or not wep.IsTFAWeapon then
 		if IsValid(plyv.TFAFlashlightGun) then
 			plyv.TFAFlashlightGun:Remove()
 		end

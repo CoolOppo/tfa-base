@@ -24,8 +24,8 @@ if SERVER then AddCSLuaFile() end
 TFA = TFA or {}
 
 local do_load = true
-local version = 4.601
-local version_string = "4.6.0.1"
+local version = 4.602
+local version_string = "4.6.0.2"
 local changelog = [[
 	* HUGE optimization and prediction improvements
 	* Better recoil and viewpunch, all configurable
@@ -40,6 +40,10 @@ local changelog = [[
 	* Silenced empty/last fire animation support
 	* Each animation can contain values for each case (like in SWEP.PumpAction, etc)
 	* New viewmodel position/angles interpolation techniques
+	* Fixed shotgun spread not working properly with ballistics enabled
+	* Fixed some weapons failing to initialize missing attachments table
+	* Fixed DoAmmoCheck error when weapon stripping is enabled
+	* Fixed nZombies compatibility (only original nZ version was tested)
 ]]
 
 local function testFunc()

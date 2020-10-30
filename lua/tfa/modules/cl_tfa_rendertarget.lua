@@ -48,7 +48,7 @@ local function TFARenderScreen()
 
 	wep = ply:GetActiveWeapon()
 
-	if not IsValid(wep) or not wep:IsTFA() then return end
+	if not IsValid(wep) or not wep.IsTFAWeapon then return end
 
 	if not wep.MaterialCached then
 		wep.MaterialCached = true

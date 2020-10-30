@@ -72,7 +72,7 @@ TFA.LastRTUpdate = TFA.LastRTUpdate or UnPredictedCurTime()
 
 hook.Add("PreDrawViewModel", "TFA_DrawViewModel", function(vm, plyv, wep)
 	if not vm or not plyv or not wep then return end
-	if not wep:IsTFA() then return end
+	if not wep.IsTFAWeapon then return end
 
 	if supports == nil then
 		supports = render.SupportsPixelShaders_1_4() and render.SupportsPixelShaders_2_0() and render.SupportsVertexShaders_2_0()
@@ -145,7 +145,7 @@ local function DrawDOF(muzzledata,fwd2)
 end
 
 hook.Add("PostDrawViewModel", "TFA_DrawViewModel", function(vm, plyv, wep)
-	if not wep:IsTFA() then return end
+	if not wep.IsTFAWeapon then return end
 
 	if not supports then
 		wep:UpdateProjectedTextures(true)
@@ -246,7 +246,7 @@ end)
 
 hook.Add("PreDrawPlayerHands", "TFA_DrawViewModel", function(hands, vm, plyv, wep)
 	if STOP then return end
-	if not wep:IsTFA() then return end
+	if not wep.IsTFAWeapon then return end
 	if not supports then return end
 
 	if not cl_tfa_fx_dof then

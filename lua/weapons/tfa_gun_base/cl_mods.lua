@@ -720,7 +720,7 @@ function SWEP:DrawWorldModel()
 		end
 	end
 
-	if IsValid(self) and self:IsTFA() and (self:GetOwner() ~= LocalPlayer() or not self:IsFirstPerson()) then
+	if IsValid(self) and self.IsTFAWeapon and (self:GetOwner() ~= LocalPlayer() or not self:IsFirstPerson()) then
 		self:UpdateProjectedTextures(false)
 	end
 end

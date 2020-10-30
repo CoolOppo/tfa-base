@@ -174,7 +174,7 @@ local function MeleeFix()
 		if target:IsPlayer() and target.GetActiveWeapon then
 			local wep = target:GetActiveWeapon()
 
-			if IsValid(wep) and wep:IsTFA() and (wep.IsKnife or wep.IsMelee or wep.Primary.Reach) then
+			if IsValid(wep) and wep.IsTFAWeapon and (wep.IsKnife or wep.IsMelee or wep.Primary.Reach) then
 				dmg:ScaleDamage(cv_melee_berserkscale:GetFloat())
 			end
 		end
@@ -193,7 +193,7 @@ local function MeleeFix()
 				wep = ent
 			end
 
-			if IsValid(wep) and wep:IsTFA() and (wep.Primary.Attacks or wep.IsMelee or wep.Primary.Reach) and wep:GetPaP() then
+			if IsValid(wep) and wep.IsTFAWeapon and (wep.Primary.Attacks or wep.IsMelee or wep.Primary.Reach) and wep:GetPaP() then
 				dmg:ScaleDamage(2)
 			end
 		end

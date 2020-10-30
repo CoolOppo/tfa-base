@@ -1,4 +1,12 @@
 # This is an archive of changelog messages from `tfa_loader.lua`. For proper changes list refer to the Git history.
+## 4.6.0.2
+* Fixed nZombies compatibility (only original nZ version was tested)
+
+## 4.6.0.1
+* Fixed shotgun spread not working properly with ballistics enabled
+* Fixed some weapons failing to initialize missing attachments table
+* Fixed DoAmmoCheck error when weapon stripping is enabled
+
 ## 4.6.0.0
 * HUGE optimization and prediction improvements
 * Better recoil and viewpunch, all configurable

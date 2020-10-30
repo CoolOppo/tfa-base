@@ -208,7 +208,7 @@ function TFA.Ballistics:AutoDetectVelocity(damage)
 end
 
 function TFA.Ballistics:ShouldUse(wep)
-	if not IsValid(wep) or not wep:IsTFA() then
+	if not IsValid(wep) or not wep.IsTFAWeapon then
 		return false
 	end
 

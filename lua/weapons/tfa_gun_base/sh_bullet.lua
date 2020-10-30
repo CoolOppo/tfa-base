@@ -335,7 +335,7 @@ end
 hook.Add("Move", "TFAMove", function(self, movedata)
 	local weapon = self:GetActiveWeapon()
 
-	if IsValid(weapon) and weapon:IsTFA() then
+	if IsValid(weapon) and weapon.IsTFAWeapon then
 		weapon:TFAMove(self, movedata)
 	end
 end)
