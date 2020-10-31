@@ -346,6 +346,42 @@ if GetConVar("cl_tfa_viewmodel_nearwall") == nil then
 	CreateClientConVar("cl_tfa_viewmodel_nearwall", 1, true, false)
 end
 
+if GetConVar("cl_tfa_viewmodel_vp_enabled") == nil then
+	CreateClientConVar("cl_tfa_viewmodel_vp_enabled", 1, true, false)
+end
+
+if GetConVar("cl_tfa_viewmodel_vp_pitch") == nil then
+	CreateClientConVar("cl_tfa_viewmodel_vp_pitch", 1, true, false)
+end
+
+if GetConVar("cl_tfa_viewmodel_vp_pitch_is") == nil then
+	CreateClientConVar("cl_tfa_viewmodel_vp_pitch_is", 1, true, false)
+end
+
+if GetConVar("cl_tfa_viewmodel_vp_vertical") == nil then
+	CreateClientConVar("cl_tfa_viewmodel_vp_vertical", 1, true, false)
+end
+
+if GetConVar("cl_tfa_viewmodel_vp_vertical_is") == nil then
+	CreateClientConVar("cl_tfa_viewmodel_vp_vertical_is", 1, true, false)
+end
+
+if GetConVar("cl_tfa_viewmodel_vp_max_vertical") == nil then
+	CreateClientConVar("cl_tfa_viewmodel_vp_max_vertical", 1, true, false)
+end
+
+if GetConVar("cl_tfa_viewmodel_vp_max_vertical_is") == nil then
+	CreateClientConVar("cl_tfa_viewmodel_vp_max_vertical_is", 1, true, false)
+end
+
+if GetConVar("cl_tfa_viewmodel_vp_yaw") == nil then
+	CreateClientConVar("cl_tfa_viewmodel_vp_yaw", 1, true, false)
+end
+
+if GetConVar("cl_tfa_viewmodel_vp_yaw_is") == nil then
+	CreateClientConVar("cl_tfa_viewmodel_vp_yaw_is", 1, true, false)
+end
+
 if GetConVar("cl_tfa_debug_crosshair") == nil then
 	CreateClientConVar("cl_tfa_debug_crosshair", 0, false, false, "Debug crosshair (Admin only)")
 end

@@ -261,6 +261,16 @@ local function bezierVector(t, vec1, vec2, vec3)
 	return Vector(x, y, z)
 end
 
+local cl_tfa_viewmodel_vp_enabled = GetConVar("cl_tfa_viewmodel_vp_enabled")
+local cl_tfa_viewmodel_vp_pitch = GetConVar("cl_tfa_viewmodel_vp_pitch")
+local cl_tfa_viewmodel_vp_pitch_is = GetConVar("cl_tfa_viewmodel_vp_pitch_is")
+local cl_tfa_viewmodel_vp_vertical = GetConVar("cl_tfa_viewmodel_vp_vertical")
+local cl_tfa_viewmodel_vp_vertical_is = GetConVar("cl_tfa_viewmodel_vp_vertical_is")
+local cl_tfa_viewmodel_vp_max_vertical = GetConVar("cl_tfa_viewmodel_vp_max_vertical")
+local cl_tfa_viewmodel_vp_max_vertical_is = GetConVar("cl_tfa_viewmodel_vp_max_vertical_is")
+local cl_tfa_viewmodel_vp_yaw = GetConVar("cl_tfa_viewmodel_vp_yaw")
+local cl_tfa_viewmodel_vp_yaw_is = GetConVar("cl_tfa_viewmodel_vp_yaw_is")
+
 function SWEP:CalculateViewModelOffset(delta)
 	local self2 = self:GetTable()
 
@@ -451,22 +461,22 @@ function SWEP:CalculateViewModelOffset(delta)
 		target_ang = target_ang + bbvec * self2.BlowbackCurrentRoot
 	end
 
-	if not sv_tfa_recoil_legacy:GetBool() then
+	if not sv_tfa_recoil_legacy:GetBool() and cl_tfa_viewmodel_vp_enabled:GetBool() then
 		if self:HasRecoilLUT() then
 			if not ironSights then
 				local ang = self:GetRecoilLUTAngle()
 
-				target_ang.x = target_ang.x - ang.p / 2 * (1 - ironSightsProgress)
-				target_ang.y = target_ang.y + ang.y / 2 * (1 - ironSightsProgress)
+				target_ang.x = target_ang.x - ang.p / 2 * Lerp(ironSightsProgress, self:GetStat("ViewModelPunchPitchMultiplier") * cl_tfa_viewmodel_vp_pitch:GetFloat(), self:GetStat("ViewModelPunchPitchMultiplier_IronSights") * cl_tfa_viewmodel_vp_pitch_is:GetFloat())
+				target_ang.y = target_ang.y + ang.y / 2 * Lerp(ironSightsProgress, self:GetStat("ViewModelPunchYawMultiplier") * cl_tfa_viewmodel_vp_yaw:GetFloat(), self:GetStat("ViewModelPunchYawMultiplier_IronSights") * cl_tfa_viewmodel_vp_yaw_is:GetFloat())
 			end
 		else
-			target_ang.x = target_ang.x - self:GetViewPunchP() * Lerp(ironSightsProgress, self:GetStat("ViewModelPunchPitchMultiplier"), self:GetStat("ViewModelPunchPitchMultiplier_IronSights"))
-			target_ang.y = target_ang.y + self:GetViewPunchY() * Lerp(ironSightsProgress, self:GetStat("ViewModelPunchYawMultiplier"), self:GetStat("ViewModelPunchYawMultiplier_IronSights"))
+			target_ang.x = target_ang.x - self:GetViewPunchP() * Lerp(ironSightsProgress, self:GetStat("ViewModelPunchPitchMultiplier") * cl_tfa_viewmodel_vp_pitch:GetFloat(), self:GetStat("ViewModelPunchPitchMultiplier_IronSights") * cl_tfa_viewmodel_vp_pitch_is:GetFloat())
+			target_ang.y = target_ang.y + self:GetViewPunchY() * Lerp(ironSightsProgress, self:GetStat("ViewModelPunchYawMultiplier") * cl_tfa_viewmodel_vp_yaw:GetFloat(), self:GetStat("ViewModelPunchYawMultiplier_IronSights") * cl_tfa_viewmodel_vp_yaw_is:GetFloat())
 
-			local ViewModelPunch_MaxVertialOffset = Lerp(ironSightsProgress, self:GetStat("ViewModelPunch_MaxVertialOffset"), self:GetStat("ViewModelPunch_MaxVertialOffset_IronSights"))
+			local ViewModelPunch_MaxVertialOffset = Lerp(ironSightsProgress, self:GetStat("ViewModelPunch_MaxVertialOffset") * cl_tfa_viewmodel_vp_max_vertical:GetFloat(), self:GetStat("ViewModelPunch_MaxVertialOffset_IronSights") * cl_tfa_viewmodel_vp_max_vertical_is:GetFloat())
 
 			target_pos.y = target_pos.y + math.Clamp(
-				self:GetViewPunchP() * Lerp(ironSightsProgress, self:GetStat("ViewModelPunch_VertialMultiplier"), self:GetStat("ViewModelPunch_VertialMultiplier_IronSights")),
+				self:GetViewPunchP() * Lerp(ironSightsProgress, self:GetStat("ViewModelPunch_VertialMultiplier") * cl_tfa_viewmodel_vp_vertical:GetFloat(), self:GetStat("ViewModelPunch_VertialMultiplier_IronSights") * cl_tfa_viewmodel_vp_vertical_is:GetFloat()),
 				-ViewModelPunch_MaxVertialOffset,
 				ViewModelPunch_MaxVertialOffset)
 		end
