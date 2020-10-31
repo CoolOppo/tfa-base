@@ -615,10 +615,12 @@ local MeleeHoldTypes = {
 function SWEP:Initialize()
 	local self2 = self:GetTable()
 
+	if self2.HasInitialized then return end
+	self2.HasInitialized = true
+
 	hook.Run("TFA_PreInitialize", self)
 
 	self2.DrawCrosshairDefault = self2.DrawCrosshair
-	self2.HasInitialized = true
 
 	if not self2.BobScaleCustom or self2.BobScaleCustom <= 0 then
 		self2.BobScaleCustom = 1
