@@ -205,8 +205,8 @@ SWEP.ViewModelPunch_MaxVertialOffset_IronSights = 1.95
 SWEP.ViewModelPunch_VertialMultiplier = 1
 SWEP.ViewModelPunch_VertialMultiplier_IronSights = 0.25
 
-SWEP.ViewModelPunchYawMultiplier = 0.45
-SWEP.ViewModelPunchYawMultiplier_IronSights = 1.5
+SWEP.ViewModelPunchYawMultiplier = 0.6
+SWEP.ViewModelPunchYawMultiplier_IronSights = 0.25
 
 local cv_customgunbob = GetConVar("cl_tfa_gunbob_custom")
 

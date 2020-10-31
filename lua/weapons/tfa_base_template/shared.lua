@@ -88,8 +88,8 @@ SWEP.ViewModelPunch_MaxVertialOffset_IronSights = nil -- Default value is 1.95
 SWEP.ViewModelPunch_VertialMultiplier = nil -- Default value is 1
 SWEP.ViewModelPunch_VertialMultiplier_IronSights = nil -- Default value is 0.25
 
-SWEP.ViewModelPunchYawMultiplier = nil -- Default value is 0.45
-SWEP.ViewModelPunchYawMultiplier_IronSights = nil -- Default value is 1.5
+SWEP.ViewModelPunchYawMultiplier = nil -- Default value is 0.6
+SWEP.ViewModelPunchYawMultiplier_IronSights = nil -- Default value is 0.25
 
 SWEP.CanJam = true -- whenever weapon cam jam
 SWEP.JamChance = 0.04 -- the (maximal) chance the weapon will jam. Newly spawned weapon will never jam on first shot for example.
