@@ -314,8 +314,16 @@ function SWEP:CalculateViewModelOffset(delta)
 
 	local stat = self:GetStatus()
 
-	local holsterStatus = (TFA.Enum.HolsterStatus[stat] and self2.ProceduralHolsterEnabled) or (TFA.Enum.ReloadStatus[stat] and self2.ProceduralReloadEnabled)
-	local holsterProgress = TFA.Enum.HolsterStatusFinal[stat] and 1 or holsterStatus and TFA.Quintic(Clamp(self:GetStatusProgress() * 1.1, 0, 1)) or 0
+	local holsterStatus = TFA.Enum.HolsterStatus[stat] and self2.GetStat(self, "ProceduralHolsterEnabled")
+	local proceduralReloadStatus = TFA.Enum.ReloadStatus[stat] and self2.GetStat(self, "ProceduralReloadEnabled")
+	local holsterProgress = TFA.Enum.HolsterStatusFinal[stat] and 1 or 0
+	local statusProgress = self:GetStatusProgress()
+
+	if proceduralReloadStatus then
+		holsterProgress = TFA.Quintic(Clamp((statusProgress >= 0.5 and (2 - statusProgress * 2) or (statusProgress * 2)), 0, 1))
+	elseif holsterStatus then
+		holsterProgress = TFA.Quintic(Clamp(statusProgress * 1.1, 0, 1))
+	end
 
 	local sprintAnimAllowed = self2.Sprint_Mode == TFA.Enum.LOCOMOTION_LUA or self2.Sprint_Mode == TFA.Enum.LOCOMOTION_HYBRID
 
@@ -342,7 +350,7 @@ function SWEP:CalculateViewModelOffset(delta)
 		target_ang = LerpVector(crouchRatio, target_ang, self2.GetStat(self, "CrouchAng"))
 	end
 
-	if holsterStatus then
+	if holsterStatus or proceduralReloadStatus then
 		local targetHolsterPos = Vector(self2.GetStat(self, "ProceduralHolsterPos"))
 		local targetHolsterAng = Vector(self2.GetStat(self, "ProceduralHolsterAng"))
 

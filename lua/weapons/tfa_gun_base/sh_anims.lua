@@ -783,7 +783,7 @@ Purpose:  Animation / Utility
 function SWEP:ChooseReloadAnim()
 	local self2 = self:GetTable()
 	if not self:VMIV() then return false, 0 end
-	if self2.ProceduralReloadEnabled then return false, 0 end
+	if self2.GetStat(self, "ProceduralReloadEnabled") then return false, 0 end
 
 	local ads = self:GetStat("IronSightsReloadEnabled") and self:GetIronSightsDirect()
 
