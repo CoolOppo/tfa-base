@@ -56,6 +56,7 @@ hook.Add("PreDrawEffects", "TFAMuzzleUpdate", function()
 
 	if not IsValid_(vm) then
 		vm = ply:GetViewModel()
+		if not IsValid_(vm) then return end
 	end
 
 	local vmmodel = GetModel(vm)
@@ -93,6 +94,7 @@ function TFA.Particles.RegisterParticleThink(particle, partfunc)
 
 	if not IsValid_(vm) then
 		vm = ply:GetViewModel()
+		if not IsValid_(vm) then return end
 	end
 
 	particle.ThinkFunc = partfunc
