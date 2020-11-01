@@ -1273,7 +1273,7 @@ function SWEP:IsOwnerCrouching()
 
 	if not ply:IsPlayer() then return false end
 
-	return self:KeyDown(IN_DUCK) and ply:OnGround()
+	return (ply:Crouching() or self:KeyDown(IN_DUCK)) and ply:OnGround()
 end
 
 function SWEP:ProcessHoldType()
