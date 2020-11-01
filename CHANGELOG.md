@@ -1,4 +1,8 @@
 # This is an archive of changelog messages from `tfa_loader.lua`. For proper changes list refer to the Git history.
+## 4.6.0.7
+* Fixed crouching state not being recognized without holding a key
+* Fixed bullet ballistics. Again.
+
 ## 4.6.0.6
 * Added viewmodel viewpunch toggle settings
 * Fixed crashing when addons call SWEP:Initialize out of order

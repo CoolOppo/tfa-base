@@ -24,14 +24,15 @@ if SERVER then AddCSLuaFile() end
 TFA = TFA or {}
 
 local do_load = true
-local version = 4.606
-local version_string = "4.6.0.6"
+local version = 4.607
+local version_string = "4.6.0.7"
 local changelog = [[
 	* Added viewmodel viewpunch toggle settings
 	* Fixed crashing when addons call SWEP:Initialize out of order
 	* Fixed bullet ballistics for NPCs not working
 	* Fixed procedural reloads
 	* Sped up ironsights/scope FOV change
+	* Fixed crouching state not being recognized without holding a key
 ]]
 
 local function testFunc()
