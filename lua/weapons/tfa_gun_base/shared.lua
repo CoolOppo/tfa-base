@@ -1072,6 +1072,7 @@ function SWEP:PlayerThinkCL(plyv)
 
 	self2.IronSightsProgressUnpredicted = l_mathApproach(self2.IronSightsProgressUnpredicted or 0, ist, (ist - (self2.IronSightsProgressUnpredicted or 0)) * ft * adstransitionspeed * 1.2)
 	self2.IronSightsProgressUnpredicted2 = l_mathApproach(self2.IronSightsProgressUnpredicted2 or 0, ist, (ist - (self2.IronSightsProgressUnpredicted2 or 0)) * ft * adstransitionspeed * 0.4)
+	self2.IronSightsProgressUnpredicted3 = l_mathApproach(self2.IronSightsProgressUnpredicted3 or 0, ist, (ist - (self2.IronSightsProgressUnpredicted3 or 0)) * ft * adstransitionspeed * 0.7)
 	self2.SprintProgressUnpredicted = l_mathApproach(self2.SprintProgressUnpredicted or 0, sprt, (sprt - (self2.SprintProgressUnpredicted or 0)) * ft * adstransitionspeed)
 	self2.SprintProgressUnpredicted2 = l_mathApproach(self2.SprintProgressUnpredicted2 or 0, sprt2, (sprt2 - (self2.SprintProgressUnpredicted2 or 0)) * ft * adstransitionspeed)
 	self2.SprintProgressUnpredicted3 = l_mathApproach(self2.SprintProgressUnpredicted3 or 0, sprt3, (sprt3 - (self2.SprintProgressUnpredicted3 or 0)) * ft * adstransitionspeed)
@@ -1998,7 +1999,7 @@ function SWEP:TranslateFOV(fov)
 
 	self:CorrectScopeFOV()
 
-	local nfov = l_Lerp(self2.IronSightsProgressUnpredicted2 or self:GetIronSightsProgress(), fov, fov * math.min(self:GetStat("Secondary.IronFOV") / 90, 1))
+	local nfov = l_Lerp(self2.IronSightsProgressUnpredicted3 or self:GetIronSightsProgress(), fov, fov * math.min(self:GetStat("Secondary.IronFOV") / 90, 1))
 	local ret = l_Lerp(self2.SprintProgressUnpredicted or self:GetSprintProgress(), nfov, nfov + self2.SprintFOVOffset)
 
 	if self:OwnerIsValid() and not self2.IsMelee then
