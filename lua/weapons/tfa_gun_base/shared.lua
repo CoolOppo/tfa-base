@@ -615,7 +615,11 @@ local MeleeHoldTypes = {
 function SWEP:Initialize()
 	local self2 = self:GetTable()
 
-	if self2.HasInitialized then return end
+	if self2.HasInitialized then
+		ErrorNoHalt(debug.traceback("SWEP:Initialize was called out of order", 2))
+		return
+	end
+
 	self2.HasInitialized = true
 
 	hook.Run("TFA_PreInitialize", self)
