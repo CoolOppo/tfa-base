@@ -1,4 +1,11 @@
 # This is an archive of changelog messages from `tfa_loader.lua`. For proper changes list refer to the Git history.
+## 4.6.0.6
+* Added viewmodel viewpunch toggle settings
+* Fixed crashing when addons call SWEP:Initialize out of order
+* Fixed bullet ballistics for NPCs not working
+* Fixed procedural reloads
+* Sped up ironsights/scope FOV change
+
 ## 4.6.0.5
 * Added a workaround for old weapons that override SWEP:Think function without baseclass call
 

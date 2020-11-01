@@ -24,28 +24,14 @@ if SERVER then AddCSLuaFile() end
 TFA = TFA or {}
 
 local do_load = true
-local version = 4.605
-local version_string = "4.6.0.5"
+local version = 4.606
+local version_string = "4.6.0.6"
 local changelog = [[
-	* HUGE optimization and prediction improvements
-	* Better recoil and viewpunch, all configurable
-	* New nearly-empty (and empty) magazine click sounds
-	* Proper NPC support (custom tracers/projectiles, random attachments)
-	* Redone Inspection GUI (scaled fonts and elements, hooks, overrides)
-	* Improved damage falloff (LUT falloff with variable calculation methods)
-	* ADS reload animation support (like in CAWODOOTY! favorite gaem!!!)
-	* Hybrid blowback animation (allowing model animation to play)
-	* Crouched viewmodel offset position
-	* Full sequence-based weapons support
-	* Silenced empty/last fire animation support
-	* Each animation can contain values for each case (like in SWEP.PumpAction, etc)
-	* New viewmodel position/angles interpolation techniques
-	* Fixed shotgun spread not working properly with ballistics enabled
-	* Fixed some weapons failing to initialize missing attachments table
-	* Fixed DoAmmoCheck error when weapon stripping is enabled
-	* Fixed nZombies compatibility (only original nZ version was tested)
-	* Fixed viewmodel snapping to idle position on procedural holster end
-	* Added a workaround for old weapons that override SWEP:Think function without baseclass call
+	* Added viewmodel viewpunch toggle settings
+	* Fixed crashing when addons call SWEP:Initialize out of order
+	* Fixed bullet ballistics for NPCs not working
+	* Fixed procedural reloads
+	* Sped up ironsights/scope FOV change
 ]]
 
 local function testFunc()
