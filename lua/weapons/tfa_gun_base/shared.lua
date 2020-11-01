@@ -616,7 +616,7 @@ function SWEP:Initialize()
 	local self2 = self:GetTable()
 
 	if self2.HasInitialized then
-		ErrorNoHalt(debug.traceback("SWEP:Initialize was called out of order", 2))
+		ErrorNoHalt(debug.traceback("SWEP:Initialize was called out of order", 2) .. "\n")
 		return
 	end
 
