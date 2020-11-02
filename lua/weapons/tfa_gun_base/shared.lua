@@ -1197,7 +1197,6 @@ function SWEP:IronSights()
 	ct = l_CT()
 	stat = self:GetStatus()
 
-	local issighting = false
 	local issprinting = self:GetSprinting()
 	local iswalking = self:GetWalking()
 
