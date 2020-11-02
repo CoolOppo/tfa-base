@@ -35,7 +35,7 @@ include("common/akimbo.lua")
 include("common/events.lua")
 include("common/nzombies.lua")
 include("common/ttt.lua")
-include("common/vm.lua")
+include("common/viewmodel.lua")
 include("common/skins.lua")
 
 include("client/effects.lua")
