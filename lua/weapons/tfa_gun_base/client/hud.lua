@@ -1297,6 +1297,8 @@ local crosshairMatrixLeft = Matrix()
 local crosshairMatrixRight = Matrix()
 local crosshairRotation = Angle()
 
+local pixelperfectshift = Vector(-0.5)
+
 function SWEP:DoDrawCrosshair()
 	local self2 = self:GetTable()
 	local x, y
@@ -1443,6 +1445,11 @@ function SWEP:DoDrawCrosshair()
 
 	extraRotation = extraRotation - EyeAngles().r
 
+	crosshairMatrix:Identity()
+	crosshairMatrix:Translate(cPos)
+	crosshairRotation.y = extraRotation
+	crosshairMatrix:Rotate(crosshairRotation)
+
 	if tricross_cvar:GetBool() then
 		crosshairMatrixLeft:Identity()
 		crosshairMatrixRight:Identity()
@@ -1454,12 +1461,12 @@ function SWEP:DoDrawCrosshair()
 		crosshairMatrixRight:SetAngles(crosshairRotation)
 		crosshairRotation.y = extraRotation - 135
 		crosshairMatrixLeft:SetAngles(crosshairRotation)
-	end
 
-	crosshairMatrix:Identity()
-	crosshairMatrix:Translate(cPos)
-	crosshairRotation.y = extraRotation
-	crosshairMatrix:Rotate(crosshairRotation)
+		if crosshairwidth % 2 ~= 0 then
+			crosshairMatrixLeft:Translate(pixelperfectshift)
+			crosshairMatrixRight:Translate(pixelperfectshift)
+		end
+	end
 
 	DisableClipping(true)
 
