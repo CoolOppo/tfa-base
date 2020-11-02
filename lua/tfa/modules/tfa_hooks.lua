@@ -604,66 +604,66 @@ Used For: Patching old, broken weapons that override SWEP:Think without calling 
 ]]
 --
 local PatchClassBlacklisted = {
-    tfa_gun_base = true,
-    tfa_melee_base = true,
-    tfa_bash_base = true,
-    tfa_bow_base = true,
-    tfa_knife_base = true,
-    tfa_nade_base = true,
-    tfa_sword_advanced_base = true,
-    tfa_cssnade_base = true,
-    tfa_shotty_base = true,
-    tfa_akimbo_base = true,
-    tfa_3dbash_base = true,
-    tfa_3dscoped_base = true,
-    tfa_scoped_base = true,
+	tfa_gun_base = true,
+	tfa_melee_base = true,
+	tfa_bash_base = true,
+	tfa_bow_base = true,
+	tfa_knife_base = true,
+	tfa_nade_base = true,
+	tfa_sword_advanced_base = true,
+	tfa_cssnade_base = true,
+	tfa_shotty_base = true,
+	tfa_akimbo_base = true,
+	tfa_3dbash_base = true,
+	tfa_3dscoped_base = true,
+	tfa_scoped_base = true,
 }
 
 hook.Add("InitPostEntity", "TFA_PatchThinkOverride", function()
-    for _, wepRefTable in ipairs(weapons.GetList()) do
-        local class = wepRefTable.ClassName
+	for _, wepRefTable in ipairs(weapons.GetList()) do
+		local class = wepRefTable.ClassName
 
-        if PatchClassBlacklisted[class] or not weapons.IsBasedOn(class, "tfa_gun_base") then
-            goto THINK1FOUND
-        end
+		if PatchClassBlacklisted[class] or not weapons.IsBasedOn(class, "tfa_gun_base") then
+			goto THINK1FOUND
+		end
 
-        local wepRealTbl = weapons.GetStored(class)
+		local wepRealTbl = weapons.GetStored(class)
 
-        if wepRealTbl.Think then
-            local info = debug.getinfo(wepRealTbl.Think, "S")
-            if not info then goto THINK1FOUND end
+		if wepRealTbl.Think then
+			local info = debug.getinfo(wepRealTbl.Think, "S")
+			if not info then goto THINK1FOUND end
 
-            local src = info.short_src
+			local src = info.short_src
 
-            if src:StartWith("addons/") then
-                src = src:gsub("^addons/[^%0:/]+/", "")
-            end
+			if src:StartWith("addons/") then
+				src = src:gsub("^addons/[^%0:/]+/", "")
+			end
 
-            local luafile = file.Read(src:sub(5), "LUA")
-            if not luafile then goto THINK1FOUND end
+			local luafile = file.Read(src:sub(5), "LUA")
+			if not luafile then goto THINK1FOUND end
 
-            local lua = luafile:Split("\n")
+			local lua = luafile:Split("\n")
 
-            for i = info.linedefined, info.lastlinedefined do
-                local line = lua[i]
+			for i = info.linedefined, info.lastlinedefined do
+				local line = lua[i]
 
-                if line:find("BaseClass%s*.%s*Think%s*%(") then
-                    goto THINK1FOUND
-                end
-            end
+				if line:find("BaseClass%s*.%s*Think%s*%(") then
+					goto THINK1FOUND
+				end
+			end
 
-            print(("[TFA Base] Weapon %s (%s) is overriding SWEP:Think() function without calling baseclass!"):format(wepRefTable.ClassName, info.short_src))
+			print(("[TFA Base] Weapon %s (%s) is overriding SWEP:Think() function without calling baseclass!"):format(wepRefTable.ClassName, info.short_src))
 
-            local BaseClass = baseclass.Get(wepRealTbl.Base)
+			local BaseClass = baseclass.Get(wepRealTbl.Base)
 
-            wepRealTbl.ThinkFuncUnwrapped = wepRealTbl.ThinkFuncUnwrapped or wepRealTbl.Think
-            function wepRealTbl:Think(...)
-                self:ThinkFuncUnwrapped(...)
+			wepRealTbl.ThinkFuncUnwrapped = wepRealTbl.ThinkFuncUnwrapped or wepRealTbl.Think
+			function wepRealTbl:Think(...)
+				self:ThinkFuncUnwrapped(...)
 
-                return BaseClass.Think(self, ...)
-            end
-        end
+				return BaseClass.Think(self, ...)
+			end
+		end
 
-        ::THINK1FOUND::
-    end
+		::THINK1FOUND::
+	end
 end)
