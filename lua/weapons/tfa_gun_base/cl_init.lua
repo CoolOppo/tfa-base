@@ -40,6 +40,7 @@ include("common/skins.lua")
 
 include("client/effects.lua")
 include("client/viewbob.lua")
+include("client/viewmodel.lua")
 include("client/hud.lua")
 include("client/mods.lua")
 include("client/laser.lua")

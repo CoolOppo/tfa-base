@@ -65,6 +65,7 @@ AddCSLuaFile("client/mods.lua")
 AddCSLuaFile("client/laser.lua")
 AddCSLuaFile("client/fov.lua")
 AddCSLuaFile("client/flashlight.lua")
+AddCSLuaFile("client/viewmodel.lua")
 
 SWEP.Weight = 60 -- Decides whether we should switch from/to this
 SWEP.AutoSwitchTo = true -- Auto switch to
