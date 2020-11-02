@@ -31,6 +31,7 @@ TFA.CYCLE_SAFETY_IMPULSE_STRING = "151"
 
 local sp = game.SinglePlayer()
 local CurTime = CurTime
+local RealTime = RealTime
 
 --[[
 Hook: PlayerFootstep
@@ -223,6 +224,9 @@ end
 local cv_lr = GetConVar("sv_tfa_reloads_legacy")
 local reload_threshold = 0.3
 
+local sv_cheats = GetConVar("sv_cheats")
+local host_timescale = GetConVar("host_timescale")
+
 local function FinishMove(ply, cmovedata)
 	if ply:InVehicle() and not ply:GetAllowWeaponsInVehicle() then return end
 
@@ -259,6 +263,37 @@ local function FinishMove(ply, cmovedata)
 	wepv:SetLastPressedButtons(pressed)
 
 	local time = CurTime()
+
+	local cl_tfa_ironsights_toggle = (ply:GetInfoNum("cl_tfa_ironsights_toggle", 0) or 0) >= 1
+	local cl_tfa_ironsights_resight = (ply:GetInfoNum("cl_tfa_ironsights_resight", 0) or 0) >= 1
+	local cl_tfa_ironsights_responsive = (ply:GetInfoNum("cl_tfa_ironsights_responsive", 0) or 0) >= 1
+	local cl_tfa_ironsights_responsive_timer = ply:GetInfoNum("cl_tfa_ironsights_responsive_timer", 0.175) or 0.175
+
+	if wepv:GetStat("data.ironsights") ~= 0 then
+		if bit.band(changed, IN_ATTACK2) == IN_ATTACK2 then
+			local deltaPress = (time - wepv:GetLastIronSightsPressed()) / (game.GetTimeScale() * (sv_cheats:GetBool() and host_timescale:GetFloat() or 1))
+
+			-- pressing for first time
+			if not wepv:GetIronSightsRaw() and bit.band(pressed, IN_ATTACK2) == IN_ATTACK2 then
+				wepv:SetIronSightsRaw(true)
+				wepv:SetLastIronSightsPressed(time)
+			elseif wepv:GetIronSightsRaw() and
+				(cl_tfa_ironsights_toggle and bit.band(pressed, IN_ATTACK2) == IN_ATTACK2 or
+				not cl_tfa_ironsights_toggle and bit.band(depressed, IN_ATTACK2) == IN_ATTACK2)
+			then
+				-- get out of iron sights
+				wepv:SetIronSightsRaw(false)
+				wepv:SetLastIronSightsPressed(-1)
+			elseif wepv:GetIronSightsRaw() and cl_tfa_ironsights_responsive and bit.band(depressed, IN_ATTACK2) == IN_ATTACK2 and deltaPress > cl_tfa_ironsights_responsive_timer then
+				-- we depressed IN_ATTACK2 with it were being held down
+				wepv:SetIronSightsRaw(false)
+				wepv:SetLastIronSightsPressed(-1)
+			end
+		elseif wepv:GetIronSightsRaw() and not cl_tfa_ironsights_resight and (not TFA.Enum.IronStatus[wepv:GetStatus()] or wepv:GetSprinting()) then
+			wepv:SetIronSightsRaw(false)
+			wepv:SetLastIronSightsPressed(-1)
+		end
+	end
 
 	if
 		bit.band(depressed, IN_RELOAD) == IN_RELOAD and

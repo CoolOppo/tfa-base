@@ -120,7 +120,9 @@ local function tfaOptionSights(panel)
 		cl_tfa_scope_sensitivity_autoscale = "1",
 		cl_tfa_scope_sensitivity = "100",
 		cl_tfa_ironsights_toggle = "0",
-		cl_tfa_ironsights_resight = "1"
+		cl_tfa_ironsights_resight = "1",
+		cl_tfa_ironsights_responsive = "0",
+		cl_tfa_ironsights_responsive_timer = "0.175",
 	}
 
 	tfaOptionCL.CVars = table.GetKeys(tfaOptionCL.Options["#preset.default"])
@@ -219,6 +221,8 @@ local function tfaOptionSights(panel)
 	panel:NumSlider("#tfa.sightsettings.rtbgblurintensity", "cl_tfa_fx_rtscopeblur_intensity", 0.01, 10, 2)
 	panel:CheckBox("#tfa.sightsettings.adstoggle", "cl_tfa_ironsights_toggle")
 	panel:CheckBox("#tfa.sightsettings.adsresight", "cl_tfa_ironsights_resight")
+	panel:CheckBox("#tfa.sightsettings.responsive", "cl_tfa_ironsights_responsive")
+	panel:NumSlider("#tfa.sightsettings.responsive_timer", "cl_tfa_ironsights_responsive_timer", 0.01, 2, 4)
 	panel:CheckBox("#tfa.sightsettings.scopesensscale", "cl_tfa_scope_sensitivity_autoscale")
 	panel:NumSlider("#tfa.sightsettings.scopesenspct", "cl_tfa_scope_sensitivity", 0.01, 100, 2)
 end

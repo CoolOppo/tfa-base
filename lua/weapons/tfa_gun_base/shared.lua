@@ -533,6 +533,8 @@ function SWEP:SetupDataTables()
 
 	self:NetworkVarTFA("Float", "LastReloadPressed")
 
+	self:NetworkVarTFA("Float", "LastIronSightsPressed")
+
 	self.GetStatus = self.GetStatusRaw
 	self.GetIronSights = self.GetIronSightsOldFinal
 	self.GetIronSightsDirect = self.GetIronSightsOldFinal
@@ -1200,59 +1202,8 @@ function SWEP:IronSights()
 	local iswalking = self:GetWalking()
 
 	local current_iron_sights = self:GetIronSightsRaw()
+	local issighting = current_iron_sights
 	local isplayer = owent:IsPlayer()
-
-	local ironsights_toggle_cvar = (isplayer and owent:GetInfoNum("cl_tfa_ironsights_toggle", 0) or 0) == 1
-	local ironsights_resight_cvar = (isplayer and owent:GetInfoNum("cl_tfa_ironsights_resight", 0) or 0) == 1
-
-	if isplayer and (SERVER or not sp) and self2.GetStat(self, "data.ironsights") ~= 0 then
-		if not TFA.Enum.ReloadStatus[stat] then
-			if not ironsights_toggle_cvar then
-				if self:KeyDown(IN_ATTACK2) then
-					issighting = true
-				end
-			else
-				issighting = self:GetIronSightsRaw()
-
-				if self:KeyPressed(IN_ATTACK2) then
-					issighting = not issighting
-					self:SetIronSightsRaw(issighting)
-				end
-			end
-		elseif self2.GetStat(self, "IronSightsReloadLock", true) then
-			issighting = current_iron_sights
-		end
-	end
-
-	if CLIENT and sp then
-		issighting = self:GetIronSightsRaw()
-	end
-
-	if ironsights_toggle_cvar and not ironsights_resight_cvar then
-		if issprinting then
-			issighting = false
-		end
-
-		if not TFA.Enum.IronStatus[stat] then
-			issighting = false
-		end
-
-		if self2.GetStat(self, "BoltAction") or self2.GetStat(self, "BoltAction_Forced") then
-			if stat == TFA.Enum.STATUS_SHOOTING then
-				if not self2.LastBoltShoot then
-					self2.LastBoltShoot = l_CT()
-				end
-
-				if l_CT() > self2.LastBoltShoot + self2.BoltTimerOffset then
-					issighting = false
-				end
-			elseif (stat == TFA.Enum.STATUS_IDLE and self:GetReloadLoopCancel(true)) or stat == TFA.Enum.STATUS_PUMP then
-				issighting = false
-			else
-				self2.LastBoltShoot = nil
-			end
-		end
-	end
 
 	if issighting and isplayer and owent:InVehicle() and not owent:GetAllowWeaponsInVehicle() then
 		issighting = false
@@ -1261,10 +1212,6 @@ function SWEP:IronSights()
 
 	-- self:SetLastSightsStatusCached(false)
 	local userstatus = issighting
-
-	if current_iron_sights ~= issighting then
-		self:SetIronSightsRaw(issighting)
-	end
 
 	if issprinting then
 		issighting = false

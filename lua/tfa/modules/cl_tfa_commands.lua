@@ -115,6 +115,14 @@ if GetConVar("cl_tfa_ironsights_resight") == nil then
 	CreateClientConVar("cl_tfa_ironsights_resight", 1, true, true, "Keep ironsights after reload or sprint?")
 end
 
+if GetConVar("cl_tfa_ironsights_responsive") == nil then
+	CreateClientConVar("cl_tfa_ironsights_responsive", 0, true, true, "Allow both toggle and held down iron sights")
+end
+
+if GetConVar("cl_tfa_ironsights_responsive_timer") == nil then
+	CreateClientConVar("cl_tfa_ironsights_responsive_timer", 0.175, true, true, "Time in seconds to determine responsivness time")
+end
+
 if GetConVar("cl_tfa_laser_trails") == nil then
 	CreateClientConVar("cl_tfa_laser_trails", 1, true, true, "Enable laser dot trails?")
 end
