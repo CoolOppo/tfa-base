@@ -152,6 +152,11 @@ function SWEP:ClearStatCache(vn)
 			self2.Primary[k] = v
 		end
 
+		if self2.Primary_TFA.RangeFalloffLUT_IsConverted then
+			self2.Primary_TFA.RangeFalloffLUT = nil
+			self2.AutoDetectRange(self)
+		end
+
 		if self2.Primary_TFA.RangeFalloffLUT then
 			self2.Primary.RangeFalloffLUTBuilt = self:BuildFalloffTable(self2.Primary_TFA.RangeFalloffLUT)
 		end
