@@ -795,14 +795,14 @@ function SWEP:InspectionVGUIAttachments(contentpanel)
 			local rightpadding = 18
 
 			for pos = 1, 4 do
-				shadowed_line(ax + pos * w / 4 - rightpadding, h - 2 - ay, ax + pos * w / 4 - rightpadding, h - 12 - ay, mainpanel.SecondaryColor, mainpanel.BackgroundColor)
-				shadowed_text(string.format("%dm", range * 0.0254 * pos / 4), "TFASleekSmall", ax + pos * w / 4 - rightpadding, h - ay, mainpanel.SecondaryColor, TEXT_ALIGN_CENTER)
+				shadowed_line(ax + pos * (w - rightpadding) / 4, h - 2 - ay, ax + pos * (w - rightpadding) / 4, h - 12 - ay, mainpanel.SecondaryColor, mainpanel.BackgroundColor)
+				shadowed_text(string.format("%dm", range * 0.0254 * pos / 4), "TFASleekSmall", ax + pos * (w - rightpadding) / 4, h - ay, mainpanel.SecondaryColor, TEXT_ALIGN_CENTER)
 			end
 
 			shadowed_line(ax + 1, ay + 1, 1, h - 2 - ay, mainpanel.SecondaryColor, mainpanel.BackgroundColor)
 			shadowed_line(ax + 1, h - 2 - ay, w - rightpadding, h - 2 - ay, mainpanel.SecondaryColor, mainpanel.BackgroundColor)
 
-			local lx, ly = myself:LocalToScreen(0, 0)
+			local lx, ly = myself:LocalToScreen(ax, 0)
 			local mx, my = input.GetCursorPos()
 			local rmx, rmy = mx, my
 			mx = mx - lx
@@ -811,6 +811,8 @@ function SWEP:InspectionVGUIAttachments(contentpanel)
 			local px, py
 
 			local cirX, cirY, dmg, drange
+
+			local progression = mx / (w - ax - rightpadding)
 
 			for i, data in ipairs(lut) do
 				local x, y = ax + data[1] / range * (w - ax - rightpadding), ay + (div - data[2]) * (h - ay * 2) / div
@@ -854,7 +856,7 @@ function SWEP:InspectionVGUIAttachments(contentpanel)
 					surface.DrawLine(cirX + Xsize, cirY - Xsize, cirX - Xsize, cirY + Xsize)
 				end
 
-				shadowed_text(string.format("%dm", range * (mx / w) * 0.0254), "TFASleekSmall", mx - ScaleH(pad), my - TFA.Fonts.SleekHeightSmall, mainpanel.SecondaryColor, TEXT_ALIGN_RIGHT)
+				shadowed_text(string.format("%dm", math.Round(range * progression * 0.0254)), "TFASleekSmall", mx - ScaleH(pad), my - TFA.Fonts.SleekHeightSmall, mainpanel.SecondaryColor, TEXT_ALIGN_RIGHT)
 				shadowed_text(string.format("%ddmg", dmg * wepdmg), "TFASleekSmall", mx + ScaleH(pad), my - TFA.Fonts.SleekHeightSmall, mainpanel.SecondaryColor, TEXT_ALIGN_LEFT)
 			end
 		end
