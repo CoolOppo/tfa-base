@@ -157,7 +157,7 @@ function SWEP:ClearStatCache(vn)
 			self2.AutoDetectRange(self)
 		end
 
-		local getLUT = self2.GetStat(self, "Primary.RangeFalloffLUT")
+		local getLUT = self2.GetStat(self, "Primary.RangeFalloffLUT", nil, true)
 
 		if getLUT then
 			self2.Primary.RangeFalloffLUTBuilt = self:BuildFalloffTable(getLUT)
@@ -265,7 +265,7 @@ function SWEP:GetStatPath(stat)
 	return self2.StatStringCache[stat]
 end
 
-function SWEP:GetStat(stat, default)
+function SWEP:GetStat(stat, default, dontMergeTables)
 	local self2 = self:GetTable()
 	local statPath = self2.GetStatPath(self, stat)
 
@@ -311,7 +311,7 @@ function SWEP:GetStat(stat, default)
 	local isDefaultAtt, statAttachment, noCache = self2.GetStatRecursive(self, self2.AttachmentTableCache, statPath, istable(statSelf) and tableCopy(statSelf) or statSelf)
 	local shouldCache = not noCache and not self2.StatCache_Blacklist[stat] and not self2.StatCache_Blacklist[statPath[1]] and not (ccv and ccv:GetBool())
 
-	if istable(statAttachment) and istable(statSelf) then
+	if istable(statAttachment) and istable(statSelf) and not dontMergeTables then
 		statSelf = table.Merge(tableCopy(statSelf), statAttachment)
 	else
 		statSelf = statAttachment
