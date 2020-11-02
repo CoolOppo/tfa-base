@@ -19,28 +19,28 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
---[[ Load up our shared code. ]]--
-
 include("shared.lua")
 
---[[ Include these modules, because they're clientside.]]--
+include("common/ai_translations.lua")
+include("common/anims.lua")
+include("common/autodetection.lua")
+include("common/utils.lua")
+include("common/attachments.lua")
+include("common/bullet.lua")
+include("common/effects.lua")
+include("common/bobcode.lua")
+include("common/calc.lua")
+include("common/akimbo.lua")
+include("common/events.lua")
+include("common/nzombies.lua")
+include("common/ttt.lua")
+include("common/vm.lua")
+include("common/skins.lua")
 
-if CLIENT then
-	for _,v in pairs(SWEP.ClSIDE_MODULES) do
-		include(v)
-	end
-end
-
---[[ Include these modules, because they're shared.]]--
-
-if CLIENT then
-	for _,v in pairs(SWEP.SH_MODULES) do
-		include(v)
-	end
-end
-
---[[Actual clientside values]]--
-
-SWEP.DrawAmmo						= true				-- Should draw the default HL2 ammo counter
-SWEP.DrawWeaponInfoBox				= false				-- Should draw the weapon info box
-SWEP.BounceWeaponIcon   			= false				-- Should the weapon icon bounce?
+include("client/effects.lua")
+include("client/viewbob.lua")
+include("client/hud.lua")
+include("client/mods.lua")
+include("client/laser.lua")
+include("client/fov.lua")
+include("client/flashlight.lua")

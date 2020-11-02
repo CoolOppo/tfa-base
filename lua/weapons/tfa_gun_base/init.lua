@@ -19,35 +19,51 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
---[[ AddCSLua our other essential functions. ]]--
-AddCSLuaFile("cl_init.lua")
-AddCSLuaFile("shared.lua")
---[[ Load up our shared code. ]]--
 include("shared.lua")
 
---[[ Include these modules]]--
-for _, v in pairs(SWEP.SV_MODULES) do
-	include(v)
-end
+include("common/ai_translations.lua")
+include("common/anims.lua")
+include("common/autodetection.lua")
+include("common/utils.lua")
+include("common/attachments.lua")
+include("common/bullet.lua")
+include("common/effects.lua")
+include("common/bobcode.lua")
+include("common/calc.lua")
+include("common/akimbo.lua")
+include("common/events.lua")
+include("common/nzombies.lua")
+include("common/ttt.lua")
+include("common/vm.lua")
+include("common/skins.lua")
 
---[[ Include these modules, and AddCSLua them, since they're shared.]]--
-for _, v in pairs(SWEP.SH_MODULES) do
-	AddCSLuaFile(v)
-	include(v)
-end
+AddCSLuaFile("common/ai_translations.lua")
+AddCSLuaFile("common/anims.lua")
+AddCSLuaFile("common/autodetection.lua")
+AddCSLuaFile("common/utils.lua")
+AddCSLuaFile("common/attachments.lua")
+AddCSLuaFile("common/bullet.lua")
+AddCSLuaFile("common/effects.lua")
+AddCSLuaFile("common/bobcode.lua")
+AddCSLuaFile("common/calc.lua")
+AddCSLuaFile("common/akimbo.lua")
+AddCSLuaFile("common/events.lua")
+AddCSLuaFile("common/nzombies.lua")
+AddCSLuaFile("common/ttt.lua")
+AddCSLuaFile("common/vm.lua")
+AddCSLuaFile("common/skins.lua")
 
---[[ Include these modules if singleplayer, and AddCSLua them, since they're clientside.]]--
-for _, v in pairs(SWEP.ClSIDE_MODULES) do
-	AddCSLuaFile(v)
-end
+AddCSLuaFile("shared.lua")
+AddCSLuaFile("client/init.lua")
 
-if game.SinglePlayer() then
-	for _, v in pairs(SWEP.ClSIDE_MODULES) do
-		include(v)
-	end
-end
+AddCSLuaFile("client/effects.lua")
+AddCSLuaFile("client/viewbob.lua")
+AddCSLuaFile("client/hud.lua")
+AddCSLuaFile("client/mods.lua")
+AddCSLuaFile("client/laser.lua")
+AddCSLuaFile("client/fov.lua")
+AddCSLuaFile("client/flashlight.lua")
 
---[[Actual serverside values]]--
 SWEP.Weight = 60 -- Decides whether we should switch from/to this
 SWEP.AutoSwitchTo = true -- Auto switch to
 SWEP.AutoSwitchFrom = true -- Auto switch from
