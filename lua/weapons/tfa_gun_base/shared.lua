@@ -2137,10 +2137,14 @@ function SWEP:OnRestore()
 	self2.HasInitAttachments = false
 end
 
--- lua autorefresh
+-- lua autorefresh / weapons.Register
 function SWEP:OnReloaded()
 	table.Merge(self.Primary_TFA, self.Primary)
 	table.Merge(self.Secondary_TFA, self.Secondary)
+
+	if self.Primary_TFA.RangeFalloffLUT_IsConverted then
+		self.Primary_TFA.RangeFalloffLUT = nil
+	end
 
 	self.event_table_warning = false
 	self.event_table_built = false

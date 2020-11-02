@@ -463,32 +463,6 @@ function SWEP:InspectionVGUIStats(contentpanel)
 		stabilitytext:SetSize(preferredWidth, TFA.Fonts.InspectionHeightSmall)
 		stabilitytext.Paint = TextShadowPaint
 
-		--Range
-		local rangepanel = statspanel:Add("DPanel")
-		rangepanel:SetSize(preferredWidth, TFA.Fonts.InspectionHeightSmall)
-		statspanel:SetTall(statspanel:GetTall() + TFA.Fonts.InspectionHeightSmall)
-
-		rangepanel.Think = function(myself)
-			if not IsValid(self) then return end
-			myself.Bar = self:GetStat("Primary.Range") / bestrange
-		end
-
-		rangepanel.Paint = PanelPaintBars
-		rangepanel:Dock(BOTTOM)
-		local rangetext = rangepanel:Add("DPanel")
-		rangetext.Text = ""
-
-		rangetext.Think = function(myself)
-			if not IsValid(self) then return end
-			myself.Text = language.GetPhrase("tfa.inspect.stat.range"):format(math.Round(feettokm(sourcetofeet(self:GetStat("Primary.Range"))) * 100) / 100)
-			myself.TextColor = mainpanel.SecondaryColor
-		end
-
-		rangetext.Font = "TFA_INSPECTION_SMALL"
-		rangetext:Dock(LEFT)
-		rangetext:SetSize(preferredWidth, TFA.Fonts.InspectionHeightSmall)
-		rangetext.Paint = TextShadowPaint
-
 		--Damage
 		local damagepanel = statspanel:Add("DPanel")
 		damagepanel:SetSize(preferredWidth, TFA.Fonts.InspectionHeightSmall)

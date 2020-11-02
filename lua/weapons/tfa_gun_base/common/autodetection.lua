@@ -61,10 +61,29 @@ function SWEP:FixProjectile()
 	end
 end
 
-local legacy_range_cv = GetConVar("sv_tfa_range_legacy")
+local sv_tfa_range_modifier = GetConVar("sv_tfa_range_modifier")
 
-function SWEP:AutoDetectRangeLegacy()
+function SWEP:AutoDetectRange()
 	local self2 = self:GetTable()
+
+	if self2.Primary_TFA.FalloffMetricBased and not self2.Primary_TFA.RangeFalloffLUT then
+		self2.Primary_TFA.RangeFalloffLUT_IsConverted = true
+
+		self2.Primary_TFA.RangeFalloffLUT = {
+			bezier = false,
+			range_func = "linear", -- function to spline range
+			units = "meters",
+			lut = {
+				{range = self2.Primary_TFA.MinRangeStartFalloff, damage = 1},
+				{range = self2.Primary_TFA.MinRangeStartFalloff + self2.Primary_TFA.MaxFalloff / self2.Primary_TFA.FalloffByMeter,
+					damage = (self2.Primary_TFA.Damage - self2.Primary_TFA.MaxFalloff) / self2.Primary_TFA.Damage},
+			}
+		}
+
+		return
+	end
+
+	if self2.Primary_TFA.FalloffMetricBased or self2.Primary_TFA.RangeFalloffLUT then return end
 
 	if self2.Primary_TFA.Range <= 0 then
 		self2.Primary_TFA.Range = math.sqrt(self2.Primary_TFA.Damage / 32) * self:MetersToUnits(350) * self:AmmoRangeMultiplier()
@@ -73,47 +92,18 @@ function SWEP:AutoDetectRangeLegacy()
 	if self2.Primary_TFA.RangeFalloff <= 0 then
 		self2.Primary_TFA.RangeFalloff = 0.5
 	end
-end
 
-function SWEP:AutoDetectRange()
-	local self2 = self:GetTable()
-	if self2.Primary_TFA.FalloffMetricBased or self2.Primary_TFA.RangeFalloffLUT then return end
+	self2.Primary_TFA.RangeFalloffLUT_IsConverted = true
 
-	if self2.Primary_TFA.Range <= 0 and self2.Primary_TFA.RangeFalloff <= 0 or legacy_range_cv:GetBool() then
-		self2.Primary_TFA.FalloffMetricBased = true
-
-		local am = string.lower(self2.Primary_TFA.Ammo or "")
-		local m = 1
-
-		if (am == "pistol") then
-			m = 0.4
-		elseif (am == "357") then
-			m = 1.15
-		elseif (am == "smg1") then
-			m = 0.34
-		elseif (am == "ar2") then
-			m = 1.4
-		elseif (am == "buckshot") then
-			m = 0.18
-		elseif (am == "airboatgun") then
-			m = 1.6
-		elseif (am == "sniperpenetratedround") then
-			m = 2.25
-		end
-
-		local force = (self2.Primary_TFA.Force or 0) * m
-
-		self2.Primary_TFA.FalloffByMeter = force / self2.Primary_TFA.Damage * 1.5
-		self2.Primary_TFA.MinRangeStartFalloff = math.sqrt(self2.Primary_TFA.Damage / 2) * 4
-		self2.Primary_TFA.MaxFalloff = self2.Primary_TFA.Damage - math.max(self2.Primary_TFA.Damage * 0.1, 1)
-		self2.Primary_TFA.Range = self2.Primary_TFA.MinRangeStartFalloff / 0.0254 + self2.Primary_TFA.MaxFalloff * (self2.Primary_TFA.FalloffByMeter / 0.0254)
-
-		self2.Primary_TFA.RangeFalloff = 0.5 -- compatibility
-
-		return
-	end
-
-	self2.AutoDetectRangeLegacy(self)
+	self2.Primary_TFA.RangeFalloffLUT = {
+		bezier = false,
+		range_func = "linear", -- function to spline range
+		units = "hammer",
+		lut = {
+			{range = self2.Primary_TFA.Range * self2.Primary_TFA.RangeFalloff, damage = 1},
+			{range = self2.Primary_TFA.Range, damage = 1 - sv_tfa_range_modifier:GetFloat()},
+		}
+	}
 end
 
 function SWEP:FixProceduralReload()

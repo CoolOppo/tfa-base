@@ -193,14 +193,19 @@ SWEP.Primary.SpreadIncrement = nil -- What percentage of the modifier is added o
 SWEP.Primary.SpreadRecovery = nil -- How much the spread recovers, per second. Example val: 3
 
 -- Range Related
+
+-- DEPRECATED. Automatically converted to RangeFalloffLUT table
 SWEP.Primary.Range = -1 -- The distance the bullet can travel in source units.  Set to -1 to autodetect based on damage/rpm.
 SWEP.Primary.RangeFalloff = -1 -- The percentage of the range the bullet damage starts to fall off at.  Set to 0.8, for example, to start falling off after 80% of the range.
+
+-- Use these if you don't want/understand how to use LUT below. These values are automatically converted to RangeFalloffLUT table
 SWEP.Primary.FalloffMetricBased = false -- Set to true if you set up values below
 SWEP.Primary.FalloffByMeter = nil -- How much damage points will bullet loose when travel
 SWEP.Primary.MinRangeStartFalloff = nil -- How long will bullet travel in Meters before starting to lose damage?
 SWEP.Primary.MaxFalloff = nil -- Maximal amount of damage to be lost
 
---[[ -- without this table it will falloff to Metric or Legacy based range falloff
+-- Use this for full control over damage dropoff.
+--[[
 SWEP.Primary.RangeFalloffLUT = {
 	bezier = true, -- Whenever to use Bezier or not to interpolate points?
 	-- you probably always want it to be set to true

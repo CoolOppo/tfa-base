@@ -41,10 +41,6 @@ if GetConVar("sv_tfa_spread_legacy") == nil then
 	CreateReplConVar("sv_tfa_spread_legacy", "0", "Use legacy spread algorithms?")
 end
 
-if GetConVar("sv_tfa_range_legacy") == nil then
-	CreateReplConVar("sv_tfa_range_legacy", "0", "Use legacy range algorithms?")
-end
-
 if GetConVar("sv_tfa_cmenu") == nil then
 	CreateReplConVar("sv_tfa_cmenu", "1", "Allow custom context menu?")
 end
@@ -186,6 +182,23 @@ end
 cvars.AddChangeCallback("sv_tfa_default_clip", function(convar_name, value_old, value_new)
 	TFAUpdateDefaultClip()
 end, "TFAUpdateDefaultClip")
+
+local function sv_tfa_range_modifier()
+	for k, v in ipairs(ents.GetAll()) do
+		if v.IsTFAWeapon and v.Primary_TFA.RangeFalloffLUT_IsConverted then
+			v.Primary_TFA.RangeFalloffLUT = nil
+			v:AutoDetectRange()
+		end
+	end
+end
+
+cvars.AddChangeCallback("sv_tfa_range_modifier", sv_tfa_range_modifier, "TFA")
+
+sv_tfa_range_modifier()
+
+if CLIENT then
+	hook.Add("InitPostEntity", "sv_tfa_range_modifier", sv_tfa_range_modifier)
+end
 
 --end
 if GetConVar("sv_tfa_unique_slots") == nil then
