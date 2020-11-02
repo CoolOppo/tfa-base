@@ -269,9 +269,11 @@ local function FinishMove(ply, cmovedata)
 	local cl_tfa_ironsights_responsive = (ply:GetInfoNum("cl_tfa_ironsights_responsive", 0) or 0) >= 1
 	local cl_tfa_ironsights_responsive_timer = ply:GetInfoNum("cl_tfa_ironsights_responsive_timer", 0.175) or 0.175
 
+	local scale_dividier = game.GetTimeScale() * (sv_cheats:GetBool() and host_timescale:GetFloat() or 1)
+
 	if wepv:GetStat("data.ironsights") ~= 0 then
 		if bit.band(changed, IN_ATTACK2) == IN_ATTACK2 then
-			local deltaPress = (time - wepv:GetLastIronSightsPressed()) / (game.GetTimeScale() * (sv_cheats:GetBool() and host_timescale:GetFloat() or 1))
+			local deltaPress = (time - wepv:GetLastIronSightsPressed()) / scale_dividier
 
 			-- pressing for first time
 			if not wepv:GetIronSightsRaw() and bit.band(pressed, IN_ATTACK2) == IN_ATTACK2 then
@@ -299,13 +301,13 @@ local function FinishMove(ply, cmovedata)
 		bit.band(depressed, IN_RELOAD) == IN_RELOAD and
 		not cv_lr:GetBool()
 		and bit.band(buttons, IN_USE) == 0
-		and time <= (wepv:GetLastReloadPressed() + reload_threshold)
+		and time <= (wepv:GetLastReloadPressed() + reload_threshold * scale_dividier)
 	then
 		wepv:SetLastReloadPressed(-1)
 		wepv:Reload(true)
 	elseif bit.band(pressed, IN_RELOAD) == IN_RELOAD then
 		wepv:SetLastReloadPressed(time)
-	elseif bit.band(buttons, IN_RELOAD) ~= 0 and bit.band(buttons, IN_USE) == 0 and time > (wepv:GetLastReloadPressed() + reload_threshold) then
+	elseif bit.band(buttons, IN_RELOAD) ~= 0 and bit.band(buttons, IN_USE) == 0 and time > (wepv:GetLastReloadPressed() + reload_threshold * scale_dividier) then
 		wepv:CheckAmmo()
 	end
 
