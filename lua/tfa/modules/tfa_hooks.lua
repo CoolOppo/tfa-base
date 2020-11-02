@@ -624,14 +624,14 @@ hook.Add("InitPostEntity", "TFA_PatchThinkOverride", function()
         local class = wepRefTable.ClassName
 
         if PatchClassBlacklisted[class] or not weapons.IsBasedOn(class, "tfa_gun_base") then
-            continue
+            goto THINK1FOUND
         end
 
         local wepRealTbl = weapons.GetStored(class)
 
         if wepRealTbl.Think then
             local info = debug.getinfo(wepRealTbl.Think, "S")
-            if not info then continue end
+            if not info then goto THINK1FOUND end
 
             local src = info.short_src
 
@@ -640,7 +640,7 @@ hook.Add("InitPostEntity", "TFA_PatchThinkOverride", function()
             end
 
             local luafile = file.Read(src:sub(5), "LUA")
-            if not luafile then continue end
+            if not luafile then goto THINK1FOUND end
 
             local lua = luafile:Split("\n")
 
