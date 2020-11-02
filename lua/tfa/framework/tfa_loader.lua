@@ -24,15 +24,16 @@ if SERVER then AddCSLuaFile() end
 TFA = TFA or {}
 
 local do_load = true
-local version = 4.607
-local version_string = "4.6.0.7"
+local version = 4.61
+local version_string = "4.6.1.0"
 local changelog = [[
-	* Added viewmodel viewpunch toggle settings
-	* Fixed crashing when addons call SWEP:Initialize out of order
-	* Fixed bullet ballistics for NPCs not working
-	* Fixed procedural reloads
-	* Sped up ironsights/scope FOV change
-	* Fixed crouching state not being recognized without holding a key
+	* BaseClass tables are now unpacked to current weapon class (fixes TFA NMRIH Chainsaw)
+	* Reorganized weapon base files
+	* Added responsive ironsights mode (click to toggle, hold to hold)
+	* Fixed being unable to reload if timescale value is too high
+	* Fixed centering of triangular crosshair
+	* Range is now converted to LUT automatically, removed legacy range option
+	* Fixed damage falloff range display
 ]]
 
 local function testFunc()

@@ -1,4 +1,13 @@
 # This is an archive of changelog messages from `tfa_loader.lua`. For proper changes list refer to the Git history.
+## 4.6.1.0
+* BaseClass tables are now unpacked to current weapon class (fixes TFA NMRIH Chainsaw)
+* Reorganized weapon base files
+* Added responsive ironsights mode (click to toggle, hold to hold)
+* Fixed being unable to reload if timescale value is too high
+* Fixed centering of triangular crosshair
+* Range is now converted to LUT automatically, removed legacy range option
+* Fixed damage falloff range display
+
 ## 4.6.0.7
 * Fixed crouching state not being recognized without holding a key
 * Fixed bullet ballistics. Again.
