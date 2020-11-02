@@ -78,10 +78,10 @@ SWEP.Primary.RangeFalloff = -1--0.5
 SWEP.Primary.PenetrationMultiplier = 1
 SWEP.Primary.DryFireDelay = nil
 
-local sv_tfa_jamming = GetConVar('sv_tfa_jamming')
-local sv_tfa_jamming_mult = GetConVar('sv_tfa_jamming_mult')
-local sv_tfa_jamming_factor = GetConVar('sv_tfa_jamming_factor')
-local sv_tfa_jamming_factor_inc = GetConVar('sv_tfa_jamming_factor_inc')
+local sv_tfa_jamming = GetConVar("sv_tfa_jamming")
+local sv_tfa_jamming_mult = GetConVar("sv_tfa_jamming_mult")
+local sv_tfa_jamming_factor = GetConVar("sv_tfa_jamming_factor")
+local sv_tfa_jamming_factor_inc = GetConVar("sv_tfa_jamming_factor_inc")
 
 -- RP owners always like realism, so this feature might be something they like. Enable it for them!
 TFA_AUTOJAMMING_ENABLED = string.find(engine.ActiveGamemode(), 'rp') or
@@ -630,14 +630,14 @@ function SWEP:Initialize()
 		self2.BobScaleCustom = 1
 	end
 
-	self.Primary_TFA = table.Copy(self.Primary)
-	self.Secondary_TFA = table.Copy(self.Secondary)
+	TFA.UnfoldBaseClass(self2.Primary)
+	TFA.UnfoldBaseClass(self2.Secondary)
 
-	self.Primary.BaseClass = nil
-	self.Secondary.BaseClass = nil
+	self2.Primary.BaseClass = nil
+	self2.Secondary.BaseClass = nil
 
-	self.Primary_TFA.BaseClass = nil
-	self.Secondary_TFA.BaseClass = nil
+	self2.Primary_TFA = table.Copy(self2.Primary)
+	self2.Secondary_TFA = table.Copy(self2.Secondary)
 
 	self2.BobScale = 0
 	self2.SwayScaleCustom = 1
@@ -668,11 +668,20 @@ function SWEP:Initialize()
 	self2.FixSprintAnimBob(self)
 	self2.FixWalkAnimBob(self)
 
-	table.Merge(self.Primary, self.Primary_TFA)
-	table.Merge(self.Secondary, self.Secondary_TFA)
+	table.Merge(self2.Primary, self2.Primary_TFA)
+	table.Merge(self2.Secondary, self2.Secondary_TFA)
 
-	self.Primary_TFA.BaseClass = nil
-	self.Secondary_TFA.BaseClass = nil
+	TFA.UnfoldBaseClass(self2.StatCache_Blacklist)
+	TFA.UnfoldBaseClass(self2.Attachments)
+	TFA.UnfoldBaseClass(self2.VElements)
+	TFA.UnfoldBaseClass(self2.ViewModelBoneMods)
+	TFA.UnfoldBaseClass(self2.EventTable)
+
+	TFA.UnfoldBaseClass(self2.Blowback_PistolMode_Disabled)
+	TFA.UnfoldBaseClass(self2.IronAnimation)
+	TFA.UnfoldBaseClass(self2.SprintAnimation)
+	TFA.UnfoldBaseClass(self2.ShootAnimation)
+	TFA.UnfoldBaseClass(self2.SmokeParticles)
 
 	self2.ClearStatCache(self)
 

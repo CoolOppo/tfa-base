@@ -396,3 +396,22 @@ end
 function TFA.Cubic(t)
 	return -2 * t * t * t + 3 * t * t
 end
+
+function TFA.UnfoldBaseClass(tableInput, tableOutput)
+	if tableOutput == nil then tableOutput = tableInput end
+	if not istable(tableInput) or not istable(tableOutput) then return tableOutput end
+
+	if tableInput ~= tableOutput then
+		for k, v in pairs(tableInput) do
+			if tableOutput[k] == nil then
+				tableOutput[k] = v
+			end
+		end
+	end
+
+	if istable(tableInput.BaseClass) then
+		TFA.UnfoldBaseClass(tableInput.BaseClass, tableOutput)
+	end
+
+	return tableOutput
+end
