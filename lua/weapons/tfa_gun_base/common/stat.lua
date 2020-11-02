@@ -157,8 +157,10 @@ function SWEP:ClearStatCache(vn)
 			self2.AutoDetectRange(self)
 		end
 
-		if self2.Primary_TFA.RangeFalloffLUT then
-			self2.Primary.RangeFalloffLUTBuilt = self:BuildFalloffTable(self2.Primary_TFA.RangeFalloffLUT)
+		local getLUT = self2.GetStat(self, "Primary.RangeFalloffLUT")
+
+		if getLUT then
+			self2.Primary.RangeFalloffLUTBuilt = self:BuildFalloffTable(getLUT)
 		end
 
 		if self2.Primary_TFA.RecoilLUT then
