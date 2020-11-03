@@ -54,7 +54,7 @@ AddCSLuaFile("common/viewmodel.lua")
 AddCSLuaFile("common/skins.lua")
 
 AddCSLuaFile("shared.lua")
-AddCSLuaFile("client/init.lua")
+AddCSLuaFile("cl_init.lua")
 
 AddCSLuaFile("client/effects.lua")
 AddCSLuaFile("client/viewbob.lua")
