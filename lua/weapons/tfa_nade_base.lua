@@ -164,13 +164,14 @@ end
 function SWEP:ThrowStart()
 	if self:Clip1() <= 0 then return end
 
-	local _, tanim = self:ChooseShootAnim()
+	local success, tanim, animType = self:ChooseShootAnim()
 
 	local delay = self:GetNW2Bool("Underhanded", false) and self.Delay_Underhand or self.Delay
 	self:ScheduleStatus(TFA.Enum.STATUS_GRENADE_THROW, delay)
 
-	if IsFirstTimePredicted() then
+	if success then
 		self.LastNadeAnim = tanim
+		self.LastNadeAnimType = animType
 		self.LastNadeDelay = delay
 	end
 end
@@ -182,8 +183,10 @@ function SWEP:Throw()
 	self:TakePrimaryAmmo(1)
 	self:ShootBulletInformation()
 
-	local len = self:GetActivityLength(self.LastNadeAnim, true)
-	self:ScheduleStatus(TFA.Enum.STATUS_GRENADE_THROW_WAIT, len - self.LastNadeDelay)
+	if self.LastNadeAnim then
+		local len = self:GetActivityLength(self.LastNadeAnim, true, self.LastNadeAnimType)
+		self:ScheduleStatus(TFA.Enum.STATUS_GRENADE_THROW_WAIT, len - (self.LastNadeDelay or len))
+	end
 end
 
 function SWEP:Think2(...)
@@ -192,7 +195,7 @@ function SWEP:Think2(...)
 	local stat = self:GetStatus()
 
 	-- This is the best place to do this since Think2 is called inside FinishMove
-	self:SetNW2Bool("Underhanded", self.AllowUnderhanded and self:GetOwner():KeyDown(IN_ATTACK2))
+	self:SetNW2Bool("Underhanded", self.AllowUnderhanded and self:KeyDown(IN_ATTACK2))
 
 	local statusend = CurTime() >= self:GetStatusEnd()
 
@@ -201,7 +204,7 @@ function SWEP:Think2(...)
 		self:SetStatus(stat, math.huge)
 	end
 
-	if stat == TFA.Enum.STATUS_GRENADE_READY and (self:GetOwner():IsNPC() or not self:GetOwner():KeyDown(IN_ATTACK2) and not self:GetOwner():KeyDown(IN_ATTACK)) then
+	if stat == TFA.Enum.STATUS_GRENADE_READY and (self:GetOwner():IsNPC() or not self:KeyDown(IN_ATTACK2) and not self:KeyDown(IN_ATTACK)) then
 		self:ThrowStart()
 	end
 
