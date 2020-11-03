@@ -932,21 +932,21 @@ function SWEP:GenerateInspectionDerma()
 			return
 		end
 
-		if cl_tfa_inspect_hide_hud:GetBool() and DLib then
-			local customizing = self:GetCustomizing()
-
-			if customizing ~= lastcustomizing then
-				lastcustomizing = customizing
-				update_visible(customizing)
-			end
-		end
-
 		local wep = ply:GetActiveWeapon()
 
 		if not IsValid(wep) or not wep.IsTFAWeapon or wep:GetInspectingProgress() <= 0.01 then
 			myself:Remove()
 
 			return
+		end
+
+		if cl_tfa_inspect_hide_hud:GetBool() and DLib then
+			local customizing = wep:GetCustomizing()
+
+			if customizing ~= lastcustomizing then
+				lastcustomizing = customizing
+				update_visible(customizing)
+			end
 		end
 
 		myself.Player = ply
