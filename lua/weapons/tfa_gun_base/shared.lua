@@ -1200,8 +1200,7 @@ function SWEP:IronSights()
 	local issprinting = self:GetSprinting()
 	local iswalking = self:GetWalking()
 
-	local current_iron_sights = self:GetIronSightsRaw()
-	local issighting = current_iron_sights
+	local issighting = self:GetIronSightsRaw()
 	local isplayer = owent:IsPlayer()
 
 	if issighting and isplayer and owent:InVehicle() and not owent:GetAllowWeaponsInVehicle() then
@@ -1270,7 +1269,7 @@ function SWEP:IronSights()
 			(self:GetStatus() == TFA.Enum.STATUS_SHOOTING and self:CanInterruptShooting()))
 		and not self:GetReloadLoopCancel()
 	then
-		local toggle_is = current_iron_sights ~= issighting
+		local toggle_is = old_iron_sights_final ~= issighting
 
 		if issighting and self:GetSprinting() then
 			toggle_is = true

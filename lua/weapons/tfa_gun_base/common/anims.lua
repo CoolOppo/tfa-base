@@ -641,11 +641,21 @@ function SWEP:Locomote(flipis, is, flipsp, spr, flipwalk, walk, flipcust, cust)
 		end
 	end
 
-	--self2.Idle_WithHeld = true
-	if tldata then return self:PlayAnimation(tldata) end
-	--self:SetNextIdleAnim(-1)
+	if tldata then
+		return self:PlayAnimation(tldata)
+	end
 
-	return false, -1
+	return false, -1, TFA.Enum.ANIMATION_SEQ
+end
+
+function SWEP:LocomoteOrIdle(...)
+	local success, animID, animType = self:Locomote(...)
+
+	if not success then
+		return self:SetNextIdleAnim(-1)
+	end
+
+	return success, animID, animType
 end
 
 --[[
