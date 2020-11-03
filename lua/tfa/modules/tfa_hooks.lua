@@ -291,8 +291,8 @@ local function FinishMove(ply, cmovedata)
 				wepv:SetIronSightsRaw(true)
 				wepv:SetLastIronSightsPressed(time)
 			elseif wepv:GetIronSightsRaw() and
-				(cl_tfa_ironsights_toggle and band(pressed, IN_ATTACK2) == IN_ATTACK2 or
-				not cl_tfa_ironsights_toggle and band(depressed, IN_ATTACK2) == IN_ATTACK2)
+				((cl_tfa_ironsights_toggle or cl_tfa_ironsights_responsive) and band(pressed, IN_ATTACK2) == IN_ATTACK2 or
+				not cl_tfa_ironsights_toggle and not cl_tfa_ironsights_responsive and band(depressed, IN_ATTACK2) == IN_ATTACK2)
 			then
 				-- get out of iron sights
 				wepv:SetIronSightsRaw(false)
