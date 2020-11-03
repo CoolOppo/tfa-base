@@ -24,16 +24,13 @@ if SERVER then AddCSLuaFile() end
 TFA = TFA or {}
 
 local do_load = true
-local version = 4.61
-local version_string = "4.6.1.0"
+local version = 4.611
+local version_string = "4.6.1.1"
 local changelog = [[
-	* BaseClass tables are now unpacked to current weapon class (fixes TFA NMRIH Chainsaw)
-	* Reorganized weapon base files
-	* Added responsive ironsights mode (click to toggle, hold to hold)
-	* Fixed being unable to reload if timescale value is too high
-	* Fixed centering of triangular crosshair
-	* Range is now converted to LUT automatically, removed legacy range option
-	* Fixed damage falloff range display
+	* Fixed idle animation not updating correctly for ironsights
+	* Fixed inspection screen not appearing in some circumstances
+	* Improved flashlight toggle prediction
+	* Fixed some grenades throwing an error if "ready" animation is missing
 ]]
 
 local function testFunc()

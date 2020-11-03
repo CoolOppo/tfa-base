@@ -1,4 +1,10 @@
 # This is an archive of changelog messages from `tfa_loader.lua`. For proper changes list refer to the Git history.
+## 4.6.1.1
+* Fixed idle animation not updating correctly for ironsights
+* Fixed inspection screen not appearing in some circumstances
+* Improved flashlight toggle prediction
+* Fixed some grenades throwing an error if "ready" animation is missing
+
 ## 4.6.1.0
 * BaseClass tables are now unpacked to current weapon class (fixes TFA NMRIH Chainsaw)
 * Reorganized weapon base files
