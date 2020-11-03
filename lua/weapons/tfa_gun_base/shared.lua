@@ -2137,26 +2137,38 @@ end
 
 -- lua autorefresh / weapons.Register
 function SWEP:OnReloaded()
-	table.Merge(self.Primary_TFA, self.Primary)
-	table.Merge(self.Secondary_TFA, self.Secondary)
+	-- queue to next game frame since gmod is a fucking idiot
+	timer.Simple(0, function()
+		if not self:IsValid() then return end
 
-	if self.Primary_TFA.RangeFalloffLUT_IsConverted then
-		self.Primary_TFA.RangeFalloffLUT = nil
-	end
+		local baseclassSelf = baseclass.Get(self:GetClass())
+		if not baseclassSelf then return end
 
-	self.event_table_warning = false
-	self.event_table_built = false
+		self.Primary_TFA.RangeFalloffLUTBuilt = nil
+		self.Primary.RangeFalloffLUTBuilt = nil
 
-	local self2 = self:GetTable()
-	self2.AutoDetectMuzzle(self)
-	self2.AutoDetectDamage(self)
-	self2.AutoDetectDamageType(self)
-	self2.AutoDetectForce(self)
-	self2.AutoDetectPenetrationPower(self)
-	self2.AutoDetectKnockback(self)
-	self2.AutoDetectSpread(self)
-	self2.AutoDetectRange(self)
-	self2.ClearStatCache(self)
+		if istable(baseclassSelf.Primary) then
+			self.Primary_TFA = table.Copy(baseclassSelf.Primary)
+		end
+
+		if istable(baseclassSelf.Secondary) then
+			self.Secondary_TFA = table.Copy(baseclassSelf.Secondary)
+		end
+
+		self.event_table_warning = false
+		self.event_table_built = false
+
+		local self2 = self:GetTable()
+		self2.AutoDetectMuzzle(self)
+		self2.AutoDetectDamage(self)
+		self2.AutoDetectDamageType(self)
+		self2.AutoDetectForce(self)
+		self2.AutoDetectPenetrationPower(self)
+		self2.AutoDetectKnockback(self)
+		self2.AutoDetectSpread(self)
+		self2.AutoDetectRange(self)
+		self2.ClearStatCache(self)
+	end)
 end
 
 function SWEP:ProcessLoopSound()
