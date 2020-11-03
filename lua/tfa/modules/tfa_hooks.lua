@@ -227,6 +227,13 @@ local reload_threshold = 0.3
 local sv_cheats = GetConVar("sv_cheats")
 local host_timescale = GetConVar("host_timescale")
 
+local band = bit.band
+local bxor = bit.bxor
+local bnot = bit.bnot
+local GetTimeScale = game.GetTimeScale
+local IN_ATTACK2 = IN_ATTACK2
+local IN_RELOAD = IN_RELOAD
+
 local function FinishMove(ply, cmovedata)
 	if ply:InVehicle() and not ply:GetAllowWeaponsInVehicle() then return end
 
@@ -258,10 +265,10 @@ local function FinishMove(ply, cmovedata)
 
 	local lastButtons = wepv:GetDownButtons()
 	local buttons = cmovedata:GetButtons()
-	local stillPressed = bit.band(lastButtons, buttons)
-	local changed = bit.bxor(lastButtons, buttons)
-	local pressed = bit.band(changed, bit.bnot(lastButtons), buttons)
-	local depressed = bit.band(changed, lastButtons, bit.bnot(buttons))
+	local stillPressed = band(lastButtons, buttons)
+	local changed = bxor(lastButtons, buttons)
+	local pressed = band(changed, bnot(lastButtons), buttons)
+	local depressed = band(changed, lastButtons, bnot(buttons))
 
 	wepv:SetDownButtons(buttons)
 	wepv:SetLastPressedButtons(pressed)
@@ -273,24 +280,24 @@ local function FinishMove(ply, cmovedata)
 	local cl_tfa_ironsights_responsive = (ply:GetInfoNum("cl_tfa_ironsights_responsive", 0) or 0) >= 1
 	local cl_tfa_ironsights_responsive_timer = ply:GetInfoNum("cl_tfa_ironsights_responsive_timer", 0.175) or 0.175
 
-	local scale_dividier = game.GetTimeScale() * (sv_cheats:GetBool() and host_timescale:GetFloat() or 1)
+	local scale_dividier = GetTimeScale() * (sv_cheats:GetBool() and host_timescale:GetFloat() or 1)
 
 	if wepv:GetStat("data.ironsights") ~= 0 then
-		if bit.band(changed, IN_ATTACK2) == IN_ATTACK2 then
+		if band(changed, IN_ATTACK2) == IN_ATTACK2 then
 			local deltaPress = (time - wepv:GetLastIronSightsPressed()) / scale_dividier
 
 			-- pressing for first time
-			if not wepv:GetIronSightsRaw() and bit.band(pressed, IN_ATTACK2) == IN_ATTACK2 then
+			if not wepv:GetIronSightsRaw() and band(pressed, IN_ATTACK2) == IN_ATTACK2 then
 				wepv:SetIronSightsRaw(true)
 				wepv:SetLastIronSightsPressed(time)
 			elseif wepv:GetIronSightsRaw() and
-				(cl_tfa_ironsights_toggle and bit.band(pressed, IN_ATTACK2) == IN_ATTACK2 or
-				not cl_tfa_ironsights_toggle and bit.band(depressed, IN_ATTACK2) == IN_ATTACK2)
+				(cl_tfa_ironsights_toggle and band(pressed, IN_ATTACK2) == IN_ATTACK2 or
+				not cl_tfa_ironsights_toggle and band(depressed, IN_ATTACK2) == IN_ATTACK2)
 			then
 				-- get out of iron sights
 				wepv:SetIronSightsRaw(false)
 				wepv:SetLastIronSightsPressed(-1)
-			elseif wepv:GetIronSightsRaw() and cl_tfa_ironsights_responsive and bit.band(depressed, IN_ATTACK2) == IN_ATTACK2 and deltaPress > cl_tfa_ironsights_responsive_timer then
+			elseif wepv:GetIronSightsRaw() and cl_tfa_ironsights_responsive and band(depressed, IN_ATTACK2) == IN_ATTACK2 and deltaPress > cl_tfa_ironsights_responsive_timer then
 				-- we depressed IN_ATTACK2 with it were being held down
 				wepv:SetIronSightsRaw(false)
 				wepv:SetLastIronSightsPressed(-1)
@@ -302,16 +309,16 @@ local function FinishMove(ply, cmovedata)
 	end
 
 	if
-		bit.band(depressed, IN_RELOAD) == IN_RELOAD and
+		band(depressed, IN_RELOAD) == IN_RELOAD and
 		not cv_lr:GetBool()
-		and bit.band(buttons, IN_USE) == 0
+		and band(buttons, IN_USE) == 0
 		and time <= (wepv:GetLastReloadPressed() + reload_threshold * scale_dividier)
 	then
 		wepv:SetLastReloadPressed(-1)
 		wepv:Reload(true)
-	elseif bit.band(pressed, IN_RELOAD) == IN_RELOAD then
+	elseif band(pressed, IN_RELOAD) == IN_RELOAD then
 		wepv:SetLastReloadPressed(time)
-	elseif bit.band(buttons, IN_RELOAD) ~= 0 and bit.band(buttons, IN_USE) == 0 and time > (wepv:GetLastReloadPressed() + reload_threshold * scale_dividier) then
+	elseif band(buttons, IN_RELOAD) ~= 0 and band(buttons, IN_USE) == 0 and time > (wepv:GetLastReloadPressed() + reload_threshold * scale_dividier) then
 		wepv:CheckAmmo()
 	end
 
