@@ -252,6 +252,10 @@ local function FinishMove(ply, cmovedata)
 		wepv:SetBashImpulse(BashImpulse)
 	end
 
+	if cmovedata:GetImpulseCommand() == 100 and (wepv:GetStat("FlashlightAttachmentName") ~= nil or wepv:GetStat("FlashlightAttachment", 0) > 0) then
+		wepv:ToggleFlashlight()
+	end
+
 	local lastButtons = wepv:GetDownButtons()
 	local buttons = cmovedata:GetButtons()
 	local stillPressed = bit.band(lastButtons, buttons)
@@ -476,13 +480,15 @@ Used For: Switching flashlight on weapon and blocking HEV flashlight
 --
 hook.Add("PlayerSwitchFlashlight", "tfa_toggleflashlight", function(plyv, toEnable)
 	if CLIENT then return end -- this is serverside hook GO AWAY
+	-- fuck you source
+	-- where is fucking prediction??!??!?!?/
 
 	if not IsValid(plyv) or not toEnable then return end -- allow disabling HEV flashlight
 
 	local wepv = plyv:GetActiveWeapon()
 
 	if IsValid(wepv) and wepv.IsTFAWeapon and (wepv:GetStat("FlashlightAttachmentName") ~= nil or wepv:GetStat("FlashlightAttachment", 0) > 0) then
-		wepv:ToggleFlashlight()
+		-- wepv:ToggleFlashlight()
 
 		return false
 	end
