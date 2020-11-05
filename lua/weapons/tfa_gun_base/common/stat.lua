@@ -330,3 +330,39 @@ function SWEP:GetStat(stat, default, dontMergeTables)
 
 	return statSelf
 end
+
+-- This function checks common stats for mods that are not aware of statcache
+
+local parentTableNames = {"Primary", "Secondary"}
+local commonStatNames = {"ClipSize", "Ammo"}
+-- I am making those tables local just so that nobody can go and try to add anything in there
+-- If you want to modify any base-specific values frequently, use SWEP.StatCache_Blacklist
+
+local cv_updatedelay = GetConVar("sv_tfa_uncachedstatsdelay")
+
+function SWEP:ProcessUncachedStats()
+	local self2 = self:GetTable()
+
+	local delay = cv_updatedelay:GetFloat()
+
+	if delay > 0 then
+		if self2.LastStatsProcess and CurTime() - self2.LastStatsProcess < delay then return end
+
+		self2.LastStatsProcess = CurTime()
+	end
+
+	for i = 1, #parentTableNames do
+		local parentTableName = parentTableNames[i]
+
+		for j = 1, #commonStatNames do
+			local statName = commonStatNames[j]
+
+			if self2.StatCache_Blacklist[parentTableName .. "." .. statName] then continue end
+
+			if self2[parentTableName][statName] ~= self2[parentTableName .. "_TFA"][statName] then
+				self2[parentTableName .. "_TFA"][statName] = self2[parentTableName][statName]
+				self2.ClearStatCache(self, parentTableName .. "." .. statName)
+			end
+		end
+	end
+end

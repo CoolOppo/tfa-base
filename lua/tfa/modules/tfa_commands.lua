@@ -19,8 +19,8 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
-local function CreateReplConVar(cvarname, cvarvalue, description)
-	return CreateConVar(cvarname, cvarvalue, CLIENT and {FCVAR_REPLICATED} or {FCVAR_REPLICATED, FCVAR_ARCHIVE, FCVAR_NOTIFY}, description)
+local function CreateReplConVar(cvarname, cvarvalue, description, ...)
+	return CreateConVar(cvarname, cvarvalue, CLIENT and {FCVAR_REPLICATED} or {FCVAR_REPLICATED, FCVAR_ARCHIVE, FCVAR_NOTIFY}, description, ...)
 end -- replicated only on clients, archive/notify on server
 
 -- Shared Convars
@@ -361,4 +361,8 @@ end
 
 if GetConVar("sv_tfa_fixed_crosshair") == nil then
 	CreateReplConVar("sv_tfa_fixed_crosshair", "0", "Fix crosshair position on center of the screen (CS:GO style)")
+end
+
+if GetConVar("sv_tfa_uncachedstatsdelay") == nil then
+	CreateReplConVar("sv_tfa_uncachedstatsdelay", "1", "Delay for checking stats that might be modified in a non-cached way", 0, 10)
 end
