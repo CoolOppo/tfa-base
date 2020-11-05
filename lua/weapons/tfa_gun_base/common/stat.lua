@@ -356,12 +356,13 @@ function SWEP:ProcessUncachedStats()
 
 		for j = 1, #commonStatNames do
 			local statName = commonStatNames[j]
+			local fullStatName = parentTableName .. "." .. statName
 
-			if self2.StatCache_Blacklist[parentTableName .. "." .. statName] then continue end
+			if not self2.StatCache2[fullStatName] then continue end
 
-			if self2[parentTableName][statName] ~= self2[parentTableName .. "_TFA"][statName] then
+			if self2[parentTableName][statName] ~= self2.StatCache[fullStatName] then
 				self2[parentTableName .. "_TFA"][statName] = self2[parentTableName][statName]
-				self2.ClearStatCache(self, parentTableName .. "." .. statName)
+				self2.ClearStatCache(self, fullStatName)
 			end
 		end
 	end
