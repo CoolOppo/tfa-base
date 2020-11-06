@@ -1184,7 +1184,6 @@ function SWEP:Think2(is_working_out_prediction_errors)
 	end
 
 	self2.ProcessStatus(self)
-	self2.ProcessUncachedStats(self)
 end
 
 SWEP.IronSightsReloadEnabled = false

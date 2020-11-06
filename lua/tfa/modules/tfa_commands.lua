@@ -362,7 +362,3 @@ end
 if GetConVar("sv_tfa_fixed_crosshair") == nil then
 	CreateReplConVar("sv_tfa_fixed_crosshair", "0", "Fix crosshair position on center of the screen (CS:GO style)")
 end
-
-if GetConVar("sv_tfa_uncachedstatsdelay") == nil then
-	CreateReplConVar("sv_tfa_uncachedstatsdelay", "1", "Delay for checking stats that might be modified in a non-cached way", 0, 10)
-end
