@@ -204,6 +204,20 @@ SWEP.Primary.FalloffByMeter = nil -- How much damage points will bullet loose wh
 SWEP.Primary.MinRangeStartFalloff = nil -- How long will bullet travel in Meters before starting to lose damage?
 SWEP.Primary.MaxFalloff = nil -- Maximal amount of damage to be lost
 
+-- Bullet pattern to utilize
+-- to be used to utilize built-in patterns
+SWEP.SpreadPattern = nil -- Defaults to ""
+
+-- Spread bias
+-- The bigger is the number, the stronger is spread
+-- along specified axis (Yaw for X, Pitch for Y). Note that this is not clamped and it is possible
+-- to make spread along X or Y or both bigger than current aimcone
+SWEP.SpreadBiasYaw = nil -- Defaults to 1
+SWEP.SpreadBiasPitch = nil -- Defaults to 1
+
+-- Check common/bullet.lua for more information on how to implement custom
+-- functions if you REALLY need them
+
 -- Use this for full control over damage dropoff.
 --[[
 SWEP.Primary.RangeFalloffLUT = {

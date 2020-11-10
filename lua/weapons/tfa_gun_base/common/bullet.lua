@@ -117,6 +117,29 @@ local sv_tfa_bullet_randomseed = GetConVar("sv_tfa_bullet_randomseed")
 
 local randomseed = "tfa_" .. tostring({})
 
+SWEP.SpreadPattern = ""
+SWEP.SpreadBiasYaw = 1
+SWEP.SpreadBiasPitch = 1
+
+-- Default ComputeBulletDeviation implementation
+-- Custom implementations should return two numbers
+-- Yaw (X) and Pitch (Y) deviation
+function SWEP:ComputeBulletDeviation(bulletNum, totalBullets, aimcone)
+	local sharedRandomSeed
+
+	if sv_tfa_bullet_randomseed:GetBool() then
+		sharedRandomSeed = randomseed .. CurTime()
+	else
+		sharedRandomSeed = "TFA_ShootBullet" .. CurTime()
+	end
+
+	return
+		-- Yaw
+		util.SharedRandom(sharedRandomSeed, -aimcone * 45 * self:GetStat("SpreadBiasYaw"), aimcone * 45 * self:GetStat("SpreadBiasYaw"), totalBullets + 1 + bulletNum),
+		-- Pitch
+		util.SharedRandom(sharedRandomSeed, -aimcone * 45 * self:GetStat("SpreadBiasPitch"), aimcone * 45 * self:GetStat("SpreadBiasPitch"), bulletNum)
+end
+
 function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet, bulletoverride)
 	if not IsFirstTimePredicted() and not game.SinglePlayer() then return end
 	num_bullets = num_bullets or 1
@@ -208,18 +231,20 @@ function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet,
 
 	self.MainBullet.Dir = self:GetAimVector()
 	self.MainBullet.HullSize = self:GetStat("Primary.HullSize") or 0
-	self.MainBullet.Spread.x = aimcone
-	self.MainBullet.Spread.y = aimcone
+	self.MainBullet.Spread.x = 0
+	self.MainBullet.Spread.y = 0
 
-	if self.MainBullet.Num == 1 and sv_tfa_bullet_randomseed:GetBool() then
-		self.MainBullet.Spread.x = 0
-		self.MainBullet.Spread.y = 0
+	self.MainBullet.Num = 1
 
-		local sharedRandomSeed = randomseed .. CurTime()
+	if num_bullets == 1 then
+		local dYaw, dPitch = self:ComputeBulletDeviation(1, 1, aimcone)
 
 		local ang = self.MainBullet.Dir:Angle()
-		ang:RotateAroundAxis(ang:Up(), util.SharedRandom(sharedRandomSeed, -aimcone * 45, aimcone * 45, 0))
-		ang:RotateAroundAxis(ang:Right(), util.SharedRandom(sharedRandomSeed, -aimcone * 45, aimcone * 45, 1))
+		local up, right = ang:Up(), ang:Right()
+
+		ang:RotateAroundAxis(up, dYaw)
+		ang:RotateAroundAxis(right, dPitch)
+
 		self.MainBullet.Dir = ang:Forward()
 	end
 
@@ -249,13 +274,7 @@ function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet,
 		self.MainBullet.Callback2 = nil
 	end
 
-	self.MainBullet.Num = num_bullets
-
-	if self.MainBullet.Num > 1 then
-		self.MainBullet.Num = 1
-		self.MainBullet.Spread.x = 0
-		self.MainBullet.Spread.y = 0
-
+	if num_bullets > 1 then
 		local ang_ = self.MainBullet.Dir:Angle()
 		local sharedRandomSeed
 
@@ -265,13 +284,18 @@ function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet,
 			sharedRandomSeed = "TFA_ShootBullet" .. CurTime()
 		end
 
+		local up, right = ang_:Up(), ang_:Right()
+
 		-- single callback per multiple bullets fix
 		for i = 1, num_bullets do
 			local bullet = table.Copy(self.MainBullet)
 
 			local ang = Angle(ang_)
-			ang:RotateAroundAxis(ang:Up(), util.SharedRandom(sharedRandomSeed, -aimcone * 45, aimcone * 45, 0 + i))
-			ang:RotateAroundAxis(ang:Right(), util.SharedRandom(sharedRandomSeed, -aimcone * 45, aimcone * 45, 1 + i))
+
+			local dYaw, dPitch = self:ComputeBulletDeviation(i, num_bullets, aimcone)
+			ang:RotateAroundAxis(up, dYaw)
+			ang:RotateAroundAxis(right, dPitch)
+
 			bullet.Dir = ang:Forward()
 
 			function bullet.Callback(attacker, trace, dmginfo)

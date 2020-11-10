@@ -1459,25 +1459,57 @@ function SWEP:DoDrawCrosshair()
 
 		cam.PushModelMatrix(crosshairMatrix)
 		surface.SetDrawColor(outr, outg, outb, outa)
-		local tA, tB, tC, tD = math.Round(-outlinewidth) - crosshairwidth / 2, math.Round(-length - outlinewidth) - crosshairwidth / 2, math.Round(outlinewidth * 2) + crosshairwidth, math.Round(length - gap + outlinewidth * 2) + crosshairwidth
-		surface.DrawRect(tA, tB, tC, tD) -- Top
+
+		local tHeight = math.Round(length - gap + outlinewidth) + crosshairwidth
+
+		local tX, tY, tWidth =
+			math.Round(-outlinewidth) - crosshairwidth / 2,
+			-gap * self:GetStat("SpreadBiasPitch") - tHeight,
+			math.Round(outlinewidth * 2) + crosshairwidth
+
+		-- Top
+		surface.DrawRect(tX, tY, tWidth, tHeight)
 		cam.PopModelMatrix()
 
 		if tricross_cvar:GetBool() then
 			local ourlinew, outlinel = math.Round(outlinewidth * 2) + crosshairwidth, math.Round(length - gap) + outlinewidth + crosshairwidth
 
+			tY = -gap - tHeight
+
 			cam.PushModelMatrix(crosshairMatrixLeft)
-			surface.DrawRect(tA, tB, tC, tD)
+			surface.DrawRect(tX, tY, tWidth, tHeight)
 			cam.PopModelMatrix()
 
 			cam.PushModelMatrix(crosshairMatrixRight)
-			surface.DrawRect(tA, tB, tC, tD)
+			surface.DrawRect(tX, tY, tWidth, tHeight)
 			cam.PopModelMatrix()
 		else
 			cam.PushModelMatrix(crosshairMatrix)
-			surface.DrawRect(math.Round(-length - outlinewidth) - crosshairwidth / 2, math.Round(-outlinewidth) - crosshairwidth / 2, math.Round(length - gap + outlinewidth * 2) + crosshairwidth, math.Round(outlinewidth * 2) + crosshairwidth) -- Left
-			surface.DrawRect(math.Round(gap - outlinewidth) - crosshairwidth / 2, math.Round(-outlinewidth) - crosshairwidth / 2, math.Round(length - gap + outlinewidth * 2) + crosshairwidth, math.Round(outlinewidth * 2) + crosshairwidth) -- Right
-			surface.DrawRect(math.Round(-outlinewidth) - crosshairwidth / 2, math.Round(gap - outlinewidth) - crosshairwidth / 2, math.Round(outlinewidth * 2) + crosshairwidth, math.Round(length - gap + outlinewidth * 2) + crosshairwidth) -- Bottom
+
+			local width = math.Round(length - gap + outlinewidth * 2) + crosshairwidth
+			local realgap = math.Round(gap * self:GetStat("SpreadBiasYaw") - outlinewidth) - crosshairwidth / 2
+
+			-- Left
+			surface.DrawRect(
+				-realgap - width,
+				math.Round(-outlinewidth) - crosshairwidth / 2,
+				width,
+				math.Round(outlinewidth * 2) + crosshairwidth)
+
+			-- Right
+			surface.DrawRect(
+				realgap,
+				math.Round(-outlinewidth) - crosshairwidth / 2,
+				width,
+				math.Round(outlinewidth * 2) + crosshairwidth)
+
+			-- Bottom
+			surface.DrawRect(
+				math.Round(-outlinewidth) - crosshairwidth / 2,
+				math.Round(gap * self:GetStat("SpreadBiasPitch") - outlinewidth) - crosshairwidth / 2,
+				math.Round(outlinewidth * 2) + crosshairwidth,
+				math.Round(length - gap + outlinewidth * 2) + crosshairwidth)
+
 			cam.PopModelMatrix()
 		end
 
@@ -1489,25 +1521,57 @@ function SWEP:DoDrawCrosshair()
 	--Main Crosshair
 	cam.PushModelMatrix(crosshairMatrix)
 	surface.SetDrawColor(crossr, crossg, crossb, crossa)
-	local tA, tB, tC, tD = -crosshairwidth / 2, math.Round(-length) - crosshairwidth / 2, crosshairwidth, math.Round(length - gap) + crosshairwidth
-	surface.DrawRect(tA, tB, tC, tD) -- Top
+
+	local tHeight = math.Round(length - gap) + crosshairwidth
+
+	local tX, tY, tWidth =
+		-crosshairwidth / 2,
+		math.Round(-gap * self:GetStat("SpreadBiasPitch") - tHeight),
+		crosshairwidth
+
+	-- Top
+	surface.DrawRect(tX, tY, tWidth, tHeight)
 	cam.PopModelMatrix()
 
 	if tricross_cvar:GetBool() then
 		local xhl = math.Round(length - gap) + crosshairwidth
 
+		tY = math.Round(-gap - tHeight),
+
 		cam.PushModelMatrix(crosshairMatrixLeft)
-		surface.DrawRect(tA, tB, tC, tD)
+		surface.DrawRect(tX, tY, tWidth, tHeight)
 		cam.PopModelMatrix()
 
 		cam.PushModelMatrix(crosshairMatrixRight)
-		surface.DrawRect(tA, tB, tC, tD)
+		surface.DrawRect(tX, tY, tWidth, tHeight)
 		cam.PopModelMatrix()
 	else
 		cam.PushModelMatrix(crosshairMatrix)
-		surface.DrawRect(math.Round( - length) - crosshairwidth / 2, - crosshairwidth / 2, math.Round(length - gap) + crosshairwidth, crosshairwidth) -- Left
-		surface.DrawRect(math.Round(gap) - crosshairwidth / 2,  - crosshairwidth / 2, math.Round(length - gap) + crosshairwidth, crosshairwidth) -- Right
-		surface.DrawRect(-crosshairwidth / 2, math.Round(gap) - crosshairwidth / 2, crosshairwidth, math.Round(length - gap) + crosshairwidth) -- Bottom
+
+		local width = math.Round(length - gap) + crosshairwidth
+		local realgap = math.Round(gap * self:GetStat("SpreadBiasYaw")) - crosshairwidth / 2
+
+		-- Left
+		surface.DrawRect(
+			-realgap - width,
+			-crosshairwidth / 2,
+			width,
+			crosshairwidth)
+
+		-- Right
+		surface.DrawRect(
+			realgap,
+			-crosshairwidth / 2,
+			width,
+			crosshairwidth)
+
+		-- Bottom
+		surface.DrawRect(
+			-crosshairwidth / 2,
+			math.Round(gap * self:GetStat("SpreadBiasPitch")) - crosshairwidth / 2,
+			crosshairwidth,
+			math.Round(length - gap) + crosshairwidth)
+
 		cam.PopModelMatrix()
 	end
 
