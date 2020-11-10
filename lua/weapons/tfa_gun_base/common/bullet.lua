@@ -276,14 +276,6 @@ function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet,
 
 	if num_bullets > 1 then
 		local ang_ = self.MainBullet.Dir:Angle()
-		local sharedRandomSeed
-
-		if sv_tfa_bullet_randomseed:GetBool() then
-			sharedRandomSeed = randomseed .. CurTime()
-		else
-			sharedRandomSeed = "TFA_ShootBullet" .. CurTime()
-		end
-
 		local up, right = ang_:Up(), ang_:Right()
 
 		-- single callback per multiple bullets fix

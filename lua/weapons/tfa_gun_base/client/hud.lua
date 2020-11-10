@@ -1536,7 +1536,7 @@ function SWEP:DoDrawCrosshair()
 	if tricross_cvar:GetBool() then
 		local xhl = math.Round(length - gap) + crosshairwidth
 
-		tY = math.Round(-gap - tHeight),
+		tY = math.Round(-gap - tHeight)
 
 		cam.PushModelMatrix(crosshairMatrixLeft)
 		surface.DrawRect(tX, tY, tWidth, tHeight)
