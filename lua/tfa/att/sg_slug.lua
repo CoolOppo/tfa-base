@@ -31,7 +31,7 @@ ATTACHMENT.Icon = "entities/tfa_ammo_slug.png" --Revers to label, please give it
 
 ATTACHMENT.WeaponTable = {
 	["Primary"] = {
-		["Damage"] = function( wep, stat ) return wep.Primary.NumShots * stat * 0.7 end,
+		["Damage"] = function( wep, stat ) return wep.Primary_TFA.NumShots * stat * 0.7 end,
 		["NumShots"] = function( wep, stat ) return 1, true end,
 		["Spread"] = function( wep, stat ) return math.max( stat - 0.015, stat * 0.5 ) end,
 		["IronAccuracy"] = function( wep, stat ) return math.max( stat - 0.03, stat * 0.25 ) end,
