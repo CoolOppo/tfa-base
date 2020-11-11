@@ -434,6 +434,7 @@ Returns:  Nothing.  Simple sets up DTVars to be networked.
 Purpose:  Networking.
 ]]
 function SWEP:SetupDataTables()
+	self.TrackedDTTypes = nil
 	self.NetworkVar_TFA = self.NetworkVar
 
 	--self:NetworkVarTFA("Bool", "IronSights")
