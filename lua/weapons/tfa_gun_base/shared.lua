@@ -2132,6 +2132,13 @@ end
 -- source engine save load
 function SWEP:OnRestore()
 	local self2 = self:GetTable()
+
+	self2.Primary = self2.Primary_TFA
+	self2.Primary_TFA = nil
+
+	self2.Secondary = self2.Secondary_TFA
+	self2.Secondary_TFA = nil
+
 	self2.HasInitialized = false
 	self2.HasInitAttachments = false
 end
