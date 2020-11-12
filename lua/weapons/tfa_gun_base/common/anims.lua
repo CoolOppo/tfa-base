@@ -224,9 +224,7 @@ function SWEP:BuildAnimActivities()
 		if v.value then
 			self2.AnimationActivities[v.value] = k
 		end
-	end
 
-	for k, _ in pairs(self2.BaseAnimations) do
 		local kvt = self2.GetStat(self, "Animations." .. k)
 
 		if kvt.value then
