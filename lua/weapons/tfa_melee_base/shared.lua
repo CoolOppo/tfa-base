@@ -144,6 +144,8 @@ SWEP.Seed = 0
 SWEP.AttackSoundTime = -1
 SWEP.VoxSoundTime = -1
 
+SWEP.DisplayFalloff = false
+
 function SWEP:SetupDataTables()
 	BaseClass.SetupDataTables(self)
 

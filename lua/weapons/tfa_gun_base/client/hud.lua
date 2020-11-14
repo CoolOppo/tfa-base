@@ -734,7 +734,7 @@ function SWEP:InspectionVGUIAttachments(contentpanel)
 		hook.Run("TFA_InspectVGUI_AttachmentsFinish", self, contentpanel, scrollpanel)
 	end
 
-	if self.Primary.RangeFalloffLUTBuilt then
+	if self.Primary.RangeFalloffLUTBuilt and self:GetStat("DisplayFalloff") then
 		local falloffpanel = vgui.Create("EditablePanel", mainpanel)
 		falloffpanel:SetSize(ScrW() * .5 - ScaleH(self.VGUIPaddingW) * 2, mainpanel:GetTall() * 0.2)
 		falloffpanel:SetPos(ScrW() * .5, mainpanel:GetTall() - falloffpanel:GetTall() - ScaleH(self.VGUIPaddingH))

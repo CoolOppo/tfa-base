@@ -201,6 +201,8 @@ SWEP.VMPos_Additive = true
 
 SWEP.AllowIronSightsDoF = true
 
+SWEP.DisplayFalloff = true
+
 SWEP.IronAnimation = {
 	--[[
 	["in"] = {

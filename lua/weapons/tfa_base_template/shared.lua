@@ -244,6 +244,8 @@ SWEP.Primary.RangeFalloffLUT = {
 }
 ]]
 
+SWEP.DisplayFalloff = nil -- Defaults to true (false for melees)
+
 --[[
 SWEP.Primary.RecoilLUT_IronSightsMult = nil -- Defaults to 0.5
 -- controls how much effective LUT is when iron sighting
