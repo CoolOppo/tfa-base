@@ -1204,6 +1204,11 @@ function SWEP:IronSights()
 
 	local issighting = self:GetIronSightsRaw()
 	local isplayer = owent:IsPlayer()
+	local old_iron_sights_final = self:GetIronSightsOldFinal()
+
+	if TFA.Enum.ReloadStatus[stat] and self2.GetStat(self, "IronSightsReloadLock") then
+		issighting = old_iron_sights_final
+	end
 
 	if issighting and isplayer and owent:InVehicle() and not owent:GetAllowWeaponsInVehicle() then
 		issighting = false
@@ -1243,12 +1248,6 @@ function SWEP:IronSights()
 		else
 			self2.LastBoltShoot = nil
 		end
-	end
-
-	local old_iron_sights_final = self:GetIronSightsOldFinal()
-
-	if TFA.Enum.ReloadStatus[stat] and self2.GetStat(self, "IronSightsReloadLock") then
-		issighting = old_iron_sights_final
 	end
 
 	if old_iron_sights_final ~= issighting and self2.Sights_Mode == TFA.Enum.LOCOMOTION_LUA then -- and stat == TFA.Enum.STATUS_IDLE then
