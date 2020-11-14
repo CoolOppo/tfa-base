@@ -1248,6 +1248,10 @@ function SWEP:IronSights()
 
 	local old_iron_sights_final = self:GetIronSightsOldFinal()
 
+	if TFA.Enum.ReloadStatus[stat] and self2.GetStat(self, "IronSightsReloadLock") then
+		issighting = old_iron_sights_final
+	end
+
 	if old_iron_sights_final ~= issighting and self2.Sights_Mode == TFA.Enum.LOCOMOTION_LUA then -- and stat == TFA.Enum.STATUS_IDLE then
 		self:SetNextIdleAnim(-1)
 	end
