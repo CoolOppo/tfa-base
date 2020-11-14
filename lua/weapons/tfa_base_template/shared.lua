@@ -10,29 +10,29 @@
 
 -- M9K compatible version is dated as 0 (and 0 is also fallback if TFADataVersion not present)
 -- as well as everything made for TFA Base before 4.7
-SWEP.TFADataVersion 			= 1
+SWEP.TFADataVersion             = 1
 
 ----------------- Basic Garry's Mod SWEP structure stats / TFA Base properties
-SWEP.Base               		= "tfa_gun_base"
-SWEP.Category               	= "TFA Template" -- The category.
+SWEP.Base                       = "tfa_gun_base"
+SWEP.Category                   = "TFA Template" -- The category.
 -- Please, just choose something generic or something I've already done if you plan on only doing like one (or two or three) swep(s).
-SWEP.Manufacturer 				= nil -- Gun Manufactrer (e.g. Hoeckler and Koch)
-SWEP.Author            			= "" -- Author Tooltip
-SWEP.Contact                	= "" -- Contact Info Tooltip
-SWEP.Purpose                	= "" -- Purpose Tooltip
+SWEP.Manufacturer               = nil -- Gun Manufactrer (e.g. Hoeckler and Koch)
+SWEP.Author                     = "" -- Author Tooltip
+SWEP.Contact                    = "" -- Contact Info Tooltip
+SWEP.Purpose                    = "" -- Purpose Tooltip
 SWEP.Instructions               = "" -- Instructions Tooltip
-SWEP.Spawnable              	= false -- Can you, as a normal user, spawn this?
-SWEP.AdminSpawnable         	= false -- Can an adminstrator spawn this?  Does not tie into your admin mod necessarily, unless its coded to allow for GMod's default ranks somewhere in its code.  Evolve and ULX should work, but try to use weapon restriction rather than these.
-SWEP.DrawCrosshair          	= true      -- Draw the crosshair?
+SWEP.Spawnable                  = false -- Can you, as a normal user, spawn this?
+SWEP.AdminSpawnable             = false -- Can an adminstrator spawn this?  Does not tie into your admin mod necessarily, unless its coded to allow for GMod's default ranks somewhere in its code.  Evolve and ULX should work, but try to use weapon restriction rather than these.
+SWEP.DrawCrosshair              = true      -- Draw the crosshair?
 
 -- AKA DrawCrosshairIS
-SWEP.DrawCrosshairIronSights	= false -- Draw the crosshair in ironsights?
-SWEP.PrintName              	= "TFA Base Template"       -- Weapon name (Shown on HUD)
-SWEP.Slot               		= 2             -- Slot in the weapon selection menu.  Subtract 1, as this starts at 0.
-SWEP.SlotPos                	= 73            -- Position in the slot
-SWEP.AutoSwitchTo           	= true      -- Auto switch to if we pick it up
-SWEP.AutoSwitchFrom         	= true      -- Auto switch from if you pick up a better weapon
-SWEP.Weight            			= 30            -- This controls how "good" the weapon is for autopickup.
+SWEP.DrawCrosshairIronSights    = false -- Draw the crosshair in ironsights?
+SWEP.PrintName                  = "TFA Base Template"       -- Weapon name (Shown on HUD)
+SWEP.Slot                       = 2             -- Slot in the weapon selection menu.  Subtract 1, as this starts at 0.
+SWEP.SlotPos                    = 73            -- Position in the slot
+SWEP.AutoSwitchTo               = true      -- Auto switch to if we pick it up
+SWEP.AutoSwitchFrom             = true      -- Auto switch from if you pick up a better weapon
+SWEP.Weight                     = 30            -- This controls how "good" the weapon is for autopickup.
 
 ----------------- The Most basic weapon stats
 SWEP.Primary.RPM = 600 -- This is in Rounds Per Minute / RPM
@@ -345,7 +345,7 @@ SWEP.Primary.MaxSurfacePenetrationCount = nil -- Defaults to infinity and is cla
 -- The maximum number of surface penetrations. You probably shouldn't touch this unless you need to remove penetration completely or limit it somehow
 -- aside from Penetration power exhaust
 
-SWEP.Primary.PenetrationPower 			= nil -- Defaults to autodetect
+SWEP.Primary.PenetrationPower           = nil -- Defaults to autodetect
 -- This control how much we can penetrate various surfaces in hammer units
 -- So, PenetrationPower of 400 say that we can penetrate 400 hammer units of material with penetration multiplier of 1
 -- 800 hammer units of material with penetration multiplier of 0.5
@@ -353,7 +353,7 @@ SWEP.Primary.PenetrationPower 			= nil -- Defaults to autodetect
 -- and so on
 -- TFA Base is designed to work with small to insanely large penetration power values, so don't be shy at experimenting with this value
 
-SWEP.Primary.PenetrationMultiplier 		= nil -- Defaults to 1
+SWEP.Primary.PenetrationMultiplier      = nil -- Defaults to 1
 -- Change the amount of something this gun can penetrate through
 -- the LESSER this value is, the BETTER is penetration
 -- this is basically multiplier for next values
@@ -370,25 +370,25 @@ SWEP.Primary.PenetrationMaterials = {
 -- e.g. if their WalkSpeed is 300 HU/s and they hold gun with multiplier of 0.75
 -- then when they press +forward their speed will be capped at 225 HU/s
 -- AKA MoveSpeed
-SWEP.RegularMoveSpeedMultiplier 		= nil -- Defaults to 1
+SWEP.RegularMoveSpeedMultiplier         = nil -- Defaults to 1
 -- Multiply the player's movespeed by this when aiming down sights
 -- !!! This penalty / bonus is not additive (multiplied by RegularMoveSpeedMultiplier) and is preemptive
 -- (e.g. if RegularMoveSpeedMultiplier is 0.5 and AimingDownSightsSpeedMultiplier is 1, then when fully Aiming Down Sights
 -- speed multiplier will be 1, when half-way ADS'ing speed will be 0.75 and so on
 -- Keep in mind that this also affect mouse sensivity when aiming down sights (creating kind of "mouse weight" effect)
 -- AKA IronSightsMoveSpeed
-SWEP.AimingDownSightsSpeedMultiplier 	= nil -- Defaults to 0.8
+SWEP.AimingDownSightsSpeedMultiplier    = nil -- Defaults to 0.8
 
 ----------------- ViewModel related
-SWEP.ViewModel      	= "models/your/path/here.mdl" -- Viewmodel path
-SWEP.ViewModelFOV   	= 65        -- This controls how big the viewmodel looks.  Less is more.
-SWEP.ViewModelFlip  	= false     -- Set this to true for CSS models, or false for everything else (with a righthanded viewmodel.)
-SWEP.UseHands       	= false -- Use gmod c_arms system.
+SWEP.ViewModel          = "models/your/path/here.mdl" -- Viewmodel path
+SWEP.ViewModelFOV       = 65        -- This controls how big the viewmodel looks.  Less is more.
+SWEP.ViewModelFlip      = false     -- Set this to true for CSS models, or false for everything else (with a righthanded viewmodel.)
+SWEP.UseHands           = false -- Use gmod c_arms system.
 
 -- The viewmodel positional offset, constantly.
 -- Subtract this from any other modifications to viewmodel position.
 -- AKA VMPos (SWEP Construction Kit naming, VMPos is always checked for presence and it always override ViewModelPosition if present)
-SWEP.ViewModelPosition 	= Vector(0, 0, 0)
+SWEP.ViewModelPosition  = Vector(0, 0, 0)
 -- AKA VMAng (SWEP Construction Kit naming)
 -- The viewmodel angular offset, constantly.
 -- Subtract this from any other modifications to viewmodel angle.
@@ -396,24 +396,24 @@ SWEP.ViewModelAngle     = Vector(0, 0, 0)
 
 -- Position when sprinting
 -- AKA RunSightsPos (SWEP Construction Kit naming)
-SWEP.SprintViewModelPosition 	= Vector(0, 0, 0) -- Change this, using SWEP Creation Kit preferably
+SWEP.SprintViewModelPosition    = Vector(0, 0, 0) -- Change this, using SWEP Creation Kit preferably
 -- AKA RunSightsAng (SWEP Construction Kit naming)
-SWEP.SprintViewModelAngle 		= Vector(0, 0, 0) -- Change this, using SWEP Creation Kit preferably
+SWEP.SprintViewModelAngle       = Vector(0, 0, 0) -- Change this, using SWEP Creation Kit preferably
 
 -- Position when crouching
 -- Viewmodel offset when player is crouched
 -- AKA CrouchPos
-SWEP.CrouchViewModelPosition 	= nil -- Defaults to nothing, use Vector(0, 0, 0) as starting point
+SWEP.CrouchViewModelPosition    = nil -- Defaults to nothing, use Vector(0, 0, 0) as starting point
 -- AKA CrouchAng
-SWEP.CrouchViewModelAngle 		= nil -- Defaults to nothing, use Vector(0, 0, 0) as starting point
+SWEP.CrouchViewModelAngle       = nil -- Defaults to nothing, use Vector(0, 0, 0) as starting point
 
-SWEP.IronSightsPosition 		= Vector(0, 0, 0) -- Change this, using SWEP Creation Kit preferably
-SWEP.IronSightsAngle 			= Vector(0, 0, 0) -- Change this, using SWEP Creation Kit preferably
+SWEP.IronSightsPosition         = Vector(0, 0, 0) -- Change this, using SWEP Creation Kit preferably
+SWEP.IronSightsAngle            = Vector(0, 0, 0) -- Change this, using SWEP Creation Kit preferably
 
 -- Inspection position
 -- Replace with a vector, in style of ironsights position, to be used for inspection
-SWEP.InspectPos 				= nil -- Vector(0, 0, 0)
-SWEP.InspectAng 				= nil -- Vector(0, 0, 0) -- Replace with a vector, in style of ironsights angle, to be used for inspection
+SWEP.InspectPos                 = nil -- Vector(0, 0, 0)
+SWEP.InspectAng                 = nil -- Vector(0, 0, 0) -- Replace with a vector, in style of ironsights angle, to be used for inspection
 
 -- Whenever positions defined above are additive to any other position modification
 -- Set to false for an easier time using VMPos
@@ -429,12 +429,12 @@ SWEP.ViewModelBodygroups       = nil -- {
 	-- [2] = etc.
 -- }
 
-SWEP.AllowIronSightsDoF 		= true -- whenever allow DoF effect on viewmodel when zoomed in with iron sights
+SWEP.AllowIronSightsDoF         = true -- whenever allow DoF effect on viewmodel when zoomed in with iron sights
 
 -- Enable ADS reload animations support (requires animations to be enabled in SWEP.Animations)
-SWEP.IronSightsReloadEnabled 	= nil
+SWEP.IronSightsReloadEnabled    = nil
 -- Lock ADS state when reloading
-SWEP.IronSightsReloadLock 		= true
+SWEP.IronSightsReloadLock       = true
 
 -- Export from SWEP Creation Kit (if it is being utilized to create gun)
 -- For each item that can/will be toggled, set active = false in its individual table
@@ -443,20 +443,20 @@ SWEP.ViewModelElements = nil
 
 ----------------- Iron sights related
 -- AKA data.ironsights
-SWEP.Secondary.IronSightsEnabled 	= true
+SWEP.Secondary.IronSightsEnabled    = true
 -- Controls Field of View when scoping in.
 -- Default FoV of Garry's Mod is 75, most of players prefer 90
 -- Lesser FoV value means stronger "zoom"
 -- Good value to begin experimenting with is 70
 -- AKA Secondary.IronFOV
-SWEP.Secondary.OwnerFOV 			= 70
+SWEP.Secondary.OwnerFOV             = 70
 -- AKA IronViewModelFOV
-SWEP.Secondary.ViewModelFOV 		= nil -- Defaults to 65. Target viewmodel FOV when aiming down the sights.
+SWEP.Secondary.ViewModelFOV         = nil -- Defaults to 65. Target viewmodel FOV when aiming down the sights.
 
 ----------------- Worldmodel related
-SWEP.WorldModel         		= "models/your/wmodel/path/here.mdl" -- Weapon world model path
+SWEP.WorldModel                 = "models/your/wmodel/path/here.mdl" -- Weapon world model path
 -- AKA Bodygroups_W
-SWEP.WorldModelBodygroups 		= nil -- {
+SWEP.WorldModelBodygroups       = nil -- {
 -- [0] = 1,
 -- [1] = 4,
 -- [2] = etc.
@@ -468,9 +468,9 @@ SWEP.HoldType = "" -- This is how others view you carrying the weapon. Options i
 
 -- Holdtypes overrides
 -- Holdtype override when iron sighting
-SWEP.IronSightHoldTypeOverride 	= nil -- Defaults to nothing (disabled)
+SWEP.IronSightHoldTypeOverride  = nil -- Defaults to nothing (disabled)
 -- This variable overrides the sprint holdtype
-SWEP.SprintHoldTypeOverride 	= nil -- Defaults to nothing (disabled)
+SWEP.SprintHoldTypeOverride     = nil -- Defaults to nothing (disabled)
 
 -- Procedural world model offset
 -- Value below is good enough for Counter-Strike: Source worldmodels
@@ -757,8 +757,8 @@ SWEP.TracerName         = nil   -- Change to a string of your tracer name.  Can 
 SWEP.TracerCount        = 3     -- 0 disables, otherwise, 1 in X chance
 
 -- Impact Effects
-SWEP.ImpactEffect 		= nil -- Impact Effect
-SWEP.ImpactDecal 		= nil -- Impact Decal
+SWEP.ImpactEffect       = nil -- Impact Effect
+SWEP.ImpactDecal        = nil -- Impact Decal
 
 ----------------- Event table
 -- Utilized for firing custom events (including running Lua code) when an action is played.
