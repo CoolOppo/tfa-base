@@ -289,7 +289,7 @@ function SWEP:GetStat(stat, default, dontMergeTables)
 
 	local isDefault, statSelf = self2.GetStatRecursive(self, self2, statPath, istable(default) and tableCopy(default) or default)
 	local isDefaultAtt, statAttachment, noCache = self2.GetStatRecursive(self, self2.AttachmentTableCache, statPath, istable(statSelf) and tableCopy(statSelf) or statSelf)
-	local shouldCache = not noCache and not self2.StatCache_Blacklist[stat] and not self2.StatCache_Blacklist[statPath[1]] and not (ccv and ccv:GetBool())
+	local shouldCache = not noCache and not (self2.StatCache_Blacklist_Real or self2.StatCache_Blacklist)[stat] and not (self2.StatCache_Blacklist_Real or self2.StatCache_Blacklist)[statPath[1]] and not (ccv and ccv:GetBool())
 
 	if istable(statAttachment) and istable(statSelf) and not dontMergeTables then
 		statSelf = table.Merge(tableCopy(statSelf), statAttachment)

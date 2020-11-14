@@ -294,6 +294,7 @@ TFA.HardDataMapping = {
 }
 
 TFA.PathParseCache = {}
+TFA.StatPathRemap = {}
 TFA.PathParseCacheDirect = {}
 
 local PathParseCache = TFA.PathParseCache
@@ -352,6 +353,8 @@ for _, info in ipairs(TFA.HardDataMapping) do
 
 		PathParseCache[info.old_path] = new_path
 	end
+
+	TFA.StatPathRemap[info.old_path] = info.new_path
 end
 
 for version, data in SortedPairs(TFA.DataVersionMapping) do
@@ -367,6 +370,8 @@ for version, data in SortedPairs(TFA.DataVersionMapping) do
 
 			PathParseCache[info.old_path] = new_path
 		end
+
+		TFA.StatPathRemap[info.old_path] = info.new_path
 	end
 end
 

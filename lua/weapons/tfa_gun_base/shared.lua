@@ -615,6 +615,43 @@ local MeleeHoldTypes = {
 	["knife"] = true
 }
 
+local patch_blacklist
+
+do
+	local string_sub = string.sub
+
+	function patch_blacklist(input)
+		local target = {}
+
+		for key in pairs(input) do
+			for key2, value2 in pairs(TFA.StatPathRemap) do
+				if string_sub(key, 1, #key2) == key2 then
+					target[value2 .. string_sub(key, #key2 + 1)] = true
+				end
+			end
+
+			target[key] = true
+		end
+
+		table.Empty(input)
+
+		setmetatable(input, {
+			__index = target,
+			__newindex = function(_, key, value)
+				for key2, value2 in pairs(TFA.StatPathRemap) do
+					if string_sub(key, 1, #key2) == key2 then
+						target[value2 .. string_sub(key, #key2 + 1)] = value
+					end
+				end
+
+				target[key] = value
+			end
+		})
+
+		return target
+	end
+end
+
 function SWEP:Initialize()
 	local self2 = self:GetTable()
 
@@ -678,6 +715,8 @@ function SWEP:Initialize()
 	table.Merge(self2.Secondary, self2.Secondary_TFA)
 
 	TFA.UnfoldBaseClass(self2.StatCache_Blacklist)
+	self2.StatCache_Blacklist_Real = patch_blacklist(self2.StatCache_Blacklist)
+
 	TFA.UnfoldBaseClass(self2.Attachments)
 	TFA.UnfoldBaseClass(self2.ViewModelElements)
 	TFA.UnfoldBaseClass(self2.ViewModelBoneMods)
@@ -2174,6 +2213,15 @@ function SWEP:OnReloaded()
 			self2.Secondary_TFA = table.Copy(baseclassSelf.Secondary)
 			TFA.UnfoldBaseClass(baseclassSelf.Secondary)
 		end
+
+		self2.StatCache_Blacklist = baseclassSelf.StatCache_Blacklist
+		TFA.UnfoldBaseClass(self2.StatCache_Blacklist)
+
+		if self2.StatCache_Blacklist_Real then
+			table.Merge(self2.StatCache_Blacklist, self2.StatCache_Blacklist_Real)
+		end
+
+		self2.StatCache_Blacklist_Real = patch_blacklist(self2.StatCache_Blacklist)
 
 		self2.event_table_warning = false
 		self2.event_table_built = false
