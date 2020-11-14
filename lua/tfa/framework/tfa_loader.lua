@@ -64,6 +64,7 @@ local official_modules_sorted = {
 	"tfa_commands.lua",
 	"cl_tfa_commands.lua", -- we need to load clientside convars before anything else
 
+	"tfa_data.lua",
 	"tfa_ammo.lua",
 	"tfa_attachments.lua",
 	"tfa_ballistics.lua",
