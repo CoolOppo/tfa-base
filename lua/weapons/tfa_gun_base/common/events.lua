@@ -538,7 +538,7 @@ function SWEP:ProcessStatus()
 			--self:SetStatusEnd( self:GetNextPrimaryFire() )
 			self:SetSilenced(not self:GetSilenced())
 			self2.Silenced = self:GetSilenced()
-		elseif stat == TFA.Enum.STATUS_RELOADING_WAIT and self2.LoopedReload then
+		elseif stat == TFA.Enum.STATUS_RELOADING_WAIT and self:GetStat("LoopedReload") then
 			if self2.Ammo1(self) <= 0 or self:Clip1() >= self:GetPrimaryClipSize() or self:GetReloadLoopCancel() then
 				finalstat = TFA.Enum.STATUS_RELOADING_LOOP_END
 				local _, tanim = self2.ChooseShotgunPumpAnim(self)
@@ -547,7 +547,7 @@ function SWEP:ProcessStatus()
 			else
 				finalstat = self2.LoadShell(self)
 			end
-		elseif stat == TFA.Enum.STATUS_RELOADING_LOOP_END and self2.LoopedReload then
+		elseif stat == TFA.Enum.STATUS_RELOADING_LOOP_END and self:GetStat("LoopedReload") then
 			self:SetReloadLoopCancel(false)
 		elseif self2.GetStat(self, "PumpAction") and stat == TFA.Enum.STATUS_PUMP then
 			self:SetReloadLoopCancel(false)

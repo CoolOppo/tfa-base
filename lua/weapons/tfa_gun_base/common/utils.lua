@@ -308,7 +308,7 @@ function SWEP:CanChamber()
 	if self.C_CanChamber ~= nil then
 		return self.C_CanChamber
 	else
-		self.C_CanChamber = not self:GetStat("BoltAction") and not self.LoopedReload and not self.Revolver and not self:GetStat("Primary.DisableChambering")
+		self.C_CanChamber = not self:GetStat("BoltAction") and not self:GetStat("LoopedReload") and not self.Revolver and not self:GetStat("Primary.DisableChambering")
 
 		return self.C_CanChamber
 	end
@@ -667,7 +667,7 @@ function SWEP:GetFireModeName()
 			if (self:GetStat("BoltAction")) then
 				return language.GetPhrase("tfa.firemode.bolt")
 			else
-				if (self.LoopedReload and self:GetStat("Primary.RPM") < 250) then
+				if self:GetStat("LoopedReload") and self:GetStat("Primary.RPM") < 250 then
 					return language.GetPhrase("tfa.firemode.pump")
 				else
 					return language.GetPhrase("tfa.firemode.semi")

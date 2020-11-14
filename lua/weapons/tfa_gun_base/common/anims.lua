@@ -797,7 +797,7 @@ function SWEP:ChooseReloadAnim()
 
 	if self:GetActivityEnabled(ACT_VM_RELOAD_SILENCED) and self2.GetSilenced(self) then
 		typev, tanim = self:ChooseAnimation((ads and self:GetActivityEnabled(ACT_VM_RELOAD_SILENCED_ADS)) and "reload_silenced_is" or "reload_silenced")
-	elseif self:GetActivityEnabled(ACT_VM_RELOAD_EMPTY) and (self:Clip1() == 0 or self:IsJammed()) and not self2.LoopedReload then
+	elseif self:GetActivityEnabled(ACT_VM_RELOAD_EMPTY) and (self:Clip1() == 0 or self:IsJammed()) and not self:GetStat("LoopedReload") then
 		typev, tanim = self:ChooseAnimation((ads and self:GetActivityEnabled(ACT_VM_RELOAD_EMPTY_ADS)) and "reload_empty_is" or "reload_empty")
 	else
 		typev, tanim = self:ChooseAnimation((ads and self:GetActivityEnabled(ACT_VM_RELOAD_ADS)) and "reload_is" or "reload")
@@ -805,8 +805,8 @@ function SWEP:ChooseReloadAnim()
 
 	local fac = 1
 
-	if self2.LoopedReload and self2.LoopedReloadInsertTime then
-		fac = self2.LoopedReloadInsertTime
+	if self:GetStat("LoopedReload") and self:GetStat("LoopedReloadInsertTime") then
+		fac = self:GetStat("LoopedReloadInsertTime")
 	end
 
 	self:SetAnimCycle(self2.ViewModelFlip and 0 or 1)

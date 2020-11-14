@@ -189,7 +189,7 @@ function SWEP:AutoDetectMuzzle()
 			self2.MuzzleFlashEffect = "tfa_muzzleflash_silenced"
 		elseif string.find(a, "357") or self2.Revolver or string.find(cat, "revolver") then
 			self2.MuzzleFlashEffect = "tfa_muzzleflash_revolver"
-		elseif self2.LoopedReload or a == "buckshot" or a == "slam" or a == "airboatgun" or string.find(cat, "shotgun") then
+		elseif self:GetStat("LoopedReload") or a == "buckshot" or a == "slam" or a == "airboatgun" or string.find(cat, "shotgun") then
 			self2.MuzzleFlashEffect = "tfa_muzzleflash_shotgun"
 		elseif string.find(a, "smg") or string.find(cat, "smg") or string.find(cat, "submachine") or string.find(cat, "sub-machine") then
 			self2.MuzzleFlashEffect = "tfa_muzzleflash_smg"

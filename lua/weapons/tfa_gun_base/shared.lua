@@ -1032,7 +1032,7 @@ function SWEP:PlayerThinkCL(plyv)
 
 	local reloadBlendMult, reloadBlendMult2 = 1, 1
 
-	if not self2.LoopedReload and (status == TFA.Enum.STATUS_RELOADING or status == TFA.Enum.STATUS_RELOADING_WAIT) and self2.ReloadAnimationEnd and self2.ReloadAnimationStart then
+	if not self:GetStat("LoopedReload") and (status == TFA.Enum.STATUS_RELOADING or status == TFA.Enum.STATUS_RELOADING_WAIT) and self2.ReloadAnimationEnd and self2.ReloadAnimationStart then
 		local time = l_CT()
 		local progress = Clamp((time - self2.ReloadAnimationStart) / (self2.ReloadAnimationEnd - self2.ReloadAnimationStart), 0, 1)
 
@@ -1332,7 +1332,7 @@ function SWEP:CanPrimaryAttack()
 	stat = self:GetStatus()
 
 	if not TFA.Enum.ReadyStatus[stat] and stat ~= TFA.Enum.STATUS_SHOOTING then
-		if self2.LoopedReload and TFA.Enum.ReloadStatus[stat] then
+		if self:GetStat("LoopedReload") and TFA.Enum.ReloadStatus[stat] then
 			self:SetReloadLoopCancel(true)
 		end
 
@@ -1678,7 +1678,7 @@ function SWEP:Reload(released)
 			if hook.Run("TFA_Reload", self) then return end
 			self:SetBurstCount(0)
 
-			if self2.LoopedReload then
+			if self:GetStat("LoopedReload") then
 				local _, tanim, ttype = self:ChooseShotgunReloadAnim()
 
 				if self:GetStat("ShotgunStartAnimShell") then
@@ -1775,7 +1775,7 @@ function SWEP:Reload2(released)
 		end
 	elseif TFA.Enum.ReadyStatus[stat] or ( stat == TFA.Enum.STATUS_SHOOTING and self:CanInterruptShooting() ) then
 		if self:Clip2() < self:GetSecondaryClipSize() then
-			if self2.LoopedReload then
+			if self:GetStat("LoopedReload") then
 				local _, tanim, ttype = self:ChooseShotgunReloadAnim()
 
 				if self2.ShotgunEmptyAnim  then
