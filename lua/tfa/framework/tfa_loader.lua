@@ -24,13 +24,13 @@ if SERVER then AddCSLuaFile() end
 TFA = TFA or {}
 
 local do_load = true
-local version = 4.611
-local version_string = "4.6.1.1"
+local version = 4.7
+local version_string = "4.7.0.0"
 local changelog = [[
-	* Fixed idle animation not updating correctly for ironsights
-	* Fixed inspection screen not appearing in some circumstances
-	* Improved flashlight toggle prediction
-	* Fixed some grenades throwing an error if "ready" animation is missing
+	* Semi-Breaking change: Implemented gun revision tracking (but should be backward compatible)
+	* PenetrationMaterials is now unfolded from baseclass
+	* Primary.MaxSurfacePenetrationCount is now working again
+	* Biased spread (width and height can be configured independently)
 ]]
 
 local function testFunc()

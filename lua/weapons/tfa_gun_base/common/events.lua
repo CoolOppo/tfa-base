@@ -128,11 +128,11 @@ function SWEP:DispatchBodygroupEvent(arg)
 	assert(isstring(event.value), "Event " .. arg .. " is missing bodygroup value to set")
 
 	if event.view then
-		self.Bodygroups_V[event.name] = event.value
+		self.ViewModelBodygroups[event.name] = event.value
 	end
 
 	if event.world then
-		self.Bodygroups_W[event.name] = event.value
+		self.WorldModelBodygroups[event.name] = event.value
 	end
 end
 
@@ -306,11 +306,11 @@ function SWEP:ProcessEvents(firstprediction)
 				(event.server and SERVER)) and (event.name and event.value and event.value ~= "") then
 
 				if event.view then
-					self.Bodygroups_V[event.name] = event.value
+					self.ViewModelBodygroups[event.name] = event.value
 				end
 
 				if event.world then
-					self.Bodygroups_W[event.name] = event.value
+					self.WorldModelBodygroups[event.name] = event.value
 				end
 			end
 		end
@@ -388,11 +388,11 @@ function SWEP:ProcessEventsSP(firstprediction)
 			if event.name and event.value and event.value ~= "" then
 				if event.server then
 					if event.view then
-						self.Bodygroups_V[event.name] = event.value
+						self.ViewModelBodygroups[event.name] = event.value
 					end
 
 					if event.world then
-						self.Bodygroups_W[event.name] = event.value
+						self.WorldModelBodygroups[event.name] = event.value
 					end
 				end
 
@@ -501,7 +501,7 @@ function SWEP:ProcessStatus()
 			lact = self:GetLastActivity()
 
 			if self2.GetActivityLength(self, lact, true) < self2.GetActivityLength(self, lact, false) - 0.01 then
-				local sht = self2.GetStat(self, "ShellTime")
+				local sht = self2.GetStat(self, "LoopedReloadInsertTime")
 
 				if sht then
 					sht = sht / self2.GetAnimationRate(self, ACT_VM_RELOAD)
@@ -538,7 +538,7 @@ function SWEP:ProcessStatus()
 			--self:SetStatusEnd( self:GetNextPrimaryFire() )
 			self:SetSilenced(not self:GetSilenced())
 			self2.Silenced = self:GetSilenced()
-		elseif stat == TFA.Enum.STATUS_RELOADING_WAIT and self2.Shotgun then
+		elseif stat == TFA.Enum.STATUS_RELOADING_WAIT and self2.LoopedReload then
 			if self2.Ammo1(self) <= 0 or self:Clip1() >= self:GetPrimaryClipSize() or self:GetReloadLoopCancel() then
 				finalstat = TFA.Enum.STATUS_RELOADING_LOOP_END
 				local _, tanim = self2.ChooseShotgunPumpAnim(self)
@@ -547,7 +547,7 @@ function SWEP:ProcessStatus()
 			else
 				finalstat = self2.LoadShell(self)
 			end
-		elseif stat == TFA.Enum.STATUS_RELOADING_LOOP_END and self2.Shotgun then
+		elseif stat == TFA.Enum.STATUS_RELOADING_LOOP_END and self2.LoopedReload then
 			self:SetReloadLoopCancel(false)
 		elseif self2.GetStat(self, "PumpAction") and stat == TFA.Enum.STATUS_PUMP then
 			self:SetReloadLoopCancel(false)

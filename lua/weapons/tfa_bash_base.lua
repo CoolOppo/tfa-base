@@ -229,7 +229,7 @@ function SWEP:Think2(...)
 end
 
 function SWEP:SecondaryAttack()
-	if self:GetStat("data.ironsights", 0) == 0 then
+	if not self:GetStat("Secondary.IronSightsEnabled", false) then
 		self:AltAttack()
 		return
 	end

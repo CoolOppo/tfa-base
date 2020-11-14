@@ -29,16 +29,15 @@ local sp = game.SinglePlayer()
 DEFINE_BASECLASS("tfa_gun_base")
 SWEP.Type = "Grenade"
 SWEP.MuzzleFlashEffect = ""
-SWEP.data = {}
-SWEP.data.ironsights = 0
+SWEP.Secondary.IronSightsEnabled = false
 SWEP.Delay = 0.3 -- Delay to fire entity
 SWEP.Delay_Underhand = 0.3 -- Delay to fire entity when underhand
 SWEP.Primary.Round = "" -- Nade Entity
 SWEP.Velocity = 550 -- Entity Velocity
 SWEP.Underhanded = false
 SWEP.DisableIdleAnimations = true
-SWEP.IronSightsPos = Vector(5,0,0)
-SWEP.IronSightsAng = Vector(0,0,0)
+SWEP.IronSightsPosition = Vector(5,0,0)
+SWEP.IronSightsAngle = Vector(0,0,0)
 SWEP.Callback = {}
 
 SWEP.AllowUnderhanded = true

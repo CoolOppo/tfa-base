@@ -346,7 +346,7 @@ function SWEP:InspectionVGUIMainInfo(contentpanel)
 
 		if clip > 0 then
 			local capacitytext = contentpanel:Add("DPanel")
-			capacitytext.Text = infotextpad .. language.GetPhrase("tfa.inspect.capacity"):format(clip .. (self:CanChamber() and (self:GetStat("Akimbo") and " + 2" or " + 1") or ""))
+			capacitytext.Text = infotextpad .. language.GetPhrase("tfa.inspect.capacity"):format(clip .. (self:CanChamber() and (self:GetStat("IsAkimbo") and " + 2" or " + 1") or ""))
 
 			capacitytext.Think = function(myself)
 				myself.TextColor = mainpanel.SecondaryColor
@@ -501,7 +501,7 @@ function SWEP:InspectionVGUIStats(contentpanel)
 
 		mobilitypanel.Think = function(myself)
 			if not IsValid(self) then return end
-			myself.Bar = (self:GetStat("MoveSpeed") - worstmove) / (1 - worstmove)
+			myself.Bar = (self:GetStat("RegularMoveSpeedMultiplier") - worstmove) / (1 - worstmove)
 		end
 
 		mobilitypanel.Paint = PanelPaintBars
@@ -510,7 +510,7 @@ function SWEP:InspectionVGUIStats(contentpanel)
 
 		mobilitytext.Think = function(myself)
 			if not IsValid(self) then return end
-			myself.Text = language.GetPhrase("tfa.inspect.stat.mobility"):format(math.Round(self:GetStat("MoveSpeed") * 100))
+			myself.Text = language.GetPhrase("tfa.inspect.stat.mobility"):format(math.Round(self:GetStat("RegularMoveSpeedMultiplier") * 100))
 			myself.TextColor = mainpanel.SecondaryColor
 		end
 
@@ -585,7 +585,7 @@ function SWEP:InspectionVGUIStats(contentpanel)
 		accuracytext.Paint = TextShadowPaint
 
 		--Iron Spread
-		if self:GetStat("data.ironsights") ~= 0 then
+		if self:GetStat("Secondary.IronSightsEnabled", false) then
 			local ironspreadpanel = statspanel:Add("DPanel")
 			ironspreadpanel:SetSize(preferredWidth, TFA.Fonts.InspectionHeightSmall)
 			statspanel:SetTall(statspanel:GetTall() + TFA.Fonts.InspectionHeightSmall)
@@ -734,7 +734,7 @@ function SWEP:InspectionVGUIAttachments(contentpanel)
 		hook.Run("TFA_InspectVGUI_AttachmentsFinish", self, contentpanel, scrollpanel)
 	end
 
-	if self.Primary.RangeFalloffLUTBuilt and self:GetStat("DisplayFalloff") then
+	if self.Primary.RangeFalloffLUTBuilt and self:GetStat("Primary.DisplayFalloff") then
 		local falloffpanel = vgui.Create("EditablePanel", mainpanel)
 		falloffpanel:SetSize(ScrW() * .5 - ScaleH(self.VGUIPaddingW) * 2, mainpanel:GetTall() * 0.2)
 		falloffpanel:SetPos(ScrW() * .5, mainpanel:GetTall() - falloffpanel:GetTall() - ScaleH(self.VGUIPaddingH))
@@ -1114,7 +1114,7 @@ function SWEP:DrawHUDAmmo()
 	if amn == "none" or amn == "" then return end
 	local mzpos = self:GetMuzzlePos()
 
-	if self2.GetStat(self, "Akimbo") then
+	if self2.GetStat(self, "IsAkimbo") then
 		self2.MuzzleAttachmentRaw = self2.MuzzleAttachmentRaw2 or 1
 	end
 
@@ -1159,7 +1159,7 @@ function SWEP:DrawHUDAmmo()
 		if self2.GetStat(self, "Primary.ClipSize") and self2.GetStat(self, "Primary.ClipSize") ~= -1 then
 			clipstr = language.GetPhrase("tfa.hud.ammo.clip1")
 
-			if self2.GetStat(self, "Akimbo") and self2.GetStat(self, "AkimboHUD") ~= false then
+			if self2.GetStat(self, "IsAkimbo") and self2.GetStat(self, "EnableAkimboHUD") ~= false then
 				str = clipstr:format(math.ceil(self:Clip1() / 2))
 
 				if (self:Clip1() > self2.GetStat(self, "Primary.ClipSize")) then
@@ -1201,7 +1201,7 @@ function SWEP:DrawHUDAmmo()
 		yy = yy + TFA.Fonts.SleekHeightSmall
 		xx = xx - TFA.Fonts.SleekHeightSmall / 3
 
-		if self2.GetStat(self, "Akimbo") and self2.GetStat(self, "AkimboHUD") ~= false then
+		if self2.GetStat(self, "IsAkimbo") and self2.GetStat(self, "EnableAkimboHUD") ~= false then
 			local angpos2 = self:GetOwner():ShouldDrawLocalPlayer() and self:GetAttachment(2) or self2.OwnerViewModel:GetAttachment(2)
 
 			if angpos2 then
@@ -1244,7 +1244,7 @@ function SWEP:DrawHUDAmmo()
 			draw.DrawText(str, "TFASleekSmall", xx, yy, ColorAlpha(self2.TextCol, myalpha), TEXT_ALIGN_RIGHT)
 		end
 
-		if self2.GetStat(self, "Secondary.Ammo") and self2.GetStat(self, "Secondary.Ammo") ~= "" and self2.GetStat(self, "Secondary.Ammo") ~= "none" and self2.GetStat(self, "Secondary.Ammo") ~= 0 and not self2.GetStat(self, "Akimbo") then
+		if self2.GetStat(self, "Secondary.Ammo") and self2.GetStat(self, "Secondary.Ammo") ~= "" and self2.GetStat(self, "Secondary.Ammo") ~= "none" and self2.GetStat(self, "Secondary.Ammo") ~= 0 and not self2.GetStat(self, "IsAkimbo") then
 			if self2.GetStat(self, "Secondary.ClipSize") and self2.GetStat(self, "Secondary.ClipSize") ~= -1 then
 				clipstr = language.GetPhrase("tfa.hud.ammo.clip2")
 				str = (self:Clip2() > self2.GetStat(self, "Secondary.ClipSize")) and clipstr:format(self2.GetStat(self, "Secondary.ClipSize") .. " + " .. (self:Clip2() - self2.GetStat(self, "Primary.ClipSize"))) or clipstr:format(self:Clip2())
@@ -1296,7 +1296,7 @@ function SWEP:DoDrawCrosshair()
 
 	local crossa = crossa_cvar:GetFloat() *
 		math.pow(math.min(1 - (((self2.IronSightsProgressUnpredicted2 or self:GetIronSightsProgress()) and
-			not self2.DrawCrosshairIS) and (self2.IronSightsProgressUnpredicted2 or self:GetIronSightsProgress()) or 0),
+			not self2.DrawCrosshairIronSights) and (self2.IronSightsProgressUnpredicted2 or self:GetIronSightsProgress()) or 0),
 			1 - self:GetSprintProgress(),
 			1 - self:GetInspectingProgress(),
 			self2.clrelp),
@@ -1304,7 +1304,7 @@ function SWEP:DoDrawCrosshair()
 
 	local outa = outa_cvar:GetFloat() *
 		math.pow(math.min(1 - (((self2.IronSightsProgressUnpredicted2 or self:GetIronSightsProgress()) and
-			not self2.DrawCrosshairIS) and (self2.IronSightsProgressUnpredicted2 or self:GetIronSightsProgress()) or 0),
+			not self2.DrawCrosshairIronSights) and (self2.IronSightsProgressUnpredicted2 or self:GetIronSightsProgress()) or 0),
 			1 - self:GetSprintProgress(),
 			1 - self:GetInspectingProgress(),
 			self2.clrelp),
@@ -1464,7 +1464,7 @@ function SWEP:DoDrawCrosshair()
 
 		local tX, tY, tWidth =
 			math.Round(-outlinewidth) - crosshairwidth / 2,
-			-gap * self:GetStat("SpreadBiasPitch") - tHeight,
+			-gap * self:GetStat("Primary.SpreadBiasPitch") - tHeight,
 			math.Round(outlinewidth * 2) + crosshairwidth
 
 		-- Top
@@ -1487,7 +1487,7 @@ function SWEP:DoDrawCrosshair()
 			cam.PushModelMatrix(crosshairMatrix)
 
 			local width = math.Round(length - gap + outlinewidth * 2) + crosshairwidth
-			local realgap = math.Round(gap * self:GetStat("SpreadBiasYaw") - outlinewidth) - crosshairwidth / 2
+			local realgap = math.Round(gap * self:GetStat("Primary.SpreadBiasYaw") - outlinewidth) - crosshairwidth / 2
 
 			-- Left
 			surface.DrawRect(
@@ -1506,7 +1506,7 @@ function SWEP:DoDrawCrosshair()
 			-- Bottom
 			surface.DrawRect(
 				math.Round(-outlinewidth) - crosshairwidth / 2,
-				math.Round(gap * self:GetStat("SpreadBiasPitch") - outlinewidth) - crosshairwidth / 2,
+				math.Round(gap * self:GetStat("Primary.SpreadBiasPitch") - outlinewidth) - crosshairwidth / 2,
 				math.Round(outlinewidth * 2) + crosshairwidth,
 				math.Round(length - gap + outlinewidth * 2) + crosshairwidth)
 
@@ -1526,7 +1526,7 @@ function SWEP:DoDrawCrosshair()
 
 	local tX, tY, tWidth =
 		-crosshairwidth / 2,
-		math.Round(-gap * self:GetStat("SpreadBiasPitch") - tHeight),
+		math.Round(-gap * self:GetStat("Primary.SpreadBiasPitch") - tHeight),
 		crosshairwidth
 
 	-- Top
@@ -1549,7 +1549,7 @@ function SWEP:DoDrawCrosshair()
 		cam.PushModelMatrix(crosshairMatrix)
 
 		local width = math.Round(length - gap) + crosshairwidth
-		local realgap = math.Round(gap * self:GetStat("SpreadBiasYaw")) - crosshairwidth / 2
+		local realgap = math.Round(gap * self:GetStat("Primary.SpreadBiasYaw")) - crosshairwidth / 2
 
 		-- Left
 		surface.DrawRect(
@@ -1568,7 +1568,7 @@ function SWEP:DoDrawCrosshair()
 		-- Bottom
 		surface.DrawRect(
 			-crosshairwidth / 2,
-			math.Round(gap * self:GetStat("SpreadBiasPitch")) - crosshairwidth / 2,
+			math.Round(gap * self:GetStat("Primary.SpreadBiasPitch")) - crosshairwidth / 2,
 			crosshairwidth,
 			math.Round(length - gap) + crosshairwidth)
 

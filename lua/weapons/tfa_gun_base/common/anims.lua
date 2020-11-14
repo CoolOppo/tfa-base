@@ -791,13 +791,13 @@ Purpose:  Animation / Utility
 function SWEP:ChooseReloadAnim()
 	local self2 = self:GetTable()
 	if not self:VMIV() then return false, 0 end
-	if self2.GetStat(self, "ProceduralReloadEnabled") then return false, 0 end
+	if self2.GetStat(self, "IsProceduralReloadBased") then return false, 0 end
 
 	local ads = self:GetStat("IronSightsReloadEnabled") and self:GetIronSightsDirect()
 
 	if self:GetActivityEnabled(ACT_VM_RELOAD_SILENCED) and self2.GetSilenced(self) then
 		typev, tanim = self:ChooseAnimation((ads and self:GetActivityEnabled(ACT_VM_RELOAD_SILENCED_ADS)) and "reload_silenced_is" or "reload_silenced")
-	elseif self:GetActivityEnabled(ACT_VM_RELOAD_EMPTY) and (self:Clip1() == 0 or self:IsJammed()) and not self2.Shotgun then
+	elseif self:GetActivityEnabled(ACT_VM_RELOAD_EMPTY) and (self:Clip1() == 0 or self:IsJammed()) and not self2.LoopedReload then
 		typev, tanim = self:ChooseAnimation((ads and self:GetActivityEnabled(ACT_VM_RELOAD_EMPTY_ADS)) and "reload_empty_is" or "reload_empty")
 	else
 		typev, tanim = self:ChooseAnimation((ads and self:GetActivityEnabled(ACT_VM_RELOAD_ADS)) and "reload_is" or "reload")
@@ -805,8 +805,8 @@ function SWEP:ChooseReloadAnim()
 
 	local fac = 1
 
-	if self2.Shotgun and self2.ShellTime then
-		fac = self2.ShellTime
+	if self2.LoopedReload and self2.LoopedReloadInsertTime then
+		fac = self2.LoopedReloadInsertTime
 	end
 
 	self:SetAnimCycle(self2.ViewModelFlip and 0 or 1)
@@ -1028,7 +1028,7 @@ function SWEP:ChooseShootAnim(ifp)
 			typev, tanim = self:ChooseAnimation("shoot1_last")
 		elseif self:Clip1() == 0 and self:GetActivityEnabled(ACT_VM_DRYFIRE) and not self2.ForceDryFireOff then
 			typev, tanim = self:ChooseAnimation("shoot1_empty")
-		elseif self2.GetStat(self, "Akimbo") and self:GetActivityEnabled(ACT_VM_SECONDARYATTACK) and ((self:GetAnimCycle() == 0 and not self2.Akimbo_Inverted) or (self:GetAnimCycle() == 1 and self2.Akimbo_Inverted)) then
+		elseif self2.GetStat(self, "IsAkimbo") and self:GetActivityEnabled(ACT_VM_SECONDARYATTACK) and ((self:GetAnimCycle() == 0 and not self2.Akimbo_Inverted) or (self:GetAnimCycle() == 1 and self2.Akimbo_Inverted)) then
 			typev, tanim = self:ChooseAnimation((self:GetIronSights() and self:GetActivityEnabled(ACT_VM_ISHOOT_M203)) and "shoot2_is" or "shoot2")
 		elseif self:GetIronSights() and self:GetActivityEnabled(ACT_VM_PRIMARYATTACK_1) then
 			typev, tanim = self:ChooseAnimation("shoot1_is")

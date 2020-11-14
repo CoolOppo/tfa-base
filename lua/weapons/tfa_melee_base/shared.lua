@@ -26,8 +26,7 @@ SWEP.DrawCrosshair = false
 SWEP.SlotPos = 72
 SWEP.Slot = 0
 SWEP.WeaponLength = 8
-SWEP.data = {}
-SWEP.data.ironsights = 0
+SWEP.Secondary.IronSightsEnabled = false
 SWEP.Primary.Directional = false
 SWEP.Primary.Attacks = {}
 --[[{
@@ -144,7 +143,7 @@ SWEP.Seed = 0
 SWEP.AttackSoundTime = -1
 SWEP.VoxSoundTime = -1
 
-SWEP.DisplayFalloff = false
+SWEP.Primary.DisplayFalloff = false
 
 function SWEP:SetupDataTables()
 	BaseClass.SetupDataTables(self)

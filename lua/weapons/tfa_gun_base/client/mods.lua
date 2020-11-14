@@ -36,14 +36,14 @@ function SWEP:InitMods()
 	--Create a new table for every weapon instance.
 	self.SWEPConstructionKit = true
 
-	self.VElements = self:CPTbl(self.VElements)
-	self.WElements = self:CPTbl(self.WElements)
+	self.ViewModelElements = self:CPTbl(self.ViewModelElements)
+	self.WorldModelElements = self:CPTbl(self.WorldModelElements)
 	self.ViewModelBoneMods = self:CPTbl(self.ViewModelBoneMods)
 
 	-- i have no idea how this gonna behave without that with SWEP Construction kit
 	-- so we gonna leave this thing alone and precache everything
-	self:CreateModels(self.VElements, true) -- create viewmodels
-	self:CreateModels(self.WElements) -- create worldmodels
+	self:CreateModels(self.ViewModelElements, true) -- create viewmodels
+	self:CreateModels(self.WorldModelElements) -- create worldmodels
 
 	--Build the bones and such.
 	if self:OwnerIsValid() then
@@ -127,34 +127,34 @@ do
 		self.VElementsBodygroupsCache = {}
 		self.WElementsBodygroupsCache = {}
 
-		if istable(self.VElements) then
+		if istable(self.ViewModelElements) then
 			local target = self.vRenderOrder
 			reference_table = {}
 
-			for k, v in pairs(self.VElements) do
+			for k, v in pairs(self.ViewModelElements) do
 				if v.type == "Model" then
 					table.insert(target, k)
-					inc_references(self.VElements, k, v, reference_table, 10000)
+					inc_references(self.ViewModelElements, k, v, reference_table, 10000)
 				elseif v.type == "Sprite" or v.type == "Quad" or v.type == "Bodygroup" then
 					table.insert(target, k)
-					inc_references(self.VElements, k, v, reference_table, 1)
+					inc_references(self.ViewModelElements, k, v, reference_table, 1)
 				end
 			end
 
 			table.sort(target, rendersorter)
 		end
 
-		if istable(self.WElements) then
+		if istable(self.WorldModelElements) then
 			local target2 = self.wRenderOrder
 			reference_table = {}
 
-			for k, v in pairs(self.WElements) do
+			for k, v in pairs(self.WorldModelElements) do
 				if v.type == "Model" then
 					table.insert(target2, 1, k)
-					inc_references(self.WElements, k, v, reference_table, 10000)
+					inc_references(self.WorldModelElements, k, v, reference_table, 10000)
 				elseif v.type == "Sprite" or v.type == "Quad" or v.type == "Bodygroup" then
 					table.insert(target2, k)
-					inc_references(self.WElements, k, v, reference_table, 1)
+					inc_references(self.WorldModelElements, k, v, reference_table, 1)
 				end
 			end
 
@@ -269,9 +269,9 @@ function SWEP:ViewModelDrawn()
 		end
 	end
 
-	if self2.VElements and self2.HasInitAttachments then
-		-- self2.VElements = self:GetStat("VElements")
-		-- self:CreateModels(self2.VElements, true)
+	if self2.ViewModelElements and self2.HasInitAttachments then
+		-- self2.ViewModelElements = self:GetStat("ViewModelElements")
+		-- self:CreateModels(self2.ViewModelElements, true)
 
 		self2.SCKMaterialCached_V = self2.SCKMaterialCached_V or {}
 
@@ -285,7 +285,7 @@ function SWEP:ViewModelDrawn()
 
 		for index = 1, #self2.vRenderOrder do
 			local name = self2.vRenderOrder[index]
-			local element = self2.VElements[name]
+			local element = self2.ViewModelElements[name]
 
 			if not element then
 				self:RebuildModsRenderOrder()
@@ -294,7 +294,7 @@ function SWEP:ViewModelDrawn()
 
 			if element.type == "Bodygroup" then
 				if element.index and element.value_active then
-					self2.Bodygroups_V[element.index] = self2.GetStat(self, "VElements." .. name .. ".active") and element.value_active or (element.value_inactive or 0)
+					self2.ViewModelBodygroups[element.index] = self2.GetStat(self, "ViewModelElements." .. name .. ".active") and element.value_active or (element.value_inactive or 0)
 				end
 
 				goto CONTINUE
@@ -305,9 +305,9 @@ function SWEP:ViewModelDrawn()
 			if element.type == "Quad" and element.draw_func_outer then goto CONTINUE end
 			if not element.bone then goto CONTINUE end
 
-			if self2.GetStat(self, "VElements." .. name .. ".active") == false then goto CONTINUE end
+			if self2.GetStat(self, "ViewModelElements." .. name .. ".active") == false then goto CONTINUE end
 
-			local pos, ang = self:GetBoneOrientation(self2.VElements, element, vm)
+			local pos, ang = self:GetBoneOrientation(self2.ViewModelElements, element, vm)
 			if not pos and not element.bonemerge then goto CONTINUE end
 
 			self:PrecacheElement(element, true)
@@ -328,7 +328,7 @@ function SWEP:ViewModelDrawn()
 					render.SuppressEngineLighting(true)
 				end
 
-				local material = self:GetStat("VElements." .. name .. ".material")
+				local material = self:GetStat("ViewModelElements." .. name .. ".material")
 
 				if not material or material == "" then
 					model:SetMaterial("")
@@ -336,7 +336,7 @@ function SWEP:ViewModelDrawn()
 					model:SetMaterial(material)
 				end
 
-				local skin = self:GetStat("VElements." .. name .. ".skin")
+				local skin = self:GetStat("ViewModelElements." .. name .. ".skin")
 
 				if skin and skin ~= model:GetSkin() then
 					model:SetSkin(skin)
@@ -345,7 +345,7 @@ function SWEP:ViewModelDrawn()
 				if not self2.SCKMaterialCached_V[name] then
 					self2.SCKMaterialCached_V[name] = true
 
-					local materialtable = self:GetStat("VElements." .. name .. ".materials", {})
+					local materialtable = self:GetStat("ViewModelElements." .. name .. ".materials", {})
 					local entmats = table.GetKeys(model:GetMaterials())
 
 					for _, k in ipairs(entmats) do
@@ -359,7 +359,7 @@ function SWEP:ViewModelDrawn()
 
 				if self2.VElementsBodygroupsCache[index] then
 					for _b = 0, self2.VElementsBodygroupsCache[index] do
-						local newbg = self2.GetStat(self, "VElements." .. name .. ".bodygroup." .. _b, 0) -- names are not supported, use overridetable
+						local newbg = self2.GetStat(self, "ViewModelElements." .. name .. ".bodygroup." .. _b, 0) -- names are not supported, use overridetable
 
 						if model:GetBodygroup(_b) ~= newbg then
 							model:SetBodygroup(_b, newbg)
@@ -368,8 +368,8 @@ function SWEP:ViewModelDrawn()
 				end
 
 				if element.bonemerge then
-					if element.rel and self2.VElements[element.rel] and IsValid(self2.VElements[element.rel].curmodel) then
-						element.parModel = self2.VElements[element.rel].curmodel
+					if element.rel and self2.ViewModelElements[element.rel] and IsValid(self2.ViewModelElements[element.rel].curmodel) then
+						element.parModel = self2.ViewModelElements[element.rel].curmodel
 					else
 						element.parModel = self2.OwnerViewModel or self
 					end
@@ -458,14 +458,14 @@ function SWEP:ViewModelDrawnPost()
 	local self2 = self:GetTable()
 	if not self2.VMIV(self) then return end
 
-	if not self2.VElements or not self2.vRenderOrder then return end
+	if not self2.ViewModelElements or not self2.vRenderOrder then return end
 
 	for index = 1, #self2.vRenderOrder do
 		local name = self2.vRenderOrder[index]
-		local element = self2.VElements[name]
+		local element = self2.ViewModelElements[name]
 
-		if element.type == "Quad" and element.draw_func_outer and not element.hide and element.bone and self:GetStat("VElements." .. name .. ".active") ~= false then
-			local pos, ang = self:GetBoneOrientation(self2.VElements, element, self2.OwnerViewModel)
+		if element.type == "Quad" and element.draw_func_outer and not element.hide and element.bone and self:GetStat("ViewModelElements." .. name .. ".active") ~= false then
+			local pos, ang = self:GetBoneOrientation(self2.ViewModelElements, element, self2.OwnerViewModel)
 
 			if pos then
 				local drawpos = pos + ang:Forward() * element.pos.x + ang:Right() * element.pos.y + ang:Up() * element.pos.z
@@ -526,7 +526,7 @@ function SWEP:DrawWorldModel()
 	end
 
 	if self2.ShowWorldModel == nil or self2.ShowWorldModel or not validowner then
-		if validowner and self2.Offset and self2.Offset.Pos and self2.Offset.Ang then -- THIS IS DANGEROUS
+		if validowner and self2.WorldModelOffset and self2.WorldModelOffset.Pos and self2.WorldModelOffset.Ang then -- THIS IS DANGEROUS
 			-- TO DO ONLY CLIENTSIDE
 			-- since this will break hitboxes!
 			local handBone = ply:LookupBone("ValveBiped.Bip01_R_Hand")
@@ -542,22 +542,22 @@ function SWEP:DrawWorldModel()
 					pos, ang = ply:GetBonePosition(handBone)
 				end
 
-				pos = pos + ang:Forward() * self2.Offset.Pos.Forward + ang:Right() * self2.Offset.Pos.Right + ang:Up() * self2.Offset.Pos.Up
-				ang:RotateAroundAxis(ang:Up(), self2.Offset.Ang.Up)
-				ang:RotateAroundAxis(ang:Right(), self2.Offset.Ang.Right)
-				ang:RotateAroundAxis(ang:Forward(), self2.Offset.Ang.Forward)
+				pos = pos + ang:Forward() * self2.WorldModelOffset.Pos.Forward + ang:Right() * self2.WorldModelOffset.Pos.Right + ang:Up() * self2.WorldModelOffset.Pos.Up
+				ang:RotateAroundAxis(ang:Up(), self2.WorldModelOffset.Ang.Up)
+				ang:RotateAroundAxis(ang:Right(), self2.WorldModelOffset.Ang.Right)
+				ang:RotateAroundAxis(ang:Forward(), self2.WorldModelOffset.Ang.Forward)
 				self:SetRenderOrigin(pos)
 				self:SetRenderAngles(ang)
-				--if self2.Offset.Scale and ( !self2.MyModelScale or ( self2.Offset and self2.MyModelScale!=self2.Offset.Scale ) ) then
-				self:SetModelScale(self2.Offset.Scale or 1, 0)
+				--if self2.WorldModelOffset.Scale and ( !self2.MyModelScale or ( self2.WorldModelOffset and self2.MyModelScale!=self2.WorldModelOffset.Scale ) ) then
+				self:SetModelScale(self2.WorldModelOffset.Scale or 1, 0)
 				--end
 			end
 		else
 			self:SetRenderOrigin(nil)
 			self:SetRenderAngles(nil)
 
-			if self2.Offset and self2.Offset.Scale then
-				self:SetModelScale(self2.Offset.Scale, 0)
+			if self2.WorldModelOffset and self2.WorldModelOffset.Scale then
+				self:SetModelScale(self2.WorldModelOffset.Scale, 0)
 			end
 		end
 
@@ -568,8 +568,8 @@ function SWEP:DrawWorldModel()
 	self:SetupBones()
 	self:UpdateWMBonePositions(self)
 
-	if self2.WElements then
-		-- self:CreateModels(self2.WElements)
+	if self2.WorldModelElements then
+		-- self:CreateModels(self2.WorldModelElements)
 
 		self2.SCKMaterialCached_W = self2.SCKMaterialCached_W or {}
 
@@ -579,7 +579,7 @@ function SWEP:DrawWorldModel()
 
 		for index = 1, #self2.wRenderOrder do
 			local name = self2.wRenderOrder[index]
-			local element = self2.WElements[name]
+			local element = self2.WorldModelElements[name]
 
 			if not element then
 				self2.RebuildModsRenderOrder(self)
@@ -588,22 +588,22 @@ function SWEP:DrawWorldModel()
 
 			if element.type == "Bodygroup" then
 				if element.index and element.value_active then
-					self2.Bodygroups_W[element.index] = self2.GetStat(self, "WElements." .. name .. ".active") and element.value_active or (element.value_inactive or 0)
+					self2.WorldModelBodygroups[element.index] = self2.GetStat(self, "WorldModelElements." .. name .. ".active") and element.value_active or (element.value_inactive or 0)
 				end
 
 				goto CONTINUE
 			end
 
 			if element.hide then goto CONTINUE end
-			if self2.GetStat(self, "WElements." .. name .. ".active") == false then goto CONTINUE end
+			if self2.GetStat(self, "WorldModelElements." .. name .. ".active") == false then goto CONTINUE end
 
 			local bone_ent = (validowner and ply:LookupBone(element.bone or "ValveBiped.Bip01_R_Hand")) and ply or self
 			local pos, ang
 
 			if element.bone then
-				pos, ang = self:GetBoneOrientation(self2.WElements, element, bone_ent)
+				pos, ang = self:GetBoneOrientation(self2.WorldModelElements, element, bone_ent)
 			else
-				pos, ang = self:GetBoneOrientation(self2.WElements, element, bone_ent, "ValveBiped.Bip01_R_Hand")
+				pos, ang = self:GetBoneOrientation(self2.WorldModelElements, element, bone_ent, "ValveBiped.Bip01_R_Hand")
 			end
 
 			if not pos and not element.bonemerge then goto CONTINUE end
@@ -624,7 +624,7 @@ function SWEP:DrawWorldModel()
 					model:SetAngles(ang)
 				end
 
-				local material = self:GetStat("WElements." .. name .. ".material")
+				local material = self:GetStat("WorldModelElements." .. name .. ".material")
 
 				if not material or material == "" then
 					model:SetMaterial("")
@@ -632,7 +632,7 @@ function SWEP:DrawWorldModel()
 					model:SetMaterial(material)
 				end
 
-				local skin = self:GetStat("WElements." .. name .. ".skin")
+				local skin = self:GetStat("WorldModelElements." .. name .. ".skin")
 
 				if skin and skin ~= model:GetSkin() then
 					model:SetSkin(skin)
@@ -641,7 +641,7 @@ function SWEP:DrawWorldModel()
 				if not self2.SCKMaterialCached_W[name] then
 					self2.SCKMaterialCached_W[name] = true
 
-					local materialtable = self:GetStat("WElements." .. name .. ".materials", {})
+					local materialtable = self:GetStat("WorldModelElements." .. name .. ".materials", {})
 					local entmats = table.GetKeys(model:GetMaterials())
 
 					for _, k in ipairs(entmats) do
@@ -655,7 +655,7 @@ function SWEP:DrawWorldModel()
 
 				if self2.WElementsBodygroupsCache[index] then
 					for _b = 0, self2.WElementsBodygroupsCache[index] do
-						local newbg = self2.GetStat(self, "WElements." .. name .. ".bodygroup." .. _b, 0) -- names are not supported, use overridetable
+						local newbg = self2.GetStat(self, "WorldModelElements." .. name .. ".bodygroup." .. _b, 0) -- names are not supported, use overridetable
 
 						if model:GetBodygroup(_b) ~= newbg then
 							model:SetBodygroup(_b, newbg)
@@ -668,8 +668,8 @@ function SWEP:DrawWorldModel()
 				end
 
 				if element.bonemerge then
-					if element.rel and self2.WElements[element.rel] and IsValid(self2.WElements[element.rel].curmodel) and self2.WElements[element.rel].bone ~= "oof" then
-						element.parModel = self2.WElements[element.rel].curmodel
+					if element.rel and self2.WorldModelElements[element.rel] and IsValid(self2.WorldModelElements[element.rel].curmodel) and self2.WorldModelElements[element.rel].bone ~= "oof" then
+						element.parModel = self2.WorldModelElements[element.rel].curmodel
 					else
 						element.parModel = self
 					end

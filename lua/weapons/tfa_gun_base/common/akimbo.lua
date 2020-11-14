@@ -22,7 +22,7 @@
 SWEP.AnimCycle = SWEP.ViewModelFlip and 0 or 1
 
 function SWEP:FixAkimbo()
-	if not self:GetStat("Akimbo") or self.Secondary_TFA.ClipSize <= 0 then return end
+	if not self:GetStat("IsAkimbo") or self.Secondary_TFA.ClipSize <= 0 then return end
 
 	self.Primary_TFA.ClipSize = self.Primary_TFA.ClipSize + self.Secondary_TFA.ClipSize
 	self.Secondary_TFA.ClipSize = -1
@@ -42,7 +42,7 @@ function SWEP:FixAkimbo()
 end
 
 function SWEP:ToggleAkimbo(arg1)
-	if self:GetStat("Akimbo") then
+	if self:GetStat("IsAkimbo") then
 		self:SetAnimCycle(1 - self:GetAnimCycle())
 		self.AnimCycle = self:GetAnimCycle()
 	end

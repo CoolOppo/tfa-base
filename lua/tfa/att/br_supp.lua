@@ -30,12 +30,12 @@ ATTACHMENT.Icon = "entities/tfa_br_supp.png" --Revers to label, please give it a
 ATTACHMENT.ShortName = "SUPP"
 
 ATTACHMENT.WeaponTable = {
-	["VElements"] = {
+	["ViewModelElements"] = {
 		["suppressor"] = {
 			["active"] = true
 		}
 	},
-	["WElements"] = {
+	["WorldModelElements"] = {
 		["suppressor"] = {
 			["active"] = true
 		}

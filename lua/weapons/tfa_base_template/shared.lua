@@ -8,62 +8,70 @@
 -- You should have received a copy of the CC0 legalcode along with this
 -- work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
-SWEP.Base               = "tfa_gun_base"
-SWEP.Category               = "TFA Template" -- The category.  Please, just choose something generic or something I've already done if you plan on only doing like one swep..
-SWEP.Manufacturer = nil -- Gun Manufactrer (e.g. Hoeckler and Koch )
-SWEP.Author             = "" -- Author Tooltip
-SWEP.Contact                = "" -- Contact Info Tooltip
-SWEP.Purpose                = "" -- Purpose Tooltip
+-- M9K compatible version is dated as 0 (and 0 is also fallback if TFADataVersion not present)
+-- as well as everything made for TFA Base before 4.7
+SWEP.TFADataVersion 			= 1
+
+----------------- Basic Garry's Mod SWEP structure stats / TFA Base properties
+SWEP.Base               		= "tfa_gun_base"
+SWEP.Category               	= "TFA Template" -- The category.
+-- Please, just choose something generic or something I've already done if you plan on only doing like one (or two or three) swep(s).
+SWEP.Manufacturer 				= nil -- Gun Manufactrer (e.g. Hoeckler and Koch)
+SWEP.Author            			= "" -- Author Tooltip
+SWEP.Contact                	= "" -- Contact Info Tooltip
+SWEP.Purpose                	= "" -- Purpose Tooltip
 SWEP.Instructions               = "" -- Instructions Tooltip
-SWEP.Spawnable              = false -- Can you, as a normal user, spawn this?
-SWEP.AdminSpawnable         = false -- Can an adminstrator spawn this?  Does not tie into your admin mod necessarily, unless its coded to allow for GMod's default ranks somewhere in its code.  Evolve and ULX should work, but try to use weapon restriction rather than these.
-SWEP.DrawCrosshair          = true      -- Draw the crosshair?
-SWEP.DrawCrosshairIS = false -- Draw the crosshair in ironsights?
-SWEP.PrintName              = "TFA Base Template"       -- Weapon name (Shown on HUD)
-SWEP.Slot               = 2             -- Slot in the weapon selection menu.  Subtract 1, as this starts at 0.
-SWEP.SlotPos                = 73            -- Position in the slot
-SWEP.AutoSwitchTo           = true      -- Auto switch to if we pick it up
-SWEP.AutoSwitchFrom         = true      -- Auto switch from if you pick up a better weapon
-SWEP.Weight             = 30            -- This controls how "good" the weapon is for autopickup.
+SWEP.Spawnable              	= false -- Can you, as a normal user, spawn this?
+SWEP.AdminSpawnable         	= false -- Can an adminstrator spawn this?  Does not tie into your admin mod necessarily, unless its coded to allow for GMod's default ranks somewhere in its code.  Evolve and ULX should work, but try to use weapon restriction rather than these.
+SWEP.DrawCrosshair          	= true      -- Draw the crosshair?
 
--- [[WEAPON HANDLING]] --
-SWEP.Primary.Sound = Sound("") -- This is the sound of the weapon, when you shoot.
-SWEP.Primary.SilencedSound = nil -- This is the sound of the weapon, when silenced.
-SWEP.Primary.PenetrationMultiplier = 1 -- Change the amount of something this gun can penetrate through
--- the LESSER this value is, the BETTER is penetration
--- this is basically multiplier for next values
--- you don't need to uncomment these if you are not going to modify them!
---[[
-SWEP.PenetrationMaterials = {
-	[MAT_DEFAULT] = 1,
-	[MAT_VENT] = 0.4, --Since most is aluminum and stuff
-	[MAT_METAL] = 0.6, --Since most is aluminum and stuff
-	[MAT_WOOD] = 0.2,
-	[MAT_PLASTIC] = 0.23,
-	[MAT_FLESH] = 0.48,
-	[MAT_CONCRETE] = 0.87,
-	[MAT_GLASS] = 0.16,
-	[MAT_SAND] = 1,
-	[MAT_SLOSH] = 1,
-	[MAT_DIRT] = 0.95, --This is plaster, not dirt, in most cases.
-	[MAT_FOLIAGE] = 0.9
-}
-]]
+-- AKA DrawCrosshairIS
+SWEP.DrawCrosshairIronSights	= false -- Draw the crosshair in ironsights?
+SWEP.PrintName              	= "TFA Base Template"       -- Weapon name (Shown on HUD)
+SWEP.Slot               		= 2             -- Slot in the weapon selection menu.  Subtract 1, as this starts at 0.
+SWEP.SlotPos                	= 73            -- Position in the slot
+SWEP.AutoSwitchTo           	= true      -- Auto switch to if we pick it up
+SWEP.AutoSwitchFrom         	= true      -- Auto switch from if you pick up a better weapon
+SWEP.Weight            			= 30            -- This controls how "good" the weapon is for autopickup.
 
-SWEP.Primary.Damage = 0.01 -- Damage, in standard damage points.
-SWEP.Primary.DamageTypeHandled = true -- true will handle damagetype in base
-SWEP.Primary.DamageType = nil -- See DMG enum.  This might be DMG_SHOCK, DMG_BURN, DMG_BULLET, etc.  Leave nil to autodetect.  DMG_AIRBOAT opens doors.
-SWEP.Primary.Force = nil -- Force value, leave nil to autocalc
-SWEP.Primary.Knockback = nil -- Autodetected if nil; this is the velocity kickback
-SWEP.Primary.HullSize = 0 -- Big bullets, increase this value.  They increase the hull size of the hitscan bullet.
-SWEP.Primary.NumShots = 1 -- The number of shots the weapon fires.  SWEP.Shotgun is NOT required for this to be >1.
-SWEP.Primary.Automatic = true -- Automatic/Semi Auto
+----------------- The Most basic weapon stats
 SWEP.Primary.RPM = 600 -- This is in Rounds Per Minute / RPM
-SWEP.Primary.RPM_Semi = nil -- RPM for semi-automatic or burst fire.  This is in Rounds Per Minute / RPM
-SWEP.Primary.RPM_Burst = nil -- RPM for burst fire, overrides semi.  This is in Rounds Per Minute / RPM
+SWEP.Primary.NumShots = 1 -- The number of shots the weapon fires
+SWEP.Primary.HullSize = 0 -- Big bullets, increase this value.  They increase the hull size of the hitscan bullet.
+SWEP.Primary.Automatic = true -- Automatic/Semi Auto
+
+-- If your gun is bullet based
+SWEP.Primary.Damage = 0.01 -- Damage, in standard damage points.
+SWEP.Primary.Force = nil -- Force value, leave nil to autocalc
+-- elseif Your gun is projectile based
+-- If your gun is projectile based, ignore Primary.Damage and Primary.Force
+SWEP.Primary.Projectile = nil -- Entity to shoot
+SWEP.Primary.ProjectileVelocity = 0 -- Entity to shoot's velocity
+SWEP.Primary.ProjectileModel = nil -- Entity to shoot's model
+
+----------------- TFA Base basic stats
+SWEP.Primary.Knockback = nil -- Autodetected if nil; this is the velocity kickback
 SWEP.Primary.DryFireDelay = nil -- How long you have to wait after firing your last shot before a dryfire animation can play.  Leave nil for full empty attack length.  Can also use SWEP.StatusLength[ ACT_VM_BLABLA ]
 SWEP.Primary.BurstDelay = nil -- Delay between bursts, leave nil to autocalculate
+-- AKA FiresUnderwater
+SWEP.Primary.FiresUnderwater = false -- Whenever this weapon can fire underwater
 
+----------------- TFA Base extended basic stats
+SWEP.Primary.RPM_Semi = nil -- RPM for semi-automatic or burst fire.  This is in Rounds Per Minute / RPM
+SWEP.Primary.RPM_Burst = nil -- RPM for burst fire, overrides semi.  This is in Rounds Per Minute / RPM
+
+SWEP.Primary.DamageTypeHandled = true -- true will handle damagetype in base
+SWEP.Primary.DamageType = nil -- See DMG enum.  This might be DMG_SHOCK, DMG_BURN, DMG_BULLET, etc.  Leave nil to autodetect.  DMG_AIRBOAT opens doors.
+
+----------------- TFA Base Basic sound handling
+SWEP.Primary.Sound = Sound("") -- This is the sound of the weapon, when you shoot.
+SWEP.Primary.SilencedSound = nil -- This is the sound of the weapon, when silenced.
+-- AKA IronInSound
+SWEP.Secondary.IronSightsInSound  = nil -- Sound to play when iron sighting in? nil for default
+-- AKA IronOutSound
+SWEP.Secondary.IronSightsOutSound = nil -- Sound to play when iron sighting out? nil for default
+
+----------------- TFA Base Advanced sound handling
 SWEP.Primary.LoopSound = nil -- Looped fire sound, unsilenced
 SWEP.Primary.LoopSoundSilenced = nil -- Looped fire sound, silenced
 SWEP.Primary.LoopSoundTail = nil -- Loop end/tail sound, unsilenced
@@ -71,7 +79,6 @@ SWEP.Primary.LoopSoundTailSilenced = nil -- Loop end/tail sound, silenced
 SWEP.Primary.LoopSoundAutoOnly = false -- Play loop sound for full-auto only? Fallbacks to Primary.Sound for semi/burst if true
 
 -- WORLD/THIRDPERSON/NPC FIRING SOUNDS! Fallbacks to first person sound if not defined.
-
 SWEP.Primary.Sound_World = nil -- This is the sound of the weapon, when you shoot.
 SWEP.Primary.SilencedSound_World = nil -- This is the sound of the weapon, when silenced.
 
@@ -80,17 +87,7 @@ SWEP.Primary.LoopSoundSilenced_World = nil -- Looped fire sound, silenced
 SWEP.Primary.LoopSoundTail_World = nil -- Loop end/tail sound, unsilenced
 SWEP.Primary.LoopSoundTailSilenced_World = nil -- Loop end/tail sound, silenced
 
-SWEP.ViewModelPunchPitchMultiplier = nil -- Default value is 0.5
-SWEP.ViewModelPunchPitchMultiplier_IronSights = nil -- Default value is 0.09
-
-SWEP.ViewModelPunch_MaxVertialOffset = nil -- Default value is 3
-SWEP.ViewModelPunch_MaxVertialOffset_IronSights = nil -- Default value is 1.95
-SWEP.ViewModelPunch_VertialMultiplier = nil -- Default value is 1
-SWEP.ViewModelPunch_VertialMultiplier_IronSights = nil -- Default value is 0.25
-
-SWEP.ViewModelPunchYawMultiplier = nil -- Default value is 0.6
-SWEP.ViewModelPunchYawMultiplier_IronSights = nil -- Default value is 0.25
-
+----------------- Jamming mechanics
 SWEP.CanJam = true -- whenever weapon cam jam
 SWEP.JamChance = 0.04 -- the (maximal) chance the weapon will jam. Newly spawned weapon will never jam on first shot for example.
 -- Default value is 0.04 (4%)
@@ -150,32 +147,33 @@ SWEP.JamChance = 0.17
 SWEP.JamFactor = 0.35
 ]]
 
-SWEP.FiresUnderwater = false
--- Miscelaneous Sounds
-SWEP.IronInSound = nil -- Sound to play when ironsighting in?  nil for default
-SWEP.IronOutSound = nil -- Sound to play when ironsighting out?  nil for default
--- Silencing
-SWEP.CanBeSilenced = false -- Can we silence?  Requires animations.
-SWEP.Silenced = false -- Silenced by default?
--- Selective Fire Stuff
-SWEP.SelectiveFire = false -- Allow selecting your firemode?
-SWEP.DisableBurstFire = false -- Only auto/single?
-SWEP.OnlyBurstFire = false -- No auto, only burst/single?
-SWEP.BurstFireCount = nil -- Burst fire count override (autocalculated by the clip size if nil)
-SWEP.DefaultFireMode = "" -- Default to auto or whatev
-SWEP.FireModeName = nil -- Change to a text value to override it
-SWEP.FireSoundAffectedByClipSize = true -- Whenever adjuct pitch (and proably other properties) of fire sound based on current clip / maxclip
+----------------- Silencing
+SWEP.CanBeSilenced                = false -- Can we silence?  Requires animations.
+SWEP.Silenced                     = false -- Silenced by default?
+
+----------------- Selective Fire Stuff
+SWEP.SelectiveFire                = false -- Allow selecting your firemode?
+SWEP.DisableBurstFire             = false -- Only auto/single?
+SWEP.OnlyBurstFire                = false -- No auto, only burst/single?
+SWEP.BurstFireCount               = nil -- Burst fire count override (autocalculated by the clip size if nil)
+SWEP.DefaultFireMode              = "" -- Default to auto or whatev
+SWEP.FireModeName                 = nil -- Change to a text value to override it
+SWEP.FireSoundAffectedByClipSize  = true -- Whenever adjuct pitch (and proably other properties) of fire sound based on current clip / maxclip
 -- This is always false when either:
 -- Weapon has no primary clip
 -- Weapon's clip is smaller than 4 rounds
 -- Weapon is a shotgun
--- Ammo Related
+
+----------------- Ammo Related
 SWEP.Primary.ClipSize = 0 -- This is the size of a clip
+
 SWEP.Primary.DefaultClip = 0 -- This is the number of bullets the gun gives you, counting a clip as defined directly above.
 SWEP.Primary.Ammo = "none" -- What kind of ammo.  Options, besides custom, include pistol, 357, smg1, ar2, buckshot, slam, SniperPenetratedRound, and AirboatGun.
-SWEP.Primary.AmmoConsumption = 1 -- Ammo consumed per shot
 -- Pistol, buckshot, and slam like to ricochet. Use AirboatGun for a light metal peircing shotgun pellets
-SWEP.DisableChambering = false -- Disable round-in-the-chamber
+SWEP.Primary.AmmoConsumption = 1 -- Ammo consumed per shot
+
+-- AKA DisableChambering
+SWEP.Primary.DisableChambering = false -- Disable round-in-the-chamber
 
 -- Recoil Related
 SWEP.Primary.KickUp = 0 -- This is the maximum upwards recoil (rise)
@@ -192,31 +190,15 @@ SWEP.Primary.SpreadMultiplierMax = nil -- How far the spread can expand when you
 SWEP.Primary.SpreadIncrement = nil -- What percentage of the modifier is added on, per shot.  Example val: 1/3.5
 SWEP.Primary.SpreadRecovery = nil -- How much the spread recovers, per second. Example val: 3
 
--- Range Related
+----------------- Range stats
+SWEP.Primary.DisplayFalloff = nil -- Defaults to true (false for melees)
 
--- DEPRECATED. Automatically converted to RangeFalloffLUT table
-SWEP.Primary.Range = -1 -- The distance the bullet can travel in source units.  Set to -1 to autodetect based on damage/rpm.
-SWEP.Primary.RangeFalloff = -1 -- The percentage of the range the bullet damage starts to fall off at.  Set to 0.8, for example, to start falling off after 80% of the range.
-
--- Use these if you don't want/understand how to use LUT below. These values are automatically converted to RangeFalloffLUT table
+-- Use these if you don't want/understand how to use LUT below.
+-- These values are automatically converted to RangeFalloffLUT table
 SWEP.Primary.FalloffMetricBased = false -- Set to true if you set up values below
 SWEP.Primary.FalloffByMeter = nil -- How much damage points will bullet loose when travel
 SWEP.Primary.MinRangeStartFalloff = nil -- How long will bullet travel in Meters before starting to lose damage?
 SWEP.Primary.MaxFalloff = nil -- Maximal amount of damage to be lost
-
--- Bullet pattern to utilize
--- to be used to utilize built-in patterns
-SWEP.SpreadPattern = nil -- Defaults to ""
-
--- Spread bias
--- The bigger is the number, the stronger is spread
--- along specified axis (Yaw for X, Pitch for Y). Note that this is not clamped and it is possible
--- to make spread along X or Y or both bigger than current aimcone
-SWEP.SpreadBiasYaw = nil -- Defaults to 1
-SWEP.SpreadBiasPitch = nil -- Defaults to 1
-
--- Check common/bullet.lua for more information on how to implement custom
--- functions if you REALLY need them
 
 -- Use this for full control over damage dropoff.
 --[[
@@ -244,9 +226,40 @@ SWEP.Primary.RangeFalloffLUT = {
 }
 ]]
 
-SWEP.DisplayFalloff = nil -- Defaults to true (false for melees)
+----------------- Spread stats
+-- Bullet pattern to utilize
+-- to be used to utilize built-in patterns
+SWEP.Primary.SpreadPattern = nil -- Defaults to ""
 
---[[
+-- Spread bias
+-- The bigger is the number, the stronger is spread
+-- along specified axis (Yaw for X, Pitch for Y). Note that this is not clamped and it is possible
+-- to make spread along X or Y or both bigger than current aimcone
+SWEP.Primary.SpreadBiasYaw = nil -- Defaults to 1
+SWEP.Primary.SpreadBiasPitch = nil -- Defaults to 1
+
+-- Check common/bullet.lua for more information on how to implement custom
+-- functions if you REALLY need them
+
+-- Less is more. Accuracy * 0.5 = Twice as accurate, Accuracy * 0.1 = Ten times as accurate
+SWEP.CrouchAccuracyMultiplier = 0.5
+
+----------------- Recoil related things
+SWEP.ViewModelPunchPitchMultiplier = nil -- Default value is 0.5
+SWEP.ViewModelPunchPitchMultiplier_IronSights = nil -- Default value is 0.09
+
+SWEP.ViewModelPunch_MaxVertialOffset = nil -- Default value is 3
+SWEP.ViewModelPunch_MaxVertialOffset_IronSights = nil -- Default value is 1.95
+SWEP.ViewModelPunch_VertialMultiplier = nil -- Default value is 1
+SWEP.ViewModelPunch_VertialMultiplier_IronSights = nil -- Default value is 0.25
+
+SWEP.ViewModelPunchYawMultiplier = nil -- Default value is 0.6
+SWEP.ViewModelPunchYawMultiplier_IronSights = nil -- Default value is 0.25
+
+-- AKA IronRecoilMultiplier
+SWEP.Primary.IronRecoilMultiplier = 0.5 -- Multiply recoil by this factor when we're in ironsights. This is proportional, not inversely.
+
+-- Stats below have no effect if RecoilLUT is not defined
 SWEP.Primary.RecoilLUT_IronSightsMult = nil -- Defaults to 0.5
 -- controls how much effective LUT is when iron sighting
 SWEP.Primary.RecoilLUT_AnglePunchMult = nil -- Defaults to 0.25
@@ -254,6 +267,7 @@ SWEP.Primary.RecoilLUT_AnglePunchMult = nil -- Defaults to 0.25
 SWEP.Primary.RecoilLUT_ViewPunchMult = nil -- Defaults to 1
 -- controls how much effective LUT at viewpunch
 
+--[[
 SWEP.Primary.RecoilLUT = {
 	["in"] = {
 		bezier = true,
@@ -325,46 +339,124 @@ SWEP.Primary.RecoilLUT = {
 }
 ]]
 
--- Penetration Related
-SWEP.MaxPenetrationCounter = 4 -- The maximum number of ricochets.  To prevent stack overflows.
+----------------- Penetration Related
+-- AKA MaxPenetrationCounter / MaxPenetration
+SWEP.Primary.MaxSurfacePenetrationCount = nil -- Defaults to infinity and is clamped by convar which defaults to 100
+-- The maximum number of surface penetrations. You probably shouldn't touch this unless you need to remove penetration completely or limit it somehow
+-- aside from Penetration power exhaust
 
--- Misc
-SWEP.IronRecoilMultiplier = 0.5 -- Multiply recoil by this factor when we're in ironsights.  This is proportional, not inversely.
-SWEP.CrouchAccuracyMultiplier = 0.5 -- Less is more.  Accuracy * 0.5 = Twice as accurate, Accuracy * 0.1 = Ten times as accurate
+SWEP.Primary.PenetrationPower 			= nil -- Defaults to autodetect
+-- This control how much we can penetrate various surfaces in hammer units
+-- So, PenetrationPower of 400 say that we can penetrate 400 hammer units of material with penetration multiplier of 1
+-- 800 hammer units of material with penetration multiplier of 0.5
+-- 1600 hammer units of material with penetration multiplier of 0.25
+-- and so on
+-- TFA Base is designed to work with small to insanely large penetration power values, so don't be shy at experimenting with this value
 
--- Movespeed
-SWEP.MoveSpeed = 1 -- Multiply the player's movespeed by this.
-SWEP.IronSightsMoveSpeed = 0.8 -- Multiply the player's movespeed by this when sighting.
+SWEP.Primary.PenetrationMultiplier 		= nil -- Defaults to 1
+-- Change the amount of something this gun can penetrate through
+-- the LESSER this value is, the BETTER is penetration
+-- this is basically multiplier for next values
+-- Checkout https://wiki.facepunch.com/gmod/Enums/MAT for list of all materials
+--[==[
+-- AKA PenetrationMaterials
+SWEP.Primary.PenetrationMaterials = {
+	[MAT_NAME] = 0.5,
+}
+]==]
 
--- PROJECTILES
-SWEP.Primary.Projectile = nil -- Entity to shoot
-SWEP.Primary.ProjectileVelocity = 0 -- Entity to shoot's velocity
-SWEP.Primary.ProjectileModel = nil -- Entity to shoot's model
+----------------- Mobility / Moving speed related
+-- Multiplies moving speed (velocity) of owner by this value
+-- e.g. if their WalkSpeed is 300 HU/s and they hold gun with multiplier of 0.75
+-- then when they press +forward their speed will be capped at 225 HU/s
+-- AKA MoveSpeed
+SWEP.RegularMoveSpeedMultiplier 		= nil -- Defaults to 1
+-- Multiply the player's movespeed by this when aiming down sights
+-- !!! This penalty / bonus is not additive (multiplied by RegularMoveSpeedMultiplier) and is preemptive
+-- (e.g. if RegularMoveSpeedMultiplier is 0.5 and AimingDownSightsSpeedMultiplier is 1, then when fully Aiming Down Sights
+-- speed multiplier will be 1, when half-way ADS'ing speed will be 0.75 and so on
+-- Keep in mind that this also affect mouse sensivity when aiming down sights (creating kind of "mouse weight" effect)
+-- AKA IronSightsMoveSpeed
+SWEP.AimingDownSightsSpeedMultiplier 	= nil -- Defaults to 0.8
 
--- VIEWMODEL
-SWEP.ViewModel          = "models/your/path/here.mdl" -- Viewmodel path
-SWEP.ViewModelFOV           = 65        -- This controls how big the viewmodel looks.  Less is more.
-SWEP.ViewModelFlip          = false     -- Set this to true for CSS models, or false for everything else (with a righthanded viewmodel.)
-SWEP.UseHands = false -- Use gmod c_arms system.
-SWEP.VMPos = Vector(0, 0, 0) -- The viewmodel positional offset, constantly.  Subtract this from any other modifications to viewmodel position.
-SWEP.VMAng = Vector(0, 0, 0) -- The viewmodel angular offset, constantly.   Subtract this from any other modifications to viewmodel angle.
-SWEP.VMPos_Additive = true -- Set to false for an easier time using VMPos. If true, VMPos will act as a constant delta ON TOP OF ironsights, run, whateverelse
-SWEP.CenteredPos = nil -- The viewmodel positional offset, used for centering.  Leave nil to autodetect using ironsights.
-SWEP.CenteredAng = nil -- The viewmodel angular offset, used for centering.  Leave nil to autodetect using ironsights.
-SWEP.Bodygroups_V = nil -- {
+----------------- ViewModel related
+SWEP.ViewModel      	= "models/your/path/here.mdl" -- Viewmodel path
+SWEP.ViewModelFOV   	= 65        -- This controls how big the viewmodel looks.  Less is more.
+SWEP.ViewModelFlip  	= false     -- Set this to true for CSS models, or false for everything else (with a righthanded viewmodel.)
+SWEP.UseHands       	= false -- Use gmod c_arms system.
+
+-- The viewmodel positional offset, constantly.
+-- Subtract this from any other modifications to viewmodel position.
+-- AKA VMPos (SWEP Construction Kit naming, VMPos is always checked for presence and it always override ViewModelPosition if present)
+SWEP.ViewModelPosition 	= Vector(0, 0, 0)
+-- AKA VMAng (SWEP Construction Kit naming)
+-- The viewmodel angular offset, constantly.
+-- Subtract this from any other modifications to viewmodel angle.
+SWEP.ViewModelAngle     = Vector(0, 0, 0)
+
+-- Position when sprinting
+-- AKA RunSightsPos (SWEP Construction Kit naming)
+SWEP.SprintViewModelPosition 	= Vector(0, 0, 0) -- Change this, using SWEP Creation Kit preferably
+-- AKA RunSightsAng (SWEP Construction Kit naming)
+SWEP.SprintViewModelAngle 		= Vector(0, 0, 0) -- Change this, using SWEP Creation Kit preferably
+
+-- Position when crouching
+-- Viewmodel offset when player is crouched
+-- AKA CrouchPos
+SWEP.CrouchViewModelPosition 	= nil -- Defaults to nothing, use Vector(0, 0, 0) as starting point
+-- AKA CrouchAng
+SWEP.CrouchViewModelAngle 		= nil -- Defaults to nothing, use Vector(0, 0, 0) as starting point
+
+SWEP.IronSightsPosition 		= Vector(0, 0, 0) -- Change this, using SWEP Creation Kit preferably
+SWEP.IronSightsAngle 			= Vector(0, 0, 0) -- Change this, using SWEP Creation Kit preferably
+
+-- Inspection position
+-- Replace with a vector, in style of ironsights position, to be used for inspection
+SWEP.InspectPos 				= nil -- Vector(0, 0, 0)
+SWEP.InspectAng 				= nil -- Vector(0, 0, 0) -- Replace with a vector, in style of ironsights angle, to be used for inspection
+
+-- Whenever positions defined above are additive to any other position modification
+-- Set to false for an easier time using VMPos
+-- If true, VMPos will act as a constant value added to every other position modification
+-- (iron sights position, run position, everything else)
+-- AKA VMPos_Additive (SWEP Construction Kit naming)
+SWEP.AdditiveViewModelPosition = true
+SWEP.CenteredViewModelPosition = nil -- The viewmodel positional offset, used for centering.  Leave nil to autodetect using ironsights.
+SWEP.CenteredViewModelAngle    = nil -- The viewmodel angular offset, used for centering.  Leave nil to autodetect using ironsights.
+SWEP.ViewModelBodygroups       = nil -- {
 	-- [0] = 1,
 	-- [1] = 4,
 	-- [2] = etc.
 -- }
 
-SWEP.AllowIronSightsDoF = true -- whenever allow DoF effect on viewmodel when zoomed in with iron sights
+SWEP.AllowIronSightsDoF 		= true -- whenever allow DoF effect on viewmodel when zoomed in with iron sights
 
-SWEP.IronSightsReloadEnabled = nil -- Enable ADS reload animations support (requires animations to be enabled in SWEP.Animations)
-SWEP.IronSightsReloadLock = true -- Lock ADS state when reloading
+-- Enable ADS reload animations support (requires animations to be enabled in SWEP.Animations)
+SWEP.IronSightsReloadEnabled 	= nil
+-- Lock ADS state when reloading
+SWEP.IronSightsReloadLock 		= true
 
--- WORLDMODEL
-SWEP.WorldModel         = "models/your/wmodel/path/here.mdl" -- Weapon world model path
-SWEP.Bodygroups_W = nil -- {
+-- Export from SWEP Creation Kit (if it is being utilized to create gun)
+-- For each item that can/will be toggled, set active = false in its individual table
+-- AKA VElements (SWEP Construction Kit naming)
+SWEP.ViewModelElements = nil
+
+----------------- Iron sights related
+-- AKA data.ironsights
+SWEP.Secondary.IronSightsEnabled 	= true
+-- Controls Field of View when scoping in.
+-- Default FoV of Garry's Mod is 75, most of players prefer 90
+-- Lesser FoV value means stronger "zoom"
+-- Good value to begin experimenting with is 70
+-- AKA Secondary.IronFOV
+SWEP.Secondary.OwnerFOV 			= 70
+-- AKA IronViewModelFOV
+SWEP.Secondary.ViewModelFOV 		= nil -- Defaults to 65. Target viewmodel FOV when aiming down the sights.
+
+----------------- Worldmodel related
+SWEP.WorldModel         		= "models/your/wmodel/path/here.mdl" -- Weapon world model path
+-- AKA Bodygroups_W
+SWEP.WorldModelBodygroups 		= nil -- {
 -- [0] = 1,
 -- [1] = 4,
 -- [2] = etc.
@@ -374,23 +466,40 @@ SWEP.HoldType = "" -- This is how others view you carrying the weapon. Options i
 -- normal melee melee2 fist knife smg ar2 pistol rpg physgun grenade shotgun crossbow slam passive
 -- You're mostly going to use ar2, smg, shotgun or pistol. rpg and crossbow make for good sniper rifles
 
-SWEP.Offset = {
+-- Holdtypes overrides
+-- Holdtype override when iron sighting
+SWEP.IronSightHoldTypeOverride 	= nil -- Defaults to nothing (disabled)
+-- This variable overrides the sprint holdtype
+SWEP.SprintHoldTypeOverride 	= nil -- Defaults to nothing (disabled)
+
+-- Procedural world model offset
+-- Value below is good enough for Counter-Strike: Source worldmodels
+--[[
+-- AKA Offset
+SWEP.WorldModelOffset = {
 	Pos = {
 		Up = 0,
 		Right = 0,
 		Forward = 0
 	},
+
 	Ang = {
 		Up = -1,
 		Right = -2,
 		Forward = 178
 	},
+
 	Scale = 1
-} -- Procedural world model animation, defaulted for CS:S purposes.
+}
+]]
 
-SWEP.ThirdPersonReloadDisable = false -- Disable third person reload?  True disables.
 
--- SCOPES
+-- Export from SWEP Creation Kit.
+-- For each item that can/will be toggled, set active = false in its individual table
+-- AKA WElements (if it is being utilized to create gun)
+SWEP.WorldModelElements = nil
+
+----------------- Scopes related
 SWEP.IronSightsSensitivity = 1 -- Useful for a RT scope.  Change this to 0.25 for 25% sensitivity.  This is if normal FOV compenstaion isn't your thing for whatever reason, so don't change it for normal scopes.
 SWEP.BoltAction = false -- Unscope/sight after you shoot?
 SWEP.Scoped = false -- Draw a scope overlay?
@@ -398,6 +507,7 @@ SWEP.ScopeOverlayThreshold = 0.875 -- Percentage you have to be sighted in to se
 SWEP.BoltTimerOffset = 0.25 -- How long you stay sighted in after shooting, with a bolt action.
 SWEP.ScopeScale = 0.5 -- Scale of the scope overlay
 SWEP.ReticleScale = 0.7 -- Scale of the reticle overlay
+
 -- GDCW Overlay Options.  Only choose one.
 SWEP.Secondary.UseACOG = false -- Overlay option
 SWEP.Secondary.UseMilDot = false -- Overlay option
@@ -405,6 +515,9 @@ SWEP.Secondary.UseSVD = false -- Overlay option
 SWEP.Secondary.UseParabolic = false -- Overlay option
 SWEP.Secondary.UseElcan = false -- Overlay option
 SWEP.Secondary.UseGreenDuplex = false -- Overlay option
+
+-- Clientside only
+-- Defines custom scope overlay
 if surface then
 	SWEP.Secondary.ScopeTable = nil --[[
 		{
@@ -414,30 +527,24 @@ if surface then
 		}
 	]] --
 end
--- [[SHOTGUN CODE]] --
-SWEP.Shotgun = false -- Enable shotgun style reloading.
+
+----------------- Looped reload related
+
+-- AKA Shotgun
+SWEP.LoopedReload = false -- Enable looped / shotgun style / one round at time reloading.
+
 SWEP.ShotgunEmptyAnim = false -- Enable emtpy reloads on shotguns?
 SWEP.ShotgunEmptyAnim_Shell = true -- Enable insertion of a shell directly into the chamber on empty reload?
 SWEP.ShotgunStartAnimShell = false -- shotgun start anim inserts shell
-SWEP.ShellTime = .35 -- For shotguns, how long it takes to insert a shell.
--- [[SPRINTING]] --
-SWEP.RunSightsPos = Vector(0, 0, 0) -- Change this, using SWEP Creation Kit preferably
-SWEP.RunSightsAng = Vector(0, 0, 0) -- Change this, using SWEP Creation Kit preferably
--- [[CROUCHING]] --
--- Viewmodel offset when player is crouched
--- SWEP.CrouchPos = Vector(0, 0, 0)
--- SWEP.CrouchAng = Vector(0, 0, 0)
--- [[IRONSIGHTS]] --
-SWEP.data = {}
-SWEP.data.ironsights = 1 -- Enable Ironsights
-SWEP.Secondary.IronFOV = 70 -- How much you "zoom" in. Less is more!  Don't have this be <= 0.  A good value for ironsights is like 70.
--- SWEP.IronViewModelFOV = 65 -- Target viewmodel FOV when aiming down the sights.
-SWEP.IronSightsPos = Vector(0, 0, 0) -- Change this, using SWEP Creation Kit preferably
-SWEP.IronSightsAng = Vector(0, 0, 0) -- Change this, using SWEP Creation Kit preferably
--- [[INSPECTION]] --
-SWEP.InspectPos = nil -- Vector(0, 0, 0) -- Replace with a vector, in style of ironsights position, to be used for inspection
-SWEP.InspectAng = nil -- Vector(0, 0, 0) -- Replace with a vector, in style of ironsights angle, to be used for inspection
--- [[VIEWMODEL BLOWBACK]] --
+
+-- For looped reloads, how long it take to insert extra round into weapon
+-- Adjuct to match visual representation when it actually insert round
+-- AKA ShellTime
+SWEP.LoopedReloadInsertTime = 0.35
+
+----------------- Animation stuff / procedural ones (Lua animated)
+
+-- ViewModel custom blowback
 SWEP.BlowbackEnabled = false -- Enable Blowback?
 SWEP.BlowbackVector = Vector(0, -1, 0) -- Vector to move bone <or root> relative to bone <or view> orientation.
 SWEP.BlowbackAngle = nil -- Angle(0, 0, 0)
@@ -449,30 +556,44 @@ SWEP.Blowback_PistolMode = false -- Do we recover from blowback when empty?
 SWEP.Blowback_Shell_Enabled = true -- Shoot shells through blowback animations
 SWEP.Blowback_Shell_Effect = "ShellEject" -- Which shell effect to use
 SWEP.BlowbackAllowAnimation = nil -- Allow playing shoot animation with blowback?
--- [[VIEWMODEL PROCEDURAL ANIMATION]] --
-SWEP.DoProceduralReload = false -- Animate first person reload using lua?
-SWEP.ProceduralReloadTime = 1 -- Procedural reload time?
--- [[HOLDTYPES]] --
-SWEP.IronSightHoldTypeOverride = "" -- This variable overrides the ironsights holdtype, choosing it instead of something from the above tables.  Change it to "" to disable.
-SWEP.SprintHoldTypeOverride = "" -- This variable overrides the sprint holdtype, choosing it instead of something from the above tables.  Change it to "" to disable.
--- [[ANIMATION]] --
 
+-- Lua animated reload animation
+-- Animate first person reload using Lua?
+-- When reloading weapon will be offset to holster position (TODO: Add separate property for that)
+-- AKA DoProceduralReload
+SWEP.IsProceduralReloadBased = false
+SWEP.ProceduralReloadTime = 1 -- Procedural reload time in seconds
+
+-- Animation / sequence control
 SWEP.StatusLengthOverride = {} -- Changes the status delay of a given animation; only used on reloads.  Otherwise, use SequenceLengthOverride or one of the others
 SWEP.SequenceLengthOverride = {} -- Changes both the status delay and the nextprimaryfire of a given animation
 SWEP.SequenceTimeOverride = {} -- Like above but changes animation length to a target
 SWEP.SequenceRateOverride = {} -- Like above but scales animation length rather than being absolute
 
-SWEP.ProceduralHolsterEnabled = nil
+SWEP.ProceduralHolsterEnabled = nil -- Defaults to autodetection (if weapon has no ACT_VM_HOLSTER animation this is enabled if not specified)
 SWEP.ProceduralHolsterTime = 0.3
-SWEP.ProceduralHolsterPos = Vector(3, 0, -5)
-SWEP.ProceduralHolsterAng = Vector(-40, -30, 10)
+-- AKA ProceduralHolsterPos
+SWEP.ProceduralHolsterPosition = Vector(3, 0, -5)
+-- AKA ProceduralHolsterAng
+SWEP.ProceduralHolsterAngle = Vector(-40, -30, 10)
 
-SWEP.Idle_Mode = TFA.Enum.IDLE_BOTH -- TFA.Enum.IDLE_DISABLED = no idle, TFA.Enum.IDLE_LUA = lua idle, TFA.Enum.IDLE_ANI = mdl idle, TFA.Enum.IDLE_BOTH = TFA.Enum.IDLE_ANI + TFA.Enum.IDLE_LUA
+----------------- Basic animation related
+
+-- TFA.Enum.IDLE_DISABLED = No idle
+-- TFA.Enum.IDLE_LUA = Lua animated idle
+-- TFA.Enum.IDLE_ANI = Model's animated idle
+-- TFA.Enum.IDLE_BOTH = TFA.Enum.IDLE_ANI + TFA.Enum.IDLE_LUA
+SWEP.Idle_Mode = TFA.Enum.IDLE_BOTH
 SWEP.Idle_Blend = 0.25 -- Start an idle this far early into the end of a transition
 SWEP.Idle_Smooth = 0.05 -- Start an idle this far early into the end of another animation
--- MDL Animations Below
+-- Model based animations Below
 
-SWEP.Sights_Mode = TFA.Enum.LOCOMOTION_LUA -- LOCOMOTION_ANI = mdl, LOCOMOTION_HYBRID = ani + lua, LOCOMOTION_LUA = lua only
+-- TFA.Enum.LOCOMOTION_ANI = Model's animation
+-- TFA.Enum.LOCOMOTION_LUA = Lua only
+-- TFA.Enum.LOCOMOTION_HYBRID = TFA.Enum.LOCOMOTION_ANI + TFA.Enum.LOCOMOTION_LUA
+-- Keep in mind that HYBRID sometimes produce very weird results, especially if
+-- model's animation is "out of sync" with Lua's one
+SWEP.Sights_Mode = TFA.Enum.LOCOMOTION_LUA
 --[[
 SWEP.IronAnimation = {
 	["in"] = {
@@ -501,7 +622,10 @@ SWEP.IronAnimation = {
 }
 ]]
 
-SWEP.Sprint_Mode = TFA.Enum.LOCOMOTION_LUA -- LOCOMOTION_ANI = mdl, LOCOMOTION_HYBRID = ani + lua, LOCOMOTION_LUA = lua only
+-- TFA.Enum.LOCOMOTION_ANI = Model's animation
+-- TFA.Enum.LOCOMOTION_LUA = Lua only
+-- TFA.Enum.LOCOMOTION_HYBRID = TFA.Enum.LOCOMOTION_ANI + TFA.Enum.LOCOMOTION_LUA
+SWEP.Sprint_Mode = TFA.Enum.LOCOMOTION_LUA
 --[[
 SWEP.SprintAnimation = {
 	["in"] = {
@@ -525,7 +649,10 @@ SWEP.SprintAnimation = {
 }
 ]]
 
-SWEP.Walk_Mode = TFA.Enum.LOCOMOTION_LUA -- LOCOMOTION_ANI = mdl, LOCOMOTION_HYBRID = ani + lua, LOCOMOTION_LUA = lua only
+-- TFA.Enum.LOCOMOTION_ANI = Model's animation
+-- TFA.Enum.LOCOMOTION_LUA = Lua only
+-- TFA.Enum.LOCOMOTION_HYBRID = TFA.Enum.LOCOMOTION_ANI + TFA.Enum.LOCOMOTION_LUA
+SWEP.Walk_Mode = TFA.Enum.LOCOMOTION_LUA
 --[[
 SWEP.WalkAnimation = {
 	["in"] = {
@@ -573,7 +700,10 @@ SWEP.ShootAnimation = {
 }
 ]]
 
-SWEP.Customize_Mode = TFA.Enum.LOCOMOTION_LUA -- LOCOMOTION_ANI = mdl, LOCOMOTION_HYBRID = ani + lua, LOCOMOTION_LUA = lua only
+-- TFA.Enum.LOCOMOTION_ANI = Model's animation
+-- TFA.Enum.LOCOMOTION_LUA = Lua only
+-- TFA.Enum.LOCOMOTION_HYBRID = TFA.Enum.LOCOMOTION_ANI + TFA.Enum.LOCOMOTION_LUA
+SWEP.Customize_Mode = TFA.Enum.LOCOMOTION_LUA
 --[[
 SWEP.CustomizeAnimation = {
 	["in"] = {
@@ -603,59 +733,82 @@ SWEP.PumpAction = { -- Pump/bolt animations
 }
 ]] --
 
--- [[EFFECTS]] --
+----------------- Effects related
+
 -- Attachments
-SWEP.MuzzleAttachment           = "1"       -- Should be "1" for CSS models or "muzzle" for hl2 models
-SWEP.ShellAttachment            = "2"       -- Should be "2" for CSS models or "shell" for hl2 models
-SWEP.MuzzleFlashEnabled = true -- Enable muzzle flash
-SWEP.MuzzleAttachmentRaw = nil -- This will override whatever string you gave.  This is the raw attachment number.  This is overridden or created when a gun makes a muzzle event.
+SWEP.MuzzleAttachment           = "1" -- Should be "1" for CSS models or "muzzle" for hl2 models
+SWEP.ShellAttachment            = "2" -- Should be "2" for CSS models or "shell" for hl2 models
+SWEP.MuzzleFlashEnabled         = true -- Enable muzzle flash
+SWEP.MuzzleAttachmentRaw        = nil -- This will override whatever string you gave. This is the raw attachment NUMBER. This is overridden or created when a gun makes a muzzle event.
 SWEP.AutoDetectMuzzleAttachment = false -- For multi-barrel weapons, detect the proper attachment?
-SWEP.MuzzleFlashEffect = nil -- Change to a string of your muzzle flash effect.  Copy/paste one of the existing from the base.
-SWEP.SmokeParticle = nil -- Smoke particle (ID within the PCF), defaults to something else based on holdtype; "" to disable
-SWEP.EjectionSmokeEnabled = true -- Disable automatic ejection smoke
+SWEP.MuzzleFlashEffect          = nil -- Change to a string of your muzzle flash effect.  Copy/paste one of the existing from the base.
+SWEP.SmokeParticle              = nil -- Smoke particle (ID within the PCF), defaults to something else based on holdtype; "" to disable
+SWEP.EjectionSmokeEnabled       = true -- Disable automatic ejection smoke
+
 -- Shell eject override
-SWEP.LuaShellEject = false -- Enable shell ejection through lua?
+SWEP.LuaShellEject      = false -- Enable shell ejection through lua?
 SWEP.LuaShellEjectDelay = 0 -- The delay to actually eject things
-SWEP.LuaShellModel = nil -- The model to use for ejected shells
-SWEP.LuaShellScale = nil -- The model scale to use for ejected shells
-SWEP.LuaShellYaw = nil -- The model yaw rotation ( relative ) to use for ejected shells
+SWEP.LuaShellModel      = nil -- The model to use for ejected shells
+SWEP.LuaShellScale      = nil -- The model scale to use for ejected shells
+SWEP.LuaShellYaw        = nil -- The model yaw rotation ( relative ) to use for ejected shells
+
 -- Tracer Stuff
 SWEP.TracerName         = nil   -- Change to a string of your tracer name.  Can be custom. There is a nice example at https://github.com/garrynewman/garrysmod/blob/master/garrysmod/gamemodes/base/entities/effects/tooltracer.lua
 SWEP.TracerCount        = 3     -- 0 disables, otherwise, 1 in X chance
+
 -- Impact Effects
-SWEP.ImpactEffect = nil -- Impact Effect
-SWEP.ImpactDecal = nil -- Impact Decal
--- [[EVENT TABLE]] --
-SWEP.EventTable = {} -- Event Table, used for custom events when an action is played.  This can even do stuff like playing a pump animation after shooting.
+SWEP.ImpactEffect 		= nil -- Impact Effect
+SWEP.ImpactDecal 		= nil -- Impact Decal
+
+----------------- Event table
+-- Utilized for firing custom events (including running Lua code) when an action is played.
+-- This can even do stuff like playing a pump animation after shooting, discarding clip when reloading
+-- playing sounds and so much more!
+SWEP.EventTable = {}
+
 -- example:
--- SWEP.EventTable = {
---  [ACT_VM_RELOAD] = {
---																				-- ifp is IsFirstTimePredicted()
---      { ["time"] = 0.1, ["type"] = "lua", ["value"] = function( wep, viewmodel, ifp ) end, ["client"] = true, ["server"] = true},
---      { ["time"] = 0.1, ["type"] = "sound", ["value"] = Sound("x") }
---  }
--- }
--- [[RENDER TARGET]] --
+--[==[
+SWEP.EventTable = {
+	[ACT_VM_RELOAD] = {
+		{["time"] = 0.1, ["type"] = "lua", ["value"] = function(wep, viewmodel, ifp --[[IsFirstTimePredicted()]]) end, ["client"] = true, ["server"] = true},
+		{["time"] = 0.1, ["type"] = "sound", ["value"] = Sound("x")}
+	}
+}
+]==]
+
+----------------- Render target related
 SWEP.RTMaterialOverride = nil -- Take the material you want out of print(LocalPlayer():GetViewModel():GetMaterials()), subtract 1 from its index, and set it to this.
 SWEP.RTOpaque = false -- Do you want your render target to be opaque?
 SWEP.RTCode = nil -- function(self) return end -- This is the function to draw onto your rendertarget
 SWEP.RTBGBlur = true -- Draw background blur when 3D scope is active?
--- [[AKIMBO]] --
-SWEP.Akimbo = false -- Akimbo gun?  Alternates between primary and secondary attacks.
-SWEP.AnimCycle = 1 -- Start on the right
-SWEP.AkimboHUD = true -- Draw holographic HUD for both weapons?
--- [[ATTACHMENTS]] --
-SWEP.VElements = nil -- Export from SWEP Creation Kit.  For each item that can/will be toggled, set active=false in its individual table
-SWEP.WElements = nil -- Export from SWEP Creation Kit.  For each item that can/will be toggled, set active=false in its individual table
+
+----------------- Akimbo related
+-- AKA Akimbo
+SWEP.IsAkimbo = false -- Akimbo gun?  Alternates between primary and secondary attacks.
+-- AKA AkimboHUD
+SWEP.EnableAkimboHUD = true -- Draw holographic HUD for both weapons?
+
+----------------- Attachments
 SWEP.Attachments = {
-	-- [ORDER] = = { atts = { "si_eotech" }, sel = 0 }
+	--[[
+		[slot number] = {
+			atts = {
+				"si_eotech",
+				-- ...
+			},
+
+			sel = 0
+		}
+	]]
+
 	-- sel allows you to have an attachment pre-selected, and is used internally by the base to show which attachment is selected in each category.
 }
+
 SWEP.AttachmentDependencies = {} -- {["si_acog"] = {"bg_rail", ["type"] = "OR"}} -- type could also be AND to require multiple
 SWEP.AttachmentExclusions = {} -- { ["si_iron"] = { [1] = "bg_heatshield"} }
 SWEP.AttachmentTableOverride = {} --[[{ -- overrides WeaponTable for attachments
 	["ins2_ub_laser"] = { -- attachment id, root of WeaponTable override
-		["VElements"] = {
+		["ViewModelElements"] = {
 			["laser_rail"] = {
 				["active"] = true
 			},
@@ -671,7 +824,7 @@ SWEP.DInv2_Mass = nil -- DInventory/2 Specific. Determines weapon's mass in kilo
 -- [[MISC INFO FOR MODELERS]] --
 --[[
 
-Used Animations (for modelers):
+Utilized animations (for modelers):
 
 ACT_VM_DRAW - Draw
 ACT_VM_DRAW_EMPTY - Draw empty
@@ -699,4 +852,16 @@ ACT_VM_HOLSTER_SILENCED - Holster empty, overwritten by silenced
 ACT_VM_HOLSTER_SILENCED - Holster silenced
 
 ]] --
-DEFINE_BASECLASS( SWEP.Base )
+
+-- Define local BaseClass to be SWEP.Base table
+-- Example usage (AND PROPER ONE!):
+--[[
+function SWEP:Think2(...) -- We're overriding Think2 without touching the main think function, which is called from there anyway
+    BaseClass.Think2(self, ...) -- THE MOST IMPORTANT LINE! It calls the Think2 function of the parent class, which is the base ifself
+
+    -- Your code here.
+end
+]]
+-- Write any code involving `BaseClass` indexing (like above) STRICTLY below DEFINE_BASECLASS(SWEP.Base), otherwise it won't work!
+-- You can do the same with ANY function defined in TFA Base itself, as long as you call BaseClass function
+DEFINE_BASECLASS(SWEP.Base)

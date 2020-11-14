@@ -25,24 +25,21 @@ SWEP.Contact = "theforgottenarchitect"
 SWEP.Purpose = ""
 SWEP.Instructions = ""
 SWEP.DrawCrosshair = true
-SWEP.DrawCrosshairIS = false
+SWEP.DrawCrosshairIronSights = false
 SWEP.ViewModelFOV = 65
 SWEP.ViewModelFlip = false
 SWEP.Skin = 0 --Viewmodel skin
 SWEP.Spawnable = false
 SWEP.IsTFAWeapon = true
 
-SWEP.Shotgun = false
+SWEP.LoopedReload = false
 SWEP.ShotgunEmptyAnim = false
 SWEP.ShotgunEmptyAnim_Shell = true
 SWEP.ShotgunStartAnimShell = false --shotgun start anim inserts shell
-SWEP.ShellTime = nil
 
-SWEP.data = {}
-SWEP.data.ironsights = 1
+SWEP.Secondary.IronSightsEnabled = true
 
-SWEP.MoveSpeed = 1
-SWEP.IronSightsMoveSpeed = nil
+SWEP.RegularMoveSpeedMultiplier = 1
 
 SWEP.FireSoundAffectedByClipSize = true
 
@@ -68,7 +65,6 @@ SWEP.Primary.SpreadMultiplierMax = -1 --How far the spread can expand when you s
 SWEP.Primary.SpreadIncrement = -1 --What percentage of the modifier is added on, per shot.
 SWEP.Primary.SpreadRecovery = -1 --How much the spread recovers, per second.
 SWEP.Primary.IronAccuracy = 0
-SWEP.Primary.MaxPenetration = 100
 SWEP.Primary.Range = -1--1200
 SWEP.Primary.RangeFalloff = -1--0.5
 SWEP.Primary.PenetrationMultiplier = 1
@@ -137,10 +133,10 @@ SWEP.BlowbackAllowAnimation = false
 
 SWEP.ProceduralHolsterEnabled = nil
 SWEP.ProceduralHolsterTime = 0.3
-SWEP.ProceduralHolsterPos = Vector(3, 0, -5)
-SWEP.ProceduralHolsterAng = Vector(-40, -30, 10)
+SWEP.ProceduralHolsterPosition = Vector(3, 0, -5)
+SWEP.ProceduralHolsterAngle = Vector(-40, -30, 10)
 
-SWEP.ProceduralReloadEnabled = false --Do we reload using lua instead of a .mdl animation
+SWEP.IsProceduralReloadBased = false --Do we reload using lua instead of a .mdl animation
 SWEP.ProceduralReloadTime = 1 --Time to take when procedurally reloading, including transition in (but not out)
 
 SWEP.Blowback_PistolMode_Disabled = {
@@ -176,12 +172,12 @@ SWEP.IronSightsSensitivity = 1
 SWEP.InspectPosDef = Vector(9.779, -11.658, -2.241)
 SWEP.InspectAngDef = Vector(24.622, 42.915, 15.477)
 
-SWEP.RunSightsPos = Vector(0,0,0)
-SWEP.RunSightsAng = Vector(0,0,0)
+SWEP.SprintViewModelPosition = Vector(0,0,0)
+SWEP.SprintViewModelAngle = Vector(0,0,0)
 SWEP.AllowSprintAttack = false --Shoot while sprinting?
 
-SWEP.CrouchPos = Vector(0, -1, -.5)
-SWEP.CrouchAng = Vector(0, 0, 0)
+SWEP.CrouchViewModelPosition = Vector(0, -1, -.5)
+SWEP.CrouchViewModelAngle = Vector(0, 0, 0)
 
 SWEP.Primary.RecoilLUT_IronSightsMult = 0.5
 SWEP.Primary.RecoilLUT_AnglePunchMult = 0.25
@@ -194,14 +190,14 @@ SWEP.RTOpaque = false
 SWEP.RTCode = nil--function(self) return end
 SWEP.RTBGBlur = true
 
-SWEP.VMPos = Vector(0,0,0)
-SWEP.VMAng = Vector(0,0,0)
+SWEP.ViewModelPosition = Vector(0,0,0)
+SWEP.ViewModelAngle = Vector(0,0,0)
 SWEP.CameraOffset = Angle(0, 0, 0)
-SWEP.VMPos_Additive = true
+SWEP.AdditiveViewModelPosition = true
 
 SWEP.AllowIronSightsDoF = true
 
-SWEP.DisplayFalloff = true
+SWEP.Primary.DisplayFalloff = true
 
 SWEP.IronAnimation = {
 	--[[
@@ -629,6 +625,8 @@ function SWEP:Initialize()
 
 	self2.HasInitialized = true
 
+	TFA.MigrateStructure(self, self2, self:GetClass())
+
 	hook.Run("TFA_PreInitialize", self)
 
 	self2.DrawCrosshairDefault = self2.DrawCrosshair
@@ -639,6 +637,8 @@ function SWEP:Initialize()
 
 	TFA.UnfoldBaseClass(self2.Primary)
 	TFA.UnfoldBaseClass(self2.Secondary)
+
+	TFA.UnfoldBaseClass(self2.Primary.PenetrationMaterials)
 
 	self2.Primary.BaseClass = nil
 	self2.Secondary.BaseClass = nil
@@ -657,7 +657,6 @@ function SWEP:Initialize()
 	self2.FixRPM(self)
 	self2.FixIdles(self)
 	self2.FixIS(self)
-	self2.FixProceduralReload(self)
 	self2.FixCone(self)
 	self2.FixProjectile(self)
 	self2.AutoDetectMuzzle(self)
@@ -680,7 +679,7 @@ function SWEP:Initialize()
 
 	TFA.UnfoldBaseClass(self2.StatCache_Blacklist)
 	TFA.UnfoldBaseClass(self2.Attachments)
-	TFA.UnfoldBaseClass(self2.VElements)
+	TFA.UnfoldBaseClass(self2.ViewModelElements)
 	TFA.UnfoldBaseClass(self2.ViewModelBoneMods)
 	TFA.UnfoldBaseClass(self2.EventTable)
 
@@ -694,8 +693,8 @@ function SWEP:Initialize()
 
 	self2.InitAttachments(self)
 
-	if not self2.IronSightsMoveSpeed then
-		self2.IronSightsMoveSpeed = self2.MoveSpeed * 0.8
+	if not self2.AimingDownSightsSpeedMultiplier then
+		self2.AimingDownSightsSpeedMultiplier = self2.RegularMoveSpeedMultiplier * 0.8
 	end
 
 	if self2.GetStat(self, "Skin") and isnumber(self2.GetStat(self, "Skin")) then
@@ -854,7 +853,7 @@ function SWEP:Holster(target)
 	stat = self:GetStatus()
 
 	if not TFA.Enum.HolsterStatus[stat] then
-		if stat == TFA.Enum.STATUS_RELOADING_WAIT and self:Clip1() <= self:GetStat("Primary.ClipSize") and (not self:GetStat("DisableChambering")) and (not self:GetStat("Shotgun")) then
+		if stat == TFA.Enum.STATUS_RELOADING_WAIT and self:Clip1() <= self:GetStat("Primary.ClipSize") and (not self:GetStat("Primary.DisableChambering")) and (not self:GetStat("LoopedReload")) then
 			self:ResetFirstDeploy()
 
 			if sp then
@@ -1033,7 +1032,7 @@ function SWEP:PlayerThinkCL(plyv)
 
 	local reloadBlendMult, reloadBlendMult2 = 1, 1
 
-	if not self2.Shotgun and (status == TFA.Enum.STATUS_RELOADING or status == TFA.Enum.STATUS_RELOADING_WAIT) and self2.ReloadAnimationEnd and self2.ReloadAnimationStart then
+	if not self2.LoopedReload and (status == TFA.Enum.STATUS_RELOADING or status == TFA.Enum.STATUS_RELOADING_WAIT) and self2.ReloadAnimationEnd and self2.ReloadAnimationStart then
 		local time = l_CT()
 		local progress = Clamp((time - self2.ReloadAnimationStart) / (self2.ReloadAnimationEnd - self2.ReloadAnimationStart), 0, 1)
 
@@ -1065,20 +1064,20 @@ function SWEP:PlayerThinkCL(plyv)
 
 	local walkt = walk and 1 or 0
 
-	local IronSightsPos = self2.GetStat(self, "IronSightsPos", self2.SightsPos)
-	local IronSightsAng = self2.GetStat(self, "IronSightsAng", self2.SightsAng)
+	local IronSightsPosition = self2.GetStat(self, "IronSightsPosition", self2.SightsPos)
+	local IronSightsAngle = self2.GetStat(self, "IronSightsAngle", self2.SightsAng)
 
-	if IronSightsPos then
-		self2.IronSightsPosCurrent = self2.IronSightsPosCurrent or Vector(IronSightsPos)
-		self2.IronSightsAngCurrent = self2.IronSightsAngCurrent or Vector(IronSightsAng)
+	if IronSightsPosition then
+		self2.IronSightsPositionCurrent = self2.IronSightsPositionCurrent or Vector(IronSightsPosition)
+		self2.IronSightsAngleCurrent = self2.IronSightsAngleCurrent or Vector(IronSightsAngle)
 
-		self2.IronSightsPosCurrent.x = Lerp(ft * 11, self2.IronSightsPosCurrent.x, IronSightsPos.x)
-		self2.IronSightsPosCurrent.y = Lerp(ft * 11, self2.IronSightsPosCurrent.y, IronSightsPos.y)
-		self2.IronSightsPosCurrent.z = Lerp(ft * 11, self2.IronSightsPosCurrent.z, IronSightsPos.z)
+		self2.IronSightsPositionCurrent.x = Lerp(ft * 11, self2.IronSightsPositionCurrent.x, IronSightsPosition.x)
+		self2.IronSightsPositionCurrent.y = Lerp(ft * 11, self2.IronSightsPositionCurrent.y, IronSightsPosition.y)
+		self2.IronSightsPositionCurrent.z = Lerp(ft * 11, self2.IronSightsPositionCurrent.z, IronSightsPosition.z)
 
-		self2.IronSightsAngCurrent.x = Lerp(ft * 11, self2.IronSightsAngCurrent.x, self2.IronSightsAngCurrent.x - math.AngleDifference(self2.IronSightsAngCurrent.x, IronSightsAng.x))
-		self2.IronSightsAngCurrent.y = Lerp(ft * 11, self2.IronSightsAngCurrent.y, self2.IronSightsAngCurrent.y - math.AngleDifference(self2.IronSightsAngCurrent.y, IronSightsAng.y))
-		self2.IronSightsAngCurrent.z = Lerp(ft * 11, self2.IronSightsAngCurrent.z, self2.IronSightsAngCurrent.z - math.AngleDifference(self2.IronSightsAngCurrent.z, IronSightsAng.z))
+		self2.IronSightsAngleCurrent.x = Lerp(ft * 11, self2.IronSightsAngleCurrent.x, self2.IronSightsAngleCurrent.x - math.AngleDifference(self2.IronSightsAngleCurrent.x, IronSightsAngle.x))
+		self2.IronSightsAngleCurrent.y = Lerp(ft * 11, self2.IronSightsAngleCurrent.y, self2.IronSightsAngleCurrent.y - math.AngleDifference(self2.IronSightsAngleCurrent.y, IronSightsAngle.y))
+		self2.IronSightsAngleCurrent.z = Lerp(ft * 11, self2.IronSightsAngleCurrent.z, self2.IronSightsAngleCurrent.z - math.AngleDifference(self2.IronSightsAngleCurrent.z, IronSightsAngle.z))
 	end
 
 	local adstransitionspeed = is and (12.5 / (self:GetStat("IronSightTime") / 0.3)) or (spr or walk) and 7.5 or 12.5
@@ -1304,9 +1303,9 @@ function SWEP:IronSightSounds()
 	if SERVER or IsFirstTimePredicted() then
 		if is ~= self2.is_sndcache_old and hook.Run("TFA_IronSightSounds", self) == nil then
 			if is then
-				self:EmitSound(self:GetStat("IronInSound", "TFA.IronIn"))
+				self:EmitSound(self:GetStat("Secondary.IronSightsInSound", "TFA.IronIn"))
 			else
-				self:EmitSound(self:GetStat("IronOutSound", "TFA.IronOut"))
+				self:EmitSound(self:GetStat("Secondary.IronSightsOutSound", "TFA.IronOut"))
 			end
 		end
 
@@ -1334,7 +1333,7 @@ function SWEP:CanPrimaryAttack()
 	stat = self:GetStatus()
 
 	if not TFA.Enum.ReadyStatus[stat] and stat ~= TFA.Enum.STATUS_SHOOTING then
-		if self2.Shotgun and TFA.Enum.ReloadStatus[stat] then
+		if self2.LoopedReload and TFA.Enum.ReloadStatus[stat] then
 			self:SetReloadLoopCancel(true)
 		end
 
@@ -1388,7 +1387,7 @@ function SWEP:CanPrimaryAttack()
 		return false
 	end
 
-	if self2.FiresUnderwater == false and self:GetOwner():WaterLevel() >= 3 then
+	if self2.GetStat(self, "Primary.FiresUnderwater") == false and self:GetOwner():WaterLevel() >= 3 then
 		self:SetNextPrimaryFire(l_CT() + 0.5)
 		self:EmitSound(self:GetStat("Primary.Sound_Blocked"))
 		return false
@@ -1473,7 +1472,7 @@ function SWEP:EmitLowAmmoSound()
 	local mult = clip1 / maxclip1
 	if mult >= self2.LowAmmoSoundThreshold or mult <= 0 then return end
 
-	local soundname = ((clip1 - (self:GetStat("Primary.AmmoConsumption", 1) * (self:GetStat("Akimbo") and 2 or 1))) <= 0) and self:GetStat("LastAmmoSound", "") or self:GetStat("LowAmmoSound", "")
+	local soundname = ((clip1 - (self:GetStat("Primary.AmmoConsumption", 1) * (self:GetStat("IsAkimbo") and 2 or 1))) <= 0) and self:GetStat("LastAmmoSound", "") or self:GetStat("LowAmmoSound", "")
 
 	if soundname and soundname ~= "" then
 		self2.GonnaAdjustVol = true
@@ -1614,7 +1613,7 @@ function SWEP:SecondaryAttack()
 
 	if hook.Run("TFA_SecondaryAttack", self) then return end
 
-	if self:GetStat("data.ironsights", 0) == 0 and self.AltAttack and self:GetOwner():IsPlayer() then
+	if self:GetStat("Secondary.IronSightsEnabled", false) and self.AltAttack and self:GetOwner():IsPlayer() then
 		self:AltAttack()
 		self:PostSecondaryAttack()
 		return
@@ -1680,7 +1679,7 @@ function SWEP:Reload(released)
 			if hook.Run("TFA_Reload", self) then return end
 			self:SetBurstCount(0)
 
-			if self2.Shotgun then
+			if self2.LoopedReload then
 				local _, tanim, ttype = self:ChooseShotgunReloadAnim()
 
 				if self:GetStat("ShotgunStartAnimShell") then
@@ -1713,7 +1712,7 @@ function SWEP:Reload(released)
 
 				self:SetStatus(TFA.Enum.STATUS_RELOADING)
 
-				if self:GetStat("ProceduralReloadEnabled") then
+				if self:GetStat("IsProceduralReloadBased") then
 					self:SetStatusEnd(ct + self:GetStat("ProceduralReloadTime"))
 				else
 					self:SetStatusEnd(ct + self:GetActivityLength(tanim, true, ttype))
@@ -1777,7 +1776,7 @@ function SWEP:Reload2(released)
 		end
 	elseif TFA.Enum.ReadyStatus[stat] or ( stat == TFA.Enum.STATUS_SHOOTING and self:CanInterruptShooting() ) then
 		if self:Clip2() < self:GetSecondaryClipSize() then
-			if self2.Shotgun then
+			if self2.LoopedReload then
 				local _, tanim, ttype = self:ChooseShotgunReloadAnim()
 
 				if self2.ShotgunEmptyAnim  then
@@ -1808,7 +1807,7 @@ function SWEP:Reload2(released)
 
 				self:SetStatus(TFA.Enum.STATUS_RELOADING)
 
-				if self:GetStat("ProceduralReloadEnabled") then
+				if self:GetStat("IsProceduralReloadBased") then
 					self:SetStatusEnd(ct + self:GetStat("ProceduralReloadTime"))
 				else
 					self:SetStatusEnd(ct + self:GetActivityLength(tanim, true, ttype))
@@ -1854,7 +1853,7 @@ function SWEP:LoadShell()
 	if self:GetActivityLength(tanim,true) < self:GetActivityLength(tanim, false, ttype) then
 		self:SetStatusEnd(ct + self:GetActivityLength(tanim, true, ttype))
 	else
-		local sht = self:GetStat("ShellTime")
+		local sht = self:GetStat("LoopedReloadInsertTime")
 		if sht then sht = sht / self:GetAnimationRate(ACT_VM_RELOAD) end
 		self:SetStatusEnd(ct + ( sht or self:GetActivityLength(tanim, true, ttype)))
 	end
@@ -1933,14 +1932,15 @@ function SWEP:AdjustMouseSensitivity()
 		sensval = sensval * sensitivity_cvar:GetFloat() / 100
 
 		if sensitivity_fov_cvar:GetBool() then
-			fovv = self:GetStat("Secondary.IronFOV") or 70
+			fovv = self:GetStat("Secondary.OwnerFOV") or 70
 			sensval = sensval * TFA.CalculateSensitivtyScale( fovv, nil, 1 )
 		else
 			sensval = sensval
 		end
 
 		if sensitivity_speed_cvar:GetFloat() then
-			sensval = sensval * self:GetStat("IronSightsMoveSpeed")
+			-- weapon heaviness
+			sensval = sensval * self:GetStat("AimingDownSightsSpeedMultiplier")
 		end
 	end
 
@@ -1966,7 +1966,7 @@ function SWEP:TranslateFOV(fov)
 
 	self:CorrectScopeFOV()
 
-	local nfov = l_Lerp(self2.IronSightsProgressUnpredicted3 or self:GetIronSightsProgress(), fov, fov * math.min(self:GetStat("Secondary.IronFOV") / 90, 1))
+	local nfov = l_Lerp(self2.IronSightsProgressUnpredicted3 or self:GetIronSightsProgress(), fov, fov * math.min(self:GetStat("Secondary.OwnerFOV") / 90, 1))
 	local ret = l_Lerp(self2.SprintProgressUnpredicted or self:GetSprintProgress(), nfov, nfov + self2.SprintFOVOffset)
 
 	if self:OwnerIsValid() and not self2.IsMelee then
@@ -2155,24 +2155,30 @@ function SWEP:OnReloaded()
 	timer.Simple(0, function()
 		if not self:IsValid() then return end
 
-		local baseclassSelf = baseclass.Get(self:GetClass())
+		local baseclassSelf = table.Copy(baseclass.Get(self:GetClass()))
 		if not baseclassSelf then return end
 
-		self.Primary_TFA.RangeFalloffLUTBuilt = nil
-		self.Primary.RangeFalloffLUTBuilt = nil
+		local self2 = self:GetTable()
+
+		self2.Primary_TFA.RangeFalloffLUTBuilt = nil
+		self2.Primary.RangeFalloffLUTBuilt = nil
+
+		TFA.MigrateStructure(self, baseclassSelf, self:GetClass())
+		TFA.MigrateStructure(self, self2, self:GetClass())
 
 		if istable(baseclassSelf.Primary) then
-			self.Primary_TFA = table.Copy(baseclassSelf.Primary)
+			self2.Primary_TFA = table.Copy(baseclassSelf.Primary)
+			TFA.UnfoldBaseClass(baseclassSelf.Primary)
 		end
 
 		if istable(baseclassSelf.Secondary) then
-			self.Secondary_TFA = table.Copy(baseclassSelf.Secondary)
+			self2.Secondary_TFA = table.Copy(baseclassSelf.Secondary)
+			TFA.UnfoldBaseClass(baseclassSelf.Secondary)
 		end
 
-		self.event_table_warning = false
-		self.event_table_built = false
+		self2.event_table_warning = false
+		self2.event_table_built = false
 
-		local self2 = self:GetTable()
 		self2.AutoDetectMuzzle(self)
 		self2.AutoDetectDamage(self)
 		self2.AutoDetectDamageType(self)

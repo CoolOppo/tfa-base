@@ -117,9 +117,9 @@ local sv_tfa_bullet_randomseed = GetConVar("sv_tfa_bullet_randomseed")
 
 local randomseed = "tfa_" .. tostring({})
 
-SWEP.SpreadPattern = ""
-SWEP.SpreadBiasYaw = 1
-SWEP.SpreadBiasPitch = 1
+SWEP.Primary.SpreadPattern = ""
+SWEP.Primary.SpreadBiasYaw = 1
+SWEP.Primary.SpreadBiasPitch = 1
 
 -- Default ComputeBulletDeviation implementation
 -- Custom implementations should return two numbers
@@ -135,9 +135,9 @@ function SWEP:ComputeBulletDeviation(bulletNum, totalBullets, aimcone)
 
 	return
 		-- Yaw
-		util.SharedRandom(sharedRandomSeed, -aimcone * 45 * self:GetStat("SpreadBiasYaw"), aimcone * 45 * self:GetStat("SpreadBiasYaw"), totalBullets + 1 + bulletNum),
+		util.SharedRandom(sharedRandomSeed, -aimcone * 45 * self:GetStat("Primary.SpreadBiasYaw"), aimcone * 45 * self:GetStat("Primary.SpreadBiasYaw"), totalBullets + 1 + bulletNum),
 		-- Pitch
-		util.SharedRandom(sharedRandomSeed, -aimcone * 45 * self:GetStat("SpreadBiasPitch"), aimcone * 45 * self:GetStat("SpreadBiasPitch"), bulletNum)
+		util.SharedRandom(sharedRandomSeed, -aimcone * 45 * self:GetStat("Primary.SpreadBiasPitch"), aimcone * 45 * self:GetStat("Primary.SpreadBiasPitch"), bulletNum)
 end
 
 function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet, bulletoverride)
@@ -402,7 +402,7 @@ function SWEP:Recoil(recoil, ifp)
 	local factor = 1 - self:GetStat("Primary.StaticRecoilFactor")
 
 	if self:GetIronSights() then
-		factor = factor * Lerp(self:GetIronSightsProgress(), 1, self:GetStat("IronRecoilMultiplier", 0.5))
+		factor = factor * Lerp(self:GetIronSightsProgress(), 1, self:GetStat("Primary.IronRecoilMultiplier", 0.5))
 	end
 
 	factor = factor * Lerp(self:GetCrouchingRatio(), 1, self:GetStat("CrouchAccuracyMultiplier", 0.5))
@@ -535,7 +535,7 @@ Notes:  Should be used with GetMaterialConcise.
 Purpose:  Utility
 ]]
 --
-SWEP.PenetrationMaterials = {
+SWEP.Primary.PenetrationMaterials = {
 	[MAT_DEFAULT] = 1,
 	[MAT_VENT] = 0.4, --Since most is aluminum and stuff
 	[MAT_METAL] = 0.6, --Since most is aluminum and stuff
@@ -553,7 +553,7 @@ SWEP.PenetrationMaterials = {
 local fac
 
 function SWEP:GetPenetrationMultiplier(mat)
-	fac = self.PenetrationMaterials[mat or MAT_DEFAULT] or self.PenetrationMaterials[MAT_DEFAULT]
+	fac = self.Primary.PenetrationMaterials[mat or MAT_DEFAULT] or self.Primary.PenetrationMaterials[MAT_DEFAULT]
 
 	return fac * (self:GetStat("Primary.PenetrationMultiplier") and self:GetStat("Primary.PenetrationMultiplier") or 1)
 end
@@ -744,7 +744,7 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon, penetrated, p
 	end
 
 	if penetration_cvar and not penetration_cvar:GetBool() then return end
-	if self.PenetrationCount > math.min(penetration_max_cvar:GetInt(100), weapon.Primary.MaxPenetration) then return end
+	if self.PenetrationCount > math.min(penetration_max_cvar:GetInt(100), weapon:GetStat("Primary.MaxSurfacePenetrationCount", math.huge)) then return end
 	-- source engine quirk - if bullet is fired too close to brush surface
 	-- it is assumed to be fired right in front of it, rather than exact
 	-- position you specified.
@@ -1002,7 +1002,7 @@ local RicochetChanceEnum = {
 
 function SWEP.MainBullet:Ricochet(ply, traceres, dmginfo, weapon)
 	if ricochet_cvar and not ricochet_cvar:GetBool() then return end
-	maxpen = math.min(penetration_max_cvar and penetration_max_cvar:GetInt() - 1 or 1, weapon.Primary.MaxPenetration)
+	maxpen = math.min(penetration_max_cvar and penetration_max_cvar:GetInt() - 1 or 1, weapon:GetStat("Primary.MaxSurfacePenetrationCount", math.huge))
 	if self.PenetrationCount > maxpen then return end
 	local ricochetchance = RicochetChanceEnum[traceres.MatType] or RicochetChanceEnum[MAT_DEFAULT]
 	local dir = traceres.HitPos - traceres.StartPos

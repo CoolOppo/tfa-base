@@ -108,7 +108,7 @@ function SWEP:CalcView(ply, pos, ang, fov)
 		targbool = targbool and not (ihols and self2.GetStat(self, "ProceduralHolsterEnabled"))
 		targint = targbool and 1 or 0
 
-		if stat == TFA.Enum.STATUS_RELOADING_LOOP_END or stat == TFA.Enum.STATUS_RELOADING or stat == TFA.Enum.STATUS_PUMP or (stat == TFA.Enum.STATUS_RELOADING_WAIT and not self2.Shotgun) or stat == TFA.Enum.STATUS_SHOOTING or (idraw and vb_d) then
+		if stat == TFA.Enum.STATUS_RELOADING_LOOP_END or stat == TFA.Enum.STATUS_RELOADING or stat == TFA.Enum.STATUS_PUMP or (stat == TFA.Enum.STATUS_RELOADING_WAIT and not self2.LoopedReload) or stat == TFA.Enum.STATUS_SHOOTING or (idraw and vb_d) then
 			targint = math.min(targint, 1 - math.pow(math.max(vm:GetCycle() - 0.5, 0) * 2, 2))
 		end
 

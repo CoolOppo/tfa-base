@@ -30,7 +30,7 @@ ATTACHMENT.Icon = "entities/tfa_si_aimpoint.png" --Revers to label, please give 
 ATTACHMENT.ShortName = "AIM"
 
 ATTACHMENT.WeaponTable = {
-	["VElements"] = {
+	["ViewModelElements"] = {
 		["aimpoint"] = {
 			["active"] = true
 		},
@@ -38,7 +38,7 @@ ATTACHMENT.WeaponTable = {
 			["active"] = true
 		}
 	},
-	["WElements"] = {
+	["WorldModelElements"] = {
 		["aimpoint"] = {
 			["active"] = true
 		},
@@ -46,10 +46,10 @@ ATTACHMENT.WeaponTable = {
 			["active"] = true
 		}
 	},
-	["IronSightsPos"] = function( wep, val ) return wep.IronSightsPos_AimPoint or val, true end,
-	["IronSightsAng"] = function( wep, val ) return wep.IronSightsAng_AimPoint or val, true end,
+	["IronSightsPosition"] = function( wep, val ) return wep.IronSightsPos_AimPoint or val, true end,
+	["IronSightsAngle"] = function( wep, val ) return wep.IronSightsAng_AimPoint or val, true end,
 	["Secondary"] = {
-		["IronFOV"] = function( wep, val ) return val * 0.9 end
+		["OwnerFOV"] = function( wep, val ) return val * 0.9 end
 	},
 	["IronSightTime"] = function( wep, val ) return val * 1.10 end
 }

@@ -45,12 +45,12 @@ local function LerpBoneMods( t, b1, b2 )
 end
 
 ATTACHMENT.WeaponTable = {
-	["VElements"] = {
+	["ViewModelElements"] = {
 		["foregrip"] = {
 			["active"] = true
 		}
 	},
-	["WElements"] = {
+	["WorldModelElements"] = {
 		["foregrip"] = {
 			["active"] = true
 		}

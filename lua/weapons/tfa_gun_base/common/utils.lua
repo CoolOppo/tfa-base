@@ -53,21 +53,21 @@ SWEP.SensitivtyFunctions = {
 	[0] = function() return 1 end,
 	[1] = function(self, ...)
 		if self:GetStat("Secondary.ScopeZoom") then
-			return TFA.CalculateSensitivtyScale(90 / self:GetStat("Secondary.ScopeZoom"), self:GetStat("Secondary.IronFOV"), self.Secondary_TFA.ScopeScreenScale or 0.392592592592592)
+			return TFA.CalculateSensitivtyScale(90 / self:GetStat("Secondary.ScopeZoom"), self:GetStat("Secondary.OwnerFOV"), self.Secondary_TFA.ScopeScreenScale or 0.392592592592592)
 		else
 			return self.SensitivtyFunctions[2](self, ...)
 		end
 	end,
 	[2] = function(self, ...)
 		if self:GetStat("RTScopeFOV") then
-			return TFA.CalculateSensitivtyScale(self:GetStat("RTScopeFOV"), self:GetStat("Secondary.IronFOV"), self.Secondary_TFA.ScopeScreenScale or 0.392592592592592)
+			return TFA.CalculateSensitivtyScale(self:GetStat("RTScopeFOV"), self:GetStat("Secondary.OwnerFOV"), self.Secondary_TFA.ScopeScreenScale or 0.392592592592592)
 		else
 			return self.SensitivtyFunctions[0](self, ...)
 		end
 	end,
 	[3] = function(self, ...)
 		if self:GetStat("RTScopeFOV") then
-			return TFA.CalculateSensitivtyScale(self:GetStat("RTScopeFOV"), self:GetStat("Secondary.IronFOV"), 1)
+			return TFA.CalculateSensitivtyScale(self:GetStat("RTScopeFOV"), self:GetStat("Secondary.OwnerFOV"), 1)
 		else
 			return self.SensitivtyFunctions[0](self, ...)
 		end
@@ -308,7 +308,7 @@ function SWEP:CanChamber()
 	if self.C_CanChamber ~= nil then
 		return self.C_CanChamber
 	else
-		self.C_CanChamber = not self:GetStat("BoltAction") and not self.Shotgun and not self.Revolver and not self:GetStat("DisableChambering")
+		self.C_CanChamber = not self:GetStat("BoltAction") and not self.LoopedReload and not self.Revolver and not self:GetStat("Primary.DisableChambering")
 
 		return self.C_CanChamber
 	end
@@ -318,7 +318,7 @@ function SWEP:GetPrimaryClipSize(calc)
 	local targetclip = self:GetStat("Primary.ClipSize")
 
 	if self:CanChamber() and not (calc and self:Clip1() <= 0) then
-		targetclip = targetclip + (self:GetStat("Akimbo") and 2 or 1)
+		targetclip = targetclip + (self:GetStat("IsAkimbo") and 2 or 1)
 	end
 
 	return math.max(targetclip, -1)
@@ -328,7 +328,7 @@ function SWEP:GetPrimaryClipSizeForReload(calc)
 	local targetclip = self:GetStat("Primary.ClipSize")
 
 	if self:CanChamber() and not (calc and self:Clip1() <= 0) and not self:IsJammed() then
-		targetclip = targetclip + (self:GetStat("Akimbo") and 2 or 1)
+		targetclip = targetclip + (self:GetStat("IsAkimbo") and 2 or 1)
 	end
 
 	return math.max(targetclip, -1)
@@ -591,7 +591,7 @@ function SWEP:GetMuzzleAttachment()
 	local vmod = self.OwnerViewModel
 	local att = math.max(1, self.MuzzleAttachmentRaw or (sp and vmod or self):LookupAttachment(self.MuzzleAttachment))
 
-	if self:GetStat("Akimbo") then
+	if self:GetStat("IsAkimbo") then
 		att = 1 + self:GetAnimCycle()
 	end
 
@@ -667,7 +667,7 @@ function SWEP:GetFireModeName()
 			if (self:GetStat("BoltAction")) then
 				return language.GetPhrase("tfa.firemode.bolt")
 			else
-				if (self.Shotgun and self:GetStat("Primary.RPM") < 250) then
+				if (self.LoopedReload and self:GetStat("Primary.RPM") < 250) then
 					return language.GetPhrase("tfa.firemode.pump")
 				else
 					return language.GetPhrase("tfa.firemode.semi")

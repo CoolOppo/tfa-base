@@ -79,8 +79,8 @@ SWEP.StatCache_Blacklist = {
 	["MaterialTable"] = true,
 	["MaterialTable_V"] = true,
 	["MaterialTable_W"] = true,
-	["Bodygroups_V"] = true,
-	["Bodygroups_W"] = true,
+	["ViewModelBodygroups"] = true,
+	["WorldModelBodygroups"] = true,
 	["Skin"] = true
 }
 
@@ -242,27 +242,7 @@ end
 local ccv = GetConVar("cl_tfa_debug_cache")
 
 function SWEP:GetStatPath(stat)
-	local self2 = self:GetTable()
-
-	if self2.StatStringCache[stat] ~= nil then return self2.StatStringCache[stat] end
-
-	local t_stbl = string.Explode(".", stat, false)
-
-	if t_stbl[1] == "Primary" then
-		t_stbl[1] = "Primary_TFA"
-	end
-
-	if t_stbl[1] == "Secondary" then
-		t_stbl[1] = "Secondary_TFA"
-	end
-
-	for k, v in ipairs(t_stbl) do
-		t_stbl[k] = tonumber(v) or v
-	end
-
-	self2.StatStringCache[stat] = t_stbl
-
-	return self2.StatStringCache[stat]
+	return TFA.GetStatPath(stat)
 end
 
 function SWEP:GetStat(stat, default, dontMergeTables)

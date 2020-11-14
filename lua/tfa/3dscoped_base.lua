@@ -58,7 +58,7 @@ function SWEP:UpdateScopeType(force)
 		if target.ScopeZoom_Backup then
 			target.ScopeZoom = target.ScopeZoom_Backup
 		else
-			target.ScopeZoom = 90 / self:GetStat("Secondary.IronFOV")
+			target.ScopeZoom = 90 / self:GetStat("Secondary.IronFOV", self:GetStat("Secondary.OwnerFOV")) -- M9K/Older TFA Base compatibility
 		end
 
 		if self.BoltAction_3D then
@@ -83,7 +83,7 @@ function SWEP:UpdateScopeType(force)
 		if self.BoltAction then
 			self.BoltAction_3D = true
 			self.BoltAction = self.BoltAction_Forced or false
-			self.DisableChambering = true
+			self.Primary.DisableChambering = true
 			self.FireModeName = "tfa.firemode.bolt"
 		end
 

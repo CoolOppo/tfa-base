@@ -50,7 +50,7 @@ SWEP.Primary.Ammo = "" -- pistol, 357, smg1, ar2, buckshot, slam, SniperPenetrat
 SWEP.Primary.ClipSize = 1 -- Size of a clip
 SWEP.Primary.DefaultClip = 1 -- Bullets you start with
 SWEP.data = {} --No ironsights
-SWEP.data.ironsights = 0 --No ironsights
+SWEP.Secondary.IronSightsEnabled = false --No ironsights
 SWEP.IsMelee = true
 
 SWEP.HullData = {

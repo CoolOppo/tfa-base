@@ -61,7 +61,7 @@ function ATTACHMENT:RTCode(wep, rt, scrw, scrh)
 	local vm = wep.OwnerViewModel
 
 	local ang = vm:GetAngles()
-	ang:RotateAroundAxis(ang:Forward(), -wep:GetStat("IronSightsAng").z)
+	ang:RotateAroundAxis(ang:Forward(), -wep:GetStat("IronSightsAngle").z)
 
 	local scopeAtt = wep:GetStat("RTScopeAttachment", -1)
 

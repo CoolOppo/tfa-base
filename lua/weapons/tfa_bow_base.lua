@@ -36,8 +36,7 @@ SWEP.Secondary.Cancel = true --enable cancelling
 SWEP.ChargeRate = 30 / 75 --1 is fully charged
 SWEP.ChargeThreshold = 0.75 --minimum charge percent to fire
 SWEP.ShakeTime = 5 --minimum time to start shaking
-SWEP.data = SWEP.data or {}
-SWEP.data.ironsights = 0
+SWEP.Secondary.IronSightsEnabled = false
 --tfa ballistics integration
 SWEP.UseBallistics = true
 SWEP.BulletModel = "models/weapons/w_tfa_arrow.mdl"

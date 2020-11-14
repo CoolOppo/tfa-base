@@ -94,7 +94,7 @@ function SWEP:GetShellAttachmentID(ent, isVM)
 		attid = ent:LookupAttachment(self:GetStat("ShellAttachment"))
 	end
 
-	if self:GetStat("Akimbo") and not israw then
+	if self:GetStat("IsAkimbo") and not israw then
 		return 3 + self:GetAnimCycle()
 	end
 

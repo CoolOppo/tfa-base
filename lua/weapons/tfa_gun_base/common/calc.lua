@@ -77,7 +77,7 @@ function SWEP:TFAFinishMove(ply, velocity, movedata)
 		self:SetSprinting(false)
 	end
 
-	self:SetWalking(vellen > ((isply and ply:GetWalkSpeed() or TFA.GUESS_NPC_WALKSPEED) * self:GetStat("MoveSpeed", 1) * .75) and ply:GetNW2Bool("TFA_IsWalking") and ply:OnGround() and not self:GetSprinting() and not self:GetCustomizing())
+	self:SetWalking(vellen > ((isply and ply:GetWalkSpeed() or TFA.GUESS_NPC_WALKSPEED) * self:GetStat("RegularMoveSpeedMultiplier", 1) * .75) and ply:GetNW2Bool("TFA_IsWalking") and ply:OnGround() and not self:GetSprinting() and not self:GetCustomizing())
 
 	self2.walking_updated = oldwalking ~= self:GetWalking()
 	self2.sprinting_updated = oldsprinting ~= self:GetSprinting()
@@ -194,7 +194,7 @@ function SWEP:CalculateRatios()
 	self2.CLIronSightsProgress = self:GetIronSightsProgress() --compatibility
 end
 
-SWEP.IronRecoilMultiplier = 0.5 --Multiply recoil by this factor when we're in ironsights.  This is proportional, not inversely.
+SWEP.Primary.IronRecoilMultiplier = 0.5 --Multiply recoil by this factor when we're in ironsights.  This is proportional, not inversely.
 SWEP.CrouchRecoilMultiplier = 0.65 --Multiply recoil by this factor when we're crouching.  This is proportional, not inversely.
 SWEP.JumpRecoilMultiplier = 1.3 --Multiply recoil by this factor when we're crouching.  This is proportional, not inversely.
 SWEP.WallRecoilMultiplier = 1.1 --Multiply recoil by this factor when we're changing state e.g. not completely ironsighted.  This is proportional, not inversely.
@@ -227,10 +227,10 @@ function SWEP:CalculateConeRecoil()
 
 	if dynacc then
 		ccon = l_Lerp(isr_2, l_Lerp(isr_1, acv, acv * self2.GetStat(self, "ChangeStateAccuracyMultiplier")), self2.GetStat(self, "Primary.IronAccuracy"))
-		crec = l_Lerp(isr_2, l_Lerp(isr_1, recv, recv * self2.GetStat(self, "ChangeStateRecoilMultiplier")), recv * self2.GetStat(self, "IronRecoilMultiplier"))
+		crec = l_Lerp(isr_2, l_Lerp(isr_1, recv, recv * self2.GetStat(self, "ChangeStateRecoilMultiplier")), recv * self2.GetStat(self, "Primary.IronRecoilMultiplier"))
 	else
 		ccon = l_Lerp(isr, acv, self2.GetStat(self, "Primary.IronAccuracy"))
-		crec = l_Lerp(isr, recv, recv * self2.GetStat(self, "IronRecoilMultiplier"))
+		crec = l_Lerp(isr, recv, recv * self2.GetStat(self, "Primary.IronRecoilMultiplier"))
 	end
 
 	local crc_1 = l_mathClamp(self:GetCrouchingRatio() * 2, 0, 1)

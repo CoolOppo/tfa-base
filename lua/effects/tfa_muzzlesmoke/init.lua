@@ -70,7 +70,7 @@ function EFFECT:Init(data)
 		end
 
 		e.SmokePCF = e.SmokePCF or {}
-		local _a = w:GetStat("Akimbo") and a or 1
+		local _a = w:GetStat("IsAkimbo") and a or 1
 
 		if IsValid(e.SmokePCF[_a]) then
 			e.SmokePCF[_a]:StopEmission()

@@ -87,7 +87,7 @@ function SWEP:WalkBob(pos, ang, breathIntensity, walkIntensity, rate, ftv)
 	self2.ti = self2.ti + delta * rate
 
 	if self2.SprintStyle == nil then
-		if self2.RunSightsAng and self2.RunSightsAng.x > 5 then
+		if self2.SprintViewModelAngle and self2.SprintViewModelAngle.x > 5 then
 			self2.SprintStyle = 1
 		else
 			self2.SprintStyle = 0

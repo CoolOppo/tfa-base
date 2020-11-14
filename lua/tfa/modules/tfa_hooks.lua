@@ -282,7 +282,7 @@ local function FinishMove(ply, cmovedata)
 
 	local scale_dividier = GetTimeScale() * (sv_cheats:GetBool() and host_timescale:GetFloat() or 1)
 
-	if wepv:GetStat("data.ironsights") ~= 0 then
+	if wepv:GetStat("Secondary.IronSightsEnabled", false) then
 		if band(changed, IN_ATTACK2) == IN_ATTACK2 then
 			local deltaPress = (time - wepv:GetLastIronSightsPressed()) / scale_dividier
 
@@ -380,7 +380,7 @@ hook.Add("SetupMove", "tfa_setupmove", function(plyv, movedata, commanddata)
 	local wepv = plyv:GetActiveWeapon()
 
 	if IsValid(wepv) and wepv.IsTFAWeapon then
-		speedmult = Lerp(wepv:GetIronSightsProgress(), wepv:GetStat("MoveSpeed"), wepv:GetStat("IronSightsMoveSpeed"))
+		speedmult = Lerp(wepv:GetIronSightsProgress(), wepv:GetStat("RegularMoveSpeedMultiplier"), wepv:GetStat("AimingDownSightsSpeedMultiplier"))
 		movedata:SetMaxClientSpeed(movedata:GetMaxClientSpeed() * speedmult)
 		commanddata:SetForwardMove(commanddata:GetForwardMove() * speedmult)
 		commanddata:SetSideMove(commanddata:GetSideMove() * speedmult)

@@ -544,8 +544,8 @@ function SWEP:GenerateVGUIAttachmentTable()
 end
 
 local bgt = {}
-SWEP.Bodygroups_V = {}
-SWEP.Bodygroups_W = {}
+SWEP.ViewModelBodygroups = {}
+SWEP.WorldModelBodygroups = {}
 
 function SWEP:IterateBodygroups(entity, tablename)
 	local self2 = self:GetTable()
@@ -572,23 +572,23 @@ function SWEP:ProcessBodygroups()
 
 	if not self2.HasFilledBodygroupTables then
 		if self2.VMIV(self) then
-			for i = 0, #(self2.OwnerViewModel:GetBodyGroups() or self2.Bodygroups_V) do
-				self2.Bodygroups_V[i] = self2.Bodygroups_V[i] or 0
+			for i = 0, #(self2.OwnerViewModel:GetBodyGroups() or self2.ViewModelBodygroups) do
+				self2.ViewModelBodygroups[i] = self2.ViewModelBodygroups[i] or 0
 			end
 		end
 
-		for i = 0, #(self:GetBodyGroups() or self2.Bodygroups_W) do
-			self2.Bodygroups_W[i] = self2.Bodygroups_W[i] or 0
+		for i = 0, #(self:GetBodyGroups() or self2.WorldModelBodygroups) do
+			self2.WorldModelBodygroups[i] = self2.WorldModelBodygroups[i] or 0
 		end
 
 		self2.HasFilledBodygroupTables = true
 	end
 
 	if self2.VMIV(self) then
-		self2.IterateBodygroups(self, self2.OwnerViewModel, "Bodygroups_V")
+		self2.IterateBodygroups(self, self2.OwnerViewModel, "ViewModelBodygroups")
 	end
 
-	self2.IterateBodygroups(self, self, "Bodygroups_W")
+	self2.IterateBodygroups(self, self, "WorldModelBodygroups")
 end
 
 function SWEP:CallAttFunc(funcName, ...)

@@ -107,10 +107,7 @@ function SWEP:AutoDetectRange()
 end
 
 function SWEP:FixProceduralReload()
-	local self2 = self:GetTable()
-	if self2.DoProceduralReload then
-		self2.ProceduralReloadEnabled = true
-	end
+	-- do nothing
 end
 
 function SWEP:FixRPM()
@@ -145,9 +142,9 @@ end
 
 function SWEP:FixIS()
 	local self2 = self:GetTable()
-	if self2.SightsPos and (not self2.IronSightsPos or (self2.IronSightsPos.x ~= self2.SightsPos.x and self2.SightsPos.x ~= 0)) then
-		self2.IronSightsPos = self2.SightsPos or Vector()
-		self2.IronSightsAng = self2.SightsAng or Vector()
+	if self2.SightsPos and (not self2.IronSightsPosition or (self2.IronSightsPosition.x ~= self2.SightsPos.x and self2.SightsPos.x ~= 0)) then
+		self2.IronSightsPosition = self2.SightsPos or Vector()
+		self2.IronSightsAngle = self2.SightsAng or Vector()
 	end
 end
 
@@ -192,7 +189,7 @@ function SWEP:AutoDetectMuzzle()
 			self2.MuzzleFlashEffect = "tfa_muzzleflash_silenced"
 		elseif string.find(a, "357") or self2.Revolver or string.find(cat, "revolver") then
 			self2.MuzzleFlashEffect = "tfa_muzzleflash_revolver"
-		elseif self2.Shotgun or a == "buckshot" or a == "slam" or a == "airboatgun" or string.find(cat, "shotgun") then
+		elseif self2.LoopedReload or a == "buckshot" or a == "slam" or a == "airboatgun" or string.find(cat, "shotgun") then
 			self2.MuzzleFlashEffect = "tfa_muzzleflash_shotgun"
 		elseif string.find(a, "smg") or string.find(cat, "smg") or string.find(cat, "submachine") or string.find(cat, "sub-machine") then
 			self2.MuzzleFlashEffect = "tfa_muzzleflash_smg"
@@ -383,11 +380,11 @@ function SWEP:CorrectScopeFOV(fov)
 	local self2 = self:GetTable()
 	fov = fov or self2.DefaultFOV
 
-	if not self2.Secondary_TFA.IronFOV or self2.Secondary_TFA.IronFOV <= 0 then
+	if not self2.Secondary_TFA.OwnerFOV or self2.Secondary_TFA.OwnerFOV <= 0 then
 		if self2.Scoped then
-			self2.Secondary_TFA.IronFOV = fov / (self2.Secondary_TFA.ScopeZoom and self2.Secondary_TFA.ScopeZoom or 2)
+			self2.Secondary_TFA.OwnerFOV = fov / (self2.Secondary_TFA.ScopeZoom and self2.Secondary_TFA.ScopeZoom or 2)
 		else
-			self2.Secondary_TFA.IronFOV = 32
+			self2.Secondary_TFA.OwnerFOV = 32
 		end
 	end
 end

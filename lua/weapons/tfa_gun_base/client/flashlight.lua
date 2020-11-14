@@ -65,8 +65,8 @@ function SWEP:DrawFlashlight(is_vm)
 		targetent = ply:GetViewModel()
 		elemname = self2.GetStat(self, "Flashlight_VElement", self2.GetStat(self, "Flashlight_Element"))
 
-		if elemname and self2.VElements[elemname] and IsValid(self2.VElements[elemname].curmodel) then
-			targetent = self2.VElements[elemname].curmodel
+		if elemname and self2.ViewModelElements[elemname] and IsValid(self2.ViewModelElements[elemname].curmodel) then
+			targetent = self2.ViewModelElements[elemname].curmodel
 		end
 
 		att = self2.GetStat(self, "FlashlightAttachment")
@@ -92,7 +92,7 @@ function SWEP:DrawFlashlight(is_vm)
 		end
 
 		if self2.FlashlightISMovement and self2.CLIronSightsProgress > 0 then
-			local isang = self2.GetStat(self, "IronSightsAng")
+			local isang = self2.GetStat(self, "IronSightsAngle")
 			angpos.Ang:RotateAroundAxis(angpos.Ang:Right(), isang.y * (self2.ViewModelFlip and -1 or 1) * self2.CLIronSightsProgress)
 			angpos.Ang:RotateAroundAxis(angpos.Ang:Up(), -isang.x * self2.CLIronSightsProgress)
 		end
@@ -133,8 +133,8 @@ function SWEP:DrawFlashlight(is_vm)
 
 	elemname = self2.GetStat(self, "Flashlight_WElement", self2.GetStat(self, "Flashlight_Element"))
 
-	if elemname and self2.WElements[elemname] and IsValid(self2.WElements[elemname].curmodel) then
-		targetent = self2.WElements[elemname].curmodel
+	if elemname and self2.WorldModelElements[elemname] and IsValid(self2.WorldModelElements[elemname].curmodel) then
+		targetent = self2.WorldModelElements[elemname].curmodel
 	end
 
 	att = self2.GetStat(self, "FlashlightAttachmentWorld", self2.GetStat(self, "FlashlightAttachment"))

@@ -33,7 +33,7 @@ ATTACHMENT.ShortName = "ACOG"
 local fov = 90 / 4 / 2 -- Default FOV / Scope Zoom / screenscale
 
 ATTACHMENT.WeaponTable = {
-	["VElements"] = {
+	["ViewModelElements"] = {
 		["acog"] = {
 			["active"] = true
 		},
@@ -41,16 +41,16 @@ ATTACHMENT.WeaponTable = {
 			["active"] = true
 		}
 	},
-	["WElements"] = {
+	["WorldModelElements"] = {
 		["acog"] = {
 			["active"] = true
 		}
 	},
-	["IronSightsPos"] = function( wep, val ) return wep.IronSightsPos_ACOG or val, true end,
-	["IronSightsAng"] = function( wep, val ) return wep.IronSightsAng_ACOG or val, true end,
-	["IronSightsSensitivity"] = function(wep,val) return TFA.CalculateSensitivtyScale( fov, wep:GetStat("Secondary.IronFOV"), wep.ACOGScreenScale ) end ,
+	["IronSightsPosition"] = function( wep, val ) return wep.IronSightsPos_ACOG or val, true end,
+	["IronSightsAngle"] = function( wep, val ) return wep.IronSightsAng_ACOG or val, true end,
+	["IronSightsSensitivity"] = function(wep,val) return TFA.CalculateSensitivtyScale( fov, wep:GetStat("Secondary.OwnerFOV"), wep.ACOGScreenScale ) end ,
 	["Secondary"] = {
-		["IronFOV"] = function( wep, val ) return val * 0.7 end
+		["OwnerFOV"] = function( wep, val ) return val * 0.7 end
 	},
 	["IronSightTime"] = function( wep, val ) return val * 1.20 end,
 	["IronSightMoveSpeed"] = function(stat) return stat * 0.9 end,

@@ -56,7 +56,7 @@ SWEP.DrawCrosshair = false -- set false if you want no crosshair
 SWEP.Weight = 50 -- rank relative ot other weapons. bigger is better
 SWEP.AutoSwitchTo = true -- Auto switch to if we pick it up
 SWEP.AutoSwitchFrom = true -- Auto switch from if you pick up a better weapon
-SWEP.Secondary.IronFOV = 90 -- How much you "zoom" in. Less is more!  Don't have this be <= 0
+SWEP.Secondary.OwnerFOV = 90 -- How much you "zoom" in. Less is more!  Don't have this be <= 0
 SWEP.WeaponLength = 8 --16 = 1 foot
 SWEP.MoveSpeed = 0.9 --Multiply the player's movespeed by this.
 SWEP.IronSightsMoveSpeed = 0.8 --Multiply the player's movespeed by this when sighting.
@@ -117,7 +117,7 @@ SWEP.UseHands = true --Uses c_hands?  If you port a model directly from HL2, CS:
 	SWEP.Primary.KickDown = 0.3 -- Maximum down recoil (skeet)
 	SWEP.Primary.KickHorizontal = 0.3 -- Maximum up recoil (stock)
 	SWEP.Primary.Automatic = false -- Automatic = true; Semi Auto = false.  In the case of our sword, if you can hold and keep swinging.
-	SWEP.FiresUnderwater = true --Can you swing your sword underwater?
+	SWEP.Primary.FiresUnderwater = true --Can you swing your sword underwater?
 	--[[ Block Procedural Animation Variables]]
 	--
 	SWEP.BlockPos = Vector(-18, -10, 3) --Blocking Position.
@@ -222,8 +222,8 @@ SWEP.Primary.Sound_World_Glass_Enabled = true --Override for glass?
 SWEP.Primary.Sound_Glass_Enabled = true --Override for glass?
 SWEP.Primary.Sound_Glass = Sound("impacts/glass_impact.wav")
 SWEP.GlassSoundPlayed = false -- DO NOT CHANGE THIS.  It's automatically set.   This way, it doesn't spam the glass sound.
-SWEP.VElements = {} --View elements
-SWEP.WElements = {} --World elements
+SWEP.ViewModelElements = {} --View elements
+SWEP.WorldModelElements = {} --World elements
 SWEP.sounds = 0
 SWEP.Action = true --Use action IDs?
 --[[Stop editing here for normal users of my base.  Code starts here.]]--

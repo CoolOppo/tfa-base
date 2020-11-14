@@ -130,7 +130,7 @@ local function PatchWep(wep)
 
 	if tbl.NoSights == nil then
 		if tbl.data then
-			tbl.NoSights = tbl.data.ironsights ~= 0
+			tbl.NoSights = tbl.Secondary.IronSightsEnabled == false or tbl.data and tbl.data.ironsights ~= 0 or false
 		end
 
 		if tbl.NoSights == nil then

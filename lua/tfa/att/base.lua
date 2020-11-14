@@ -23,6 +23,9 @@ if not ATTACHMENT then
 	ATTACHMENT = {}
 end
 
+-- ATTACHMENT.TFADataVersion = 1 -- Uncomment this in your attachment file
+-- If it is undefined, if fallback to 0 and WeaponTable gets migrated like SWEPs do
+
 ATTACHMENT.Name = "Base Attachment"
 ATTACHMENT.ShortName = nil --Abbreviation, 5 chars or less please
 ATTACHMENT.Description = {} --TFA.Attachments.Colors["+"], "Does something good", TFA.Attachments.Colors["-"], "Does something bad" }
