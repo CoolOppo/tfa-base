@@ -35,68 +35,68 @@ SWEP.AutoSwitchFrom             = true      -- Auto switch from if you pick up a
 SWEP.Weight                     = 30            -- This controls how "good" the weapon is for autopickup.
 
 ----------------- The Most basic weapon stats
-SWEP.Primary.RPM = 600 -- This is in Rounds Per Minute / RPM
-SWEP.Primary.NumShots = 1 -- The number of shots the weapon fires
-SWEP.Primary.HullSize = 0 -- Big bullets, increase this value.  They increase the hull size of the hitscan bullet.
-SWEP.Primary.Automatic = true -- Automatic/Semi Auto
+SWEP.Primary.RPM                = 600 -- This is in Rounds Per Minute / RPM
+SWEP.Primary.NumShots           = 1 -- The number of shots the weapon fires
+SWEP.Primary.HullSize           = 0 -- Big bullets, increase this value.  They increase the hull size of the hitscan bullet.
+SWEP.Primary.Automatic          = true -- Automatic/Semi Auto
 
 -- If your gun is bullet based
-SWEP.Primary.Damage = 0.01 -- Damage, in standard damage points.
-SWEP.Primary.Force = nil -- Force value, leave nil to autocalc
+SWEP.Primary.Damage             = 0.01 -- Damage, in standard damage points.
+SWEP.Primary.Force              = nil -- Force value, leave nil to autocalc
 -- elseif Your gun is projectile based
 -- If your gun is projectile based, ignore Primary.Damage and Primary.Force
-SWEP.Primary.Projectile = nil -- Entity to shoot
+SWEP.Primary.Projectile         = nil -- Entity to shoot
 SWEP.Primary.ProjectileVelocity = 0 -- Entity to shoot's velocity
-SWEP.Primary.ProjectileModel = nil -- Entity to shoot's model
+SWEP.Primary.ProjectileModel    = nil -- Entity to shoot's model
 
 ----------------- TFA Base basic stats
-SWEP.Primary.Knockback = nil -- Autodetected if nil; this is the velocity kickback
-SWEP.Primary.DryFireDelay = nil -- How long you have to wait after firing your last shot before a dryfire animation can play.  Leave nil for full empty attack length.  Can also use SWEP.StatusLength[ ACT_VM_BLABLA ]
-SWEP.Primary.BurstDelay = nil -- Delay between bursts, leave nil to autocalculate
+SWEP.Primary.Knockback          = nil -- Autodetected if nil; this is the velocity kickback
+SWEP.Primary.DryFireDelay       = nil -- How long you have to wait after firing your last shot before a dryfire animation can play.  Leave nil for full empty attack length.  Can also use SWEP.StatusLength[ ACT_VM_BLABLA ]
+SWEP.Primary.BurstDelay         = nil -- Delay between bursts, leave nil to autocalculate
 -- AKA FiresUnderwater
-SWEP.Primary.FiresUnderwater = false -- Whenever this weapon can fire underwater
+SWEP.Primary.FiresUnderwater    = false -- Whenever this weapon can fire underwater
 
 ----------------- TFA Base extended basic stats
-SWEP.Primary.RPM_Semi = nil -- RPM for semi-automatic or burst fire.  This is in Rounds Per Minute / RPM
-SWEP.Primary.RPM_Burst = nil -- RPM for burst fire, overrides semi.  This is in Rounds Per Minute / RPM
+SWEP.Primary.RPM_Semi           = nil -- RPM for semi-automatic or burst fire.  This is in Rounds Per Minute / RPM
+SWEP.Primary.RPM_Burst          = nil -- RPM for burst fire, overrides semi.  This is in Rounds Per Minute / RPM
 
 SWEP.Primary.DamageTypeHandled = true -- true will handle damagetype in base
-SWEP.Primary.DamageType = nil -- See DMG enum.  This might be DMG_SHOCK, DMG_BURN, DMG_BULLET, etc.  Leave nil to autodetect.  DMG_AIRBOAT opens doors.
+SWEP.Primary.DamageType         = nil -- See DMG enum.  This might be DMG_SHOCK, DMG_BURN, DMG_BULLET, etc.  Leave nil to autodetect.  DMG_AIRBOAT opens doors.
 
 ----------------- TFA Base Basic sound handling
-SWEP.Primary.Sound = Sound("") -- This is the sound of the weapon, when you shoot.
-SWEP.Primary.SilencedSound = nil -- This is the sound of the weapon, when silenced.
+SWEP.Primary.Sound              = Sound("") -- This is the sound of the weapon, when you shoot.
+SWEP.Primary.SilencedSound      = nil -- This is the sound of the weapon, when silenced.
 -- AKA IronInSound
-SWEP.Secondary.IronSightsInSound  = nil -- Sound to play when iron sighting in? nil for default
+SWEP.Secondary.IronSightsInSound = nil -- Sound to play when iron sighting in? nil for default
 -- AKA IronOutSound
 SWEP.Secondary.IronSightsOutSound = nil -- Sound to play when iron sighting out? nil for default
 
 ----------------- TFA Base Advanced sound handling
-SWEP.Primary.LoopSound = nil -- Looped fire sound, unsilenced
-SWEP.Primary.LoopSoundSilenced = nil -- Looped fire sound, silenced
-SWEP.Primary.LoopSoundTail = nil -- Loop end/tail sound, unsilenced
+SWEP.Primary.LoopSound          = nil -- Looped fire sound, unsilenced
+SWEP.Primary.LoopSoundSilenced  = nil -- Looped fire sound, silenced
+SWEP.Primary.LoopSoundTail      = nil -- Loop end/tail sound, unsilenced
 SWEP.Primary.LoopSoundTailSilenced = nil -- Loop end/tail sound, silenced
-SWEP.Primary.LoopSoundAutoOnly = false -- Play loop sound for full-auto only? Fallbacks to Primary.Sound for semi/burst if true
+SWEP.Primary.LoopSoundAutoOnly  = false -- Play loop sound for full-auto only? Fallbacks to Primary.Sound for semi/burst if true
 
 -- WORLD/THIRDPERSON/NPC FIRING SOUNDS! Fallbacks to first person sound if not defined.
-SWEP.Primary.Sound_World = nil -- This is the sound of the weapon, when you shoot.
+SWEP.Primary.Sound_World        = nil -- This is the sound of the weapon, when you shoot.
 SWEP.Primary.SilencedSound_World = nil -- This is the sound of the weapon, when silenced.
 
-SWEP.Primary.LoopSound_World = nil -- Looped fire sound, unsilenced
+SWEP.Primary.LoopSound_World    = nil -- Looped fire sound, unsilenced
 SWEP.Primary.LoopSoundSilenced_World = nil -- Looped fire sound, silenced
 SWEP.Primary.LoopSoundTail_World = nil -- Loop end/tail sound, unsilenced
 SWEP.Primary.LoopSoundTailSilenced_World = nil -- Loop end/tail sound, silenced
 
 ----------------- Jamming mechanics
-SWEP.CanJam = true -- whenever weapon cam jam
-SWEP.JamChance = 0.04 -- the (maximal) chance the weapon will jam. Newly spawned weapon will never jam on first shot for example.
+SWEP.CanJam                     = true -- whenever weapon cam jam
+SWEP.JamChance                  = 0.04 -- the (maximal) chance the weapon will jam. Newly spawned weapon will never jam on first shot for example.
 -- Default value is 0.04 (4%)
 -- Maxmial value is 1, means weapon will always jam when factor become 100
 -- Also remember that there is a minimal factor before weapon can jam
 -- This number is not treated "as-is" but as basic value that needs to be concluded as chance
 -- You don't really need to cry over it and trying to balance it, TFA Base will do the job for you
 -- (TFA Base will calculate the best value between 0 and JamChance based on current JamFactor of the weapon)
-SWEP.JamFactor = 0.06 -- How to increase jam factor after each shot.
+SWEP.JamFactor                  = 0.06 -- How to increase jam factor after each shot.
 -- When factor reach 100 it will mean that on each shot there will be SWEP.Primary.JamChance chance to jam
 -- When factor reach 50 it will mean that on each shot there will be SWEP.Primary.JamChance / 2 chance to jam
 -- and so on
@@ -165,40 +165,40 @@ SWEP.FireSoundAffectedByClipSize  = true -- Whenever adjuct pitch (and proably o
 -- Weapon is a shotgun
 
 ----------------- Ammo Related
-SWEP.Primary.ClipSize = 0 -- This is the size of a clip
+SWEP.Primary.ClipSize           = 0 -- This is the size of a clip
 
-SWEP.Primary.DefaultClip = 0 -- This is the number of bullets the gun gives you, counting a clip as defined directly above.
-SWEP.Primary.Ammo = "none" -- What kind of ammo.  Options, besides custom, include pistol, 357, smg1, ar2, buckshot, slam, SniperPenetratedRound, and AirboatGun.
+SWEP.Primary.DefaultClip        = 0 -- This is the number of bullets the gun gives you, counting a clip as defined directly above.
+SWEP.Primary.Ammo               = "none" -- What kind of ammo.  Options, besides custom, include pistol, 357, smg1, ar2, buckshot, slam, SniperPenetratedRound, and AirboatGun.
 -- Pistol, buckshot, and slam like to ricochet. Use AirboatGun for a light metal peircing shotgun pellets
-SWEP.Primary.AmmoConsumption = 1 -- Ammo consumed per shot
+SWEP.Primary.AmmoConsumption    = 1 -- Ammo consumed per shot
 
 -- AKA DisableChambering
-SWEP.Primary.DisableChambering = false -- Disable round-in-the-chamber
+SWEP.Primary.DisableChambering  = false -- Disable round-in-the-chamber
 
 -- Recoil Related
-SWEP.Primary.KickUp = 0 -- This is the maximum upwards recoil (rise)
-SWEP.Primary.KickDown = 0 -- This is the maximum downwards recoil (skeet)
-SWEP.Primary.KickHorizontal = 0 -- This is the maximum sideways recoil (no real term)
+SWEP.Primary.KickUp             = 0 -- This is the maximum upwards recoil (rise)
+SWEP.Primary.KickDown           = 0 -- This is the maximum downwards recoil (skeet)
+SWEP.Primary.KickHorizontal     = 0 -- This is the maximum sideways recoil (no real term)
 SWEP.Primary.StaticRecoilFactor = 0.5 -- Amount of recoil to directly apply to EyeAngles.  Enter what fraction or percentage (in decimal form) you want.  This is also affected by a convar that defaults to 0.5.
 
 -- Firing Cone Related
-SWEP.Primary.Spread = .01 -- This is hip-fire acuracy.  Less is more (1 is horribly awful, .0001 is close to perfect)
-SWEP.Primary.IronAccuracy = .005 -- Ironsight accuracy, should be the same for shotguns
+SWEP.Primary.Spread             = .01 -- This is hip-fire acuracy.  Less is more (1 is horribly awful, .0001 is close to perfect)
+SWEP.Primary.IronAccuracy       = .005 -- Ironsight accuracy, should be the same for shotguns
 
 -- Unless you can do this manually, autodetect it.  If you decide to manually do these, uncomment this block and remove this line.
 SWEP.Primary.SpreadMultiplierMax = nil -- How far the spread can expand when you shoot. Example val: 2.5
-SWEP.Primary.SpreadIncrement = nil -- What percentage of the modifier is added on, per shot.  Example val: 1/3.5
-SWEP.Primary.SpreadRecovery = nil -- How much the spread recovers, per second. Example val: 3
+SWEP.Primary.SpreadIncrement    = nil -- What percentage of the modifier is added on, per shot.  Example val: 1/3.5
+SWEP.Primary.SpreadRecovery     = nil -- How much the spread recovers, per second. Example val: 3
 
 ----------------- Range stats
-SWEP.Primary.DisplayFalloff = nil -- Defaults to true (false for melees)
+SWEP.Primary.DisplayFalloff     = nil -- Defaults to true (false for melees)
 
 -- Use these if you don't want/understand how to use LUT below.
 -- These values are automatically converted to RangeFalloffLUT table
 SWEP.Primary.FalloffMetricBased = false -- Set to true if you set up values below
-SWEP.Primary.FalloffByMeter = nil -- How much damage points will bullet loose when travel
+SWEP.Primary.FalloffByMeter     = nil -- How much damage points will bullet loose when travel
 SWEP.Primary.MinRangeStartFalloff = nil -- How long will bullet travel in Meters before starting to lose damage?
-SWEP.Primary.MaxFalloff = nil -- Maximal amount of damage to be lost
+SWEP.Primary.MaxFalloff         = nil -- Maximal amount of damage to be lost
 
 -- Use this for full control over damage dropoff.
 --[[
@@ -229,42 +229,42 @@ SWEP.Primary.RangeFalloffLUT = {
 ----------------- Spread stats
 -- Bullet pattern to utilize
 -- to be used to utilize built-in patterns
-SWEP.Primary.SpreadPattern = nil -- Defaults to ""
+SWEP.Primary.SpreadPattern      = nil -- Defaults to ""
 
 -- Spread bias
 -- The bigger is the number, the stronger is spread
 -- along specified axis (Yaw for X, Pitch for Y). Note that this is not clamped and it is possible
 -- to make spread along X or Y or both bigger than current aimcone
-SWEP.Primary.SpreadBiasYaw = nil -- Defaults to 1
-SWEP.Primary.SpreadBiasPitch = nil -- Defaults to 1
+SWEP.Primary.SpreadBiasYaw      = nil -- Defaults to 1
+SWEP.Primary.SpreadBiasPitch    = nil -- Defaults to 1
 
 -- Check common/bullet.lua for more information on how to implement custom
 -- functions if you REALLY need them
 
 -- Less is more. Accuracy * 0.5 = Twice as accurate, Accuracy * 0.1 = Ten times as accurate
-SWEP.CrouchAccuracyMultiplier = 0.5
+SWEP.CrouchAccuracyMultiplier   = 0.5
 
 ----------------- Recoil related things
-SWEP.ViewModelPunchPitchMultiplier = nil -- Default value is 0.5
-SWEP.ViewModelPunchPitchMultiplier_IronSights = nil -- Default value is 0.09
+SWEP.ViewModelPunchPitchMultiplier               = nil -- Default value is 0.5
+SWEP.ViewModelPunchPitchMultiplier_IronSights    = nil -- Default value is 0.09
 
-SWEP.ViewModelPunch_MaxVertialOffset = nil -- Default value is 3
-SWEP.ViewModelPunch_MaxVertialOffset_IronSights = nil -- Default value is 1.95
-SWEP.ViewModelPunch_VertialMultiplier = nil -- Default value is 1
+SWEP.ViewModelPunch_MaxVertialOffset             = nil -- Default value is 3
+SWEP.ViewModelPunch_MaxVertialOffset_IronSights  = nil -- Default value is 1.95
+SWEP.ViewModelPunch_VertialMultiplier            = nil -- Default value is 1
 SWEP.ViewModelPunch_VertialMultiplier_IronSights = nil -- Default value is 0.25
 
-SWEP.ViewModelPunchYawMultiplier = nil -- Default value is 0.6
-SWEP.ViewModelPunchYawMultiplier_IronSights = nil -- Default value is 0.25
+SWEP.ViewModelPunchYawMultiplier                 = nil -- Default value is 0.6
+SWEP.ViewModelPunchYawMultiplier_IronSights      = nil -- Default value is 0.25
 
 -- AKA IronRecoilMultiplier
-SWEP.Primary.IronRecoilMultiplier = 0.5 -- Multiply recoil by this factor when we're in ironsights. This is proportional, not inversely.
+SWEP.Primary.IronRecoilMultiplier               = 0.5 -- Multiply recoil by this factor when we're in ironsights. This is proportional, not inversely.
 
 -- Stats below have no effect if RecoilLUT is not defined
-SWEP.Primary.RecoilLUT_IronSightsMult = nil -- Defaults to 0.5
+SWEP.Primary.RecoilLUT_IronSightsMult           = nil -- Defaults to 0.5
 -- controls how much effective LUT is when iron sighting
-SWEP.Primary.RecoilLUT_AnglePunchMult = nil -- Defaults to 0.25
+SWEP.Primary.RecoilLUT_AnglePunchMult           = nil -- Defaults to 0.25
 -- controls how much effective LUT at pushing EyeAngles of shooter
-SWEP.Primary.RecoilLUT_ViewPunchMult = nil -- Defaults to 1
+SWEP.Primary.RecoilLUT_ViewPunchMult            = nil -- Defaults to 1
 -- controls how much effective LUT at viewpunch
 
 --[[
@@ -545,37 +545,37 @@ SWEP.LoopedReloadInsertTime = 0.35
 ----------------- Animation stuff / procedural ones (Lua animated)
 
 -- ViewModel custom blowback
-SWEP.BlowbackEnabled = false -- Enable Blowback?
-SWEP.BlowbackVector = Vector(0, -1, 0) -- Vector to move bone <or root> relative to bone <or view> orientation.
-SWEP.BlowbackAngle = nil -- Angle(0, 0, 0)
-SWEP.BlowbackCurrentRoot = 0 -- Amount of blowback currently, for root
-SWEP.BlowbackCurrent = 0 -- Amount of blowback currently, for bones
-SWEP.BlowbackBoneMods = nil -- Viewmodel bone mods via SWEP Creation Kit
-SWEP.Blowback_Only_Iron = true -- Only do blowback on ironsights
-SWEP.Blowback_PistolMode = false -- Do we recover from blowback when empty?
+SWEP.BlowbackEnabled        = false -- Enable Blowback?
+SWEP.BlowbackVector         = Vector(0, -1, 0) -- Vector to move bone <or root> relative to bone <or view> orientation.
+SWEP.BlowbackAngle          = nil -- Angle(0, 0, 0)
+SWEP.BlowbackCurrentRoot    = 0 -- Amount of blowback currently, for root
+SWEP.BlowbackCurrent        = 0 -- Amount of blowback currently, for bones
+SWEP.BlowbackBoneMods       = nil -- Viewmodel bone mods via SWEP Creation Kit
+SWEP.Blowback_Only_Iron     = true -- Only do blowback on ironsights
+SWEP.Blowback_PistolMode    = false -- Do we recover from blowback when empty?
 SWEP.Blowback_Shell_Enabled = true -- Shoot shells through blowback animations
-SWEP.Blowback_Shell_Effect = "ShellEject" -- Which shell effect to use
+SWEP.Blowback_Shell_Effect  = "ShellEject" -- Which shell effect to use
 SWEP.BlowbackAllowAnimation = nil -- Allow playing shoot animation with blowback?
 
 -- Lua animated reload animation
 -- Animate first person reload using Lua?
 -- When reloading weapon will be offset to holster position (TODO: Add separate property for that)
 -- AKA DoProceduralReload
-SWEP.IsProceduralReloadBased = false
-SWEP.ProceduralReloadTime = 1 -- Procedural reload time in seconds
+SWEP.IsProceduralReloadBased    = false
+SWEP.ProceduralReloadTime       = 1 -- Procedural reload time in seconds
 
 -- Animation / sequence control
-SWEP.StatusLengthOverride = {} -- Changes the status delay of a given animation; only used on reloads.  Otherwise, use SequenceLengthOverride or one of the others
-SWEP.SequenceLengthOverride = {} -- Changes both the status delay and the nextprimaryfire of a given animation
-SWEP.SequenceTimeOverride = {} -- Like above but changes animation length to a target
-SWEP.SequenceRateOverride = {} -- Like above but scales animation length rather than being absolute
+SWEP.StatusLengthOverride       = {} -- Changes the status delay of a given animation; only used on reloads.  Otherwise, use SequenceLengthOverride or one of the others
+SWEP.SequenceLengthOverride     = {} -- Changes both the status delay and the nextprimaryfire of a given animation
+SWEP.SequenceTimeOverride       = {} -- Like above but changes animation length to a target
+SWEP.SequenceRateOverride       = {} -- Like above but scales animation length rather than being absolute
 
-SWEP.ProceduralHolsterEnabled = nil -- Defaults to autodetection (if weapon has no ACT_VM_HOLSTER animation this is enabled if not specified)
-SWEP.ProceduralHolsterTime = 0.3
+SWEP.ProceduralHolsterEnabled   = nil -- Defaults to autodetection (if weapon has no ACT_VM_HOLSTER animation this is enabled if not specified)
+SWEP.ProceduralHolsterTime      = 0.3
 -- AKA ProceduralHolsterPos
-SWEP.ProceduralHolsterPosition = Vector(3, 0, -5)
+SWEP.ProceduralHolsterPosition  = Vector(3, 0, -5)
 -- AKA ProceduralHolsterAng
-SWEP.ProceduralHolsterAngle = Vector(-40, -30, 10)
+SWEP.ProceduralHolsterAngle     = Vector(-40, -30, 10)
 
 ----------------- Basic animation related
 
@@ -583,9 +583,9 @@ SWEP.ProceduralHolsterAngle = Vector(-40, -30, 10)
 -- TFA.Enum.IDLE_LUA = Lua animated idle
 -- TFA.Enum.IDLE_ANI = Model's animated idle
 -- TFA.Enum.IDLE_BOTH = TFA.Enum.IDLE_ANI + TFA.Enum.IDLE_LUA
-SWEP.Idle_Mode = TFA.Enum.IDLE_BOTH
-SWEP.Idle_Blend = 0.25 -- Start an idle this far early into the end of a transition
-SWEP.Idle_Smooth = 0.05 -- Start an idle this far early into the end of another animation
+SWEP.Idle_Mode                  = TFA.Enum.IDLE_BOTH
+SWEP.Idle_Blend                 = 0.25 -- Start an idle this far early into the end of a transition
+SWEP.Idle_Smooth                = 0.05 -- Start an idle this far early into the end of another animation
 -- Model based animations Below
 
 -- TFA.Enum.LOCOMOTION_ANI = Model's animation
@@ -593,7 +593,7 @@ SWEP.Idle_Smooth = 0.05 -- Start an idle this far early into the end of another 
 -- TFA.Enum.LOCOMOTION_HYBRID = TFA.Enum.LOCOMOTION_ANI + TFA.Enum.LOCOMOTION_LUA
 -- Keep in mind that HYBRID sometimes produce very weird results, especially if
 -- model's animation is "out of sync" with Lua's one
-SWEP.Sights_Mode = TFA.Enum.LOCOMOTION_LUA
+SWEP.Sights_Mode                = TFA.Enum.LOCOMOTION_LUA
 --[[
 SWEP.IronAnimation = {
 	["in"] = {
@@ -625,7 +625,7 @@ SWEP.IronAnimation = {
 -- TFA.Enum.LOCOMOTION_ANI = Model's animation
 -- TFA.Enum.LOCOMOTION_LUA = Lua only
 -- TFA.Enum.LOCOMOTION_HYBRID = TFA.Enum.LOCOMOTION_ANI + TFA.Enum.LOCOMOTION_LUA
-SWEP.Sprint_Mode = TFA.Enum.LOCOMOTION_LUA
+SWEP.Sprint_Mode                = TFA.Enum.LOCOMOTION_LUA
 --[[
 SWEP.SprintAnimation = {
 	["in"] = {
@@ -652,7 +652,7 @@ SWEP.SprintAnimation = {
 -- TFA.Enum.LOCOMOTION_ANI = Model's animation
 -- TFA.Enum.LOCOMOTION_LUA = Lua only
 -- TFA.Enum.LOCOMOTION_HYBRID = TFA.Enum.LOCOMOTION_ANI + TFA.Enum.LOCOMOTION_LUA
-SWEP.Walk_Mode = TFA.Enum.LOCOMOTION_LUA
+SWEP.Walk_Mode                  = TFA.Enum.LOCOMOTION_LUA
 --[[
 SWEP.WalkAnimation = {
 	["in"] = {
@@ -703,7 +703,7 @@ SWEP.ShootAnimation = {
 -- TFA.Enum.LOCOMOTION_ANI = Model's animation
 -- TFA.Enum.LOCOMOTION_LUA = Lua only
 -- TFA.Enum.LOCOMOTION_HYBRID = TFA.Enum.LOCOMOTION_ANI + TFA.Enum.LOCOMOTION_LUA
-SWEP.Customize_Mode = TFA.Enum.LOCOMOTION_LUA
+SWEP.Customize_Mode             = TFA.Enum.LOCOMOTION_LUA
 --[[
 SWEP.CustomizeAnimation = {
 	["in"] = {
@@ -777,16 +777,16 @@ SWEP.EventTable = {
 ]==]
 
 ----------------- Render target related
-SWEP.RTMaterialOverride = nil -- Take the material you want out of print(LocalPlayer():GetViewModel():GetMaterials()), subtract 1 from its index, and set it to this.
-SWEP.RTOpaque = false -- Do you want your render target to be opaque?
-SWEP.RTCode = nil -- function(self) return end -- This is the function to draw onto your rendertarget
-SWEP.RTBGBlur = true -- Draw background blur when 3D scope is active?
+SWEP.RTMaterialOverride         = nil -- Take the material you want out of print(LocalPlayer():GetViewModel():GetMaterials()), subtract 1 from its index, and set it to this.
+SWEP.RTOpaque                   = false -- Do you want your render target to be opaque?
+SWEP.RTCode                     = nil -- function(self) return end -- This is the function to draw onto your rendertarget
+SWEP.RTBGBlur                   = true -- Draw background blur when 3D scope is active?
 
 ----------------- Akimbo related
 -- AKA Akimbo
-SWEP.IsAkimbo = false -- Akimbo gun?  Alternates between primary and secondary attacks.
+SWEP.IsAkimbo                   = false -- Akimbo gun?  Alternates between primary and secondary attacks.
 -- AKA AkimboHUD
-SWEP.EnableAkimboHUD = true -- Draw holographic HUD for both weapons?
+SWEP.EnableAkimboHUD            = true -- Draw holographic HUD for both weapons?
 
 ----------------- Attachments
 SWEP.Attachments = {
@@ -804,9 +804,9 @@ SWEP.Attachments = {
 	-- sel allows you to have an attachment pre-selected, and is used internally by the base to show which attachment is selected in each category.
 }
 
-SWEP.AttachmentDependencies = {} -- {["si_acog"] = {"bg_rail", ["type"] = "OR"}} -- type could also be AND to require multiple
-SWEP.AttachmentExclusions = {} -- { ["si_iron"] = { [1] = "bg_heatshield"} }
-SWEP.AttachmentTableOverride = {} --[[{ -- overrides WeaponTable for attachments
+SWEP.AttachmentDependencies     = {} -- {["si_acog"] = {"bg_rail", ["type"] = "OR"}} -- type could also be AND to require multiple
+SWEP.AttachmentExclusions       = {} -- { ["si_iron"] = { [1] = "bg_heatshield"} }
+SWEP.AttachmentTableOverride    = {} --[[{ -- overrides WeaponTable for attachments
 	["ins2_ub_laser"] = { -- attachment id, root of WeaponTable override
 		["ViewModelElements"] = {
 			["laser_rail"] = {
