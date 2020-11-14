@@ -72,9 +72,9 @@ SWEP.Primary.DryFireDelay = nil
 
 --[[Actual clientside values]]--
 
-SWEP.DrawAmmo						= true				-- Should draw the default HL2 ammo counter
-SWEP.DrawWeaponInfoBox				= false				-- Should draw the weapon info box
-SWEP.BounceWeaponIcon   			= false				-- Should the weapon icon bounce?
+SWEP.DrawAmmo                       = true              -- Should draw the default HL2 ammo counter
+SWEP.DrawWeaponInfoBox              = false             -- Should draw the weapon info box
+SWEP.BounceWeaponIcon               = false             -- Should the weapon icon bounce?
 
 local sv_tfa_jamming = GetConVar("sv_tfa_jamming")
 local sv_tfa_jamming_mult = GetConVar("sv_tfa_jamming_mult")
@@ -625,7 +625,7 @@ function SWEP:Initialize()
 
 	self2.HasInitialized = true
 
-	TFA.MigrateStructure(self, self2, self:GetClass())
+	TFA.MigrateStructure(self, self2, self:GetClass(), true)
 
 	hook.Run("TFA_PreInitialize", self)
 
@@ -934,7 +934,7 @@ function SWEP:OnDrop()
 	end
 
 	-- if self2.ResetViewModelModifications then
-	-- 	self:ResetViewModelModifications()
+	--  self:ResetViewModelModifications()
 	-- end
 
 	return hook.Run("TFA_OnDrop", self)
@@ -2162,8 +2162,8 @@ function SWEP:OnReloaded()
 		self2.Primary_TFA.RangeFalloffLUTBuilt = nil
 		self2.Primary.RangeFalloffLUTBuilt = nil
 
-		TFA.MigrateStructure(self, baseclassSelf, self:GetClass())
-		TFA.MigrateStructure(self, self2, self:GetClass())
+		TFA.MigrateStructure(self, baseclassSelf, self:GetClass(), true)
+		TFA.MigrateStructure(self, self2, self:GetClass(), true)
 
 		if istable(baseclassSelf.Primary) then
 			self2.Primary_TFA = table.Copy(baseclassSelf.Primary)

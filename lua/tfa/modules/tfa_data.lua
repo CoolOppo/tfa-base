@@ -231,12 +231,16 @@ TFA.HardDataMapping = {
 	{
 		old_path = "Bodygroups_V",
 		new_path = "ViewModelBodygroups",
+		backtrack = true,
+		force_table = true,
 		force = true,
 	},
 
 	{
 		old_path = "Bodygroups_W",
 		new_path = "WorldModelBodygroups",
+		backtrack = true,
+		force_table = true,
 		force = true,
 	},
 
@@ -255,6 +259,8 @@ TFA.HardDataMapping = {
 	{
 		old_path = "Offset",
 		new_path = "WorldModelOffset",
+		backtrack = true,
+		force_table = true,
 		force = true,
 	},
 
@@ -273,12 +279,16 @@ TFA.HardDataMapping = {
 	{
 		old_path = "VElements",
 		new_path = "ViewModelElements",
+		backtrack = true,
+		force_table = true,
 		force = true,
 	},
 
 	{
 		old_path = "WElements",
 		new_path = "WorldModelElements",
+		backtrack = true,
+		force_table = true,
 		force = true,
 	},
 }
@@ -403,31 +413,43 @@ function push(struct, path, value, depth, limit, force)
 	return false
 end
 
-local function apply(struct, info, self, ...)
+local function apply(struct, info, self, backtrack, ...)
 	local old_path = GetStatPathDirect(info.old_path)
 	local new_path = GetStatPathDirect(info.new_path)
 
 	local load = retrieve(struct, old_path, 1, #old_path)
-	if load == nil then return false end
+
+	if load == nil then
+		if info.force_table then
+			load = {}
+		else
+			return false
+		end
+	end
 
 	if isfunction(info.translate) then
 		load = info.translate(self, load, struct, ...)
 	end
 
 	--print("pushing", load, "to", info.new_path, "from", info.old_path)
+
+	if info.backtrack and backtrack then
+		push(struct, old_path, load, 1, #old_path, false)
+	end
+
 	return push(struct, new_path, load, 1, #new_path, info.force)
 end
 
-function TFA.MigrateStructure(self, struct, classname, ...)
+function TFA.MigrateStructure(self, struct, classname, backtrack, ...)
 	local migrations = #TFA.HardDataMapping
 
+	local currentVersion = struct.TFADataVersion or 0
+
 	for _, info in ipairs(TFA.HardDataMapping) do
-		if apply(struct, info, self, ...) then
+		if apply(struct, info, self, backtrack and currentVersion == 0, ...) then
 			migrations = migrations + 1
 		end
 	end
-
-	local currentVersion = struct.TFADataVersion or 0
 
 	if currentVersion == 0 then
 		-- remove old default value since we were ignoring it already
@@ -443,7 +465,7 @@ function TFA.MigrateStructure(self, struct, classname, ...)
 	for version, data in SortedPairs(TFA.DataVersionMapping) do
 		if currentVersion <= version then
 			for _, info in ipairs(data) do
-				if apply(struct, info, self, ...) then
+				if apply(struct, info, self, backtrack and currentVersion == 0, ...) then
 					migrations = migrations + 1
 				end
 			end
