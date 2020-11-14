@@ -1612,7 +1612,7 @@ function SWEP:SecondaryAttack()
 
 	if hook.Run("TFA_SecondaryAttack", self) then return end
 
-	if self:GetStat("Secondary.IronSightsEnabled", false) and self.AltAttack and self:GetOwner():IsPlayer() then
+	if not self:GetStat("Secondary.IronSightsEnabled", false) and self.AltAttack and self:GetOwner():IsPlayer() then
 		self:AltAttack()
 		self:PostSecondaryAttack()
 		return
