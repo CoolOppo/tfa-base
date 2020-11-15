@@ -61,6 +61,7 @@ SWEP.Primary.DamageType = nil
 SWEP.Primary.Ammo = "smg1"
 SWEP.Primary.AmmoConsumption = 1
 SWEP.Primary.Spread = 0
+SWEP.Primary.DisplaySpread = true
 SWEP.Primary.SpreadMultiplierMax = -1 --How far the spread can expand when you shoot.
 SWEP.Primary.SpreadIncrement = -1 --What percentage of the modifier is added on, per shot.
 SWEP.Primary.SpreadRecovery = -1 --How much the spread recovers, per second.
@@ -667,6 +668,10 @@ function SWEP:Initialize()
 
 	self2.Primary.BaseClass = nil
 	self2.Secondary.BaseClass = nil
+
+	if self2.Primary.DisplayIronSpread == nil then
+		self2.Primary.DisplayIronSpread = self2.Primary.DisplaySpread
+	end
 
 	self2.Primary_TFA = table.Copy(self2.Primary)
 	self2.Secondary_TFA = table.Copy(self2.Secondary)

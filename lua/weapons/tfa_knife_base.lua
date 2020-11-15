@@ -51,6 +51,7 @@ SWEP.Primary.ClipSize = 1 -- Size of a clip
 SWEP.Primary.DefaultClip = 1 -- Bullets you start with
 SWEP.data = {} --No ironsights
 SWEP.Secondary.IronSightsEnabled = false --No ironsights
+SWEP.Secondary.DisplaySpread = false
 SWEP.IsMelee = true
 
 SWEP.HullData = {

@@ -31,6 +31,7 @@ local changelog = [[
 	* PenetrationMaterials is now unfolded from baseclass
 	* Primary.MaxSurfacePenetrationCount is now working again
 	* Biased spread (width and height can be configured independently)
+	* Primary.DisplaySpread / Primary.DisplayIronSpread
 ]]
 
 local function testFunc()

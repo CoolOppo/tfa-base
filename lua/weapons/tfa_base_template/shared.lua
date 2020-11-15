@@ -184,6 +184,8 @@ SWEP.Primary.StaticRecoilFactor = 0.5 -- Amount of recoil to directly apply to E
 -- Firing Cone Related
 SWEP.Primary.Spread             = .01 -- This is hip-fire acuracy.  Less is more (1 is horribly awful, .0001 is close to perfect)
 SWEP.Primary.IronAccuracy       = .005 -- Ironsight accuracy, should be the same for shotguns
+SWEP.Primary.DisplaySpread      = nil -- Defaults to true. Display spread on customization screen?
+SWEP.Primary.DisplayIronSpread  = nil -- Defaults to Primary.DisplaySpread. Display spread on customization screen for iron sights? This is always false if Secondary.IronSightsEnabled is false
 
 -- Unless you can do this manually, autodetect it.  If you decide to manually do these, uncomment this block and remove this line.
 SWEP.Primary.SpreadMultiplierMax = nil -- How far the spread can expand when you shoot. Example val: 2.5

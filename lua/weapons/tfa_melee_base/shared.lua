@@ -27,6 +27,7 @@ SWEP.SlotPos = 72
 SWEP.Slot = 0
 SWEP.WeaponLength = 8
 SWEP.Secondary.IronSightsEnabled = false
+SWEP.Secondary.DisplaySpread = false
 SWEP.Primary.Directional = false
 SWEP.Primary.Attacks = {}
 --[[{

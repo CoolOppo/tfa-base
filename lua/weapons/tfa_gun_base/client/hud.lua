@@ -548,44 +548,46 @@ function SWEP:InspectionVGUIStats(contentpanel)
 		fireratetext.Paint = TextShadowPaint
 
 		--Hipfire Spread
-		local accuracypanel = statspanel:Add("DPanel")
-		accuracypanel:SetSize(preferredWidth, TFA.Fonts.InspectionHeightSmall)
-		statspanel:SetTall(statspanel:GetTall() + TFA.Fonts.InspectionHeightSmall)
+		if self:GetStat("Secondary.DisplaySpread") then
+			local accuracypanel = statspanel:Add("DPanel")
+			accuracypanel:SetSize(preferredWidth, TFA.Fonts.InspectionHeightSmall)
+			statspanel:SetTall(statspanel:GetTall() + TFA.Fonts.InspectionHeightSmall)
 
-		accuracypanel.Think = function(myself)
-			if not IsValid(self) then return end
+			accuracypanel.Think = function(myself)
+				if not IsValid(self) then return end
 
-			myself.Bar = 1 - self:GetStat("Primary.Spread") / worstaccuracy
-		end
-
-		accuracypanel.Paint = PanelPaintBars
-		accuracypanel:Dock(BOTTOM)
-		local accuracytext = accuracypanel:Add("DPanel")
-
-		accuracytext.Think = function(myself)
-			if not IsValid(self) then return end
-
-			local ismoa = cv_display_moa and cv_display_moa:GetBool()
-			local spread = self:GetStat("Primary.Spread")
-			local spreadtext
-
-			if ismoa then
-				spreadtext = language.GetPhrase("tfa.inspect.val.moa"):format(spread * AccuracyToMOA)
-			else
-				spreadtext = language.GetPhrase("tfa.inspect.val.degrees"):format(spread * AccuracyToDegrees)
+				myself.Bar = 1 - self:GetStat("Primary.Spread") / worstaccuracy
 			end
 
-			myself.Text = language.GetPhrase("tfa.inspect.stat.accuracy.hip"):format(spreadtext)
-			myself.TextColor = mainpanel.SecondaryColor
+			accuracypanel.Paint = PanelPaintBars
+			accuracypanel:Dock(BOTTOM)
+			local accuracytext = accuracypanel:Add("DPanel")
+
+			accuracytext.Think = function(myself)
+				if not IsValid(self) then return end
+
+				local ismoa = cv_display_moa and cv_display_moa:GetBool()
+				local spread = self:GetStat("Primary.Spread")
+				local spreadtext
+
+				if ismoa then
+					spreadtext = language.GetPhrase("tfa.inspect.val.moa"):format(spread * AccuracyToMOA)
+				else
+					spreadtext = language.GetPhrase("tfa.inspect.val.degrees"):format(spread * AccuracyToDegrees)
+				end
+
+				myself.Text = language.GetPhrase("tfa.inspect.stat.accuracy.hip"):format(spreadtext)
+				myself.TextColor = mainpanel.SecondaryColor
+			end
+
+			accuracytext.Font = "TFA_INSPECTION_SMALL"
+			accuracytext:Dock(LEFT)
+			accuracytext:SetSize(preferredWidth, TFA.Fonts.InspectionHeightSmall)
+			accuracytext.Paint = TextShadowPaint
 		end
 
-		accuracytext.Font = "TFA_INSPECTION_SMALL"
-		accuracytext:Dock(LEFT)
-		accuracytext:SetSize(preferredWidth, TFA.Fonts.InspectionHeightSmall)
-		accuracytext.Paint = TextShadowPaint
-
 		--Iron Spread
-		if self:GetStat("Secondary.IronSightsEnabled", false) then
+		if self:GetStat("Secondary.IronSightsEnabled", false) and self:GetStat("Secondary.DisplayIronSpread") then
 			local ironspreadpanel = statspanel:Add("DPanel")
 			ironspreadpanel:SetSize(preferredWidth, TFA.Fonts.InspectionHeightSmall)
 			statspanel:SetTall(statspanel:GetTall() + TFA.Fonts.InspectionHeightSmall)
