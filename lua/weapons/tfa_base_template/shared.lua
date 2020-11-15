@@ -777,7 +777,7 @@ SWEP.EventTable = {
 ]==]
 
 ----------------- Render target related
-SWEP.RTMaterialOverride         = nil -- Take the material you want out of print(LocalPlayer():GetViewModel():GetMaterials()), subtract 1 from its index, and set it to this.
+SWEP.RTMaterialOverride         = nil -- Take the material you want out of PrintTable(LocalPlayer():GetViewModel():GetMaterials()), subtract 1 from its index, and set it to this.
 SWEP.RTOpaque                   = false -- Do you want your render target to be opaque?
 SWEP.RTCode                     = nil -- function(self) return end -- This is the function to draw onto your rendertarget
 SWEP.RTBGBlur                   = true -- Draw background blur when 3D scope is active?
