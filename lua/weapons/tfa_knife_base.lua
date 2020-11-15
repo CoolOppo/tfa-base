@@ -59,6 +59,8 @@ SWEP.HullData = {
 	hullMax = Vector(16, 16, 16)
 }
 
+SWEP.Primary.DisplayFalloff = false
+
 SWEP.SlashCounter = 1
 SWEP.StabCounter = 1
 
