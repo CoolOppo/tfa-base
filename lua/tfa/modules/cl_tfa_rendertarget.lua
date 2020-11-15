@@ -26,10 +26,27 @@ local props = {
 }
 
 local TFA_RTMat = CreateMaterial("tfa_rtmaterial", "UnLitGeneric", props) --Material("models/weapons/TFA/shared/optic")
-local TFA_RTScreen, TFA_RTScreenO
+local TFA_RTScreen, TFA_RTScreenO = {}, {}
 local tgt
 local old_bt
 local ply, vm, wep
+local w, h
+local qualitySizes
+
+local function callFunc()
+	if wep.RTCode then
+		wep:RTCode(TFA_RTMat, w, h)
+	end
+
+	if wep:GetStat("RTDrawEnabled") then
+		wep:CallAttFunc("RTCode", TFA_RTMat, w, h)
+	end
+end
+
+hook.Add("OnScreenSizeChanged", "TFA_rendertargets", function()
+	qualitySizes = nil
+	TFA_RTScreen, TFA_RTScreenO = {}, {}
+end)
 
 local function TFARenderScreen()
 	ply = GetViewEntity()
@@ -87,43 +104,45 @@ local function TFARenderScreen()
 	end
 
 	if not wep:GetStat("RTDrawEnabled") and not wep:GetStat("RTMaterialOverride") and not wep.RTCode then return end
-	local w, h = ScrW(), ScrH()
+	w, h = ScrW(), ScrH()
 
-	if not TFA_RTScreen then
-		TFA_RTScreen = {}
-		TFA_RTScreenO = {}
-		TFA_RTScreen[0] = GetRenderTargetEx("TFA_RT_Screen", 2048, 2048, RT_SIZE_NO_CHANGE, MATERIAL_RT_DEPTH_SHARED, 0, CREATERENDERTARGETFLAGS_UNFILTERABLE_OK, IMAGE_FORMAT_ARGB8888)
-		TFA_RTScreenO[0] = GetRenderTargetEx("TFA_RT_ScreenO", 2048, 2048, RT_SIZE_NO_CHANGE, MATERIAL_RT_DEPTH_SHARED, 0, CREATERENDERTARGETFLAGS_UNFILTERABLE_OK, IMAGE_FORMAT_RGB888)
-		TFA_RTScreen[1] = GetRenderTargetEx("TFA_RT_Screen_1024", 1024, 1024, RT_SIZE_NO_CHANGE, MATERIAL_RT_DEPTH_SHARED, 0, CREATERENDERTARGETFLAGS_UNFILTERABLE_OK, IMAGE_FORMAT_ARGB8888)
-		TFA_RTScreenO[1] = GetRenderTargetEx("TFA_RT_ScreenO_1024", 1024, 1024, RT_SIZE_NO_CHANGE, MATERIAL_RT_DEPTH_SHARED, 0, CREATERENDERTARGETFLAGS_UNFILTERABLE_OK, IMAGE_FORMAT_RGB888)
-		TFA_RTScreen[2] = GetRenderTargetEx("TFA_RT_Screen_512", 512, 512, RT_SIZE_NO_CHANGE, MATERIAL_RT_DEPTH_SHARED, 0, CREATERENDERTARGETFLAGS_UNFILTERABLE_OK, IMAGE_FORMAT_ARGB8888)
-		TFA_RTScreenO[2] = GetRenderTargetEx("TFA_RT_ScreenO_512", 512, 512, RT_SIZE_NO_CHANGE, MATERIAL_RT_DEPTH_SHARED, 0, CREATERENDERTARGETFLAGS_UNFILTERABLE_OK, IMAGE_FORMAT_RGB888)
-		TFA_RTScreen[3] = GetRenderTargetEx("TFA_RT_Screen_256", 256, 256, RT_SIZE_NO_CHANGE, MATERIAL_RT_DEPTH_SHARED, 0, CREATERENDERTARGETFLAGS_UNFILTERABLE_OK, IMAGE_FORMAT_ARGB8888)
-		TFA_RTScreenO[3] = GetRenderTargetEx("TFA_RT_ScreenO_256", 256, 256, RT_SIZE_NO_CHANGE, MATERIAL_RT_DEPTH_SHARED, 0, CREATERENDERTARGETFLAGS_UNFILTERABLE_OK, IMAGE_FORMAT_RGB888)
+	if not qualitySizes then
+		qualitySizes = {
+			[0] = h,
+			[1] = math.Round(h * 0.5),
+			[2] = math.Round(h * 0.25),
+			[3] = math.Round(h * 0.125),
+		}
 	end
+
+	local quality = TFA.RTQuality()
 
 	if wep:GetStat("RTOpaque") then
-		tgt = TFA_RTScreenO[TFA.RTQuality()] or TFA_RTScreenO[2]
+		tgt = TFA_RTScreenO[quality]
+
+		if not tgt then
+			local size = qualitySizes[quality]
+			tgt = GetRenderTargetEx("TFA_RT_ScreenO_" .. size, size, size, RT_SIZE_NO_CHANGE, MATERIAL_RT_DEPTH_SHARED, 0, CREATERENDERTARGETFLAGS_UNFILTERABLE_OK, IMAGE_FORMAT_RGB888)
+			TFA_RTScreenO[quality] = tgt
+		end
 	else
-		tgt = TFA_RTScreen[TFA.RTQuality()] or TFA_RTScreen[2]
+		tgt = TFA_RTScreen[quality]
+
+		if not tgt then
+			local size = qualitySizes[quality]
+			tgt = GetRenderTargetEx("TFA_RT_Screen_" .. size, size, size, RT_SIZE_NO_CHANGE, MATERIAL_RT_DEPTH_SHARED, 0, CREATERENDERTARGETFLAGS_UNFILTERABLE_OK, IMAGE_FORMAT_RGBA8888)
+			TFA_RTScreen[quality] = tgt
+		end
 	end
 
-	TFA.LastRTUpdate = UnPredictedCurTime() + 0.01
+	TFA.LastRTUpdate = CurTime() + 0.01
 
 	render.PushRenderTarget(tgt)
 	render.Clear(0, 0, 0, 255, true, true)
 
 	TFA.DrawingRenderTarget = true
 	render.CullMode(MATERIAL_CULLMODE_CCW)
-	ProtectedCall(function()
-		if wep.RTCode then
-			wep:RTCode(TFA_RTMat, w, h)
-		end
-
-		if wep:GetStat("RTDrawEnabled") then
-			wep:CallAttFunc("RTCode", TFA_RTMat, w, h)
-		end
-	end)
+	ProtectedCall(callFunc)
 	TFA.DrawingRenderTarget = false
 
 	render.SetScissorRect(0, 0, 0, 0, false)
@@ -148,29 +167,3 @@ hook.Add("PreRender", "TFASCREENS", function()
 end)
 
 TFA.RT_DRAWING = false
-
-local rt_res_tbl = {
-	[0] = 2048,
-	[1] = 1024,
-	[2] = 512,
-	[3] = 256
-}
-
-local cv_rt = GetConVar("cl_tfa_3dscope_quality")
-
-local function checkConVar()
-	if not cv_rt then
-		cv_rt = GetConVar("cl_tfa_3dscope_quality")
-	end
-
-	if cv_rt:GetInt() < 0 then return end -- it's set to autodetect already
-	local res = rt_res_tbl[math.Clamp(cv_rt:GetInt(), 0, 3)]
-
-	if res and (ScrW() < res or ScrH() < res) then
-		print("[TFA Base] Your screen resolution is too low for selected RT scope resolution, reverting to auto-detect.")
-		cv_rt:SetInt(-1)
-	end
-end
-
-hook.Add("InitPostEntity", "TFA_RT_ResolutionEnforcer", checkConVar)
-cvars.AddChangeCallback("cl_tfa_3dscope_quality", checkConVar, "TFA_RT_ResolutionEnforcer")

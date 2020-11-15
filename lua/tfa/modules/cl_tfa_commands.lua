@@ -60,7 +60,7 @@ if GetConVar("cl_tfa_gunbob_custom") == nil then
 end
 
 if GetConVar("cl_tfa_3dscope_quality") == nil then
-	CreateClientConVar("cl_tfa_3dscope_quality", -1, true, true, "3D scope quality (leave -1 for autodetected)")
+	CreateClientConVar("cl_tfa_3dscope_quality", -1, true, true, "3D scope quality (0 to 3)")
 end
 
 if GetConVar("cl_tfa_3dscope") == nil then

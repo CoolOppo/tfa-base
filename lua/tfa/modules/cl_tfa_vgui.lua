@@ -112,7 +112,7 @@ local function tfaOptionSights(panel)
 	tfaOptionCL.Options["#preset.default"] = {
 		cl_tfa_3dscope = "1",
 		cl_tfa_3dscope_overlay = "1",
-		cl_tfa_3dscope_quality = "-1",
+		cl_tfa_3dscope_quality = "0",
 		cl_tfa_fx_rtscopeblur_passes = "3",
 		cl_tfa_fx_rtscopeblur_intensity = "4",
 		cl_tfa_fx_rtscopeblur_mode = "1",
@@ -169,10 +169,6 @@ local function tfaOptionSights(panel)
 		Label = "#tfa.sightsettings.3dsq",
 		MenuButton = "0",
 		Folder = "TFA 3D Scope Sens."
-	}
-
-	tfaOption3DSQ.Options["#tfa.sightsettings.3dsq.at"] = {
-		cl_tfa_3dscope_quality = "-1"
 	}
 
 	tfaOption3DSQ.Options["#tfa.sightsettings.3dsq.ul"] = {

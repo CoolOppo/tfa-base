@@ -80,14 +80,13 @@ local SoundChannels = {
 
 --Scope
 
-local cv_rt
+local cv_rt = GetConVar("cl_tfa_3dscope_quality")
 
 function TFA.RTQuality()
-	if not cv_rt then cv_rt = GetConVar("cl_tfa_3dscope_quality") end
-	if ( not cv_rt ) or ( cv_rt:GetInt() == -1 ) then
-		return math.max( 3 - math.floor( math.min( ScrH(), ScrW() ) / 512 ), 0 )
+	if not cv_rt or cv_rt:GetInt() == -1 then
+		return 0
 	elseif cv_rt then
-		return math.Clamp( cv_rt:GetInt(), 0, 3 )
+		return math.Clamp(cv_rt:GetInt(), 0, 3)
 	end
 end
 
