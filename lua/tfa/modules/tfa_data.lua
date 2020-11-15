@@ -294,20 +294,82 @@ TFA.HardDataMapping = {
 }
 
 TFA.PathParseCache = {}
-TFA.StatPathRemap = {}
+TFA.StatPathRemapCache = {}
 TFA.PathParseCacheDirect = {}
+
+TFA.StatPathRemap_Real = {}
 
 local PathParseCache = TFA.PathParseCache
 local PathParseCacheDirect = TFA.PathParseCacheDirect
+local StatPathRemapCache = TFA.StatPathRemapCache
+local StatPathRemap_Real = TFA.StatPathRemap_Real
 local string_Explode = string.Explode
 local ipairs = ipairs
+local pairs = pairs
+local string_sub = string.sub
 local tonumber = tonumber
+local table_Copy = table.Copy
+local table_concat = table.concat
+
+function TFA.RemapStatPath(path)
+	local get_cache = StatPathRemapCache[path]
+	if get_cache ~= nil then return get_cache end
+
+	get_cache = string_Explode(".", path, false)
+
+	local search = StatPathRemap_Real
+
+	for depth, pathPart in ipairs(get_cache) do
+		if not search[pathPart] then break end
+
+		if search[pathPart].exact and (not search[pathPart].children or depth == #get_cache) then
+			if depth == #get_cache then
+				get_cache = search[pathPart].exact
+			else
+				local get_cache2 = table_Copy(search[pathPart].exact)
+
+				for i = depth + 1, #get_cache do
+					get_cache2[i] = get_cache[i]
+				end
+
+				get_cache = get_cache2
+			end
+		elseif depth ~= #get_cache and search[pathPart].children then
+			search = search[pathPart].children
+		end
+	end
+
+	StatPathRemapCache[path] = table_concat(get_cache, ".")
+	return StatPathRemapCache[path]
+end
 
 function TFA.GetStatPath(path)
 	local get_cache = PathParseCache[path]
 	if get_cache ~= nil then return get_cache end
 
 	get_cache = string_Explode(".", path, false)
+
+	local search = StatPathRemap_Real
+
+	for depth, pathPart in ipairs(get_cache) do
+		if not search[pathPart] then break end
+
+		if search[pathPart].exact and (not search[pathPart].children or depth == #get_cache) then
+			if depth == #get_cache then
+				get_cache = table_Copy(search[pathPart].exact)
+			else
+				local get_cache2 = table_Copy(search[pathPart].exact)
+
+				for i = depth + 1, #get_cache do
+					get_cache2[i] = get_cache[i]
+				end
+
+				get_cache = get_cache2
+			end
+		elseif depth ~= #get_cache and search[pathPart].children then
+			search = search[pathPart].children
+		end
+	end
 
 	if get_cache[1] == "Primary" then
 		get_cache[1] = "Primary_TFA"
@@ -339,40 +401,60 @@ end
 
 local GetStatPathDirect = TFA.GetStatPathDirect
 local istable = istable
-local table_Copy = table.Copy
 
-for _, info in ipairs(TFA.HardDataMapping) do
-	if info.force then
-		local new_path = table_Copy(GetStatPathDirect(info.new_path))
+local function mapMigration(info)
+	local new_path = table_Copy(GetStatPathDirect(info.new_path))
+	local old_path = table_Copy(GetStatPathDirect(info.old_path))
 
-		if new_path[1] == "Primary" then
-			new_path[1] = "Primary_TFA"
-		elseif new_path[1] == "Secondary" then
-			new_path[1] = "Secondary_TFA"
+	-- VElements -> ViewModelElements
+	if #old_path == 1 then
+		if not StatPathRemap_Real[old_path[1]] then
+			StatPathRemap_Real[old_path[1]] = {children = {}}
 		end
 
-		PathParseCache[info.old_path] = new_path
-	end
+		StatPathRemap_Real[old_path[1]].exact = table_Copy(new_path)
+	else
+		local targeting = StatPathRemap_Real
 
-	TFA.StatPathRemap[info.old_path] = info.new_path
+		for depth, pathPartOld in ipairs(old_path) do
+			if not targeting[pathPartOld] then
+				targeting[pathPartOld] = {children = {}}
+			end
+
+			-- exact
+			if #old_path == depth then
+				targeting[pathPartOld].exact = table_Copy(new_path)
+			else -- children
+				targeting = targeting[pathPartOld].children
+			end
+		end
+	end
+end
+
+for _, info in ipairs(TFA.HardDataMapping) do
+	mapMigration(info)
 end
 
 for version, data in SortedPairs(TFA.DataVersionMapping) do
 	for _, info in ipairs(data) do
-		if info.force then
-			local new_path = table_Copy(GetStatPathDirect(info.new_path))
-
-			if new_path[1] == "Primary" then
-				new_path[1] = "Primary_TFA"
-			elseif new_path[1] == "Secondary" then
-				new_path[1] = "Secondary_TFA"
-			end
-
-			PathParseCache[info.old_path] = new_path
-		end
-
-		TFA.StatPathRemap[info.old_path] = info.new_path
+		mapMigration(info)
 	end
+end
+
+do
+	local function collapse(tableInput)
+		for k, v in pairs(tableInput) do
+			if istable(v) and istable(v.children) then
+				if table.Count(v.children) == 0 then
+					v.children = nil
+				else
+					collapse(v.children)
+				end
+			end
+		end
+	end
+
+	collapse(StatPathRemap_Real)
 end
 
 --PrintTable(PathParseCache)

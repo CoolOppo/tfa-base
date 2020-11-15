@@ -624,13 +624,7 @@ do
 		local target = {}
 
 		for key in pairs(input) do
-			for key2, value2 in pairs(TFA.StatPathRemap) do
-				if string_sub(key, 1, #key2) == key2 then
-					target[value2 .. string_sub(key, #key2 + 1)] = true
-				end
-			end
-
-			target[key] = true
+			target[TFA.RemapStatPath(key)] = true
 		end
 
 		table.Empty(input)
@@ -638,13 +632,7 @@ do
 		setmetatable(input, {
 			__index = target,
 			__newindex = function(_, key, value)
-				for key2, value2 in pairs(TFA.StatPathRemap) do
-					if string_sub(key, 1, #key2) == key2 then
-						target[value2 .. string_sub(key, #key2 + 1)] = value
-					end
-				end
-
-				target[key] = value
+				target[TFA.RemapStatPath(key)] = value
 			end
 		})
 
