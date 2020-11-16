@@ -302,6 +302,10 @@ do
 			end
 		end
 
+		if id <= 0 and self2.Attachments[cat].default and type(self2.Attachments[cat].default) == "string" and self2.Attachments[cat].default ~= "" then
+			return self2.SetTFAAttachment(self, cat, self2.Attachments[cat].default, nw, force)
+		end
+
 		local attn = self2.Attachments[cat].atts[id] or ""
 		local attn_old = self2.Attachments[cat].atts[self2.Attachments[cat].sel or -1] or ""
 		if SERVER and id > 0 and not (force or self2.CanAttach(self, attn)) then return false end

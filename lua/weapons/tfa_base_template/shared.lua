@@ -797,9 +797,10 @@ SWEP.Attachments = {
 			atts = {
 				"si_eotech",
 				-- ...
-			},
+			}, -- table of available attachments IDs
 
-			sel = 0
+			sel = 0, -- index or ID of pre-selected attachment (index starts with 1)
+			default = nil -- attachment ID to equip on deselect
 		}
 	]]
 
