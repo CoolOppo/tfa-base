@@ -1091,7 +1091,7 @@ function SWEP:EmitSoundNet(sound, ifp)
 
 	if filter:GetCount() == 0 then return end
 
-	net.Start("tfaSoundEvent")
+	net.Start("tfaSoundEvent", true)
 	net.WriteEntity(self)
 	net.WriteString(sound)
 	net.Send(filter)

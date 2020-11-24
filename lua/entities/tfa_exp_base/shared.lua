@@ -45,7 +45,7 @@ function ENT:EmitSoundNet(sound)
 		filter:RemovePlayer(self:GetOwner())
 	end
 
-	net.Start("tfaSoundEvent")
+	net.Start("tfaSoundEvent", true)
 	net.WriteEntity(self)
 	net.WriteString(sound)
 	net.Send(filter)
