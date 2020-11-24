@@ -209,7 +209,7 @@ function TFA.Attachments.Register(id, ATTACHMENT)
 	end
 
 	if not TFA_ATTACHMENT_ISUPDATING and istable(ATTACHMENT.WeaponTable) then
-		TFA.MigrateStructure(ATTACHMENT, ATTACHMENT.WeaponTable, id or '<attachment>', false)
+		TFA.MigrateStructure(ATTACHMENT, ATTACHMENT.WeaponTable, id or "<attachment>", false)
 	end
 
 	ProtectedCall(function()
@@ -327,7 +327,7 @@ function TFAUpdateAttachments(network)
 		patchInheritance(v)
 
 		if istable(v.WeaponTable) then
-			TFA.MigrateStructure(v, v.WeaponTable, v.ID or '<attachment>', false)
+			TFA.MigrateStructure(v, v.WeaponTable, v.ID or "<attachment>", false)
 		end
 	end
 

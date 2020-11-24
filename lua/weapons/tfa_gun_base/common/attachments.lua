@@ -136,11 +136,11 @@ function SWEP:BuildAttachmentCache()
 
 		local srctbl = TFA.Attachments.Atts[attName].WeaponTable
 
-		if type(srctbl) == "table" then
+		if istable(srctbl) then
 			CloneTableRecursive(srctbl, self.AttachmentTableCache, true)
 		end
 
-		if type(self.AttachmentTableOverride[attName]) == "table" then
+		if istable(self.AttachmentTableOverride[attName]) then
 			CloneTableRecursive(self.AttachmentTableOverride[attName], self.AttachmentTableCache, true)
 		end
 

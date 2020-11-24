@@ -666,6 +666,14 @@ function SWEP:Initialize()
 
 	TFA.UnfoldBaseClass(self2.Primary.PenetrationMaterials)
 
+	TFA.UnfoldBaseClass(self2.AttachmentTableOverride)
+
+	for k, v in pairs(self2.AttachmentTableOverride) do
+		if istable(v) and k ~= "BaseClass" then
+			TFA.MigrateStructure(self, v, self:GetClass(), false)
+		end
+	end
+
 	self2.Primary.BaseClass = nil
 	self2.Secondary.BaseClass = nil
 
