@@ -865,8 +865,8 @@ function SWEP:ChooseIdleAnim()
 	local self2 = self:GetTable()
 	if not self:VMIV() then return end
 	--if self2.Idle_WithHeld then
-	--	self2.Idle_WithHeld = nil
-	--	return
+	--  self2.Idle_WithHeld = nil
+	--  return
 	--end
 
 	if TFA.Enum.ShootLoopingStatus[self:GetShootStatus()] then
@@ -904,7 +904,7 @@ function SWEP:ChooseIdleAnim()
 	end
 
 	--else
-	--	return
+	--  return
 	--end
 	return PlayChosenAnimation(self, typev, tanim)
 end
@@ -1281,7 +1281,7 @@ function SWEP:IsOwnerCrouching()
 
 	if not ply:IsPlayer() then return false end
 
-	return (ply:Crouching() or self:KeyDown(IN_DUCK)) and ply:OnGround()
+	return (ply:Crouching() or self:KeyDown(IN_DUCK)) and ply:OnGround() and not ply:InVehicle()
 end
 
 function SWEP:ProcessHoldType()

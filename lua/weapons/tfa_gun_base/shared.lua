@@ -1127,7 +1127,7 @@ function SWEP:PlayerThinkCL(plyv)
 
 	local jr_targ = math.min(math.abs(velocity.z) / 500, 1)
 	self2.JumpRatioUnpredicted = l_mathApproach((self2.JumpRatioUnpredicted or 0), jr_targ, (jr_targ - (self2.JumpRatioUnpredicted or 0)) * ft * 20)
-	self2.CrouchingRatioUnpredicted = l_mathApproach((self2.CrouchingRatioUnpredicted or 0), ((ply:Crouching() or self2.KeyDown(self, IN_DUCK)) and ply:OnGround()) and 1 or 0, ft / self2.ToCrouchTime)
+	self2.CrouchingRatioUnpredicted = l_mathApproach((self2.CrouchingRatioUnpredicted or 0), ((ply:Crouching() or self2.KeyDown(self, IN_DUCK)) and ply:OnGround() and not ply:InVehicle()) and 1 or 0, ft / self2.ToCrouchTime)
 
 	self2.IronSightsProgressUnpredicted = l_mathApproach(self2.IronSightsProgressUnpredicted or 0, ist, (ist - (self2.IronSightsProgressUnpredicted or 0)) * ft * adstransitionspeed * 1.2)
 	self2.IronSightsProgressUnpredicted2 = l_mathApproach(self2.IronSightsProgressUnpredicted2 or 0, ist, (ist - (self2.IronSightsProgressUnpredicted2 or 0)) * ft * adstransitionspeed * 0.4)
