@@ -132,7 +132,7 @@ if CLIENT then
 			end
 
 			if sp then
-				net.Start("tfaSDLP")
+				net.Start("tfaSDLP", true)
 				net.WriteBool(ply:ShouldDrawLocalPlayer())
 				net.SendToServer()
 			end

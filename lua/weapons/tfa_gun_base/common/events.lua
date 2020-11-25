@@ -279,12 +279,12 @@ function SWEP:ProcessEvents(firstprediction)
 			if SERVER then
 				if event.client then
 					if not isplayer and player.GetCount() ~= 0 then
-						net.Start("tfaSoundEvent")
+						net.Start("tfaSoundEvent", true)
 						net.WriteEntity(self)
 						net.WriteString(event.value or "")
 						net.SendPVS(self:GetPos())
 					elseif isplayer then
-						net.Start("tfaSoundEvent")
+						net.Start("tfaSoundEvent", true)
 						net.WriteEntity(self)
 						net.WriteString(event.value or "")
 						net.SendOmit(ply)
@@ -377,7 +377,7 @@ function SWEP:ProcessEventsSP(firstprediction)
 			end
 		elseif event.type == "snd" or event.type == "sound" then
 			if event.client then
-				net.Start("tfaSoundEvent")
+				net.Start("tfaSoundEvent", true)
 				net.WriteEntity(self)
 				net.WriteString(event.value or "")
 				net.Broadcast()

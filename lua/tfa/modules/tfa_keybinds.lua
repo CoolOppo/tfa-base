@@ -103,7 +103,7 @@ function TFA.RegisterKeyBind(data_in)
 			data.onpress(ply)
 
 			if sp and SERVER then
-				net.Start("TFA_KB_State")
+				net.Start("TFA_KB_State", true)
 				net.WriteString(data.bind)
 				net.WriteBool(data.state)
 				net.Send(ply)
@@ -120,7 +120,7 @@ function TFA.RegisterKeyBind(data_in)
 			data.onrelease(ply)
 
 			if sp and SERVER then
-				net.Start("TFA_KB_State")
+				net.Start("TFA_KB_State", true)
 				net.WriteString(data.bind)
 				net.WriteBool(data.state)
 				net.Send(ply)
@@ -136,7 +136,7 @@ function TFA.RegisterKeyBind(data_in)
 				data.think(ply)
 
 				if sp and SERVER then
-					net.Start("TFA_KB_Think")
+					net.Start("TFA_KB_Think", true)
 					net.WriteString(data.bind)
 					net.Send(ply)
 				end

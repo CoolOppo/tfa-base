@@ -50,7 +50,7 @@ function SWEP:EventShell()
 	if SERVER and self.processing_events and sp then return end
 
 	if SERVER then
-		net.Start("tfaBaseShellSV")
+		net.Start("tfaBaseShellSV", true)
 		net.WriteEntity(self)
 
 		if self:GetOwner():IsPlayer() then
@@ -169,7 +169,7 @@ end
 Function Name:  CleanParticles
 Syntax: self:CleanParticles().
 Returns:  Nothing.
-Notes:	Cleans up particles.
+Notes:  Cleans up particles.
 Purpose:  FX
 ]]
 --
@@ -202,7 +202,7 @@ end
 Function Name:  EjectionSmoke
 Syntax: self:EjectionSmoke().
 Returns:  Nothing.
-Notes:	Puff of smoke on shell attachment.
+Notes:  Puff of smoke on shell attachment.
 Purpose:  FX
 ]]
 --
@@ -246,7 +246,7 @@ end
 Function Name:  ShootEffectsCustom
 Syntax: self:ShootEffectsCustom().
 Returns:  Nothing.
-Notes:	Calls the proper muzzleflash, muzzle smoke, muzzle light code.
+Notes:  Calls the proper muzzleflash, muzzle smoke, muzzle light code.
 Purpose:  FX
 ]]
 --
@@ -303,7 +303,7 @@ function SWEP:ShootEffectsCustom(ifp)
 	ifp = ifp or IsFirstTimePredicted()
 
 	if (SERVER and sp and self.ParticleMuzzleFlash) or (SERVER and not sp) then
-		net.Start("tfa_base_muzzle_mp")
+		net.Start("tfa_base_muzzle_mp", true)
 		net.WriteEntity(self)
 
 		if sp or not self:GetOwner():IsPlayer() then
@@ -326,7 +326,7 @@ end
 Function Name:  CanDustEffect
 Syntax: self:CanDustEffect( concise material name ).
 Returns:  True/False
-Notes:	Used for the impact effect.  Should be used with GetMaterialConcise.
+Notes:  Used for the impact effect.  Should be used with GetMaterialConcise.
 Purpose:  Utility
 ]]
 --
@@ -346,7 +346,7 @@ end
 Function Name:  CanSparkEffect
 Syntax: self:CanSparkEffect( concise material name ).
 Returns:  True/False
-Notes:	Used for the impact effect.  Should be used with GetMaterialConcise.
+Notes:  Used for the impact effect.  Should be used with GetMaterialConcise.
 Purpose:  Utility
 ]]
 --

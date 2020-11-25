@@ -851,11 +851,11 @@ function SWEP:SendHitMarker(ply, traceres, dmginfo)
 	local hm3d_sg = ply:GetInfoNum("cl_tfa_hud_hitmarker_3d_shotguns", 0) > 0 and self:GetStat("Primary.NumShots") > 1
 
 	if hm3d or hm3d_sg then
-		net.Start("tfaHitmarker3D")
+		net.Start("tfaHitmarker3D", true)
 		net.WriteVector(traceres.HitPos)
 		net.Send(ply)
 	else
-		net.Start("tfaHitmarker")
+		net.Start("tfaHitmarker", true)
 		net.Send(ply)
 	end
 end
@@ -1118,7 +1118,7 @@ function SWEP:StopSoundNet(sound, ifp)
 
 	if filter:GetCount() == 0 then return end
 
-	net.Start("tfaSoundEventStop")
+	net.Start("tfaSoundEventStop", true)
 	net.WriteEntity(self)
 	net.WriteString(sound)
 	net.Send(filter)
