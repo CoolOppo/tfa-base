@@ -117,7 +117,7 @@ local function DrawDebugInfo(w, h, ply, wep)
 	local statusText = string.format(
 		"%s [%.2f, %.2f, %.2f, %.2f]",
 		TFA.Enum.InverseStatus[wep:GetStatus()] or wep:GetStatus(),
-		CurTime(),
+		CurTime() + (wep.CurTimePredictionAdvance or 0),
 		wep:GetStatusProgress(true),
 		wep:GetStatusStart(),
 		wep:GetStatusEnd())
