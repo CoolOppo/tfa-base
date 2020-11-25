@@ -143,7 +143,7 @@ function SWEP:AltAttack()
 end
 
 function SWEP:BashAnim()
-	--if IsValid(wep) and wep.GetHoldType then
+	if not IsFirstTimePredicted() then return end
 	local ht = self.DefaultHoldType or self.HoldType
 	local altanim = false
 
