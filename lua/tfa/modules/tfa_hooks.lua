@@ -583,6 +583,8 @@ if CLIENT then
 		wepv:Sway(vec, ang, delta)
 		wepv:CalculateViewModelOffset(delta)
 		wepv:CalculateViewModelFlip()
+
+		wepv:UpdateProjectedTextures(true)
 	end)
 end
 
