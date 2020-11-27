@@ -98,6 +98,10 @@ function SWEP:ClearStatCache(vn)
 	local self2 = self:GetTable()
 	local getpath, getpath2
 
+	if isstring(vn) then
+		vn = TFA.RemapStatPath(vn)
+	end
+
 	if not vn and not self2.ClearStatCacheWarned then
 		local ct = CurTime()
 		local delta = ct - self2.LastClearStatCache
