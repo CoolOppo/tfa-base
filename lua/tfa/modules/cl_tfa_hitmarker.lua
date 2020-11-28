@@ -23,6 +23,7 @@ local ScrW, ScrH = ScrW, ScrH
 
 local markers = {}
 
+local cl_drawhud = GetConVar("cl_drawhud")
 local enabledcvar = GetConVar("cl_tfa_hud_hitmarker_enabled")
 local solidtimecvar = GetConVar("cl_tfa_hud_hitmarker_solidtime")
 local fadetimecvar = GetConVar("cl_tfa_hud_hitmarker_fadetime")
@@ -61,7 +62,7 @@ local mat_triang = Material("vgui/tfa_hitmarker_triang.png", "smooth mips")
 local cl_tfa_hud_crosshair_enable_custom = GetConVar("cl_tfa_hud_crosshair_enable_custom")
 
 hook.Add("HUDPaint", "tfaDrawHitmarker", function()
-	if not enabledcvar:GetBool() then return end
+	if not enabledcvar:GetBool() or not cl_drawhud:GetBool() then return end
 
 	local solidtime = solidtimecvar:GetFloat()
 	local fadetime = math.max(fadetimecvar:GetFloat(), 0.001)
