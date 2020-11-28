@@ -686,7 +686,7 @@ function SWEP:ChooseDrawAnim()
 		self2.IsFirstDeploy = false
 	end
 
-	if self:GetActivityEnabled(ACT_VM_DRAW_EMPTY) and (self:Clip1() == 0) then
+	if self:GetActivityEnabled(ACT_VM_DRAW_EMPTY) and self:IsEmpty1() then
 		typev, tanim = self:ChooseAnimation("draw_empty")
 	elseif (self:GetActivityEnabled(ACT_VM_DRAW_DEPLOYED) or self2.FirstDeployEnabled) and self2.IsFirstDeploy then
 		typev, tanim = self:ChooseAnimation("draw_first")
@@ -722,7 +722,7 @@ function SWEP:ChooseInspectAnim()
 
 	if self:GetActivityEnabled(ACT_VM_FIDGET_SILENCED) and self2.GetSilenced(self) then
 		typev, tanim = self:ChooseAnimation("inspect_silenced")
-	elseif self:GetActivityEnabled(ACT_VM_FIDGET_EMPTY) and self2.Primary_TFA.ClipSize > 0 and math.Round(self:Clip1()) == 0 then
+	elseif self:GetActivityEnabled(ACT_VM_FIDGET_EMPTY) and self:IsEmpty1() then
 		typev, tanim = self:ChooseAnimation("inspect_empty")
 	elseif self2.InspectionActions then
 		tanim = self2.InspectionActions[self:SharedRandom(1, #self2.InspectionActions, "Inspect")]
@@ -750,7 +750,7 @@ function SWEP:ChooseHolsterAnim()
 
 	if self:GetActivityEnabled(ACT_VM_HOLSTER_SILENCED) and self2.GetSilenced(self) then
 		typev, tanim = self:ChooseAnimation("holster_silenced")
-	elseif self:GetActivityEnabled(ACT_VM_HOLSTER_EMPTY) and (self:Clip1() == 0) then
+	elseif self:GetActivityEnabled(ACT_VM_HOLSTER_EMPTY) and self:IsEmpty1() then
 		typev, tanim = self:ChooseAnimation("holster_empty")
 	elseif self:GetActivityEnabled(ACT_VM_HOLSTER) then
 		typev, tanim = self:ChooseAnimation("holster")
@@ -892,7 +892,7 @@ function SWEP:ChooseIdleAnim()
 
 	if self:GetActivityEnabled(ACT_VM_IDLE_SILENCED) and self2.GetSilenced(self) then
 		typev, tanim = self:ChooseAnimation("idle_silenced")
-	elseif (self2.Primary_TFA.ClipSize > 0 and self:Clip1() == 0) or (self2.Primary_TFA.ClipSize <= 0 and self:Ammo1() == 0) then
+	elseif self:IsEmpty1() then
 		--self:GetActivityEnabled( ACT_VM_IDLE_EMPTY ) and (self:Clip1() == 0) then
 		if self:GetActivityEnabled(ACT_VM_IDLE_EMPTY) then
 			typev, tanim = self:ChooseAnimation("idle_empty")
@@ -917,7 +917,7 @@ function SWEP:ChooseFlatAnim()
 
 	if self:GetActivityEnabled(ACT_VM_IDLE_SILENCED) and self2.GetSilenced(self) then
 		typev, tanim = self:ChooseAnimation("idle_silenced")
-	elseif self:GetActivityEnabled(ACT_VM_IDLE_EMPTY) and ((self2.Primary_TFA.ClipSize > 0 and self:Clip1() == 0) or (self2.Primary_TFA.ClipSize <= 0 and self:Ammo1() == 0)) then
+	elseif self:GetActivityEnabled(ACT_VM_IDLE_EMPTY) and self:IsEmpty1() then
 		typev, tanim = self:ChooseAnimation("idle_empty")
 	end
 

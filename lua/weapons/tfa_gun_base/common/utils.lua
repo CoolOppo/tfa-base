@@ -434,6 +434,16 @@ function SWEP:TakeSecondaryAmmo(num, pool)
 	self:SetClip2(math.max(self:Clip2() - num, 0))
 end
 
+function SWEP:IsEmpty1()
+	return self:GetStat("Primary.ClipSize") > 0 and self:Clip1() == 0 or
+		self:GetStat("Primary.ClipSize") <= 0 and self:Ammo1() == 0
+end
+
+function SWEP:IsEmpty2()
+	return self:GetStat("Secondary.ClipSize") > 0 and self:Clip2() == 0 or
+		self:GetStat("Secondary.ClipSize") <= 0 and self:Ammo2() == 0
+end
+
 SWEP.TakeAmmo1 = SWEP.TakePrimaryAmmo
 SWEP.TakeAmmo2 = SWEP.TakeSecondaryAmmo
 
