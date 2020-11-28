@@ -58,6 +58,8 @@ function SWEP:TFAFinishMove(ply, velocity, movedata)
 		self2.LastUnpredictedVelocity = velocity
 	end
 
+	local speedmult = Lerp(self:GetIronSightsProgress(), self:GetStat("RegularMoveSpeedMultiplier"), self:GetStat("AimingDownSightsSpeedMultiplier"))
+
 	local jr_targ = math.min(math.abs(velocity.z) / 500, 1)
 	self:SetJumpRatio(l_mathApproach(self:GetJumpRatio(), jr_targ, (jr_targ - self:GetJumpRatio()) * ft * 20))
 	self2.JumpRatio = self:GetJumpRatio()
@@ -69,10 +71,10 @@ function SWEP:TFAFinishMove(ply, velocity, movedata)
 	local vellen = velocity:Length2D()
 
 	--if TFA.Enum.ReloadStatus[status] then
-	--	self:SetSprinting(false)
+	--  self:SetSprinting(false)
 	--elseif sprint_cv:GetBool() and not self:GetStat("AllowSprintAttack", false) and movedata then
 	if sprint_cv:GetBool() and not self:GetStat("AllowSprintAttack", false) and movedata then
-		self:SetSprinting(vellen > ply:GetRunSpeed() * 0.6 and movedata:KeyDown(IN_SPEED) and ply:OnGround())
+		self:SetSprinting(vellen > ply:GetRunSpeed() * 0.6 * speedmult and movedata:KeyDown(IN_SPEED) and ply:OnGround())
 	else
 		self:SetSprinting(false)
 	end

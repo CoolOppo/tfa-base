@@ -374,13 +374,11 @@ Function: Modify movement speed
 Used For:  Weapon slowdown, ironsights slowdown
 ]]
 --
-local speedmult
-
 hook.Add("SetupMove", "tfa_setupmove", function(plyv, movedata, commanddata)
 	local wepv = plyv:GetActiveWeapon()
 
 	if IsValid(wepv) and wepv.IsTFAWeapon then
-		speedmult = Lerp(wepv:GetIronSightsProgress(), wepv:GetStat("RegularMoveSpeedMultiplier"), wepv:GetStat("AimingDownSightsSpeedMultiplier"))
+		local speedmult = Lerp(wepv:GetIronSightsProgress(), wepv:GetStat("RegularMoveSpeedMultiplier"), wepv:GetStat("AimingDownSightsSpeedMultiplier"))
 		movedata:SetMaxClientSpeed(movedata:GetMaxClientSpeed() * speedmult)
 		commanddata:SetForwardMove(commanddata:GetForwardMove() * speedmult)
 		commanddata:SetSideMove(commanddata:GetSideMove() * speedmult)
