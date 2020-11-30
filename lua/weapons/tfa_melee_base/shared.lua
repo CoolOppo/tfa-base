@@ -184,16 +184,16 @@ function SWEP:Deploy()
 end
 
 function SWEP:AddNZAnimations()
-	if self.Primary_TFA.Attacks then
-		for _, v in pairs(self.Primary_TFA.Attacks) do
+	if self.Primary.Attacks then
+		for _, v in pairs(self.Primary.Attacks) do
 			if v.act then
 				self.DTapActivities[v.act] = true
 			end
 		end
 	end
 
-	if self.Secondary_TFA.Attacks then
-		for _, v in pairs(self.Secondary_TFA.Attacks) do
+	if self.Secondary.Attacks then
+		for _, v in pairs(self.Secondary.Attacks) do
 			if v.act then
 				self.DTapActivities[v.act] = true
 			end
