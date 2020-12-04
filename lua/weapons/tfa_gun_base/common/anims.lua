@@ -609,33 +609,33 @@ function SWEP:Locomote(flipis, is, flipsp, spr, flipwalk, walk, flipcust, cust)
 
 	if flipis then
 		if is and self2.GetStat(self, "IronAnimation.in") then
-			tldata = self2.GetStat(self, "IronAnimation.in") or tldata
+			tldata = self2.GetStat(self, "IronAnimation.in", tldata)
 		elseif self2.GetStat(self, "IronAnimation.out") and not flipsp then
-			tldata = self2.GetStat(self, "IronAnimation.out") or tldata
+			tldata = self2.GetStat(self, "IronAnimation.out", tldata)
 		end
 	end
 
 	if flipsp then
 		if spr and self2.GetStat(self, "SprintAnimation.in") then
-			tldata = self2.GetStat(self, "SprintAnimation.in") or tldata
+			tldata = self2.GetStat(self, "SprintAnimation.in", tldata)
 		elseif self2.GetStat(self, "SprintAnimation.out") and not flipis and not spr then
-			tldata = self2.GetStat(self, "SprintAnimation.out") or tldata
+			tldata = self2.GetStat(self, "SprintAnimation.out", tldata)
 		end
 	end
 
 	if flipwalk and not is then
 		if walk and self2.GetStat(self, "WalkAnimation.in") then
-			tldata = self2.GetStat(self, "WalkAnimation.in") or tldata
+			tldata = self2.GetStat(self, "WalkAnimation.in", tldata)
 		elseif self2.GetStat(self, "WalkAnimation.out") and (not flipis and not flipsp and not flipcust) and not walk then
-			tldata = self2.GetStat(self, "WalkAnimation.out") or tldata
+			tldata = self2.GetStat(self, "WalkAnimation.out", tldata)
 		end
 	end
 
 	if flipcust then
 		if cust and self2.GetStat(self, "CustomizeAnimation.in") then
-			tldata = self2.GetStat(self, "CustomizeAnimation.in") or tldata
+			tldata = self2.GetStat(self, "CustomizeAnimation.in", tldata)
 		elseif self2.GetStat(self, "CustomizeAnimation.out") and (not flipis and not flipsp and not flipwalk) and not cust then
-			tldata = self2.GetStat(self, "CustomizeAnimation.out") or tldata
+			tldata = self2.GetStat(self, "CustomizeAnimation.out", tldata)
 		end
 	end
 
