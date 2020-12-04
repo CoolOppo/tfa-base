@@ -475,6 +475,7 @@ end
 local rft, eyeAngles, viewPunch, oldEyeAngles, delta, motion, counterMotion, compensation, fac, positionCompensation, swayRate, wiggleFactor, flipFactor
 
 local gunswaycvar = GetConVar("cl_tfa_gunbob_intensity")
+local sv_tfa_weapon_weight = GetConVar("sv_tfa_weapon_weight")
 
 function SWEP:Sway(pos, ang, ftv)
 	local self2 = self:GetTable()
@@ -497,8 +498,8 @@ function SWEP:Sway(pos, ang, ftv)
 		eyeAngles.y = eyeAngles.y - viewPunch.y
 		oldEyeAngles = oldEyeAngles or eyeAngles
 		--calculate delta
-		wiggleFactor = (1 - self2.GetStat(self, "RegularMoveSpeedMultiplier")) / 0.6 + 0.15
-		swayRate = math.pow(self2.GetStat(self, "RegularMoveSpeedMultiplier"), 1.5) * 10
+		wiggleFactor = (1 - (sv_tfa_weapon_weight:GetBool() and self2.GetStat(self, "RegularMoveSpeedMultiplier") or 1)) / 0.6 + 0.15
+		swayRate = math.pow(sv_tfa_weapon_weight:GetBool() and self2.GetStat(self, "RegularMoveSpeedMultiplier") or 1, 1.5) * 10
 		rft = math.Clamp(ftv, 0.001, 1 / 20)
 		local clampFac = 1.1 - math.min((math.abs(motion.p) + math.abs(motion.y) + math.abs(motion.r)) / 20, 1)
 		delta.p = math.AngleDifference(eyeAngles.p, oldEyeAngles.p) / rft / 120 * clampFac

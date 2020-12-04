@@ -362,3 +362,7 @@ end
 if GetConVar("sv_tfa_fixed_crosshair") == nil then
 	CreateReplConVar("sv_tfa_fixed_crosshair", "0", "Fix crosshair position on center of the screen (CS:GO style)")
 end
+
+if GetConVar("sv_tfa_weapon_weight") == nil then
+	CreateReplConVar("sv_tfa_weapon_weight", "1", "Disabling this WILL break certain SWEPs and Mechanics. You were warned.")
+end

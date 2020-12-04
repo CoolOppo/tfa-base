@@ -368,6 +368,8 @@ hook.Add("PlayerSpawn", "TFAExtinguishQOL", function(plyv)
 	end
 end)
 
+local sv_tfa_weapon_weight = GetConVar("sv_tfa_weapon_weight")
+
 --[[
 Hook: SetupMove
 Function: Modify movement speed
@@ -378,7 +380,7 @@ hook.Add("SetupMove", "tfa_setupmove", function(plyv, movedata, commanddata)
 	local wepv = plyv:GetActiveWeapon()
 
 	if IsValid(wepv) and wepv.IsTFAWeapon then
-		local speedmult = Lerp(wepv:GetIronSightsProgress(), wepv:GetStat("RegularMoveSpeedMultiplier"), wepv:GetStat("AimingDownSightsSpeedMultiplier"))
+		local speedmult = Lerp(wepv:GetIronSightsProgress(), sv_tfa_weapon_weight:GetBool() and wepv:GetStat("RegularMoveSpeedMultiplier") or 1, wepv:GetStat("AimingDownSightsSpeedMultiplier"))
 		movedata:SetMaxClientSpeed(movedata:GetMaxClientSpeed() * speedmult)
 		commanddata:SetForwardMove(commanddata:GetForwardMove() * speedmult)
 		commanddata:SetSideMove(commanddata:GetSideMove() * speedmult)

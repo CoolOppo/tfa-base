@@ -393,6 +393,7 @@ function SWEP:InspectionVGUIMainInfo(contentpanel)
 end
 
 local cv_display_moa = GetConVar("cl_tfa_inspect_spreadinmoa")
+local sv_tfa_weapon_weight = GetConVar("sv_tfa_weapon_weight")
 
 local AccuracyToDegrees = 1 / TFA.DegreesToAccuracy
 local AccuracyToMOA = 1 / TFA.DegreesToAccuracy * 60
@@ -494,30 +495,32 @@ function SWEP:InspectionVGUIStats(contentpanel)
 		damagetext:SetSize(preferredWidth, TFA.Fonts.InspectionHeightSmall)
 		damagetext.Paint = TextShadowPaint
 
-		--Mobility
-		local mobilitypanel = statspanel:Add("DPanel")
-		mobilitypanel:SetSize(preferredWidth, TFA.Fonts.InspectionHeightSmall)
-		statspanel:SetTall(statspanel:GetTall() + TFA.Fonts.InspectionHeightSmall)
+		if sv_tfa_weapon_weight:GetBool() then
+			--Mobility
+			local mobilitypanel = statspanel:Add("DPanel")
+			mobilitypanel:SetSize(preferredWidth, TFA.Fonts.InspectionHeightSmall)
+			statspanel:SetTall(statspanel:GetTall() + TFA.Fonts.InspectionHeightSmall)
 
-		mobilitypanel.Think = function(myself)
-			if not IsValid(self) then return end
-			myself.Bar = (self:GetStat("RegularMoveSpeedMultiplier") - worstmove) / (1 - worstmove)
+			mobilitypanel.Think = function(myself)
+				if not IsValid(self) then return end
+				myself.Bar = (self:GetStat("RegularMoveSpeedMultiplier") - worstmove) / (1 - worstmove)
+			end
+
+			mobilitypanel.Paint = PanelPaintBars
+			mobilitypanel:Dock(BOTTOM)
+			local mobilitytext = mobilitypanel:Add("DPanel")
+
+			mobilitytext.Think = function(myself)
+				if not IsValid(self) then return end
+				myself.Text = language.GetPhrase("tfa.inspect.stat.mobility"):format(math.Round(self:GetStat("RegularMoveSpeedMultiplier") * 100))
+				myself.TextColor = mainpanel.SecondaryColor
+			end
+
+			mobilitytext.Font = "TFA_INSPECTION_SMALL"
+			mobilitytext:Dock(LEFT)
+			mobilitytext:SetSize(preferredWidth, TFA.Fonts.InspectionHeightSmall)
+			mobilitytext.Paint = TextShadowPaint
 		end
-
-		mobilitypanel.Paint = PanelPaintBars
-		mobilitypanel:Dock(BOTTOM)
-		local mobilitytext = mobilitypanel:Add("DPanel")
-
-		mobilitytext.Think = function(myself)
-			if not IsValid(self) then return end
-			myself.Text = language.GetPhrase("tfa.inspect.stat.mobility"):format(math.Round(self:GetStat("RegularMoveSpeedMultiplier") * 100))
-			myself.TextColor = mainpanel.SecondaryColor
-		end
-
-		mobilitytext.Font = "TFA_INSPECTION_SMALL"
-		mobilitytext:Dock(LEFT)
-		mobilitytext:SetSize(preferredWidth, TFA.Fonts.InspectionHeightSmall)
-		mobilitytext.Paint = TextShadowPaint
 
 		--Firerate
 		local fireratepanel = statspanel:Add("DPanel")

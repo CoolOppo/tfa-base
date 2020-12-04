@@ -48,6 +48,7 @@ local function l_mathApproach(a, b, delta)
 end
 
 local sprint_cv = GetConVar("sv_tfa_sprint_enabled")
+local sv_tfa_weapon_weight = GetConVar("sv_tfa_weapon_weight")
 
 function SWEP:TFAFinishMove(ply, velocity, movedata)
 	local ft = FrameTime()
@@ -58,7 +59,7 @@ function SWEP:TFAFinishMove(ply, velocity, movedata)
 		self2.LastUnpredictedVelocity = velocity
 	end
 
-	local speedmult = Lerp(self:GetIronSightsProgress(), self:GetStat("RegularMoveSpeedMultiplier"), self:GetStat("AimingDownSightsSpeedMultiplier"))
+	local speedmult = Lerp(self:GetIronSightsProgress(), sv_tfa_weapon_weight:GetBool() and self:GetStat("RegularMoveSpeedMultiplier") or 1, self:GetStat("AimingDownSightsSpeedMultiplier"))
 
 	local jr_targ = math.min(math.abs(velocity.z) / 500, 1)
 	self:SetJumpRatio(l_mathApproach(self:GetJumpRatio(), jr_targ, (jr_targ - self:GetJumpRatio()) * ft * 20))
@@ -79,7 +80,7 @@ function SWEP:TFAFinishMove(ply, velocity, movedata)
 		self:SetSprinting(false)
 	end
 
-	self:SetWalking(vellen > ((isply and ply:GetWalkSpeed() or TFA.GUESS_NPC_WALKSPEED) * self:GetStat("RegularMoveSpeedMultiplier", 1) * .75) and ply:GetNW2Bool("TFA_IsWalking") and ply:OnGround() and not self:GetSprinting() and not self:GetCustomizing())
+	self:SetWalking(vellen > ((isply and ply:GetWalkSpeed() or TFA.GUESS_NPC_WALKSPEED) * (sv_tfa_weapon_weight:GetBool() and self:GetStat("RegularMoveSpeedMultiplier", 1) or 1) * .75) and ply:GetNW2Bool("TFA_IsWalking") and ply:OnGround() and not self:GetSprinting() and not self:GetCustomizing())
 
 	self2.walking_updated = oldwalking ~= self:GetWalking()
 	self2.sprinting_updated = oldsprinting ~= self:GetSprinting()
