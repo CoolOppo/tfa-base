@@ -350,14 +350,17 @@ function SWEP:CalculateViewModelOffset(delta)
 	end
 
 	if ironSightsProgress > 0.02 and (self2.Sights_Mode == TFA.Enum.LOCOMOTION_LUA or self2.Sights_Mode == TFA.Enum.LOCOMOTION_HYBRID) then
-		if targetPosCenter then
-			target_pos = bezierVector(ironSightsProgress, target_pos, targetPosCenter, self2.IronSightsPositionCurrent or IronSightsPosition or self2.GetStat(self, "SightsPos", vector_origin))
+		local score = self2.VM_IronPositionScore
+		local getSightsPos = self2.IronSightsPositionCurrent or IronSightsPosition or self2.GetStat(self, "SightsPos", vector_origin)
+
+		if targetPosCenter and score > 0.04 then
+			target_pos = bezierVector(ironSightsProgress, target_pos, LerpVector(score, getSightsPos, targetPosCenter), getSightsPos)
 		else
-			target_pos = LerpVector(ironSightsProgress, target_pos, self2.IronSightsPositionCurrent or IronSightsPosition or self2.GetStat(self, "SightsPos", vector_origin))
+			target_pos = LerpVector(ironSightsProgress, target_pos, getSightsPos)
 		end
 
-		if targetAngCenter then
-			local deviate = 30
+		if targetAngCenter and score > 0.04 then
+			local deviate = 30 * score
 
 			if self2.VM_IsScopedIn then
 				deviate = -deviate
@@ -367,7 +370,7 @@ function SWEP:CalculateViewModelOffset(delta)
 				deviate = -deviate
 			end
 
-			local targetAngCenter2 = Vector(targetAngCenter.x, targetAngCenter.y, targetAngCenter.z + deviate)
+			local targetAngCenter2 = Vector(targetAngCenter.x * score, targetAngCenter.y * score, targetAngCenter.z * score + deviate)
 			target_ang = bezierVector(ironSightsProgress, target_ang, targetAngCenter2, self2.IronSightsAngleCurrent or IronSightsAngle or self2.GetStat(self, "SightsAng", vector_origin))
 		else
 			target_ang = LerpVector(ironSightsProgress, target_ang, self2.IronSightsAngleCurrent or IronSightsAngle or self2.GetStat(self, "SightsAng", vector_origin))
@@ -409,7 +412,7 @@ function SWEP:CalculateViewModelOffset(delta)
 		target_ang:Add(self2.ViewModelAngle)
 	end
 
-	target_ang.z = target_ang.z + -7.5 * (1 - math.abs(0.5 - ironSightsProgress) * 2) * (self:GetIronSights() and 1 or 0.5) * (self2.ViewModelFlip and 1 or -1)
+	target_ang.z = target_ang.z + -7.5 * (1 - math.abs(0.5 - ironSightsProgress) * 2) * (self:GetIronSights() and 1 or 0.5) * (self2.ViewModelFlip and 1 or -1) * (self2.VM_IronPositionScore or 1)
 
 	if self:GetHidden() then
 		target_pos.z = target_pos.z - 5
