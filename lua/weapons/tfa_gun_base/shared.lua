@@ -1137,7 +1137,7 @@ function SWEP:PlayerThinkCL(plyv)
 	self2.SprintProgressUnpredicted3 = l_mathApproach(self2.SprintProgressUnpredicted3 or 0, sprt3, (sprt3 - (self2.SprintProgressUnpredicted3 or 0)) * ft * adstransitionspeed)
 
 	if is and not self2.VM_IronPositionScore then
-		self2.VM_IronPositionScore = Clamp(self2.GetStat(self, "ViewModelPosition"):Distance(self2.GetStat(self, "IronSightsPosition", self2.SightsPos)) / 7, 0, 1)
+		self2.VM_IronPositionScore = Clamp(self2.GetStat(self, "ViewModelPosition"):Distance(self2.IronSightsPositionCurrent or self2.GetStat(self, "IronSightsPosition", self2.GetStat(self, "SightsPos", vector_origin))) / 7, 0, 1)
 	elseif not is and self2.VM_IronPositionScore and self2.IronSightsProgressUnpredicted2 <= 0.08 then
 		self2.VM_IronPositionScore = nil
 	end
