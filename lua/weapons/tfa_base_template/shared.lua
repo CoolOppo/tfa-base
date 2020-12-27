@@ -520,14 +520,19 @@ SWEP.Secondary.UseGreenDuplex = false -- Overlay option
 
 -- Clientside only
 -- Defines custom scope overlay
-if surface then
+if CLIENT then
 	SWEP.Secondary.ScopeTable = nil --[[
-		{
-			scopetex = surface.GetTextureID("scope/gdcw_closedsight"),
-			reticletex = surface.GetTextureID("scope/gdcw_acogchevron"),
-			dottex = surface.GetTextureID("scope/gdcw_acogcross")
+	{
+		ScopeBorder = Color(0, 0, 0, 255),
+		ScopeMaterial = Material("scope/gdcw_closedsight"),
+		ScopeOverlay = Material("effects/combine_binocoverlay"),
+		ScopeCrosshair = { -- can also be just a Material() value
+			r = 0, g = 0, b = 0, a = 255, -- color
+			scale = 1, -- scale or crosshair line width if no material specified
+			Material = Material("scope/gdcw_acogcross"), -- material, OPTIONAL!
 		}
-	]] --
+	}
+	]]
 end
 
 ----------------- Looped reload related
