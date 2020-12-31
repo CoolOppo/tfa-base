@@ -1691,6 +1691,18 @@ do
 	end
 end
 
+if SERVER and sp then
+	util.AddNetworkString("tfa_reload_blending")
+elseif CLIENT and sp then
+	net.Receive("tfa_reload_blending", function()
+		local self = net.ReadEntity()
+		if not IsValid(self) then return end
+		local ct, ct2 = net.ReadDouble(), net.ReadDouble()
+		self.ReloadAnimationStart = ct
+		self.ReloadAnimationEnd = ct2
+	end)
+end
+
 function SWEP:Reload(released)
 	local self2 = self:GetTable()
 
@@ -1767,6 +1779,12 @@ function SWEP:Reload(released)
 				if CLIENT then
 					self2.ReloadAnimationStart = ct
 					self2.ReloadAnimationEnd = ct + self:GetActivityLength(tanim, false, ttype)
+				elseif sp then
+					net.Start("tfa_reload_blending", true)
+					net.WriteEntity(self)
+					net.WriteDouble(ct)
+					net.WriteDouble(ct + self:GetActivityLength(tanim, false, ttype))
+					net.Broadcast()
 				end
 			end
 
