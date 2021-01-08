@@ -879,7 +879,7 @@ Purpose:  Standard SWEP Function
 function SWEP:Holster(target)
 	local self2 = self:GetTable()
 
-	local v = hook.Run("TFA_PreHolster", self)
+	local v = hook.Run("TFA_PreHolster", self, target)
 	if v ~= nil then return v end
 
 	if not IsValid(target) then

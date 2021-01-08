@@ -31,7 +31,7 @@ TFA_Initialize(wepom) --do things in here
 TFA_PreDeploy(wepom) --do things in here
 TFA_Deploy(wepom) --do things in here; return to override what the thingy returns
 --holster+remove
-TFA_PreHolster(wepom) --do things in here, called before we truly holster, but in the holster hook; return to override what the thingy returns
+TFA_PreHolster(wepom, target) --do things in here, called before we truly holster, but in the holster hook; return to override what the thingy returns
 TFA_Holster(wepom) --really the finishholster func; return to override what the thingy returns
 TFA_OnRemove(wepom) --return to override what the thingy returns
 TFA_OnDrop(wepom) -- return to override what the thingy returns
@@ -58,8 +58,8 @@ TFA_TranslateFOV(wepom,fov) --return a value to modify the fov with your own stu
 TFA_PreInitAttachments(wepom) --modify attachments here
 TFA_PostInitAttachments(wepom) --runs before building attachment cache
 TFA_FinalInitAttachments(wepom) --final attachment init hook
-TFA_PreCanAttach(wepom) --can we attach a thingy?  called before exclusions/dependencies
-TFA_CanAttach(wepom) --can we attach a thingy?  called after exclusions/dependencies
+TFA_PreCanAttach(wepom, attid) --can we attach a thingy?  called before exclusions/dependencies
+TFA_CanAttach(wepom, attid) --can we attach a thingy?  called after exclusions/dependencies
 TFA_Attachment_Attached(wepom, attid, atttable, category, attindex, forced) --called after attachment was attached to the gun
 TFA_Attachment_Detached(wepom, attid, atttable, category, attindex, forced) --called after attachment was detached from the gun
 --animation
