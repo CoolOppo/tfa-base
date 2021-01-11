@@ -1697,9 +1697,8 @@ elseif CLIENT and sp then
 	net.Receive("tfa_reload_blending", function()
 		local self = net.ReadEntity()
 		if not IsValid(self) then return end
-		local ct, ct2 = net.ReadDouble(), net.ReadDouble()
-		self.ReloadAnimationStart = ct
-		self.ReloadAnimationEnd = ct2
+		self.ReloadAnimationStart = net.ReadDouble()
+		self.ReloadAnimationEnd = net.ReadDouble()
 	end)
 end
 
