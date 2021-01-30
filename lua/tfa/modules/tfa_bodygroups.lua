@@ -22,7 +22,7 @@
 local sp = game.SinglePlayer()
 
 hook.Add("PlayerSwitchWeapon", "TFA_Bodygroups_PSW", function(ply, oldwep, wep)
-	if not IsValid(wep) then return end
+	if not IsValid(wep) or not wep.IsTFAWeapon then return end
 
 	timer.Simple(0, function()
 		if IsValid(ply) and ply:GetActiveWeapon() == wep then
