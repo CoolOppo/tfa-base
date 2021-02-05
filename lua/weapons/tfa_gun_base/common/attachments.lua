@@ -26,6 +26,7 @@ local tableCopy = table.Copy
 SWEP.Attachments = {} --[MDL_ATTACHMENT] = = { offset = { 0, 0 }, atts = { "sample_attachment_1", "sample_attachment_2" }, sel = 1, order = 1 } --offset will move the offset the display from the weapon attachment when using CW2.0 style attachment display --atts is a table containing the visible attachments --sel allows you to have an attachment pre-selected, and is used internally by the base to show which attachment is selected in each category. --order is the order it will appear in the TFA style attachment menu
 SWEP.AttachmentCache = {} --["att_name"] = true
 SWEP.AttachmentTableCache = {}
+SWEP.AttachmentCount = 0
 SWEP.AttachmentDependencies = {} --{["si_acog"] = {"bg_rail"}}
 SWEP.AttachmentExclusions = {} --{ ["si_iron"] = {"bg_heatshield"} }
 SWEP.AttachmentTableOverride = {}
@@ -120,9 +121,12 @@ local function CloneTableRecursive(source, target, root)
 end
 
 function SWEP:BuildAttachmentCache()
+	self.AttachmentCount = 0
+
 	for k, v in pairs(self.Attachments) do
 		if v.atts then
 			for l, b in pairs(v.atts) do
+				self.AttachmentCount = self.AttachmentCount + 1
 				self.AttachmentCache[b] = (v.sel == l) and k or false
 			end
 		end
@@ -349,7 +353,6 @@ do
 
 		if nw and (not isentity(nw) or SERVER) then
 			net.Start("TFA_Attachment_Set")
-			net.WriteEntity(self)
 			net.WriteUInt(cat, 8)
 			net.WriteString(attn)
 

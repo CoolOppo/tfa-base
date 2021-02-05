@@ -41,13 +41,19 @@ if SERVER then
 	util.AddNetworkString("TFA_Attachment_Set")
 	util.AddNetworkString("TFA_Attachment_SetStatus")
 	util.AddNetworkString("TFA_Attachment_Reload")
-	util.AddNetworkString("TFA_Attachment_RequestAll")
 	util.AddNetworkString("TFA_Attachment_Request")
 
-	local function UpdateWeapon(wep, ply)
-		if not istable(wep.Attachments) then return end
+	local UpdateWeaponQueue = {}
 
-		for category, data in pairs(wep.Attachments) do
+	local function UpdateWeapon(wep, ply)
+		if not wep.HasInitAttachments or wep.AttachmentCount < 1 then return end
+
+		UpdateWeaponQueue[ply] = UpdateWeaponQueue[ply] or {}
+
+		if UpdateWeaponQueue[ply][wep] then return end
+		UpdateWeaponQueue[ply][wep] = true
+
+		for category, data in pairs(wep.Attachments or {}) do
 			if type(category) ~= "string" then
 				net.Start("TFA_Attachment_Set")
 				net.WriteEntity(wep)
@@ -64,32 +70,16 @@ if SERVER then
 		end
 	end
 
-	local sp = game.SinglePlayer()
-
-	net.Receive("TFA_Attachment_RequestAll", function(len, ply)
-		if not IsValid(ply) then return end
-
-		if sp or not ply.TFA_RequestAll then
-			for _, v in ipairs(ents.GetAll()) do
-				if v:IsWeapon() and v.IsTFAWeapon and v.HasInitAttachments then
-					UpdateWeapon(v, ply)
-				end
-			end
-
-			ply.TFA_RequestAll = true
-		end
-	end)
-
 	net.Receive("TFA_Attachment_Request", function(len, ply)
 		if not IsValid(ply) then return end
 		local wep = net.ReadEntity()
-		if not IsValid(wep) or not wep.IsTFAWeapon or not istable(wep.Attachments) then return end
+		if not IsValid(wep) or not wep.IsTFAWeapon then return end
 		UpdateWeapon(wep, ply)
 	end)
 
 	net.Receive("TFA_Attachment_Set", function(len, ply)
-		local wep = net.ReadEntity()
-		if not IsValid(ply) or not IsValid(wep) or not wep.SetTFAAttachment or ply:GetActiveWeapon() ~= wep then return end
+		local wep = ply:GetActiveWeapon()
+		if not IsValid(wep) or not wep.IsTFAWeapon then return end
 
 		local cat = net.ReadUInt(8)
 		local ind = net.ReadString()
@@ -142,16 +132,9 @@ else
 		weapon:SetTFAAttachment(cat, ind, false)
 	end)
 
-	hook.Add("HUDPaint", "TFA_Attachment_RequestAll", function()
-		if LocalPlayer():IsValid() then
-			hook.Remove("HUDPaint", "TFA_Attachment_RequestAll")
-			net.Start("TFA_Attachment_RequestAll")
-			net.SendToServer()
-		end
-	end)
-
 	local function request(self)
 		if self._TFA_Attachment_Request then return end
+		if not self.HasInitAttachments or self.AttachmentCount < 1 then return end
 		net.Start("TFA_Attachment_Request")
 		net.WriteEntity(self)
 		net.SendToServer()
