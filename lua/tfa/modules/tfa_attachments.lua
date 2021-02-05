@@ -68,6 +68,8 @@ if SERVER then
 				net.Send(ply)
 			end
 		end
+
+		UpdateWeaponQueue[ply][wep] = nil
 	end
 
 	net.Receive("TFA_Attachment_Request", function(len, ply)
