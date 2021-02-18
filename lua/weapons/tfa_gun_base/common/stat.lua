@@ -249,6 +249,10 @@ function SWEP:GetStatPath(stat, path_version)
 	return TFA.GetStatPath(stat, path_version or 0, self.TFADataVersion)
 end
 
+function SWEP:RemapStatPath(stat, path_version)
+	return TFA.RemapStatPath(stat, path_version or 0, self.TFADataVersion)
+end
+
 function SWEP:GetStatPathRaw(stat)
 	return TFA.GetStatPathRaw(stat)
 end
