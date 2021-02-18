@@ -297,7 +297,7 @@ function SWEP:GetStatVersioned(stat, path_version, default, dontMergeTables)
 			end
 		end
 
-		local getstat = hook.Run("TFA_GetStat", self, stat, finalReturn)
+		local getstat = hook.Run("TFA_GetStat", self, currentVersionStat, finalReturn)
 		if getstat ~= nil then return getstat end
 
 		return finalReturn
@@ -311,7 +311,7 @@ function SWEP:GetStatVersioned(stat, path_version, default, dontMergeTables)
 			_, finalReturn = self2.GetStatRecursive(self, self2, statPath, istable(default) and tableCopy(default) or default)
 		end
 
-		local getstat = hook.Run("TFA_GetStat", self, stat, finalReturn)
+		local getstat = hook.Run("TFA_GetStat", self, currentVersionStat, finalReturn)
 		if getstat ~= nil then return getstat end
 		return finalReturn
 	end
@@ -337,7 +337,7 @@ function SWEP:GetStatVersioned(stat, path_version, default, dontMergeTables)
 		self2.StatCache2[stat] = true
 	end
 
-	local getstat = hook.Run("TFA_GetStat", self, stat, statSelf)
+	local getstat = hook.Run("TFA_GetStat", self, currentVersionStat, statSelf)
 	if getstat ~= nil then return getstat end
 
 	return statSelf
