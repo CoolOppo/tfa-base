@@ -46,3 +46,5 @@ include("client/mods.lua")
 include("client/laser.lua")
 include("client/fov.lua")
 include("client/flashlight.lua")
+
+TFA.FillMissingMetaValues(SWEP)

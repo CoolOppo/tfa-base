@@ -149,8 +149,8 @@ function SWEP:Think2(...)
 	end
 
 	if IsFirstTimePredicted() or game.SinglePlayer() then
-		self.Primary_TFA.SpreadBase = self.Primary_TFA.SpreadBase or self:GetStat("Primary.Spread")
-		local targ = self:GetShaking() and self.Primary_TFA.SpreadShake or self:GetStat("Primary.SpreadBase")
+		self.Primary_TFA.SpreadBase = self.Primary_TFA.SpreadBase or self:GetStatL("Primary.Spread")
+		local targ = self:GetShaking() and self.Primary_TFA.SpreadShake or self:GetStatL("Primary.SpreadBase")
 		self.Primary_TFA.Spread = math.Approach(self.Primary_TFA.Spread, targ, (targ - self.Primary_TFA.Spread) * FrameTime() * 5)
 		self:ClearStatCache("Primary.Spread")
 	end
@@ -159,14 +159,14 @@ function SWEP:Think2(...)
 end
 
 function SWEP:Shoot()
-	if self:GetStat("Primary.Sound") and IsFirstTimePredicted()  and not ( sp and CLIENT ) then
-		if self:GetStat("Primary.SilencedSound") and self:GetSilenced() then
-			self:EmitSound(self:GetStat("Primary.SilencedSound")	)
+	if self:GetStatL("Primary.Sound") and IsFirstTimePredicted()  and not ( sp and CLIENT ) then
+		if self:GetStatL("Primary.SilencedSound") and self:GetSilenced() then
+			self:EmitSound(self:GetStatL("Primary.SilencedSound")   )
 		else
-			self:EmitSound(self:GetStat("Primary.Sound"))
+			self:EmitSound(self:GetStatL("Primary.Sound"))
 		end
 	end
-	self:TakePrimaryAmmo(self:GetStat("Primary.AmmoConsumption"))
+	self:TakePrimaryAmmo(self:GetStatL("Primary.AmmoConsumption"))
 	self:PlayAnimation(self.BowAnimations.shoot)
 	self:ShootBulletInformation()
 	self:SetCharge(0)
@@ -218,7 +218,7 @@ end
 Function Name:  ShootBulletInformation
 Syntax: self:ShootBulletInformation().
 Returns:   Nothing.
-Notes:	Used to generate a self.MainBullet table which is then sent to self:ShootBullet, and also to call shooteffects.
+Notes:  Used to generate a self.MainBullet table which is then sent to self:ShootBullet, and also to call shooteffects.
 Purpose:  Bullet
 ]]
 --
@@ -235,11 +235,11 @@ function SWEP:ShootBulletInformation()
 	if not IsFirstTimePredicted() then return end
 	con, rec = self:CalculateConeRecoil()
 	local tmpranddamage = math.Rand(cv_dmg_mult_min:GetFloat(), cv_dmg_mult_max:GetFloat())
-	local basedamage = self.ConDamageMultiplier * self:GetStat("Primary.Damage")
+	local basedamage = self.ConDamageMultiplier * self:GetStatL("Primary.Damage")
 	dmg = basedamage * tmpranddamage
-	local ns = self:GetStat("Primary.NumShots")
-	local clip = (self:GetStat("Primary.ClipSize") == -1) and self:Ammo1() or self:Clip1()
-	ns = math.Round(ns, math.min(clip / self:GetStat("Primary.NumShots"), 1))
+	local ns = self:GetStatL("Primary.NumShots")
+	local clip = (self:GetStatL("Primary.ClipSize") == -1) and self:Ammo1() or self:Clip1()
+	ns = math.Round(ns, math.min(clip / self:GetStatL("Primary.NumShots"), 1))
 	self:ShootBullet(dmg, rec, ns, con)
 end
 
@@ -247,7 +247,7 @@ end
 Function Name:  ShootBullet
 Syntax: self:ShootBullet(damage, recoil, number of bullets, spray cone, disable ricochet, override the generated self.MainBullet table with this value if you send it).
 Returns:   Nothing.
-Notes:	Used to shoot a self.MainBullet.
+Notes:  Used to shoot a self.MainBullet.
 Purpose:  Bullet
 ]]
 --
@@ -260,15 +260,15 @@ local AttachArrowModel = function(a, b, c, wep)
 
 	if b.HitWorld and not (IsValid(b.Entity) and not b.Entity:IsWorld()) then
 		local arrowstuck = ents.Create("tfbow_arrow_stuck")
-		arrowstuck:SetModel(wep:GetStat("BulletModel"))
+		arrowstuck:SetModel(wep:GetStatL("BulletModel"))
 		arrowstuck.gun = wep:GetClass()
 		arrowstuck:SetPos(b.HitPos)
 		arrowstuck:SetAngles(b.Normal:Angle())
 		arrowstuck:Spawn()
 	else
 		local arrowstuck = ents.Create("tfbow_arrow_stuck_clientside")
-		arrowstuck:SetModel(wep:GetStat("BulletModel"))
-		arrowstuck:SetModel(wep:GetStat("BulletModel"))
+		arrowstuck:SetModel(wep:GetStatL("BulletModel"))
+		arrowstuck:SetModel(wep:GetStatL("BulletModel"))
 		arrowstuck.gun = wep:GetClass()
 		arrowstuck:SetPos(b.HitPos)
 		arrowstuck:SetAngles(b.Normal:Angle())
@@ -280,7 +280,7 @@ end
 
 function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet, bulletoverride)
 	if not IsFirstTimePredicted() and not game.SinglePlayer() then return end
-	local chargeTable = self:GetStat("Primary.Damage_Charge")
+	local chargeTable = self:GetStatL("Primary.Damage_Charge")
 	local mult = Lerp(math.Clamp(self:GetCharge() - self.ChargeThreshold, 0, 1 - self.ChargeThreshold) / (1 - self.ChargeThreshold), chargeTable[1], chargeTable[2])
 	local unitScale = TFA.Ballistics.UnitScale or TFA.UnitScale or 40
 	num_bullets = num_bullets or 1
@@ -297,15 +297,15 @@ function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet,
 	if self.TracerPCF then
 		self.MainBullet.Tracer = 0
 	else
-		self.MainBullet.Tracer = self:GetStat("TracerCount") or 3
+		self.MainBullet.Tracer = self:GetStatL("TracerCount") or 3
 	end
 
 	self.MainBullet.PenetrationCount = 0
 	self.MainBullet.AmmoType = self:GetPrimaryAmmoType()
-	self.MainBullet.Force = damage / 6 * math.sqrt(self:GetStat("Primary.KickUp") + self:GetStat("Primary.KickDown") + self:GetStat("Primary.KickHorizontal")) * cv_forcemult:GetFloat() * self:GetAmmoForceMultiplier() * mult
+	self.MainBullet.Force = damage / 6 * math.sqrt(self:GetStatL("Primary.KickUp") + self:GetStatL("Primary.KickDown") + self:GetStatL("Primary.KickHorizontal")) * cv_forcemult:GetFloat() * self:GetAmmoForceMultiplier() * mult
 	self.MainBullet.Damage = damage * mult
 	self.MainBullet.HasAppliedRange = false
-	self.MainBullet.Velocity = self:GetStat("Primary.Velocity") * mult * unitScale
+	self.MainBullet.Velocity = self:GetStatL("Primary.Velocity") * mult * unitScale
 
 	self.MainBullet.Callback = function(a, b, c)
 		if IsValid(self) then

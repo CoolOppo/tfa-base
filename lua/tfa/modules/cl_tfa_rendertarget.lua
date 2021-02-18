@@ -38,7 +38,7 @@ local function callFunc()
 		wep:RTCode(TFA_RTMat, w, h)
 	end
 
-	if wep:GetStat("RTDrawEnabled") then
+	if wep:GetStatL("RTDrawEnabled") then
 		wep:CallAttFunc("RTCode", TFA_RTMat, w, h)
 	end
 end
@@ -73,27 +73,27 @@ local function TFARenderScreen()
 		wep.MaterialCached_W = nil
 	end
 
-	local skinStat = wep:GetStat("Skin")
+	local skinStat = wep:GetStatL("Skin")
 
 	if skinStat and isnumber(skinStat) then
 		if vm:GetSkin() ~= skinStat then
-			vm:SetSkin(wep:GetStat("Skin"))
+			vm:SetSkin(wep:GetStatL("Skin"))
 		end
 
 		if wep:GetSkin() ~= skinStat then
-			wep:SetSkin(wep:GetStat("Skin"))
+			wep:SetSkin(wep:GetStatL("Skin"))
 		end
 	end
 
-	if wep:GetStat("MaterialTable_V") and not wep.MaterialCached_V then
+	if wep:GetStatL("MaterialTable_V") and not wep.MaterialCached_V then
 		wep.MaterialCached_V = {}
 		vm:SetSubMaterial()
-		local collectedKeys = table.GetKeys(wep:GetStat("MaterialTable_V"))
-		table.Merge(collectedKeys, table.GetKeys(wep:GetStat("MaterialTable")))
+		local collectedKeys = table.GetKeys(wep:GetStatL("MaterialTable_V"))
+		table.Merge(collectedKeys, table.GetKeys(wep:GetStatL("MaterialTable")))
 
 		for _, k in pairs(collectedKeys) do
 			if k ~= "BaseClass" then
-				local v = wep:GetStat("MaterialTable_V")[k]
+				local v = wep:GetStatL("MaterialTable_V")[k]
 
 				if not wep.MaterialCached_V[k] then
 					vm:SetSubMaterial(k - 1, v)
@@ -103,7 +103,7 @@ local function TFARenderScreen()
 		end
 	end
 
-	if not wep:GetStat("RTDrawEnabled") and not wep:GetStat("RTMaterialOverride") and not wep.RTCode then return end
+	if not wep:GetStatL("RTDrawEnabled") and not wep:GetStatL("RTMaterialOverride") and not wep.RTCode then return end
 	w, h = ScrW(), ScrH()
 
 	if not qualitySizes then
@@ -117,7 +117,7 @@ local function TFARenderScreen()
 
 	local quality = TFA.RTQuality()
 
-	if wep:GetStat("RTOpaque") then
+	if wep:GetStatL("RTOpaque") then
 		tgt = TFA_RTScreenO[quality]
 
 		if not tgt then
@@ -153,8 +153,8 @@ local function TFARenderScreen()
 		old_bt = tgt
 	end
 
-	if wep:GetStat("RTMaterialOverride", -1) >= 0 then
-		wep:GetOwner():GetViewModel():SetSubMaterial(wep:GetStat("RTMaterialOverride"), "!tfa_rtmaterial")
+	if wep:GetStatL("RTMaterialOverride", -1) >= 0 then
+		wep:GetOwner():GetViewModel():SetSubMaterial(wep:GetStatL("RTMaterialOverride"), "!tfa_rtmaterial")
 	end
 end
 

@@ -223,7 +223,7 @@ TFA.RegisterKeyBind({
 		local wepv = plyv:GetActiveWeapon()
 
 		if IsValid(wepv) and wepv.GetStat then
-			if wepv:GetStat("SelectiveFire") and not wepv:GetOwner():KeyDown(IN_SPEED) then
+			if wepv:GetStatL("SelectiveFire") and not wepv:GetOwner():KeyDown(IN_SPEED) then
 				RunConsoleCommand("impulse", TFA.CYCLE_FIREMODE_IMPULSE_STRING)
 			elseif wepv:GetOwner():KeyDown(IN_SPEED) then
 				RunConsoleCommand("impulse", TFA.CYCLE_SAFETY_IMPULSE_STRING)

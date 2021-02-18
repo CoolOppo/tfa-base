@@ -118,10 +118,10 @@ function SWEP:CalculateViewModelFlip()
 	self2.ViewModelFOV_OG = self2.ViewModelFOV_OG or self2.ViewModelFOV
 
 	local cam_fov = self2.LastTranslatedFOV or cv_fov:GetInt() or 90
-	local iron_add = cam_fov * (1 - 90 / cam_fov) * math.max(1 - self2.GetStat(self, "Secondary.OwnerFOV", 90) / 90, 0)
+	local iron_add = cam_fov * (1 - 90 / cam_fov) * math.max(1 - self2.GetStatL(self, "Secondary.OwnerFOV", 90) / 90, 0)
 
 	local ironSightsProgress = TFA.Cosine(self2.IronSightsProgressUnpredicted or self:GetIronSightsProgress())
-	self2.ViewModelFOV = Lerp(ironSightsProgress, self2.ViewModelFOV_OG, self2.GetStat(self, "Secondary.ViewModelFOV", self2.ViewModelFOV_OG)) * fovmod_mult:GetFloat() + fovmod_add:GetFloat() + iron_add * ironSightsProgress
+	self2.ViewModelFOV = Lerp(ironSightsProgress, self2.ViewModelFOV_OG, self2.GetStatL(self, "Secondary.ViewModelFOV", self2.ViewModelFOV_OG)) * fovmod_mult:GetFloat() + fovmod_add:GetFloat() + iron_add * ironSightsProgress
 end
 
 function SWEP:UpdateWeaponLength()
@@ -236,19 +236,19 @@ function SWEP:CalculateViewModelOffset(delta)
 	local self2 = self:GetTable()
 
 	local target_pos, target_ang
-	local additivePos = self2.GetStat(self, "AdditiveViewModelPosition")
+	local additivePos = self2.GetStatL(self, "AdditiveViewModelPosition")
 
 	if additivePos then
 		target_pos, target_ang = Vector(), Vector()
 	else
-		target_pos = Vector(self2.GetStat(self, "ViewModelPosition"))
-		target_ang = Vector(self2.GetStat(self, "ViewModelAngle"))
+		target_pos = Vector(self2.GetStatL(self, "ViewModelPosition"))
+		target_ang = Vector(self2.GetStatL(self, "ViewModelAngle"))
 	end
 
-	local CenteredViewModelPosition = self2.GetStat(self, "CenteredViewModelPosition")
-	local CenteredViewModelAngle = self2.GetStat(self, "CenteredViewModelAngle")
-	local IronSightsPosition = self2.GetStat(self, "IronSightsPosition", self2.SightsPos)
-	local IronSightsAngle = self2.GetStat(self, "IronSightsAngle", self2.SightsAng)
+	local CenteredViewModelPosition = self2.GetStatL(self, "CenteredViewModelPosition")
+	local CenteredViewModelAngle = self2.GetStatL(self, "CenteredViewModelAngle")
+	local IronSightsPosition = self2.GetStatL(self, "IronSightsPosition", self2.SightsPos)
+	local IronSightsAngle = self2.GetStatL(self, "IronSightsAngle", self2.SightsAng)
 
 	local targetPosCenter, targetAngCenter
 
@@ -275,14 +275,14 @@ function SWEP:CalculateViewModelOffset(delta)
 
 	local stat = self:GetStatus()
 
-	local holsterStatus = TFA.Enum.HolsterStatus[stat] and self2.GetStat(self, "ProceduralHolsterEnabled")
-	local proceduralReloadStatus = TFA.Enum.ReloadStatus[stat] and self2.GetStat(self, "IsProceduralReloadBased")
+	local holsterStatus = TFA.Enum.HolsterStatus[stat] and self2.GetStatL(self, "ProceduralHolsterEnabled")
+	local proceduralReloadStatus = TFA.Enum.ReloadStatus[stat] and self2.GetStatL(self, "IsProceduralReloadBased")
 	local holsterProgress = 0
 	local statusProgress = self:GetStatusProgress()
 
 	if proceduralReloadStatus then
 		holsterProgress = TFA.Quintic(Clamp((statusProgress >= 0.5 and (2 - statusProgress * 2) or (statusProgress * 2)), 0, 1))
-	elseif self2.GetStat(self, "ProceduralHolsterEnabled") then
+	elseif self2.GetStatL(self, "ProceduralHolsterEnabled") then
 		if TFA.Enum.HolsterStatusFinal[stat] then
 			holsterProgress = 1
 		elseif TFA.Enum.HolsterStatus[stat] then
@@ -311,13 +311,13 @@ function SWEP:CalculateViewModelOffset(delta)
 	local crouchRatio = Lerp(math_max(ironSightsProgress, holsterProgress, Clamp(sprintProgress * 2, 0, 1), safetyProgress), TFA.Quintic(self2.CrouchingRatioUnpredicted or self:GetCrouchingRatio()), 0)
 
 	if crouchRatio > 0.01 then
-		target_pos = LerpVector(crouchRatio, target_pos, self2.GetStat(self, "CrouchViewModelPosition"))
-		target_ang = LerpVector(crouchRatio, target_ang, self2.GetStat(self, "CrouchViewModelAngle"))
+		target_pos = LerpVector(crouchRatio, target_pos, self2.GetStatL(self, "CrouchViewModelPosition"))
+		target_ang = LerpVector(crouchRatio, target_ang, self2.GetStatL(self, "CrouchViewModelAngle"))
 	end
 
 	if holsterStatus or proceduralReloadStatus then
-		local targetHolsterPos = Vector(self2.GetStat(self, "ProceduralHolsterPosition"))
-		local targetHolsterAng = Vector(self2.GetStat(self, "ProceduralHolsterAngle"))
+		local targetHolsterPos = Vector(self2.GetStatL(self, "ProceduralHolsterPosition"))
+		local targetHolsterAng = Vector(self2.GetStatL(self, "ProceduralHolsterAngle"))
 
 		if self2.ViewModelFlip then
 			targetHolsterPos.x = -targetHolsterPos.x
@@ -339,19 +339,19 @@ function SWEP:CalculateViewModelOffset(delta)
 			target_pos = target_pos + centered_sprintpos
 			target_ang = target_ang + centered_sprintang
 		else
-			target_pos = LerpVector(safetyProgress, target_pos, self2.GetStat(self, "SafetyPos", self2.GetStat(self, "SprintViewModelPosition")))
-			target_ang = LerpVector(safetyProgress, target_ang, self2.GetStat(self, "SafetyAng", self2.GetStat(self, "SprintViewModelAngle")))
+			target_pos = LerpVector(safetyProgress, target_pos, self2.GetStatL(self, "SafetyPos", self2.GetStatL(self, "SprintViewModelPosition")))
+			target_ang = LerpVector(safetyProgress, target_ang, self2.GetStatL(self, "SafetyAng", self2.GetStatL(self, "SprintViewModelAngle")))
 
 			if sprintAnimAllowed then
-				target_pos = LerpVector(sprintProgress, target_pos, self2.GetStat(self, "SprintViewModelPosition"))
-				target_ang = LerpVector(sprintProgress, target_ang, self2.GetStat(self, "SprintViewModelAngle"))
+				target_pos = LerpVector(sprintProgress, target_pos, self2.GetStatL(self, "SprintViewModelPosition"))
+				target_ang = LerpVector(sprintProgress, target_ang, self2.GetStatL(self, "SprintViewModelAngle"))
 			end
 		end
 	end
 
 	if ironSightsProgress > 0.02 and (self2.Sights_Mode == TFA.Enum.LOCOMOTION_LUA or self2.Sights_Mode == TFA.Enum.LOCOMOTION_HYBRID) then
 		local score = self2.VM_IronPositionScore
-		local getSightsPos = self2.IronSightsPositionCurrent or IronSightsPosition or self2.GetStat(self, "SightsPos", vector_origin)
+		local getSightsPos = self2.IronSightsPositionCurrent or IronSightsPosition or self2.GetStatL(self, "SightsPos", vector_origin)
 
 		if targetPosCenter and score > 0.04 then
 			target_pos = bezierVector(ironSightsProgress, target_pos, LerpVector(score, getSightsPos, targetPosCenter), getSightsPos)
@@ -371,9 +371,9 @@ function SWEP:CalculateViewModelOffset(delta)
 			end
 
 			local targetAngCenter2 = Vector(targetAngCenter.x * score, targetAngCenter.y * score, targetAngCenter.z * score + deviate)
-			target_ang = bezierVector(ironSightsProgress, target_ang, targetAngCenter2, self2.IronSightsAngleCurrent or IronSightsAngle or self2.GetStat(self, "SightsAng", vector_origin))
+			target_ang = bezierVector(ironSightsProgress, target_ang, targetAngCenter2, self2.IronSightsAngleCurrent or IronSightsAngle or self2.GetStatL(self, "SightsAng", vector_origin))
 		else
-			target_ang = LerpVector(ironSightsProgress, target_ang, self2.IronSightsAngleCurrent or IronSightsAngle or self2.GetStat(self, "SightsAng", vector_origin))
+			target_ang = LerpVector(ironSightsProgress, target_ang, self2.IronSightsAngleCurrent or IronSightsAngle or self2.GetStatL(self, "SightsAng", vector_origin))
 		end
 	end
 
@@ -401,8 +401,8 @@ function SWEP:CalculateViewModelOffset(delta)
 			end
 		end
 
-		target_pos = LerpVector(customizationProgress, target_pos, self2.GetStat(self, "InspectPos"))
-		target_ang = LerpVector(customizationProgress, target_ang, self2.GetStat(self, "InspectAng"))
+		target_pos = LerpVector(customizationProgress, target_pos, self2.GetStatL(self, "InspectPos"))
+		target_ang = LerpVector(customizationProgress, target_ang, self2.GetStatL(self, "InspectAng"))
 	end
 
 	target_pos, target_ang = self:CalculateNearWall(target_pos, target_ang)
@@ -418,10 +418,10 @@ function SWEP:CalculateViewModelOffset(delta)
 		target_pos.z = target_pos.z - 5
 	end
 
-	if self2.GetStat(self, "BlowbackEnabled") and self2.BlowbackCurrentRoot > 0.01 then
-		local bbvec = self2.GetStat(self, "BlowbackVector")
+	if self2.GetStatL(self, "BlowbackEnabled") and self2.BlowbackCurrentRoot > 0.01 then
+		local bbvec = self2.GetStatL(self, "BlowbackVector")
 		target_pos = target_pos + bbvec * self2.BlowbackCurrentRoot
-		local bbang = self2.GetStat(self, "BlowbackAngle") or angle_zero
+		local bbang = self2.GetStatL(self, "BlowbackAngle") or angle_zero
 		bbvec = bbvec * 1
 		bbvec.x = bbang.p
 		bbvec.y = bbang.y
@@ -439,17 +439,17 @@ function SWEP:CalculateViewModelOffset(delta)
 			if not ironSights then
 				local ang = self:GetRecoilLUTAngle()
 
-				target_ang.x = target_ang.x - ang.p / 2 * Lerp(ironSightsProgress, self:GetStat("ViewModelPunchPitchMultiplier") * cl_tfa_viewmodel_vp_pitch:GetFloat(), self:GetStat("ViewModelPunchPitchMultiplier_IronSights") * cl_tfa_viewmodel_vp_pitch_is:GetFloat())
-				target_ang.y = target_ang.y + ang.y / 2 * Lerp(ironSightsProgress, self:GetStat("ViewModelPunchYawMultiplier") * cl_tfa_viewmodel_vp_yaw:GetFloat(), self:GetStat("ViewModelPunchYawMultiplier_IronSights") * cl_tfa_viewmodel_vp_yaw_is:GetFloat())
+				target_ang.x = target_ang.x - ang.p / 2 * Lerp(ironSightsProgress, self:GetStatL("ViewModelPunchPitchMultiplier") * cl_tfa_viewmodel_vp_pitch:GetFloat(), self:GetStatL("ViewModelPunchPitchMultiplier_IronSights") * cl_tfa_viewmodel_vp_pitch_is:GetFloat())
+				target_ang.y = target_ang.y + ang.y / 2 * Lerp(ironSightsProgress, self:GetStatL("ViewModelPunchYawMultiplier") * cl_tfa_viewmodel_vp_yaw:GetFloat(), self:GetStatL("ViewModelPunchYawMultiplier_IronSights") * cl_tfa_viewmodel_vp_yaw_is:GetFloat())
 			end
 		else
-			target_ang.x = target_ang.x - self:GetViewPunchP() * Lerp(ironSightsProgress, self:GetStat("ViewModelPunchPitchMultiplier") * cl_tfa_viewmodel_vp_pitch:GetFloat(), self:GetStat("ViewModelPunchPitchMultiplier_IronSights") * cl_tfa_viewmodel_vp_pitch_is:GetFloat())
-			target_ang.y = target_ang.y + self:GetViewPunchY() * Lerp(ironSightsProgress, self:GetStat("ViewModelPunchYawMultiplier") * cl_tfa_viewmodel_vp_yaw:GetFloat(), self:GetStat("ViewModelPunchYawMultiplier_IronSights") * cl_tfa_viewmodel_vp_yaw_is:GetFloat())
+			target_ang.x = target_ang.x - self:GetViewPunchP() * Lerp(ironSightsProgress, self:GetStatL("ViewModelPunchPitchMultiplier") * cl_tfa_viewmodel_vp_pitch:GetFloat(), self:GetStatL("ViewModelPunchPitchMultiplier_IronSights") * cl_tfa_viewmodel_vp_pitch_is:GetFloat())
+			target_ang.y = target_ang.y + self:GetViewPunchY() * Lerp(ironSightsProgress, self:GetStatL("ViewModelPunchYawMultiplier") * cl_tfa_viewmodel_vp_yaw:GetFloat(), self:GetStatL("ViewModelPunchYawMultiplier_IronSights") * cl_tfa_viewmodel_vp_yaw_is:GetFloat())
 
-			local ViewModelPunch_MaxVertialOffset = Lerp(ironSightsProgress, self:GetStat("ViewModelPunch_MaxVertialOffset") * cl_tfa_viewmodel_vp_max_vertical:GetFloat(), self:GetStat("ViewModelPunch_MaxVertialOffset_IronSights") * cl_tfa_viewmodel_vp_max_vertical_is:GetFloat())
+			local ViewModelPunch_MaxVertialOffset = Lerp(ironSightsProgress, self:GetStatL("ViewModelPunch_MaxVertialOffset") * cl_tfa_viewmodel_vp_max_vertical:GetFloat(), self:GetStatL("ViewModelPunch_MaxVertialOffset_IronSights") * cl_tfa_viewmodel_vp_max_vertical_is:GetFloat())
 
 			target_pos.y = target_pos.y + math.Clamp(
-				self:GetViewPunchP() * Lerp(ironSightsProgress, self:GetStat("ViewModelPunch_VertialMultiplier") * cl_tfa_viewmodel_vp_vertical:GetFloat(), self:GetStat("ViewModelPunch_VertialMultiplier_IronSights") * cl_tfa_viewmodel_vp_vertical_is:GetFloat()),
+				self:GetViewPunchP() * Lerp(ironSightsProgress, self:GetStatL("ViewModelPunch_VertialMultiplier") * cl_tfa_viewmodel_vp_vertical:GetFloat(), self:GetStatL("ViewModelPunch_VertialMultiplier_IronSights") * cl_tfa_viewmodel_vp_vertical_is:GetFloat()),
 				-ViewModelPunch_MaxVertialOffset,
 				ViewModelPunch_MaxVertialOffset)
 		end
@@ -462,7 +462,7 @@ function SWEP:CalculateViewModelOffset(delta)
 	end
 
 	local intensityWalk = math.min(self:GetOwner():GetVelocity():Length2D() / self:GetOwner():GetWalkSpeed(), 1) * Lerp(ironSightsProgress, self2.WalkBobMult, self2.WalkBobMult_Iron or self2.WalkBobMult)
-	local intensityBreath = Lerp(ironSightsProgress, self2.GetStat(self, "BreathScale", 0.2), self2.GetStat(self, "IronBobMultWalk", 0.5) * intensityWalk)
+	local intensityBreath = Lerp(ironSightsProgress, self2.GetStatL(self, "BreathScale", 0.2), self2.GetStatL(self, "IronBobMultWalk", 0.5) * intensityWalk)
 	intensityWalk = (1 - ironSightsProgress) * intensityWalk
 	local intensityRun = Lerp(self2.SprintProgressUnpredicted3 or self2.SprintProgressUnpredicted or self:GetSprintProgress(), 0, self2.SprintBobMult)
 	local velocity = math.max(self:GetOwner():GetVelocity():Length2D() * self:AirWalkScale() - self:GetOwner():GetVelocity().z * 0.5, 0)
@@ -501,8 +501,8 @@ function SWEP:Sway(pos, ang, ftv)
 		eyeAngles.y = eyeAngles.y - viewPunch.y
 		oldEyeAngles = oldEyeAngles or eyeAngles
 		--calculate delta
-		wiggleFactor = (1 - (sv_tfa_weapon_weight:GetBool() and self2.GetStat(self, "RegularMoveSpeedMultiplier") or 1)) / 0.6 + 0.15
-		swayRate = math.pow(sv_tfa_weapon_weight:GetBool() and self2.GetStat(self, "RegularMoveSpeedMultiplier") or 1, 1.5) * 10
+		wiggleFactor = (1 - (sv_tfa_weapon_weight:GetBool() and self2.GetStatL(self, "RegularMoveSpeedMultiplier") or 1)) / 0.6 + 0.15
+		swayRate = math.pow(sv_tfa_weapon_weight:GetBool() and self2.GetStatL(self, "RegularMoveSpeedMultiplier") or 1, 1.5) * 10
 		rft = math.Clamp(ftv, 0.001, 1 / 20)
 		local clampFac = 1.1 - math.min((math.abs(motion.p) + math.abs(motion.y) + math.abs(motion.r)) / 20, 1)
 		delta.p = math.AngleDifference(eyeAngles.p, oldEyeAngles.p) / rft / 120 * clampFac

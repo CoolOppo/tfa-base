@@ -94,12 +94,12 @@ SWEP.ClearStatCacheWarned = false
 
 local IdealCSCDeltaTime = engine.TickInterval() * 2
 
-function SWEP:ClearStatCache(vn)
+function SWEP:ClearStatCache(vn, path_version)
 	local self2 = self:GetTable()
 	local getpath, getpath2
 
 	if isstring(vn) then
-		vn = TFA.RemapStatPath(vn)
+		vn = TFA.RemapStatPath(vn, path_version or 0, self.TFADataVersion)
 	end
 
 	if not vn and not self2.ClearStatCacheWarned then
@@ -138,7 +138,7 @@ function SWEP:ClearStatCache(vn)
 
 		setmetatable(self2.Primary, {
 			__index = function(self3, key)
-				return self2.GetStat(self, "Primary." .. key)
+				return self2.GetStatL(self, "Primary." .. key)
 			end,
 
 			__newindex = function() end
@@ -146,7 +146,7 @@ function SWEP:ClearStatCache(vn)
 
 		for k in pairs(self2.Primary_TFA) do
 			if isstring(k) then
-				temp[k] = self2.GetStat(self, "Primary." .. k)
+				temp[k] = self2.GetStatL(self, "Primary." .. k)
 			end
 		end
 
@@ -161,7 +161,7 @@ function SWEP:ClearStatCache(vn)
 			self2.AutoDetectRange(self)
 		end
 
-		local getLUT = self2.GetStat(self, "Primary.RangeFalloffLUT", nil, true)
+		local getLUT = self2.GetStatL(self, "Primary.RangeFalloffLUT", nil, true)
 
 		if getLUT then
 			self2.Primary.RangeFalloffLUTBuilt = self:BuildFalloffTable(getLUT)
@@ -205,7 +205,7 @@ function SWEP:ClearStatCache(vn)
 			end
 		end
 	elseif getpath == "Primary_TFA" and isstring(getpath2[2]) then
-		self2.Primary[getpath[2]] = self2.GetStat(self, vn)
+		self2.Primary[getpath[2]] = self2.GetStatL(self, vn)
 	end
 
 	if vn == "Secondary" or not vn then
@@ -215,7 +215,7 @@ function SWEP:ClearStatCache(vn)
 
 		setmetatable(self2.Secondary, {
 			__index = function(self3, key)
-				return self2.GetStat(self, "Secondary." .. key)
+				return self2.GetStatL(self, "Secondary." .. key)
 			end,
 
 			__newindex = function() end
@@ -223,7 +223,7 @@ function SWEP:ClearStatCache(vn)
 
 		for k in pairs(self.Secondary_TFA) do
 			if isstring(k) then
-				temp[k] = self2.GetStat(self, "Secondary." .. k)
+				temp[k] = self2.GetStatL(self, "Secondary." .. k)
 			end
 		end
 
@@ -233,7 +233,7 @@ function SWEP:ClearStatCache(vn)
 			self2.Secondary[k] = v
 		end
 	elseif getpath == "Secondary_TFA" and isstring(getpath2[2]) then
-		self2.Secondary[getpath[2]] = self2.GetStat(self, vn)
+		self2.Secondary[getpath[2]] = self2.GetStatL(self, vn)
 	end
 
 	if CLIENT then
@@ -245,13 +245,38 @@ end
 
 local ccv = GetConVar("cl_tfa_debug_cache")
 
-function SWEP:GetStatPath(stat)
-	return TFA.GetStatPath(stat)
+function SWEP:GetStatPath(stat, path_version)
+	return TFA.GetStatPath(stat, path_version or 0, self.TFADataVersion)
+end
+
+function SWEP:GetStatPathRaw(stat)
+	return TFA.GetStatPathRaw(stat)
+end
+
+function SWEP:GetStatRaw(stat, path_version)
+	local self2 = self:GetTable()
+	local path = TFA.GetStatPath(stat, path_version or 0, self2.TFADataVersion)
+	local value = self2[path[1]]
+
+	for i = 2, #path do
+		if not istable(value) then return end
+		value = value[path[i]]
+	end
+
+	return value
 end
 
 function SWEP:GetStat(stat, default, dontMergeTables)
+	return self:GetStatVersioned(stat, 0, default, dontMergeTables)
+end
+
+function SWEP:GetStatL(stat, default, dontMergeTables)
+	return self:GetStatVersioned(stat, TFA.LatestDataVersion, default, dontMergeTables)
+end
+
+function SWEP:GetStatVersioned(stat, path_version, default, dontMergeTables)
 	local self2 = self:GetTable()
-	local statPath = self2.GetStatPath(self, stat)
+	local statPath, currentVersionStat = self2.GetStatPath(self, stat, path_version)
 
 	if self2.StatCache2[stat] ~= nil then
 		local finalReturn
@@ -293,7 +318,10 @@ function SWEP:GetStat(stat, default, dontMergeTables)
 
 	local isDefault, statSelf = self2.GetStatRecursive(self, self2, statPath, istable(default) and tableCopy(default) or default)
 	local isDefaultAtt, statAttachment, noCache = self2.GetStatRecursive(self, self2.AttachmentTableCache, statPath, istable(statSelf) and tableCopy(statSelf) or statSelf)
-	local shouldCache = not noCache and not (self2.StatCache_Blacklist_Real or self2.StatCache_Blacklist)[stat] and not (self2.StatCache_Blacklist_Real or self2.StatCache_Blacklist)[statPath[1]] and not (ccv and ccv:GetBool())
+	local shouldCache = not noCache and
+		not (self2.StatCache_Blacklist_Real or self2.StatCache_Blacklist)[currentVersionStat] and
+		not (self2.StatCache_Blacklist_Real or self2.StatCache_Blacklist)[statPath[1]] and
+		not (ccv and ccv:GetBool())
 
 	if istable(statAttachment) and istable(statSelf) and not dontMergeTables then
 		statSelf = table.Merge(tableCopy(statSelf), statAttachment)

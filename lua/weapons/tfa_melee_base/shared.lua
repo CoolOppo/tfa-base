@@ -472,7 +472,7 @@ function SWEP:ChooseIdleAnim(...)
 end
 
 function SWEP:StrikeThink()
-	if self:GetSprinting() and not self:GetStat("AllowSprintAttack", false) then
+	if self:GetSprinting() and not self:GetStatL("AllowSprintAttack", false) then
 		self:SetComboCount(0)
 		--return
 	end
@@ -706,9 +706,9 @@ function SWEP:PrimaryAttack()
 	local ow = self:GetOwner()
 
 	if IsValid(ow) and ow:IsNPC() then
-		local keys = table.GetKeys(self:GetStat("Primary.Attacks"))
+		local keys = table.GetKeys(self:GetStatL("Primary.Attacks"))
 		table.RemoveByValue(keys, "BaseClass")
-		local attk = self:GetStat("Primary.Attacks")[table.Random(keys)]
+		local attk = self:GetStatL("Primary.Attacks")[table.Random(keys)]
 		local owv = self:GetOwner()
 
 		timer.Simple(0.5, function()
@@ -730,7 +730,7 @@ function SWEP:PrimaryAttack()
 		return
 	end
 
-	if self:GetSprinting() and not self:GetStat("AllowSprintAttack", false) then return end
+	if self:GetSprinting() and not self:GetStatL("AllowSprintAttack", false) then return end
 	if self:IsSafety() then return end
 	if not self:VMIV() then return end
 	if CurTime() <= self:GetNextPrimaryFire() then return end
@@ -846,7 +846,7 @@ function SWEP:PrimaryAttack()
 end
 
 function SWEP:SecondaryAttack()
-	if self:GetSprinting() and not self:GetStat("AllowSprintAttack", false) then return end
+	if self:GetSprinting() and not self:GetStatL("AllowSprintAttack", false) then return end
 	if self:IsSafety() then return end
 	if not self:VMIV() then return end
 	if CurTime() <= self:GetNextPrimaryFire() then return end

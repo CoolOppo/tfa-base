@@ -56,7 +56,7 @@ function EFFECT:Init(data)
 			self.Attachment = 2
 		end
 
-		if self.WeaponEntOG:GetStat("IsAkimbo") then
+		if self.WeaponEntOG:GetStatL("IsAkimbo") then
 			self.Attachment = 4 - self.WeaponEntOG:GetAnimCycle()
 		end
 

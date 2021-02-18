@@ -501,7 +501,7 @@ function SWEP:ProcessStatus()
 			lact = self:GetLastActivity()
 
 			if self2.GetActivityLength(self, lact, true) < self2.GetActivityLength(self, lact, false) - 0.01 then
-				local sht = self2.GetStat(self, "LoopedReloadInsertTime")
+				local sht = self2.GetStatL(self, "LoopedReloadInsertTime")
 
 				if sht then
 					sht = sht / self2.GetAnimationRate(self, ACT_VM_RELOAD)
@@ -538,7 +538,7 @@ function SWEP:ProcessStatus()
 			--self:SetStatusEnd( self:GetNextPrimaryFire() )
 			self:SetSilenced(not self:GetSilenced())
 			self2.Silenced = self:GetSilenced()
-		elseif stat == TFA.Enum.STATUS_RELOADING_WAIT and self:GetStat("LoopedReload") then
+		elseif stat == TFA.Enum.STATUS_RELOADING_WAIT and self:GetStatL("LoopedReload") then
 			if self2.Ammo1(self) <= 0 or self:Clip1() >= self:GetPrimaryClipSize() or self:GetReloadLoopCancel() then
 				finalstat = TFA.Enum.STATUS_RELOADING_LOOP_END
 				local _, tanim = self2.ChooseShotgunPumpAnim(self)
@@ -547,15 +547,15 @@ function SWEP:ProcessStatus()
 			else
 				finalstat = self2.LoadShell(self)
 			end
-		elseif stat == TFA.Enum.STATUS_RELOADING_LOOP_END and self:GetStat("LoopedReload") then
+		elseif stat == TFA.Enum.STATUS_RELOADING_LOOP_END and self:GetStatL("LoopedReload") then
 			self:SetReloadLoopCancel(false)
-		elseif self2.GetStat(self, "PumpAction") and stat == TFA.Enum.STATUS_PUMP then
+		elseif self2.GetStatL(self, "PumpAction") and stat == TFA.Enum.STATUS_PUMP then
 			self:SetReloadLoopCancel(false)
-		elseif stat == TFA.Enum.STATUS_SHOOTING and self2.GetStat(self, "PumpAction") then
-			if self:Clip1() == 0 and self2.GetStat(self, "PumpAction").value_empty then
+		elseif stat == TFA.Enum.STATUS_SHOOTING and self2.GetStatL(self, "PumpAction") then
+			if self:Clip1() == 0 and self2.GetStatL(self, "PumpAction").value_empty then
 				--finalstat = TFA.Enum.STATUS_PUMP_READY
 				self:SetReloadLoopCancel(true)
-			elseif (self2.GetStat(self, "Primary.ClipSize") < 0 or self:Clip1() > 0) and self2.GetStat(self, "PumpAction").value then
+			elseif (self2.GetStatL(self, "Primary.ClipSize") < 0 or self:Clip1() > 0) and self2.GetStatL(self, "PumpAction").value then
 				--finalstat = TFA.Enum.STATUS_PUMP_READY
 				self:SetReloadLoopCancel(true)
 			end
@@ -602,9 +602,9 @@ function SWEP:ProcessStatus()
 		end
 	end
 
-	--if stat == TFA.Enum.STATUS_IDLE and self:GetReloadLoopCancel() and (self2.GetStat(self, "AllowSprintAttack") or self:GetSprintProgress() < 0.1) then
+	--if stat == TFA.Enum.STATUS_IDLE and self:GetReloadLoopCancel() and (self2.GetStatL(self, "AllowSprintAttack") or self:GetSprintProgress() < 0.1) then
 	if stat == TFA.Enum.STATUS_IDLE and self:GetReloadLoopCancel() then
-		if self2.GetStat(self, "PumpAction") then
+		if self2.GetStatL(self, "PumpAction") then
 			if ct > self:GetNextPrimaryFire() and not self:KeyDown(IN_ATTACK) then
 				self2.DoPump(self)
 			end

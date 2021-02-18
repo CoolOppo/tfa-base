@@ -59,7 +59,7 @@ function SWEP:TFAFinishMove(ply, velocity, movedata)
 		self2.LastUnpredictedVelocity = velocity
 	end
 
-	local speedmult = Lerp(self:GetIronSightsProgress(), sv_tfa_weapon_weight:GetBool() and self:GetStat("RegularMoveSpeedMultiplier") or 1, self:GetStat("AimingDownSightsSpeedMultiplier"))
+	local speedmult = Lerp(self:GetIronSightsProgress(), sv_tfa_weapon_weight:GetBool() and self:GetStatL("RegularMoveSpeedMultiplier") or 1, self:GetStatL("AimingDownSightsSpeedMultiplier"))
 
 	local jr_targ = math.min(math.abs(velocity.z) / 500, 1)
 	self:SetJumpRatio(l_mathApproach(self:GetJumpRatio(), jr_targ, (jr_targ - self:GetJumpRatio()) * ft * 20))
@@ -73,14 +73,14 @@ function SWEP:TFAFinishMove(ply, velocity, movedata)
 
 	--if TFA.Enum.ReloadStatus[status] then
 	--  self:SetSprinting(false)
-	--elseif sprint_cv:GetBool() and not self:GetStat("AllowSprintAttack", false) and movedata then
-	if sprint_cv:GetBool() and not self:GetStat("AllowSprintAttack", false) and movedata then
+	--elseif sprint_cv:GetBool() and not self:GetStatL("AllowSprintAttack", false) and movedata then
+	if sprint_cv:GetBool() and not self:GetStatL("AllowSprintAttack", false) and movedata then
 		self:SetSprinting(vellen > ply:GetRunSpeed() * 0.6 * speedmult and movedata:KeyDown(IN_SPEED) and ply:OnGround())
 	else
 		self:SetSprinting(false)
 	end
 
-	self:SetWalking(vellen > ((isply and ply:GetWalkSpeed() or TFA.GUESS_NPC_WALKSPEED) * (sv_tfa_weapon_weight:GetBool() and self:GetStat("RegularMoveSpeedMultiplier", 1) or 1) * .75) and ply:GetNW2Bool("TFA_IsWalking") and ply:OnGround() and not self:GetSprinting() and not self:GetCustomizing())
+	self:SetWalking(vellen > ((isply and ply:GetWalkSpeed() or TFA.GUESS_NPC_WALKSPEED) * (sv_tfa_weapon_weight:GetBool() and self:GetStatL("RegularMoveSpeedMultiplier", 1) or 1) * .75) and ply:GetNW2Bool("TFA_IsWalking") and ply:OnGround() and not self:GetSprinting() and not self:GetCustomizing())
 
 	self2.walking_updated = oldwalking ~= self:GetWalking()
 	self2.sprinting_updated = oldsprinting ~= self:GetSprinting()
@@ -130,7 +130,7 @@ function SWEP:CalculateRatios()
 	local adstransitionspeed
 
 	if is then
-		adstransitionspeed = 12.5 / (self:GetStat("IronSightTime") / 0.3)
+		adstransitionspeed = 12.5 / (self:GetStatL("IronSightTime") / 0.3)
 	elseif spr or walk then
 		adstransitionspeed = 7.5
 	else
@@ -141,7 +141,7 @@ function SWEP:CalculateRatios()
 		self:TFAFinishMove(owent, owent:GetVelocity())
 	end
 
-	self:SetSpreadRatio(l_mathClamp(self:GetSpreadRatio() - self2.GetStat(self, "Primary.SpreadRecovery") * ft, 1, self2.GetStat(self, "Primary.SpreadMultiplierMax")))
+	self:SetSpreadRatio(l_mathClamp(self:GetSpreadRatio() - self2.GetStatL(self, "Primary.SpreadRecovery") * ft, 1, self2.GetStatL(self, "Primary.SpreadMultiplierMax")))
 	self:SetIronSightsProgress(l_mathApproach(self:GetIronSightsProgress(), ist, (ist - self:GetIronSightsProgress()) * ft * adstransitionspeed))
 	self:SetProceduralHolsterProgress(l_mathApproach(self:GetProceduralHolsterProgress(), sprt, (sprt - self:GetSprintProgress()) * ft * self2.ProceduralHolsterTime * 15))
 	self:SetInspectingProgress(l_mathApproach(self:GetInspectingProgress(), self:GetCustomizing() and 1 or 0, ((self:GetCustomizing() and 1 or 0) - self:GetInspectingProgress()) * ft * 10))
@@ -219,29 +219,29 @@ function SWEP:CalculateConeRecoil()
 	local self2 = self:GetTable()
 	local isr = self:GetIronSightsProgress()
 
-	if dynacc_cvar:GetBool() and (self2.GetStat(self, "Primary.NumShots") <= 1) then
+	if dynacc_cvar:GetBool() and (self2.GetStatL(self, "Primary.NumShots") <= 1) then
 		dynacc = true
 	end
 
 	local isr_1 = l_mathClamp(isr * 2, 0, 1)
 	local isr_2 = l_mathClamp((isr - 0.5) * 2, 0, 1)
-	local acv = self2.GetStat(self, "Primary.Spread") or self2.GetStat(self, "Primary.Accuracy")
-	local recv = self2.GetStat(self, "Primary.Recoil") * 5
+	local acv = self2.GetStatL(self, "Primary.Spread") or self2.GetStatL(self, "Primary.Accuracy")
+	local recv = self2.GetStatL(self, "Primary.Recoil") * 5
 
 	if dynacc then
-		ccon = l_Lerp(isr_2, l_Lerp(isr_1, acv, acv * self2.GetStat(self, "ChangeStateAccuracyMultiplier")), self2.GetStat(self, "Primary.IronAccuracy"))
-		crec = l_Lerp(isr_2, l_Lerp(isr_1, recv, recv * self2.GetStat(self, "ChangeStateRecoilMultiplier")), recv * self2.GetStat(self, "Primary.IronRecoilMultiplier"))
+		ccon = l_Lerp(isr_2, l_Lerp(isr_1, acv, acv * self2.GetStatL(self, "ChangeStateAccuracyMultiplier")), self2.GetStatL(self, "Primary.IronAccuracy"))
+		crec = l_Lerp(isr_2, l_Lerp(isr_1, recv, recv * self2.GetStatL(self, "ChangeStateRecoilMultiplier")), recv * self2.GetStatL(self, "Primary.IronRecoilMultiplier"))
 	else
-		ccon = l_Lerp(isr, acv, self2.GetStat(self, "Primary.IronAccuracy"))
-		crec = l_Lerp(isr, recv, recv * self2.GetStat(self, "Primary.IronRecoilMultiplier"))
+		ccon = l_Lerp(isr, acv, self2.GetStatL(self, "Primary.IronAccuracy"))
+		crec = l_Lerp(isr, recv, recv * self2.GetStatL(self, "Primary.IronRecoilMultiplier"))
 	end
 
 	local crc_1 = l_mathClamp(self:GetCrouchingRatio() * 2, 0, 1)
 	local crc_2 = l_mathClamp((self:GetCrouchingRatio() - 0.5) * 2, 0, 1)
 
 	if dynacc then
-		ccon = l_Lerp(crc_2, l_Lerp(crc_1, ccon, ccon * self2.GetStat(self, "ChangeStateAccuracyMultiplier")), ccon * self2.GetStat(self, "CrouchAccuracyMultiplier"))
-		crec = l_Lerp(crc_2, l_Lerp(crc_1, crec, self2.GetStat(self, "Primary.Recoil") * self2.GetStat(self, "ChangeStateRecoilMultiplier")), crec * self2.GetStat(self, "CrouchRecoilMultiplier"))
+		ccon = l_Lerp(crc_2, l_Lerp(crc_1, ccon, ccon * self2.GetStatL(self, "ChangeStateAccuracyMultiplier")), ccon * self2.GetStatL(self, "CrouchAccuracyMultiplier"))
+		crec = l_Lerp(crc_2, l_Lerp(crc_1, crec, self2.GetStatL(self, "Primary.Recoil") * self2.GetStatL(self, "ChangeStateRecoilMultiplier")), crec * self2.GetStatL(self, "CrouchRecoilMultiplier"))
 	end
 
 	local owner = self:GetOwner()
@@ -261,15 +261,15 @@ function SWEP:CalculateConeRecoil()
 	local vfc_1 = l_mathClamp(ovel / (isply and owner:GetWalkSpeed() or TFA.GUESS_NPC_WALKSPEED), 0, 2)
 
 	if dynacc then
-		ccon = l_Lerp(vfc_1, ccon, ccon * self2.GetStat(self, "WalkAccuracyMultiplier"))
-		crec = l_Lerp(vfc_1, crec, crec * self2.GetStat(self, "WallRecoilMultiplier"))
+		ccon = l_Lerp(vfc_1, ccon, ccon * self2.GetStatL(self, "WalkAccuracyMultiplier"))
+		crec = l_Lerp(vfc_1, crec, crec * self2.GetStatL(self, "WallRecoilMultiplier"))
 	end
 
 	local jr = self:GetJumpRatio()
 
 	if dynacc then
-		ccon = l_Lerp(jr, ccon, ccon * self2.GetStat(self, "JumpAccuracyMultiplier"))
-		crec = l_Lerp(jr, crec, crec * self2.GetStat(self, "JumpRecoilMultiplier"))
+		ccon = l_Lerp(jr, ccon, ccon * self2.GetStatL(self, "JumpAccuracyMultiplier"))
+		crec = l_Lerp(jr, crec, crec * self2.GetStatL(self, "JumpRecoilMultiplier"))
 	end
 
 	ccon = ccon * self:GetSpreadRatio()

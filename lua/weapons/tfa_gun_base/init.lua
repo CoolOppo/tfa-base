@@ -82,11 +82,11 @@ function SWEP:NPCShoot_Primary()
 end
 
 function SWEP:GetNPCRestTimes()
-	if sv_tfa_npc_burst:GetBool() or self:GetStat("NPCBurstOverride", false) then
-		return self:GetStat("NPCMinRest", self:GetFireDelay()), self:GetStat("NPCMaxRest", self:GetFireDelay() * 2)
+	if sv_tfa_npc_burst:GetBool() or self:GetStatL("NPCBurstOverride", false) then
+		return self:GetStatL("NPCMinRest", self:GetFireDelay()), self:GetStatL("NPCMaxRest", self:GetFireDelay() * 2)
 	end
 
-	if self:GetStat("Primary.Automatic") then
+	if self:GetStatL("Primary.Automatic") then
 		return 0, 0
 	else
 		return self:GetFireDelay(), self:GetFireDelay() * 2
@@ -94,8 +94,8 @@ function SWEP:GetNPCRestTimes()
 end
 
 function SWEP:GetNPCBurstSettings()
-	if sv_tfa_npc_burst:GetBool() or self:GetStat("NPCBurstOverride", false) then
-		return self:GetStat("NPCMinBurst", 1), self:GetStat("NPCMinBurst", 6), self:GetStat("NPCBurstDelay", self:GetFireDelay() * self:GetMaxBurst())
+	if sv_tfa_npc_burst:GetBool() or self:GetStatL("NPCBurstOverride", false) then
+		return self:GetStatL("NPCMinBurst", 1), self:GetStatL("NPCMinBurst", 6), self:GetStatL("NPCBurstDelay", self:GetFireDelay() * self:GetMaxBurst())
 	end
 
 	if self:GetMaxClip1() > 0 then
@@ -103,7 +103,7 @@ function SWEP:GetNPCBurstSettings()
 		local value = math.ceil(self:Clip1() / burst)
 		local delay = self:GetFireDelay() * burst
 
-		if self:GetStat("Primary.Automatic") then
+		if self:GetStatL("Primary.Automatic") then
 			return math.min(4, value), math.min(12, value), delay
 		else
 			return 1, math.min(4, value), delay
@@ -148,3 +148,5 @@ function SWEP:Equip(...)
 	self.OwnerViewModel = nil
 	self:EquipTTT(...)
 end
+
+TFA.FillMissingMetaValues(SWEP)

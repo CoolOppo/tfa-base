@@ -281,7 +281,7 @@ function SWEP:InspectionVGUIMainInfo(contentpanel)
 		titletext:SetSize(ScrW() * .5, TFA.Fonts.InspectionHeightTitle)
 		titletext.Paint = TextShadowPaint
 		local typetext = contentpanel:Add("DPanel")
-		typetext.Text = self:GetStat("Type_Displayed") or self:GetType()
+		typetext.Text = self:GetStatL("Type_Displayed") or self:GetType()
 
 		typetext.Think = function(myself)
 			myself.TextColor = mainpanel.PrimaryColor
@@ -342,11 +342,11 @@ function SWEP:InspectionVGUIMainInfo(contentpanel)
 			makertext.Paint = TextShadowPaint
 		end
 
-		local clip = self:GetStat("Primary.ClipSize")
+		local clip = self:GetStatL("Primary.ClipSize")
 
 		if clip > 0 then
 			local capacitytext = contentpanel:Add("DPanel")
-			capacitytext.Text = infotextpad .. language.GetPhrase("tfa.inspect.capacity"):format(clip .. (self:CanChamber() and (self:GetStat("IsAkimbo") and " + 2" or " + 1") or ""))
+			capacitytext.Text = infotextpad .. language.GetPhrase("tfa.inspect.capacity"):format(clip .. (self:CanChamber() and (self:GetStatL("IsAkimbo") and " + 2" or " + 1") or ""))
 
 			capacitytext.Think = function(myself)
 				myself.TextColor = mainpanel.SecondaryColor
@@ -412,14 +412,14 @@ function SWEP:InspectionVGUIStats(contentpanel)
 		statspanel.Paint = function() end
 
 		-- Bash damage
-		if self.BashBase and self:GetStat("Secondary.CanBash") ~= false then
+		if self.BashBase and self:GetStatL("Secondary.CanBash") ~= false then
 			local bashdamagepanel = statspanel:Add("DPanel")
 			bashdamagepanel:SetSize(preferredWidth, TFA.Fonts.InspectionHeightSmall)
 			statspanel:SetTall(statspanel:GetTall() + TFA.Fonts.InspectionHeightSmall)
 
 			bashdamagepanel.Think = function(myself)
 				if not IsValid(self) then return end
-				myself.Bar = self:GetStat("Secondary.BashDamage", 0) / bestdamage
+				myself.Bar = self:GetStatL("Secondary.BashDamage", 0) / bestdamage
 			end
 
 			bashdamagepanel.Paint = PanelPaintBars
@@ -428,7 +428,7 @@ function SWEP:InspectionVGUIStats(contentpanel)
 
 			bashdamagetext.Think = function(myself)
 				if not IsValid(self) then return end
-				myself.Text = language.GetPhrase("tfa.inspect.stat.bashdamage"):format(math.Round(self:GetStat("Secondary.BashDamage", 0)))
+				myself.Text = language.GetPhrase("tfa.inspect.stat.bashdamage"):format(math.Round(self:GetStatL("Secondary.BashDamage", 0)))
 				myself.TextColor = mainpanel.SecondaryColor
 			end
 
@@ -445,7 +445,7 @@ function SWEP:InspectionVGUIStats(contentpanel)
 
 		stabilitypanel.Think = function(myself)
 			if not IsValid(self) then return end
-			myself.Bar = (1 - math.abs(self:GetStat("Primary.KickUp") + self:GetStat("Primary.KickDown")) / 2 / worstrecoil)
+			myself.Bar = (1 - math.abs(self:GetStatL("Primary.KickUp") + self:GetStatL("Primary.KickDown")) / 2 / worstrecoil)
 		end
 
 		stabilitypanel.Paint = PanelPaintBars
@@ -455,7 +455,7 @@ function SWEP:InspectionVGUIStats(contentpanel)
 
 		stabilitytext.Think = function(myself)
 			if not IsValid(self) then return end
-			myself.Text = language.GetPhrase("tfa.inspect.stat.stability"):format(math.Clamp(math.Round((1 - math.abs(self:GetStat("Primary.KickUp") + self:GetStat("Primary.KickDown")) / 2 / 1) * 100), 0, 100))
+			myself.Text = language.GetPhrase("tfa.inspect.stat.stability"):format(math.Clamp(math.Round((1 - math.abs(self:GetStatL("Primary.KickUp") + self:GetStatL("Primary.KickDown")) / 2 / 1) * 100), 0, 100))
 			myself.TextColor = mainpanel.SecondaryColor
 		end
 
@@ -471,7 +471,7 @@ function SWEP:InspectionVGUIStats(contentpanel)
 
 		damagepanel.Think = function(myself)
 			if not IsValid(self) then return end
-			myself.Bar = (self:GetStat("Primary.Damage") * math.Round(self:GetStat("Primary.NumShots") * 0.75)) / bestdamage
+			myself.Bar = (self:GetStatL("Primary.Damage") * math.Round(self:GetStatL("Primary.NumShots") * 0.75)) / bestdamage
 		end
 
 		damagepanel.Paint = PanelPaintBars
@@ -480,10 +480,10 @@ function SWEP:InspectionVGUIStats(contentpanel)
 
 		damagetext.Think = function(myself)
 			if not IsValid(self) then return end
-			local dmgstr = language.GetPhrase("tfa.inspect.stat.damage"):format(math.Round(self:GetStat("Primary.Damage")))
+			local dmgstr = language.GetPhrase("tfa.inspect.stat.damage"):format(math.Round(self:GetStatL("Primary.Damage")))
 
-			if self:GetStat("Primary.NumShots") ~= 1 then
-				dmgstr = dmgstr .. "x" .. math.Round(self:GetStat("Primary.NumShots"))
+			if self:GetStatL("Primary.NumShots") ~= 1 then
+				dmgstr = dmgstr .. "x" .. math.Round(self:GetStatL("Primary.NumShots"))
 			end
 
 			myself.Text = dmgstr
@@ -503,7 +503,7 @@ function SWEP:InspectionVGUIStats(contentpanel)
 
 			mobilitypanel.Think = function(myself)
 				if not IsValid(self) then return end
-				myself.Bar = (self:GetStat("RegularMoveSpeedMultiplier") - worstmove) / (1 - worstmove)
+				myself.Bar = (self:GetStatL("RegularMoveSpeedMultiplier") - worstmove) / (1 - worstmove)
 			end
 
 			mobilitypanel.Paint = PanelPaintBars
@@ -512,7 +512,7 @@ function SWEP:InspectionVGUIStats(contentpanel)
 
 			mobilitytext.Think = function(myself)
 				if not IsValid(self) then return end
-				myself.Text = language.GetPhrase("tfa.inspect.stat.mobility"):format(math.Round(self:GetStat("RegularMoveSpeedMultiplier") * 100))
+				myself.Text = language.GetPhrase("tfa.inspect.stat.mobility"):format(math.Round(self:GetStatL("RegularMoveSpeedMultiplier") * 100))
 				myself.TextColor = mainpanel.SecondaryColor
 			end
 
@@ -529,7 +529,7 @@ function SWEP:InspectionVGUIStats(contentpanel)
 
 		fireratepanel.Think = function(myself)
 			if not IsValid(self) then return end
-			local rpmstat = self:GetStat("Primary.RPM_Displayed") or self:GetStat("Primary.RPM")
+			local rpmstat = self:GetStatL("Primary.RPM_Displayed") or self:GetStatL("Primary.RPM")
 			myself.Bar = rpmstat / bestrpm
 		end
 
@@ -539,7 +539,7 @@ function SWEP:InspectionVGUIStats(contentpanel)
 
 		fireratetext.Think = function(myself)
 			if not IsValid(self) then return end
-			local rpmstat = self:GetStat("Primary.RPM_Displayed") or self:GetStat("Primary.RPM")
+			local rpmstat = self:GetStatL("Primary.RPM_Displayed") or self:GetStatL("Primary.RPM")
 			local fireratestr = language.GetPhrase("tfa.inspect.stat.rpm"):format(rpmstat)
 			myself.Text = fireratestr
 			myself.TextColor = mainpanel.SecondaryColor
@@ -551,7 +551,7 @@ function SWEP:InspectionVGUIStats(contentpanel)
 		fireratetext.Paint = TextShadowPaint
 
 		--Hipfire Spread
-		if self:GetStat("Secondary.DisplaySpread") then
+		if self:GetStatL("Secondary.DisplaySpread") then
 			local accuracypanel = statspanel:Add("DPanel")
 			accuracypanel:SetSize(preferredWidth, TFA.Fonts.InspectionHeightSmall)
 			statspanel:SetTall(statspanel:GetTall() + TFA.Fonts.InspectionHeightSmall)
@@ -559,7 +559,7 @@ function SWEP:InspectionVGUIStats(contentpanel)
 			accuracypanel.Think = function(myself)
 				if not IsValid(self) then return end
 
-				myself.Bar = 1 - self:GetStat("Primary.Spread") / worstaccuracy
+				myself.Bar = 1 - self:GetStatL("Primary.Spread") / worstaccuracy
 			end
 
 			accuracypanel.Paint = PanelPaintBars
@@ -570,7 +570,7 @@ function SWEP:InspectionVGUIStats(contentpanel)
 				if not IsValid(self) then return end
 
 				local ismoa = cv_display_moa and cv_display_moa:GetBool()
-				local spread = self:GetStat("Primary.Spread")
+				local spread = self:GetStatL("Primary.Spread")
 				local spreadtext
 
 				if ismoa then
@@ -590,7 +590,7 @@ function SWEP:InspectionVGUIStats(contentpanel)
 		end
 
 		--Iron Spread
-		if self:GetStat("Secondary.IronSightsEnabled", false) and self:GetStat("Secondary.DisplayIronSpread") then
+		if self:GetStatL("Secondary.IronSightsEnabled", false) and self:GetStatL("Secondary.DisplayIronSpread") then
 			local ironspreadpanel = statspanel:Add("DPanel")
 			ironspreadpanel:SetSize(preferredWidth, TFA.Fonts.InspectionHeightSmall)
 			statspanel:SetTall(statspanel:GetTall() + TFA.Fonts.InspectionHeightSmall)
@@ -598,7 +598,7 @@ function SWEP:InspectionVGUIStats(contentpanel)
 			ironspreadpanel.Think = function(myself)
 				if not IsValid(self) then return end
 
-				myself.Bar = 1 - self:GetStat("Primary.IronAccuracy") / worstaccuracy
+				myself.Bar = 1 - self:GetStatL("Primary.IronAccuracy") / worstaccuracy
 			end
 
 			ironspreadpanel.Paint = PanelPaintBars
@@ -609,7 +609,7 @@ function SWEP:InspectionVGUIStats(contentpanel)
 				if not IsValid(self) then return end
 
 				local ismoa = cv_display_moa and cv_display_moa:GetBool()
-				local spread = self:GetStat("Primary.IronAccuracy")
+				local spread = self:GetStatL("Primary.IronAccuracy")
 				local spreadtext
 
 				if ismoa then
@@ -739,7 +739,7 @@ function SWEP:InspectionVGUIAttachments(contentpanel)
 		hook.Run("TFA_InspectVGUI_AttachmentsFinish", self, contentpanel, scrollpanel)
 	end
 
-	if self.Primary.RangeFalloffLUTBuilt and self:GetStat("Primary.DisplayFalloff") then
+	if self.Primary.RangeFalloffLUTBuilt and self:GetStatL("Primary.DisplayFalloff") then
 		local falloffpanel = vgui.Create("EditablePanel", mainpanel)
 		falloffpanel:SetSize(ScrW() * .5 - ScaleH(self.VGUIPaddingW) * 2, mainpanel:GetTall() * 0.2)
 		falloffpanel:SetPos(ScrW() * .5, mainpanel:GetTall() - falloffpanel:GetTall() - ScaleH(self.VGUIPaddingH))
@@ -1045,7 +1045,7 @@ end
 
 function SWEP:DrawHUDBackground()
 	--Scope Overlay
-	if self:GetIronSightsProgress() > self:GetStat("ScopeOverlayThreshold") and self:GetStat("Scoped") then
+	if self:GetIronSightsProgress() > self:GetStatL("ScopeOverlayThreshold") and self:GetStatL("Scoped") then
 		self:DrawScopeOverlay()
 	end
 end
@@ -1081,7 +1081,7 @@ function SWEP:DrawHUDAmmo()
 	local self2 = self:GetTable()
 	local stat = self2.GetStatus(self)
 
-	if self2.GetStat(self, "BoltAction") then
+	if self2.GetStatL(self, "BoltAction") then
 		if stat == TFA.Enum.STATUS_SHOOTING then
 			if not self2.LastBoltShoot then
 				self2.LastBoltShoot = l_CT()
@@ -1096,7 +1096,7 @@ function SWEP:DrawHUDAmmo()
 	fm = self:GetFireMode()
 	targbool = (not TFA.Enum.HUDDisabledStatus[stat]) or fm ~= lfm
 	targbool = targbool or (stat == TFA.Enum.STATUS_SHOOTING and self2.LastBoltShoot and l_CT() > self2.LastBoltShoot + self2.BoltTimerOffset)
-	targbool = targbool or (self2.GetStat(self, "PumpAction") and (stat == TFA.Enum.STATUS_PUMP or (stat == TFA.Enum.STATUS_SHOOTING and self:Clip1() == 0)))
+	targbool = targbool or (self2.GetStatL(self, "PumpAction") and (stat == TFA.Enum.STATUS_PUMP or (stat == TFA.Enum.STATUS_SHOOTING and self:Clip1() == 0)))
 	targbool = targbool or (stat == TFA.Enum.STATUS_FIDGET)
 
 	targ = targbool and 1 or 0
@@ -1114,12 +1114,12 @@ function SWEP:DrawHUDAmmo()
 
 	local myalpha = 225 * self2.CLAmmoProgress
 	if myalpha < 1 then return end
-	local amn = self2.GetStat(self, "Primary.Ammo")
+	local amn = self2.GetStatL(self, "Primary.Ammo")
 	if not amn then return end
 	if amn == "none" or amn == "" then return end
 	local mzpos = self:GetMuzzlePos()
 
-	if self2.GetStat(self, "IsAkimbo") then
+	if self2.GetStatL(self, "IsAkimbo") then
 		self2.MuzzleAttachmentRaw = self2.MuzzleAttachmentRaw2 or 1
 	end
 
@@ -1158,23 +1158,23 @@ function SWEP:DrawHUDAmmo()
 		end
 	end
 
-	if self:GetInspectingProgress() < 0.01 and self2.GetStat(self, "Primary.Ammo") ~= "" and self2.GetStat(self, "Primary.Ammo") ~= 0 then
+	if self:GetInspectingProgress() < 0.01 and self2.GetStatL(self, "Primary.Ammo") ~= "" and self2.GetStatL(self, "Primary.Ammo") ~= 0 then
 		local str, clipstr
 
-		if self2.GetStat(self, "Primary.ClipSize") and self2.GetStat(self, "Primary.ClipSize") ~= -1 then
+		if self2.GetStatL(self, "Primary.ClipSize") and self2.GetStatL(self, "Primary.ClipSize") ~= -1 then
 			clipstr = language.GetPhrase("tfa.hud.ammo.clip1")
 
-			if self2.GetStat(self, "IsAkimbo") and self2.GetStat(self, "EnableAkimboHUD") ~= false then
+			if self2.GetStatL(self, "IsAkimbo") and self2.GetStatL(self, "EnableAkimboHUD") ~= false then
 				str = clipstr:format(math.ceil(self:Clip1() / 2))
 
-				if (self:Clip1() > self2.GetStat(self, "Primary.ClipSize")) then
-					str = clipstr:format(math.ceil(self:Clip1() / 2) - 1 .. " + " .. (math.ceil(self:Clip1() / 2) - math.ceil(self2.GetStat(self, "Primary.ClipSize") / 2)))
+				if (self:Clip1() > self2.GetStatL(self, "Primary.ClipSize")) then
+					str = clipstr:format(math.ceil(self:Clip1() / 2) - 1 .. " + " .. (math.ceil(self:Clip1() / 2) - math.ceil(self2.GetStatL(self, "Primary.ClipSize") / 2)))
 				end
 			else
 				str = clipstr:format(self:Clip1())
 
-				if (self:Clip1() > self2.GetStat(self, "Primary.ClipSize")) then
-					str = clipstr:format(self2.GetStat(self, "Primary.ClipSize") .. " + " .. (self:Clip1() - self2.GetStat(self, "Primary.ClipSize")))
+				if (self:Clip1() > self2.GetStatL(self, "Primary.ClipSize")) then
+					str = clipstr:format(self2.GetStatL(self, "Primary.ClipSize") .. " + " .. (self:Clip1() - self2.GetStatL(self, "Primary.ClipSize")))
 				end
 			end
 
@@ -1195,7 +1195,7 @@ function SWEP:DrawHUDAmmo()
 			xx = xx - TFA.Fonts.SleekHeightMedium / 3
 		end
 
-		str = string.upper(self:GetFireModeName() .. (#self2.GetStat(self, "FireModes") > 2 and " | +" or ""))
+		str = string.upper(self:GetFireModeName() .. (#self2.GetStatL(self, "FireModes") > 2 and " | +" or ""))
 
 		if self:IsJammed() then
 			str = str .. "\n" .. language.GetPhrase("tfa.hud.jammed")
@@ -1206,7 +1206,7 @@ function SWEP:DrawHUDAmmo()
 		yy = yy + TFA.Fonts.SleekHeightSmall
 		xx = xx - TFA.Fonts.SleekHeightSmall / 3
 
-		if self2.GetStat(self, "IsAkimbo") and self2.GetStat(self, "EnableAkimboHUD") ~= false then
+		if self2.GetStatL(self, "IsAkimbo") and self2.GetStatL(self, "EnableAkimboHUD") ~= false then
 			local angpos2 = self:GetOwner():ShouldDrawLocalPlayer() and self:GetAttachment(2) or self2.OwnerViewModel:GetAttachment(2)
 
 			if angpos2 then
@@ -1218,13 +1218,13 @@ function SWEP:DrawHUDAmmo()
 				xx, yy = ScrW() * .35, ScrH() * .6
 			end
 
-			if self2.GetStat(self, "Primary.ClipSize") and self2.GetStat(self, "Primary.ClipSize") ~= -1 then
+			if self2.GetStatL(self, "Primary.ClipSize") and self2.GetStatL(self, "Primary.ClipSize") ~= -1 then
 				clipstr = language.GetPhrase("tfa.hud.ammo.clip1")
 
 				str = clipstr:format(math.floor(self:Clip1() / 2))
 
-				if (math.floor(self:Clip1() / 2) > math.floor(self2.GetStat(self, "Primary.ClipSize") / 2)) then
-					str = clipstr:format(math.floor(self:Clip1() / 2) - 1 .. " + " .. (math.floor(self:Clip1() / 2) - math.floor(self2.GetStat(self, "Primary.ClipSize") / 2)))
+				if (math.floor(self:Clip1() / 2) > math.floor(self2.GetStatL(self, "Primary.ClipSize") / 2)) then
+					str = clipstr:format(math.floor(self:Clip1() / 2) - 1 .. " + " .. (math.floor(self:Clip1() / 2) - math.floor(self2.GetStatL(self, "Primary.ClipSize") / 2)))
 				end
 
 				draw.DrawText(str, "TFASleek", xx + 1, yy + 1, ColorAlpha(self2.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
@@ -1249,10 +1249,10 @@ function SWEP:DrawHUDAmmo()
 			draw.DrawText(str, "TFASleekSmall", xx, yy, ColorAlpha(self2.TextCol, myalpha), TEXT_ALIGN_RIGHT)
 		end
 
-		if self2.GetStat(self, "Secondary.Ammo") and self2.GetStat(self, "Secondary.Ammo") ~= "" and self2.GetStat(self, "Secondary.Ammo") ~= "none" and self2.GetStat(self, "Secondary.Ammo") ~= 0 and not self2.GetStat(self, "IsAkimbo") then
-			if self2.GetStat(self, "Secondary.ClipSize") and self2.GetStat(self, "Secondary.ClipSize") ~= -1 then
+		if self2.GetStatL(self, "Secondary.Ammo") and self2.GetStatL(self, "Secondary.Ammo") ~= "" and self2.GetStatL(self, "Secondary.Ammo") ~= "none" and self2.GetStatL(self, "Secondary.Ammo") ~= 0 and not self2.GetStatL(self, "IsAkimbo") then
+			if self2.GetStatL(self, "Secondary.ClipSize") and self2.GetStatL(self, "Secondary.ClipSize") ~= -1 then
 				clipstr = language.GetPhrase("tfa.hud.ammo.clip2")
-				str = (self:Clip2() > self2.GetStat(self, "Secondary.ClipSize")) and clipstr:format(self2.GetStat(self, "Secondary.ClipSize") .. " + " .. (self:Clip2() - self2.GetStat(self, "Primary.ClipSize"))) or clipstr:format(self:Clip2())
+				str = (self:Clip2() > self2.GetStatL(self, "Secondary.ClipSize")) and clipstr:format(self2.GetStatL(self, "Secondary.ClipSize") .. " + " .. (self:Clip2() - self2.GetStatL(self, "Primary.ClipSize"))) or clipstr:format(self:Clip2())
 				draw.DrawText(str, "TFASleekSmall", xx + 1, yy + 1, ColorAlpha(self2.TextColContrast, myalpha), TEXT_ALIGN_RIGHT)
 				draw.DrawText(str, "TFASleekSmall", xx, yy, ColorAlpha(self2.TextCol, myalpha), TEXT_ALIGN_RIGHT)
 				str = language.GetPhrase("tfa.hud.ammo.reserve2"):format(self2.Ammo2(self))
@@ -1387,7 +1387,7 @@ function SWEP:DoDrawCrosshair()
 	drawdot = drawdot_cvar:GetBool()
 	local scale = (s_cone * 90) / self:GetOwner():GetFOV() * ScrH() / 1.44 * cgapscale_cvar:GetFloat()
 
-	if self:GetSprintProgress() >= 0.1 and not self:GetStat("AllowSprintAttack", false) then
+	if self:GetSprintProgress() >= 0.1 and not self:GetStatL("AllowSprintAttack", false) then
 		scale = scale * (1 + TFA.Cubic(self:GetSprintProgress() - 0.1) * 6)
 	end
 
@@ -1469,7 +1469,7 @@ function SWEP:DoDrawCrosshair()
 
 		local tX, tY, tWidth =
 			math.Round(-outlinewidth) - crosshairwidth / 2,
-			-gap * self:GetStat("Primary.SpreadBiasPitch") - tHeight,
+			-gap * self:GetStatL("Primary.SpreadBiasPitch") - tHeight,
 			math.Round(outlinewidth * 2) + crosshairwidth
 
 		-- Top
@@ -1492,7 +1492,7 @@ function SWEP:DoDrawCrosshair()
 			cam.PushModelMatrix(crosshairMatrix)
 
 			local width = math.Round(length - gap + outlinewidth * 2) + crosshairwidth
-			local realgap = math.Round(gap * self:GetStat("Primary.SpreadBiasYaw") - outlinewidth) - crosshairwidth / 2
+			local realgap = math.Round(gap * self:GetStatL("Primary.SpreadBiasYaw") - outlinewidth) - crosshairwidth / 2
 
 			-- Left
 			surface.DrawRect(
@@ -1511,7 +1511,7 @@ function SWEP:DoDrawCrosshair()
 			-- Bottom
 			surface.DrawRect(
 				math.Round(-outlinewidth) - crosshairwidth / 2,
-				math.Round(gap * self:GetStat("Primary.SpreadBiasPitch") - outlinewidth) - crosshairwidth / 2,
+				math.Round(gap * self:GetStatL("Primary.SpreadBiasPitch") - outlinewidth) - crosshairwidth / 2,
 				math.Round(outlinewidth * 2) + crosshairwidth,
 				math.Round(length - gap + outlinewidth * 2) + crosshairwidth)
 
@@ -1531,7 +1531,7 @@ function SWEP:DoDrawCrosshair()
 
 	local tX, tY, tWidth =
 		-crosshairwidth / 2,
-		math.Round(-gap * self:GetStat("Primary.SpreadBiasPitch") - tHeight),
+		math.Round(-gap * self:GetStatL("Primary.SpreadBiasPitch") - tHeight),
 		crosshairwidth
 
 	-- Top
@@ -1554,7 +1554,7 @@ function SWEP:DoDrawCrosshair()
 		cam.PushModelMatrix(crosshairMatrix)
 
 		local width = math.Round(length - gap) + crosshairwidth
-		local realgap = math.Round(gap * self:GetStat("Primary.SpreadBiasYaw")) - crosshairwidth / 2
+		local realgap = math.Round(gap * self:GetStatL("Primary.SpreadBiasYaw")) - crosshairwidth / 2
 
 		-- Left
 		surface.DrawRect(
@@ -1573,7 +1573,7 @@ function SWEP:DoDrawCrosshair()
 		-- Bottom
 		surface.DrawRect(
 			-crosshairwidth / 2,
-			math.Round(gap * self:GetStat("Primary.SpreadBiasPitch")) - crosshairwidth / 2,
+			math.Round(gap * self:GetStatL("Primary.SpreadBiasPitch")) - crosshairwidth / 2,
 			crosshairwidth,
 			math.Round(length - gap) + crosshairwidth)
 
@@ -1600,40 +1600,40 @@ function SWEP:DrawScopeOverlay()
 
 	local tbl
 
-	if self2.GetStat(self, "Secondary.UseACOG") then
+	if self2.GetStatL(self, "Secondary.UseACOG") then
 		tbl = TFA_SCOPE_ACOG
 	end
 
-	if self2.GetStat(self, "Secondary.UseMilDot") then
+	if self2.GetStatL(self, "Secondary.UseMilDot") then
 		tbl = TFA_SCOPE_MILDOT
 	end
 
-	if self2.GetStat(self, "Secondary.UseSVD") then
+	if self2.GetStatL(self, "Secondary.UseSVD") then
 		tbl = TFA_SCOPE_SVD
 	end
 
-	if self2.GetStat(self, "Secondary.UseParabolic") then
+	if self2.GetStatL(self, "Secondary.UseParabolic") then
 		tbl = TFA_SCOPE_PARABOLIC
 	end
 
-	if self2.GetStat(self, "Secondary.UseElcan") then
+	if self2.GetStatL(self, "Secondary.UseElcan") then
 		tbl = TFA_SCOPE_ELCAN
 	end
 
-	if self2.GetStat(self, "Secondary.UseGreenDuplex") then
+	if self2.GetStatL(self, "Secondary.UseGreenDuplex") then
 		tbl = TFA_SCOPE_GREENDUPLEX
 	end
 
-	if self2.GetStat(self, "Secondary.UseAimpoint") then
+	if self2.GetStatL(self, "Secondary.UseAimpoint") then
 		tbl = TFA_SCOPE_AIMPOINT
 	end
 
-	if self2.GetStat(self, "Secondary.UseMatador") then
+	if self2.GetStatL(self, "Secondary.UseMatador") then
 		tbl = TFA_SCOPE_MATADOR
 	end
 
-	if self2.GetStat(self, "Secondary.ScopeTable") then
-		tbl = self2.GetStat(self, "Secondary.ScopeTable")
+	if self2.GetStatL(self, "Secondary.ScopeTable") then
+		tbl = self2.GetStatL(self, "Secondary.ScopeTable")
 	end
 
 	if not tbl then
@@ -1694,11 +1694,11 @@ function SWEP:DrawScopeOverlay()
 			end
 		else
 			if k == "scopetex" then
-				dimension = dimension * self:GetStat("ScopeScale") ^ 2 * TFA_SCOPE_SCOPESCALE
+				dimension = dimension * self:GetStatL("ScopeScale") ^ 2 * TFA_SCOPE_SCOPESCALE
 			elseif k == "reticletex" then
-				dimension = dimension * (self:GetStat("ReticleScale") and self:GetStat("ReticleScale") or 1) ^ 2 * (TFA_SCOPE_RETICLESCALE and TFA_SCOPE_RETICLESCALE or 1)
+				dimension = dimension * (self:GetStatL("ReticleScale") and self:GetStatL("ReticleScale") or 1) ^ 2 * (TFA_SCOPE_RETICLESCALE and TFA_SCOPE_RETICLESCALE or 1)
 			else
-				dimension = dimension * self:GetStat("ReticleScale") ^ 2 * TFA_SCOPE_DOTSCALE
+				dimension = dimension * self:GetStatL("ReticleScale") ^ 2 * TFA_SCOPE_DOTSCALE
 			end
 
 			surface.SetDrawColor(255, 255, 255, 255)
@@ -1716,7 +1716,7 @@ function SWEP:DrawWeaponSelection(x, y, wide, tall, alpha)
 
 	surface.SetDrawColor(255, 255, 255, alpha)
 
-	icon = self2.GetStat(self, "WepSelectIcon_Override", self2.WepSelectIcon)
+	icon = self2.GetStatL(self, "WepSelectIcon_Override", self2.WepSelectIcon)
 
 	if not icon then
 		self2.IconFix(self)

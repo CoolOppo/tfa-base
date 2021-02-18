@@ -43,7 +43,7 @@ function SWEP:DrawFlashlight(is_vm)
 	local self2 = self:GetTable()
 
 	if not self2.FlashlightDotMaterial then
-		self2.FlashlightDotMaterial = Material(self2.GetStat(self, "FlashlightMaterial") or "effects/flashlight001")
+		self2.FlashlightDotMaterial = Material(self2.GetStatL(self, "FlashlightMaterial") or "effects/flashlight001")
 	end
 
 	local ply = self:GetOwner()
@@ -63,15 +63,17 @@ function SWEP:DrawFlashlight(is_vm)
 		end
 
 		targetent = ply:GetViewModel()
-		elemname = self2.GetStat(self, "Flashlight_VElement", self2.GetStat(self, "Flashlight_Element"))
+		elemname = self2.GetStatL(self, "Flashlight_VElement", self2.GetStatL(self, "Flashlight_Element"))
 
-		if elemname and self2.ViewModelElements[elemname] and IsValid(self2.ViewModelElements[elemname].curmodel) then
-			targetent = self2.ViewModelElements[elemname].curmodel
+		local ViewModelElements = self:GetStatRaw("ViewModelElements", TFA.LatestDataVersion)
+
+		if elemname and ViewModelElements[elemname] and IsValid(ViewModelElements[elemname].curmodel) then
+			targetent = ViewModelElements[elemname].curmodel
 		end
 
-		att = self2.GetStat(self, "FlashlightAttachment")
+		att = self2.GetStatL(self, "FlashlightAttachment")
 
-		attname = self2.GetStat(self, "FlashlightAttachmentName")
+		attname = self2.GetStatL(self, "FlashlightAttachmentName")
 
 		if attname then
 			att = targetent:LookupAttachment(attname)
@@ -92,7 +94,7 @@ function SWEP:DrawFlashlight(is_vm)
 		end
 
 		if self2.FlashlightISMovement and self2.CLIronSightsProgress > 0 then
-			local isang = self2.GetStat(self, "IronSightsAngle")
+			local isang = self2.GetStatL(self, "IronSightsAngle")
 			angpos.Ang:RotateAroundAxis(angpos.Ang:Right(), isang.y * (self2.ViewModelFlip and -1 or 1) * self2.CLIronSightsProgress)
 			angpos.Ang:RotateAroundAxis(angpos.Ang:Up(), -isang.x * self2.CLIronSightsProgress)
 		end
@@ -106,11 +108,11 @@ function SWEP:DrawFlashlight(is_vm)
 			local lamp = ProjectedTexture()
 			ply.TFAFlashlightGun = lamp
 			lamp:SetTexture(self2.FlashlightDotMaterial:GetString("$basetexture"))
-			lamp:SetFarZ(self2.GetStat(self, "FlashlightDistance")) -- How far the light should shine
-			lamp:SetFOV(self2.GetStat(self, "FlashlightFOV"))
+			lamp:SetFarZ(self2.GetStatL(self, "FlashlightDistance")) -- How far the light should shine
+			lamp:SetFOV(self2.GetStatL(self, "FlashlightFOV"))
 			lamp:SetPos(angpos.Pos)
 			lamp:SetAngles(angpos.Ang)
-			lamp:SetBrightness(self2.GetStat(self, "FlashlightBrightness") * (0.9  + 0.1 * math.max(math.sin(CurTime() * 120), math.cos(CurTime() * 40))))
+			lamp:SetBrightness(self2.GetStatL(self, "FlashlightBrightness") * (0.9  + 0.1 * math.max(math.sin(CurTime() * 120), math.cos(CurTime() * 40))))
 			lamp:SetNearZ(1)
 			lamp:SetColor(color_white)
 			lamp:SetEnableShadows(true)
@@ -131,15 +133,17 @@ function SWEP:DrawFlashlight(is_vm)
 
 	targetent = self
 
-	elemname = self2.GetStat(self, "Flashlight_WElement", self2.GetStat(self, "Flashlight_Element"))
+	elemname = self2.GetStatL(self, "Flashlight_WElement", self2.GetStatL(self, "Flashlight_Element"))
 
-	if elemname and self2.WorldModelElements[elemname] and IsValid(self2.WorldModelElements[elemname].curmodel) then
-		targetent = self2.WorldModelElements[elemname].curmodel
+	local WorldModelElements = self:GetStatRaw("WorldModelElements", TFA.LatestDataVersion)
+
+	if elemname and WorldModelElements[elemname] and IsValid(WorldModelElements[elemname].curmodel) then
+		targetent = WorldModelElements[elemname].curmodel
 	end
 
-	att = self2.GetStat(self, "FlashlightAttachmentWorld", self2.GetStat(self, "FlashlightAttachment"))
+	att = self2.GetStatL(self, "FlashlightAttachmentWorld", self2.GetStatL(self, "FlashlightAttachment"))
 
-	attname = self2.GetStat(self, "FlashlightAttachmentNameWorld", self2.GetStat(self, "FlashlightAttachmentName"))
+	attname = self2.GetStatL(self, "FlashlightAttachmentNameWorld", self2.GetStatL(self, "FlashlightAttachmentName"))
 
 	if attname then
 		att = targetent:LookupAttachment(attname)
@@ -167,11 +171,11 @@ function SWEP:DrawFlashlight(is_vm)
 		local lamp = ProjectedTexture()
 		ply.TFAFlashlightGun = lamp
 		lamp:SetTexture(self2.FlashlightDotMaterial:GetString("$basetexture"))
-		lamp:SetFarZ(self2.GetStat(self, "FlashlightDistance")) -- How far the light should shine
-		lamp:SetFOV(self2.GetStat(self, "FlashlightFOV"))
+		lamp:SetFarZ(self2.GetStatL(self, "FlashlightDistance")) -- How far the light should shine
+		lamp:SetFOV(self2.GetStatL(self, "FlashlightFOV"))
 		lamp:SetPos(angpos.Pos)
 		lamp:SetAngles(angpos.Ang)
-		lamp:SetBrightness(self2.GetStat(self, "FlashlightBrightness") * (0.9  + 0.1 * math.max(math.sin(CurTime() * 120), math.cos(CurTime() * 40))))
+		lamp:SetBrightness(self2.GetStatL(self, "FlashlightBrightness") * (0.9  + 0.1 * math.max(math.sin(CurTime() * 120), math.cos(CurTime() * 40))))
 		lamp:SetNearZ(1)
 		lamp:SetColor(color_white)
 		lamp:SetEnableShadows(false)
@@ -185,7 +189,7 @@ function SWEP:DrawFlashlight(is_vm)
 		local ang = angpos.Ang
 		lamp:SetPos(lamppos)
 		lamp:SetAngles(ang)
-		lamp:SetBrightness(self2.GetStat(self, "FlashlightBrightness") * (0.9  + 0.1 * math.max(math.sin(CurTime() * 120), math.cos(CurTime() * 40))))
+		lamp:SetBrightness(self2.GetStatL(self, "FlashlightBrightness") * (0.9  + 0.1 * math.max(math.sin(CurTime() * 120), math.cos(CurTime() * 40))))
 		lamp:Update()
 	end
 end

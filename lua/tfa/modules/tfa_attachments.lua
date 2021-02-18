@@ -193,9 +193,9 @@ function TFA.Attachments.Register(id, ATTACHMENT)
 		ATTACHMENT.Base = ATTACHMENT.Base or "base"
 	end
 
-	if not TFA_ATTACHMENT_ISUPDATING and istable(ATTACHMENT.WeaponTable) then
+	--[[if not TFA_ATTACHMENT_ISUPDATING and istable(ATTACHMENT.WeaponTable) then
 		TFA.MigrateStructure(ATTACHMENT, ATTACHMENT.WeaponTable, id or "<attachment>", false)
-	end
+	end]]
 
 	ProtectedCall(function()
 		hook.Run("TFABase_RegisterAttachment", id, ATTACHMENT)
@@ -311,9 +311,9 @@ function TFAUpdateAttachments(network)
 	for _, v in pairs(TFA.Attachments.Atts) do
 		patchInheritance(v)
 
-		if istable(v.WeaponTable) then
+		--[[if istable(v.WeaponTable) then
 			TFA.MigrateStructure(v, v.WeaponTable, v.ID or "<attachment>", false)
-		end
+		end]]
 	end
 
 	ProtectedCall(function()

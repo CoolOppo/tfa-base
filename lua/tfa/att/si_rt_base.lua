@@ -61,9 +61,9 @@ function ATTACHMENT:RTCode(wep, rt, scrw, scrh)
 	local vm = wep.OwnerViewModel
 
 	local ang = vm:GetAngles()
-	ang:RotateAroundAxis(ang:Forward(), -wep:GetStat("IronSightsAngle").z)
+	ang:RotateAroundAxis(ang:Forward(), -wep:GetStatL("IronSightsAngle").z)
 
-	local scopeAtt = wep:GetStat("RTScopeAttachment", -1)
+	local scopeAtt = wep:GetStatL("RTScopeAttachment", -1)
 
 	if scopeAtt > 0 then
 		local AngPos = vm:GetAttachment(scopeAtt)
@@ -83,7 +83,7 @@ function ATTACHMENT:RTCode(wep, rt, scrw, scrh)
 	cd.y = 0
 	cd.w = rtw
 	cd.h = rth
-	cd.fov = wep:GetStat("RTScopeFOV", 90 / wep:GetStat("ScopeZoom", 1) / 2)
+	cd.fov = wep:GetStatL("RTScopeFOV", 90 / wep:GetStatL("ScopeZoom", 1) / 2)
 	cd.drawviewmodel = false
 	cd.drawhud = false
 
@@ -105,14 +105,14 @@ function ATTACHMENT:RTCode(wep, rt, scrw, scrh)
 	surface.SetDrawColor(ColorAlpha(color_black, 255 * (1 - wep:GetIronSightsProgress())))
 	surface.DrawRect(0, 0, rtw, rth)
 
-	surface.SetMaterial(wep:GetStat("RTReticleMaterial", fallbackReticle))
-	surface.SetDrawColor(wep:GetStat("RTReticleColor", color_white))
-	local retScale = wep:GetStat("RTReticleScale", 1)
+	surface.SetMaterial(wep:GetStatL("RTReticleMaterial", fallbackReticle))
+	surface.SetDrawColor(wep:GetStatL("RTReticleColor", color_white))
+	local retScale = wep:GetStatL("RTReticleScale", 1)
 	surface.DrawTexturedRect(rtw / 2 - rtw * retScale / 2, rth / 2 - rth * retScale / 2, rtw * retScale, rth * retScale)
 
-	surface.SetMaterial(wep:GetStat("RTShadowMaterial", fallbackShadow))
-	surface.SetDrawColor(wep:GetStat("RTShadowColor", color_white))
-	local shadScale = wep:GetStat("RTShadowScale", 2)
+	surface.SetMaterial(wep:GetStatL("RTShadowMaterial", fallbackShadow))
+	surface.SetDrawColor(wep:GetStatL("RTShadowColor", color_white))
+	local shadScale = wep:GetStatL("RTShadowScale", 2)
 	surface.DrawTexturedRect(rtw / 2 - rtw * shadScale / 2, rth / 2 - rth * shadScale / 2, rtw * shadScale, rth * shadScale)
 
 	cam.End2D()

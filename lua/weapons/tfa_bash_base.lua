@@ -103,14 +103,14 @@ function SWEP:AltAttack()
 	local time = l_CT()
 
 	if
-		self:GetStat("Secondary.CanBash") == false or
+		self:GetStatL("Secondary.CanBash") == false or
 		not self:OwnerIsValid() or
 		time < self:GetNextSecondaryFire()
 	then return end
 
 	local stat = self:GetStatus()
-	if not TFA.Enum.ReadyStatus[stat] and not self:GetStat("Secondary.BashInterrupt") or
-		stat == TFA.Enum.STATUS_BASHING and self:GetStat("Secondary.BashInterrupt") then return end
+	if not TFA.Enum.ReadyStatus[stat] and not self:GetStatL("Secondary.BashInterrupt") or
+		stat == TFA.Enum.STATUS_BASHING and self:GetStatL("Secondary.BashInterrupt") then return end
 
 	if self:IsSafety() or self:GetHolding() then return end
 
@@ -129,15 +129,15 @@ function SWEP:AltAttack()
 	self:BashAnim()
 	if sp and SERVER then self:CallOnClient("BashAnim", "") end
 
-	local bashend = self:GetStat("Secondary.BashEnd")
+	local bashend = self:GetStatL("Secondary.BashEnd")
 	local nextTime = time + (bashend or self:GetActivityLength(tanim, false, ttype))
 
 	self:SetNextPrimaryFire(nextTime)
 	self:SetNextSecondaryFire(nextTime)
 
-	self:EmitSoundNet(self:GetStat("Secondary.BashSound"))
+	self:EmitSoundNet(self:GetStatL("Secondary.BashSound"))
 
-	self:ScheduleStatus(TFA.Enum.STATUS_BASHING, self:GetStat("Secondary.BashDelay"))
+	self:ScheduleStatus(TFA.Enum.STATUS_BASHING, self:GetStatL("Secondary.BashDelay"))
 
 	hook.Run("TFA_PostBash", self)
 end
@@ -163,13 +163,13 @@ function SWEP:HandleBashAttack()
 
 	local slash = {}
 	slash.start = pos
-	slash.endpos = pos + (av * self:GetStat("Secondary.BashLength"))
+	slash.endpos = pos + (av * self:GetStatL("Secondary.BashLength"))
 	slash.filter = ply
 	slash.mins = Vector(-10, -5, 0)
 	slash.maxs = Vector(10, 5, 5)
 	local slashtrace = util.TraceHull(slash)
 
-	local pain = self:GetStat("Secondary.BashDamage")
+	local pain = self:GetStatL("Secondary.BashDamage")
 
 	if not slashtrace.Hit then return end
 	self:HandleDoor(slashtrace)
@@ -177,8 +177,8 @@ function SWEP:HandleBashAttack()
 	if not (sp and CLIENT) then
 		self:EmitSound(
 			(slashtrace.MatType == MAT_FLESH or slashtrace.MatType == MAT_ALIENFLESH) and
-			self:GetStat("Secondary.BashHitSound_Flesh") or
-			self:GetStat("Secondary.BashHitSound"))
+			self:GetStatL("Secondary.BashHitSound_Flesh") or
+			self:GetStatL("Secondary.BashHitSound"))
 	end
 
 	if CLIENT then return end
@@ -189,7 +189,7 @@ function SWEP:HandleBashAttack()
 	dmg:SetDamagePosition(pos)
 	dmg:SetDamageForce(av * pain)
 	dmg:SetDamage(pain)
-	dmg:SetDamageType(self:GetStat("Secondary.BashDamageType"))
+	dmg:SetDamageType(self:GetStatL("Secondary.BashDamageType"))
 
 	if IsValid(slashtrace.Entity) and slashtrace.Entity.TakeDamageInfo then
 		slashtrace.Entity:TakeDamageInfo(dmg)
@@ -208,10 +208,10 @@ function SWEP:HandleBashAttack()
 
 	if IsValid(phys) then
 		if ent:IsPlayer() or ent:IsNPC() then
-			ent:SetVelocity(av * self:GetStat("Secondary.BashDamage") * 0.5)
-			phys:SetVelocity(phys:GetVelocity() + av * self:GetStat("Secondary.BashDamage") * 0.5)
+			ent:SetVelocity(av * self:GetStatL("Secondary.BashDamage") * 0.5)
+			phys:SetVelocity(phys:GetVelocity() + av * self:GetStatL("Secondary.BashDamage") * 0.5)
 		else
-			phys:ApplyForceOffset(av * self:GetStat("Secondary.BashDamage") * 0.5, slashtrace.HitPos)
+			phys:ApplyForceOffset(av * self:GetStatL("Secondary.BashDamage") * 0.5, slashtrace.HitPos)
 		end
 	end
 end
@@ -229,7 +229,7 @@ function SWEP:Think2(...)
 end
 
 function SWEP:SecondaryAttack()
-	if not self:GetStat("Secondary.IronSightsEnabled", false) then
+	if not self:GetStatL("Secondary.IronSightsEnabled", false) then
 		self:AltAttack()
 		return
 	end

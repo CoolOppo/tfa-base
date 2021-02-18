@@ -60,8 +60,8 @@ function SWEP:NZMaxAmmo()
 	local at2 = self.GetSecondaryAmmoType and self:GetSecondaryAmmoType() or self.Secondary_TFA.Ammo
 
 	if IsValid(self:GetOwner()) then
-		if self:GetStat("Primary.ClipSize") <= 0 then
-			count = math.Clamp(10, 300 / (self:GetStat("Primary.Damage") / 30), 10, 300)
+		if self:GetStatL("Primary.ClipSize") <= 0 then
+			count = math.Clamp(10, 300 / (self:GetStatL("Primary.Damage") / 30), 10, 300)
 			if self.Primary_TFA.NZMaxAmmo and self.Primary_TFA.NZMaxAmmo > 0 then
 				count = self.Primary_TFA.NZMaxAmmo
 				if self:GetPaP() then
@@ -71,8 +71,8 @@ function SWEP:NZMaxAmmo()
 			self:GetOwner():SetAmmo(count, at)
 		else
 			upperclamp = self:GetPaP() and 600 or 300
-			count = math.Clamp(math.abs(self:GetStat("Primary.ClipSize")) * 10, 10, upperclamp)
-			count = count + self:GetStat("Primary.ClipSize") - self:Clip1()
+			count = math.Clamp(math.abs(self:GetStatL("Primary.ClipSize")) * 10, 10, upperclamp)
+			count = count + self:GetStatL("Primary.ClipSize") - self:Clip1()
 			if self.Primary_TFA.NZMaxAmmo and self.Primary_TFA.NZMaxAmmo > 0 then
 				count = self.Primary_TFA.NZMaxAmmo
 				if self:GetPaP() then
@@ -81,9 +81,9 @@ function SWEP:NZMaxAmmo()
 			end
 			self:GetOwner():SetAmmo(count, at)
 		end
-		if self:GetStat("Secondary.ClipSize") > 0 or self:GetSecondaryAmmoType() >= 0 then
-			if self:GetStat("Secondary.ClipSize") <= 0 then
-				count = math.ceil( math.Clamp(10, 300 / math.pow( ( self:GetStat("Secondary.Damage") or 100 ) / 30, 2 ), 10, 300) / 5 ) * 5
+		if self:GetStatL("Secondary.ClipSize") > 0 or self:GetSecondaryAmmoType() >= 0 then
+			if self:GetStatL("Secondary.ClipSize") <= 0 then
+				count = math.ceil( math.Clamp(10, 300 / math.pow( ( self:GetStatL("Secondary.Damage") or 100 ) / 30, 2 ), 10, 300) / 5 ) * 5
 				if self.Secondary_TFA.NZMaxAmmo and self.Secondary_TFA.NZMaxAmmo > 0 then
 					count = self.Secondary_TFA.NZMaxAmmo
 					if self:GetPaP() then
@@ -93,8 +93,8 @@ function SWEP:NZMaxAmmo()
 				self:GetOwner():SetAmmo(count, at2)
 			else
 				upperclamp = self:GetPaP() and 600 or 300
-				count = math.Clamp(math.abs(self:GetStat("Secondary.ClipSize")) * 10, 10, upperclamp)
-				count = count + self:GetStat("Secondary.ClipSize") - self:Clip2()
+				count = math.Clamp(math.abs(self:GetStatL("Secondary.ClipSize")) * 10, 10, upperclamp)
+				count = count + self:GetStatL("Secondary.ClipSize") - self:Clip2()
 				if self.Secondary_TFA.NZMaxAmmo and self.Secondary_TFA.NZMaxAmmo > 0 then
 					count = self.Secondary_TFA.NZMaxAmmo
 					if self:GetPaP() then

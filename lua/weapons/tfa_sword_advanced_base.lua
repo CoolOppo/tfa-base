@@ -26,7 +26,7 @@ if SERVER then
 end
 
 -- This base is kept for backward compatiblity purposes
--- This should not, on any meaning, be utilized in newer SWEPS
+-- This should not, by any means, be utilized in newer SWEPS
 -- Look at melee base/knife base
 
 --[[

@@ -83,7 +83,7 @@ SWEP.ShellEffectOverride = nil -- ???
 SWEP.ShellEjectionQueue = 0
 
 function SWEP:GetShellAttachmentID(ent, isVM)
-	local raw = self:GetStat("ShellAttachmentRaw")
+	local raw = self:GetStatL("ShellAttachmentRaw")
 	local israw = false
 	local attid
 
@@ -91,10 +91,10 @@ function SWEP:GetShellAttachmentID(ent, isVM)
 		attid = raw
 		israw = true
 	else
-		attid = ent:LookupAttachment(self:GetStat("ShellAttachment"))
+		attid = ent:LookupAttachment(self:GetStatL("ShellAttachment"))
 	end
 
-	if self:GetStat("IsAkimbo") and not israw then
+	if self:GetStatL("IsAkimbo") and not israw then
 		return 3 + self:GetAnimCycle()
 	end
 
@@ -125,8 +125,8 @@ function SWEP:MakeShell(eject_now)
 		return retVal
 	end
 
-	if self:GetStat("ShellEffectOverride") then
-		shelltype = self:GetStat("ShellEffectOverride")
+	if self:GetStatL("ShellEffectOverride") then
+		shelltype = self:GetStatL("ShellEffectOverride")
 	elseif TFA.GetLegacyShellsEnabled() then
 		shelltype = "tfa_shell_legacy"
 	else
@@ -211,18 +211,18 @@ function SWEP:EjectionSmoke(ovrr)
 	if retVal ~= nil then
 		return retVal
 	end
-	if TFA.GetEJSmokeEnabled() and (self:GetStat("EjectionSmokeEnabled") or ovrr) then
+	if TFA.GetEJSmokeEnabled() and (self:GetStatL("EjectionSmokeEnabled") or ovrr) then
 		local vm = self:IsFirstPerson() and self.OwnerViewModel or self
 
 		if IsValid(vm) then
-			local att = vm:LookupAttachment(self:GetStat("ShellAttachment"))
+			local att = vm:LookupAttachment(self:GetStatL("ShellAttachment"))
 
 			if not att or att <= 0 then
 				att = 2
 			end
 
 			local oldatt = att
-			att = self:GetStat("ShellAttachmentRaw", att)
+			att = self:GetStatL("ShellAttachmentRaw", att)
 			local angpos = vm:GetAttachment(att)
 
 			if not angpos then
@@ -259,7 +259,7 @@ function SWEP:MuzzleSmoke(spv)
 		self.SmokeParticle = self.SmokeParticles[self.DefaultHoldType or self.HoldType]
 	end
 
-	if self:GetStat("SmokeParticle") and self:GetStat("SmokeParticle") ~= "" then
+	if self:GetStatL("SmokeParticle") and self:GetStatL("SmokeParticle") ~= "" then
 		self:UpdateMuzzleAttachment()
 		local att = self:GetMuzzleAttachment()
 		fx = EffectData()
@@ -282,12 +282,12 @@ function SWEP:MuzzleFlashCustom(spv)
 	fx:SetNormal(self:GetOwner():EyeAngles():Forward())
 	fx:SetEntity(self)
 	fx:SetAttachment(att)
-	local mzsil = self:GetStat("MuzzleFlashEffectSilenced")
+	local mzsil = self:GetStatL("MuzzleFlashEffectSilenced")
 
 	if (self:GetSilenced() and mzsil and mzsil ~= "") then
 		TFA.Effects.Create(mzsil, fx)
 	else
-		TFA.Effects.Create(self:GetStat("MuzzleFlashEffect", self.MuzzleFlashEffect or ""), fx)
+		TFA.Effects.Create(self:GetStatL("MuzzleFlashEffect", self.MuzzleFlashEffect or ""), fx)
 	end
 end
 

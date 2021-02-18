@@ -113,10 +113,10 @@ function EFFECT:Init(data)
 	end
 
 	local model, scale, yaw = self:FindModel(self.WeaponEntOG)
-	model = self.WeaponEntOG:GetStat("ShellModel") or self.WeaponEntOG:GetStat("LuaShellModel") or model
+	model = self.WeaponEntOG:GetStatL("ShellModel") or self.WeaponEntOG:GetStatL("LuaShellModel") or model
 	model = modelReplaceLookup[model] or model
-	scale = self.WeaponEntOG:GetStat("ShellScale") or self.WeaponEntOG:GetStat("LuaShellScale") or scale
-	yaw = self.WeaponEntOG:GetStat("ShellYaw") or self.WeaponEntOG:GetStat("LuaShellYaw") or yaw
+	scale = self.WeaponEntOG:GetStatL("ShellScale") or self.WeaponEntOG:GetStatL("LuaShellScale") or scale
+	yaw = self.WeaponEntOG:GetStatL("ShellYaw") or self.WeaponEntOG:GetStatL("LuaShellYaw") or yaw
 
 	if model:lower():find("shotgun") then
 		self.Shotgun = true
@@ -151,7 +151,7 @@ function EFFECT:Init(data)
 		physObj:AddAngleVelocity(VectorRand() * velocity:Length() * self.VelocityRandAngle * 0.5)
 	end
 
-	local ss = self.WeaponEntOG:GetStat("ShellSound") or self.WeaponEntOG:GetStat("LuaShellSound")
+	local ss = self.WeaponEntOG:GetStatL("ShellSound") or self.WeaponEntOG:GetStatL("LuaShellSound")
 
 	if ss then
 		self.ImpactSound = ss

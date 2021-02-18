@@ -246,7 +246,7 @@ local function FinishMove(ply, cmovedata)
 
 	if impulse == TFA.INSPECTION_IMPULSE then
 		wepv:ToggleInspect()
-	elseif impulse == TFA.CYCLE_FIREMODE_IMPULSE and wepv:GetStatus() == TFA.Enum.STATUS_IDLE and wepv:GetStat("SelectiveFire") then
+	elseif impulse == TFA.CYCLE_FIREMODE_IMPULSE and wepv:GetStatus() == TFA.Enum.STATUS_IDLE and wepv:GetStatL("SelectiveFire") then
 		wepv:CycleFireMode()
 	elseif impulse == TFA.CYCLE_SAFETY_IMPULSE and wepv:GetStatus() == TFA.Enum.STATUS_IDLE then
 		wepv:CycleSafety()
@@ -259,7 +259,7 @@ local function FinishMove(ply, cmovedata)
 		wepv:SetBashImpulse(BashImpulse)
 	end
 
-	if cmovedata:GetImpulseCommand() == 100 and (wepv:GetStat("FlashlightAttachmentName") ~= nil or wepv:GetStat("FlashlightAttachment", 0) > 0) then
+	if cmovedata:GetImpulseCommand() == 100 and (wepv:GetStatL("FlashlightAttachmentName") ~= nil or wepv:GetStatL("FlashlightAttachment", 0) > 0) then
 		wepv:ToggleFlashlight()
 	end
 
@@ -282,7 +282,7 @@ local function FinishMove(ply, cmovedata)
 
 	local scale_dividier = GetTimeScale() * (sv_cheats:GetBool() and host_timescale:GetFloat() or 1)
 
-	if wepv:GetStat("Secondary.IronSightsEnabled", false) then
+	if wepv:GetStatL("Secondary.IronSightsEnabled", false) then
 		if band(changed, IN_ATTACK2) == IN_ATTACK2 then
 			local deltaPress = (time - wepv:GetLastIronSightsPressed()) / scale_dividier
 
@@ -380,7 +380,7 @@ hook.Add("SetupMove", "tfa_setupmove", function(plyv, movedata, commanddata)
 	local wepv = plyv:GetActiveWeapon()
 
 	if IsValid(wepv) and wepv.IsTFAWeapon then
-		local speedmult = Lerp(wepv:GetIronSightsProgress(), sv_tfa_weapon_weight:GetBool() and wepv:GetStat("RegularMoveSpeedMultiplier") or 1, wepv:GetStat("AimingDownSightsSpeedMultiplier"))
+		local speedmult = Lerp(wepv:GetIronSightsProgress(), sv_tfa_weapon_weight:GetBool() and wepv:GetStatL("RegularMoveSpeedMultiplier", 1), wepv:GetStatL("AimingDownSightsSpeedMultiplier", 1))
 		movedata:SetMaxClientSpeed(movedata:GetMaxClientSpeed() * speedmult)
 		commanddata:SetForwardMove(commanddata:GetForwardMove() * speedmult)
 		commanddata:SetSideMove(commanddata:GetSideMove() * speedmult)
@@ -494,7 +494,7 @@ hook.Add("PlayerSwitchFlashlight", "tfa_toggleflashlight", function(plyv, toEnab
 
 	local wepv = plyv:GetActiveWeapon()
 
-	if IsValid(wepv) and wepv.IsTFAWeapon and (wepv:GetStat("FlashlightAttachmentName") ~= nil or wepv:GetStat("FlashlightAttachment", 0) > 0) then
+	if IsValid(wepv) and wepv.IsTFAWeapon and (wepv:GetStatL("FlashlightAttachmentName") ~= nil or wepv:GetStatL("FlashlightAttachment", 0) > 0) then
 		-- wepv:ToggleFlashlight()
 
 		return false

@@ -77,14 +77,16 @@ function SWEP:DrawLaser(is_vm)
 		end
 
 		targetent = ply:GetViewModel()
-		elemname = self2.GetStat(self, "LaserSight_VElement", self2.GetStat(self, "LaserSight_Element"))
+		elemname = self2.GetStatL(self, "LaserSight_VElement", self2.GetStatL(self, "LaserSight_Element"))
 
-		if elemname and self2.ViewModelElements[elemname] and IsValid(self2.ViewModelElements[elemname].curmodel) then
-			targetent = self2.ViewModelElements[elemname].curmodel
+		local ViewModelElements = self:GetStatRaw("ViewModelElements", TFA.LatestDataVersion)
+
+		if elemname and ViewModelElements[elemname] and IsValid(ViewModelElements[elemname].curmodel) then
+			targetent = ViewModelElements[elemname].curmodel
 		end
 
-		att = self2.GetStat(self, "LaserSightAttachment")
-		attname = self2.GetStat(self, "LaserSightAttachmentName")
+		att = self2.GetStatL(self, "LaserSightAttachment")
+		attname = self2.GetStatL(self, "LaserSightAttachmentName")
 
 		if attname then
 			att = targetent:LookupAttachment(attname)
@@ -105,7 +107,7 @@ function SWEP:DrawLaser(is_vm)
 		end
 
 		if self2.LaserDotISMovement and self2.CLIronSightsProgress > 0 then
-			local isang = self2.GetStat(self, "IronSightsAngle")
+			local isang = self2.GetStatL(self, "IronSightsAngle")
 			angpos.Ang:RotateAroundAxis(angpos.Ang:Right(), isang.y * (self2.ViewModelFlip and -1 or 1) * self2.CLIronSightsProgress)
 			angpos.Ang:RotateAroundAxis(angpos.Ang:Up(), -isang.x * self2.CLIronSightsProgress)
 		end
@@ -149,15 +151,17 @@ function SWEP:DrawLaser(is_vm)
 
 	targetent = self
 
-	elemname = self2.GetStat(self, "LaserSight_WElement", self2.GetStat(self, "LaserSight_Element"))
+	elemname = self2.GetStatL(self, "LaserSight_WElement", self2.GetStatL(self, "LaserSight_Element"))
 
-	if elemname and self2.WorldModelElements[elemname] and IsValid(self2.WorldModelElements[elemname].curmodel) then
-		targetent = self2.WorldModelElements[elemname].curmodel
+	local WorldModelElements = self:GetStatRaw("WorldModelElements", TFA.LatestDataVersion)
+
+	if elemname and WorldModelElements[elemname] and IsValid(WorldModelElements[elemname].curmodel) then
+		targetent = WorldModelElements[elemname].curmodel
 	end
 
-	att = self2.GetStat(self, "LaserSightAttachmentWorld", self2.GetStat(self, "LaserSightAttachment"))
+	att = self2.GetStatL(self, "LaserSightAttachmentWorld", self2.GetStatL(self, "LaserSightAttachment"))
 
-	attname = self2.GetStat(self, "LaserSightAttachmentWorldName", self2.GetStat(self, "LaserSightAttachmentName"))
+	attname = self2.GetStatL(self, "LaserSightAttachmentWorldName", self2.GetStatL(self, "LaserSightAttachmentName"))
 
 	if attname then
 		att = targetent:LookupAttachment(attname)

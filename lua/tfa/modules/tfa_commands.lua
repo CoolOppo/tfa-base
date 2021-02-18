@@ -318,7 +318,7 @@ end
 hook.Add("TFA_GetStat", "TFA_IronsightsConVarToggle", function(wep, stat, val)
 	if not IsValid(wep) or stat ~= "Secondary.IronSightsEnabled" then return end
 
-	if not cv_ironsights:GetBool() and not wep:GetStat("Scoped") and not wep:GetStat("Scoped_3D") then
+	if not cv_ironsights:GetBool() and not wep:GetStatL("Scoped") and not wep:GetStatL("Scoped_3D") then
 		return false
 	end
 end)

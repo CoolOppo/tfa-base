@@ -26,11 +26,11 @@ SWEP.MaterialTable_W = {}
 function SWEP:InitializeMaterialTable()
 	if not self.HasSetMaterialMeta then
 		setmetatable(self.MaterialTable_V, {
-			["__index"] = function(t,k) return self:GetStat("MaterialTable")[k] end
+			["__index"] = function(t,k) return self:GetStatL("MaterialTable")[k] end
 		})
 
 		setmetatable(self.MaterialTable_W, {
-			["__index"] = function(t,k) return self:GetStat("MaterialTable")[k] end
+			["__index"] = function(t,k) return self:GetStatL("MaterialTable")[k] end
 		})
 
 		self.HasSetMaterialMeta = true

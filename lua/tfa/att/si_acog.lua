@@ -48,7 +48,7 @@ ATTACHMENT.WeaponTable = {
 	},
 	["IronSightsPosition"] = function( wep, val ) return wep.IronSightsPos_ACOG or val, true end,
 	["IronSightsAngle"] = function( wep, val ) return wep.IronSightsAng_ACOG or val, true end,
-	["IronSightsSensitivity"] = function(wep,val) return TFA.CalculateSensitivtyScale( fov, wep:GetStat("Secondary.OwnerFOV"), wep.ACOGScreenScale ) end ,
+	["IronSightsSensitivity"] = function(wep,val) return TFA.CalculateSensitivtyScale( fov, wep:GetStatL("Secondary.OwnerFOV"), wep.ACOGScreenScale ) end ,
 	["Secondary"] = {
 		["OwnerFOV"] = function( wep, val ) return val * 0.7 end
 	},

@@ -58,7 +58,7 @@ function SWEP:UpdateScopeType(force)
 		if target.ScopeZoom_Backup then
 			target.ScopeZoom = target.ScopeZoom_Backup
 		else
-			target.ScopeZoom = 90 / self:GetStat("Secondary.IronFOV", self:GetStat("Secondary.OwnerFOV")) -- M9K/Older TFA Base compatibility
+			target.ScopeZoom = 90 / self:GetStatL("Secondary.IronFOV", self:GetStatL("Secondary.OwnerFOV")) -- M9K/Older TFA Base compatibility
 		end
 
 		if self.BoltAction_3D then
@@ -68,7 +68,7 @@ function SWEP:UpdateScopeType(force)
 			self:ClearStatCache("BoltAction")
 		end
 
-		target.IronFOV = 90 / self:GetStat("Secondary.ScopeZoom")
+		target.IronFOV = 90 / self:GetStatL("Secondary.ScopeZoom")
 		self.IronSightsSensitivity = 1
 	end
 

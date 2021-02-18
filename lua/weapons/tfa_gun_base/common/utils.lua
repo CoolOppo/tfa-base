@@ -52,22 +52,22 @@ local cv_3dmode = GetConVar("cl_tfa_scope_sensitivity_3d")
 SWEP.SensitivtyFunctions = {
 	[0] = function() return 1 end,
 	[1] = function(self, ...)
-		if self:GetStat("Secondary.ScopeZoom") then
-			return TFA.CalculateSensitivtyScale(90 / self:GetStat("Secondary.ScopeZoom"), self:GetStat("Secondary.OwnerFOV"), self.Secondary_TFA.ScopeScreenScale or 0.392592592592592)
+		if self:GetStatL("Secondary.ScopeZoom") then
+			return TFA.CalculateSensitivtyScale(90 / self:GetStatL("Secondary.ScopeZoom"), self:GetStatL("Secondary.OwnerFOV"), self.Secondary_TFA.ScopeScreenScale or 0.392592592592592)
 		else
 			return self.SensitivtyFunctions[2](self, ...)
 		end
 	end,
 	[2] = function(self, ...)
-		if self:GetStat("RTScopeFOV") then
-			return TFA.CalculateSensitivtyScale(self:GetStat("RTScopeFOV"), self:GetStat("Secondary.OwnerFOV"), self.Secondary_TFA.ScopeScreenScale or 0.392592592592592)
+		if self:GetStatL("RTScopeFOV") then
+			return TFA.CalculateSensitivtyScale(self:GetStatL("RTScopeFOV"), self:GetStatL("Secondary.OwnerFOV"), self.Secondary_TFA.ScopeScreenScale or 0.392592592592592)
 		else
 			return self.SensitivtyFunctions[0](self, ...)
 		end
 	end,
 	[3] = function(self, ...)
-		if self:GetStat("RTScopeFOV") then
-			return TFA.CalculateSensitivtyScale(self:GetStat("RTScopeFOV"), self:GetStat("Secondary.OwnerFOV"), 1)
+		if self:GetStatL("RTScopeFOV") then
+			return TFA.CalculateSensitivtyScale(self:GetStatL("RTScopeFOV"), self:GetStatL("Secondary.OwnerFOV"), 1)
 		else
 			return self.SensitivtyFunctions[0](self, ...)
 		end
@@ -189,8 +189,8 @@ function SWEP:GetActivityLengthRaw(tanim, status, animType)
 		sqlen = vm:SequenceDuration(vm:SelectWeightedSequenceSeeded(math.max(tanim or 1, 1), self:GetSeedIrradical()))
 	end
 
-	slo = self:GetStat("StatusLengthOverride." .. nm) or self:GetStat("StatusLengthOverride." .. (tanim or "0"))
-	sqlo = self:GetStat("SequenceLengthOverride." .. nm) or self:GetStat("SequenceLengthOverride." .. (tanim or "0"))
+	slo = self:GetStatL("StatusLengthOverride." .. nm) or self:GetStatL("StatusLengthOverride." .. (tanim or "0"))
+	sqlo = self:GetStatL("SequenceLengthOverride." .. nm) or self:GetStatL("SequenceLengthOverride." .. (tanim or "0"))
 
 	if status and slo then
 		sqlen = slo
@@ -246,7 +246,7 @@ function SWEP:GetHolding()
 end
 
 function SWEP:CanInterruptShooting()
-	return self:GetStat("Primary.RPM") > 160 and not self:GetStat("BoltAction") and not self:GetStat("BoltAction_Forced")
+	return self:GetStatL("Primary.RPM") > 160 and not self:GetStatL("BoltAction") and not self:GetStatL("BoltAction_Forced")
 end
 
 function SWEP:ReloadCV()
@@ -308,34 +308,34 @@ function SWEP:CanChamber()
 	if self.C_CanChamber ~= nil then
 		return self.C_CanChamber
 	else
-		self.C_CanChamber = not self:GetStat("BoltAction") and not self:GetStat("LoopedReload") and not self.Revolver and not self:GetStat("Primary.DisableChambering")
+		self.C_CanChamber = not self:GetStatL("BoltAction") and not self:GetStatL("LoopedReload") and not self.Revolver and not self:GetStatL("Primary.DisableChambering")
 
 		return self.C_CanChamber
 	end
 end
 
 function SWEP:GetPrimaryClipSize(calc)
-	local targetclip = self:GetStat("Primary.ClipSize")
+	local targetclip = self:GetStatL("Primary.ClipSize")
 
 	if self:CanChamber() and not (calc and self:Clip1() <= 0) then
-		targetclip = targetclip + (self:GetStat("IsAkimbo") and 2 or 1)
+		targetclip = targetclip + (self:GetStatL("IsAkimbo") and 2 or 1)
 	end
 
 	return math.max(targetclip, -1)
 end
 
 function SWEP:GetPrimaryClipSizeForReload(calc)
-	local targetclip = self:GetStat("Primary.ClipSize")
+	local targetclip = self:GetStatL("Primary.ClipSize")
 
 	if self:CanChamber() and not (calc and self:Clip1() <= 0) and not self:IsJammed() then
-		targetclip = targetclip + (self:GetStat("IsAkimbo") and 2 or 1)
+		targetclip = targetclip + (self:GetStatL("IsAkimbo") and 2 or 1)
 	end
 
 	return math.max(targetclip, -1)
 end
 
 function SWEP:GetSecondaryClipSize(calc)
-	local targetclip = self:GetStat("Secondary.ClipSize")
+	local targetclip = self:GetStatL("Secondary.ClipSize")
 
 	return math.max(targetclip, -1)
 end
@@ -343,11 +343,11 @@ end
 --[[
 
 function SWEP:GetPrimaryAmmoType()
-	return self:GetStat( "Primary.Ammo" ) or ""
+	return self:GetStatL( "Primary.Ammo" ) or ""
 end
 
 function SWEP:GetPrimaryAmmoTypeC()
-	return self:GetStat( "Primary.Ammo" ) or self:GetPrimaryAmmoType()
+	return self:GetStatL( "Primary.Ammo" ) or self:GetPrimaryAmmoType()
 end
 
 function SWEP:Ammo1()
@@ -355,11 +355,11 @@ function SWEP:Ammo1()
 end
 
 function SWEP:GetSecondaryAmmoType()
-	return self:GetStat( "Secondary.Ammo" ) or ""
+	return self:GetStatL( "Secondary.Ammo" ) or ""
 end
 
 function SWEP:GetSecondaryAmmoTypeC()
-	return self:GetStat( "Secondary.Ammo" ) or self:GetSecondaryAmmoType()
+	return self:GetStatL( "Secondary.Ammo" ) or self:GetSecondaryAmmoType()
 end
 
 function SWEP:Ammo2()
@@ -371,7 +371,7 @@ end
 local at
 
 function SWEP:GetPrimaryAmmoTypeC()
-	at = self:GetStat("Primary.Ammo")
+	at = self:GetStatL("Primary.Ammo")
 
 	if at and at ~= self.Primary_TFA.Ammo then
 		return at
@@ -383,7 +383,7 @@ function SWEP:GetPrimaryAmmoTypeC()
 end
 
 function SWEP:GetSecondaryAmmoTypeC()
-	at = self:GetStat("Secondary.Ammo")
+	at = self:GetStatL("Secondary.Ammo")
 
 	if at and at ~= self.Secondary_TFA.Ammo then
 		return at
@@ -410,7 +410,7 @@ end
 
 function SWEP:TakePrimaryAmmo(num, pool)
 	-- Doesn't use clips
-	if self:GetStat("Primary.ClipSize") < 0 or pool then
+	if self:GetStatL("Primary.ClipSize") < 0 or pool then
 		if (self:Ammo1() <= 0) then return end
 		if not self:GetOwner():IsPlayer() then return end
 		self:GetOwner():RemoveAmmo(math.min(self:Ammo1(), num), self:GetPrimaryAmmoTypeC())
@@ -423,7 +423,7 @@ end
 
 function SWEP:TakeSecondaryAmmo(num, pool)
 	-- Doesn't use clips
-	if self:GetStat("Secondary.ClipSize") < 0 or pool then
+	if self:GetStatL("Secondary.ClipSize") < 0 or pool then
 		if (self:Ammo2() <= 0) then return end
 		if not self:GetOwner():IsPlayer() then return end
 		self:GetOwner():RemoveAmmo(math.min(self:Ammo2(), num), self:GetSecondaryAmmoTypeC())
@@ -435,27 +435,27 @@ function SWEP:TakeSecondaryAmmo(num, pool)
 end
 
 function SWEP:IsEmpty1()
-	return self:GetStat("Primary.ClipSize") > 0 and self:Clip1() == 0 or
-		self:GetStat("Primary.ClipSize") <= 0 and self:Ammo1() == 0
+	return self:GetStatL("Primary.ClipSize") > 0 and self:Clip1() == 0 or
+		self:GetStatL("Primary.ClipSize") <= 0 and self:Ammo1() == 0
 end
 
 function SWEP:IsEmpty2()
-	return self:GetStat("Secondary.ClipSize") > 0 and self:Clip2() == 0 or
-		self:GetStat("Secondary.ClipSize") <= 0 and self:Ammo2() == 0
+	return self:GetStatL("Secondary.ClipSize") > 0 and self:Clip2() == 0 or
+		self:GetStatL("Secondary.ClipSize") <= 0 and self:Ammo2() == 0
 end
 
 SWEP.TakeAmmo1 = SWEP.TakePrimaryAmmo
 SWEP.TakeAmmo2 = SWEP.TakeSecondaryAmmo
 
 function SWEP:GetFireDelay()
-	if self:GetMaxBurst() > 1 and self:GetStat("Primary.RPM_Burst") and self:GetStat("Primary.RPM_Burst") > 0 then
-		return 60 / self:GetStat("Primary.RPM_Burst")
-	elseif self:GetStat("Primary.RPM_Semi") and not self.Primary_TFA.Automatic and self:GetStat("Primary.RPM_Semi") and self:GetStat("Primary.RPM_Semi") > 0 then
-		return 60 / self:GetStat("Primary.RPM_Semi")
-	elseif self:GetStat("Primary.RPM") and self:GetStat("Primary.RPM") > 0 then
-		return 60 / self:GetStat("Primary.RPM")
+	if self:GetMaxBurst() > 1 and self:GetStatL("Primary.RPM_Burst") and self:GetStatL("Primary.RPM_Burst") > 0 then
+		return 60 / self:GetStatL("Primary.RPM_Burst")
+	elseif self:GetStatL("Primary.RPM_Semi") and not self.Primary_TFA.Automatic and self:GetStatL("Primary.RPM_Semi") and self:GetStatL("Primary.RPM_Semi") > 0 then
+		return 60 / self:GetStatL("Primary.RPM_Semi")
+	elseif self:GetStatL("Primary.RPM") and self:GetStatL("Primary.RPM") > 0 then
+		return 60 / self:GetStatL("Primary.RPM")
 	else
-		return self:GetStat("Primary.Delay") or 0.1
+		return self:GetStatL("Primary.Delay") or 0.1
 	end
 end
 
@@ -465,7 +465,7 @@ function SWEP:GetBurstDelay(bur)
 	end
 
 	if bur <= 1 then return 0 end
-	if self:GetStat("Primary.BurstDelay") then return self:GetStat("Primary.BurstDelay") end
+	if self:GetStatL("Primary.BurstDelay") then return self:GetStatL("Primary.BurstDelay") end
 
 	return self:GetFireDelay() * 3
 end
@@ -479,9 +479,9 @@ Purpose:  Utility
 ]]
 --
 function SWEP:IsSafety()
-	if not self:GetStat("FireModes") then return false end
-	local fm = self:GetStat("FireModes")[self:GetFireMode()]
-	local fmn = string.lower(fm and fm or self:GetStat("FireModes")[1])
+	if not self:GetStatL("FireModes") then return false end
+	local fm = self:GetStatL("FireModes")[self:GetFireMode()]
+	local fmn = string.lower(fm and fm or self:GetStatL("FireModes")[1])
 
 	if fmn == "safe" or fmn == "holster" then
 		return true
@@ -516,7 +516,7 @@ function SWEP:UpdateMuzzleAttachment()
 		end
 	end
 
-	local mzm = self:GetStat("MuzzleAttachmentMod", 0)
+	local mzm = self:GetStatL("MuzzleAttachmentMod", 0)
 
 	if mzm then
 		if isstring(mzm) then
@@ -548,7 +548,7 @@ Purpose:  Utility
 ]]
 --
 function SWEP:IsCurrentlyScoped()
-	return (self:GetIronSightsProgress() > self:GetStat("ScopeOverlayThreshold")) and self:GetStat("Scoped")
+	return (self:GetIronSightsProgress() > self:GetStatL("ScopeOverlayThreshold")) and self:GetStatL("Scoped")
 end
 
 --[[
@@ -601,7 +601,7 @@ function SWEP:GetMuzzleAttachment()
 	local vmod = self.OwnerViewModel
 	local att = math.max(1, self.MuzzleAttachmentRaw or (sp and vmod or self):LookupAttachment(self.MuzzleAttachment))
 
-	if self:GetStat("IsAkimbo") then
+	if self:GetStatL("IsAkimbo") then
 		att = 1 + self:GetAnimCycle()
 	end
 
@@ -618,7 +618,7 @@ function SWEP:GetMuzzlePos(ignorepos)
 
 	-- Avoid returning strings inside MuzzleAttachmentMod, since this would decrease performance
 	-- Better call :UpdateMuzzleAttachment() or return number in MuzzleAttachmentMod
-	local obj = self:GetStat("MuzzleAttachmentMod") or self.MuzzleAttachmentRaw or vm:LookupAttachment(self.MuzzleAttachment)
+	local obj = self:GetStatL("MuzzleAttachmentMod") or self.MuzzleAttachmentRaw or vm:LookupAttachment(self.MuzzleAttachment)
 
 	if type(obj) == "string" then
 		obj = tonumber(obj) or vm:LookupAttachment(obj)
@@ -637,21 +637,21 @@ function SWEP:GetMuzzlePos(ignorepos)
 end
 
 function SWEP:FindEvenBurstNumber()
-	local burstOverride = self:GetStat("BurstFireCount")
+	local burstOverride = self:GetStatL("BurstFireCount")
 
 	if burstOverride then
 		return burstOverride
 	end
 
-	if (self:GetStat("Primary.ClipSize") % 3 == 0) then
+	if (self:GetStatL("Primary.ClipSize") % 3 == 0) then
 		return 3
-	elseif (self:GetStat("Primary.ClipSize") % 2 == 0) then
+	elseif (self:GetStatL("Primary.ClipSize") % 2 == 0) then
 		return 2
 	else
 		local i = 4
 
 		while i <= 7 do
-			if self:GetStat("Primary.ClipSize") % i == 0 then return i end
+			if self:GetStatL("Primary.ClipSize") % i == 0 then return i end
 			i = i + 1
 		end
 	end
@@ -661,23 +661,23 @@ end
 
 function SWEP:GetFireModeName()
 	local fm = self:GetFireMode()
-	local fmn = string.lower(self:GetStat("FireModes")[fm])
+	local fmn = string.lower(self:GetStatL("FireModes")[fm])
 	if fmn == "safe" or fmn == "holster" then return language.GetPhrase("tfa.firemode.safe") end
-	if self:GetStat("FireModeName") then return language.GetPhrase(self:GetStat("FireModeName")) end
+	if self:GetStatL("FireModeName") then return language.GetPhrase(self:GetStatL("FireModeName")) end
 	if fmn == "auto" or fmn == "automatic" then return language.GetPhrase("tfa.firemode.auto") end
 
 	if fmn == "semi" or fmn == "single" then
-		if self:GetStat("Revolver") then
-			if (self:GetStat("BoltAction")) then
+		if self:GetStatL("Revolver") then
+			if (self:GetStatL("BoltAction")) then
 				return language.GetPhrase("tfa.firemode.single")
 			else
 				return language.GetPhrase("tfa.firemode.revolver")
 			end
 		else
-			if (self:GetStat("BoltAction")) then
+			if (self:GetStatL("BoltAction")) then
 				return language.GetPhrase("tfa.firemode.bolt")
 			else
-				if self:GetStat("LoopedReload") and self:GetStat("Primary.RPM") < 250 then
+				if self:GetStatL("LoopedReload") and self:GetStatL("Primary.RPM") < 250 then
 					return language.GetPhrase("tfa.firemode.pump")
 				else
 					return language.GetPhrase("tfa.firemode.semi")
@@ -698,7 +698,7 @@ function SWEP:GetMaxBurst()
 	local fm = self:GetFireMode()
 
 	if not self.BurstCountCache[fm] then
-		local fmt = self:GetStat("FireModes")
+		local fmt = self:GetStatL("FireModes")
 		local fmn = string.lower(fmt[fm])
 		local bpos = string.find(fmn, "burst")
 
@@ -734,7 +734,7 @@ function SWEP:CycleFireMode()
 	local fm = self:GetFireMode()
 	fm = fm + 1
 
-	if fm >= #self:GetStat("FireModes") then
+	if fm >= #self:GetStatL("FireModes") then
 		fm = 1
 	end
 
@@ -744,7 +744,7 @@ function SWEP:CycleFireMode()
 	if success then
 		self:SetNextPrimaryFire(ct + self:GetActivityLength(tanim, false, ttype))
 	else
-		self:EmitSound(self:GetStat("FireModeSound"))
+		self:EmitSound(self:GetStatL("FireModeSound"))
 		self:SetNextPrimaryFire(ct + math.max(self:GetFireDelay(), 0.25))
 	end
 
@@ -752,7 +752,7 @@ function SWEP:CycleFireMode()
 	self:SetIsCyclingSafety(false)
 	self:SetStatus(TFA.Enum.STATUS_FIREMODE, self:GetNextPrimaryFire())
 
-	self.Primary.Automatic = self:GetStat("FireModesAutomatic." .. self:GetStat("FireModes." .. fm)) ~= nil
+	self.Primary.Automatic = self:GetStatL("FireModesAutomatic." .. self:GetStatL("FireModes." .. fm)) ~= nil
 	self.Primary_TFA.Automatic = self.Primary.Automatic
 end
 
@@ -767,7 +767,7 @@ Purpose:  Feature
 function SWEP:CycleSafety()
 	local ct = l_CT()
 	local fm = self:GetFireMode()
-	local fmt = self:GetStat("FireModes")
+	local fmt = self:GetStatL("FireModes")
 
 	self.BurstCount = 0
 	self:SetIsCyclingSafety(true)
@@ -786,7 +786,7 @@ function SWEP:CycleSafety()
 		self:SetNextPrimaryFire(ct + self:GetActivityLength(tanim, false, ttype))
 	else
 		self:SetSafetyCycleAnimated(false)
-		self:EmitSound(self:GetStat("FireModeSound"))
+		self:EmitSound(self:GetStatL("FireModeSound"))
 		self:SetNextPrimaryFire(ct + math.max(self:GetFireDelay(), 0.25))
 	end
 
@@ -796,7 +796,7 @@ function SWEP:CycleSafety()
 		self.Primary.Automatic = false
 		self.Primary_TFA.Automatic = false
 	else
-		self.Primary.Automatic = self:GetStat("FireModesAutomatic." .. self:GetStat("FireModes." .. self:GetFireMode())) ~= nil
+		self.Primary.Automatic = self:GetStatL("FireModesAutomatic." .. self:GetStatL("FireModes." .. self:GetFireMode())) ~= nil
 		self.Primary_TFA.Automatic = self.Primary.Automatic
 	end
 end
@@ -817,7 +817,7 @@ function SWEP:ProcessFireMode()
 	end
 
 	if self:OwnerIsValid() and self:KeyPressed(IN_RELOAD) and self:KeyDown(IN_USE) and self:GetStatus() == TFA.Enum.STATUS_IDLE and (SERVER or not sp) then
-		if self:GetStat("SelectiveFire") and not self:KeyDown(IN_SPEED) then
+		if self:GetStatL("SelectiveFire") and not self:KeyDown(IN_SPEED) then
 			self:CycleFireMode()
 		elseif self:GetOwner():KeyDown(IN_SPEED) then
 			self:CycleSafety()
@@ -866,7 +866,7 @@ function SWEP:SendHitMarker(ply, traceres, dmginfo)
 	if not IsValid(ply) or not ply:IsPlayer() then return end
 
 	local hm3d = ply:GetInfoNum("cl_tfa_hud_hitmarker_3d_all", 0) > 0
-	local hm3d_sg = ply:GetInfoNum("cl_tfa_hud_hitmarker_3d_shotguns", 0) > 0 and self:GetStat("Primary.NumShots") > 1
+	local hm3d_sg = ply:GetInfoNum("cl_tfa_hud_hitmarker_3d_shotguns", 0) > 0 and self:GetStatL("Primary.NumShots") > 1
 
 	if hm3d or hm3d_sg then
 		net.Start("tfaHitmarker3D", true)
@@ -1032,7 +1032,7 @@ do
 		end
 
 		local self2 = self:GetTable()
-		local isp = 1 - self:GetIronSightsProgress() * self2.GetStat(self, "Primary.RecoilLUT_IronSightsMult")
+		local isp = 1 - self:GetIronSightsProgress() * self2.GetStatL(self, "Primary.RecoilLUT_IronSightsMult")
 
 		if not self:GetRecoilLoop() then
 			-- currently, we only playing IN animation

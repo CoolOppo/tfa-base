@@ -29,269 +29,227 @@ TFA.DataVersionMapping = {
 		{
 			old_path = "DrawCrosshairIS",
 			new_path = "DrawCrosshairIronSights",
-			force = true,
 		},
 
 		{
 			old_path = "FiresUnderwater",
 			new_path = "Primary.FiresUnderwater",
-			force = true,
 		},
 
 		{
 			old_path = "PenetrationMaterials",
 			new_path = "Primary.PenetrationMaterials",
-			force = true,
 		},
 
 		{
 			old_path = "MaxPenetrationCounter",
 			new_path = "Primary.MaxSurfacePenetrationCount",
-			force = true,
 		},
 
 		{
 			old_path = "MaxPenetration",
 			new_path = "Primary.MaxSurfacePenetrationCount",
-			force = true,
 		},
 
 		{
 			old_path = "IronRecoilMultiplier",
 			new_path = "Primary.IronRecoilMultiplier",
-			force = true,
 		},
 
 		{
 			old_path = "MoveSpeed",
 			new_path = "RegularMoveSpeedMultiplier",
-			force = true,
 		},
 
 		{
 			old_path = "IronSightsMoveSpeed",
 			new_path = "AimingDownSightsSpeedMultiplier",
-			force = true,
 		},
 
 		{
 			old_path = "Shotgun",
 			new_path = "LoopedReload",
-			force = true,
 		},
 
 		{
 			old_path = "ShellTime",
 			new_path = "LoopedReloadInsertTime",
-			force = true,
 		},
 
 		{
 			old_path = "CrouchPos",
 			new_path = "CrouchViewModelPosition",
-			force = true,
 		},
 
 		{
 			old_path = "CrouchAng",
 			new_path = "CrouchViewModelAngle",
-			force = true,
 		},
 
 		{
 			old_path = "data.ironsights",
 			new_path = "Secondary.IronSightsEnabled",
-			translate = function(self, value) return tobool(value) end,
-			force = true,
+			upgrade = function(value) return tobool(value) end,
+			downgrade = function(value) return value and 1 or 0 end,
 		},
 
 		{
 			old_path = "Secondary.IronFOV",
 			new_path = "Secondary.OwnerFOV",
-			force = true,
 		},
 
 		{
 			old_path = "IronViewModelFOV",
 			new_path = "Secondary.ViewModelFOV",
-			force = true,
 		},
 
 		{
 			old_path = "DoProceduralReload",
 			new_path = "IsProceduralReloadBased",
-			force = true,
 		},
 
 		{
 			old_path = "ProceduralReloadEnabled",
 			new_path = "IsProceduralReloadBased",
-			force = true,
 		},
 
 		{
 			old_path = "Akimbo",
 			new_path = "IsAkimbo",
-			force = true,
 		},
 
 		{
 			old_path = "AkimboHUD",
 			new_path = "EnableAkimboHUD",
-			force = true,
 		},
 
 		{
 			old_path = "IronInSound",
 			new_path = "Secondary.IronSightsInSound",
-			force = true,
 		},
 
 		{
 			old_path = "IronOutSound",
 			new_path = "Secondary.IronSightsOutSound",
-			force = true,
 		},
 
 		{
 			old_path = "DisableChambering",
 			new_path = "Primary.DisableChambering",
-			force = true,
 		},
 
 		{
 			old_path = "DisplayFalloff",
 			new_path = "Primary.DisplayFalloff",
-			force = true,
 		},
 
 		{
 			old_path = "SpreadPattern",
 			new_path = "Primary.SpreadPattern",
-			force = true,
 		},
 
 		{
 			old_path = "SpreadBiasYaw",
 			new_path = "Primary.SpreadBiasYaw",
-			force = true,
 		},
 
 		{
 			old_path = "SpreadBiasPitch",
 			new_path = "Primary.SpreadBiasPitch",
-			force = true,
+		},
+
+		{
+			old_path = "VMPos",
+			new_path = "ViewModelPosition",
+		},
+
+		{
+			old_path = "VMAng",
+			new_path = "ViewModelAngle",
+		},
+
+		{
+			old_path = "VMPos_Additive",
+			new_path = "AdditiveViewModelPosition",
+		},
+
+		{
+			old_path = "RunSightsPos",
+			new_path = "SprintViewModelPosition",
+		},
+
+		{
+			old_path = "RunSightsAng",
+			new_path = "SprintViewModelAngle",
+		},
+
+		{
+			old_path = "IronSightsPos",
+			new_path = "IronSightsPosition",
+		},
+
+		{
+			old_path = "IronSightsAng",
+			new_path = "IronSightsAngle",
+		},
+
+		{
+			old_path = "Bodygroups_V",
+			new_path = "ViewModelBodygroups",
+		},
+
+		{
+			old_path = "Bodygroups_W",
+			new_path = "WorldModelBodygroups",
+		},
+
+		{
+			old_path = "CenteredPos",
+			new_path = "CenteredViewModelPosition",
+		},
+
+		{
+			old_path = "CenteredAng",
+			new_path = "CenteredViewModelAngle",
+		},
+
+		{
+			old_path = "Offset",
+			new_path = "WorldModelOffset",
+		},
+
+		{
+			old_path = "ProceduralHolsterPos",
+			new_path = "ProceduralHolsterPosition",
+		},
+
+		{
+			old_path = "ProceduralHolsterAng",
+			new_path = "ProceduralHolsterAngle",
+		},
+
+		{
+			old_path = "VElements",
+			new_path = "ViewModelElements",
+		},
+
+		{
+			old_path = "WElements",
+			new_path = "WorldModelElements",
 		},
 	}
 }
 
-TFA.HardDataMapping = {
-	{
-		old_path = "VMPos",
-		new_path = "ViewModelPosition",
-		force = true,
-	},
+do
+	local function identity(...) return ... end
 
-	{
-		old_path = "VMAng",
-		new_path = "ViewModelAngle",
-		force = true,
-	},
-
-	{
-		old_path = "VMPos_Additive",
-		new_path = "AdditiveViewModelPosition",
-		force = true,
-	},
-
-	{
-		old_path = "RunSightsPos",
-		new_path = "SprintViewModelPosition",
-		force = true,
-	},
-
-	{
-		old_path = "RunSightsAng",
-		new_path = "SprintViewModelAngle",
-		force = true,
-	},
-
-	{
-		old_path = "IronSightsPos",
-		new_path = "IronSightsPosition",
-		force = true,
-	},
-
-	{
-		old_path = "IronSightsAng",
-		new_path = "IronSightsAngle",
-		force = true,
-	},
-
-	{
-		old_path = "Bodygroups_V",
-		new_path = "ViewModelBodygroups",
-		backtrack = true,
-		force_table = true,
-		force = true,
-	},
-
-	{
-		old_path = "Bodygroups_W",
-		new_path = "WorldModelBodygroups",
-		backtrack = true,
-		force_table = true,
-		force = true,
-	},
-
-	{
-		old_path = "CenteredPos",
-		new_path = "CenteredViewModelPosition",
-		force = true,
-	},
-
-	{
-		old_path = "CenteredAng",
-		new_path = "CenteredViewModelAngle",
-		force = true,
-	},
-
-	{
-		old_path = "Offset",
-		new_path = "WorldModelOffset",
-		backtrack = true,
-		force_table = true,
-		force = true,
-	},
-
-	{
-		old_path = "ProceduralHolsterPos",
-		new_path = "ProceduralHolsterPosition",
-		force = true,
-	},
-
-	{
-		old_path = "ProceduralHolsterAng",
-		new_path = "ProceduralHolsterAngle",
-		force = true,
-	},
-
-	{
-		old_path = "VElements",
-		new_path = "ViewModelElements",
-		backtrack = true,
-		force_table = true,
-		force = true,
-	},
-
-	{
-		old_path = "WElements",
-		new_path = "WorldModelElements",
-		backtrack = true,
-		force_table = true,
-		force = true,
-	},
-}
+	for version = 0, #TFA.DataVersionMapping do
+		for i, data in ipairs(TFA.DataVersionMapping[version]) do
+			if not isfunction(data.upgrade) then data.upgrade = identity end
+			if not isfunction(data.downgrade) then data.downgrade = identity end
+		end
+	end
+end
 
 TFA.PathParseCache = {}
 TFA.StatPathRemapCache = {}
@@ -310,66 +268,110 @@ local string_sub = string.sub
 local tonumber = tonumber
 local table_Copy = table.Copy
 local table_concat = table.concat
+local istable = istable
+local string_format = string.format
 
-function TFA.RemapStatPath(path)
-	local get_cache = StatPathRemapCache[path]
-	if get_cache ~= nil then return get_cache end
-
-	get_cache = string_Explode(".", path, false)
-
-	local search = StatPathRemap_Real
-
-	for depth, pathPart in ipairs(get_cache) do
-		if not search[pathPart] then break end
-
-		if search[pathPart].exact and (not search[pathPart].children or depth == #get_cache) then
-			if depth == #get_cache then
-				get_cache = search[pathPart].exact
-			else
-				local get_cache2 = table_Copy(search[pathPart].exact)
-
-				for i = depth + 1, #get_cache do
-					get_cache2[i] = get_cache[i]
-				end
-
-				get_cache = get_cache2
-			end
-		elseif depth ~= #get_cache and search[pathPart].children then
-			search = search[pathPart].children
+local function doDowngrade(path, migrations)
+	for i, data in ipairs(migrations) do
+		if data.new_path == path then
+			return data.old_path
+		elseif path:StartWith(data.new_path) and path[#data.new_path + 1] == '.' then
+			return data.old_path .. path:sub(#data.new_path + 1)
 		end
 	end
 
-	StatPathRemapCache[path] = table_concat(get_cache, ".")
-	return StatPathRemapCache[path]
+	return path
 end
 
-function TFA.GetStatPath(path)
-	local get_cache = PathParseCache[path]
+local function doUpgrade(path, migrations)
+	for i, data in ipairs(migrations) do
+		if data.old_path == path then
+			return data.new_path
+		elseif path:StartWith(data.old_path) and path[#data.old_path + 1] == '.' then
+			return data.new_path .. path:sub(#data.old_path + 1)
+		end
+	end
+
+	return path
+end
+
+function TFA.RemapStatPath(path, path_version, structure_version)
+	local cache_path = path
+
+	if path_version == nil then path_version = 0 end
+	if structure_version == nil then structure_version = 0 end
+
+	-- version do not match
+	if path_version ~= structure_version then
+		cache_path = string_format("%d_%d_%s", path_version, structure_version, path)
+	end
+
+	local get_cache = StatPathRemapCache[cache_path]
 	if get_cache ~= nil then return get_cache end
 
 	get_cache = string_Explode(".", path, false)
 
-	local search = StatPathRemap_Real
+	if cache_path ~= path then
+		-- downgrade
+		if path_version > structure_version then
+			for version = path_version, structure_version, -1 do
+				local mapping = TFA.DataVersionMapping[version]
 
-	for depth, pathPart in ipairs(get_cache) do
-		if not search[pathPart] then break end
-
-		if search[pathPart].exact and (not search[pathPart].children or depth == #get_cache) then
-			if depth == #get_cache then
-				get_cache = table_Copy(search[pathPart].exact)
-			else
-				local get_cache2 = table_Copy(search[pathPart].exact)
-
-				for i = depth + 1, #get_cache do
-					get_cache2[i] = get_cache[i]
+				if istable(mapping) then
+					path = doDowngrade(path, mapping)
 				end
-
-				get_cache = get_cache2
 			end
-		elseif depth ~= #get_cache and search[pathPart].children then
-			search = search[pathPart].children
+		else -- upgrade
+			for version = path_version, structure_version do
+				local mapping = TFA.DataVersionMapping[version]
+
+				if istable(mapping) then
+					path = doUpgrade(path, mapping)
+				end
+			end
 		end
 	end
+
+	StatPathRemapCache[cache_path] = path
+	return StatPathRemapCache[cache_path]
+end
+
+function TFA.GetStatPath(path, path_version, structure_version)
+	local cache_path = path
+
+	if path_version == nil then path_version = 0 end
+	if structure_version == nil then structure_version = 0 end
+
+	-- version do not match
+	if path_version ~= structure_version then
+		cache_path = string_format("%d_%d_%s", path_version, structure_version, path)
+	end
+
+	local get_cache = PathParseCache[cache_path]
+	if get_cache ~= nil then return get_cache[1], get_cache[2] end
+
+	if cache_path ~= path then
+		-- downgrade
+		if path_version > structure_version then
+			for version = path_version, structure_version, -1 do
+				local mapping = TFA.DataVersionMapping[version]
+
+				if istable(mapping) then
+					path = doDowngrade(path, mapping)
+				end
+			end
+		else -- upgrade
+			for version = path_version, structure_version do
+				local mapping = TFA.DataVersionMapping[version]
+
+				if istable(mapping) then
+					path = doUpgrade(path, mapping)
+				end
+			end
+		end
+	end
+
+	get_cache = string_Explode(".", path, false)
 
 	if get_cache[1] == "Primary" then
 		get_cache[1] = "Primary_TFA"
@@ -381,11 +383,11 @@ function TFA.GetStatPath(path)
 		get_cache[k] = tonumber(v) or v
 	end
 
-	PathParseCache[path] = get_cache
-	return get_cache
+	PathParseCache[cache_path] = {get_cache, path}
+	return get_cache, path
 end
 
-function TFA.GetStatPathDirect(path)
+function TFA.GetStatPathRaw(path)
 	local get_cache = PathParseCacheDirect[path]
 	if get_cache ~= nil then return get_cache end
 
@@ -399,167 +401,57 @@ function TFA.GetStatPathDirect(path)
 	return t_stbl
 end
 
-local GetStatPathDirect = TFA.GetStatPathDirect
-local istable = istable
-
-local function mapMigration(info)
-	local new_path = table_Copy(GetStatPathDirect(info.new_path))
-	local old_path = table_Copy(GetStatPathDirect(info.old_path))
-
-	-- VElements -> ViewModelElements
-	if #old_path == 1 then
-		if not StatPathRemap_Real[old_path[1]] then
-			StatPathRemap_Real[old_path[1]] = {children = {}}
-		end
-
-		StatPathRemap_Real[old_path[1]].exact = table_Copy(new_path)
-	else
-		local targeting = StatPathRemap_Real
-
-		for depth, pathPartOld in ipairs(old_path) do
-			if not targeting[pathPartOld] then
-				targeting[pathPartOld] = {children = {}}
-			end
-
-			-- exact
-			if #old_path == depth then
-				targeting[pathPartOld].exact = table_Copy(new_path)
-			else -- children
-				targeting = targeting[pathPartOld].children
-			end
-		end
-	end
-end
-
-for _, info in ipairs(TFA.HardDataMapping) do
-	mapMigration(info)
-end
-
-for version, data in SortedPairs(TFA.DataVersionMapping) do
-	for _, info in ipairs(data) do
-		mapMigration(info)
-	end
-end
+local GetStatPathRaw = TFA.GetStatPathRaw
 
 do
-	local function collapse(tableInput)
-		for k, v in pairs(tableInput) do
-			if istable(v) and istable(v.children) then
-				if table.Count(v.children) == 0 then
-					v.children = nil
-				else
-					collapse(v.children)
+	local function get(self, path)
+		local value = self[path[1]]
+
+		for i = 2, #path do
+			if not istable(value) then return end
+			value = value[path[i]]
+		end
+
+		return value
+	end
+
+	local function set(self, path, val)
+		if #path == 1 then
+			if self[path[1]] == nil then
+				self[path[1]] = val
+			end
+
+			return
+		end
+
+		local value = self[path[1]]
+
+		for i = 2, #path - 1 do
+			if not istable(value) then return end
+			value = value[path[i]]
+		end
+
+		if istable(value) and value[path[#path]] == nil then
+			value[path[#path]] = val
+			print('fill', table_concat(path, '.'))
+		elseif not istable(value) then
+			print('[TFA Base] unable to fill gap for older version in meta structure of ' .. table_concat(path, '.'))
+		end
+	end
+
+	function TFA.FillMissingMetaValues(SWEP)
+		for version = TFA.LatestDataVersion, 0, -1 do
+			local mapping = TFA.DataVersionMapping[version]
+
+			if istable(mapping) then
+				for i, data in ipairs(mapping) do
+					local getVal = get(SWEP, GetStatPathRaw(data.new_path))
+
+					if getVal ~= nil then
+						set(SWEP, GetStatPathRaw(data.old_path), data.downgrade(getVal))
+					end
 				end
 			end
 		end
 	end
-
-	collapse(StatPathRemap_Real)
-end
-
---PrintTable(PathParseCache)
-
-local retrieve, push
-function retrieve(struct, path, depth, limit)
-	if depth > limit then return end
-
-	local load = struct[path[depth]]
-
-	if load == nil then return end
-	if depth == limit then return load end
-	if istable(load) then return retrieve(load, path, depth + 1, limit) end
-	-- not found
-end
-
-function push(struct, path, value, depth, limit, force)
-	if depth > limit then return false end
-
-	local load = struct[path[depth]]
-
-	if depth == limit then
-		if force or load == nil then
-			struct[path[depth]] = value
-			--print("pushed", value, " to ", path[depth])
-		end
-
-		--print("depth == limit", path[depth], value)
-
-		return true
-	end
-
-	if load == nil and limit < depth then
-		load = {}
-		struct[path[depth]] = load
-	end
-
-	if istable(load) then
-		return push(load, path, value, depth + 1, limit, force)
-	end
-
-	--print("failed to push", value, "to", path[depth])
-	return false
-end
-
-local function apply(struct, info, self, backtrack, ...)
-	local old_path = GetStatPathDirect(info.old_path)
-	local new_path = GetStatPathDirect(info.new_path)
-
-	local load = retrieve(struct, old_path, 1, #old_path)
-
-	if load == nil then
-		if info.force_table then
-			load = {}
-		else
-			return false
-		end
-	end
-
-	if isfunction(info.translate) then
-		load = info.translate(self, load, struct, ...)
-	end
-
-	--print("pushing", load, "to", info.new_path, "from", info.old_path)
-
-	if info.backtrack and backtrack then
-		push(struct, old_path, load, 1, #old_path, false)
-	end
-
-	return push(struct, new_path, load, 1, #new_path, info.force)
-end
-
-function TFA.MigrateStructure(self, struct, classname, backtrack, ...)
-	local migrations = #TFA.HardDataMapping
-
-	local currentVersion = struct.TFADataVersion or 0
-
-	for _, info in ipairs(TFA.HardDataMapping) do
-		if apply(struct, info, self, backtrack and currentVersion == 0, ...) then
-			migrations = migrations + 1
-		end
-	end
-
-	if currentVersion == 0 then
-		-- remove old default value since we were ignoring it already
-		if struct.MaxPenetrationCounter == 4 then
-			struct.MaxPenetrationCounter = nil
-		end
-
-		if struct.MaxPenetration == 4 then
-			struct.MaxPenetration = nil
-		end
-	end
-
-	for version, data in SortedPairs(TFA.DataVersionMapping) do
-		if currentVersion <= version then
-			for _, info in ipairs(data) do
-				if apply(struct, info, self, backtrack and currentVersion == 0, ...) then
-					migrations = migrations + 1
-				end
-			end
-		end
-	end
-
-	-- print("[TFA Base] Migrated " .. classname .. " (applied " .. migrations .. " migrations)")
-
-	return migrations
 end

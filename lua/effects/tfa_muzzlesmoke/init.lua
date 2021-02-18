@@ -30,7 +30,7 @@ function EFFECT:Init(data)
 	if limit_particle_cv:GetBool() and self.WeaponEnt:GetOwner() ~= LocalPlayer() then return end
 	self.Attachment = data:GetAttachment()
 	local smokepart = "smoke_trail_tfa"
-	local delay = self.WeaponEnt.GetStat and self.WeaponEnt:GetStat("SmokeDelay") or self.WeaponEnt.SmokeDelay
+	local delay = self.WeaponEnt.GetStatL and self.WeaponEnt:GetStatL("SmokeDelay") or self.WeaponEnt.SmokeDelay
 
 	if self.WeaponEnt.SmokeParticle then
 		smokepart = self.WeaponEnt.SmokeParticle
@@ -70,7 +70,7 @@ function EFFECT:Init(data)
 		end
 
 		e.SmokePCF = e.SmokePCF or {}
-		local _a = w:GetStat("IsAkimbo") and a or 1
+		local _a = w:GetStatL("IsAkimbo") and a or 1
 
 		if IsValid(e.SmokePCF[_a]) then
 			e.SmokePCF[_a]:StopEmission()

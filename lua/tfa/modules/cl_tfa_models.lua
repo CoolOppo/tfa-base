@@ -67,15 +67,15 @@ local function NotifyShouldTransmit(ent, notdormant)
 	if notdormant or not ent.IsTFAWeapon then return end
 	if ent:GetOwner() == LocalPlayer() then return end
 
-	ent:CleanModels(ent.ViewModelElements)
-	ent:CleanModels(ent.WorldModelElements)
+	ent:CleanModels(ent:GetStatRaw("ViewModelElements", TFA.LatestDataVersion))
+	ent:CleanModels(ent:GetStatRaw("WorldModelElements", TFA.LatestDataVersion))
 end
 
 local function EntityRemoved(ent)
 	if not ent.IsTFAWeapon then return end
 
-	ent:CleanModels(ent.ViewModelElements)
-	ent:CleanModels(ent.WorldModelElements)
+	ent:CleanModels(ent:GetStatRaw("ViewModelElements", TFA.LatestDataVersion))
+	ent:CleanModels(ent:GetStatRaw("WorldModelElements", TFA.LatestDataVersion))
 end
 
 hook.Add("NotifyShouldTransmit", "TFA_ClientsideModels", NotifyShouldTransmit)

@@ -139,9 +139,9 @@ function SWEP:SmackDamage(tr, fwd, primary)
 	local dmg, force
 
 	if primary then
-		dmg = self:GetStat("Primary.Damage")
+		dmg = self:GetStatL("Primary.Damage")
 	else
-		dmg = self:GetStat("Secondary.Damage")
+		dmg = self:GetStatL("Secondary.Damage")
 	end
 
 	force = dmg * 25
@@ -217,8 +217,8 @@ function SWEP:Slash(bPrimary)
 	tracedata.filter = ow
 
 	tr = self:GetSlashTrace(tracedata, fw)
-	rpm = self:GetStat("Primary.RPM")
-	delay = self:GetStat("Primary.Delay")
+	rpm = self:GetStatL("Primary.RPM")
+	delay = self:GetStatL("Primary.Delay")
 	self:SlashSound(tr)
 	self:SmackDamage(tr, fw, bPrimary)
 	self:SmackEffect(tr, fw, bPrimary)

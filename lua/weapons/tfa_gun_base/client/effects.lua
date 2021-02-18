@@ -176,7 +176,7 @@ function SWEP:ImpactEffectFunc(pos, normal, mattype)
 			TFA.Effects.Create("tfa_metal_impact", fx)
 		end
 
-		local scal = math.sqrt(self:GetStat("Primary.Damage") / 30)
+		local scal = math.sqrt(self:GetStatL("Primary.Damage") / 30)
 		if mattype == MAT_FLESH then
 			scal = scal * 0.25
 		end

@@ -225,7 +225,7 @@ function SWEP:BuildAnimActivities()
 			self2.AnimationActivities[v.value] = k
 		end
 
-		local kvt = self2.GetStat(self, "Animations." .. k)
+		local kvt = self2.GetStatL(self, "Animations." .. k)
 
 		if kvt.value then
 			self2.AnimationActivities[kvt.value] = k
@@ -233,7 +233,7 @@ function SWEP:BuildAnimActivities()
 	end
 
 	for k, _ in pairs(self2.Animations) do
-		local kvt = self2.GetStat(self, "Animations." .. k)
+		local kvt = self2.GetStatL(self, "Animations." .. k)
 
 		if kvt.value then
 			self2.AnimationActivities[kvt.value] = k
@@ -243,7 +243,7 @@ end
 
 function SWEP:GetActivityEnabled(act)
 	local self2 = self:GetTable()
-	local stat = self2.GetStat(self, "SequenceEnabled." .. act)
+	local stat = self2.GetStatL(self, "SequenceEnabled." .. act)
 	if stat then return stat end
 
 	if not self2.AnimationActivities then
@@ -251,7 +251,7 @@ function SWEP:GetActivityEnabled(act)
 	end
 
 	local keysel = self2.AnimationActivities[act] or ""
-	local kv = self2.GetStat(self, "Animations." .. keysel)
+	local kv = self2.GetStatL(self, "Animations." .. keysel)
 	if not kv then return false end
 
 	if kv["enabled"] then
@@ -267,7 +267,7 @@ function SWEP:ChooseAnimation(keyOrData)
 	local data
 
 	if isstring(keyOrData) then
-		data = self2.GetStat(self, "Animations." .. keyOrData)
+		data = self2.GetStatL(self, "Animations." .. keyOrData)
 	elseif istable(keyOrData) then
 		data = keyOrData
 	else
@@ -280,14 +280,14 @@ function SWEP:ChooseAnimation(keyOrData)
 
 	local retType, retValue = data["type"], data["value"]
 
-	if self:Clip1() <= 0 and self2.GetStat(self, "Primary.ClipSize") >= 0 then
+	if self:Clip1() <= 0 and self2.GetStatL(self, "Primary.ClipSize") >= 0 then
 		if data.value_empty then
 			retValue = data.value_empty
 			retType = data.type_empty or retType
 		end
 	end
 
-	if self:Clip1() == 1 and self2.GetStat(self, "Primary.ClipSize") >= 0 then
+	if self:Clip1() == 1 and self2.GetStatL(self, "Primary.ClipSize") >= 0 then
 		if data.value_last then
 			retValue = data.value_last
 			retType = data.type_last or retType
@@ -302,7 +302,7 @@ function SWEP:ChooseAnimation(keyOrData)
 			retType = data.type_sil or previousRetType
 		end
 
-		if self:Clip1() <= 0 and self2.GetStat(self, "Primary.ClipSize") >= 0 then
+		if self:Clip1() <= 0 and self2.GetStatL(self, "Primary.ClipSize") >= 0 then
 			if data.value_sil_empty then
 				retValue = data.value_sil_empty
 				retType = data.type_sil_empty or previousRetType
@@ -318,14 +318,14 @@ function SWEP:ChooseAnimation(keyOrData)
 			retType = data.type_is or previousRetType
 		end
 
-		if self:Clip1() <= 0 and self2.GetStat(self, "Primary.ClipSize") >= 0 then
+		if self:Clip1() <= 0 and self2.GetStatL(self, "Primary.ClipSize") >= 0 then
 			if data.value_is_empty then
 				retValue = data.value_is_empty
 				retType = data.type_is_empty or previousRetType
 			end
 		end
 
-		if self:Clip1() == 1 and self2.GetStat(self, "Primary.ClipSize") >= 0 then
+		if self:Clip1() == 1 and self2.GetStatL(self, "Primary.ClipSize") >= 0 then
 			if data.value_is_last then
 				retValue = data.value_is_last
 				retType = data.type_is_last or previousRetType
@@ -338,14 +338,14 @@ function SWEP:ChooseAnimation(keyOrData)
 				retType = data.type_is_sil or previousRetType
 			end
 
-			if self:Clip1() <= 0 and self2.GetStat(self, "Primary.ClipSize") >= 0 then
+			if self:Clip1() <= 0 and self2.GetStatL(self, "Primary.ClipSize") >= 0 then
 				if data.value_is_sil_empty then
 					retValue = data.value_is_sil_empty
 					retType = data.type_is_sil_empty or previousRetType
 				end
 			end
 
-			if self:Clip1() == 1 and self2.GetStat(self, "Primary.ClipSize") >= 0 then
+			if self:Clip1() == 1 and self2.GetStatL(self, "Primary.ClipSize") >= 0 then
 				if data.value_is_sil_last then
 					retValue = data.value_is_sil_last
 					retType = data.type_is_sil_last or previousRetType
@@ -380,8 +380,8 @@ function SWEP:GetAnimationRate(ani, animationType)
 		error("ani argument is typeof " .. type(ani))
 	end
 
-	local sqto = self2.GetStat(self, "SequenceTimeOverride." .. nm) or self2.GetStat(self, "SequenceTimeOverride." .. (ani or "0"))
-	local sqro = self2.GetStat(self, "SequenceRateOverride." .. nm) or self2.GetStat(self, "SequenceRateOverride." .. (ani or "0"))
+	local sqto = self2.GetStatL(self, "SequenceTimeOverride." .. nm) or self2.GetStatL(self, "SequenceTimeOverride." .. (ani or "0"))
+	local sqro = self2.GetStatL(self, "SequenceRateOverride." .. nm) or self2.GetStatL(self, "SequenceRateOverride." .. (ani or "0"))
 
 	if sqro then
 		rate = rate * sqro
@@ -608,34 +608,34 @@ function SWEP:Locomote(flipis, is, flipsp, spr, flipwalk, walk, flipcust, cust)
 	tldata = nil
 
 	if flipis then
-		if is and self2.GetStat(self, "IronAnimation.in") then
-			tldata = self2.GetStat(self, "IronAnimation.in", tldata)
-		elseif self2.GetStat(self, "IronAnimation.out") and not flipsp then
-			tldata = self2.GetStat(self, "IronAnimation.out", tldata)
+		if is and self2.GetStatL(self, "IronAnimation.in") then
+			tldata = self2.GetStatL(self, "IronAnimation.in", tldata)
+		elseif self2.GetStatL(self, "IronAnimation.out") and not flipsp then
+			tldata = self2.GetStatL(self, "IronAnimation.out", tldata)
 		end
 	end
 
 	if flipsp then
-		if spr and self2.GetStat(self, "SprintAnimation.in") then
-			tldata = self2.GetStat(self, "SprintAnimation.in", tldata)
-		elseif self2.GetStat(self, "SprintAnimation.out") and not flipis and not spr then
-			tldata = self2.GetStat(self, "SprintAnimation.out", tldata)
+		if spr and self2.GetStatL(self, "SprintAnimation.in") then
+			tldata = self2.GetStatL(self, "SprintAnimation.in", tldata)
+		elseif self2.GetStatL(self, "SprintAnimation.out") and not flipis and not spr then
+			tldata = self2.GetStatL(self, "SprintAnimation.out", tldata)
 		end
 	end
 
 	if flipwalk and not is then
-		if walk and self2.GetStat(self, "WalkAnimation.in") then
-			tldata = self2.GetStat(self, "WalkAnimation.in", tldata)
-		elseif self2.GetStat(self, "WalkAnimation.out") and (not flipis and not flipsp and not flipcust) and not walk then
-			tldata = self2.GetStat(self, "WalkAnimation.out", tldata)
+		if walk and self2.GetStatL(self, "WalkAnimation.in") then
+			tldata = self2.GetStatL(self, "WalkAnimation.in", tldata)
+		elseif self2.GetStatL(self, "WalkAnimation.out") and (not flipis and not flipsp and not flipcust) and not walk then
+			tldata = self2.GetStatL(self, "WalkAnimation.out", tldata)
 		end
 	end
 
 	if flipcust then
-		if cust and self2.GetStat(self, "CustomizeAnimation.in") then
-			tldata = self2.GetStat(self, "CustomizeAnimation.in", tldata)
-		elseif self2.GetStat(self, "CustomizeAnimation.out") and (not flipis and not flipsp and not flipwalk) and not cust then
-			tldata = self2.GetStat(self, "CustomizeAnimation.out", tldata)
+		if cust and self2.GetStatL(self, "CustomizeAnimation.in") then
+			tldata = self2.GetStatL(self, "CustomizeAnimation.in", tldata)
+		elseif self2.GetStatL(self, "CustomizeAnimation.out") and (not flipis and not flipsp and not flipwalk) and not cust then
+			tldata = self2.GetStatL(self, "CustomizeAnimation.out", tldata)
 		end
 	end
 
@@ -791,13 +791,13 @@ Purpose:  Animation / Utility
 function SWEP:ChooseReloadAnim()
 	local self2 = self:GetTable()
 	if not self:VMIV() then return false, 0 end
-	if self2.GetStat(self, "IsProceduralReloadBased") then return false, 0 end
+	if self2.GetStatL(self, "IsProceduralReloadBased") then return false, 0 end
 
-	local ads = self:GetStat("IronSightsReloadEnabled") and self:GetIronSightsDirect()
+	local ads = self:GetStatL("IronSightsReloadEnabled") and self:GetIronSightsDirect()
 
 	if self:GetActivityEnabled(ACT_VM_RELOAD_SILENCED) and self2.GetSilenced(self) then
 		typev, tanim = self:ChooseAnimation((ads and self:GetActivityEnabled(ACT_VM_RELOAD_SILENCED_ADS)) and "reload_silenced_is" or "reload_silenced")
-	elseif self:GetActivityEnabled(ACT_VM_RELOAD_EMPTY) and (self:Clip1() == 0 or self:IsJammed()) and not self:GetStat("LoopedReload") then
+	elseif self:GetActivityEnabled(ACT_VM_RELOAD_EMPTY) and (self:Clip1() == 0 or self:IsJammed()) and not self:GetStatL("LoopedReload") then
 		typev, tanim = self:ChooseAnimation((ads and self:GetActivityEnabled(ACT_VM_RELOAD_EMPTY_ADS)) and "reload_empty_is" or "reload_empty")
 	else
 		typev, tanim = self:ChooseAnimation((ads and self:GetActivityEnabled(ACT_VM_RELOAD_ADS)) and "reload_is" or "reload")
@@ -805,8 +805,8 @@ function SWEP:ChooseReloadAnim()
 
 	local fac = 1
 
-	if self:GetStat("LoopedReload") and self:GetStat("LoopedReloadInsertTime") then
-		fac = self:GetStat("LoopedReloadInsertTime")
+	if self:GetStatL("LoopedReload") and self:GetStatL("LoopedReloadInsertTime") then
+		fac = self:GetStatL("LoopedReloadInsertTime")
 	end
 
 	self:SetAnimCycle(self2.ViewModelFlip and 0 or 1)
@@ -827,7 +827,7 @@ function SWEP:ChooseShotgunReloadAnim()
 	local self2 = self:GetTable()
 	if not self:VMIV() then return end
 
-	local ads = self:GetStat("IronSightsReloadEnabled") and self:GetIronSightsDirect()
+	local ads = self:GetStatL("IronSightsReloadEnabled") and self:GetIronSightsDirect()
 
 	if self:GetActivityEnabled(ACT_VM_RELOAD_SILENCED) and self2.GetSilenced(self) then
 		typev, tanim = self:ChooseAnimation((ads and self:GetActivityEnabled(ACT_VM_RELOAD_SILENCED_ADS)) and "reload_silenced_is" or "reload_silenced")
@@ -846,7 +846,7 @@ function SWEP:ChooseShotgunPumpAnim()
 	if not self:VMIV() then return end
 
 	typev, tanim = self:ChooseAnimation(
-		(self:GetStat("IronSightsReloadEnabled") and
+		(self:GetStatL("IronSightsReloadEnabled") and
 		self:GetIronSightsDirect() and
 		self:GetActivityEnabled(ACT_SHOTGUN_RELOAD_START_ADS)) and "reload_shotgun_finish_is" or "reload_shotgun_finish")
 
@@ -926,7 +926,7 @@ end
 
 function SWEP:ChooseADSAnim()
 	local self2 = self:GetTable()
-	local a, b, c = self:PlayAnimation(self2.GetStat(self, "IronAnimation.loop"))
+	local a, b, c = self:PlayAnimation(self2.GetStatL(self, "IronAnimation.loop"))
 
 	--self:SetNextIdleAnim(CurTime() + 1)
 	if not a then
@@ -939,19 +939,19 @@ function SWEP:ChooseADSAnim()
 end
 
 function SWEP:ChooseSprintAnim()
-	return self:PlayAnimation(self:GetStat("SprintAnimation.loop"))
+	return self:PlayAnimation(self:GetStatL("SprintAnimation.loop"))
 end
 
 function SWEP:ChooseWalkAnim()
-	return self:PlayAnimation(self:GetStat("WalkAnimation.loop"))
+	return self:PlayAnimation(self:GetStatL("WalkAnimation.loop"))
 end
 
 function SWEP:ChooseLoopShootAnim()
-	return self:PlayAnimation(self:GetStat("ShootAnimation.loop"))
+	return self:PlayAnimation(self:GetStatL("ShootAnimation.loop"))
 end
 
 function SWEP:ChooseCustomizeAnim()
-	return self:PlayAnimation(self:GetStat("CustomizeAnimation.loop"))
+	return self:PlayAnimation(self:GetStatL("CustomizeAnimation.loop"))
 end
 
 --[[
@@ -968,7 +968,7 @@ function SWEP:ChooseShootAnim(ifp)
 	if ifp == nil then ifp = IsFirstTimePredicted() end
 	if not self:VMIV() then return end
 
-	if self2.GetStat(self, "ShootAnimation.loop") and self2.Primary_TFA.Automatic then
+	if self2.GetStatL(self, "ShootAnimation.loop") and self2.Primary_TFA.Automatic then
 		if self2.LuaShellEject and ifp then
 			self:EventShell()
 		end
@@ -976,10 +976,10 @@ function SWEP:ChooseShootAnim(ifp)
 		if TFA.Enum.ShootReadyStatus[self:GetShootStatus()] then
 			self:SetShootStatus(TFA.Enum.SHOOT_START)
 
-			local inan = self2.GetStat(self, "ShootAnimation.in")
+			local inan = self2.GetStatL(self, "ShootAnimation.in")
 
 			if not inan then
-				inan = self2.GetStat(self, "ShootAnimation.loop")
+				inan = self2.GetStatL(self, "ShootAnimation.loop")
 			end
 
 			return self:PlayAnimation(inan)
@@ -988,16 +988,16 @@ function SWEP:ChooseShootAnim(ifp)
 		return
 	end
 
-	if self:GetIronSights() and (self2.Sights_Mode == TFA.Enum.LOCOMOTION_ANI or self2.Sights_Mode == TFA.Enum.LOCOMOTION_HYBRID) and self2.GetStat(self, "IronAnimation.shoot") then
+	if self:GetIronSights() and (self2.Sights_Mode == TFA.Enum.LOCOMOTION_ANI or self2.Sights_Mode == TFA.Enum.LOCOMOTION_HYBRID) and self2.GetStatL(self, "IronAnimation.shoot") then
 		if self2.LuaShellEject and ifp then
 			self:EventShell()
 		end
 
-		return self:PlayAnimation(self2.GetStat(self, "IronAnimation.shoot"))
+		return self:PlayAnimation(self2.GetStatL(self, "IronAnimation.shoot"))
 	end
 
-	shouldBlowback = self2.GetStat(self, "BlowbackEnabled") and (not self2.GetStat(self, "Blowback_Only_Iron") or self:GetIronSights())
-	shouldAnim = not shouldBlowback or self2.GetStat(self, "BlowbackAllowAnimation")
+	shouldBlowback = self2.GetStatL(self, "BlowbackEnabled") and (not self2.GetStatL(self, "Blowback_Only_Iron") or self:GetIronSights())
+	shouldAnim = not shouldBlowback or self2.GetStatL(self, "BlowbackAllowAnimation")
 
 	if shouldBlowback then
 		if sp and SERVER then
@@ -1008,7 +1008,7 @@ function SWEP:ChooseShootAnim(ifp)
 			self:BlowbackFull(ifp)
 		end
 
-		if self2.GetStat(self, "Blowback_Shell_Enabled") and (ifp or sp) then
+		if self2.GetStatL(self, "Blowback_Shell_Enabled") and (ifp or sp) then
 			self:EventShell()
 		end
 	end
@@ -1028,7 +1028,7 @@ function SWEP:ChooseShootAnim(ifp)
 			typev, tanim = self:ChooseAnimation("shoot1_last")
 		elseif self:Clip1() == 0 and self:GetActivityEnabled(ACT_VM_DRYFIRE) and not self2.ForceDryFireOff then
 			typev, tanim = self:ChooseAnimation("shoot1_empty")
-		elseif self2.GetStat(self, "IsAkimbo") and self:GetActivityEnabled(ACT_VM_SECONDARYATTACK) and ((self:GetAnimCycle() == 0 and not self2.Akimbo_Inverted) or (self:GetAnimCycle() == 1 and self2.Akimbo_Inverted)) then
+		elseif self2.GetStatL(self, "IsAkimbo") and self:GetActivityEnabled(ACT_VM_SECONDARYATTACK) and ((self:GetAnimCycle() == 0 and not self2.Akimbo_Inverted) or (self:GetAnimCycle() == 1 and self2.Akimbo_Inverted)) then
 			typev, tanim = self:ChooseAnimation((self:GetIronSights() and self:GetActivityEnabled(ACT_VM_ISHOOT_M203)) and "shoot2_is" or "shoot2")
 		elseif self:GetIronSights() and self:GetActivityEnabled(ACT_VM_PRIMARYATTACK_1) then
 			typev, tanim = self:ChooseAnimation("shoot1_is")
@@ -1057,7 +1057,7 @@ function SWEP:BlowbackFull()
 		self2.BlowbackCurrentRoot = 1
 
 		if CLIENT then
-			minang, maxang = self2.GetStat(self, "BlowbackRandomAngleMin"), self2.GetStat(self, "BlowbackRandomAngleMax")
+			minang, maxang = self2.GetStatL(self, "BlowbackRandomAngleMin"), self2.GetStatL(self, "BlowbackRandomAngleMax")
 
 			self2.BlowbackRandomAngle = Angle(math.Rand(minang.p, maxang.p), math.Rand(minang.y, maxang.y), math.Rand(minang.r, maxang.r))
 		end
@@ -1173,7 +1173,7 @@ function SWEP:ChooseBashAnim()
 	typev, tanim = nil, nil
 	success = false
 
-	local isempty = self2.GetStat(self, "Primary.ClipSize") > 0 and self:Clip1() == 0
+	local isempty = self2.GetStatL(self, "Primary.ClipSize") > 0 and self:Clip1() == 0
 
 	if self2.GetSilenced(self) and self:GetActivityEnabled(ACT_VM_HITCENTER2) then
 		if self:GetActivityEnabled(ACT_VM_MISSCENTER2) and isempty then
@@ -1286,7 +1286,7 @@ end
 
 function SWEP:ProcessHoldType()
 	local self2 = self:GetTable()
-	mht = self2.GetStat(self, "HoldType") or "ar2"
+	mht = self2.GetStatL(self, "HoldType", "ar2")
 
 	if mht ~= self2.mht_old or not self2.DefaultHoldType then
 		self2.DefaultHoldType = mht

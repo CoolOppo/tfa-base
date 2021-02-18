@@ -212,10 +212,10 @@ function TFA.Ballistics:ShouldUse(wep)
 		return false
 	end
 
-	local shouldUse = wep:GetStat("UseBallistics")
+	local shouldUse = wep:GetStatL("UseBallistics")
 
 	if shouldUse == nil then
-		if wep:GetStat("TracerPCF") then
+		if wep:GetStatL("TracerPCF") then
 			return false
 		end
 
@@ -235,8 +235,8 @@ function TFA.Ballistics:FireBullets(wep, bulletStruct, angIn, bulletOverride)
 
 	if bulletStruct.Velocity then
 		vel = bulletStruct.Velocity
-	elseif wep.GetStat and wep:GetStat("Primary.Velocity") then
-		vel = wep:GetStat("Primary.Velocity") * TFA.Ballistics.UnitScale
+	elseif wep.GetStat and wep:GetStatL("Primary.Velocity") then
+		vel = wep:GetStatL("Primary.Velocity") * TFA.Ballistics.UnitScale
 	elseif wep.Primary and wep.Primary.Velocity then
 		vel = wep.Primary.Velocity * TFA.Ballistics.UnitScale
 	elseif wep.Velocity then
@@ -244,8 +244,8 @@ function TFA.Ballistics:FireBullets(wep, bulletStruct, angIn, bulletOverride)
 	else
 		local dmg
 
-		if wep.GetStat and wep:GetStat("Primary.Damage") then
-			dmg = wep:GetStat("Primary.Damage")
+		if wep.GetStat and wep:GetStatL("Primary.Damage") then
+			dmg = wep:GetStatL("Primary.Damage")
 		else
 			dmg = wep.Primary.Damage or wep.Damage or 30
 		end
@@ -352,23 +352,23 @@ if CLIENT then
 	net.Receive(TFA.Ballistics.BulletCreationNetString, function()
 		if not sp and not cv_receive:GetBool() then return end
 
-		local owner = 			net.ReadEntity()
-		local inflictor = 		net.ReadEntity()
-		local damage = 			net.ReadFloat()
-		local force = 			net.ReadFloat()
-		local pos = 			net.ReadVector()
-		local velocity = 		Vector(net.ReadDouble(), net.ReadDouble(), net.ReadDouble())
-		local model = 			net.ReadString()
-		local smokeparticle = 	net.ReadString()
-		local customPosition = 	net.ReadBool()
-		local IgnoreEntity = 	net.ReadEntity()
+		local owner =           net.ReadEntity()
+		local inflictor =       net.ReadEntity()
+		local damage =          net.ReadFloat()
+		local force =           net.ReadFloat()
+		local pos =             net.ReadVector()
+		local velocity =        Vector(net.ReadDouble(), net.ReadDouble(), net.ReadDouble())
+		local model =           net.ReadString()
+		local smokeparticle =   net.ReadString()
+		local customPosition =  net.ReadBool()
+		local IgnoreEntity =    net.ReadEntity()
 
 
-		local Src = 			net.ReadVector()
-		local Dir = 			net.ReadNormal()
-		local Attacker = 		net.ReadEntity()
-		local Spread = 			net.ReadVector()
-		local Velocity = 		net.ReadFloat()
+		local Src =             net.ReadVector()
+		local Dir =             net.ReadNormal()
+		local Attacker =        net.ReadEntity()
+		local Spread =          net.ReadVector()
+		local Velocity =        net.ReadFloat()
 
 		if not IsValid(owner) or not IsValid(inflictor) then return end
 

@@ -33,7 +33,7 @@ hook.Add("PlayerSwitchWeapon", "TFA_Bodygroups_PSW", function(ply, oldwep, wep)
 			local bgt = wep.ViewModelBodygroups or wep.Bodygroups or {}
 
 			if wep.GetStat then
-				bgt = wep:GetStat("ViewModelBodygroups", bgt)
+				bgt = wep:GetStatL("ViewModelBodygroups", bgt)
 			end
 
 			for i = 0, bgcount - 1 do

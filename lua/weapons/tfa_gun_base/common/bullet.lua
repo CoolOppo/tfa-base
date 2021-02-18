@@ -83,13 +83,13 @@ function SWEP:ShootBulletInformation()
 	con, rec = self:CalculateConeRecoil()
 
 	local tmpranddamage = math.Rand(cv_dmg_mult_min:GetFloat(), cv_dmg_mult_max:GetFloat())
-	local basedamage = self.ConDamageMultiplier * self:GetStat("Primary.Damage")
+	local basedamage = self.ConDamageMultiplier * self:GetStatL("Primary.Damage")
 	dmg = basedamage * tmpranddamage
 
-	local ns = self:GetStat("Primary.NumShots")
-	local clip = (self:GetStat("Primary.ClipSize") == -1) and self:Ammo1() or self:Clip1()
+	local ns = self:GetStatL("Primary.NumShots")
+	local clip = (self:GetStatL("Primary.ClipSize") == -1) and self:Ammo1() or self:Clip1()
 
-	ns = math.Round(ns, math.min(clip / self:GetStat("Primary.NumShots"), 1))
+	ns = math.Round(ns, math.min(clip / self:GetStatL("Primary.NumShots"), 1))
 
 	self:ShootBullet(dmg, rec, ns, con)
 end
@@ -135,9 +135,9 @@ function SWEP:ComputeBulletDeviation(bulletNum, totalBullets, aimcone)
 
 	return
 		-- Yaw
-		util.SharedRandom(sharedRandomSeed, -aimcone * 45 * self:GetStat("Primary.SpreadBiasYaw"), aimcone * 45 * self:GetStat("Primary.SpreadBiasYaw"), totalBullets + 1 + bulletNum),
+		util.SharedRandom(sharedRandomSeed, -aimcone * 45 * self:GetStatL("Primary.SpreadBiasYaw"), aimcone * 45 * self:GetStatL("Primary.SpreadBiasYaw"), totalBullets + 1 + bulletNum),
 		-- Pitch
-		util.SharedRandom(sharedRandomSeed, -aimcone * 45 * self:GetStat("Primary.SpreadBiasPitch"), aimcone * 45 * self:GetStat("Primary.SpreadBiasPitch"), bulletNum)
+		util.SharedRandom(sharedRandomSeed, -aimcone * 45 * self:GetStatL("Primary.SpreadBiasPitch"), aimcone * 45 * self:GetStatL("Primary.SpreadBiasPitch"), bulletNum)
 end
 
 function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet, bulletoverride)
@@ -145,11 +145,11 @@ function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet,
 	num_bullets = num_bullets or 1
 	aimcone = aimcone or 0
 
-	if self:GetStat("Primary.Projectile") then
+	if self:GetStatL("Primary.Projectile") then
 		if CLIENT then return end
 
 		for _ = 1, num_bullets do
-			local ent = ents.Create(self:GetStat("Primary.Projectile"))
+			local ent = ents.Create(self:GetStatL("Primary.Projectile"))
 
 			local ang = self:GetOwner():GetAimVector():Angle()
 
@@ -164,11 +164,11 @@ function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet,
 			ent:SetPos(self:GetOwner():GetShootPos())
 			ent:SetOwner(self:GetOwner())
 			ent:SetAngles(ang)
-			ent.damage = self:GetStat("Primary.Damage")
-			ent.mydamage = self:GetStat("Primary.Damage")
+			ent.damage = self:GetStatL("Primary.Damage")
+			ent.mydamage = self:GetStatL("Primary.Damage")
 
-			if self:GetStat("Primary.ProjectileModel") then
-				ent:SetModel(self:GetStat("Primary.ProjectileModel"))
+			if self:GetStatL("Primary.ProjectileModel") then
+				ent:SetModel(self:GetStatL("Primary.ProjectileModel"))
 			end
 
 			self:PreSpawnProjectile(ent)
@@ -176,7 +176,7 @@ function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet,
 			ent:Spawn()
 
 			local dir = ang:Forward()
-			dir:Mul(self:GetStat("Primary.ProjectileVelocity"))
+			dir:Mul(self:GetStatL("Primary.ProjectileVelocity"))
 
 			ent:SetVelocity(dir)
 			local phys = ent:GetPhysicsObject()
@@ -186,7 +186,7 @@ function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet,
 			end
 
 			if self.ProjectileModel then
-				ent:SetModel(self:GetStat("Primary.ProjectileModel"))
+				ent:SetModel(self:GetStatL("Primary.ProjectileModel"))
 			end
 
 			ent:SetOwner(self:GetOwner())
@@ -213,13 +213,13 @@ function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet,
 
 	self.MainBullet.PCFTracer = nil
 
-	if self:GetStat("TracerName") and self:GetStat("TracerName") ~= "" then
-		if self:GetStat("TracerPCF") then
+	if self:GetStatL("TracerName") and self:GetStatL("TracerName") ~= "" then
+		if self:GetStatL("TracerPCF") then
 			TracerName = nil
-			self.MainBullet.PCFTracer = self:GetStat("TracerName")
+			self.MainBullet.PCFTracer = self:GetStatL("TracerName")
 			self.MainBullet.Tracer = 0
 		else
-			TracerName = self:GetStat("TracerName")
+			TracerName = self:GetStatL("TracerName")
 		end
 	end
 
@@ -230,7 +230,7 @@ function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet,
 	self.MainBullet.Src = owner:GetShootPos()
 
 	self.MainBullet.Dir = self:GetAimVector()
-	self.MainBullet.HullSize = self:GetStat("Primary.HullSize") or 0
+	self.MainBullet.HullSize = self:GetStatL("Primary.HullSize") or 0
 	self.MainBullet.Spread.x = 0
 	self.MainBullet.Spread.y = 0
 
@@ -253,12 +253,12 @@ function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet,
 	if self.TracerPCF then
 		self.MainBullet.Tracer = 0
 	else
-		self.MainBullet.Tracer = self:GetStat("TracerCount") or 3
+		self.MainBullet.Tracer = self:GetStatL("TracerCount") or 3
 	end
 
 	self.MainBullet.TracerName = TracerName
 	self.MainBullet.PenetrationCount = 0
-	self.MainBullet.PenetrationPower = self:GetStat("Primary.PenetrationPower") * sv_tfa_bullet_penetration_power_mul:GetFloat(1)
+	self.MainBullet.PenetrationPower = self:GetStatL("Primary.PenetrationPower") * sv_tfa_bullet_penetration_power_mul:GetFloat(1)
 	self.MainBullet.InitialPenetrationPower = self.MainBullet.PenetrationPower
 	self.MainBullet.AmmoType = self:GetPrimaryAmmoType()
 	self.MainBullet.Force = damage / 10 * self:GetAmmoForceMultiplier()
@@ -385,13 +385,13 @@ function SWEP:Recoil(recoil, ifp)
 	local owner = self:GetOwner()
 	local isplayer = owner:IsPlayer()
 
-	self:SetSpreadRatio(l_mathClamp(self:GetSpreadRatio() + self:GetStat("Primary.SpreadIncrement"), 1, self:GetStat("Primary.SpreadMultiplierMax")))
-	self:QueueRecoil(-owner:GetAimVector() * self:GetStat("Primary.Knockback") * cv_forcemult:GetFloat() * recoil / 5)
+	self:SetSpreadRatio(l_mathClamp(self:GetSpreadRatio() + self:GetStatL("Primary.SpreadIncrement"), 1, self:GetStatL("Primary.SpreadMultiplierMax")))
+	self:QueueRecoil(-owner:GetAimVector() * self:GetStatL("Primary.Knockback") * cv_forcemult:GetFloat() * recoil / 5)
 
 	local seed = self:GetSeed() + 1
 
-	local kickP = util.SharedRandom("TFA_KickDown", self:GetStat("Primary.KickDown"), self:GetStat("Primary.KickUp"), seed) * recoil * -1
-	local kickY = util.SharedRandom("TFA_KickHorizontal", -self:GetStat("Primary.KickHorizontal"), self:GetStat("Primary.KickHorizontal"), seed) * recoil
+	local kickP = util.SharedRandom("TFA_KickDown", self:GetStatL("Primary.KickDown"), self:GetStatL("Primary.KickUp"), seed) * recoil * -1
+	local kickY = util.SharedRandom("TFA_KickHorizontal", -self:GetStatL("Primary.KickHorizontal"), self:GetStatL("Primary.KickHorizontal"), seed) * recoil
 
 	if isplayer then
 		kickP, kickY = kickP * sv_tfa_recoil_mul_p:GetFloat(), kickY * sv_tfa_recoil_mul_y:GetFloat()
@@ -399,13 +399,13 @@ function SWEP:Recoil(recoil, ifp)
 		kickP, kickY = kickP * sv_tfa_recoil_mul_p_npc:GetFloat(), kickY * sv_tfa_recoil_mul_y_npc:GetFloat()
 	end
 
-	local factor = 1 - self:GetStat("Primary.StaticRecoilFactor")
+	local factor = 1 - self:GetStatL("Primary.StaticRecoilFactor")
 
 	if self:GetIronSights() then
-		factor = factor * Lerp(self:GetIronSightsProgress(), 1, self:GetStat("Primary.IronRecoilMultiplier", 0.5))
+		factor = factor * Lerp(self:GetIronSightsProgress(), 1, self:GetStatL("Primary.IronRecoilMultiplier", 0.5))
 	end
 
-	factor = factor * Lerp(self:GetCrouchingRatio(), 1, self:GetStat("CrouchAccuracyMultiplier", 0.5))
+	factor = factor * Lerp(self:GetCrouchingRatio(), 1, self:GetStatL("CrouchAccuracyMultiplier", 0.5))
 
 	local punchY = kickY * factor
 	local deltaP = 0
@@ -427,9 +427,9 @@ function SWEP:Recoil(recoil, ifp)
 
 	if isplayer then
 		local maxdist = math.min(math.max(0, 89 + owner:EyeAngles().p - math.abs(owner:GetViewPunchAngles().p * 2)), 88.5)
-		local punchP = l_mathClamp((kickP + deltaP * self:GetStat("Primary.RecoilLUT_ViewPunchMult")) * factor, -maxdist, maxdist)
+		local punchP = l_mathClamp((kickP + deltaP * self:GetStatL("Primary.RecoilLUT_ViewPunchMult")) * factor, -maxdist, maxdist)
 
-		owner:ViewPunch(Angle(punchP * sv_tfa_recoil_viewpunch_mul:GetFloat(), (punchY + deltaY * self:GetStat("Primary.RecoilLUT_ViewPunchMult")) * sv_tfa_recoil_viewpunch_mul:GetFloat()))
+		owner:ViewPunch(Angle(punchP * sv_tfa_recoil_viewpunch_mul:GetFloat(), (punchY + deltaY * self:GetStatL("Primary.RecoilLUT_ViewPunchMult")) * sv_tfa_recoil_viewpunch_mul:GetFloat()))
 	end
 
 	if (not isplayer or not sv_tfa_recoil_legacy:GetBool()) and not self:HasRecoilLUT() then
@@ -444,8 +444,8 @@ function SWEP:Recoil(recoil, ifp)
 	if isplayer and ((game.SinglePlayer() and SERVER) or (CLIENT and ifp)) then
 		local neweyeang = owner:EyeAngles()
 
-		local ap, ay = (kickP + deltaP * self:GetStat("Primary.RecoilLUT_AnglePunchMult")) * self:GetStat("Primary.StaticRecoilFactor") * sv_tfa_recoil_eyeangles_mul:GetFloat(),
-						(kickY + deltaY * self:GetStat("Primary.RecoilLUT_AnglePunchMult")) * self:GetStat("Primary.StaticRecoilFactor") * sv_tfa_recoil_eyeangles_mul:GetFloat()
+		local ap, ay = (kickP + deltaP * self:GetStatL("Primary.RecoilLUT_AnglePunchMult")) * self:GetStatL("Primary.StaticRecoilFactor") * sv_tfa_recoil_eyeangles_mul:GetFloat(),
+						(kickY + deltaY * self:GetStatL("Primary.RecoilLUT_AnglePunchMult")) * self:GetStatL("Primary.StaticRecoilFactor") * sv_tfa_recoil_eyeangles_mul:GetFloat()
 
 		neweyeang.p = neweyeang.p + ap
 		neweyeang.y = neweyeang.y + ay
@@ -463,7 +463,7 @@ Purpose:  Utility
 ]]
 --
 function SWEP:GetAmmoRicochetMultiplier()
-	local am = string.lower(self:GetStat("Primary.Ammo"))
+	local am = string.lower(self:GetStatL("Primary.Ammo"))
 
 	if (am == "pistol") then
 		return 1.25
@@ -504,7 +504,7 @@ function SWEP:GetAmmoForceMultiplier()
 	--Slam = Medium Shotgun Round
 	--AirboatGun = Heavy, Penetrating Shotgun Round
 	--SniperPenetratedRound = Heavy Large Rifle Caliber ~= .50 Cal blow-yer-head-off
-	local am = string.lower(self:GetStat("Primary.Ammo"))
+	local am = string.lower(self:GetStatL("Primary.Ammo"))
 
 	if (am == "pistol") then
 		return 0.4
@@ -555,7 +555,7 @@ local fac
 function SWEP:GetPenetrationMultiplier(mat)
 	fac = self.Primary.PenetrationMaterials[mat or MAT_DEFAULT] or self.Primary.PenetrationMaterials[MAT_DEFAULT]
 
-	return fac * (self:GetStat("Primary.PenetrationMultiplier") and self:GetStat("Primary.PenetrationMultiplier") or 1)
+	return fac * (self:GetStatL("Primary.PenetrationMultiplier") and self:GetStatL("Primary.PenetrationMultiplier") or 1)
 end
 
 local decalbul = {
@@ -674,7 +674,7 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon, penetrated, p
 
 	self:HandleDoor(ply, traceres, dmginfo, weapon)
 
-	atype = weapon:GetStat("Primary.DamageType")
+	atype = weapon:GetStatL("Primary.DamageType")
 	dmginfo:SetDamageType(atype)
 
 	if SERVER and IsValid(ply) and ply:IsPlayer() and IsValid(hitent) and (hitent:IsPlayer() or hitent:IsNPC() or type(hitent) == "NextBot") then
@@ -714,7 +714,7 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon, penetrated, p
 		if dmginfo:IsDamageType(DMG_BLAST) and weapon.Primary.DamageTypeHandled and traceres.Hit and not traceres.HitSky then
 			local tmpdmg = dmginfo:GetDamage()
 			dmginfo:SetDamageForce(dmginfo:GetDamageForce() / 2)
-			util.BlastDamageInfo(dmginfo, traceres.HitPos, weapon:GetStat("Primary.BlastRadius") or (tmpdmg / 2)  )
+			util.BlastDamageInfo(dmginfo, traceres.HitPos, weapon:GetStatL("Primary.BlastRadius") or (tmpdmg / 2)  )
 			--util.BlastDamage(weapon, weapon:GetOwner(), traceres.HitPos, tmpdmg / 2, tmpdmg)
 			local fx = EffectData()
 			fx:SetOrigin(traceres.HitPos)
@@ -744,7 +744,7 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon, penetrated, p
 	end
 
 	if penetration_cvar and not penetration_cvar:GetBool() then return end
-	if self.PenetrationCount > math.min(penetration_max_cvar:GetInt(100), weapon:GetStat("Primary.MaxSurfacePenetrationCount", math.huge)) then return end
+	if self.PenetrationCount > math.min(penetration_max_cvar:GetInt(100), weapon:GetStatL("Primary.MaxSurfacePenetrationCount", math.huge)) then return end
 	-- source engine quirk - if bullet is fired too close to brush surface
 	-- it is assumed to be fired right in front of it, rather than exact
 	-- position you specified.
@@ -1002,7 +1002,7 @@ local RicochetChanceEnum = {
 
 function SWEP.MainBullet:Ricochet(ply, traceres, dmginfo, weapon)
 	if ricochet_cvar and not ricochet_cvar:GetBool() then return end
-	maxpen = math.min(penetration_max_cvar and penetration_max_cvar:GetInt() - 1 or 1, weapon:GetStat("Primary.MaxSurfacePenetrationCount", math.huge))
+	maxpen = math.min(penetration_max_cvar and penetration_max_cvar:GetInt() - 1 or 1, weapon:GetStatL("Primary.MaxSurfacePenetrationCount", math.huge))
 	if self.PenetrationCount > maxpen then return end
 	local ricochetchance = RicochetChanceEnum[traceres.MatType] or RicochetChanceEnum[MAT_DEFAULT]
 	local dir = traceres.HitPos - traceres.StartPos
