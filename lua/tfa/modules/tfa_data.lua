@@ -309,8 +309,6 @@ function TFA.RemapStatPath(path, path_version, structure_version)
 	local get_cache = StatPathRemapCache[cache_path]
 	if get_cache ~= nil then return get_cache end
 
-	get_cache = string_Explode(".", path, false)
-
 	if cache_path ~= path then
 		-- downgrade
 		if path_version > structure_version then
