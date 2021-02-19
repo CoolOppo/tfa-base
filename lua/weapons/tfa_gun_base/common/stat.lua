@@ -282,17 +282,17 @@ function SWEP:GetStatVersioned(stat, path_version, default, dontMergeTables)
 	local self2 = self:GetTable()
 	local statPath, currentVersionStat = self2.GetStatPath(self, stat, path_version)
 
-	if self2.StatCache2[stat] ~= nil then
+	if self2.StatCache2[currentVersionStat] ~= nil then
 		local finalReturn
 
-		if self2.StatCache[stat] ~= nil then
-			finalReturn = self2.StatCache[stat]
+		if self2.StatCache[currentVersionStat] ~= nil then
+			finalReturn = self2.StatCache[currentVersionStat]
 		else
 			local isDefault, retval = self2.GetStatRecursive(self, self2, statPath)
 
 			if retval ~= nil then
 				if not isDefault then
-					self2.StatCache[stat] = retval
+					self2.StatCache[currentVersionStat] = retval
 				end
 
 				finalReturn = retval
@@ -335,10 +335,10 @@ function SWEP:GetStatVersioned(stat, path_version, default, dontMergeTables)
 
 	if shouldCache then
 		if not isDefault or not isDefaultAtt then
-			self2.StatCache[stat] = statSelf
+			self2.StatCache[currentVersionStat] = statSelf
 		end
 
-		self2.StatCache2[stat] = true
+		self2.StatCache2[currentVersionStat] = true
 	end
 
 	local getstat = hook.Run("TFA_GetStat", self, currentVersionStat, statSelf)
