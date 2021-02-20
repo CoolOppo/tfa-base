@@ -280,7 +280,7 @@ end
 
 function SWEP:GetStatVersioned(stat, path_version, default, dontMergeTables)
 	local self2 = self:GetTable()
-	local statPath, currentVersionStat = self2.GetStatPath(self, stat, path_version)
+	local statPath, currentVersionStat, translate = self2.GetStatPath(self, stat, path_version)
 
 	if self2.StatCache2[currentVersionStat] ~= nil then
 		local finalReturn
@@ -302,9 +302,9 @@ function SWEP:GetStatVersioned(stat, path_version, default, dontMergeTables)
 		end
 
 		local getstat = hook.Run("TFA_GetStat", self, currentVersionStat, finalReturn)
-		if getstat ~= nil then return getstat end
+		if getstat ~= nil then return translate(getstat) end
 
-		return finalReturn
+		return translate(finalReturn)
 	end
 
 	if not self2.OwnerIsValid(self) then
@@ -316,8 +316,9 @@ function SWEP:GetStatVersioned(stat, path_version, default, dontMergeTables)
 		end
 
 		local getstat = hook.Run("TFA_GetStat", self, currentVersionStat, finalReturn)
-		if getstat ~= nil then return getstat end
-		return finalReturn
+		if getstat ~= nil then return translate(getstat) end
+
+		return translate(finalReturn)
 	end
 
 	local isDefault, statSelf = self2.GetStatRecursive(self, self2, statPath, istable(default) and tableCopy(default) or default)
@@ -342,7 +343,7 @@ function SWEP:GetStatVersioned(stat, path_version, default, dontMergeTables)
 	end
 
 	local getstat = hook.Run("TFA_GetStat", self, currentVersionStat, statSelf)
-	if getstat ~= nil then return getstat end
+	if getstat ~= nil then return translate(getstat) end
 
-	return statSelf
+	return translate(statSelf)
 end

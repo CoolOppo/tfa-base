@@ -89,7 +89,7 @@ TFA.DataVersionMapping = {
 		{
 			old_path = "data.ironsights",
 			new_path = "Secondary.IronSightsEnabled",
-			upgrade = function(value) return tobool(value) end,
+			upgrade = function(value) return value == 1 end,
 			downgrade = function(value) return value and 1 or 0 end,
 		},
 
@@ -240,14 +240,12 @@ TFA.DataVersionMapping = {
 	}
 }
 
-do
-	local function identity(...) return ... end
+local function identity(...) return ... end
 
-	for version = 0, #TFA.DataVersionMapping do
-		for i, data in ipairs(TFA.DataVersionMapping[version]) do
-			if not isfunction(data.upgrade) then data.upgrade = identity end
-			if not isfunction(data.downgrade) then data.downgrade = identity end
-		end
+for version = 0, #TFA.DataVersionMapping do
+	for i, data in ipairs(TFA.DataVersionMapping[version]) do
+		if not isfunction(data.upgrade) then data.upgrade = identity end
+		if not isfunction(data.downgrade) then data.downgrade = identity end
 	end
 end
 
@@ -274,9 +272,9 @@ local string_format = string.format
 local function doDowngrade(path, migrations)
 	for i, data in ipairs(migrations) do
 		if data.new_path == path then
-			return data.old_path
+			return data.old_path, data.upgrade
 		elseif path:StartWith(data.new_path) and path[#data.new_path + 1] == '.' then
-			return data.old_path .. path:sub(#data.new_path + 1)
+			return data.old_path .. path:sub(#data.new_path + 1), data.upgrade
 		end
 	end
 
@@ -286,9 +284,9 @@ end
 local function doUpgrade(path, migrations)
 	for i, data in ipairs(migrations) do
 		if data.old_path == path then
-			return data.new_path
+			return data.new_path, data.downgrade
 		elseif path:StartWith(data.old_path) and path[#data.old_path + 1] == '.' then
-			return data.new_path .. path:sub(#data.old_path + 1)
+			return data.new_path .. path:sub(#data.old_path + 1), data.downgrade
 		end
 	end
 
@@ -310,7 +308,7 @@ function TFA.RemapStatPath(path, path_version, structure_version)
 	if get_cache ~= nil then return get_cache end
 
 	if cache_path ~= path then
-		-- downgrade
+		-- downgrade path
 		if path_version > structure_version then
 			for version = path_version, structure_version, -1 do
 				local mapping = TFA.DataVersionMapping[version]
@@ -319,7 +317,7 @@ function TFA.RemapStatPath(path, path_version, structure_version)
 					path = doDowngrade(path, mapping)
 				end
 			end
-		else -- upgrade
+		else -- upgrade path
 			for version = path_version, structure_version do
 				local mapping = TFA.DataVersionMapping[version]
 
@@ -346,7 +344,9 @@ function TFA.GetStatPath(path, path_version, structure_version)
 	end
 
 	local get_cache = PathParseCache[cache_path]
-	if get_cache ~= nil then return get_cache[1], get_cache[2] end
+	if get_cache ~= nil then return get_cache[1], get_cache[2], get_cache[3] end
+
+	local fn, fnGet
 
 	if cache_path ~= path then
 		-- downgrade
@@ -355,7 +355,16 @@ function TFA.GetStatPath(path, path_version, structure_version)
 				local mapping = TFA.DataVersionMapping[version]
 
 				if istable(mapping) then
-					path = doDowngrade(path, mapping)
+					path, fnGet = doDowngrade(path, mapping)
+
+					if fnGet and fnGet ~= identity then
+						if not fn then
+							fn = fnGet
+						else
+							local _fn = fn
+							function fn(...) return fnGet(_fn(...)) end
+						end
+					end
 				end
 			end
 		else -- upgrade
@@ -363,7 +372,17 @@ function TFA.GetStatPath(path, path_version, structure_version)
 				local mapping = TFA.DataVersionMapping[version]
 
 				if istable(mapping) then
-					path = doUpgrade(path, mapping)
+					path, fnGet = doUpgrade(path, mapping)
+					print(path, fnGet)
+
+					if fnGet and fnGet ~= identity then
+						if not fn then
+							fn = fnGet
+						else
+							local _fn = fn
+							function fn(...) return fnGet(_fn(...)) end
+						end
+					end
 				end
 			end
 		end
@@ -381,8 +400,8 @@ function TFA.GetStatPath(path, path_version, structure_version)
 		get_cache[k] = tonumber(v) or v
 	end
 
-	PathParseCache[cache_path] = {get_cache, path}
-	return get_cache, path
+	PathParseCache[cache_path] = {get_cache, path, fn or identity}
+	return get_cache, path, fn or identity
 end
 
 function TFA.GetStatPathRaw(path)
