@@ -408,8 +408,8 @@ function SWEP:CalculateViewModelOffset(delta)
 	target_pos, target_ang = self:CalculateNearWall(target_pos, target_ang)
 
 	if additivePos then
-		target_pos:Add(self2.ViewModelPosition)
-		target_ang:Add(self2.ViewModelAngle)
+		target_pos:Add(self2.GetStatL(self, "ViewModelPosition"))
+		target_ang:Add(self2.GetStatL(self, "ViewModelAngle"))
 	end
 
 	target_ang.z = target_ang.z + -7.5 * (1 - math.abs(0.5 - ironSightsProgress) * 2) * (self:GetIronSights() and 1 or 0.5) * (self2.ViewModelFlip and 1 or -1) * (self2.VM_IronPositionScore or 1)
