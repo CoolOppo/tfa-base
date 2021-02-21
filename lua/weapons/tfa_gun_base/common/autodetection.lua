@@ -22,42 +22,42 @@
 function SWEP:FixSprintAnimBob()
 	local self2 = self:GetTable()
 
-	if self2.Sprint_Mode == TFA.Enum.LOCOMOTION_ANI then
-		self2.SprintBobMult = 0
+	if self:GetStatRawL("Sprint_Mode") == TFA.Enum.LOCOMOTION_ANI then
+		self:SetStatRawL("SprintBobMult", 0)
 	end
 end
 
 function SWEP:FixWalkAnimBob()
 	local self2 = self:GetTable()
-	if self2.Walk_Mode == TFA.Enum.LOCOMOTION_ANI then
-		self2.WalkBobMult_Iron = self2.WalkBobMult
-		self2.WalkBobMult = 0
+	if self:GetStatRawL("Walk_Mode") == TFA.Enum.LOCOMOTION_ANI then
+		self:SetStatRawL("WalkBobMult_Iron", self:GetStatRawL("WalkBobMult"))
+		self:SetStatRawL("WalkBobMult", 0)
 	end
 end
 
 function SWEP:PatchAmmoTypeAccessors()
 	local self2 = self:GetTable()
-	self2.GetPrimaryAmmoTypeOld = self2.GetPrimaryAmmoTypeOld or self2.GetPrimaryAmmoType
-	self2.GetPrimaryAmmoType = function(myself, ...) return myself.GetPrimaryAmmoTypeC(myself, ...) end
-	self2.GetSecondaryAmmoTypeOld = self2.GetSecondaryAmmoTypeOld or self2.GetSecondaryAmmoType
-	self2.GetSecondaryAmmoType = function(myself, ...) return myself.GetSecondaryAmmoTypeC(myself, ...) end
+	self:SetStatRawL("GetPrimaryAmmoTypeOld", self:GetStatRawL("GetPrimaryAmmoTypeOld") or self:GetStatRawL("GetPrimaryAmmoType"))
+	self:SetStatRawL("GetPrimaryAmmoType", function(myself, ...) return myself.GetPrimaryAmmoTypeC(myself, ...) end)
+	self:SetStatRawL("GetSecondaryAmmoTypeOld", self:GetStatRawL("GetSecondaryAmmoTypeOld") or self:GetStatRawL("GetSecondaryAmmoType"))
+	self:SetStatRawL("GetSecondaryAmmoType", function(myself, ...) return myself.GetSecondaryAmmoTypeC(myself, ...) end)
 end
 
 function SWEP:FixProjectile()
 	local self2 = self:GetTable()
-	if self2.ProjectileEntity and self2.ProjectileEntity ~= "" then
-		self2.Primary_TFA.Projectile = self2.ProjectileEntity
-		self2.ProjectileEntity = nil
+	if self:GetStatRawL("ProjectileEntity") and self:GetStatRawL("ProjectileEntity") ~= "" then
+		self:SetStatRawL("Primary.Projectile", self:GetStatRawL("ProjectileEntity"))
+		self:SetStatRawL("ProjectileEntity", nil)
 	end
 
-	if self2.ProjectileModel and self2.ProjectileModel ~= "" then
-		self2.Primary_TFA.ProjectileModel = self2.ProjectileModel
-		self2.ProjectileModel = nil
+	if self:GetStatRawL("ProjectileModel") and self:GetStatRawL("ProjectileModel") ~= "" then
+		self:SetStatRawL("Primary.ProjectileModel", self:GetStatRawL("ProjectileModel"))
+		self:SetStatRawL("ProjectileModel", nil)
 	end
 
-	if self2.ProjectileVelocity and self2.ProjectileVelocity ~= "" then
-		self2.Primary_TFA.ProjectileVelocity = self2.ProjectileVelocity
-		self2.ProjectileVelocity = nil
+	if self:GetStatRawL("ProjectileVelocity") and self:GetStatRawL("ProjectileVelocity") ~= "" then
+		self:SetStatRawL("Primary.ProjectileVelocity", self:GetStatRawL("ProjectileVelocity"))
+		self:SetStatRawL("ProjectileVelocity", nil)
 	end
 end
 
@@ -66,44 +66,44 @@ local sv_tfa_range_modifier = GetConVar("sv_tfa_range_modifier")
 function SWEP:AutoDetectRange()
 	local self2 = self:GetTable()
 
-	if self2.Primary_TFA.FalloffMetricBased and not self2.Primary_TFA.RangeFalloffLUT then
-		self2.Primary_TFA.RangeFalloffLUT_IsConverted = true
+	if self:GetStatRawL("Primary.FalloffMetricBased") and not self:GetStatRawL("Primary.RangeFalloffLUT") then
+		self:SetStatRawL("Primary.RangeFalloffLUT_IsConverted", true)
 
-		self2.Primary_TFA.RangeFalloffLUT = {
+		self:SetStatRawL("Primary.RangeFalloffLUT", {
 			bezier = false,
 			range_func = "linear", -- function to spline range
 			units = "meters",
 			lut = {
-				{range = self2.Primary_TFA.MinRangeStartFalloff, damage = 1},
-				{range = self2.Primary_TFA.MinRangeStartFalloff + self2.Primary_TFA.MaxFalloff / self2.Primary_TFA.FalloffByMeter,
-					damage = (self2.Primary_TFA.Damage - self2.Primary_TFA.MaxFalloff) / self2.Primary_TFA.Damage},
+				{range = self:GetStatRawL("Primary.MinRangeStartFalloff"), damage = 1},
+				{range = self:GetStatRawL("Primary.MinRangeStartFalloff") + self:GetStatRawL("Primary.MaxFalloff") / self:GetStatRawL("Primary.FalloffByMeter"),
+					damage = (self:GetStatRawL("Primary.Damage") - self:GetStatRawL("Primary.MaxFalloff")) / self:GetStatRawL("Primary.Damage")},
 			}
-		}
+		})
 
 		return
 	end
 
-	if self2.Primary_TFA.FalloffMetricBased or self2.Primary_TFA.RangeFalloffLUT then return end
+	if self:GetStatRawL("Primary.FalloffMetricBased") or self:GetStatRawL("Primary.RangeFalloffLUT") then return end
 
-	if self2.Primary_TFA.Range <= 0 then
-		self2.Primary_TFA.Range = math.sqrt(self2.Primary_TFA.Damage / 32) * self:MetersToUnits(350) * self:AmmoRangeMultiplier()
+	if self:GetStatRawL("Primary.Range") <= 0 then
+		self:SetStatRawL("Primary.Range", math.sqrt(self:GetStatRawL("Primary.Damage") / 32) * self:MetersToUnits(350) * self:AmmoRangeMultiplier())
 	end
 
-	if self2.Primary_TFA.RangeFalloff <= 0 then
-		self2.Primary_TFA.RangeFalloff = 0.5
+	if self:GetStatRawL("Primary.RangeFalloff") <= 0 then
+		self:SetStatRawL("Primary.RangeFalloff", 0.5)
 	end
 
-	self2.Primary_TFA.RangeFalloffLUT_IsConverted = true
+	self:SetStatRawL("Primary.RangeFalloffLUT_IsConverted", true)
 
-	self2.Primary_TFA.RangeFalloffLUT = {
+	self:SetStatRawL("Primary.RangeFalloffLUT", {
 		bezier = false,
 		range_func = "linear", -- function to spline range
 		units = "hammer",
 		lut = {
-			{range = self2.Primary_TFA.Range * self2.Primary_TFA.RangeFalloff, damage = 1},
-			{range = self2.Primary_TFA.Range, damage = 1 - sv_tfa_range_modifier:GetFloat()},
+			{range = self:GetStatRawL("Primary.Range") * self:GetStatRawL("Primary.RangeFalloff"), damage = 1},
+			{range = self:GetStatRawL("Primary.Range"), damage = 1 - sv_tfa_range_modifier:GetFloat()},
 		}
-	}
+	})
 end
 
 function SWEP:FixProceduralReload()
@@ -112,39 +112,39 @@ end
 
 function SWEP:FixRPM()
 	local self2 = self:GetTable()
-	if not self2.Primary_TFA.RPM then
-		if self2.Primary_TFA.Delay then
-			self2.Primary_TFA.RPM = 60 / self2.Primary_TFA.Delay
+	if not self:GetStatRawL("Primary.RPM") then
+		if self:GetStatRawL("Primary.Delay") then
+			self:SetStatRawL("Primary.RPM", 60 / self:GetStatRawL("Primary.Delay"))
 		else
-			self2.Primary_TFA.RPM = 120
+			self:SetStatRawL("Primary.RPM", 120)
 		end
 	end
 end
 
 function SWEP:FixCone()
 	local self2 = self:GetTable()
-	if self2.Primary_TFA.Cone then
-		if (not self2.Primary_TFA.Spread) or self2.Primary_TFA.Spread < 0 then
-			self2.Primary_TFA.Spread = self2.Primary_TFA.Cone
+	if self:GetStatRawL("Primary.Cone") then
+		if (not self:GetStatRawL("Primary.Spread")) or self:GetStatRawL("Primary.Spread") < 0 then
+			self:SetStatRawL("Primary.Spread", self:GetStatRawL("Primary.Cone"))
 		end
 
-		self2.Primary_TFA.Cone = nil
+		self:SetStatRawL("Primary.Cone", nil)
 	end
 end
 
 --legacy compatibility
 function SWEP:FixIdles()
 	local self2 = self:GetTable()
-	if self2.DisableIdleAnimations ~= nil and self2.DisableIdleAnimations == true then
-		self2.Idle_Mode = TFA.Enum.IDLE_LUA
+	if self:GetStatRawL("DisableIdleAnimations") ~= nil and self:GetStatRawL("DisableIdleAnimations") == true then
+		self:SetStatRawL("Idle_Mode", TFA.Enum.IDLE_LUA)
 	end
 end
 
 function SWEP:FixIS()
 	local self2 = self:GetTable()
-	if self2.SightsPos and (not self2.IronSightsPosition or (self2.IronSightsPosition.x ~= self2.SightsPos.x and self2.SightsPos.x ~= 0)) then
-		self2.IronSightsPosition = self2.SightsPos or Vector()
-		self2.IronSightsAngle = self2.SightsAng or Vector()
+	if self:GetStatRawL("SightsPos") and (not self:GetStatRawL("IronSightsPosition") or (self:GetStatRawL("IronSightsPosition.x") ~= self:GetStatRawL("SightsPos.x") and self:GetStatRawL("SightsPos.x") ~= 0)) then
+		self:SetStatRawL("IronSightsPosition", Vector())
+		self:SetStatRawL("IronSightsAngle", Vector())
 	end
 end
 
@@ -158,16 +158,16 @@ function SWEP:AutoDetectSpread()
 		return
 	end
 
-	if self2.Primary_TFA.SpreadMultiplierMax == -1 or not self2.Primary_TFA.SpreadMultiplierMax then
-		self2.Primary_TFA.SpreadMultiplierMax = math.Clamp(math.sqrt(math.sqrt(self2.Primary_TFA.Damage / 35) * 10 / 5) * 5, 0.01 / self2.Primary_TFA.Spread, 0.1 / self2.Primary_TFA.Spread)
+	if self:GetStatRawL("Primary.SpreadMultiplierMax") == -1 or not self:GetStatRawL("Primary.SpreadMultiplierMax") then
+		self:SetStatRawL("Primary.SpreadMultiplierMax", math.Clamp(math.sqrt(math.sqrt(self:GetStatRawL("Primary.Damage") / 35) * 10 / 5) * 5, 0.01 / self:GetStatRawL("Primary.Spread"), 0.1 / self:GetStatRawL("Primary.Spread")))
 	end
 
-	if self2.Primary_TFA.SpreadIncrement == -1 or not self2.Primary_TFA.SpreadIncrement then
-		self2.Primary_TFA.SpreadIncrement = self2.Primary_TFA.SpreadMultiplierMax * 60 / self2.Primary_TFA.RPM * 0.85 * 1.5
+	if self:GetStatRawL("Primary.SpreadIncrement") == -1 or not self:GetStatRawL("Primary.SpreadIncrement") then
+		self:SetStatRawL("Primary.SpreadIncrement", self:GetStatRawL("Primary.SpreadMultiplierMax") * 60 / self:GetStatRawL("Primary.RPM") * 0.85 * 1.5)
 	end
 
-	if self2.Primary_TFA.SpreadRecovery == -1 or not self2.Primary_TFA.SpreadRecovery then
-		self2.Primary_TFA.SpreadRecovery = math.max(self2.Primary_TFA.SpreadMultiplierMax * math.pow(self2.Primary_TFA.RPM / 600, 1 / 3) * 0.75, self2.Primary_TFA.SpreadMultiplierMax / 1.5)
+	if self:GetStatRawL("Primary.SpreadRecovery") == -1 or not self:GetStatRawL("Primary.SpreadRecovery") then
+		self:SetStatRawL("Primary.SpreadRecovery", math.max(self:GetStatRawL("Primary.SpreadMultiplierMax") * math.pow(self:GetStatRawL("Primary.RPM") / 600, 1 / 3) * 0.75, self:GetStatRawL("Primary.SpreadMultiplierMax") / 1.5))
 	end
 end
 
@@ -181,26 +181,26 @@ Purpose:  Autodetection
 --
 function SWEP:AutoDetectMuzzle()
 	local self2 = self:GetTable()
-	if not self2.MuzzleFlashEffect then
-		local a = string.lower(self2.Primary_TFA.Ammo)
-		local cat = string.lower(self2.Category and self2.Category or "")
+	if not self:GetStatRawL("MuzzleFlashEffect") then
+		local a = string.lower(self:GetStatRawL("Primary.Ammo"))
+		local cat = string.lower(self:GetStatRawL("Category") and self:GetStatRawL("Category") or "")
 
-		if self2.Silenced or self:GetSilenced() then
-			self2.MuzzleFlashEffect = "tfa_muzzleflash_silenced"
-		elseif string.find(a, "357") or self2.Revolver or string.find(cat, "revolver") then
-			self2.MuzzleFlashEffect = "tfa_muzzleflash_revolver"
+		if self:GetStatRawL("Silenced") or self:GetSilenced() then
+			self:SetStatRawL("MuzzleFlashEffect", "tfa_muzzleflash_silenced")
+		elseif string.find(a, "357") or self:GetStatRawL("Revolver") or string.find(cat, "revolver") then
+			self:SetStatRawL("MuzzleFlashEffect", "tfa_muzzleflash_revolver")
 		elseif self:GetStatL("LoopedReload") or a == "buckshot" or a == "slam" or a == "airboatgun" or string.find(cat, "shotgun") then
-			self2.MuzzleFlashEffect = "tfa_muzzleflash_shotgun"
+			self:SetStatRawL("MuzzleFlashEffect", "tfa_muzzleflash_shotgun")
 		elseif string.find(a, "smg") or string.find(cat, "smg") or string.find(cat, "submachine") or string.find(cat, "sub-machine") then
-			self2.MuzzleFlashEffect = "tfa_muzzleflash_smg"
+			self:SetStatRawL("MuzzleFlashEffect", "tfa_muzzleflash_smg")
 		elseif string.find(a, "sniper") or string.find(cat, "sniper") then
-			self2.MuzzleFlashEffect = "tfa_muzzleflash_sniper"
+			self:SetStatRawL("MuzzleFlashEffect", "tfa_muzzleflash_sniper")
 		elseif string.find(a, "pistol") or string.find(cat, "pistol") then
-			self2.MuzzleFlashEffect = "tfa_muzzleflash_pistol"
+			self:SetStatRawL("MuzzleFlashEffect", "tfa_muzzleflash_pistol")
 		elseif string.find(a, "ar2") or string.find(a, "rifle") or (string.find(cat, "revolver") and not string.find(cat, "rifle")) then
-			self2.MuzzleFlashEffect = "tfa_muzzleflash_rifle"
+			self:SetStatRawL("MuzzleFlashEffect", "tfa_muzzleflash_rifle")
 		else
-			self2.MuzzleFlashEffect = "tfa_muzzleflash_generic"
+			self:SetStatRawL("MuzzleFlashEffect", "tfa_muzzleflash_generic")
 		end
 	end
 end
@@ -215,44 +215,44 @@ Purpose:  Autodetection
 --
 function SWEP:AutoDetectDamage()
 	local self2 = self:GetTable()
-	if self2.Primary_TFA.Damage and self2.Primary_TFA.Damage ~= -1 then return end
+	if self:GetStatRawL("Primary.Damage") and self:GetStatRawL("Primary.Damage") ~= -1 then return end
 
-	if self2.Primary_TFA.Round then
-		local rnd = string.lower(self2.Primary_TFA.Round)
+	if self:GetStatRawL("Primary.Round") then
+		local rnd = string.lower(self:GetStatRawL("Primary.Round"))
 
 		if string.find(rnd, ".50bmg") then
-			self2.Primary_TFA.Damage = 185
+			self:SetStatRawL("Primary.Damage", 185)
 		elseif string.find(rnd, "5.45x39") then
-			self2.Primary_TFA.Damage = 22
+			self:SetStatRawL("Primary.Damage", 22)
 		elseif string.find(rnd, "5.56x45") then
-			self2.Primary_TFA.Damage = 30
+			self:SetStatRawL("Primary.Damage", 30)
 		elseif string.find(rnd, "338_lapua") then
-			self2.Primary_TFA.Damage = 120
+			self:SetStatRawL("Primary.Damage", 120)
 		elseif string.find(rnd, "338") then
-			self2.Primary_TFA.Damage = 100
+			self:SetStatRawL("Primary.Damage", 100)
 		elseif string.find(rnd, "7.62x51") then
-			self2.Primary_TFA.Damage = 100
+			self:SetStatRawL("Primary.Damage", 100)
 		elseif string.find(rnd, "9x39") then
-			self2.Primary_TFA.Damage = 32
+			self:SetStatRawL("Primary.Damage", 32)
 		elseif string.find(rnd, "9mm") then
-			self2.Primary_TFA.Damage = 22
+			self:SetStatRawL("Primary.Damage", 22)
 		elseif string.find(rnd, "9x19") then
-			self2.Primary_TFA.Damage = 22
+			self:SetStatRawL("Primary.Damage", 22)
 		elseif string.find(rnd, "9x18") then
-			self2.Primary_TFA.Damage = 20
+			self:SetStatRawL("Primary.Damage", 20)
 		end
 
 		if string.find(rnd, "ap") then
-			self2.Primary_TFA.Damage = self2.Primary_TFA.Damage * 1.2
+			self:SetStatRawL("Primary.Damage", self:GetStatRawL("Primary.Damage") * 1.2)
 		end
 	end
 
-	if (not self2.Primary_TFA.Damage) or (self2.Primary_TFA.Damage <= 0.01) and self2.Velocity then
-		self2.Primary_TFA.Damage = self2.Velocity / 5
+	if (not self:GetStatRawL("Primary.Damage")) or (self:GetStatRawL("Primary.Damage") <= 0.01) and self:GetStatRawL("Velocity") then
+		self:SetStatRawL("Primary.Damage", self:GetStatRawL("Velocity") / 5)
 	end
 
-	if (not self2.Primary_TFA.Damage) or (self2.Primary_TFA.Damage <= 0.01) then
-		self2.Primary_TFA.Damage = (self2.Primary_TFA.KickUp + self2.Primary_TFA.KickUp + self2.Primary_TFA.KickUp) * 10
+	if (not self:GetStatRawL("Primary.Damage")) or (self:GetStatRawL("Primary.Damage") <= 0.01) then
+		self:SetStatRawL("Primary.Damage", (self:GetStatRawL("Primary.KickUp") + self:GetStatRawL("Primary.KickUp") + self:GetStatRawL("Primary.KickUp")) * 10)
 	end
 end
 
@@ -266,11 +266,11 @@ Purpose:  Autodetection
 --
 function SWEP:AutoDetectDamageType()
 	local self2 = self:GetTable()
-	if self2.Primary_TFA.DamageType == -1 or not self2.Primary_TFA.DamageType then
-		if self2.DamageType and not self2.Primary_TFA.DamageType then
-			self2.Primary_TFA.DamageType = self2.DamageType
+	if self:GetStatRawL("Primary.DamageType") == -1 or not self:GetStatRawL("Primary.DamageType") then
+		if self:GetStatRawL("DamageType") and not self:GetStatRawL("Primary.DamageType") then
+			self:SetStatRawL("Primary.DamageType", self:GetStatRawL("DamageType"))
 		else
-			self2.Primary_TFA.DamageType = DMG_BULLET
+			self:SetStatRawL("Primary.DamageType", DMG_BULLET)
 		end
 	end
 end
@@ -285,15 +285,15 @@ Purpose:  Autodetection
 --
 function SWEP:AutoDetectForce()
 	local self2 = self:GetTable()
-	if self2.Primary_TFA.Force == -1 or not self2.Primary_TFA.Force then
-		self2.Primary_TFA.Force = self2.Force or (math.sqrt(self2.Primary_TFA.Damage / 16) * 3 / math.sqrt(self2.Primary_TFA.NumShots))
+	if self:GetStatRawL("Primary.Force") == -1 or not self:GetStatRawL("Primary.Force") then
+		self:SetStatRawL("Primary.Force", self:GetStatRawL("Force") or (math.sqrt(self:GetStatRawL("Primary.Damage") / 16) * 3 / math.sqrt(self:GetStatRawL("Primary.NumShots"))))
 	end
 end
 
 function SWEP:AutoDetectPenetrationPower()
 	local self2 = self:GetTable()
 
-	if self2.Primary_TFA.PenetrationPower == -1 or not self2.Primary_TFA.PenetrationPower then
+	if self:GetStatRawL("Primary.PenetrationPower") == -1 or not self:GetStatRawL("Primary.PenetrationPower") then
 		local am = string.lower(self:GetStatL("Primary.Ammo"))
 		local m = 1
 
@@ -313,7 +313,7 @@ function SWEP:AutoDetectPenetrationPower()
 			m = 3
 		end
 
-		self2.Primary_TFA.PenetrationPower = self2.PenetrationPower or math.sqrt(self2.Primary_TFA.Force * 200 * m)
+		self:SetStatRawL("Primary.PenetrationPower", self:GetStatRawL("PenetrationPower") or math.sqrt(self:GetStatRawL("Primary.Force") * 200 * m))
 	end
 end
 
@@ -327,8 +327,8 @@ Purpose:  Autodetection
 --
 function SWEP:AutoDetectKnockback()
 	local self2 = self:GetTable()
-	if self2.Primary_TFA.Knockback == -1 or not self2.Primary_TFA.Knockback then
-		self2.Primary_TFA.Knockback = self2.Knockback or math.max(math.pow(self2.Primary_TFA.Force - 3.25, 2), 0) * math.pow(self2.Primary_TFA.NumShots, 1 / 3)
+	if self:GetStatRawL("Primary.Knockback") == -1 or not self:GetStatRawL("Primary.Knockback") then
+		self:SetStatRawL("Primary.Knockback", self:GetStatRawL("Knockback") or math.max(math.pow(self:GetStatRawL("Primary.Force") - 3.25, 2), 0) * math.pow(self:GetStatRawL("Primary.NumShots"), 1 / 3))
 	end
 end
 
@@ -350,18 +350,18 @@ function SWEP:IconFix()
 	local class = self2.ClassName
 
 	if selicon_final[class] then
-		self2.WepSelectIcon = selicon_final[class]
+		self:SetStatRawL("WepSelectIcon", selicon_final[class])
 
 		return
 	end
 
 	if self2.WepSelectIcon and type(self2.WepSelectIcon) == "string" then
-		self2.WepSelectIcon = surface.GetTextureID(self2.WepSelectIcon)
+		self:SetStatRawL("WepSelectIcon", surface.GetTextureID(self2.WepSelectIcon))
 	else
 		if file.Exists("materials/vgui/hud/" .. class .. ".png", "GAME") then
-			self2.WepSelectIcon = Material("vgui/hud/" .. class .. ".png", "smooth noclamp") -- NOTHING should access this variable directly and our DrawWeaponSelection override supports IMaterial.
+			self:SetStatRawL("WepSelectIcon", Material("vgui/hud/" .. class .. ".png", "smooth noclamp")) -- NOTHING should access this variable directly and our DrawWeaponSelection override supports IMaterial.
 		elseif file.Exists("materials/vgui/hud/" .. class .. ".vmt", "GAME") then
-			self2.WepSelectIcon = surface.GetTextureID("vgui/hud/" .. class)
+			self:SetStatRawL("WepSelectIcon", surface.GetTextureID("vgui/hud/" .. class))
 		end
 	end
 
@@ -378,13 +378,13 @@ Purpose:  Autodetection
 --
 function SWEP:CorrectScopeFOV(fov)
 	local self2 = self:GetTable()
-	fov = fov or self2.DefaultFOV
+	fov = fov or self:GetStatRawL("DefaultFOV")
 
-	if not self2.Secondary_TFA.OwnerFOV or self2.Secondary_TFA.OwnerFOV <= 0 then
-		if self2.Scoped then
-			self2.Secondary_TFA.OwnerFOV = fov / (self2.Secondary_TFA.ScopeZoom and self2.Secondary_TFA.ScopeZoom or 2)
+	if not self:GetStatRawL("Secondary.OwnerFOV") or self:GetStatRawL("Secondary.OwnerFOV") <= 0 then
+		if self:GetStatRawL("Scoped") then
+			self:SetStatRawL("Secondary.OwnerFOV", fov / (self:GetStatRawL("Secondary.ScopeZoom") and self:GetStatRawL("Secondary.ScopeZoom") or 2))
 		else
-			self2.Secondary_TFA.OwnerFOV = 32
+			self:SetStatRawL("Secondary.OwnerFOV", 32)
 		end
 	end
 end
@@ -402,7 +402,7 @@ SWEP.FireModeCache = {}
 function SWEP:CreateFireModes(isfirstdraw)
 	local self2 = self:GetTable()
 	if not self2.FireModes then
-		self2.FireModes = {}
+		self:SetStatRawL("FireModes", {})
 		local burstcnt = self:FindEvenBurstNumber()
 
 		if self2.SelectiveFire then
@@ -477,7 +477,7 @@ function SWEP:CacheAnimations()
 	local self2 = self:GetTable()
 	table.Empty(self2.ActCache)
 
-	if self2.CanBeSilenced and self2.SequenceEnabled[ACT_VM_IDLE_SILENCED] == nil then
+	if self:GetStatRawL("CanBeSilenced") and self2.SequenceEnabled[ACT_VM_IDLE_SILENCED] == nil then
 		self2.SequenceEnabled[ACT_VM_IDLE_SILENCED] = true
 	end
 
@@ -516,67 +516,67 @@ function SWEP:CacheAnimations()
 		return false
 	end
 
-	if self2.ProceduralHolsterEnabled == nil then
+	if self:GetStatRawL("ProceduralHolsterEnabled") == nil then
 		if self2.SequenceEnabled[ACT_VM_HOLSTER] then
-			self2.ProceduralHolsterEnabled = false
+			self:SetStatRawL("ProceduralHolsterEnabled", false)
 		else
-			self2.ProceduralHolsterEnabled = true
+			self:SetStatRawL("ProceduralHolsterEnabled", true)
 		end
 	end
 
-	self2.HasDetectedValidAnimations = true
+	self:SetStatRawL("HasDetectedValidAnimations", true)
 
 	return true
 end
 
 function SWEP:GetType()
 	local self2 = self:GetTable()
-	if self2.Type then return self2.Type end
-	local at = string.lower(self2.Primary_TFA.Ammo or "")
-	local ht = string.lower((self2.DefaultHoldType or self2.HoldType) or "")
-	local rpm = self2.Primary_TFA.RPM_Displayed or self2.Primary_TFA.RPM or 600
+	if self:GetStatRawL("Type") then return self:GetStatRawL("Type") end
+	local at = string.lower(self:GetStatRawL("Primary.Ammo") or "")
+	local ht = string.lower((self:GetStatRawL("DefaultHoldType") or self:GetStatRawL("HoldType")) or "")
+	local rpm = self:GetStatRawL("Primary.RPM_Displayed") or self:GetStatRawL("Primary.RPM") or 600
 
-	if self2.Primary_TFA.ProjectileEntity or self2.ProjectileEntity then
-		if (self2.ProjectileVelocity or self2.Primary_TFA.ProjectileVelocity) > 400 then
-			self2.Type = "Launcher"
+	if self:GetStatRawL("Primary.ProjectileEntity") or self:GetStatRawL("ProjectileEntity") then
+		if (self:GetStatRawL("ProjectileVelocity") or self:GetStatRawL("Primary.ProjectileVelocity")) > 400 then
+			self:SetStatRawL("Type", "Launcher")
 		else
-			self2.Type = "Grenade"
+			self:SetStatRawL("Type", "Grenade")
 		end
 		return
 	end
 
 	if at == "buckshot" then
-		self2.Type = "Shotgun"
+		self:SetStatRawL("Type", "Shotgun")
 
 		return self:GetType()
 	end
 
-	if self2.Pistol or (at == "pistol" and ht == "pistol") then
-		self2.Type = "Pistol"
+	if self:GetStatRawL("Pistol") or (at == "pistol" and ht == "pistol") then
+		self:SetStatRawL("Type", "Pistol")
 
 		return self:GetType()
 	end
 
-	if self2.SMG or (at == "smg1" and (ht == "smg" or ht == "pistol" or ht == "357")) then
-		self2.Type = "Sub-Machine Gun"
+	if self:GetStatRawL("SMG") or (at == "smg1" and (ht == "smg" or ht == "pistol" or ht == "357")) then
+		self:SetStatRawL("Type", "Sub-Machine Gun")
 
 		return self:GetType()
 	end
 
-	if self2.Revolver or (at == "357" and ht == "revolver") then
-		self2.Type = "Revolver"
+	if self:GetStatRawL("Revolver") or (at == "357" and ht == "revolver") then
+		self:SetStatRawL("Type", "Revolver")
 
 		return self:GetType()
 	end
 
 	--Detect Sniper Type
-	if ( (self2.Scoped or self2.Scoped_3D) and rpm < 600 ) or at == "sniperpenetratedround" then
-		if rpm > 180 and (self2.Primary_TFA.Automatic or self2.Primary_TFA.SelectiveFire) then
-			self2.Type = "Designated Marksman Rifle"
+	if ( (self:GetStatRawL("Scoped") or self:GetStatRawL("Scoped_3D")) and rpm < 600 ) or at == "sniperpenetratedround" then
+		if rpm > 180 and (self:GetStatRawL("Primary.Automatic") or self:GetStatRawL("Primary.SelectiveFire")) then
+			self:SetStatRawL("Type", "Designated Marksman Rifle")
 
 			return self:GetType()
 		else
-			self2.Type = "Sniper Rifle"
+			self:SetStatRawL("Type", "Sniper Rifle")
 
 			return self:GetType()
 		end
@@ -584,10 +584,10 @@ function SWEP:GetType()
 
 	--Detect based on holdtype
 	if ht == "pistol" then
-		if self2.Primary_TFA.Automatic then
-			self2.Type = "Machine Pistol"
+		if self:GetStatRawL("Primary.Automatic") then
+			self:SetStatRawL("Type", "Machine Pistol")
 		else
-			self2.Type = "Pistol"
+			self:SetStatRawL("Type", "Pistol")
 		end
 
 		return self:GetType()
@@ -595,19 +595,19 @@ function SWEP:GetType()
 
 	if ht == "duel" then
 		if at == "pistol" then
-			self2.Type = "Dual Pistols"
+			self:SetStatRawL("Type", "Dual Pistols")
 
 			return self:GetType()
 		elseif at == "357" then
-			self2.Type = "Dual Revolvers"
+			self:SetStatRawL("Type", "Dual Revolvers")
 
 			return self:GetType()
 		elseif at == "smg1" then
-			self2.Type = "Dual Sub-Machine Guns"
+			self:SetStatRawL("Type", "Dual Sub-Machine Guns")
 
 			return self:GetType()
 		else
-			self2.Type = "Dual Guns"
+			self:SetStatRawL("Type", "Dual Guns")
 
 			return self:GetType()
 		end
@@ -615,16 +615,16 @@ function SWEP:GetType()
 
 	--If it's using rifle ammo, it's a rifle or a carbine
 	if at == "ar2" then
-		if self2.Primary_TFA.ClipSize >= 60 then
-			self2.Type = "Light Machine Gun"
+		if self:GetStatRawL("Primary.ClipSize") >= 60 then
+			self:SetStatRawL("Type", "Light Machine Gun")
 
 			return self:GetType()
 		elseif ht == "rpg" or ht == "revolver" then
-			self2.Type = "Carbine"
+			self:SetStatRawL("Type", "Carbine")
 
 			return self:GetType()
 		else
-			self2.Type = "Rifle"
+			self:SetStatRawL("Type", "Rifle")
 
 			return self:GetType()
 		end
@@ -632,77 +632,77 @@ function SWEP:GetType()
 
 	--Check SMG one last time
 	if ht == "smg" or at == "smg1" then
-		self2.Type = "Sub-Machine Gun"
+		self:SetStatRawL("Type", "Sub-Machine Gun")
 
 		return self:GetType()
 	end
 
 	--Fallback to generic
-	self2.Type = "Weapon"
+	self:SetStatRawL("Type", "Weapon")
 
 	return self:GetType()
 end
 
 function SWEP:SetUpSpreadLegacy()
 	local self2 = self:GetTable()
-	local ht = self2.DefaultHoldType and self2.DefaultHoldType or self2.HoldType
+	local ht = self:GetStatRawL("DefaultHoldType") and self:GetStatRawL("DefaultHoldType") or self:GetStatRawL("HoldType")
 
-	if not self2.Primary_TFA.SpreadMultiplierMax or self2.Primary_TFA.SpreadMultiplierMax <= 0 or self2.AutoDetectSpreadMultiplierMax then
-		self2.Primary_TFA.SpreadMultiplierMax = 2.5 * math.max(self2.Primary_TFA.RPM, 400) / 600 * math.sqrt(self2.Primary_TFA.Damage / 30 * self2.Primary_TFA.NumShots) --How far the spread can expand when you shoot.
+	if not self:GetStatRawL("Primary.SpreadMultiplierMax") or self:GetStatRawL("Primary.SpreadMultiplierMax") <= 0 or self:GetStatRawL("AutoDetectSpreadMultiplierMax") then
+		self:SetStatRawL("Primary.SpreadMultiplierMax", 2.5 * math.max(self:GetStatRawL("Primary.RPM"), 400) / 600 * math.sqrt(self:GetStatRawL("Primary.Damage") / 30 * self:GetStatRawL("Primary.NumShots"))) --How far the spread can expand when you shoot.
 
 		if ht == "smg" then
-			self2.Primary_TFA.SpreadMultiplierMax = self2.Primary_TFA.SpreadMultiplierMax * 0.8
+			self:SetStatRawL("Primary.SpreadMultiplierMax", self:GetStatRawL("Primary.SpreadMultiplierMax") * 0.8)
 		end
 
 		if ht == "revolver" then
-			self2.Primary_TFA.SpreadMultiplierMax = self2.Primary_TFA.SpreadMultiplierMax * 2
+			self:SetStatRawL("Primary.SpreadMultiplierMax", self:GetStatRawL("Primary.SpreadMultiplierMax") * 2)
 		end
 
-		if self2.Scoped then
-			self2.Primary_TFA.SpreadMultiplierMax = self2.Primary_TFA.SpreadMultiplierMax * 1.5
+		if self:GetStatRawL("Scoped") then
+			self:SetStatRawL("Primary.SpreadMultiplierMax", self:GetStatRawL("Primary.SpreadMultiplierMax") * 1.5)
 		end
 
-		self2.AutoDetectSpreadMultiplierMax = true
+		self:SetStatRawL("AutoDetectSpreadMultiplierMax", true)
 	end
 
-	if not self2.Primary_TFA.SpreadIncrement or self2.Primary_TFA.SpreadIncrement <= 0 or self2.AutoDetectSpreadIncrement then
-		self2.AutoDetectSpreadIncrement = true
-		self2.Primary_TFA.SpreadIncrement = 1 * math.Clamp(math.sqrt(self2.Primary_TFA.RPM) / 24.5, 0.7, 3) * math.sqrt(self2.Primary_TFA.Damage / 30 * self2.Primary_TFA.NumShots) --What percentage of the modifier is added on, per shot.
+	if not self:GetStatRawL("Primary.SpreadIncrement") or self:GetStatRawL("Primary.SpreadIncrement") <= 0 or self:GetStatRawL("AutoDetectSpreadIncrement") then
+		self:SetStatRawL("AutoDetectSpreadIncrement", true)
+		self:SetStatRawL("Primary.SpreadIncrement", 1 * math.Clamp(math.sqrt(self:GetStatRawL("Primary.RPM")) / 24.5, 0.7, 3) * math.sqrt(self:GetStatRawL("Primary.Damage") / 30 * self:GetStatRawL("Primary.NumShots"))) --What percentage of the modifier is added on, per shot.
 
 		if ht == "revolver" then
-			self2.Primary_TFA.SpreadIncrement = self2.Primary_TFA.SpreadIncrement * 2
+			self:SetStatRawL("Primary.SpreadIncrement", self:GetStatRawL("Primary.SpreadIncrement") * 2)
 		end
 
 		if ht == "pistol" then
-			self2.Primary_TFA.SpreadIncrement = self2.Primary_TFA.SpreadIncrement * 1.35
+			self:SetStatRawL("Primary.SpreadIncrement", self:GetStatRawL("Primary.SpreadIncrement") * 1.35)
 		end
 
 		if ht == "ar2" or ht == "rpg" then
-			self2.Primary_TFA.SpreadIncrement = self2.Primary_TFA.SpreadIncrement * 0.65
+			self:SetStatRawL("Primary.SpreadIncrement", self:GetStatRawL("Primary.SpreadIncrement") * 0.65)
 		end
 
 		if ht == "smg" then
-			self2.Primary_TFA.SpreadIncrement = self2.Primary_TFA.SpreadIncrement * 1.75
-			self2.Primary_TFA.SpreadIncrement = self2.Primary_TFA.SpreadIncrement * (math.Clamp((self2.Primary_TFA.RPM - 650) / 150, 0, 1) + 1)
+			self:SetStatRawL("Primary.SpreadIncrement", self:GetStatRawL("Primary.SpreadIncrement") * 1.75)
+			self:SetStatRawL("Primary.SpreadIncrement", self:GetStatRawL("Primary.SpreadIncrement") * (math.Clamp((self:GetStatRawL("Primary.RPM") - 650) / 150, 0, 1) + 1))
 		end
 
-		if ht == "pistol" and self2.Primary_TFA.Automatic == true then
-			self2.Primary_TFA.SpreadIncrement = self2.Primary_TFA.SpreadIncrement * 1.5
+		if ht == "pistol" and self:GetStatRawL("Primary.Automatic") == true then
+			self:SetStatRawL("Primary.SpreadIncrement", self:GetStatRawL("Primary.SpreadIncrement") * 1.5)
 		end
 
-		if self2.Scoped then
-			self2.Primary_TFA.SpreadIncrement = self2.Primary_TFA.SpreadIncrement * 1.25
+		if self:GetStatRawL("Scoped") then
+			self:SetStatRawL("Primary.SpreadIncrement", self:GetStatRawL("Primary.SpreadIncrement") * 1.25)
 		end
 
-		self2.Primary_TFA.SpreadIncrement = self2.Primary_TFA.SpreadIncrement * math.sqrt(self2.Primary_TFA.Recoil * (self2.Primary_TFA.KickUp + self2.Primary_TFA.KickDown + self2.Primary_TFA.KickHorizontal)) * 0.8
+		self:SetStatRawL("Primary.SpreadIncrement", self:GetStatRawL("Primary.SpreadIncrement") * math.sqrt(self:GetStatRawL("Primary.Recoil") * (self:GetStatRawL("Primary.KickUp") + self:GetStatRawL("Primary.KickDown") + self:GetStatRawL("Primary.KickHorizontal"))) * 0.8)
 	end
 
-	if not self2.Primary_TFA.SpreadRecovery or self2.Primary_TFA.SpreadRecovery <= 0 or self2.AutoDetectSpreadRecovery then
-		self2.AutoDetectSpreadRecovery = true
-		self2.Primary_TFA.SpreadRecovery = math.sqrt(math.max(self2.Primary_TFA.RPM, 300)) / 29 * 4 --How much the spread recovers, per second.
+	if not self:GetStatRawL("Primary.SpreadRecovery") or self:GetStatRawL("Primary.SpreadRecovery") <= 0 or self:GetStatRawL("AutoDetectSpreadRecovery") then
+		self:SetStatRawL("AutoDetectSpreadRecovery", true)
+		self:SetStatRawL("Primary.SpreadRecovery", math.sqrt(math.max(self:GetStatRawL("Primary.RPM"), 300)) / 29 * 4) --How much the spread recovers, per second.
 
 		if ht == "smg" then
-			self2.Primary_TFA.SpreadRecovery = self2.Primary_TFA.SpreadRecovery * (1 - math.Clamp((self2.Primary_TFA.RPM - 600) / 200, 0, 1) * 0.33)
+			self:SetStatRawL("Primary.SpreadRecovery", self:GetStatRawL("Primary.SpreadRecovery") * (1 - math.Clamp((self:GetStatRawL("Primary.RPM") - 600) / 200, 0, 1) * 0.33))
 		end
 	end
 end
@@ -722,26 +722,26 @@ function SWEP:AutoDetectLowAmmoSound()
 	if self.LowAmmoSoundTypeBlacklist[wt] then return end
 
 	if not self.LowAmmoSound then
-		self.LowAmmoSound = "TFA.LowAmmo"
+		self:SetStatRawL("LowAmmoSound", "TFA.LowAmmo")
 
 		if wt == "Pistol" or wt == "Dual Pistols" then
-			self.LowAmmoSound = "TFA.LowAmmo.Handgun"
+			self:SetStatRawL("LowAmmoSound", "TFA.LowAmmo.Handgun")
 		end
 
 		if wt == "Shotgun" then
-			self.LowAmmoSound = "TFA.LowAmmo.Shotgun"
+			self:SetStatRawL("LowAmmoSound", "TFA.LowAmmo.Shotgun")
 		end
 	end
 
 	if not self.LastAmmoSound then
-		self.LastAmmoSound = "TFA.LowAmmo_Dry"
+		self:SetStatRawL("LastAmmoSound", "TFA.LowAmmo_Dry")
 
 		if wt == "Pistol" or wt == "Dual Pistols" then
-			self.LastAmmoSound = "TFA.LowAmmo.Handgun_Dry"
+			self:SetStatRawL("LastAmmoSound", "TFA.LowAmmo.Handgun_Dry")
 		end
 
 		if wt == "Shotgun" then
-			self.LastAmmoSound = "TFA.LowAmmo.Shotgun_Dry"
+			self:SetStatRawL("LastAmmoSound", "TFA.LowAmmo.Shotgun_Dry")
 		end
 	end
 end

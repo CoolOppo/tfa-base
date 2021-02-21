@@ -250,12 +250,14 @@ for version = 0, #TFA.DataVersionMapping do
 end
 
 TFA.PathParseCache = {}
+TFA.PathParseCacheTR = {}
 TFA.StatPathRemapCache = {}
 TFA.PathParseCacheDirect = {}
 
 TFA.StatPathRemap_Real = {}
 
 local PathParseCache = TFA.PathParseCache
+local PathParseCacheTR = TFA.PathParseCacheTR
 local PathParseCacheDirect = TFA.PathParseCacheDirect
 local StatPathRemapCache = TFA.StatPathRemapCache
 local StatPathRemap_Real = TFA.StatPathRemap_Real
@@ -332,7 +334,7 @@ function TFA.RemapStatPath(path, path_version, structure_version)
 	return StatPathRemapCache[cache_path]
 end
 
-function TFA.GetStatPath(path, path_version, structure_version)
+function TFA.GetStatPath(path, path_version, structure_version, no_translate)
 	local cache_path = path
 
 	if path_version == nil then path_version = 0 end
@@ -343,6 +345,7 @@ function TFA.GetStatPath(path, path_version, structure_version)
 		cache_path = string_format("%d_%d_%s", path_version, structure_version, path)
 	end
 
+	local PathParseCache = no_translate and PathParseCacheTR or PathParseCache
 	local get_cache = PathParseCache[cache_path]
 	if get_cache ~= nil then return get_cache[1], get_cache[2], get_cache[3] end
 
@@ -390,10 +393,12 @@ function TFA.GetStatPath(path, path_version, structure_version)
 
 	get_cache = string_Explode(".", path, false)
 
-	if get_cache[1] == "Primary" then
-		get_cache[1] = "Primary_TFA"
-	elseif get_cache[1] == "Secondary" then
-		get_cache[1] = "Secondary_TFA"
+	if not no_translate then
+		if get_cache[1] == "Primary" then
+			get_cache[1] = "Primary_TFA"
+		elseif get_cache[1] == "Secondary" then
+			get_cache[1] = "Secondary_TFA"
+		end
 	end
 
 	for k, v in ipairs(get_cache) do
