@@ -733,11 +733,11 @@ function SWEP:Initialize()
 
 	self2.InitAttachments(self)
 
-	if not self2.AimingDownSightsSpeedMultiplier then
-		self2.AimingDownSightsSpeedMultiplier = self2.RegularMoveSpeedMultiplier * 0.8
+	if not self:GetStatRawL("AimingDownSightsSpeedMultiplier") then
+		self:SetStatRawL("AimingDownSightsSpeedMultiplier", self:GetStatRawL("RegularMoveSpeedMultiplier") * 0.8)
 	end
 
-	if self2.GetStatL(self, "Skin") and isnumber(self2.GetStatL(self, "Skin")) then
+	if isnumber(self2.GetStatL(self, "Skin")) then
 		self:SetSkin(self:GetStatL("Skin"))
 	end
 
@@ -767,7 +767,7 @@ function SWEP:Initialize()
 			self:GetOwner():Fire( "DisableWeaponPickup", "", 0 )
 		end
 
-		self:GetOwner():SetKeyValue( "spawnflags", "256" )
+		self:GetOwner():SetKeyValue("spawnflags", "256")
 
 		return
 	end

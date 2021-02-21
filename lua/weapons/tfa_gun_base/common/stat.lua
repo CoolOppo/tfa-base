@@ -270,6 +270,37 @@ function SWEP:GetStatRaw(stat, path_version)
 	return value
 end
 
+function SWEP:GetStatRawL(stat)
+	return self:GetStatRaw(stat, TFA.LatestDataVersion)
+end
+
+function SWEP:SetStatRaw(stat, path_version, _value)
+	local self2 = self:GetTable()
+	local path = TFA.GetStatPath(stat, path_version or 0, self2.TFADataVersion)
+
+	if #path == 1 then
+		self2[path[1]] = _value
+		return self
+	end
+
+	local value = self2[path[1]]
+
+	for i = 2, #path - 1 do
+		if not istable(value) then return self end
+		value = value[path[i]]
+	end
+
+	if istable(value) then
+		value[path[#path]] = _value
+	end
+
+	return self
+end
+
+function SWEP:SetStatRawL(stat, _value)
+	return self:SetStatRaw(stat, TFA.LatestDataVersion, _value)
+end
+
 function SWEP:GetStat(stat, default, dontMergeTables)
 	return self:GetStatVersioned(stat, 0, default, dontMergeTables)
 end
