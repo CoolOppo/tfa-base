@@ -720,8 +720,8 @@ function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon, penetrated, p
 			fx:SetOrigin(traceres.HitPos)
 			fx:SetNormal(traceres.HitNormal)
 
-			if weapon.Primary.ImpactEffect then
-				TFA.Effects.Create(weapon.Primary.ImpactEffect, fx)
+			if weapon:GetStatL("Primary.ImpactEffect") then
+				TFA.Effects.Create(weapon:GetStatL("Primary.ImpactEffect"), fx)
 			elseif tmpdmg > 90 then
 				TFA.Effects.Create("HelicopterMegaBomb", fx)
 				TFA.Effects.Create("Explosion", fx)
