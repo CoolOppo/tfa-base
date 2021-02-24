@@ -461,7 +461,6 @@ do
 
 		if istable(value) and value[path[#path]] == nil then
 			value[path[#path]] = val
-			print('fill', table_concat(path, '.'))
 		elseif not istable(value) then
 			print('[TFA Base] unable to fill gap for older version in meta structure of ' .. table_concat(path, '.'))
 		end
