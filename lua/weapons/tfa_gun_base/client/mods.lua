@@ -533,38 +533,45 @@ function SWEP:DrawWorldModel()
 	end
 
 	if self2.ShowWorldModel == nil or self2.ShowWorldModel or not validowner then
-		if validowner and self2.WorldModelOffset and self2.WorldModelOffset.Pos and self2.WorldModelOffset.Ang then -- THIS IS DANGEROUS
-			-- TO DO ONLY CLIENTSIDE
-			-- since this will break hitboxes!
-			local handBone = ply:LookupBone("ValveBiped.Bip01_R_Hand")
+		if validowner then
+			local WorldModelOffset = self:GetStatRawL("WorldModelOffset")
 
-			if handBone then
-				--local pos, ang = ply:GetBonePosition(handBone)
-				local pos, ang
-				local mat = ply:GetBoneMatrix(handBone)
+			 -- THIS IS DANGEROUS
+			if WorldModelOffset and WorldModelOffset.Pos and WorldModelOffset.Ang then
+				-- TO DO ONLY CLIENTSIDE
+				-- since this will break hitboxes!
+				local handBone = ply:LookupBone("ValveBiped.Bip01_R_Hand")
 
-				if mat then
-					pos, ang = mat:GetTranslation(), mat:GetAngles()
-				else
-					pos, ang = ply:GetBonePosition(handBone)
+				if handBone then
+					--local pos, ang = ply:GetBonePosition(handBone)
+					local pos, ang
+					local mat = ply:GetBoneMatrix(handBone)
+
+					if mat then
+						pos, ang = mat:GetTranslation(), mat:GetAngles()
+					else
+						pos, ang = ply:GetBonePosition(handBone)
+					end
+
+					pos = pos + ang:Forward() * WorldModelOffset.Pos.Forward + ang:Right() * WorldModelOffset.Pos.Right + ang:Up() * WorldModelOffset.Pos.Up
+					ang:RotateAroundAxis(ang:Up(), WorldModelOffset.Ang.Up)
+					ang:RotateAroundAxis(ang:Right(), WorldModelOffset.Ang.Right)
+					ang:RotateAroundAxis(ang:Forward(), WorldModelOffset.Ang.Forward)
+					self:SetRenderOrigin(pos)
+					self:SetRenderAngles(ang)
+					--if WorldModelOffset.Scale and ( !self2.MyModelScale or ( WorldModelOffset and self2.MyModelScale!=WorldModelOffset.Scale ) ) then
+					self:SetModelScale(WorldModelOffset.Scale or 1, 0)
+					--end
 				end
-
-				pos = pos + ang:Forward() * self2.WorldModelOffset.Pos.Forward + ang:Right() * self2.WorldModelOffset.Pos.Right + ang:Up() * self2.WorldModelOffset.Pos.Up
-				ang:RotateAroundAxis(ang:Up(), self2.WorldModelOffset.Ang.Up)
-				ang:RotateAroundAxis(ang:Right(), self2.WorldModelOffset.Ang.Right)
-				ang:RotateAroundAxis(ang:Forward(), self2.WorldModelOffset.Ang.Forward)
-				self:SetRenderOrigin(pos)
-				self:SetRenderAngles(ang)
-				--if self2.WorldModelOffset.Scale and ( !self2.MyModelScale or ( self2.WorldModelOffset and self2.MyModelScale!=self2.WorldModelOffset.Scale ) ) then
-				self:SetModelScale(self2.WorldModelOffset.Scale or 1, 0)
-				--end
 			end
 		else
 			self:SetRenderOrigin(nil)
 			self:SetRenderAngles(nil)
 
-			if self2.WorldModelOffset and self2.WorldModelOffset.Scale then
-				self:SetModelScale(self2.WorldModelOffset.Scale, 0)
+			local WorldModelOffset = self:GetStatRawL("WorldModelOffset")
+
+			if WorldModelOffset and WorldModelOffset.Scale then
+				self:SetModelScale(WorldModelOffset.Scale, 0)
 			end
 		end
 

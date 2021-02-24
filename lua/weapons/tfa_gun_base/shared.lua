@@ -733,6 +733,9 @@ function SWEP:Initialize()
 
 	self2.InitAttachments(self)
 
+	self2.WorldModelBodygroups = self:GetStatRawL("WorldModelBodygroups")
+	self2.ViewModelBodygroups = self:GetStatRawL("ViewModelBodygroups")
+
 	if not self:GetStatRawL("AimingDownSightsSpeedMultiplier") then
 		self:SetStatRawL("AimingDownSightsSpeedMultiplier", self:GetStatRawL("RegularMoveSpeedMultiplier") * 0.8)
 	end

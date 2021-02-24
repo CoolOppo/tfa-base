@@ -448,8 +448,14 @@ do
 
 		local value = self[path[1]]
 
+		if value == nil then
+			self[path[1]] = {}
+			value = self[path[1]]
+		end
+
 		for i = 2, #path - 1 do
 			if not istable(value) then return end
+			if value[path[i]] == nil then value[path[i]] = {} end
 			value = value[path[i]]
 		end
 
