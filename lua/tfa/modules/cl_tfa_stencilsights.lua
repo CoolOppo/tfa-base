@@ -184,6 +184,7 @@ do -- Quad/Attach reticle, TFA INS2 method
 
 			if pos == TargetEntity:GetPos() then
 				pos = TargetEntity:GetBoneMatrix(BoneID):GetTranslation()
+				ang = TargetEntity:GetBoneMatrix(BoneID):GetAngles()
 			end
 		else
 			return

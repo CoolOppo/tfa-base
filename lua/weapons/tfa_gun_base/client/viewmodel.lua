@@ -72,24 +72,56 @@ function SWEP:AirWalkScale()
 	return (self:OwnerIsValid() and self:GetOwner():IsOnGround()) and 1 or 0.2
 end
 
-function SWEP:GetViewModelPosition(pos, ang)
+SWEP.OldPos = Vector(0, 0, 0)
+SWEP.OldAng = Angle(0, 0, 0)
+
+function SWEP:GetViewModelPosition(opos, oang, ...)
 	local self2 = self:GetTable()
 
-	if not self2.pos_cached then return pos, ang end
+	if not self2.pos_cached then return opos, oang end
 
-	ang:RotateAroundAxis(ang:Right(), self2.ang_cached.p)
-	ang:RotateAroundAxis(ang:Up(), self2.ang_cached.y)
-	ang:RotateAroundAxis(ang:Forward(), self2.ang_cached.r)
-	pos:Add(ang:Right() * self2.pos_cached.x)
-	pos:Add(ang:Forward() * self2.pos_cached.y)
-	pos:Add(ang:Up() * self2.pos_cached.z)
+	local npos, nang = opos * 1, oang * 1
+
+	nang:RotateAroundAxis(nang:Right(), self2.ang_cached.p)
+	nang:RotateAroundAxis(nang:Up(), self2.ang_cached.y)
+	nang:RotateAroundAxis(nang:Forward(), self2.ang_cached.r)
+	npos:Add(nang:Right() * self2.pos_cached.x)
+	npos:Add(nang:Forward() * self2.pos_cached.y)
+	npos:Add(nang:Up() * self2.pos_cached.z)
 
 	if cv_customgunbob:GetBool() then
-		pos, ang = self:Sway(pos, ang)
-		pos, ang = self:SprintBob(pos, ang, Lerp(self2.SprintProgressUnpredicted3 or self2.SprintProgressUnpredicted or self:GetSprintProgress(), 0, self2.SprintBobMult))
+		npos, nang = self:Sway(npos, nang)
+		npos, nang = self:SprintBob(npos, nang, Lerp(self2.SprintProgressUnpredicted3 or self2.SprintProgressUnpredicted or self:GetSprintProgress(), 0, self2.SprintBobMult))
 	end
 
-	return pos, ang
+	if not self.SightsAttPos or not self.SightsAttAng then return npos, nang end
+
+	local pos, ang = WorldToLocal(self.SightsAttPos, self.SightsAttAng, self.OldPos, self.OldAng)
+	local ofpos, ofang = WorldToLocal(npos, nang, opos, oang)
+
+	self.OldPos = npos
+	self.OldAng = nang
+
+	if self.IronSightsProgressUnpredicted > 0.05 then
+		local _opos, _oang = opos * 1, oang * 1
+
+		-- sight offset
+		_oang:RotateAroundAxis(_oang:Forward(), -ang.r)
+		_oang:RotateAroundAxis(_oang:Right(), ang.p)
+		_oang:RotateAroundAxis(_oang:Up(), -ang.y)
+
+		local right, up, fwd = _oang:Right(), _oang:Up(), _oang:Forward()
+
+		_opos = _opos - pos.x * fwd + pos.y * right - pos.z * up
+
+		-- tfa base vm offset
+		_opos = _opos - ofpos.y * right + ofpos.x * fwd + ofpos.z * up
+
+		self.OldPos = LerpVector(self.IronSightsProgressUnpredicted, npos, _opos)
+		self.OldAng = LerpAngle(self.IronSightsProgressUnpredicted, nang, _oang)
+	end
+
+	return self.OldPos, self.OldAng
 end
 
 function SWEP:CalculateViewModelFlip()
@@ -525,4 +557,78 @@ function SWEP:Sway(pos, ang, ftv)
 	ang:RotateAroundAxis(ang:Forward(), counterMotion.r * 0.5 * fac * flipFactor)
 
 	return pos, ang
+end
+
+function SWEP:CacheSightsPos()
+	self.SightsAttPos, self.SightsAttAng = nil, nil
+
+	if not self:GetStat("ProceduralSight", false) then return end
+
+	local model = self.OwnerViewModel
+	local attname = self:GetStat("ProceduralSight_VElement")
+
+	if attname then
+		if not self:GetStat("VElements." .. attname .. ".active", false) then return end
+
+		model = self.VElements[attname].curmodel
+	end
+
+	if not IsValid(model) then return end
+
+	if self:GetStat("ProceduralSight_PositionType", TFA.Enum.SIGHTSPOS_ATTACH) == TFA.Enum.SIGHTSPOS_BONE then
+		local boneid = self:GetStat("ProceduralSight_Bone")
+		if not boneid then return end
+
+		if type(boneid) == "string" then
+			boneid = model:LookupBone(boneid)
+		end
+
+		if not boneid or boneid < 0 then return end
+
+		self.SightsAttPos, self.SightsAttAng = model:GetBonePosition(boneid)
+
+		if self.SightsAttPos == model:GetPos() then
+			self.SightsAttPos = model:GetBoneMatrix(boneid):GetTranslation()
+			self.SightsAttAng = model:GetBoneMatrix(boneid):GetAngles()
+		end
+	else
+		local attid = self:GetStat("ProceduralSight_Attachment")
+		if not attid then return end
+
+		if type(attid) == "string" then
+			attid = model:LookupAttachment(attid)
+		end
+
+		if not attid or attid <= 0 then return end
+
+		local attpos = model:GetAttachment(attid)
+
+		self.SightsAttPos, self.SightsAttAng = attpos.Pos, attpos.Ang
+	end
+
+	if self.SightsAttPos and self.SightsAttPos then
+		local OffsetPos = self:GetStat("ProceduralSight_OffsetPos")
+		if OffsetPos then
+			if GetConVarNumber("developer") > 0 then -- draw pre-offset pos
+				render.DrawLine(self.SightsAttPos, self.SightsAttPos + self.SightsAttAng:Forward() * 1, Color(127, 0, 0), false)
+				render.DrawLine(self.SightsAttPos, self.SightsAttPos - self.SightsAttAng:Right() * 1, Color(0, 127, 0), false)
+				render.DrawLine(self.SightsAttPos, self.SightsAttPos + self.SightsAttAng:Up() * 1, Color(0, 0, 127), false)
+			end
+
+			self.SightsAttPos = self.SightsAttPos + self.SightsAttAng:Right() * OffsetPos.x + self.SightsAttAng:Forward() * OffsetPos.y + self.SightsAttAng:Up() * OffsetPos.z
+		end
+
+		local OffsetAng = self:GetStat("ProceduralSight_OffsetAng")
+		if OffsetAng then
+			self.SightsAttAng:RotateAroundAxis(self.SightsAttAng:Right(), OffsetAng.p)
+			self.SightsAttAng:RotateAroundAxis(self.SightsAttAng:Up(), OffsetAng.y)
+			self.SightsAttAng:RotateAroundAxis(self.SightsAttAng:Forward(), OffsetAng.r)
+		end
+
+		if GetConVarNumber("developer") > 0 then -- draw final pos
+			render.DrawLine(self.SightsAttPos, self.SightsAttPos + self.SightsAttAng:Forward() * 1, Color(255, 0, 0), false)
+			render.DrawLine(self.SightsAttPos, self.SightsAttPos - self.SightsAttAng:Right() * 1, Color(0, 255, 0), false)
+			render.DrawLine(self.SightsAttPos, self.SightsAttPos + self.SightsAttAng:Up() * 1, Color(0, 0, 255), false)
+		end
+	end
 end

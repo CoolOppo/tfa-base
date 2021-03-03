@@ -486,6 +486,8 @@ function SWEP:ViewModelDrawnPost()
 			end
 		end
 	end
+
+	self2.CacheSightsPos(self)
 end
 
 --[[
