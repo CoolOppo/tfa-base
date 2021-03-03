@@ -1072,6 +1072,7 @@ function SWEP:PlayerThinkCL(plyv)
 	local status = self2.GetStatus(self)
 
 	local ist = is and 1 or 0
+	local ist2 = TFA.Enum.ReloadStatus[self:GetStatus()] and ist * .25 or ist
 
 	local reloadBlendMult, reloadBlendMult2 = 1, 1
 
@@ -1134,7 +1135,7 @@ function SWEP:PlayerThinkCL(plyv)
 
 	self2.IronSightsProgressUnpredicted = l_mathApproach(self2.IronSightsProgressUnpredicted or 0, ist, (ist - (self2.IronSightsProgressUnpredicted or 0)) * ft * adstransitionspeed * 1.2)
 	self2.IronSightsProgressUnpredicted2 = l_mathApproach(self2.IronSightsProgressUnpredicted2 or 0, ist, (ist - (self2.IronSightsProgressUnpredicted2 or 0)) * ft * adstransitionspeed * 0.4)
-	self2.IronSightsProgressUnpredicted3 = l_mathApproach(self2.IronSightsProgressUnpredicted3 or 0, ist, (ist - (self2.IronSightsProgressUnpredicted3 or 0)) * ft * adstransitionspeed * 0.7)
+	self2.IronSightsProgressUnpredicted3 = l_mathApproach(self2.IronSightsProgressUnpredicted3 or 0, ist2, (ist2 - (self2.IronSightsProgressUnpredicted3 or 0)) * ft * adstransitionspeed * 0.7)
 	self2.SprintProgressUnpredicted = l_mathApproach(self2.SprintProgressUnpredicted or 0, sprt, (sprt - (self2.SprintProgressUnpredicted or 0)) * ft * adstransitionspeed)
 	self2.SprintProgressUnpredicted2 = l_mathApproach(self2.SprintProgressUnpredicted2 or 0, sprt2, (sprt2 - (self2.SprintProgressUnpredicted2 or 0)) * ft * adstransitionspeed)
 	self2.SprintProgressUnpredicted3 = l_mathApproach(self2.SprintProgressUnpredicted3 or 0, sprt3, (sprt3 - (self2.SprintProgressUnpredicted3 or 0)) * ft * adstransitionspeed)
