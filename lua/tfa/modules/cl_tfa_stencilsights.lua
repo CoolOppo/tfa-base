@@ -57,7 +57,10 @@ do -- Flat reticle, stays at center or moves with recoil
 		local ReticleMaterial = wep:GetStat("StencilSight_ReticleMaterial")
 		if not ReticleMaterial then return end
 
-		CachedMaterials[ReticleMaterial] = CachedMaterials[ReticleMaterial] or Material(ReticleMaterial, "noclamp nocull smooth")
+		if type(ReticleMaterial) == "string" then
+			CachedMaterials[ReticleMaterial] = CachedMaterials[ReticleMaterial] or Material(ReticleMaterial, "noclamp nocull smooth")
+			ReticleMaterial = CachedMaterials[ReticleMaterial]
+		end
 
 		local ReticleSize = wep:GetStat("StencilSight_ReticleSize")
 		if not ReticleSize then return end
@@ -92,7 +95,7 @@ do -- Flat reticle, stays at center or moves with recoil
 		end
 
 		cam.Start2D(0, 0, w, h)
-			surface.SetMaterial(CachedMaterials[ReticleMaterial])
+			surface.SetMaterial(ReticleMaterial)
 			surface.SetDrawColor(TargetColor)
 			surface.DrawTexturedRect(x - ReticleSize * .5, y - ReticleSize * .5, ReticleSize, ReticleSize)
 		cam.End2D()
@@ -205,7 +208,10 @@ do -- Quad/Attach reticle, TFA INS2 method
 		local ReticleMaterial = wep:GetStat("StencilSight_ReticleMaterial")
 		if not ReticleMaterial then return end
 
-		CachedMaterials[ReticleMaterial] = CachedMaterials[ReticleMaterial] or Material(ReticleMaterial, "noclamp nocull smooth")
+		if type(ReticleMaterial) == "string" then
+			CachedMaterials[ReticleMaterial] = CachedMaterials[ReticleMaterial] or Material(ReticleMaterial, "noclamp nocull smooth")
+			ReticleMaterial = CachedMaterials[ReticleMaterial]
+		end
 
 		local ReticleSize = wep:GetStat("StencilSight_ReticleSize")
 		if not ReticleSize then return end
@@ -237,7 +243,7 @@ do -- Quad/Attach reticle, TFA INS2 method
 
 		render.OverrideDepthEnable(true, true)
 
-		render.SetMaterial(CachedMaterials[ReticleMaterial])
+		render.SetMaterial(ReticleMaterial)
 		render.DrawQuadEasy(p, a:Forward() * -1, ReticleSize, ReticleSize, TargetColor, 180 - a.r)
 
 		render.OverrideDepthEnable(false, false)
