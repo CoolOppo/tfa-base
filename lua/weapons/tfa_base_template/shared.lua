@@ -431,6 +431,22 @@ SWEP.ViewModelBodygroups       = nil -- {
 	-- [2] = etc.
 -- }
 
+-- Procedural sights position.
+-- Applies !!BEFORE!! IronSightsPosition/IronSightsAngle and ViewModelPosition/ViewModelAngle
+SWEP.ProceduralSight = nil -- Enables procedural viewmodel sight position lookup
+SWEP.ProceduralSight_VElement = nil -- "reciever_p90_fn_p90_std" -- Name of VElement to follow; must be active to work; when not defined viewmodel is selected instead
+
+-- Position lookup type: QC Attachment
+-- SWEP.ProceduralSight_PositionType = TFA.Enum.SIGHTSPOS_ATTACH -- Enabled by default
+-- SWEP.ProceduralSight_Attachment = "mod_aim_camera" -- $attachment name or ID to get the position of
+
+-- Position lookup type: Bone
+-- SWEP.ProceduralSight_PositionType = TFA.Enum.SIGHTSPOS_BONE
+-- SWEP.ProceduralSight_Bone = "ValveBiped.P250_rootbone" -- Name of the bone to get the position of
+
+SWEP.ProceduralSight_OffsetPos = nil -- Vector(0, 0, 0)
+SWEP.ProceduralSight_OffsetAng = nil -- Angle(0, 0, 0)
+
 SWEP.AllowIronSightsDoF         = true -- whenever allow DoF effect on viewmodel when zoomed in with iron sights
 
 -- Enable ADS reload animations support (requires animations to be enabled in SWEP.Animations)
@@ -828,6 +844,51 @@ SWEP.DInv2_GridSizeX = nil -- DInventory/2 Specific. Determines weapon's width i
 SWEP.DInv2_GridSizeY = nil -- DInventory/2 Specific. Determines weapon's height in grid. This is not TFA Base specific and can be specified to any Scripted SWEP.
 SWEP.DInv2_Volume = nil -- DInventory/2 Specific. Determines weapon's volume in liters. This is not TFA Base specific and can be specified to any Scripted SWEP.
 SWEP.DInv2_Mass = nil -- DInventory/2 Specific. Determines weapon's mass in kilograms. This is not TFA Base specific and can be specified to any Scripted SWEP.
+
+-- Stencil Sights.
+SWEP.StencilSight = nil -- Enables stencil sight drawing
+SWEP.StencilSight_MinPercent = nil -- Mimimum aim progress percentage to draw; 0.05 by default; set to 0 to always draw
+SWEP.StencilSight_VElement = nil -- "scope_p90_fn_ring_sight_std" -- Name of VElement to draw sight on; must be active to work
+SWEP.StencilSight_UseMask = nil -- Use the .mask value of VElement's table as stencil mask model (model must be bonemergeable on the sights VElement!)
+
+-- Sight Type: Flat
+-- SWEP.StencilSight_ReticleType = TFA.Enum.RETICLE_FLAT
+-- SWEP.StencilSight_ReticleMaterial = "models/weapons/yurie_bcry2/scope_assault/reddot" -- Reticle material, accepts either string or Material() object; must be a square texture!
+-- SWEP.StencilSight_ReticleSize = 256 -- Reticle size; scales with screen height using HL2 scale formula (size * (screen height / 480))
+-- SWEP.StencilSight_ScaleReticleByProgress = nil -- Scale reticle with aim progress for smoother fade-in; true by default
+-- SWEP.StencilSight_FollowRecoil = nil -- If enabled, reticle follows crosshair recoil instead of being locked in center; true by default; affected by crosshair settings
+-- SWEP.StencilSight_ReticleTint = nil -- Reticle color; Color(255, 255, 255) by default
+-- SWEP.StencilSight_ReticleTintBySightColor = nil -- Use the "Reticule Color" value from base settings instead of StencilSight_ReticleTint? false by default
+-- SWEP.StencilSight_FadeReticleByProgress = nil -- Fade-in reticle alpha with aim progress; false by default
+-- // Sight Type: Flat
+
+-- Sight Type: Model; requires .reticle value of VElement's table (same deal as UseMask)
+-- SWEP.StencilSight_ReticleType = TFA.Enum.RETICLE_MODEL
+-- SWEP.StencilSight_FadeReticleByProgress = nil -- Fade-in reticle alpha with aim progress; false by default
+-- // Sight Type: Model
+
+-- Sight Type: Quad (aka the old way from TFA INS2)
+-- SWEP.StencilSight_ReticleType = TFA.Enum.RETICLE_QUAD
+-- SWEP.StencilSight_ReticleMaterial = "models/weapons/yurie_eft/parts/scopes/scope_p90_fn_ring_sight_std_LOD0_marks" -- Reticle material, accepts either string or Material() object; must be a square texture!
+-- SWEP.StencilSight_ReticleSize = 1 -- Reticle quad size
+-- SWEP.StencilSight_ScaleReticleByProgress = nil -- Scale reticle with aim progress for smoother fade-in; true by default
+-- SWEP.StencilSight_ReticleTint = nil -- Reticle color; Color(255, 255, 255) by default
+-- SWEP.StencilSight_ReticleTintBySightColor = nil -- Use the "Reticule Color" value from base settings instead of StencilSight_ReticleTint? false by default
+-- SWEP.StencilSight_FadeReticleByProgress = nil -- Fade-in reticle alpha with aim progress; false by default
+
+-- Quad Reticle Position Lookup
+
+-- Lookup Type: Attachment
+-- SWEP.StencilSight_PositionType = TFA.Enum.SIGHTSPOS_ATTACH -- Enabled by default
+-- SWEP.StencilSight_ReticleAttachment = "tag_reticle" -- Name or index of target $attachment
+
+-- Lookup Type: Bone
+-- SWEP.StencilSight_PositionType = TFA.Enum.SIGHTSPOS_BONE
+-- SWEP.StencilSight_ReticleBone = "tag_reticle" -- Name or index of target bone
+
+-- SWEP.StencilSight_ReticleOffsetPos = nil -- Vector(0, 0, 0)
+-- SWEP.StencilSight_ReticleOffsetAng = nil -- Angle(0, 0, 0)
+-- // Sight Type: Quad
 
 -- [[MISC INFO FOR MODELERS]] --
 --[[
