@@ -110,6 +110,7 @@ local official_modules_sorted = {
 	"cl_tfa_settingsmenu.lua",
 	"cl_tfa_vgui.lua",
 	"cl_tfa_vm_blur.lua",
+	"cl_tfa_stencilsights.lua",
 }
 
 local official_modules = {}
