@@ -94,12 +94,22 @@ SWEP.ClearStatCacheWarned = false
 
 local IdealCSCDeltaTime = engine.TickInterval() * 2
 
-function SWEP:ClearStatCache(vn, path_version)
+local LatestDataVersion = TFA.LatestDataVersion
+
+function SWEP:ClearStatCache(vn)
+	return self:ClearStatCacheVersioned(vn, 0)
+end
+
+function SWEP:ClearStatCacheL(vn)
+	return self:ClearStatCacheVersioned(vn, LatestDataVersion)
+end
+
+function SWEP:ClearStatCacheVersioned(vn, path_version)
 	local self2 = self:GetTable()
 	local getpath, getpath2
 
 	if isstring(vn) then
-		vn = TFA.RemapStatPath(vn, path_version or 0, self.TFADataVersion)
+		vn = TFA.RemapStatPath(vn, path_version, self.TFADataVersion)
 	end
 
 	if not vn and not self2.ClearStatCacheWarned then
@@ -122,8 +132,13 @@ function SWEP:ClearStatCache(vn, path_version)
 	end
 
 	if vn then
-		self2.StatCache[vn] = nil
-		self2.StatCache2[vn] = nil
+		local list = TFA.GetStatPathChildren(vn, path_version, self.TFADataVersion)
+
+		for i = 1, #list do
+			self2.StatCache[list[i]] = nil
+			self2.StatCache2[list[i]] = nil
+		end
+
 		getpath2 = self2.GetStatPath(self, vn)
 		getpath = getpath2[1]
 	else
@@ -138,7 +153,7 @@ function SWEP:ClearStatCache(vn, path_version)
 
 		setmetatable(self2.Primary, {
 			__index = function(self3, key)
-				return self2.GetStatL(self, "Primary." .. key)
+				return self2.GetStatVersioned(self, "Primary." .. key, self2.TFADataVersion)
 			end,
 
 			__newindex = function() end
@@ -146,7 +161,7 @@ function SWEP:ClearStatCache(vn, path_version)
 
 		for k in pairs(self2.Primary_TFA) do
 			if isstring(k) then
-				temp[k] = self2.GetStatL(self, "Primary." .. k)
+				temp[k] = self2.GetStatVersioned(self, "Primary." .. k, self2.TFADataVersion)
 			end
 		end
 
@@ -205,7 +220,7 @@ function SWEP:ClearStatCache(vn, path_version)
 			end
 		end
 	elseif getpath == "Primary_TFA" and isstring(getpath2[2]) then
-		self2.Primary[getpath[2]] = self2.GetStatL(self, vn)
+		self2.Primary[getpath[2]] = self2.GetStatVersioned(self, vn, path_version)
 	end
 
 	if vn == "Secondary" or not vn then
@@ -215,7 +230,7 @@ function SWEP:ClearStatCache(vn, path_version)
 
 		setmetatable(self2.Secondary, {
 			__index = function(self3, key)
-				return self2.GetStatL(self, "Secondary." .. key)
+				return self2.GetStatVersioned(self, "Secondary." .. key, self2.TFADataVersion)
 			end,
 
 			__newindex = function() end
@@ -223,7 +238,7 @@ function SWEP:ClearStatCache(vn, path_version)
 
 		for k in pairs(self.Secondary_TFA) do
 			if isstring(k) then
-				temp[k] = self2.GetStatL(self, "Secondary." .. k)
+				temp[k] = self2.GetStatVersioned(self, "Secondary." .. k, self2.TFADataVersion)
 			end
 		end
 
@@ -233,7 +248,7 @@ function SWEP:ClearStatCache(vn, path_version)
 			self2.Secondary[k] = v
 		end
 	elseif getpath == "Secondary_TFA" and isstring(getpath2[2]) then
-		self2.Secondary[getpath[2]] = self2.GetStatL(self, vn)
+		self2.Secondary[getpath[2]] = self2.GetStatVersioned(self, vn, path_version)
 	end
 
 	if CLIENT then
@@ -271,7 +286,7 @@ function SWEP:GetStatRaw(stat, path_version)
 end
 
 function SWEP:GetStatRawL(stat)
-	return self:GetStatRaw(stat, TFA.LatestDataVersion)
+	return self:GetStatRaw(stat, LatestDataVersion)
 end
 
 function SWEP:SetStatRaw(stat, path_version, _value)
@@ -298,7 +313,7 @@ function SWEP:SetStatRaw(stat, path_version, _value)
 end
 
 function SWEP:SetStatRawL(stat, _value)
-	return self:SetStatRaw(stat, TFA.LatestDataVersion, _value)
+	return self:SetStatRaw(stat, LatestDataVersion, _value)
 end
 
 function SWEP:GetStat(stat, default, dontMergeTables)
@@ -306,7 +321,7 @@ function SWEP:GetStat(stat, default, dontMergeTables)
 end
 
 function SWEP:GetStatL(stat, default, dontMergeTables)
-	return self:GetStatVersioned(stat, TFA.LatestDataVersion, default, dontMergeTables)
+	return self:GetStatVersioned(stat, LatestDataVersion, default, dontMergeTables)
 end
 
 function SWEP:GetStatVersioned(stat, path_version, default, dontMergeTables)

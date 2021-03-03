@@ -253,14 +253,13 @@ TFA.PathParseCache = {}
 TFA.PathParseCacheTR = {}
 TFA.StatPathRemapCache = {}
 TFA.PathParseCacheDirect = {}
-
-TFA.StatPathRemap_Real = {}
+TFA.PathParseChildren = {}
 
 local PathParseCache = TFA.PathParseCache
 local PathParseCacheTR = TFA.PathParseCacheTR
 local PathParseCacheDirect = TFA.PathParseCacheDirect
 local StatPathRemapCache = TFA.StatPathRemapCache
-local StatPathRemap_Real = TFA.StatPathRemap_Real
+local PathParseChildren = TFA.PathParseChildren
 local string_Explode = string.Explode
 local ipairs = ipairs
 local pairs = pairs
@@ -334,6 +333,39 @@ function TFA.RemapStatPath(path, path_version, structure_version)
 	return StatPathRemapCache[cache_path]
 end
 
+function TFA.GetStatPathChildren(path, path_version, structure_version)
+	-- version do not match
+	if path_version ~= structure_version then
+		path = TFA.RemapStatPath(path, path_version, structure_version)
+	end
+
+	if not PathParseChildren[path] then
+		TFA.GetStatPath(path, path_version, structure_version)
+	end
+
+	return PathParseChildren[path].list
+end
+
+local function concat_to(tab, to)
+	local str = tab[1]
+
+	for i = 2, to do
+		str = str .. '.' .. tab[i]
+	end
+
+	return str
+end
+
+local function concat_from(tab, from)
+	local str = tab[from]
+
+	for i = from + 1, #tab do
+		str = str .. '.' .. tab[i]
+	end
+
+	return str
+end
+
 function TFA.GetStatPath(path, path_version, structure_version, no_translate)
 	local cache_path = path
 
@@ -376,7 +408,6 @@ function TFA.GetStatPath(path, path_version, structure_version, no_translate)
 
 				if istable(mapping) then
 					path, fnGet = doUpgrade(path, mapping)
-					print(path, fnGet)
 
 					if fnGet and fnGet ~= identity then
 						if not fn then
@@ -392,6 +423,60 @@ function TFA.GetStatPath(path, path_version, structure_version, no_translate)
 	end
 
 	get_cache = string_Explode(".", path, false)
+
+	do
+		local children = PathParseChildren[get_cache[1]]
+
+		if not children then
+			children = {
+				list = {get_cache[1]},
+				children = {}
+			}
+
+			PathParseChildren[get_cache[1]] = children
+		end
+
+		local childrens = {children}
+
+		for i = 2, #get_cache do
+			local obj = get_cache[i]
+			local path2 = concat_to(get_cache, i)
+
+			for i3 = 1, #childrens do
+				local list = childrens[i3].list
+				local hit = false
+
+				for i2 = 1, #list do
+					if list[i2] == path2 then
+						hit = true
+						break
+					end
+				end
+
+				if not hit then
+					table.insert(list, path2)
+				end
+			end
+
+			if not children.children[obj] then
+				children.children[obj] = {
+					list = {path2},
+					children = {}
+				}
+			end
+
+			if not PathParseChildren[path2] then
+				PathParseChildren[path2] = {
+					list = {path2},
+					children = {}
+				}
+			end
+
+			children = children.children[obj]
+			table.insert(childrens, children)
+			table.insert(childrens, PathParseChildren[path2])
+		end
+	end
 
 	if not no_translate then
 		if get_cache[1] == "Primary" then
