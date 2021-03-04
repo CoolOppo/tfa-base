@@ -463,6 +463,8 @@ function SWEP:ViewModelDrawnPost()
 	local self2 = self:GetTable()
 	if not self2.VMIV(self) then return end
 
+	self2.CacheSightsPos(self)
+
 	local ViewModelElements = self:GetStatRaw("ViewModelElements", TFA.LatestDataVersion)
 
 	if not ViewModelElements or not self2.vRenderOrder then return end
@@ -486,8 +488,6 @@ function SWEP:ViewModelDrawnPost()
 			end
 		end
 	end
-
-	self2.CacheSightsPos(self)
 end
 
 --[[
