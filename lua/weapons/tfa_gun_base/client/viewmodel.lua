@@ -568,7 +568,8 @@ end
 local mirror = Matrix()
 
 hook.Add("PostRender", "TFA:CacheSightsPos", function()
-	local self = LocalWeapon()
+	local self = LocalPlayer():GetActiveWeapon()
+	if not IsValid(self) then return end
 	local self2 = self:GetTable()
 	if not self2.IsTFAWeapon then return end
 	if not self2.ViewModelFlip then return end

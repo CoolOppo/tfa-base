@@ -377,8 +377,8 @@ function TFA.GetStatPath(path, path_version, structure_version, no_translate)
 		cache_path = string_format("%d_%d_%s", path_version, structure_version, path)
 	end
 
-	local PathParseCache = no_translate and PathParseCacheTR or PathParseCache
-	local get_cache = PathParseCache[cache_path]
+	local _PathParseCache = no_translate and PathParseCacheTR or PathParseCache
+	local get_cache = _PathParseCache[cache_path]
 	if get_cache ~= nil then return get_cache[1], get_cache[2], get_cache[3] end
 
 	local fn, fnGet
@@ -490,7 +490,7 @@ function TFA.GetStatPath(path, path_version, structure_version, no_translate)
 		get_cache[k] = tonumber(v) or v
 	end
 
-	PathParseCache[cache_path] = {get_cache, path, fn or identity}
+	_PathParseCache[cache_path] = {get_cache, path, fn or identity}
 	return get_cache, path, fn or identity
 end
 
