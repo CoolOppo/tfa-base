@@ -312,10 +312,12 @@ local function DrawSight(vm, ply, wep)
 			end
 		end
 
+		if wep.ViewModelFlip then render.CullMode(MATERIAL_CULLMODE_CW) end
 		local oldBlend = render.GetBlend()
 		render.SetBlend(0)
 			SightMaskModel:DrawModel()
 		render.SetBlend(oldBlend)
+		if wep.ViewModelFlip then render.CullMode(MATERIAL_CULLMODE_CCW) end
 
 		drawOn()
 	end
