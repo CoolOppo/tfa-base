@@ -771,7 +771,7 @@ function SWEP:GetBoneOrientation(basetabl, tabl, ent, bone_override)
 		local v = basetabl[tabl.rel]
 		if not v then return end
 
-		local boneName = bone_override or tabl.bone
+		local boneName = tabl.bone
 
 		if v.curmodel and ent ~= v.curmodel and (v.bonemerge or (boneName and boneName ~= "" and v.curmodel:LookupBone(boneName))) then
 			pos, ang = self:GetBoneOrientation(basetabl, v, v.curmodel, boneName)
