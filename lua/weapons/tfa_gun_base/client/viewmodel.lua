@@ -102,20 +102,24 @@ function SWEP:GetViewModelPosition(opos, oang, ...)
 	self.OldPos = npos
 	self.OldAng = nang
 
-	if self.IronSightsProgressUnpredicted > 0.05 then
+	if self.IronSightsProgressUnpredicted > 0.005 then
 		local _opos, _oang = opos * 1, oang * 1
 
-		-- sight offset
-		_oang:RotateAroundAxis(_oang:Forward(), -ang.r)
-		_oang:RotateAroundAxis(_oang:Right(), ang.p)
-		_oang:RotateAroundAxis(_oang:Up(), -ang.y)
-
+		-- tfa base vm offset
 		local right, up, fwd = _oang:Right(), _oang:Up(), _oang:Forward()
 
-		_opos = _opos - pos.x * fwd + pos.y * right - pos.z * up
-
-		-- tfa base vm offset
 		_opos = _opos - ofpos.y * right + ofpos.x * fwd + ofpos.z * up
+		_oang:RotateAroundAxis(fwd, ofang.r)
+		_oang:RotateAroundAxis(right, -ofang.p)
+		_oang:RotateAroundAxis(up, ofang.y)
+
+		-- sight offset
+		right, up, fwd = _oang:Right(), _oang:Up(), _oang:Forward()
+		_oang:RotateAroundAxis(fwd, -ang.r)
+		_oang:RotateAroundAxis(right, ang.p)
+		_oang:RotateAroundAxis(up, -ang.y)
+
+		_opos = _opos - pos.x * fwd + pos.y * right - pos.z * up
 
 		self.OldPos = LerpVector(self.IronSightsProgressUnpredicted, npos, _opos)
 		self.OldAng = LerpAngle(self.IronSightsProgressUnpredicted, nang, _oang)
@@ -606,7 +610,7 @@ function SWEP:CacheSightsPos()
 		self.SightsAttPos, self.SightsAttAng = attpos.Pos, attpos.Ang
 	end
 
-	if self.SightsAttPos and self.SightsAttPos then
+	if self.SightsAttPos and self.SightsAttAng then
 		local OffsetPos = self:GetStat("ProceduralSight_OffsetPos")
 		if OffsetPos then
 			if GetConVarNumber("developer") > 0 then -- draw pre-offset pos
