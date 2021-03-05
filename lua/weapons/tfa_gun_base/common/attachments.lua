@@ -554,10 +554,10 @@ local bgt = {}
 SWEP.ViewModelBodygroups = {}
 SWEP.WorldModelBodygroups = {}
 
-function SWEP:IterateBodygroups(entity, tablename)
+function SWEP:IterateBodygroups(entity, tablename, version)
 	local self2 = self:GetTable()
 
-	bgt = self2.GetStat(self, tablename, self2[tablename])
+	bgt = self2.GetStatVersioned(self, tablename, version or 0, self2[tablename])
 
 	for k, v in pairs(bgt) do
 		if isnumber(k) then
@@ -576,26 +576,28 @@ end
 
 function SWEP:ProcessBodygroups()
 	local self2 = self:GetTable()
+	local ViewModelBodygroups = self:GetStatRawL("ViewModelBodygroups")
+	local WorldModelBodygroups = self:GetStatRawL("WorldModelBodygroups")
 
 	if not self2.HasFilledBodygroupTables then
 		if self2.VMIV(self) then
-			for i = 0, #(self2.OwnerViewModel:GetBodyGroups() or self2.ViewModelBodygroups) do
-				self2.ViewModelBodygroups[i] = self2.ViewModelBodygroups[i] or 0
+			for i = 0, #(self2.OwnerViewModel:GetBodyGroups() or ViewModelBodygroups) do
+				ViewModelBodygroups[i] = ViewModelBodygroups[i] or 0
 			end
 		end
 
-		for i = 0, #(self:GetBodyGroups() or self2.WorldModelBodygroups) do
-			self2.WorldModelBodygroups[i] = self2.WorldModelBodygroups[i] or 0
+		for i = 0, #(self:GetBodyGroups() or WorldModelBodygroups) do
+			WorldModelBodygroups[i] = WorldModelBodygroups[i] or 0
 		end
 
 		self2.HasFilledBodygroupTables = true
 	end
 
 	if self2.VMIV(self) then
-		self2.IterateBodygroups(self, self2.OwnerViewModel, "ViewModelBodygroups")
+		self2.IterateBodygroups(self, self2.OwnerViewModel, "ViewModelBodygroups", TFA.LatestDataVersion)
 	end
 
-	self2.IterateBodygroups(self, self, "WorldModelBodygroups")
+	self2.IterateBodygroups(self, self, "WorldModelBodygroups", TFA.LatestDataVersion)
 end
 
 function SWEP:CallAttFunc(funcName, ...)

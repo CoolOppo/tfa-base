@@ -80,6 +80,7 @@ SWEP.StatCache_Blacklist = {
 	["MaterialTable_V"] = true,
 	["MaterialTable_W"] = true,
 	["ViewModelBodygroups"] = true,
+	["Bodygroups_V"] = true,
 	["WorldModelBodygroups"] = true,
 	["Skin"] = true
 }

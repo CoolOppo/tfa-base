@@ -280,7 +280,8 @@ function SWEP:ViewModelDrawn()
 		end
 	end
 
-	local ViewModelElements = self:GetStatRaw("ViewModelElements", TFA.LatestDataVersion)
+	local ViewModelElements = self:GetStatRawL("ViewModelElements")
+	local ViewModelBodygroups = self:GetStatRawL("ViewModelBodygroups")
 
 	if ViewModelElements and self2.HasInitAttachments then
 		-- ViewModelElements = self:GetStatL("ViewModelElements")
@@ -307,7 +308,7 @@ function SWEP:ViewModelDrawn()
 
 			if element.type == "Bodygroup" then
 				if element.index and element.value_active then
-					self2.ViewModelBodygroups[element.index] = self2.GetStatL(self, "ViewModelElements." .. name .. ".active") and element.value_active or (element.value_inactive or 0)
+					ViewModelBodygroups[element.index] = self2.GetStatL(self, "ViewModelElements." .. name .. ".active") and element.value_active or (element.value_inactive or 0)
 				end
 
 				goto CONTINUE
