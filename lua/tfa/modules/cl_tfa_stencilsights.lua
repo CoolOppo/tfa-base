@@ -245,7 +245,7 @@ do -- Quad/Attach reticle, TFA INS2 method
 		render.OverrideDepthEnable(true, true)
 
 		render.SetMaterial(ReticleMaterial)
-		render.DrawQuadEasy(p, a:Forward() * -1, ReticleSize, ReticleSize, TargetColor, 180 - a.r)
+		render.DrawQuadEasy(p, a:Forward() * -1, ReticleSize, ReticleSize, TargetColor, 180 + a.r * (wep.ViewModelFlip and 1 or -1))
 
 		render.OverrideDepthEnable(false, false)
 	end
