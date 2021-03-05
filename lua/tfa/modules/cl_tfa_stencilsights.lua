@@ -136,6 +136,7 @@ do -- Model reticle, for when you don't have an attach point
 			end
 		end
 
+		if wep.ViewModelFlip then render.CullMode(MATERIAL_CULLMODE_CW) end
 		if wep:GetStat("StencilSight_FadeReticleByProgress", false) then
 			local oldBlend = render.GetBlend()
 
@@ -145,6 +146,7 @@ do -- Model reticle, for when you don't have an attach point
 		else
 			SightReticleEnt:DrawModel()
 		end
+		if wep.ViewModelFlip then render.CullMode(MATERIAL_CULLMODE_CCW) end
 	end
 end
 
@@ -245,7 +247,7 @@ do -- Quad/Attach reticle, TFA INS2 method
 		render.OverrideDepthEnable(true, true)
 
 		render.SetMaterial(ReticleMaterial)
-		render.DrawQuadEasy(p, a:Forward() * -1, ReticleSize, ReticleSize, TargetColor, 180 - a.r)
+		render.DrawQuadEasy(p, a:Forward() * -1, ReticleSize, ReticleSize, TargetColor, 180 + a.r * (wep.ViewModelFlip and 1 or -1))
 
 		render.OverrideDepthEnable(false, false)
 	end
@@ -310,10 +312,12 @@ local function DrawSight(vm, ply, wep)
 			end
 		end
 
+		if wep.ViewModelFlip then render.CullMode(MATERIAL_CULLMODE_CW) end
 		local oldBlend = render.GetBlend()
 		render.SetBlend(0)
 			SightMaskModel:DrawModel()
 		render.SetBlend(oldBlend)
+		if wep.ViewModelFlip then render.CullMode(MATERIAL_CULLMODE_CCW) end
 
 		drawOn()
 	end
