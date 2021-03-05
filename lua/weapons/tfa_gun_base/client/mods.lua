@@ -336,17 +336,19 @@ function SWEP:ViewModelDrawn()
 
 			if element.type == "Model" and IsValid(model) then
 				if not element.bonemerge then
-					model:SetPos(pos + ang:Forward() * element.pos.x + ang:Right() * element.pos.y + ang:Up() * element.pos.z)
-
 					mirror:Identity()
 
 					if self2.ViewModelFlip then
+						model:SetPos(pos + ang:Forward() * element.pos.x - ang:Right() * element.pos.y + ang:Up() * element.pos.z)
+
 						ang:RotateAroundAxis(ang:Up(), -element.angle.y)
 						ang:RotateAroundAxis(ang:Right(), element.angle.p)
 						ang:RotateAroundAxis(ang:Forward(), -element.angle.r)
 						mirror:Scale(mirror_scale)
 						mirror:Scale(element.size)
 					else
+						model:SetPos(pos + ang:Forward() * element.pos.x + ang:Right() * element.pos.y + ang:Up() * element.pos.z)
+
 						ang:RotateAroundAxis(ang:Up(), element.angle.y)
 						ang:RotateAroundAxis(ang:Right(), element.angle.p)
 						ang:RotateAroundAxis(ang:Forward(), element.angle.r)
