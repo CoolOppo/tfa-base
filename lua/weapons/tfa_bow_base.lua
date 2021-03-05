@@ -327,3 +327,5 @@ function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet,
 
 	BallisticFirebullet(self:GetOwner(), self.MainBullet)
 end
+
+TFA.FillMissingMetaValues(SWEP)

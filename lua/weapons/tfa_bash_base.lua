@@ -251,3 +251,5 @@ function SWEP:GetBashingStrict()
 	local stat = self:GetStatus()
 	return stat == TFA.Enum.STATUS_BASHING or stat == TFA.Enum.STATUS_BASHING_WAIT
 end
+
+TFA.FillMissingMetaValues(SWEP)

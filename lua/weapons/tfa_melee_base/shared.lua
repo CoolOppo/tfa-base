@@ -998,3 +998,5 @@ end
 
 function SWEP:CycleSafety()
 end
+
+TFA.FillMissingMetaValues(SWEP)

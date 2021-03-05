@@ -338,3 +338,5 @@ end
 
 SWEP.IsKnife = true
 SWEP.WeaponLength = 8
+
+TFA.FillMissingMetaValues(SWEP)
