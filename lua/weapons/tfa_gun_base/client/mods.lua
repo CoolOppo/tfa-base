@@ -796,22 +796,12 @@ function SWEP:GetBoneOrientation(basetabl, tabl, ent, bone_override, isVM)
 		if v.curmodel and ent ~= v.curmodel and (v.bonemerge or (boneName and boneName ~= "" and v.curmodel:LookupBone(boneName))) then
 			pos, ang = self:GetBoneOrientation(basetabl, v, v.curmodel, boneName, isVM)
 
-			if pos and ang then
-				if isVM and self.ViewModelFlip then
-					--ang.r = -ang.r
-				end
-
-				return pos, ang
-			end
+			if pos and ang then return pos, ang end
 		else
 			--As clavus states in his original code, don't make your elements named the same as a bone, because recursion.
 			pos, ang = self:GetBoneOrientation(basetabl, v, ent, nil, isVM)
 
 			if pos and ang then
-				if isVM and self.ViewModelFlip then
-					--ang.r = -ang.r
-				end
-
 				pos = pos + ang:Forward() * v.pos.x + ang:Right() * v.pos.y + ang:Up() * v.pos.z
 
 				ang:RotateAroundAxis(ang:Up(), v.angle.y)
