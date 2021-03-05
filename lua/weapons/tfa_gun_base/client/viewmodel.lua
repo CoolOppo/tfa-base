@@ -94,14 +94,13 @@ function SWEP:GetViewModelPosition(opos, oang, ...)
 		npos, nang = self:SprintBob(npos, nang, Lerp(self2.SprintProgressUnpredicted3 or self2.SprintProgressUnpredicted or self:GetSprintProgress(), 0, self2.SprintBobMult))
 	end
 
-	if not self.SightsAttPos or not self.SightsAttAng then return npos, nang end
+	local pos, ang = self2.SightsAttPos, self2.SightsAttAng
+	if not pos or not ang then return npos, nang end
 
-	--local pos, ang = WorldToLocal(self.SightsAttPos, self.SightsAttAng, self.OldPos, self.OldAng)
-	local pos, ang = self.SightsAttPos * 1, self.SightsAttAng * 1
 	local ofpos, ofang = WorldToLocal(npos, nang, opos, oang)
 
-	self.OldPos = npos
-	self.OldAng = nang
+	self2.OldPos = npos
+	self2.OldAng = nang
 
 	if self.IronSightsProgressUnpredicted > 0.005 then
 		local _opos, _oang = opos * 1, oang * 1
@@ -115,20 +114,18 @@ function SWEP:GetViewModelPosition(opos, oang, ...)
 		_oang:RotateAroundAxis(up, ofang.y)
 
 		-- sight offset
+		_oang:RotateAroundAxis(_oang:Forward(), -ang.r)
+		_oang:RotateAroundAxis(_oang:Right(), ang.p)
+		_oang:RotateAroundAxis(_oang:Up(), -ang.y)
 		right, up, fwd = _oang:Right(), _oang:Up(), _oang:Forward()
-		_oang:RotateAroundAxis(fwd, -ang.r)
-		_oang:RotateAroundAxis(right, ang.p)
-		_oang:RotateAroundAxis(up, -ang.y)
 
 		_opos = _opos - pos.x * fwd + pos.y * right - pos.z * up
 
-		self.OldPos = LerpVector(self.IronSightsProgressUnpredicted, npos, _opos)
-		self.OldAng = LerpAngle(self.IronSightsProgressUnpredicted, nang, _oang)
+		self2.OldPos = LerpVector(self2.IronSightsProgressUnpredicted, npos, _opos)
+		self2.OldAng = LerpAngle(self2.IronSightsProgressUnpredicted, nang, _oang)
 	end
 
-	--print(self.SightsAttPos, self.SightsAttAng)
-
-	return self.OldPos, self.OldAng
+	return self2.OldPos, self2.OldAng
 end
 
 function SWEP:CalculateViewModelFlip()
@@ -738,7 +735,7 @@ function SWEP:CacheSightsPos(vm, flipped)
 			self.SightsAttPos, self.SightsAttAng = transform:GetTranslation(), transform:GetAngles()
 		end
 
-		local OffsetPos = self:GetStat("ProceduralSight_OffsetPos")
+		local OffsetPos = self:GetStatL("ProceduralSight_OffsetPos")
 
 		if OffsetPos then
 			if GetConVarNumber("developer") > 0 then -- draw pre-offset pos
@@ -749,10 +746,12 @@ function SWEP:CacheSightsPos(vm, flipped)
 				render.DrawLine(a, a + b:Up() * 1, Color(0, 0, 127), false)
 			end
 
-			self.SightsAttPos = self.SightsAttPos + self.SightsAttAng:Right() * OffsetPos.x + self.SightsAttAng:Forward() * OffsetPos.y + self.SightsAttAng:Up() * OffsetPos.z
+			self.SightsAttPos:Add(self.SightsAttAng:Right() * OffsetPos.x)
+			self.SightsAttPos:Add(self.SightsAttAng:Forward() * OffsetPos.y)
+			self.SightsAttPos:Add(self.SightsAttAng:Up() * OffsetPos.z)
 		end
 
-		local OffsetAng = self:GetStat("ProceduralSight_OffsetAng")
+		local OffsetAng = self:GetStatL("ProceduralSight_OffsetAng")
 
 		if OffsetAng then
 			self.SightsAttAng:RotateAroundAxis(self.SightsAttAng:Right(), OffsetAng.p)
