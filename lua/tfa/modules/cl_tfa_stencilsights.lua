@@ -136,6 +136,7 @@ do -- Model reticle, for when you don't have an attach point
 			end
 		end
 
+		if wep.ViewModelFlip then render.CullMode(MATERIAL_CULLMODE_CW) end
 		if wep:GetStat("StencilSight_FadeReticleByProgress", false) then
 			local oldBlend = render.GetBlend()
 
@@ -145,6 +146,7 @@ do -- Model reticle, for when you don't have an attach point
 		else
 			SightReticleEnt:DrawModel()
 		end
+		if wep.ViewModelFlip then render.CullMode(MATERIAL_CULLMODE_CCW) end
 	end
 end
 
