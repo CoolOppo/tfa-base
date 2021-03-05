@@ -96,7 +96,8 @@ function SWEP:GetViewModelPosition(opos, oang, ...)
 
 	if not self.SightsAttPos or not self.SightsAttAng then return npos, nang end
 
-	local pos, ang = WorldToLocal(self.SightsAttPos, self.SightsAttAng, self.OldPos, self.OldAng)
+	--local pos, ang = WorldToLocal(self.SightsAttPos, self.SightsAttAng, self.OldPos, self.OldAng)
+	local pos, ang = self.SightsAttPos * 1, self.SightsAttAng * 1
 	local ofpos, ofang = WorldToLocal(npos, nang, opos, oang)
 
 	self.OldPos = npos
@@ -124,6 +125,8 @@ function SWEP:GetViewModelPosition(opos, oang, ...)
 		self.OldPos = LerpVector(self.IronSightsProgressUnpredicted, npos, _opos)
 		self.OldAng = LerpAngle(self.IronSightsProgressUnpredicted, nang, _oang)
 	end
+
+	--print(self.SightsAttPos, self.SightsAttAng)
 
 	return self.OldPos, self.OldAng
 end
@@ -563,12 +566,125 @@ function SWEP:Sway(pos, ang, ftv)
 	return pos, ang
 end
 
-function SWEP:CacheSightsPos()
+hook.Add("PostRender", "TFA:CacheSightsPos", function()
+	local self = LocalWeapon()
+	local self2 = self:GetTable()
+	if not self2.IsTFAWeapon then return end
+	if not self2.ViewModelFlip then return end
+
+	local vm = self2.OwnerViewModel
+
+	vm:SetRenderOrigin(Vector())
+	vm:SetRenderAngles(Angle())
+
+	self2.ViewModelFlip = false
+
+	vm:InvalidateBoneCache()
+	vm:SetupBones()
+
+	local ViewModelElements = self:GetStatRaw("ViewModelElements", TFA.LatestDataVersion)
+
+	if ViewModelElements and self2.HasInitAttachments then
+		if not self2.vRenderOrder then
+			self:RebuildModsRenderOrder()
+		end
+
+		TFA._IncNextSetupBones()
+
+		for index = 1, #self2.vRenderOrder do
+			local name = self2.vRenderOrder[index]
+			local element = ViewModelElements[name]
+
+			if not element then
+				self:RebuildModsRenderOrder()
+				break
+			end
+
+			if element.type ~= "Model" then goto CONTINUE end
+
+			if element.hide then goto CONTINUE end
+			if not element.bone then goto CONTINUE end
+
+			if self2.GetStatL(self, "ViewModelElements." .. name .. ".active") == false then goto CONTINUE end
+
+			local pos, ang = self:GetBoneOrientation(ViewModelElements, element, vm)
+			if not pos and not element.bonemerge then goto CONTINUE end
+
+			self:PrecacheElement(element, true)
+
+			local model = element.curmodel
+			local sprite = element.spritemat
+
+			if IsValid(model) then
+				if not element.bonemerge then
+					model:SetPos(pos + ang:Forward() * element.pos.x + ang:Right() * element.pos.y + ang:Up() * element.pos.z)
+					ang:RotateAroundAxis(ang:Up(), element.angle.y)
+					ang:RotateAroundAxis(ang:Right(), element.angle.p)
+					ang:RotateAroundAxis(ang:Forward(), element.angle.r)
+					model:SetAngles(ang)
+				end
+
+				if not self2.VElementsBodygroupsCache[index] then
+					self2.VElementsBodygroupsCache[index] = #model:GetBodyGroups() - 1
+				end
+
+				if self2.VElementsBodygroupsCache[index] then
+					for _b = 0, self2.VElementsBodygroupsCache[index] do
+						local newbg = self2.GetStatL(self, "ViewModelElements." .. name .. ".bodygroup." .. _b, 0) -- names are not supported, use overridetable
+
+						if model:GetBodygroup(_b) ~= newbg then
+							model:SetBodygroup(_b, newbg)
+						end
+					end
+				end
+
+				if element.bonemerge then
+					if element.rel and ViewModelElements[element.rel] and IsValid(ViewModelElements[element.rel].curmodel) then
+						element.parModel = ViewModelElements[element.rel].curmodel
+					else
+						element.parModel = self2.OwnerViewModel or self
+					end
+
+					if model:GetParent() ~= element.parModel then
+						model:SetParent(element.parModel)
+					end
+
+					if not model:IsEffectActive(EF_BONEMERGE) then
+						model:AddEffects(EF_BONEMERGE)
+						model:AddEffects(EF_BONEMERGE_FASTCULL)
+						model:SetMoveType(MOVETYPE_NONE)
+						model:SetLocalPos(vector_origin)
+						model:SetLocalAngles(angle_zero)
+					end
+				elseif model:IsEffectActive(EF_BONEMERGE) then
+					model:RemoveEffects(EF_BONEMERGE)
+					model:SetParent(NULL)
+				end
+
+				model:InvalidateBoneCache()
+				model:SetupBones()
+				model.tfa_next_setup_bones = TFA._GetNextSetupBones()
+			end
+
+			::CONTINUE::
+		end
+	end
+
+	self:CacheSightsPos(vm, true)
+
+	vm:SetRenderOrigin()
+	vm:SetRenderAngles()
+
+	self.ViewModelFlip = true
+	vm:InvalidateBoneCache()
+end)
+
+function SWEP:CacheSightsPos(vm, flipped)
 	self.SightsAttPos, self.SightsAttAng = nil, nil
 
 	if not self:GetStat("ProceduralSight", false) then return end
 
-	local model = self.OwnerViewModel
+	local model = vm
 	local attname = self:GetStat("ProceduralSight_VElement")
 
 	if attname then
@@ -578,6 +694,10 @@ function SWEP:CacheSightsPos()
 	end
 
 	if not IsValid(model) then return end
+
+	local ViewModelElements = self:GetStatRaw("ViewModelElements", TFA.LatestDataVersion)
+
+	TFA._IncNextSetupBones()
 
 	if self:GetStat("ProceduralSight_PositionType", TFA.Enum.SIGHTSPOS_ATTACH) == TFA.Enum.SIGHTSPOS_BONE then
 		local boneid = self:GetStat("ProceduralSight_Bone")
@@ -590,11 +710,6 @@ function SWEP:CacheSightsPos()
 		if not boneid or boneid < 0 then return end
 
 		self.SightsAttPos, self.SightsAttAng = model:GetBonePosition(boneid)
-
-		if self.SightsAttPos == model:GetPos() then
-			self.SightsAttPos = model:GetBoneMatrix(boneid):GetTranslation()
-			self.SightsAttAng = model:GetBoneMatrix(boneid):GetAngles()
-		end
 	else
 		local attid = self:GetStat("ProceduralSight_Attachment")
 		if not attid then return end
@@ -611,18 +726,34 @@ function SWEP:CacheSightsPos()
 	end
 
 	if self.SightsAttPos and self.SightsAttAng then
+		if not flipped then
+			local transform = Matrix()
+			transform:Translate(vm:GetPos())
+			transform:Rotate(vm:GetAngles())
+			transform:Invert()
+
+			transform:Translate(self.SightsAttPos)
+			transform:Rotate(self.SightsAttAng)
+
+			self.SightsAttPos, self.SightsAttAng = transform:GetTranslation(), transform:GetAngles()
+		end
+
 		local OffsetPos = self:GetStat("ProceduralSight_OffsetPos")
+
 		if OffsetPos then
 			if GetConVarNumber("developer") > 0 then -- draw pre-offset pos
-				render.DrawLine(self.SightsAttPos, self.SightsAttPos + self.SightsAttAng:Forward() * 1, Color(127, 0, 0), false)
-				render.DrawLine(self.SightsAttPos, self.SightsAttPos - self.SightsAttAng:Right() * 1, Color(0, 127, 0), false)
-				render.DrawLine(self.SightsAttPos, self.SightsAttPos + self.SightsAttAng:Up() * 1, Color(0, 0, 127), false)
+				local a, b = LocalToWorld(self.SightsAttPos, self.SightsAttAng, vm:GetPos(), vm:GetAngles())
+
+				render.DrawLine(a, a + b:Forward() * 1, Color(127, 0, 0), false)
+				render.DrawLine(a, a - b:Right() * 1, Color(0, 127, 0), false)
+				render.DrawLine(a, a + b:Up() * 1, Color(0, 0, 127), false)
 			end
 
 			self.SightsAttPos = self.SightsAttPos + self.SightsAttAng:Right() * OffsetPos.x + self.SightsAttAng:Forward() * OffsetPos.y + self.SightsAttAng:Up() * OffsetPos.z
 		end
 
 		local OffsetAng = self:GetStat("ProceduralSight_OffsetAng")
+
 		if OffsetAng then
 			self.SightsAttAng:RotateAroundAxis(self.SightsAttAng:Right(), OffsetAng.p)
 			self.SightsAttAng:RotateAroundAxis(self.SightsAttAng:Up(), OffsetAng.y)
@@ -630,9 +761,11 @@ function SWEP:CacheSightsPos()
 		end
 
 		if GetConVarNumber("developer") > 0 then -- draw final pos
-			render.DrawLine(self.SightsAttPos, self.SightsAttPos + self.SightsAttAng:Forward() * 1, Color(255, 0, 0), false)
-			render.DrawLine(self.SightsAttPos, self.SightsAttPos - self.SightsAttAng:Right() * 1, Color(0, 255, 0), false)
-			render.DrawLine(self.SightsAttPos, self.SightsAttPos + self.SightsAttAng:Up() * 1, Color(0, 0, 255), false)
+			local a, b = LocalToWorld(self.SightsAttPos, self.SightsAttAng, vm:GetPos(), vm:GetAngles())
+
+			render.DrawLine(a, a + b:Forward() * 1, Color(255, 0, 0), false)
+			render.DrawLine(a, a - b:Right() * 1, Color(0, 255, 0), false)
+			render.DrawLine(a, a + b:Up() * 1, Color(0, 0, 255), false)
 		end
 	end
 end

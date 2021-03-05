@@ -180,6 +180,14 @@ end
 
 local next_setup_bones = 0
 
+function TFA._IncNextSetupBones()
+	next_setup_bones = next_setup_bones + 1
+end
+
+function TFA._GetNextSetupBones()
+	return next_setup_bones
+end
+
 function SWEP:ViewModelDrawn()
 	local self2 = self:GetTable()
 	render.SetBlend(1)
@@ -396,7 +404,7 @@ function SWEP:ViewModelDrawn()
 					end
 				elseif model:IsEffectActive(EF_BONEMERGE) then
 					model:RemoveEffects(EF_BONEMERGE)
-					model:SetParent(nil)
+					model:SetParent(NULL)
 				end
 
 				render.SetColorModulation(element.color.r / 255, element.color.g / 255, element.color.b / 255)
@@ -463,7 +471,9 @@ function SWEP:ViewModelDrawnPost()
 	local self2 = self:GetTable()
 	if not self2.VMIV(self) then return end
 
-	self2.CacheSightsPos(self)
+	if not self.ViewModelFlip then
+		self2.CacheSightsPos(self, self.OwnerViewModel, false)
+	end
 
 	local ViewModelElements = self:GetStatRaw("ViewModelElements", TFA.LatestDataVersion)
 
@@ -758,7 +768,7 @@ function SWEP:GetBoneOrientation(basetabl, tabl, ent, bone_override)
 
 	if tabl.rel and tabl.rel ~= "" and not tabl.bonemerge then
 		local v = basetabl[tabl.rel]
-		if (not v) then return end
+		if not v then return end
 
 		local boneName = bone_override or tabl.bone
 
@@ -805,6 +815,7 @@ function SWEP:GetBoneOrientation(basetabl, tabl, ent, bone_override)
 	local owner = self:GetOwner()
 
 	if IsValid(owner) and owner:IsPlayer() and ent == owner:GetViewModel() and self.ViewModelFlip then
+		ang:RotateAroundAxis(ang:Up(), 180)
 		ang.r = -ang.r
 	end
 
