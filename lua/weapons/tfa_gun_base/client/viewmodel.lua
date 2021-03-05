@@ -94,7 +94,7 @@ function SWEP:GetViewModelPosition(opos, oang, ...)
 		npos, nang = self:SprintBob(npos, nang, Lerp(self2.SprintProgressUnpredicted3 or self2.SprintProgressUnpredicted or self:GetSprintProgress(), 0, self2.SprintBobMult))
 	end
 
-	local pos, ang = self2.SightsAttPos, self2.SightsAttAng
+	local pos, ang = self2.SightsAttPos, Angle(self2.SightsAttAng)
 	if not pos or not ang then return npos, nang end
 
 	local ofpos, ofang = WorldToLocal(npos, nang, opos, oang)
@@ -114,9 +114,11 @@ function SWEP:GetViewModelPosition(opos, oang, ...)
 		_oang:RotateAroundAxis(up, ofang.y)
 
 		-- sight offset
+
 		_oang:RotateAroundAxis(_oang:Forward(), -ang.r)
 		_oang:RotateAroundAxis(_oang:Right(), ang.p)
 		_oang:RotateAroundAxis(_oang:Up(), -ang.y)
+
 		right, up, fwd = _oang:Right(), _oang:Up(), _oang:Forward()
 
 		_opos = _opos - pos.x * fwd + pos.y * right - pos.z * up
@@ -563,6 +565,8 @@ function SWEP:Sway(pos, ang, ftv)
 	return pos, ang
 end
 
+local mirror = Matrix()
+
 hook.Add("PostRender", "TFA:CacheSightsPos", function()
 	local self = LocalWeapon()
 	local self2 = self:GetTable()
@@ -571,10 +575,10 @@ hook.Add("PostRender", "TFA:CacheSightsPos", function()
 
 	local vm = self2.OwnerViewModel
 
+	self2.ViewModelFlip = false
+
 	vm:SetRenderOrigin(Vector())
 	vm:SetRenderAngles(Angle())
-
-	self2.ViewModelFlip = false
 
 	vm:InvalidateBoneCache()
 	vm:SetupBones()
@@ -604,7 +608,7 @@ hook.Add("PostRender", "TFA:CacheSightsPos", function()
 
 			if self2.GetStatL(self, "ViewModelElements." .. name .. ".active") == false then goto CONTINUE end
 
-			local pos, ang = self:GetBoneOrientation(ViewModelElements, element, vm)
+			local pos, ang = self:GetBoneOrientation(ViewModelElements, element, vm, nil, true)
 			if not pos and not element.bonemerge then goto CONTINUE end
 
 			self:PrecacheElement(element, true)
@@ -619,6 +623,9 @@ hook.Add("PostRender", "TFA:CacheSightsPos", function()
 					ang:RotateAroundAxis(ang:Right(), element.angle.p)
 					ang:RotateAroundAxis(ang:Forward(), element.angle.r)
 					model:SetAngles(ang)
+					mirror:Identity()
+					mirror:Scale(element.size)
+					model:EnableMatrix("RenderMultiply", mirror)
 				end
 
 				if not self2.VElementsBodygroupsCache[index] then

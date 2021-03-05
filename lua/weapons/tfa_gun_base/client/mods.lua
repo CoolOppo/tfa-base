@@ -188,6 +188,11 @@ function TFA._GetNextSetupBones()
 	return next_setup_bones
 end
 
+local mirror_scale = Vector(1, -1, 1)
+local normal_scale = Vector(1, 1, 1)
+
+local mirror = Matrix()
+
 function SWEP:ViewModelDrawn()
 	local self2 = self:GetTable()
 	render.SetBlend(1)
@@ -321,7 +326,7 @@ function SWEP:ViewModelDrawn()
 
 			if self2.GetStatL(self, "ViewModelElements." .. name .. ".active") == false then goto CONTINUE end
 
-			local pos, ang = self:GetBoneOrientation(ViewModelElements, element, vm)
+			local pos, ang = self:GetBoneOrientation(ViewModelElements, element, vm, nil, true)
 			if not pos and not element.bonemerge then goto CONTINUE end
 
 			self:PrecacheElement(element, true)
@@ -332,10 +337,25 @@ function SWEP:ViewModelDrawn()
 			if element.type == "Model" and IsValid(model) then
 				if not element.bonemerge then
 					model:SetPos(pos + ang:Forward() * element.pos.x + ang:Right() * element.pos.y + ang:Up() * element.pos.z)
-					ang:RotateAroundAxis(ang:Up(), element.angle.y)
-					ang:RotateAroundAxis(ang:Right(), element.angle.p)
-					ang:RotateAroundAxis(ang:Forward(), element.angle.r)
+
+					mirror:Identity()
+
+					if self2.ViewModelFlip then
+						ang:RotateAroundAxis(ang:Up(), -element.angle.y)
+						ang:RotateAroundAxis(ang:Right(), element.angle.p)
+						ang:RotateAroundAxis(ang:Forward(), -element.angle.r)
+						mirror:Scale(mirror_scale)
+						mirror:Scale(element.size)
+					else
+						ang:RotateAroundAxis(ang:Up(), element.angle.y)
+						ang:RotateAroundAxis(ang:Right(), element.angle.p)
+						ang:RotateAroundAxis(ang:Forward(), element.angle.r)
+						mirror:Scale(normal_scale)
+						mirror:Scale(element.size)
+					end
+
 					model:SetAngles(ang)
+					model:EnableMatrix("RenderMultiply", mirror)
 				end
 
 				if element.surpresslightning then
@@ -399,10 +419,6 @@ function SWEP:ViewModelDrawn()
 						model:SetLocalPos(vector_origin)
 						model:SetLocalAngles(angle_zero)
 					end
-
-					if self2.ViewModelFlip then
-						render.CullMode(MATERIAL_CULLMODE_CW)
-					end
 				elseif model:IsEffectActive(EF_BONEMERGE) then
 					model:RemoveEffects(EF_BONEMERGE)
 					model:SetParent(NULL)
@@ -417,12 +433,16 @@ function SWEP:ViewModelDrawn()
 					model.tfa_next_setup_bones = next_setup_bones
 				end
 
+				if self2.ViewModelFlip then
+					render.CullMode(MATERIAL_CULLMODE_CW)
+				end
+
 				model:DrawModel()
 
 				render.SetBlend(1)
 				render.SetColorModulation(1, 1, 1)
 
-				if element.bonemerge and self2.ViewModelFlip then
+				if self2.ViewModelFlip then
 					render.CullMode(MATERIAL_CULLMODE_CCW)
 				end
 
@@ -762,7 +782,7 @@ Notes:  This is a very specific function for a specific purpose, and shouldn't b
 Purpose:  SWEP Construction Kit Compatibility / Basic Attachments.
 ]]
 --
-function SWEP:GetBoneOrientation(basetabl, tabl, ent, bone_override)
+function SWEP:GetBoneOrientation(basetabl, tabl, ent, bone_override, isVM)
 	local bone, pos, ang
 
 	if not IsValid(ent) then return Vector(), Angle() end
@@ -774,17 +794,30 @@ function SWEP:GetBoneOrientation(basetabl, tabl, ent, bone_override)
 		local boneName = tabl.bone
 
 		if v.curmodel and ent ~= v.curmodel and (v.bonemerge or (boneName and boneName ~= "" and v.curmodel:LookupBone(boneName))) then
-			pos, ang = self:GetBoneOrientation(basetabl, v, v.curmodel, boneName)
-			if pos and ang then return pos, ang end
-		else
-			--As clavus states in his original code, don't make your elements named the same as a bone, because recursion.
-			pos, ang = self:GetBoneOrientation(basetabl, v, ent)
+			pos, ang = self:GetBoneOrientation(basetabl, v, v.curmodel, boneName, isVM)
 
 			if pos and ang then
+				if isVM and self.ViewModelFlip then
+					--ang.r = -ang.r
+				end
+
+				return pos, ang
+			end
+		else
+			--As clavus states in his original code, don't make your elements named the same as a bone, because recursion.
+			pos, ang = self:GetBoneOrientation(basetabl, v, ent, nil, isVM)
+
+			if pos and ang then
+				if isVM and self.ViewModelFlip then
+					--ang.r = -ang.r
+				end
+
 				pos = pos + ang:Forward() * v.pos.x + ang:Right() * v.pos.y + ang:Up() * v.pos.z
+
 				ang:RotateAroundAxis(ang:Up(), v.angle.y)
 				ang:RotateAroundAxis(ang:Right(), v.angle.p)
 				ang:RotateAroundAxis(ang:Forward(), v.angle.r)
+
 				-- For mirrored viewmodels.  You might think to scale negatively on X, but this isn't the case.
 
 				return pos, ang
@@ -815,8 +848,7 @@ function SWEP:GetBoneOrientation(basetabl, tabl, ent, bone_override)
 
 	local owner = self:GetOwner()
 
-	if IsValid(owner) and owner:IsPlayer() and ent == owner:GetViewModel() and self.ViewModelFlip then
-		ang:RotateAroundAxis(ang:Up(), 180)
+	if isVM and self.ViewModelFlip then
 		ang.r = -ang.r
 	end
 
