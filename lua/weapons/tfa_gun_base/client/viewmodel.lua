@@ -578,8 +578,8 @@ hook.Add("PostRender", "TFA:CacheSightsPos", function()
 
 	self2.ViewModelFlip = false
 
-	vm:SetRenderOrigin(Vector())
-	vm:SetRenderAngles(Angle())
+	vm:SetRenderOrigin(vector_origin)
+	vm:SetRenderAngles(angle_zero)
 
 	vm:InvalidateBoneCache()
 	vm:SetupBones()
