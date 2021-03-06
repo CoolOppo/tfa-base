@@ -147,6 +147,10 @@ do -- Model reticle, for when you don't have an attach point
 			SightReticleEnt:DrawModel()
 		end
 		if wep.ViewModelFlip then render.CullMode(MATERIAL_CULLMODE_CCW) end
+
+		if wep:GetStat("StencilSight_EnableQuad") then
+			DrawFunctions[TFA.Enum.RETICLE_QUAD](vm, ply, wep, SightElementTable)
+		end
 	end
 end
 
