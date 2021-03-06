@@ -193,6 +193,157 @@ local normal_scale = Vector(1, 1, 1)
 
 local mirror = Matrix()
 
+local function draw_element_closure(self, self2, name, index, vm, ViewModelElements, element)
+	if self2.GetStatL(self, "ViewModelElements." .. name .. ".active") == false then return end
+
+	local pos, ang = self:GetBoneOrientation(ViewModelElements, element, vm, nil, true)
+	if not pos and not element.bonemerge then return end
+
+	self:PrecacheElement(element, true)
+
+	local model = element.curmodel
+	local sprite = element.spritemat
+
+	if element.type == "Model" and IsValid(model) then
+		if not element.bonemerge then
+			mirror:Identity()
+
+			if self2.ViewModelFlip then
+				model:SetPos(pos + ang:Forward() * element.pos.x - ang:Right() * element.pos.y + ang:Up() * element.pos.z)
+
+				ang:RotateAroundAxis(ang:Up(), -element.angle.y)
+				ang:RotateAroundAxis(ang:Right(), element.angle.p)
+				ang:RotateAroundAxis(ang:Forward(), -element.angle.r)
+				mirror:Scale(mirror_scale)
+				mirror:Scale(element.size)
+			else
+				model:SetPos(pos + ang:Forward() * element.pos.x + ang:Right() * element.pos.y + ang:Up() * element.pos.z)
+
+				ang:RotateAroundAxis(ang:Up(), element.angle.y)
+				ang:RotateAroundAxis(ang:Right(), element.angle.p)
+				ang:RotateAroundAxis(ang:Forward(), element.angle.r)
+				mirror:Scale(normal_scale)
+				mirror:Scale(element.size)
+			end
+
+			model:SetAngles(ang)
+			model:EnableMatrix("RenderMultiply", mirror)
+		end
+
+		if element.surpresslightning then
+			render.SuppressEngineLighting(true)
+		end
+
+		local material = self:GetStatL("ViewModelElements." .. name .. ".material")
+
+		if not material or material == "" then
+			model:SetMaterial("")
+		elseif model:GetMaterial() ~= material then
+			model:SetMaterial(material)
+		end
+
+		local skin = self:GetStatL("ViewModelElements." .. name .. ".skin")
+
+		if skin and skin ~= model:GetSkin() then
+			model:SetSkin(skin)
+		end
+
+		if not self2.SCKMaterialCached_V[name] then
+			self2.SCKMaterialCached_V[name] = true
+
+			local materialtable = self:GetStatL("ViewModelElements." .. name .. ".materials", {})
+			local entmats = table.GetKeys(model:GetMaterials())
+
+			for _, k in ipairs(entmats) do
+				model:SetSubMaterial(k - 1, materialtable[k] or "")
+			end
+		end
+
+		if not self2.VElementsBodygroupsCache[index] then
+			self2.VElementsBodygroupsCache[index] = #model:GetBodyGroups() - 1
+		end
+
+		if self2.VElementsBodygroupsCache[index] then
+			for _b = 0, self2.VElementsBodygroupsCache[index] do
+				local newbg = self2.GetStatL(self, "ViewModelElements." .. name .. ".bodygroup." .. _b, 0) -- names are not supported, use overridetable
+
+				if model:GetBodygroup(_b) ~= newbg then
+					model:SetBodygroup(_b, newbg)
+				end
+			end
+		end
+
+		if element.bonemerge then
+			if element.rel and ViewModelElements[element.rel] and IsValid(ViewModelElements[element.rel].curmodel) then
+				element.parModel = ViewModelElements[element.rel].curmodel
+			else
+				element.parModel = self2.OwnerViewModel or self
+			end
+
+			if model:GetParent() ~= element.parModel then
+				model:SetParent(element.parModel)
+			end
+
+			if not model:IsEffectActive(EF_BONEMERGE) then
+				model:AddEffects(EF_BONEMERGE)
+				model:AddEffects(EF_BONEMERGE_FASTCULL)
+				model:SetMoveType(MOVETYPE_NONE)
+				model:SetLocalPos(vector_origin)
+				model:SetLocalAngles(angle_zero)
+			end
+		elseif model:IsEffectActive(EF_BONEMERGE) then
+			model:RemoveEffects(EF_BONEMERGE)
+			model:SetParent(NULL)
+		end
+
+		render.SetColorModulation(element.color.r / 255, element.color.g / 255, element.color.b / 255)
+		render.SetBlend(element.color.a / 255)
+
+		if model.tfa_next_setup_bones ~= next_setup_bones then
+			model:InvalidateBoneCache()
+			model:SetupBones()
+			model.tfa_next_setup_bones = next_setup_bones
+		end
+
+		if self2.ViewModelFlip then
+			render.CullMode(MATERIAL_CULLMODE_CW)
+		end
+
+		model:DrawModel()
+
+		render.SetBlend(1)
+		render.SetColorModulation(1, 1, 1)
+
+		if self2.ViewModelFlip then
+			render.CullMode(MATERIAL_CULLMODE_CCW)
+		end
+
+		if element.surpresslightning then
+			render.SuppressEngineLighting(false)
+		end
+	elseif element.type == "Sprite" and sprite then
+		local drawpos = pos + ang:Forward() * element.pos.x + ang:Right() * element.pos.y + ang:Up() * element.pos.z
+		render.SetMaterial(sprite)
+		render.DrawSprite(drawpos, element.size.x, element.size.y, element.color)
+	elseif element.type == "Quad" and element.draw_func then
+		local drawpos = pos + ang:Forward() * element.pos.x + ang:Right() * element.pos.y + ang:Up() * element.pos.z
+		ang:RotateAroundAxis(ang:Up(), element.angle.y)
+		ang:RotateAroundAxis(ang:Right(), element.angle.p)
+		ang:RotateAroundAxis(ang:Forward(), element.angle.r)
+
+		cam.Start3D2D(drawpos, ang, element.size)
+		render.PushFilterMin(TEXFILTER.ANISOTROPIC)
+		render.PushFilterMag(TEXFILTER.ANISOTROPIC)
+
+		drawfn, drawself, fndrawpos, fndrawang, fndrawsize = element.draw_func, self, nil, nil, nil
+		ProtectedCall(dodraw)
+
+		render.PopFilterMin()
+		render.PopFilterMag()
+		cam.End3D2D()
+	end
+end
+
 function SWEP:ViewModelDrawn()
 	local self2 = self:GetTable()
 	render.SetBlend(1)
@@ -319,159 +470,12 @@ function SWEP:ViewModelDrawn()
 				goto CONTINUE
 			end
 
-			if element.hide then goto CONTINUE end
+			if element.hide or element.translucent then goto CONTINUE end
 
 			if element.type == "Quad" and element.draw_func_outer then goto CONTINUE end
 			if not element.bone and not element.attachment then goto CONTINUE end
 
-			if self2.GetStatL(self, "ViewModelElements." .. name .. ".active") == false then goto CONTINUE end
-
-			local pos, ang = self:GetBoneOrientation(ViewModelElements, element, vm, nil, true)
-			if not pos and not element.bonemerge then goto CONTINUE end
-
-			self:PrecacheElement(element, true)
-
-			local model = element.curmodel
-			local sprite = element.spritemat
-
-			if element.type == "Model" and IsValid(model) then
-				if not element.bonemerge then
-					mirror:Identity()
-
-					if self2.ViewModelFlip then
-						model:SetPos(pos + ang:Forward() * element.pos.x - ang:Right() * element.pos.y + ang:Up() * element.pos.z)
-
-						ang:RotateAroundAxis(ang:Up(), -element.angle.y)
-						ang:RotateAroundAxis(ang:Right(), element.angle.p)
-						ang:RotateAroundAxis(ang:Forward(), -element.angle.r)
-						mirror:Scale(mirror_scale)
-						mirror:Scale(element.size)
-					else
-						model:SetPos(pos + ang:Forward() * element.pos.x + ang:Right() * element.pos.y + ang:Up() * element.pos.z)
-
-						ang:RotateAroundAxis(ang:Up(), element.angle.y)
-						ang:RotateAroundAxis(ang:Right(), element.angle.p)
-						ang:RotateAroundAxis(ang:Forward(), element.angle.r)
-						mirror:Scale(normal_scale)
-						mirror:Scale(element.size)
-					end
-
-					model:SetAngles(ang)
-					model:EnableMatrix("RenderMultiply", mirror)
-				end
-
-				if element.surpresslightning then
-					render.SuppressEngineLighting(true)
-				end
-
-				local material = self:GetStatL("ViewModelElements." .. name .. ".material")
-
-				if not material or material == "" then
-					model:SetMaterial("")
-				elseif model:GetMaterial() ~= material then
-					model:SetMaterial(material)
-				end
-
-				local skin = self:GetStatL("ViewModelElements." .. name .. ".skin")
-
-				if skin and skin ~= model:GetSkin() then
-					model:SetSkin(skin)
-				end
-
-				if not self2.SCKMaterialCached_V[name] then
-					self2.SCKMaterialCached_V[name] = true
-
-					local materialtable = self:GetStatL("ViewModelElements." .. name .. ".materials", {})
-					local entmats = table.GetKeys(model:GetMaterials())
-
-					for _, k in ipairs(entmats) do
-						model:SetSubMaterial(k - 1, materialtable[k] or "")
-					end
-				end
-
-				if not self2.VElementsBodygroupsCache[index] then
-					self2.VElementsBodygroupsCache[index] = #model:GetBodyGroups() - 1
-				end
-
-				if self2.VElementsBodygroupsCache[index] then
-					for _b = 0, self2.VElementsBodygroupsCache[index] do
-						local newbg = self2.GetStatL(self, "ViewModelElements." .. name .. ".bodygroup." .. _b, 0) -- names are not supported, use overridetable
-
-						if model:GetBodygroup(_b) ~= newbg then
-							model:SetBodygroup(_b, newbg)
-						end
-					end
-				end
-
-				if element.bonemerge then
-					if element.rel and ViewModelElements[element.rel] and IsValid(ViewModelElements[element.rel].curmodel) then
-						element.parModel = ViewModelElements[element.rel].curmodel
-					else
-						element.parModel = self2.OwnerViewModel or self
-					end
-
-					if model:GetParent() ~= element.parModel then
-						model:SetParent(element.parModel)
-					end
-
-					if not model:IsEffectActive(EF_BONEMERGE) then
-						model:AddEffects(EF_BONEMERGE)
-						model:AddEffects(EF_BONEMERGE_FASTCULL)
-						model:SetMoveType(MOVETYPE_NONE)
-						model:SetLocalPos(vector_origin)
-						model:SetLocalAngles(angle_zero)
-					end
-				elseif model:IsEffectActive(EF_BONEMERGE) then
-					model:RemoveEffects(EF_BONEMERGE)
-					model:SetParent(NULL)
-				end
-
-				render.SetColorModulation(element.color.r / 255, element.color.g / 255, element.color.b / 255)
-				render.SetBlend(element.color.a / 255)
-
-				if model.tfa_next_setup_bones ~= next_setup_bones then
-					model:InvalidateBoneCache()
-					model:SetupBones()
-					model.tfa_next_setup_bones = next_setup_bones
-				end
-
-				if self2.ViewModelFlip then
-					render.CullMode(MATERIAL_CULLMODE_CW)
-				end
-
-				model:DrawModel()
-
-				render.SetBlend(1)
-				render.SetColorModulation(1, 1, 1)
-
-				if self2.ViewModelFlip then
-					render.CullMode(MATERIAL_CULLMODE_CCW)
-				end
-
-				if element.surpresslightning then
-					render.SuppressEngineLighting(false)
-				end
-			elseif element.type == "Sprite" and sprite then
-				local drawpos = pos + ang:Forward() * element.pos.x + ang:Right() * element.pos.y + ang:Up() * element.pos.z
-				render.SetMaterial(sprite)
-				render.DrawSprite(drawpos, element.size.x, element.size.y, element.color)
-			elseif element.type == "Quad" and element.draw_func then
-				local drawpos = pos + ang:Forward() * element.pos.x + ang:Right() * element.pos.y + ang:Up() * element.pos.z
-				ang:RotateAroundAxis(ang:Up(), element.angle.y)
-				ang:RotateAroundAxis(ang:Right(), element.angle.p)
-				ang:RotateAroundAxis(ang:Forward(), element.angle.r)
-
-				cam.Start3D2D(drawpos, ang, element.size)
-				render.PushFilterMin(TEXFILTER.ANISOTROPIC)
-				render.PushFilterMag(TEXFILTER.ANISOTROPIC)
-
-				drawfn, drawself, fndrawpos, fndrawang, fndrawsize = element.draw_func, self, nil, nil, nil
-				ProtectedCall(dodraw)
-
-				render.PopFilterMin()
-				render.PopFilterMag()
-				cam.End3D2D()
-			end
+			draw_element_closure(self, self2, name, index, vm, ViewModelElements, element)
 
 			::CONTINUE::
 		end
@@ -479,6 +483,7 @@ function SWEP:ViewModelDrawn()
 
 	if not self2.UseHands and self2.ViewModelDrawnPost then
 		self:ViewModelDrawnPost()
+		self:ViewModelDrawnPostFinal()
 	end
 
 	if self2.ShellEjectionQueue ~= 0 then
@@ -487,6 +492,29 @@ function SWEP:ViewModelDrawn()
 		end
 
 		self2.ShellEjectionQueue = 0
+	end
+end
+
+function SWEP:ViewModelDrawnPostFinal()
+	local self2 = self:GetTable()
+	local vm = self.OwnerViewModel
+	if not IsValid(vm) then return end
+
+	local ViewModelElements = self:GetStatRawL("ViewModelElements")
+	if not ViewModelElements then return end
+
+	for index = 1, #self2.vRenderOrder do
+		local name = self2.vRenderOrder[index]
+		local element = ViewModelElements[name]
+
+		if element.hide or not element.translucent then goto CONTINUE end
+
+		if element.type == "Quad" and element.draw_func_outer then goto CONTINUE end
+		if not element.bone and not element.attachment then goto CONTINUE end
+
+		draw_element_closure(self, self2, name, index, vm, ViewModelElements, element)
+
+		::CONTINUE::
 	end
 end
 

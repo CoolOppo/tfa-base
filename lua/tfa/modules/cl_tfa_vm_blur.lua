@@ -253,3 +253,9 @@ hook.Add("PreDrawPlayerHands", "TFA_DrawViewModel", function(hands, vm, plyv, we
 	if TFA.LastRTUpdate > UnPredictedCurTime() then return end
 	if wep:GetIronSightsProgress() > 0.4 then return true end
 end)
+
+hook.Add("PostDrawPlayerHands", "TFA_DrawViewModel", function(hands, vm, plyv, wep)
+	if not wep.IsTFAWeapon then return end
+
+	wep:ViewModelDrawnPostFinal()
+end)
