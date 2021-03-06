@@ -322,7 +322,7 @@ function SWEP:ViewModelDrawn()
 			if element.hide then goto CONTINUE end
 
 			if element.type == "Quad" and element.draw_func_outer then goto CONTINUE end
-			if not element.bone then goto CONTINUE end
+			if not element.bone and not element.attachment then goto CONTINUE end
 
 			if self2.GetStatL(self, "ViewModelElements." .. name .. ".active") == false then goto CONTINUE end
 
@@ -506,7 +506,7 @@ function SWEP:ViewModelDrawnPost()
 		local name = self2.vRenderOrder[index]
 		local element = ViewModelElements[name]
 
-		if element.type == "Quad" and element.draw_func_outer and not element.hide and element.bone and self:GetStatL("ViewModelElements." .. name .. ".active") ~= false then
+		if element.type == "Quad" and element.draw_func_outer and not element.hide and (element.bone or element.attachment and element.attachment ~= "") and self:GetStatL("ViewModelElements." .. name .. ".active") ~= false then
 			local pos, ang = self:GetBoneOrientation(ViewModelElements, element, self2.OwnerViewModel)
 
 			if pos then
@@ -784,24 +784,28 @@ Notes:  This is a very specific function for a specific purpose, and shouldn't b
 Purpose:  SWEP Construction Kit Compatibility / Basic Attachments.
 ]]
 --
-function SWEP:GetBoneOrientation(basetabl, tabl, ent, bone_override, isVM)
+function SWEP:GetBoneOrientation(basetabl, tabl, ent, bone_override, isVM, isAttachment, isNonRoot)
 	local bone, pos, ang
 
 	if not IsValid(ent) then return Vector(), Angle() end
 
-	if tabl.rel and tabl.rel ~= "" and not tabl.bonemerge then
+	if not isNonRoot and tabl.rel and tabl.rel ~= "" and not tabl.bonemerge then
 		local v = basetabl[tabl.rel]
-		if not v then return end
+		if not v then return Vector(), Angle() end
 
 		local boneName = tabl.bone
 
-		if v.curmodel and ent ~= v.curmodel and (v.bonemerge or (boneName and boneName ~= "" and v.curmodel:LookupBone(boneName))) then
-			pos, ang = self:GetBoneOrientation(basetabl, v, v.curmodel, boneName, isVM)
+		if tabl.attachment and tabl.attachment ~= "" and v.curmodel:LookupAttachment(tabl.attachment) ~= 0 then
+			pos, ang = self:GetBoneOrientation(basetabl, v, v.curmodel, tabl.attachment, isVM, true, true)
+
+			if pos and ang then return pos, ang end
+		elseif v.curmodel and ent ~= v.curmodel and (v.bonemerge or (boneName and boneName ~= "" and v.curmodel:LookupBone(boneName))) then
+			pos, ang = self:GetBoneOrientation(basetabl, v, v.curmodel, boneName, isVM, false, true)
 
 			if pos and ang then return pos, ang end
 		else
 			--As clavus states in his original code, don't make your elements named the same as a bone, because recursion.
-			pos, ang = self:GetBoneOrientation(basetabl, v, ent, nil, isVM)
+			pos, ang = self:GetBoneOrientation(basetabl, v, ent, nil, isVM, false, true)
 
 			if pos and ang then
 				pos = pos + ang:Forward() * v.pos.x + ang:Right() * v.pos.y + ang:Up() * v.pos.z
@@ -817,8 +821,12 @@ function SWEP:GetBoneOrientation(basetabl, tabl, ent, bone_override, isVM)
 		end
 	end
 
+	if isAttachment == nil then isAttachment = tabl.attachment ~= nil end
+
 	if isnumber(bone_override) then
 		bone = bone_override
+	elseif isAttachment then
+		bone = ent:LookupAttachment(bone_override or tabl.attachment)
 	else
 		bone = ent:LookupBone(bone_override or tabl.bone) or 0
 	end
@@ -832,10 +840,21 @@ function SWEP:GetBoneOrientation(basetabl, tabl, ent, bone_override, isVM)
 		ent.tfa_next_setup_bones = next_setup_bones
 	end
 
-	local m = ent:GetBoneMatrix(bone)
+	if isAttachment then
+		-- mmmm yes tasty LuaVM memory
+		-- GC screams in agony
+		local get = ent:GetAttachment(bone)
 
-	if m then
-		pos, ang = m:GetTranslation(), m:GetAngles()
+		if get then
+			pos, ang = get.Pos, get.Ang
+		end
+	else
+
+		local m = ent:GetBoneMatrix(bone)
+
+		if m then
+			pos, ang = m:GetTranslation(), m:GetAngles()
+		end
 	end
 
 	local owner = self:GetOwner()
