@@ -145,6 +145,8 @@ function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet,
 	num_bullets = num_bullets or 1
 	aimcone = aimcone or 0
 
+	self:SetLastGunFire(CurTime())
+
 	if self:GetStatL("Primary.Projectile") then
 		if CLIENT then return end
 

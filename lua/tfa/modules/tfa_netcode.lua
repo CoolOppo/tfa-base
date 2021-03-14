@@ -35,6 +35,27 @@ if SERVER then
 
 	util.AddNetworkString("tfaHitmarker")
 	util.AddNetworkString("tfaHitmarker3D")
+	util.AddNetworkString("tfa_friendly_encounter")
+
+	do
+		local old_state = false
+
+		timer.Create("tfa_friendly_encounter", 2, 0, function()
+			local new_state = game.GetGlobalState("friendly_encounter") == GLOBAL_ON
+
+			if old_state ~= new_state then
+				net.Start("tfa_friendly_encounter")
+				net.WriteBool(new_state)
+				net.Broadcast()
+
+				old_state = new_state
+			end
+		end)
+
+		hook.Add("PlayerAuthed", "tfa_friendly_encounter", function()
+			old_state = false
+		end)
+	end
 
 	--Enable CKey Inspection
 
@@ -76,6 +97,12 @@ if SERVER then
 	end)
 	]]--
 else
+	TFA.FriendlyEncounter = false
+
+	net.Receive("tfa_friendly_encounter", function()
+		TFA.FriendlyEncounter = net.ReadBool()
+	end)
+
 	--Arrow can follow entities clientside too
 	net.Receive("tfaArrowFollow",function()
 		local ent = net.ReadEntity()

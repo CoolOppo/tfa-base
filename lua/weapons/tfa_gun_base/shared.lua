@@ -458,6 +458,7 @@ function SWEP:SetupDataTables()
 	self:NetworkVarTFA("Float", "NextLoopSoundCheck")
 	self:NetworkVarTFA("Float", "JamFactor")
 	self:NetworkVarTFA("Float", "EventTimer")
+	self:NetworkVarTFA("Float", "LastGunFire")
 
 	self:NetworkVarTFA("Int", "StatusRaw")
 	self:NetworkVarTFA("Int", "FireMode")
@@ -1045,6 +1046,15 @@ end
 
 local Lerp = Lerp
 
+function SWEP:ShouldPlaySafetyAnim()
+	if self:IsSafety() then
+		return true
+	end
+
+	if not TFA.FriendlyEncounter then return false end
+	return not self:GetIronSights() and (self:GetLastGunFire() + 1 < CurTime())
+end
+
 function SWEP:PlayerThinkCL(plyv)
 	local self2 = self:GetTable()
 
@@ -1159,10 +1169,10 @@ function SWEP:PlayerThinkCL(plyv)
 	self2.WalkProgressUnpredicted = l_mathApproach((self2.WalkProgressUnpredicted or 0), walkt, (walkt - (self2.WalkProgressUnpredicted or 0)) * ft * adstransitionspeed)
 
 	if status ~= TFA.Enum.STATUS_FIREMODE or not self:GetIsCyclingSafety() then
-		local safetyTarget = self:IsSafety() and (fidgetBlendMult * reloadBlendMult) or 0
+		local safetyTarget = self:ShouldPlaySafetyAnim() and (fidgetBlendMult * reloadBlendMult) or 0
 		self2.SafetyProgressUnpredicted = l_mathApproach(self2.SafetyProgressUnpredicted or 0, safetyTarget, (safetyTarget - (self2.SafetyProgressUnpredicted or 0)) * ft * adstransitionspeed * 0.7)
 	elseif status == TFA.Enum.STATUS_FIREMODE and self:GetIsCyclingSafety() then
-		if not self:IsSafety() then
+		if not self:ShouldPlaySafetyAnim() then
 			local safetyTarget = 0
 
 			if self:GetSafetyCycleAnimated() then
