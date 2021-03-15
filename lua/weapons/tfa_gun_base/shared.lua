@@ -1048,11 +1048,11 @@ local Lerp = Lerp
 
 function SWEP:ShouldPlaySafetyAnim()
 	if self:IsSafety() then
-		return true
+		return not self.SprintProgressUnpredicted2 or self.SprintProgressUnpredicted2 < 0.3
 	end
 
 	if not TFA.FriendlyEncounter then return false end
-	return not self:GetIronSights() and (self:GetLastGunFire() + 1 < CurTime())
+	return not self:GetIronSights() and (self:GetLastGunFire() + 1 < CurTime()) and (not self.SprintProgressUnpredicted2 or self.SprintProgressUnpredicted2 < 0.3)
 end
 
 function SWEP:PlayerThinkCL(plyv)
