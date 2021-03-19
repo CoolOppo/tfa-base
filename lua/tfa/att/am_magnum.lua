@@ -28,6 +28,7 @@ ATTACHMENT.ShortName = "MAG" --Abbreviation, 5 chars or less please
 --ATTACHMENT.ID = "base" -- normally this is just your filename
 ATTACHMENT.Description = { TFA.Attachments.Colors["+"], "10% more damage", TFA.Attachments.Colors["-"], "15% more recoil", TFA.Attachments.Colors["-"], "10% more spread"  }
 ATTACHMENT.Icon = "entities/tfa_ammo_magnum.png" --Revers to label, please give it an icon though!  This should be the path to a png, like "entities/tfa_ammo_match.png"
+ATTACHMENT.TFADataVersion = TFA.LatestDataVersion
 
 ATTACHMENT.WeaponTable = {
 	["Primary"] = {

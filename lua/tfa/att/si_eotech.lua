@@ -28,6 +28,7 @@ ATTACHMENT.Name = "EOTech"
 ATTACHMENT.Description = { TFA.Attachments.Colors["="], "10% higher zoom", TFA.Attachments.Colors["-"], "10% higher zoom time" }
 ATTACHMENT.Icon = "entities/tfa_si_eotech.png" --Revers to label, please give it an icon though!  This should be the path to a png, like "entities/tfa_ammo_match.png"
 ATTACHMENT.ShortName = "EOTEK"
+ATTACHMENT.TFADataVersion = TFA.LatestDataVersion
 
 ATTACHMENT.WeaponTable = {
 	["ViewModelElements"] = {

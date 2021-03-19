@@ -28,6 +28,7 @@ ATTACHMENT.Name = "Foregrip"
 ATTACHMENT.Description = { TFA.Attachments.Colors["+"], "30% lower H-recoil", TFA.Attachments.Colors["+"], "10% lower V-recoil", TFA.Attachments.Colors["-"], "10% higher spread recovery" }
 ATTACHMENT.Icon = "entities/tfa_si_eotech.png" --Revers to label, please give it an icon though!  This should be the path to a png, like "entities/tfa_ammo_match.png"
 ATTACHMENT.ShortName = "FGRIP"
+ATTACHMENT.TFADataVersion = TFA.LatestDataVersion
 
 local defaultbl = { scale = Vector(1, 1, 1), pos = Vector(0, 0, 0), angle = Angle(0, 0, 0) }
 

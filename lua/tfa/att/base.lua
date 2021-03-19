@@ -38,6 +38,9 @@ ATTACHMENT.DInv2_Volume = nil -- DInventory/2 Specific. Determines attachment's 
 ATTACHMENT.DInv2_Mass = nil -- DInventory/2 Specific. Determines attachment's mass in kilograms.
 ATTACHMENT.DInv2_StackSize = nil -- DInventory/2 Specific. Determines attachment's maximal stack size.
 
+ATTACHMENT.TFADataVersion = nil -- TFA.LatestDataVersion, specifies version of TFA Weapon Data this attachment utilize in `WeaponTable`
+-- 0 is original, M9K-like data, and is the fallback if `TFADataVersion` is undefined
+
 function ATTACHMENT:CanAttach(wep)
 	return true --can be overridden per-attachment
 end

@@ -28,6 +28,7 @@ ATTACHMENT.Name = "Suppressor"
 ATTACHMENT.Description = { TFA.Attachments.Colors["+"], "Less firing noise", TFA.Attachments.Colors["-"], "10% less spread", TFA.Attachments.Colors["-"], "5% less damage", TFA.Attachments.Colors["-"], "10% less vertical recoil" }
 ATTACHMENT.Icon = "entities/tfa_br_supp.png" --Revers to label, please give it an icon though!  This should be the path to a png, like "entities/tfa_ammo_match.png"
 ATTACHMENT.ShortName = "SUPP"
+ATTACHMENT.TFADataVersion = TFA.LatestDataVersion
 
 ATTACHMENT.WeaponTable = {
 	["ViewModelElements"] = {

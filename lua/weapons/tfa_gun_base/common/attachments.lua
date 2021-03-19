@@ -55,66 +55,159 @@ function SWEP:RemoveUnusedAttachments()
 	end
 end
 
-local function CloneTableRecursive(source, target, root)
-	for k2, v in pairs(source) do
-		local k = k2
+local function select_function_table(target)
+	-- idk
+	local found_table, _index
 
-		if k == "Primary" and root then
-			k = "Primary_TFA"
+	for i_index, base_value in pairs(target) do
+		if istable(b) then
+			found_table = base_value
+			_index = i_index
+		end
+	end
+
+	if not found_table then
+		found_table = {}
+		table.insert(target, found_table)
+	end
+
+	return found_table
+end
+
+local function get(path, target)
+	if #path == 1 then
+		if istable(target[path[1]]) and target[path[1]].functionTable then
+			return select_function_table(target[path[1]])
 		end
 
-		if k == "Secondary" and root then
-			k = "Secondary_TFA"
+		return target[path[1]]
+	end
+
+	local _target = target[path[1]]
+
+	if _target == nil then
+		target[path[1]] = {}
+		_target = target[path[1]]
+	end
+
+	for i = 2, #path do
+		if not istable(_target) then
+			return value
 		end
 
-		if istable(v) then
-			if istable(target[k]) and target[k].functionTable then
-				local baseTable = target[k]
-				local t, index
+		if _target[path[i]] == nil then _target[path[i]] = {} end
 
-				for l, b in pairs(baseTable) do
+		if _target[path[i]].functionTable then
+			_target = select_function_table(_target[path[i]])
+		else
+			_target = _target[path[i]]
+		end
+	end
+
+	return _target
+end
+
+local function set(path, target, value)
+	if #path == 1 then
+		target[path[1]] = value
+		return value
+	end
+
+	local _target = target[path[1]]
+
+	if _target == nil then
+		target[path[1]] = {}
+		_target = target[path[1]]
+	end
+
+	for i = 2, #path - 1 do
+		if not istable(_target) then
+			return value
+		end
+
+		if _target[path[i]] == nil then _target[path[i]] = {} end
+
+		if _target[path[i]].functionTable then
+			_target = select_function_table(_target[path[i]])
+		else
+			_target = _target[path[i]]
+		end
+	end
+
+	if istable(_target) then
+		if istable(_target[path[#path]]) and _target[path[#path]].functionTable then
+			table.insert(select_function_table(_target[path[#path]]), value)
+		else
+			_target[path[#path]] = value
+		end
+	end
+
+	return value
+end
+
+local function CloneTableRecursive(source, target, root, source_version, target_version)
+	for index, value in pairs(source) do
+		local _root = root == "" and index or (root .. "." .. index)
+
+		-- merge two tables
+		if istable(value) then
+			local baseTable = get(TFA.GetStatPath(_root, source_version, target_version), target)
+
+			-- target is a function table
+			if istable(baseTable) and baseTable.functionTable then
+				local found_table, _index
+
+				for i_index, base_value in pairs(baseTable) do
 					if istable(b) then
-						t = b
-						index = l
+						found_table = base_value
+						_index = i_index
 					end
 				end
 
-				if not t then
-					t = {}
+				if not found_table then
+					found_table = {}
+					table.insert(baseTable, 1, found_table)
 				end
 
-				CloneTableRecursive(v, t)
-
-				if index then
-					baseTable[index] = t
-				else
-					table.insert(baseTable, 1, t)
-				end
+				CloneTableRecursive(value, target, _root, self_version, target_version)
+			-- target is a regular table
 			else
-				target[k] = istable(target[k]) and target[k] or {}
-				CloneTableRecursive(v, target[k])
+				if not istable(baseTable) then
+					set(TFA.GetStatPath(_root, source_version, target_version), target, {})
+				end
+
+				CloneTableRecursive(value, target, _root, self_version, target_version)
 			end
-		elseif isfunction(v) then
+		-- final value is determined by function
+		elseif isfunction(value) then
 			local temp
+			local get_path = TFA.GetStatPath(_root, source_version, target_version)
+			local get_table = get(get_path, target)
 
-			if target[k] and not istable(target[k]) then
-				temp = target[k]
+			if get_table ~= nil and not istable(get_table) then
+				temp = get_table
 			end
 
-			target[k] = istable(target[k]) and target[k] or {}
-			local t = target[k]
-			t.functionTable = true
+			local get_value = not istable(get_table) and set(get_path, target, {}) or get_table
 
-			if temp then
-				t[#t + 1] = temp
+			-- mark this table as function based
+			get_value.functionTable = true
+
+			if temp ~= nil then
+				-- insert variable that was there before
+				table.insert(get_value, temp)
 			end
 
-			t[#t + 1] = v
+			-- insert function
+			table.insert(get_value, value)
+		-- final value is a scalar
 		else
-			if istable(target[k]) and target[k].functionTable then
-				table.insert(target[k], 1, v)
+			local get_table = get(TFA.GetStatPath(_root, source_version, target_version), target)
+
+			if istable(get_table) and get_table.functionTable then
+				table.insert(get_table, 1, value)
 			else
-				target[k] = v
+				set(TFA.GetStatPath(_root, source_version, target_version), target, value)
 			end
 		end
 	end
@@ -141,11 +234,11 @@ function SWEP:BuildAttachmentCache()
 		local srctbl = TFA.Attachments.Atts[attName].WeaponTable
 
 		if istable(srctbl) then
-			CloneTableRecursive(srctbl, self.AttachmentTableCache, true)
+			CloneTableRecursive(srctbl, self.AttachmentTableCache, "", TFA.Attachments.Atts[attName].TFADataVersion or 0, self.TFADataVersion or 0)
 		end
 
 		if istable(self.AttachmentTableOverride[attName]) then
-			CloneTableRecursive(self.AttachmentTableOverride[attName], self.AttachmentTableCache, true)
+			CloneTableRecursive(self.AttachmentTableOverride[attName], self.AttachmentTableCache, "", self.TFADataVersion or 0, self.TFADataVersion or 0)
 		end
 
 		::CONTINUE::

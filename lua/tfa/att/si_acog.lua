@@ -29,6 +29,7 @@ ATTACHMENT.Name = "ACOG"
 ATTACHMENT.Description = { TFA.Attachments.Colors["="], "4x zoom", TFA.Attachments.Colors["-"], "20% higher zoom time",  TFA.Attachments.Colors["-"], "10% slower aimed walking" }
 ATTACHMENT.Icon = "entities/tfa_si_acog.png" --Revers to label, please give it an icon though!  This should be the path to a png, like "entities/tfa_ammo_match.png"
 ATTACHMENT.ShortName = "ACOG"
+ATTACHMENT.TFADataVersion = TFA.LatestDataVersion
 
 local fov = 90 / 4 / 2 -- Default FOV / Scope Zoom / screenscale
 
