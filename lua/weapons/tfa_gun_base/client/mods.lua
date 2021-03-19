@@ -562,7 +562,7 @@ function SWEP:ViewModelDrawnPost()
 				ang:RotateAroundAxis(ang:Forward(), element.angle.r)
 
 				drawfn, drawself, fndrawpos, fndrawang, fndrawsize = element.draw_func_outer, self, drawpos, ang, element.size
-				ProtectedCall(dodraw)
+				ProtectedCall(dodrawfn)
 			end
 		end
 	end
@@ -807,7 +807,7 @@ function SWEP:DrawWorldModel()
 				cam.Start3D2D(drawpos, ang, element.size)
 
 				drawfn, drawself, fndrawpos, fndrawang, fndrawsize = element.draw_func, self, nil, nil, nil
-				ProtectedCall(dodraw)
+				ProtectedCall(dodrawfn)
 
 				cam.End3D2D()
 			end
