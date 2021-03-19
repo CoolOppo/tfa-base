@@ -50,7 +50,6 @@ end
 
 function SWEP:UpdateScopeType(force)
 	local target = self.Secondary_TFA or self.Secondary
-	PrintTable(target)
 
 	if self.Scoped_3D and force then
 		self.Scoped = true
