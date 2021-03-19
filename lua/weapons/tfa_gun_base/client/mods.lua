@@ -174,7 +174,7 @@ end
 
 local drawfn, drawself, fndrawpos, fndrawang, fndrawsize
 
-local function dodraw()
+local function dodrawfn()
 	drawfn(drawself, fndrawpos, fndrawang, fndrawsize)
 end
 
@@ -353,7 +353,7 @@ local function draw_element_closure(self, self2, name, index, vm, ViewModelEleme
 		render.PushFilterMag(TEXFILTER.ANISOTROPIC)
 
 		drawfn, drawself, fndrawpos, fndrawang, fndrawsize = element.draw_func, self, nil, nil, nil
-		ProtectedCall(dodraw)
+		ProtectedCall(dodrawfn)
 
 		render.PopFilterMin()
 		render.PopFilterMag()

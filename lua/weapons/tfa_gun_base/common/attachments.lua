@@ -57,12 +57,11 @@ end
 
 local function select_function_table(target)
 	-- idk
-	local found_table, _index
+	local found_table
 
 	for i_index, base_value in pairs(target) do
-		if istable(b) then
+		if istable(base_value) then
 			found_table = base_value
-			_index = i_index
 		end
 	end
 
@@ -92,7 +91,7 @@ local function get(path, target)
 
 	for i = 2, #path do
 		if not istable(_target) then
-			return value
+			return
 		end
 
 		if _target[path[i]] == nil then _target[path[i]] = {} end
@@ -155,12 +154,11 @@ local function CloneTableRecursive(source, target, root, source_version, target_
 
 			-- target is a function table
 			if istable(baseTable) and baseTable.functionTable then
-				local found_table, _index
+				local found_table
 
 				for i_index, base_value in pairs(baseTable) do
-					if istable(b) then
+					if istable(base_value) then
 						found_table = base_value
-						_index = i_index
 					end
 				end
 
@@ -169,14 +167,14 @@ local function CloneTableRecursive(source, target, root, source_version, target_
 					table.insert(baseTable, 1, found_table)
 				end
 
-				CloneTableRecursive(value, target, _root, self_version, target_version)
+				CloneTableRecursive(value, target, _root, source_version, target_version)
 			-- target is a regular table
 			else
 				if not istable(baseTable) then
 					set(TFA.GetStatPath(_root, source_version, target_version), target, {})
 				end
 
-				CloneTableRecursive(value, target, _root, self_version, target_version)
+				CloneTableRecursive(value, target, _root, source_version, target_version)
 			end
 		-- final value is determined by function
 		elseif isfunction(value) then
