@@ -50,6 +50,7 @@ end
 
 function SWEP:UpdateScopeType(force)
 	local target = self.Secondary_TFA or self.Secondary
+	PrintTable(target)
 
 	if self.Scoped_3D and force then
 		self.Scoped = true
@@ -58,7 +59,7 @@ function SWEP:UpdateScopeType(force)
 		if target.ScopeZoom_Backup then
 			target.ScopeZoom = target.ScopeZoom_Backup
 		else
-			target.ScopeZoom = 90 / self:GetStatL("Secondary.IronFOV", self:GetStatL("Secondary.OwnerFOV")) -- M9K/Older TFA Base compatibility
+			target.ScopeZoom = 90 / self:GetStatRawL("Secondary.OwnerFOV") -- M9K/Older TFA Base compatibility
 		end
 
 		if self.BoltAction_3D then
@@ -68,7 +69,7 @@ function SWEP:UpdateScopeType(force)
 			self:ClearStatCache("BoltAction")
 		end
 
-		target.IronFOV = 90 / self:GetStatL("Secondary.ScopeZoom")
+		self:SetStatRawL("Secondary.OwnerFOV", 90 / self:GetStatRawL("Secondary.ScopeZoom"))
 		self.IronSightsSensitivity = 1
 	end
 
@@ -89,17 +90,18 @@ function SWEP:UpdateScopeType(force)
 
 		if target.ScopeZoom and target.ScopeZoom > 0 then
 			if CLIENT then
-				self.RTScopeFOV = 90 / target.ScopeZoom * ( target.ScopeScreenScale or 0.392592592592592 )
+				self.RTScopeFOV = 90 / target.ScopeZoom * (target.ScopeScreenScale or 0.392592592592592)
 			end
 
-			target.IronFOV_Backup = target.IronFOV
-			target.IronFOV = 70
+			-- target.IronFOV_Backup = self:GetStatRawL("Secondary.OwnerFOV", 70)
+			-- self:SetStatRawL("Secondary.OwnerFOV", 70)
+			-- self:ClearStatCacheL("Secondary.OwnerFOV")
 
 			if CLIENT then
 				self.IronSightsSensitivity = self:Get3DSensitivity()
 			end
 
-			target.ScopeZoom = nil
+			target.ScopeZoom = false
 		end
 	else
 		self.Scoped = true
@@ -118,17 +120,28 @@ function SWEP:UpdateScopeType(force)
 			self:ClearStatCache("BoltAction")
 		end
 
-		target.IronFOV = 90 / target.ScopeZoom
+		self:SetStatRawL("Secondary.OwnerFOV", 90 / target.ScopeZoom)
 		self.IronSightsSensitivity = 1
+
+		self:ClearStatCacheL("Secondary.OwnerFOV")
 	end
 end
 
 function SWEP:Initialize(...)
-	self.Primary_TFA = self.Primary
-	self.Secondary_TFA = self.Secondary
+	local unsetA = self.Primary_TFA == nil
+	local unsetB = self.Secondary_TFA == nil
+
+	self.Primary_TFA = self.Primary_TFA or self.Primary
+	self.Secondary_TFA = self.Secondary_TFA or self.Secondary
 	self:UpdateScopeType()
-	self.Primary_TFA = nil
-	self.Secondary_TFA = nil
+
+	if unsetA then
+		self.Primary_TFA = nil
+	end
+
+	if unsetB then
+		self.Secondary_TFA = nil
+	end
 
 	BaseClass.Initialize(self, ...)
 
