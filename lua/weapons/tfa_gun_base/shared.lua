@@ -1380,6 +1380,9 @@ SWEP.Primary.Sound_DrySafety = Sound("Weapon_AR2.Empty2") -- safety click sound
 SWEP.Primary.Sound_Blocked = Sound("Weapon_AR2.Empty") -- underwater click sound
 SWEP.Primary.Sound_Jammed = Sound("Default.ClipEmpty_Rifle") -- jammed click sound
 
+SWEP.Primary.SoundHint_Fire = true
+SWEP.Primary.SoundHint_DryFire = true
+
 function SWEP:CanPrimaryAttack()
 	local self2 = self:GetTable()
 
@@ -1425,6 +1428,10 @@ function SWEP:CanPrimaryAttack()
 	if self:GetPrimaryClipSize(true) > 0 and self:Clip1() < self:GetStatL("Primary.AmmoConsumption") then
 		if not self2.HasPlayedEmptyClick then
 			self2.HasPlayedEmptyClick = true
+
+			if SERVER and self:GetStatL("Primary.SoundHint_DryFire") then
+				sound.EmitHint(SOUND_COMBAT, self:GetPos(), 500, 0.2, self:GetOwner())
+			end
 
 			if self:GetOwner():IsNPC() or self:KeyPressed(IN_ATTACK) then
 				local enabled, tanim, ttype = self:ChooseDryFireAnim()
@@ -1576,6 +1583,10 @@ function SWEP:TriggerAttack(tableName, clipID)
 
 	if (not sp) or (not self:IsFirstPerson()) then
 		ply:SetAnimation(PLAYER_ATTACK1)
+	end
+
+	if SERVER and self:GetStatL(tableName .. ".SoundHint_Fire") then
+		sound.EmitHint(bit.bor(SOUND_COMBAT, SOUND_CONTEXT_GUNFIRE), self:GetPos(), self:GetSilenced() and 500 or 1500, 0.2, self:GetOwner())
 	end
 
 	if self:GetStatL(tableName .. ".Sound") and ifp and not (sp and CLIENT) then
