@@ -92,7 +92,8 @@ stds.gmod.globals = {
 	"SWEP",
 	"EFFECT",
 
-	"BaseClass" -- replaced by preprocessor, not present in _G
+	"BaseClass", -- replaced by preprocessor, not present in _G
+	"DEFINE_BASECLASS", -- YEAH THIS IS WHAT I'M TALKING ABOUT
 }
 stds.gmod.read_globals = {
 	-- gmod version 2021.03.01
