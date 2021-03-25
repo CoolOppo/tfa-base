@@ -158,7 +158,7 @@ local function TFARenderScreen()
 	end
 end
 
-hook.Add("PreRender", "TFASCREENS", function()
+hook.Add("PostRender", "TFASCREENS", function()
 	if not TFA.RT_DRAWING then
 		TFA.RT_DRAWING = true
 		TFARenderScreen()
