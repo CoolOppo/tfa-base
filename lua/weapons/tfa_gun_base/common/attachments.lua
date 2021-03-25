@@ -96,7 +96,7 @@ local function get(path, target)
 
 		if _target[path[i]] == nil then _target[path[i]] = {} end
 
-		if _target[path[i]].functionTable then
+		if _target[path[i]].functionTable and i ~= #path then
 			_target = select_function_table(_target[path[i]])
 		else
 			_target = _target[path[i]]
