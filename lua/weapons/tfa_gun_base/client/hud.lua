@@ -1405,7 +1405,7 @@ function SWEP:DoDrawCrosshair()
 	end
 
 	local extraRotation = 0
-	local cPos = Vector(x, y)
+	local cPos = Vector(x - 1, y - 1)
 
 	if stat == TFA.Enum.STATUS_PUMP and cl_tfa_hud_crosshair_pump:GetBool() then
 		if tricross_cvar:GetBool() then
