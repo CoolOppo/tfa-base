@@ -1465,11 +1465,11 @@ function SWEP:DoDrawCrosshair()
 		cam.PushModelMatrix(crosshairMatrix)
 		surface.SetDrawColor(outr, outg, outb, outa)
 
-		local tHeight = math.Round(length - gap + outlinewidth) + crosshairwidth
+		local tHeight = math.Round(length - gap + outlinewidth * 2) + crosshairwidth
 
 		local tX, tY, tWidth =
 			math.Round(-outlinewidth) - crosshairwidth / 2,
-			-gap * self:GetStatL("Primary.SpreadBiasPitch") - tHeight,
+			-gap * self:GetStatL("Primary.SpreadBiasPitch") - tHeight + outlinewidth,
 			math.Round(outlinewidth * 2) + crosshairwidth
 
 		-- Top
@@ -1477,16 +1477,14 @@ function SWEP:DoDrawCrosshair()
 		cam.PopModelMatrix()
 
 		if tricross_cvar:GetBool() then
-			local ourlinew, outlinel = math.Round(outlinewidth * 2) + crosshairwidth, math.Round(length - gap) + outlinewidth + crosshairwidth
-
 			tY = -gap - tHeight
 
 			cam.PushModelMatrix(crosshairMatrixLeft)
-			surface.DrawRect(tX, tY, tWidth, tHeight)
+			surface.DrawRect(tX, tY + outlinewidth, tWidth, tHeight)
 			cam.PopModelMatrix()
 
 			cam.PushModelMatrix(crosshairMatrixRight)
-			surface.DrawRect(tX, tY, tWidth, tHeight)
+			surface.DrawRect(tX, tY + outlinewidth, tWidth, tHeight)
 			cam.PopModelMatrix()
 		else
 			cam.PushModelMatrix(crosshairMatrix)
