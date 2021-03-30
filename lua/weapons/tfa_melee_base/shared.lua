@@ -532,8 +532,6 @@ local function TraceHitFlesh(b)
 	return b.MatType == MAT_FLESH or b.MatType == MAT_ALIENFLESH or (IsValid(b.Entity) and b.Entity.IsNPC and (b.Entity:IsNPC() or b.Entity:IsPlayer() or b.Entity:IsRagdoll()))
 end
 
-local red = Color(255, 0, 0, 255)
-
 function SWEP:Strike(attk, precision)
 	local hitWorld, hitNonWorld, hitFlesh, needsCB
 	local distance, direction, maxhull
@@ -579,7 +577,13 @@ function SWEP:Strike(attk, precision)
 	strikedir:Add(direction.y * eang:Forward())
 	strikedir:Add(direction.z * eang:Up())
 	local strikedirfull = strikedir * 1
-	debugoverlay.Line(tr.start + Vector(0, 0, -1) + fwd * distance / 2 - strikedirfull / 2, tr.start + Vector(0, 0, -1) + fwd * distance / 2 + strikedirfull / 2, 5, red)
+
+	if ow:IsPlayer() and ow:IsAdmin() and GetConVarNumber("developer") > 0 then
+		local spos, epos = tr.start + Vector(0, 0, -1) + fwd * distance / 2 - strikedirfull / 2, tr.start + Vector(0, 0, -1) + fwd * distance / 2 + strikedirfull / 2
+		debugoverlay.Line(spos, epos, 5, Color(255, 0, 0))
+		debugoverlay.Cross(spos, 8, 5, Color(0, 255, 0), true)
+		debugoverlay.Cross(epos, 4, 5, Color(0, 255, 255), true)
+	end
 
 	if SERVER and not game.SinglePlayer() and ow:IsPlayer() then
 		ow:LagCompensation(true)
