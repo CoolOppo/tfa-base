@@ -1405,7 +1405,7 @@ function SWEP:DoDrawCrosshair()
 	end
 
 	local extraRotation = 0
-	local cPos = Vector(x - 1, y - 1)
+	local cPos = Vector(x, y)
 
 	if stat == TFA.Enum.STATUS_PUMP and cl_tfa_hud_crosshair_pump:GetBool() then
 		if tricross_cvar:GetBool() then
@@ -1517,7 +1517,9 @@ function SWEP:DoDrawCrosshair()
 		end
 
 		if drawdot then
-			surface.DrawRect(math.Round(x - outlinewidth) - crosshairwidth / 2, math.Round(y - outlinewidth) - crosshairwidth / 2, math.Round(outlinewidth * 2) + crosshairwidth, math.Round(outlinewidth * 2) + crosshairwidth) --Dot
+			cam.PushModelMatrix(crosshairMatrix)
+			surface.DrawRect(-math.Round((crosshairwidth - 1) / 2) - math.Round(outlinewidth), -math.Round((crosshairwidth - 1) / 2) - math.Round(outlinewidth), math.Round(outlinewidth * 2) + crosshairwidth, math.Round(outlinewidth * 2) + crosshairwidth) --dot
+			cam.PopModelMatrix()
 		end
 	end
 
@@ -1581,11 +1583,13 @@ function SWEP:DoDrawCrosshair()
 	render.PopFilterMag()
 	render.PopFilterMin()
 
-	DisableClipping(false)
-
 	if drawdot then
-		surface.DrawRect(math.Round(x) - crosshairwidth / 2, math.Round(y) - crosshairwidth / 2, crosshairwidth, crosshairwidth) --dot
+		cam.PushModelMatrix(crosshairMatrix)
+		surface.DrawRect(-math.Round((crosshairwidth - 1) / 2), -math.Round((crosshairwidth - 1) / 2), crosshairwidth, crosshairwidth) --dot
+		cam.PopModelMatrix()
 	end
+
+	DisableClipping(false)
 
 	return true
 end
