@@ -22,7 +22,7 @@
 local vector_origin = Vector()
 
 DEFINE_BASECLASS("tfa_bash_base")
-SWEP.DrawCrosshair = false
+SWEP.DrawCrosshair = true
 SWEP.SlotPos = 72
 SWEP.Slot = 0
 SWEP.WeaponLength = 8
@@ -145,6 +145,8 @@ SWEP.AttackSoundTime = -1
 SWEP.VoxSoundTime = -1
 
 SWEP.Primary.DisplayFalloff = false
+
+SWEP.CrosshairConeRecoilOverride = .05
 
 function SWEP:SetupDataTables()
 	BaseClass.SetupDataTables(self)

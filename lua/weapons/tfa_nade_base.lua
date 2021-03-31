@@ -27,6 +27,7 @@ local CurTime = CurTime
 local sp = game.SinglePlayer()
 
 DEFINE_BASECLASS("tfa_gun_base")
+SWEP.DrawCrosshair = true
 SWEP.Type = "Grenade"
 SWEP.MuzzleFlashEffect = ""
 SWEP.Secondary.IronSightsEnabled = false
@@ -247,5 +248,7 @@ function SWEP:ChooseIdleAnim(...)
 	if self:GetStatus() == TFA.Enum.STATUS_GRENADE_READY then return end
 	return BaseClass.ChooseIdleAnim(self, ...)
 end
+
+SWEP.CrosshairConeRecoilOverride = .05
 
 TFA.FillMissingMetaValues(SWEP)

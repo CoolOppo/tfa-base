@@ -24,6 +24,7 @@ if SERVER then
 end
 
 DEFINE_BASECLASS("tfa_gun_base")
+SWEP.DrawCrosshair = true
 SWEP.Primary.Automatic = true
 SWEP.Secondary.Automatic = true
 SWEP.Primary.RPM = 120 --Primary Slashs per minute
@@ -53,6 +54,8 @@ SWEP.data = {} --No ironsights
 SWEP.Secondary.IronSightsEnabled = false --No ironsights
 SWEP.Secondary.DisplaySpread = false
 SWEP.IsMelee = true
+
+SWEP.CrosshairConeRecoilOverride = .05
 
 SWEP.HullData = {
 	hullMin = Vector(-16, -16, -16),

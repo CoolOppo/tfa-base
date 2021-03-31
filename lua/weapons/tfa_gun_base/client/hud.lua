@@ -1280,6 +1280,10 @@ local crosshairRotation = Angle()
 
 local pixelperfectshift = Vector(-0.5)
 
+function SWEP:CalculateCrosshairConeRecoil()
+	return self:GetStatL("CrosshairConeRecoilOverride", false) or self:CalculateConeRecoil()
+end
+
 function SWEP:DoDrawCrosshair()
 	local self2 = self:GetTable()
 	local x, y
@@ -1362,7 +1366,7 @@ function SWEP:DoDrawCrosshair()
 		return v
 	end
 
-	local s_cone = self:CalculateConeRecoil()
+	local s_cone = self:CalculateCrosshairConeRecoil()
 
 	if not self2.selftbl then
 		self2.selftbl = {ply, self}
