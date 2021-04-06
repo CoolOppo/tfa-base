@@ -132,15 +132,30 @@ end
 
 --internal function for handling acceleration
 local function GetWind()
-	local wind = vector_origin
+	return vector_origin
+end
 
-	if StormFox then
-		local windSpeed = StormFox.GetNetworkData("Wind") * TFA.Ballistics.UnitScale
-		local windAng = Angle(0, StormFox.GetNetworkData("WindAngle"), 0)
-		wind = windSpeed * windAng:Forward():GetNormalized()
+if StormFox and StormFox.Version then
+	if StormFox.Version < 2 then -- SF1
+		local SF_GetNetworkData = StormFox.GetNetworkData
+
+		function GetWind()
+			local windSpeed = SF_GetNetworkData("Wind") * TFA.Ballistics.UnitScale
+			local windAng = Angle(0, SF_GetNetworkData("WindAngle"), 0)
+
+			return windSpeed * windAng:Forward():GetNormalized()
+		end
+	elseif StormFox.Wind then -- SF2
+		local SFW_GetForce = StormFox.Wind.GetForce
+		local SFW_GetYaw = StormFox.Wind.GetYaw
+
+		function GetWind()
+			local windSpeed = SFW_GetForce() * TFA.Ballistics.UnitScale
+			local windAng = Angle(0, SFW_GetYaw(), 0)
+
+			return windSpeed * windAng:Forward():GetNormalized()
+		end
 	end
-
-	return wind
 end
 
 function BallisticBullet:_accelerate(delta)
