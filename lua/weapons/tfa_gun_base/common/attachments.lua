@@ -75,10 +75,6 @@ end
 
 local function get(path, target)
 	if #path == 1 then
-		if istable(target[path[1]]) and target[path[1]].functionTable then
-			return select_function_table(target[path[1]])
-		end
-
 		return target[path[1]]
 	end
 
