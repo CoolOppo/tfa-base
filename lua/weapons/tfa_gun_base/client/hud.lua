@@ -922,6 +922,8 @@ function SWEP:GenerateInspectionDerma()
 
 	cvars.AddChangeCallback("cl_drawhud", function()
 		if not IsValid(TFA_INSPECTIONPANEL) then return end
+		TFA_INSPECTIONPANEL:Think()
+		if not IsValid(TFA_INSPECTIONPANEL) then return end
 		TFA_INSPECTIONPANEL:SetVisible(cl_drawhud:GetBool())
 		update_visible(cl_drawhud:GetBool())
 	end, "TFA_INSPECTIONPANEL")
