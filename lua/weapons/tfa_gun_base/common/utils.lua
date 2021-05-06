@@ -771,6 +771,7 @@ function SWEP:CycleSafety()
 
 	self.BurstCount = 0
 	self:SetIsCyclingSafety(true)
+	self:SetIronSightsRaw(false)
 
 	if fm ~= #fmt then
 		self.LastFireMode = fm

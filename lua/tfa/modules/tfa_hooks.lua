@@ -282,7 +282,7 @@ local function FinishMove(ply, cmovedata)
 
 	local scale_dividier = GetTimeScale() * (sv_cheats:GetBool() and host_timescale:GetFloat() or 1)
 
-	if wepv:GetStatL("Secondary.IronSightsEnabled", false) then
+	if wepv:GetStatL("Secondary.IronSightsEnabled", false) and not wepv:IsSafety() then
 		if band(changed, IN_ATTACK2) == IN_ATTACK2 then
 			local deltaPress = (time - wepv:GetLastIronSightsPressed()) / scale_dividier
 
