@@ -551,7 +551,7 @@ function SWEP:InspectionVGUIStats(contentpanel)
 		fireratetext.Paint = TextShadowPaint
 
 		--Hipfire Spread
-		if self:GetStatL("Secondary.DisplaySpread") then
+		if self:GetStatL("Secondary.DisplaySpread", true) then
 			local accuracypanel = statspanel:Add("DPanel")
 			accuracypanel:SetSize(preferredWidth, TFA.Fonts.InspectionHeightSmall)
 			statspanel:SetTall(statspanel:GetTall() + TFA.Fonts.InspectionHeightSmall)
@@ -590,7 +590,7 @@ function SWEP:InspectionVGUIStats(contentpanel)
 		end
 
 		--Iron Spread
-		if self:GetStatL("Secondary.IronSightsEnabled", false) and self:GetStatL("Secondary.DisplayIronSpread") then
+		if self:GetStatL("Secondary.IronSightsEnabled", false) and self:GetStatL("Secondary.DisplayIronSpread", true) then
 			local ironspreadpanel = statspanel:Add("DPanel")
 			ironspreadpanel:SetSize(preferredWidth, TFA.Fonts.InspectionHeightSmall)
 			statspanel:SetTall(statspanel:GetTall() + TFA.Fonts.InspectionHeightSmall)
