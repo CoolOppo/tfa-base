@@ -2225,6 +2225,11 @@ end
 -- source engine save load
 function SWEP:OnRestore()
 	self:BuildAttachmentCache()
+
+	self:InitializeAnims()
+	self:InitializeMaterialTable()
+
+	self:IconFix()
 end
 
 -- lua autorefresh / weapons.Register
