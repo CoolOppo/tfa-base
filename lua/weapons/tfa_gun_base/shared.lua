@@ -2230,6 +2230,22 @@ function SWEP:OnRestore()
 	self:InitializeMaterialTable()
 
 	self:IconFix()
+
+	do -- attempt to restore attachments; weapons DO have owner so we don't need the precautions
+		local OldFD = self.IsFirstDeploy
+
+		self.IsFirstDeploy = true -- so extmag attachments don't unload the clip
+		for attName, sel in pairs(self.AttachmentCache or {}) do
+			if sel then
+				local att = TFA.Attachments.Atts[attName]
+
+				if att and att.Attach then
+					att:Attach(self)
+				end
+			end
+		end
+		self.IsFirstDeploy = OldFD
+	end
 end
 
 -- lua autorefresh / weapons.Register
