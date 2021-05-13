@@ -270,6 +270,14 @@ function SWEP:RTCode(rt, scrw, scrh)
 				end
 			end
 		end
+	else
+		local isang = self:GetStatL("IronSightsAngle") * self:GetIronSightsProgress()
+
+		ang:RotateAroundAxis(ang:Forward(), -isang.z)
+		ang:RotateAroundAxis(ang:Right(), -isang.x)
+		ang:RotateAroundAxis(ang:Up(), -isang.y)
+
+		ang:RotateAroundAxis(ang:Forward(), isang.z)
 	end
 
 	cd.angles = ang
