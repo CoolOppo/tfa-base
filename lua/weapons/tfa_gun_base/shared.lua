@@ -861,10 +861,8 @@ function SWEP:Deploy()
 
 	self2.DefaultFOV = TFADUSKFOV or ( IsValid(ply) and ply:GetFOV() or 90 )
 
-	if self:GetStatL("Skin") and isnumber(self:GetStatL("Skin")) then
-		self2.OwnerViewModel:SetSkin(self:GetStatL("Skin"))
-		self:SetSkin(self:GetStatL("Skin"))
-	end
+	self:ApplyViewModelModifications()
+	self:CallOnClient("ApplyViewModelModifications")
 
 	local v = hook.Run("TFA_Deploy", self)
 
@@ -937,6 +935,12 @@ function SWEP:FinishHolster()
 
 		if IsValid(ent) and ent:IsWeapon() then
 			self:GetOwner():SelectWeapon(ent:GetClass())
+
+			if ent.IsTFAWeapon then
+				ent:ApplyViewModelModifications()
+				ent:CallOnClient("ApplyViewModelModifications")
+			end
+
 			self2.OwnerViewModel = nil
 		end
 	end

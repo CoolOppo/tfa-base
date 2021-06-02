@@ -26,23 +26,11 @@ hook.Add("PlayerSwitchWeapon", "TFA_Bodygroups_PSW", function(ply, oldwep, wep)
 
 	timer.Simple(0, function()
 		if not IsValid(ply) or ply:GetActiveWeapon() ~= wep then return end
-		local vm = ply:GetViewModel()
-		if not IsValid(vm) then return end
 
-		local bgcount = #(vm:GetBodyGroups() or {})
-		local ViewModelBodygroups = wep:GetStatRawL("ViewModelBodygroups")
-		local bgt = ViewModelBodygroups or wep.Bodygroups or {}
+		wep:ApplyViewModelModifications()
 
-		for i = 0, bgcount - 1 do
-			vm:SetBodygroup(i, bgt[i] or 0)
-		end
-
-		if wep.ClearMaterialCache then
-			wep:ClearMaterialCache()
-
-			if sp then
-				wep:CallOnClient("ClearMaterialCache")
-			end
+		if sp then
+			wep:CallOnClient("ApplyViewModelModifications")
 		end
 	end)
 end)

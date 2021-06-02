@@ -51,9 +51,33 @@ local function RBP(vm)
 	end
 end
 
+function SWEP:ApplyViewModelModifications()
+	local self2 = self:GetTable()
+	if not self2.VMIV(self) then return end
+
+	local vm = self2.OwnerViewModel
+
+	local bgcount = #(vm:GetBodyGroups() or {})
+	local ViewModelBodygroups = self2.GetStatRawL(self, "ViewModelBodygroups")
+	local bgt = ViewModelBodygroups or self2.Bodygroups or {}
+
+	for i = 0, bgcount - 1 do
+		vm:SetBodygroup(i, bgt[i] or 0)
+	end
+
+	local skinind = self2.GetStatL(self, "Skin")
+
+	if skinind and isnumber(skinind) then
+		vm:SetSkin(skinind)
+		self:SetSkin(skinind)
+	end
+
+	self2.ClearMaterialCache(self)
+end
+
 function SWEP:ResetViewModelModifications()
 	local self2 = self:GetTable()
-	if not self:VMIV() then return end
+	if not self2.VMIV(self) then return end
 
 	local vm = self2.OwnerViewModel
 
