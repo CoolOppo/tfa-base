@@ -470,6 +470,30 @@ function SWEP:GetBurstDelay(bur)
 	return self:GetFireDelay() * 3
 end
 
+local tickrate = engine.TickInterval()
+
+function SWEP:GetNextCorrectedPrimaryFire(delay)
+	local nextfire = self:GetNextPrimaryFire()
+	local delta = CurTime() - nextfire
+
+	if delta < 0 or delta > tickrate then
+		nextfire = CurTime()
+	end
+
+	return nextfire + delay
+end
+
+function SWEP:GetNextCorrectedSecondaryFire(delay)
+	local nextfire = self:GetNextSecondaryFire()
+	local delta = CurTime() - nextfire
+
+	if delta < 0 or delta > tickrate then
+		nextfire = CurTime()
+	end
+
+	return nextfire + delay
+end
+
 --[[
 Function Name:  IsSafety
 Syntax: self:IsSafety().

@@ -597,7 +597,7 @@ function SWEP:ProcessStatus()
 				self:PrimaryAttack()
 			else
 				self:SetBurstCount(0)
-				self:SetNextPrimaryFire(ct + self2.GetBurstDelay(self))
+				self:SetNextPrimaryFire(self2.GetNextCorrectedPrimaryFire(self, self2.GetBurstDelay(self)))
 			end
 		end
 	end

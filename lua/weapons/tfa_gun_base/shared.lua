@@ -1569,7 +1569,7 @@ function SWEP:TriggerAttack(tableName, clipID)
 		return
 	end
 
-	self["SetNext" .. fnname .. "Fire"](self, l_CT() + self:GetFireDelay())
+	self["SetNext" .. fnname .. "Fire"](self, self2["GetNextCorrected" .. fnname .. "Fire"](self, self2.GetFireDelay(self)))
 
 	if self:GetMaxBurst() > 1 then
 		self:SetBurstCount(math.max(1, self:GetBurstCount() + 1))
