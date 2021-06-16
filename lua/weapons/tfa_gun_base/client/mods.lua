@@ -579,14 +579,14 @@ Purpose:  SWEP Construction Kit Compatibility / Basic Attachments.
 function SWEP:DrawWorldModel()
 	local self2 = self:GetTable()
 
-	if self2.GetStatL(self, "MaterialTable_W") and not self2.MaterialCached_W then
+	if not self2.MaterialCached_W and self2.GetStatL(self, "MaterialTable_W") then
 		self2.MaterialCached_W = {}
 		self:SetSubMaterial()
 
 		local collectedKeys = table.GetKeys(self2.GetStatL(self, "MaterialTable_W"))
 		table.Merge(collectedKeys, table.GetKeys(self2.GetStatL(self, "MaterialTable")))
 
-		for _, k in pairs(collectedKeys) do
+		for _, k in ipairs(collectedKeys) do
 			if (k == "BaseClass") then goto CONTINUE end
 
 			local v = self2.GetStatL(self, "MaterialTable_W")[k]
@@ -613,211 +613,226 @@ function SWEP:DrawWorldModel()
 	end
 
 	if self2.ShowWorldModel == nil or self2.ShowWorldModel or not validowner then
-		if validowner then
-			local WorldModelOffset = self:GetStatRawL("WorldModelOffset")
+		self2.WorldModelOffsetUpdate(self, ply)
+		self2.ProcessBodygroups(self)
 
-			 -- THIS IS DANGEROUS
-			if WorldModelOffset and WorldModelOffset.Pos and WorldModelOffset.Ang then
-				-- TO DO ONLY CLIENTSIDE
-				-- since this will break hitboxes!
-				local handBone = ply:LookupBone("ValveBiped.Bip01_R_Hand")
-
-				if handBone then
-					--local pos, ang = ply:GetBonePosition(handBone)
-					local pos, ang
-					local mat = ply:GetBoneMatrix(handBone)
-
-					if mat then
-						pos, ang = mat:GetTranslation(), mat:GetAngles()
-					else
-						pos, ang = ply:GetBonePosition(handBone)
-					end
-
-					pos = pos + ang:Forward() * WorldModelOffset.Pos.Forward + ang:Right() * WorldModelOffset.Pos.Right + ang:Up() * WorldModelOffset.Pos.Up
-					ang:RotateAroundAxis(ang:Up(), WorldModelOffset.Ang.Up)
-					ang:RotateAroundAxis(ang:Right(), WorldModelOffset.Ang.Right)
-					ang:RotateAroundAxis(ang:Forward(), WorldModelOffset.Ang.Forward)
-					self:SetRenderOrigin(pos)
-					self:SetRenderAngles(ang)
-					--if WorldModelOffset.Scale and ( !self2.MyModelScale or ( WorldModelOffset and self2.MyModelScale!=WorldModelOffset.Scale ) ) then
-					self:SetModelScale(WorldModelOffset.Scale or 1, 0)
-					--end
-				end
-			end
-		else
-			self:SetRenderOrigin(nil)
-			self:SetRenderAngles(nil)
-
-			local WorldModelOffset = self:GetStatRawL("WorldModelOffset")
-
-			if WorldModelOffset and WorldModelOffset.Scale then
-				self:SetModelScale(WorldModelOffset.Scale, 0)
-			end
-		end
-
-		self:ProcessBodygroups()
 		self:DrawModel()
 	end
 
 	self:SetupBones()
-	self:UpdateWMBonePositions(self)
+	self2.UpdateWMBonePositions(self)
 
-	local WorldModelElements = self:GetStatRaw("WorldModelElements", TFA.LatestDataVersion)
+	self:DrawWElements()
 
-	if WorldModelElements then
-		-- self:CreateModels(WorldModelElements)
+	if IsValid(self) and self.IsTFAWeapon and (self:GetOwner() ~= LocalPlayer() or not self:IsFirstPerson()) then
+		self2.UpdateProjectedTextures(self, false)
+	end
+end
 
-		self2.SCKMaterialCached_W = self2.SCKMaterialCached_W or {}
+function SWEP:DrawWElements()
+	local self2 = self:GetTable()
 
-		if not self2.wRenderOrder then
+	local WorldModelElements = self2.GetStatRaw(self, "WorldModelElements", TFA.LatestDataVersion)
+
+	if not WorldModelElements then return end
+
+	if not self2.SCKMaterialCached_W then
+		self2.SCKMaterialCached_W = {}
+	end
+
+	if not self2.wRenderOrder then
+		self2.RebuildModsRenderOrder(self)
+	end
+
+	for index = 1, #self2.wRenderOrder do
+		local name = self2.wRenderOrder[index]
+		local element = WorldModelElements[name]
+
+		if not element then
 			self2.RebuildModsRenderOrder(self)
+			break
 		end
 
-		for index = 1, #self2.wRenderOrder do
-			local name = self2.wRenderOrder[index]
-			local element = WorldModelElements[name]
-
-			if not element then
-				self2.RebuildModsRenderOrder(self)
-				break
+		if element.type == "Bodygroup" then
+			if element.index and element.value_active then
+				self2.WorldModelBodygroups[element.index] = self2.GetStatL(self, "WorldModelElements." .. name .. ".active") and element.value_active or (element.value_inactive or 0)
 			end
 
-			if element.type == "Bodygroup" then
-				if element.index and element.value_active then
-					self2.WorldModelBodygroups[element.index] = self2.GetStatL(self, "WorldModelElements." .. name .. ".active") and element.value_active or (element.value_inactive or 0)
-				end
+			goto CONTINUE
+		end
 
-				goto CONTINUE
-			end
+		if element.hide then goto CONTINUE end
+		if self2.GetStatL(self, "WorldModelElements." .. name .. ".active") == false then goto CONTINUE end
 
-			if element.hide then goto CONTINUE end
-			if self2.GetStatL(self, "WorldModelElements." .. name .. ".active") == false then goto CONTINUE end
+		local bone_ent = (validowner and ply:LookupBone(element.bone or "ValveBiped.Bip01_R_Hand")) and ply or self
+		local pos, ang
 
-			local bone_ent = (validowner and ply:LookupBone(element.bone or "ValveBiped.Bip01_R_Hand")) and ply or self
-			local pos, ang
+		if element.bone then
+			pos, ang = self2.GetBoneOrientation(self, WorldModelElements, element, bone_ent)
+		else
+			pos, ang = self2.GetBoneOrientation(self, WorldModelElements, element, bone_ent, "ValveBiped.Bip01_R_Hand")
+		end
 
-			if element.bone then
-				pos, ang = self:GetBoneOrientation(WorldModelElements, element, bone_ent)
-			else
-				pos, ang = self:GetBoneOrientation(WorldModelElements, element, bone_ent, "ValveBiped.Bip01_R_Hand")
-			end
+		if not pos and not element.bonemerge then goto CONTINUE end
 
-			if not pos and not element.bonemerge then goto CONTINUE end
+		self2.PrecacheElement(self, element, true)
 
-			self:PrecacheElement(element, true)
+		local model = element.curmodel
+		local sprite = element.spritemat
 
-			local model = element.curmodel
-			local sprite = element.spritemat
+		if element.type == "Model" and IsValid(model) then
+			if not element.bonemerge then
+				model:SetPos(pos + ang:Forward() * element.pos.x + ang:Right() * element.pos.y + ang:Up() * element.pos.z)
 
-			if element.type == "Model" and IsValid(model) then
-				if not element.bonemerge then
-					model:SetPos(pos + ang:Forward() * element.pos.x + ang:Right() * element.pos.y + ang:Up() * element.pos.z)
-
-					ang:RotateAroundAxis(ang:Up(), element.angle.y)
-					ang:RotateAroundAxis(ang:Right(), element.angle.p)
-					ang:RotateAroundAxis(ang:Forward(), element.angle.r)
-
-					model:SetAngles(ang)
-				end
-
-				local material = self:GetStatL("WorldModelElements." .. name .. ".material")
-
-				if not material or material == "" then
-					model:SetMaterial("")
-				elseif model:GetMaterial() ~= material then
-					model:SetMaterial(material)
-				end
-
-				local skin = self:GetStatL("WorldModelElements." .. name .. ".skin")
-
-				if skin and skin ~= model:GetSkin() then
-					model:SetSkin(skin)
-				end
-
-				if not self2.SCKMaterialCached_W[name] then
-					self2.SCKMaterialCached_W[name] = true
-
-					local materialtable = self:GetStatL("WorldModelElements." .. name .. ".materials", {})
-					local entmats = table.GetKeys(model:GetMaterials())
-
-					for _, k in ipairs(entmats) do
-						model:SetSubMaterial(k - 1, materialtable[k] or "")
-					end
-				end
-
-				if not self2.WElementsBodygroupsCache[index] then
-					self2.WElementsBodygroupsCache[index] = #model:GetBodyGroups() - 1
-				end
-
-				if self2.WElementsBodygroupsCache[index] then
-					for _b = 0, self2.WElementsBodygroupsCache[index] do
-						local newbg = self2.GetStatL(self, "WorldModelElements." .. name .. ".bodygroup." .. _b, 0) -- names are not supported, use overridetable
-
-						if model:GetBodygroup(_b) ~= newbg then
-							model:SetBodygroup(_b, newbg)
-						end
-					end
-				end
-
-				if element.surpresslightning then
-					render.SuppressEngineLighting(true)
-				end
-
-				if element.bonemerge then
-					if element.rel and WorldModelElements[element.rel] and IsValid(WorldModelElements[element.rel].curmodel) and WorldModelElements[element.rel].bone ~= "oof" then
-						element.parModel = WorldModelElements[element.rel].curmodel
-					else
-						element.parModel = self
-					end
-
-					if model:GetParent() ~= element.parModel then
-						model:SetParent(element.parModel)
-					end
-
-					if not model:IsEffectActive(EF_BONEMERGE) then
-						model:AddEffects(EF_BONEMERGE)
-						model:SetLocalPos(vector_origin)
-						model:SetLocalAngles(angle_zero)
-					end
-				elseif model:IsEffectActive(EF_BONEMERGE) then
-					model:RemoveEffects(EF_BONEMERGE)
-					model:SetParent(nil)
-				end
-
-				render.SetColorModulation(element.color.r / 255, element.color.g / 255, element.color.b / 255)
-				render.SetBlend(element.color.a / 255)
-
-				model:DrawModel()
-
-				render.SetBlend(1)
-				render.SetColorModulation(1, 1, 1)
-
-				if element.surpresslightning then
-					render.SuppressEngineLighting(false)
-				end
-			elseif element.type == "Sprite" and sprite then
-				local drawpos = pos + ang:Forward() * element.pos.x + ang:Right() * element.pos.y + ang:Up() * element.pos.z
-				render.SetMaterial(sprite)
-				render.DrawSprite(drawpos, element.size.x, element.size.y, element.color)
-			elseif element.type == "Quad" and element.draw_func then
-				local drawpos = pos + ang:Forward() * element.pos.x + ang:Right() * element.pos.y + ang:Up() * element.pos.z
 				ang:RotateAroundAxis(ang:Up(), element.angle.y)
 				ang:RotateAroundAxis(ang:Right(), element.angle.p)
 				ang:RotateAroundAxis(ang:Forward(), element.angle.r)
-				cam.Start3D2D(drawpos, ang, element.size)
 
-				drawfn, drawself, fndrawpos, fndrawang, fndrawsize = element.draw_func, self, nil, nil, nil
-				ProtectedCall(dodrawfn)
-
-				cam.End3D2D()
+				model:SetAngles(ang)
 			end
 
-			::CONTINUE::
+			local material = self2.GetStatL(self, "WorldModelElements." .. name .. ".material")
+
+			if not material or material == "" then
+				model:SetMaterial("")
+			elseif model:GetMaterial() ~= material then
+				model:SetMaterial(material)
+			end
+
+			local skin = self2.GetStatL(self, "WorldModelElements." .. name .. ".skin")
+
+			if skin and skin ~= model:GetSkin() then
+				model:SetSkin(skin)
+			end
+
+			if not self2.SCKMaterialCached_W[name] then
+				self2.SCKMaterialCached_W[name] = true
+
+				local materialtable = self2.GetStatL(self, "WorldModelElements." .. name .. ".materials", {})
+				local entmats = table.GetKeys(model:GetMaterials())
+
+				for _, k in ipairs(entmats) do
+					model:SetSubMaterial(k - 1, materialtable[k] or "")
+				end
+			end
+
+			if not self2.WElementsBodygroupsCache[index] then
+				self2.WElementsBodygroupsCache[index] = #model:GetBodyGroups() - 1
+			end
+
+			if self2.WElementsBodygroupsCache[index] then
+				for _b = 0, self2.WElementsBodygroupsCache[index] do
+					local newbg = self2.GetStatL(self, "WorldModelElements." .. name .. ".bodygroup." .. _b, 0) -- names are not supported, use overridetable
+
+					if model:GetBodygroup(_b) ~= newbg then
+						model:SetBodygroup(_b, newbg)
+					end
+				end
+			end
+
+			if element.surpresslightning then
+				render.SuppressEngineLighting(true)
+			end
+
+			if element.bonemerge then
+				if element.rel and WorldModelElements[element.rel] and IsValid(WorldModelElements[element.rel].curmodel) and WorldModelElements[element.rel].bone ~= "oof" then
+					element.parModel = WorldModelElements[element.rel].curmodel
+				else
+					element.parModel = self
+				end
+
+				if model:GetParent() ~= element.parModel then
+					model:SetParent(element.parModel)
+				end
+
+				if not model:IsEffectActive(EF_BONEMERGE) then
+					model:AddEffects(EF_BONEMERGE)
+					model:SetLocalPos(vector_origin)
+					model:SetLocalAngles(angle_zero)
+				end
+			elseif model:IsEffectActive(EF_BONEMERGE) then
+				model:RemoveEffects(EF_BONEMERGE)
+				model:SetParent(nil)
+			end
+
+			render.SetColorModulation(element.color.r / 255, element.color.g / 255, element.color.b / 255)
+			render.SetBlend(element.color.a / 255)
+
+			model:DrawModel()
+
+			render.SetBlend(1)
+			render.SetColorModulation(1, 1, 1)
+
+			if element.surpresslightning then
+				render.SuppressEngineLighting(false)
+			end
+		elseif element.type == "Sprite" and sprite then
+			local drawpos = pos + ang:Forward() * element.pos.x + ang:Right() * element.pos.y + ang:Up() * element.pos.z
+			render.SetMaterial(sprite)
+			render.DrawSprite(drawpos, element.size.x, element.size.y, element.color)
+		elseif element.type == "Quad" and element.draw_func then
+			local drawpos = pos + ang:Forward() * element.pos.x + ang:Right() * element.pos.y + ang:Up() * element.pos.z
+			ang:RotateAroundAxis(ang:Up(), element.angle.y)
+			ang:RotateAroundAxis(ang:Right(), element.angle.p)
+			ang:RotateAroundAxis(ang:Forward(), element.angle.r)
+			cam.Start3D2D(drawpos, ang, element.size)
+
+			drawfn, drawself, fndrawpos, fndrawang, fndrawsize = element.draw_func, self, nil, nil, nil
+			ProtectedCall(dodrawfn)
+
+			cam.End3D2D()
 		end
+
+		::CONTINUE::
+	end
+end
+
+function SWEP:WorldModelOffsetUpdate(ply)
+	if not IsValid(ply) then
+		self:SetRenderOrigin(nil)
+		self:SetRenderAngles(nil)
+
+		local WorldModelOffset = self:GetStatRawL("WorldModelOffset")
+
+		if WorldModelOffset and WorldModelOffset.Scale then
+			self:SetModelScale(WorldModelOffset.Scale, 0)
+		end
+
+		return
 	end
 
-	if IsValid(self) and self.IsTFAWeapon and (self:GetOwner() ~= LocalPlayer() or not self:IsFirstPerson()) then
-		self:UpdateProjectedTextures(false)
+
+	local WorldModelOffset = self:GetStatRawL("WorldModelOffset")
+
+		-- THIS IS DANGEROUS
+	if WorldModelOffset and WorldModelOffset.Pos and WorldModelOffset.Ang then
+		-- TO DO ONLY CLIENTSIDE
+		-- since this will break hitboxes!
+		local handBone = ply:LookupBone("ValveBiped.Bip01_R_Hand")
+
+		if handBone then
+			--local pos, ang = ply:GetBonePosition(handBone)
+			local pos, ang
+			local mat = ply:GetBoneMatrix(handBone)
+
+			if mat then
+				pos, ang = mat:GetTranslation(), mat:GetAngles()
+			else
+				pos, ang = ply:GetBonePosition(handBone)
+			end
+
+			local opos, oang, oscale = WorldModelOffset.Pos, WorldModelOffset.Ang, WorldModelOffset.Scale
+
+			pos = pos + ang:Forward() * opos.Forward + ang:Right() * opos.Right + ang:Up() * opos.Up
+			ang:RotateAroundAxis(ang:Up(), oang.Up)
+			ang:RotateAroundAxis(ang:Right(), oang.Right)
+			ang:RotateAroundAxis(ang:Forward(), oang.Forward)
+			self:SetRenderOrigin(pos)
+			self:SetRenderAngles(ang)
+			--if WorldModelOffset.Scale and ( !self2.MyModelScale or ( WorldModelOffset and self2.MyModelScale!=WorldModelOffset.Scale ) ) then
+			self:SetModelScale(oscale or 1, 0)
+			--end
+		end
 	end
 end
 
@@ -1230,7 +1245,7 @@ Notes:   Updates the bones for a worldmodel.
 Purpose:  SWEP Construction Kit Compatibility / Basic Attachments.
 ]]
 --
-function SWEP:UpdateWMBonePositions(wm)
+function SWEP:UpdateWMBonePositions()
 	if not self.WorldModelBoneMods then
 		self.WorldModelBoneMods = {}
 	end
@@ -1238,50 +1253,42 @@ function SWEP:UpdateWMBonePositions(wm)
 	local WM_BoneMods = self:GetStatL("WorldModelBoneMods", self.WorldModelBoneMods)
 
 	if next(WM_BoneMods) then
-		local wbones = {}
+		for bone = 0, self:GetBoneCount() - 1 do
+			local bonemod = WM_BoneMods[self:GetBoneName(bone)]
+			if not bonemod then goto CONTINUE end
 
-		for boneid = 0, wm:GetBoneCount() - 1 do
-			local bonename = wm:GetBoneName(boneid)
-
-			if WM_BoneMods[bonename] then
-				wbones[bonename] = WM_BoneMods[bonename]
-			else
-				wbones[bonename] = {
-					scale = onevec,
-					pos = vector_origin,
-					angle = angle_zero
-				}
-			end
-		end
-
-		for k, v in pairs(wbones) do
-			if k == "BaseClass" then goto CONTINUE end
-
-			local bone = wm:LookupBone(k)
-			if (not bone) or (bone == -1) then goto CONTINUE end
-			local s = Vector(v.scale.x, v.scale.y, v.scale.z)
-			local p = Vector(v.pos.x, v.pos.y, v.pos.z)
-			local childscale = Vector(1, 1, 1)
-			local cur = wm:GetBoneParent(bone)
+			local childscale
+			local cur = self:GetBoneParent(bone)
 
 			while (cur ~= -1) do
-				local pscale = wbones[wm:GetBoneName(cur)].scale
-				childscale = childscale * pscale
-				cur = wm:GetBoneParent(cur)
+				local par = WM_BoneMods[self:GetBoneName(cur)]
+
+				if par then
+					childscale = (childscale or onevec) * (par.scale or onevec)
+				end
+
+				cur = self:GetBoneParent(cur)
 			end
 
-			s = s * childscale
-
-			if wm:GetManipulateBoneScale(bone) ~= s then
-				wm:ManipulateBoneScale(bone, s)
+			local s = (bonemod.scale or onevec)
+			if childscale then
+				s = s * childscale
 			end
 
-			if wm:GetManipulateBoneAngles(bone) ~= v.angle then
-				wm:ManipulateBoneAngles(bone, v.angle)
+			if self:GetManipulateBoneScale(bone) ~= s then
+				self:ManipulateBoneScale(bone, s)
 			end
 
-			if wm:GetManipulateBonePosition(bone) ~= p then
-				wm:ManipulateBonePosition(bone, p)
+			local a = bonemod.angle or angle_zero
+
+			if self:GetManipulateBoneAngles(bone) ~= a then
+				self:ManipulateBoneAngles(bone, a)
+			end
+
+			local p = bonemod.pos or vector_origin
+
+			if self:GetManipulateBonePosition(bone) ~= p then
+				self:ManipulateBonePosition(bone, p)
 			end
 
 			::CONTINUE::
