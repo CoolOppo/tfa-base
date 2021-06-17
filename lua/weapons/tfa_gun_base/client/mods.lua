@@ -644,6 +644,9 @@ function SWEP:DrawWElements()
 		self2.RebuildModsRenderOrder(self)
 	end
 
+	local ply = self:GetOwner()
+	local validowner = IsValid(ply)
+
 	for index = 1, #self2.wRenderOrder do
 		local name = self2.wRenderOrder[index]
 		local element = WorldModelElements[name]
