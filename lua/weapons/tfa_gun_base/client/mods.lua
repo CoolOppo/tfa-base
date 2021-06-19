@@ -286,6 +286,9 @@ local function draw_element_closure(self, self2, name, index, vm, ViewModelEleme
 			end
 
 			if element.bonemerge then
+				model:SetPos(pos)
+				model:SetAngles(ang)
+
 				if element.rel and ViewModelElements[element.rel] and IsValid(ViewModelElements[element.rel].curmodel) then
 					element.parModel = ViewModelElements[element.rel].curmodel
 				else
@@ -684,7 +687,10 @@ function SWEP:DrawWElements()
 		local sprite = element.spritemat
 
 		if element.type == "Model" and IsValid(model) then
-			if not element.bonemerge then
+			if element.bonemerge then
+				model:SetPos(pos)
+				model:SetAngles(ang)
+			else
 				model:SetPos(pos + ang:Forward() * element.pos.x + ang:Right() * element.pos.y + ang:Up() * element.pos.z)
 
 				ang:RotateAroundAxis(ang:Up(), element.angle.y)
