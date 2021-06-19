@@ -88,4 +88,6 @@ TFA_InspectVGUI_StatsStart(wepom, contentpanel) -- called before adding bottom i
 TFA_InspectVGUI_StatsFinish(wepom, contentpanel) -- called after adding bottom info
 TFA_InspectVGUI_AttachmentsStart(wepom, contentpanel) -- called before adding attachments panel; return false to prevent
 TFA_InspectVGUI_AttachmentsFinish(wepom, contentpanel, attachmentspanel) -- called after adding attachments panel
+TFA_InspectVGUI_FalloffStart(wepom, contentpanel) -- called before adding damage falloff graph; return false to prevent
+TFA_InspectVGUI_FalloffFinish(wepom, contentpanel, falloffpanel) -- called after adding falloff panel
 ]]

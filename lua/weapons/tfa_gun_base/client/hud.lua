@@ -739,7 +739,7 @@ function SWEP:InspectionVGUIAttachments(contentpanel)
 		hook.Run("TFA_InspectVGUI_AttachmentsFinish", self, contentpanel, scrollpanel)
 	end
 
-	if self.Primary.RangeFalloffLUTBuilt and self:GetStatL("Primary.DisplayFalloff") then
+	if self.Primary.RangeFalloffLUTBuilt and self:GetStatL("Primary.DisplayFalloff") and hook.Run("TFA_InspectVGUI_FalloffStart", self, contentpanel) ~= false then
 		local falloffpanel = vgui.Create("EditablePanel", mainpanel)
 		falloffpanel:SetSize(ScrW() * .5 - ScaleH(self.VGUIPaddingW) * 2, mainpanel:GetTall() * 0.2)
 		falloffpanel:SetPos(ScrW() * .5, mainpanel:GetTall() - falloffpanel:GetTall() - ScaleH(self.VGUIPaddingH))
@@ -865,6 +865,8 @@ function SWEP:InspectionVGUIAttachments(contentpanel)
 				shadowed_text(string.format("%ddmg", dmg * wepdmg), "TFASleekSmall", mx + ScaleH(pad), my - TFA.Fonts.SleekHeightSmall, mainpanel.SecondaryColor, TEXT_ALIGN_LEFT)
 			end
 		end
+
+		hook.Run("TFA_InspectVGUI_FalloffFinish", self, contentpanel, falloffpanel)
 	end
 end
 
