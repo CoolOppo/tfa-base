@@ -293,13 +293,21 @@ function SWEP:VMIVNPC()
 end
 
 function SWEP:VMIV()
+	local owent = self:GetOwner()
+
 	if not IsValid(self.OwnerViewModel) then
-		if IsValid(self:GetOwner()) and self:GetOwner().GetViewModel then
-			self.OwnerViewModel = self:GetOwner():GetViewModel()
+		if IsValid(owent) and owent.GetViewModel then
+			self.OwnerViewModel = owent:GetViewModel()
 		end
 
 		return false
 	else
+		if not IsValid(owent) or not owent.GetViewModel then
+			self.OwnerViewModel = nil
+
+			return false
+		end
+
 		return self.OwnerViewModel
 	end
 end
