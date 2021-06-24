@@ -62,7 +62,7 @@ if GetConVar("sv_tfa_penetration_hardlimit") == nil then
 end
 
 if GetConVar("sv_tfa_bullet_penetration_power_mul") == nil then
-	CreateReplConVar("sv_tfa_bullet_penetration_power_mul", "1", "Power multiplier. Set to 3 for CS1.6 experience")
+	CreateReplConVar("sv_tfa_bullet_penetration_power_mul", "1", "Power multiplier. 1 or 1.5 for CS 1.6 experience, 0.25 for semi-realistic behavior")
 end
 
 if GetConVar("sv_tfa_penetration_hitmarker") == nil then
