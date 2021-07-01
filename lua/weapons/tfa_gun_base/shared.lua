@@ -452,6 +452,7 @@ function SWEP:SetupDataTables()
 	self:NetworkVarTFA("Bool", "FirstDeployEvent")
 	self:NetworkVarTFA("Bool", "IsCyclingSafety")
 	self:NetworkVarTFA("Bool", "SafetyCycleAnimated")
+	self:NetworkVarTFA("Bool", "HasPlayedEmptyClick")
 
 	self:NetworkVarTFA("Float", "StatusEnd")
 	self:NetworkVarTFA("Float", "NextIdleAnim")
@@ -1387,6 +1388,33 @@ SWEP.Primary.Sound_Jammed = Sound("Default.ClipEmpty_Rifle") -- jammed click sou
 SWEP.Primary.SoundHint_Fire = true
 SWEP.Primary.SoundHint_DryFire = true
 
+local function Dryfire(self, self2, reload)
+	if not dryfire_cvar:GetBool() and reload then
+		self:Reload(true)
+	end
+
+	if self2.GetHasPlayedEmptyClick(self) then return end
+
+	self2.SetHasPlayedEmptyClick(self, true)
+
+	if SERVER and self:GetStatL("Primary.SoundHint_DryFire") then
+		sound.EmitHint(SOUND_COMBAT, self:GetPos(), 500, 0.2, self:GetOwner())
+	end
+
+	if self:GetOwner():IsNPC() or self:KeyPressed(IN_ATTACK) then
+		local enabled, tanim, ttype = self:ChooseDryFireAnim()
+
+		if enabled then
+			self:SetNextPrimaryFire(l_CT() + self:GetStatL("Primary.DryFireDelay", self:GetActivityLength(tanim, true, ttype)))
+			return
+		end
+	end
+
+	if IsFirstTimePredicted() then
+		self:EmitSound(self:GetStatL("Primary.Sound_DryFire"))
+	end
+end
+
 function SWEP:CanPrimaryAttack()
 	local self2 = self:GetTable()
 
@@ -1409,6 +1437,10 @@ function SWEP:CanPrimaryAttack()
 	if self:IsSafety() then
 		if IsFirstTimePredicted() then
 			self:EmitSound(self:GetStatL("Primary.Sound_DrySafety"))
+
+			if SERVER and self:GetStatL("Primary.SoundHint_DryFire") then
+				sound.EmitHint(SOUND_COMBAT, self:GetPos(), 200, 0.2, self:GetOwner())
+			end
 		end
 
 		if l_CT() < self:GetLastSafetyShoot() + 0.2 then
@@ -1421,39 +1453,17 @@ function SWEP:CanPrimaryAttack()
 		return
 	end
 
-	if self:GetStatL("Primary.ClipSize") <= 0 and self:Ammo1() < self:GetStatL("Primary.AmmoConsumption") then
-		return false
-	end
-
 	if self:GetSprintProgress() >= 0.1 and not self:GetStatL("AllowSprintAttack", false) then
 		return false
 	end
 
+	if self:GetStatL("Primary.ClipSize") <= 0 and self:Ammo1() < self:GetStatL("Primary.AmmoConsumption") then
+		Dryfire(self, self2)
+		return false
+	end
+
 	if self:GetPrimaryClipSize(true) > 0 and self:Clip1() < self:GetStatL("Primary.AmmoConsumption") then
-		if not self2.HasPlayedEmptyClick then
-			self2.HasPlayedEmptyClick = true
-
-			if SERVER and self:GetStatL("Primary.SoundHint_DryFire") then
-				sound.EmitHint(SOUND_COMBAT, self:GetPos(), 500, 0.2, self:GetOwner())
-			end
-
-			if self:GetOwner():IsNPC() or self:KeyPressed(IN_ATTACK) then
-				local enabled, tanim, ttype = self:ChooseDryFireAnim()
-
-				if enabled then
-					self:SetNextPrimaryFire(l_CT() + self:GetStatL("Primary.DryFireDelay", self:GetActivityLength(tanim, true, ttype)))
-
-					return false
-				end
-			end
-
-			self:EmitSound(self:GetStatL("Primary.Sound_DryFire"))
-
-			if not dryfire_cvar:GetBool() then
-				self:Reload(true)
-			end
-		end
-
+		Dryfire(self, self2, true)
 		return false
 	end
 
@@ -1463,7 +1473,7 @@ function SWEP:CanPrimaryAttack()
 		return false
 	end
 
-	self2.HasPlayedEmptyClick = false
+	self2.SetHasPlayedEmptyClick(self, false)
 
 	if l_CT() < self:GetNextPrimaryFire() then return false end
 
@@ -1585,7 +1595,7 @@ function SWEP:TriggerAttack(tableName, clipID)
 
 	local _, tanim = self:ChooseShootAnim(ifp)
 
-	if (not sp) or (not self:IsFirstPerson()) then
+	if not sp or not self:IsFirstPerson() then
 		ply:SetAnimation(PLAYER_ATTACK1)
 	end
 
