@@ -105,8 +105,15 @@ function SWEP:ClearStatCacheL(vn)
 	return self:ClearStatCacheVersioned(vn, LatestDataVersion)
 end
 
+local trigger_lut_rebuild = {
+	FalloffMetricBased = true,
+	Range = true,
+	RangeFalloff = true,
+}
+
 function SWEP:ClearStatCacheVersioned(vn, path_version)
 	local self2 = self:GetTable()
+	self2.ignore_stat_cache = true
 	local getpath, getpath2
 
 	if isstring(vn) then
@@ -221,6 +228,11 @@ function SWEP:ClearStatCacheVersioned(vn, path_version)
 			end
 		end
 	elseif getpath == "Primary_TFA" and isstring(getpath2[2]) then
+		if trigger_lut_rebuild[getpath2[2]] and self2.Primary_TFA.RangeFalloffLUT_IsConverted then
+			self2.Primary_TFA.RangeFalloffLUT = nil
+			self2.AutoDetectRange(self)
+		end
+
 		self2.Primary[getpath[2]] = self2.GetStatVersioned(self, vn, path_version)
 	end
 
@@ -256,6 +268,7 @@ function SWEP:ClearStatCacheVersioned(vn, path_version)
 		self:RebuildModsRenderOrder()
 	end
 
+	self2.ignore_stat_cache = false
 	hook.Run("TFA_ClearStatCache", self)
 end
 
@@ -381,7 +394,7 @@ function SWEP:GetStatVersioned(stat, path_version, default, dontMergeTables)
 		statSelf = statAttachment
 	end
 
-	if shouldCache then
+	if shouldCache and not self2.ignore_stat_cache then
 		if not isDefault or not isDefaultAtt then
 			self2.StatCache[currentVersionStat] = statSelf
 		end

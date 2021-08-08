@@ -66,7 +66,7 @@ local sv_tfa_range_modifier = GetConVar("sv_tfa_range_modifier")
 function SWEP:AutoDetectRange()
 	local self2 = self:GetTable()
 
-	if self:GetStatRawL("Primary.FalloffMetricBased") and not self:GetStatRawL("Primary.RangeFalloffLUT") then
+	if self:GetStatL("Primary.FalloffMetricBased") and not self:GetStatRawL("Primary.RangeFalloffLUT") then
 		self:SetStatRawL("Primary.RangeFalloffLUT_IsConverted", true)
 
 		self:SetStatRawL("Primary.RangeFalloffLUT", {
@@ -74,22 +74,22 @@ function SWEP:AutoDetectRange()
 			range_func = "linear", -- function to spline range
 			units = "meters",
 			lut = {
-				{range = self:GetStatRawL("Primary.MinRangeStartFalloff"), damage = 1},
-				{range = self:GetStatRawL("Primary.MinRangeStartFalloff") + self:GetStatRawL("Primary.MaxFalloff") / self:GetStatRawL("Primary.FalloffByMeter"),
-					damage = (self:GetStatRawL("Primary.Damage") - self:GetStatRawL("Primary.MaxFalloff")) / self:GetStatRawL("Primary.Damage")},
+				{range = self:GetStatL("Primary.MinRangeStartFalloff"), damage = 1},
+				{range = self:GetStatL("Primary.MinRangeStartFalloff") + self:GetStatL("Primary.MaxFalloff") / self:GetStatL("Primary.FalloffByMeter"),
+					damage = (self:GetStatL("Primary.Damage") - self:GetStatL("Primary.MaxFalloff")) / self:GetStatL("Primary.Damage")},
 			}
 		})
 
 		return
 	end
 
-	if self:GetStatRawL("Primary.FalloffMetricBased") or self:GetStatRawL("Primary.RangeFalloffLUT") then return end
+	if self:GetStatL("Primary.FalloffMetricBased") or self:GetStatL("Primary.RangeFalloffLUT") then return end
 
-	if self:GetStatRawL("Primary.Range") <= 0 then
-		self:SetStatRawL("Primary.Range", math.sqrt(self:GetStatRawL("Primary.Damage") / 32) * self:MetersToUnits(350) * self:AmmoRangeMultiplier())
+	if self:GetStatL("Primary.Range") <= 0 then
+		self:SetStatRawL("Primary.Range", math.sqrt(self:GetStatL("Primary.Damage") / 32) * self:MetersToUnits(350) * self:AmmoRangeMultiplier())
 	end
 
-	if self:GetStatRawL("Primary.RangeFalloff") <= 0 then
+	if self:GetStatL("Primary.RangeFalloff") <= 0 then
 		self:SetStatRawL("Primary.RangeFalloff", 0.5)
 	end
 
@@ -100,8 +100,8 @@ function SWEP:AutoDetectRange()
 		range_func = "linear", -- function to spline range
 		units = "hammer",
 		lut = {
-			{range = self:GetStatRawL("Primary.Range") * self:GetStatRawL("Primary.RangeFalloff"), damage = 1},
-			{range = self:GetStatRawL("Primary.Range"), damage = 1 - sv_tfa_range_modifier:GetFloat()},
+			{range = self:GetStatL("Primary.Range") * self:GetStatL("Primary.RangeFalloff"), damage = 1},
+			{range = self:GetStatL("Primary.Range"), damage = 1 - sv_tfa_range_modifier:GetFloat()},
 		}
 	})
 end
