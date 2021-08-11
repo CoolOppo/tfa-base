@@ -73,6 +73,18 @@ local function CreateFonts()
 	fontdata.size = ScaleH(24)
 	surface.CreateFont("TFA_INSPECTION_SMALL", fontdata)
 	TFA.Fonts.InspectionHeightSmall = GetFontHeight("TFA_INSPECTION_SMALL")
+
+	fontdata = {}
+	fontdata.extended = true
+	fontdata.weight = 500
+
+	fontdata.font = "Roboto Condensed"
+	fontdata.size = ScaleH(30)
+	surface.CreateFont("TFAAttachmentTTHeader", fontdata)
+
+	fontdata.font = "Roboto Lt"
+	fontdata.size = ScaleH(21)
+	surface.CreateFont("TFAAttachmentTTBody", fontdata)
 end
 
 CreateFonts()

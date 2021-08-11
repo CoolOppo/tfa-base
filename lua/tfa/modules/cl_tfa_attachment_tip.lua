@@ -75,48 +75,13 @@ function PANEL:SetTextTable( t )
 	self.TextTable = t or {}
 end
 
-
-surface.CreateFont("TFAAttachmentTTHeader", {
-	font = "Roboto Condensed", -- Use the font-name which is shown to you by your operating system Font Viewer, not the file name
-	size = 20,
-	weight = 500,
-	blursize = 0,
-	scanlines = 0,
-	antialias = true,
-	underline = false,
-	italic = false,
-	strikeout = false,
-	symbol = false,
-	rotary = false,
-	shadow = false,
-	additive = false,
-	outline = false
-})
-
-surface.CreateFont("TFAAttachmentTTBody", {
-	font = "Roboto Lt", -- Use the font-name which is shown to you by your operating system Font Viewer, not the file name
-	size = 14,
-	weight = 500,
-	blursize = 0,
-	scanlines = 0,
-	antialias = true,
-	underline = false,
-	italic = false,
-	strikeout = false,
-	symbol = false,
-	rotary = false,
-	shadow = false,
-	additive = false,
-	outline = false
-})
-
-local headerfont = "TFAAttachmentTTHeader"
-local bodyfont = "TFAAttachmentTTBody"
+PANEL.HeaderFont = "TFAAttachmentTTHeader"
+PANEL.BodyFont = "TFAAttachmentTTBody"
 
 function PANEL:GetHeaderHeight()
 	if not IsValid(self.Wep) then return 0 end
 	if not self.Header then return 0 end
-	surface.SetFont(headerfont)
+	surface.SetFont(self.HeaderFont)
 	local _, th = surface.GetTextSize( self.Header )
 	return th + padding * 2
 end
@@ -124,7 +89,7 @@ end
 function PANEL:GetHeaderSize()
 	if not IsValid(self.Wep) then return 0, 0 end
 	if not self.Header then return 0, 0 end
-	surface.SetFont(headerfont)
+	surface.SetFont(self.HeaderFont)
 	local tw, th = surface.GetTextSize( self.Header )
 	return tw + padding * 2, th + padding * 2
 end
@@ -132,7 +97,7 @@ end
 function PANEL:GetTextTableHeight()
 	if not self.TextTable or #self.TextTable <= 0 then return 0 end
 	local hv = padding
-	surface.SetFont(bodyfont)
+	surface.SetFont(self.BodyFont)
 	for _,v in pairs(self.TextTable) do
 		if type(v) == "string" then
 			local _, th = surface.GetTextSize( v )
@@ -147,7 +112,7 @@ function PANEL:GetTextTableSize(  )
 	if not self.TextTable or #self.TextTable <= 0 then return 0, 0 end
 	local mw = 0
 	local hv = padding
-	surface.SetFont(bodyfont)
+	surface.SetFont(self.BodyFont)
 	for _,v in pairs(self.TextTable) do
 		if type(v) == "string" then
 			local tw, th = surface.GetTextSize( v )
@@ -161,17 +126,17 @@ end
 
 function PANEL:DrawHeader( w, h )
 	if not self.Header then return 0 end
-	surface.SetFont(headerfont)
+	surface.SetFont(self.HeaderFont)
 	local _, th = surface.GetTextSize( self.Header )
 	draw.RoundedBox( 0, 0, 0, w, th + padding * 2, ColorAlpha( TFA.Attachments.Colors["background"], self.Wep:GetInspectingProgress() * 192 ) )
 	if self.AnchoredH then
-		draw.SimpleText( self.Header, headerfont, self:GetWide() / 2 , padding, ColorAlpha( TFA.Attachments.Colors["primary"], self.Wep:GetInspectingProgress() * 225 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP )
+		draw.DrawText( self.Header, self.HeaderFont, self:GetWide() / 2 , padding, ColorAlpha( TFA.Attachments.Colors["primary"], self.Wep:GetInspectingProgress() * 225 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP )
 		--draw.RoundedBox( 0, w / 2 - tw / 2, padding + th + padding / 4, tw, padding / 2, ColorAlpha( TFA.Attachments.Colors["primary"], self.Wep:GetInspectingProgress() * 225 ) )
 
-		--draw.SimpleText( self.Header, headerfont, self:GetWide() - padding, padding, ColorAlpha( TFA.Attachments.Colors["primary"], self.Wep:GetInspectingProgress() * 225 ), TEXT_ALIGN_RIGHT, TEXT_ALIGN_TOP )
+		--draw.DrawText( self.Header, self.HeaderFont, self:GetWide() - padding, padding, ColorAlpha( TFA.Attachments.Colors["primary"], self.Wep:GetInspectingProgress() * 225 ), TEXT_ALIGN_RIGHT, TEXT_ALIGN_TOP )
 		--draw.RoundedBox( 0, w - padding - tw, padding + th + padding / 4, tw, padding / 2, ColorAlpha( TFA.Attachments.Colors["primary"], self.Wep:GetInspectingProgress() * 225 ) )
 	else
-		draw.SimpleText( self.Header, headerfont, padding, padding, ColorAlpha( TFA.Attachments.Colors["primary"], self.Wep:GetInspectingProgress() * 225 ), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP )
+		draw.DrawText( self.Header, self.HeaderFont, padding, padding, ColorAlpha( TFA.Attachments.Colors["primary"], self.Wep:GetInspectingProgress() * 225 ), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP )
 		--draw.RoundedBox( 0, padding, padding + th + padding / 4, tw, padding / 2, ColorAlpha( TFA.Attachments.Colors["primary"], self.Wep:GetInspectingProgress() * 225 ) )
 	end
 	return th + padding * 2
@@ -182,7 +147,7 @@ function PANEL:DrawTextTable( x, y )
 	--y = y + padding
 	local hv = padding
 	local acol = TFA.Attachments.Colors["primary"]
-	surface.SetFont(bodyfont)
+	surface.SetFont(self.BodyFont)
 	for _,v in pairs(self.TextTable) do
 		if type(v) == "table" or type(v) == "vector" then
 			if v.r then
@@ -194,10 +159,10 @@ function PANEL:DrawTextTable( x, y )
 		if type(v) == "string" then
 			local _, th = surface.GetTextSize( v )
 			if self.AnchoredH then
-				--draw.SimpleText( v, bodyfont, x + self:GetWide() - padding, y + hv, ColorAlpha( acol, self.Wep:GetInspectingProgress() * 225 ), TEXT_ALIGN_RIGHT, TEXT_ALIGN_TOP )
-				draw.SimpleText( v, bodyfont, x + padding * 2, y + hv, ColorAlpha( acol, self.Wep:GetInspectingProgress() * 225 ), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP )
+				--draw.DrawText( v, self.BodyFont, x + self:GetWide() - padding, y + hv, ColorAlpha( acol, self.Wep:GetInspectingProgress() * 225 ), TEXT_ALIGN_RIGHT, TEXT_ALIGN_TOP )
+				draw.DrawText( v, self.BodyFont, x + padding * 2, y + hv, ColorAlpha( acol, self.Wep:GetInspectingProgress() * 225 ), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP )
 			else
-				draw.SimpleText( v, bodyfont, x + padding * 2, y + hv, ColorAlpha( acol, self.Wep:GetInspectingProgress() * 225 ), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP )
+				draw.DrawText( v, self.BodyFont, x + padding * 2, y + hv, ColorAlpha( acol, self.Wep:GetInspectingProgress() * 225 ), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP )
 			end
 			hv = hv + th
 		end
