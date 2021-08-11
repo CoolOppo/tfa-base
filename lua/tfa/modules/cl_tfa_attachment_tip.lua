@@ -82,7 +82,7 @@ function PANEL:GetHeaderHeight()
 	if not IsValid(self.Wep) then return 0 end
 	if not self.Header then return 0 end
 	surface.SetFont(self.HeaderFont)
-	local _, th = surface.GetTextSize( self.Header )
+	local _, th = surface.GetTextSize( language.GetPhrase(self.Header) )
 	return th + padding * 2
 end
 
@@ -90,7 +90,7 @@ function PANEL:GetHeaderSize()
 	if not IsValid(self.Wep) then return 0, 0 end
 	if not self.Header then return 0, 0 end
 	surface.SetFont(self.HeaderFont)
-	local tw, th = surface.GetTextSize( self.Header )
+	local tw, th = surface.GetTextSize( language.GetPhrase(self.Header) )
 	return tw + padding * 2, th + padding * 2
 end
 
@@ -100,6 +100,7 @@ function PANEL:GetTextTableHeight()
 	surface.SetFont(self.BodyFont)
 	for _,v in pairs(self.TextTable) do
 		if type(v) == "string" then
+			v = language.GetPhrase(v)
 			local _, th = surface.GetTextSize( v )
 			hv = hv + th
 		end
@@ -115,6 +116,7 @@ function PANEL:GetTextTableSize(  )
 	surface.SetFont(self.BodyFont)
 	for _,v in pairs(self.TextTable) do
 		if type(v) == "string" then
+			v = language.GetPhrase(v)
 			local tw, th = surface.GetTextSize( v )
 			hv = hv + th
 			mw = math.max( mw, tw )
@@ -127,16 +129,18 @@ end
 function PANEL:DrawHeader( w, h )
 	if not self.Header then return 0 end
 	surface.SetFont(self.HeaderFont)
-	local _, th = surface.GetTextSize( self.Header )
+
+	local header = language.GetPhrase(self.Header)
+	local _, th = surface.GetTextSize( header )
 	draw.RoundedBox( 0, 0, 0, w, th + padding * 2, ColorAlpha( TFA.Attachments.Colors["background"], self.Wep:GetInspectingProgress() * 192 ) )
 	if self.AnchoredH then
-		draw.DrawText( self.Header, self.HeaderFont, self:GetWide() / 2 , padding, ColorAlpha( TFA.Attachments.Colors["primary"], self.Wep:GetInspectingProgress() * 225 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP )
+		draw.DrawText( header, self.HeaderFont, self:GetWide() / 2 , padding, ColorAlpha( TFA.Attachments.Colors["primary"], self.Wep:GetInspectingProgress() * 225 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP )
 		--draw.RoundedBox( 0, w / 2 - tw / 2, padding + th + padding / 4, tw, padding / 2, ColorAlpha( TFA.Attachments.Colors["primary"], self.Wep:GetInspectingProgress() * 225 ) )
 
-		--draw.DrawText( self.Header, self.HeaderFont, self:GetWide() - padding, padding, ColorAlpha( TFA.Attachments.Colors["primary"], self.Wep:GetInspectingProgress() * 225 ), TEXT_ALIGN_RIGHT, TEXT_ALIGN_TOP )
+		--draw.DrawText( header, self.HeaderFont, self:GetWide() - padding, padding, ColorAlpha( TFA.Attachments.Colors["primary"], self.Wep:GetInspectingProgress() * 225 ), TEXT_ALIGN_RIGHT, TEXT_ALIGN_TOP )
 		--draw.RoundedBox( 0, w - padding - tw, padding + th + padding / 4, tw, padding / 2, ColorAlpha( TFA.Attachments.Colors["primary"], self.Wep:GetInspectingProgress() * 225 ) )
 	else
-		draw.DrawText( self.Header, self.HeaderFont, padding, padding, ColorAlpha( TFA.Attachments.Colors["primary"], self.Wep:GetInspectingProgress() * 225 ), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP )
+		draw.DrawText( header, self.HeaderFont, padding, padding, ColorAlpha( TFA.Attachments.Colors["primary"], self.Wep:GetInspectingProgress() * 225 ), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP )
 		--draw.RoundedBox( 0, padding, padding + th + padding / 4, tw, padding / 2, ColorAlpha( TFA.Attachments.Colors["primary"], self.Wep:GetInspectingProgress() * 225 ) )
 	end
 	return th + padding * 2
@@ -157,6 +161,7 @@ function PANEL:DrawTextTable( x, y )
 			end
 		end
 		if type(v) == "string" then
+			v = language.GetPhrase(v)
 			local _, th = surface.GetTextSize( v )
 			if self.AnchoredH then
 				--draw.DrawText( v, self.BodyFont, x + self:GetWide() - padding, y + hv, ColorAlpha( acol, self.Wep:GetInspectingProgress() * 225 ), TEXT_ALIGN_RIGHT, TEXT_ALIGN_TOP )
