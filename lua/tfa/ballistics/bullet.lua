@@ -252,15 +252,7 @@ function BallisticBullet:Impact(tr)
 		["__index"] = self.bul
 	})
 
-	if self.playerOwned then
-		self.owner:LagCompensation(true)
-	end
-
 	self.owner:FireBullets(bul)
-
-	if self.playerOwned then
-		self.owner:LagCompensation(false)
-	end
 end
 
 --Render
