@@ -457,7 +457,22 @@ SWEP.IronSightsReloadLock       = true
 -- Export from SWEP Creation Kit (if it is being utilized to create gun)
 -- For each item that can/will be toggled, set active = false in its individual table
 -- AKA VElements (SWEP Construction Kit naming)
-SWEP.ViewModelElements = nil
+SWEP.ViewModelElements = nil --[[ {
+	["element_name"] = {
+		-- Standard SCK table syntax here
+		-- (type, model, bone, rel, pos, angle, size, color, surpresslightning, material, skin, bodygroup, active)
+
+		-- Additional syntax from TFA Base:
+		["attachment"] = "muzzle", -- Parent attachment name, overrides the "bone" value
+		["bonemerge"] = false, -- Bonemerge model instead of positioning it at reference point
+		["materials"] = {}, -- Submaterials replacement table
+		["translucent"] = false, -- Workaround for translucent models drawing behind player hands
+
+		-- For stencil sights:
+		["mask"] = "models/error.mdl", -- Sight mask model path
+		["reticle"] = "models/error.mdl", -- Model path for model reticle type
+	}
+}]]--
 
 ----------------- Iron sights related
 -- AKA data.ironsights
