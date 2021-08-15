@@ -56,6 +56,19 @@ function ATTACHMENT:Detach(wep)
 end
 ]]--
 
+-- Attachment functions called from base
+--[[
+-- Called from render target code if SWEP.RTDrawEnabled is true
+function ATTACHMENT:RTCode(wep, rt_texture, w, h)
+end
+]]--
+
+--[[
+-- Called from FireBullets for each bullet trace hit; arguments are passed from bullet callback
+function ATTACHMENT:CustomBulletCallback(wep, attacker, trace, dmginfo)
+end
+]]--
+
 if not TFA_ATTACHMENT_ISUPDATING then
 	TFAUpdateAttachments()
 end
