@@ -891,6 +891,19 @@ SWEP.StencilSight_UseMask = nil -- Use the .mask value of VElement's table as st
 -- SWEP.StencilSight_ReticleOffsetAng = nil -- Angle(0, 0, 0)
 -- // Sight Type: Quad
 
+-- [[ BASH BASE PARAMETERS ]] --
+-- If you're using "tfa_bash_base" or something that's derived from it
+SWEP.Secondary.CanBash            = true -- set to false to disable bashing
+SWEP.Secondary.BashDamage         = 25 -- Melee bash damage
+SWEP.Secondary.BashSound          = "TFA.Bash" -- Soundscript name for bash swing sound
+SWEP.Secondary.BashHitSound       = "TFA.BashWall" -- Soundscript name for non-flesh hit sound
+SWEP.Secondary.BashHitSound_Flesh = "TFA.BashFlesh" -- Soundscript name for flesh hit sound
+SWEP.Secondary.BashLength         = 54 -- Length of bash melee trace in units
+SWEP.Secondary.BashDelay          = 0.2 -- Delay (in seconds) from bash start to bash attack trace
+SWEP.Secondary.BashDamageType     = DMG_SLASH -- Damage type (DMG_ enum value)
+SWEP.Secondary.BashEnd            = nil -- Bash end time (in seconds), defaults to animation end if undefined
+SWEP.Secondary.BashInterrupt      = false -- Bash attack interrupts everything (reload, draw, whatever)
+
 -- [[MISC INFO FOR MODELERS]] --
 --[[
 
@@ -901,7 +914,7 @@ ACT_VM_DRAW_EMPTY - Draw empty
 ACT_VM_DRAW_SILENCED - Draw silenced, overrides empty
 
 ACT_VM_IDLE - Idle
-ACT_VM_IDLE_SILENCED - Idle empty, overwritten by silenced
+ACT_VM_IDLE_EMPTY - Idle empty, overwritten by silenced
 ACT_VM_IDLE_SILENCED - Idle silenced
 
 ACT_VM_PRIMARYATTACK - Shoot
@@ -916,10 +929,23 @@ ACT_SHOTGUN_RELOAD_FINISH - End shotgun reload.
 ACT_VM_RELOAD_EMPTY - Empty mag reload, chambers the new round.  Works for shotguns too, where applicable.
 ACT_VM_RELOAD_SILENCED - Silenced reload, overwrites all
 
+ACT_VM_FIREMODE - Firemode switch
+ACT_VM_IFIREMODE - ADS firemode switch
+
+ACT_VM_FIDGET - Inspect/fidget animation (hold Reload key to play)
+ACT_CROSSBOW_FIDGET_UNLOADED - Inspect empty
+ACT_RPG_FIDGET_UNLOADED - Inspect silenced
 
 ACT_VM_HOLSTER - Holster
 ACT_VM_HOLSTER_SILENCED - Holster empty, overwritten by silenced
 ACT_VM_HOLSTER_SILENCED - Holster silenced
+
+ACT_VM_HITCENTER - Melee bash
+ACT_VM_HITCENTER2 - Melee bash silenced (why would you use that)
+ACT_VM_MISSCENTER - Melee bash empty
+ACT_VM_MISSCENTER2 - Melee bash empty and silenced (...)
+
+-- For more verbose list check lua/weapons/tfa_gun_base/common/anims.lua
 
 ]] --
 
