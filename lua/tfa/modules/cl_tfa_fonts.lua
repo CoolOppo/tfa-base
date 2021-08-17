@@ -78,12 +78,18 @@ local function CreateFonts()
 	fontdata.extended = true
 	fontdata.weight = 500
 
+	fontdata.font = "Roboto"
+	fontdata.size = ScaleH(12)
+	surface.CreateFont("TFAAttachmentIconFont", fontdata)
+	fontdata.size = ScaleH(10)
+	surface.CreateFont("TFAAttachmentIconFontTiny", fontdata)
+
 	fontdata.font = "Roboto Condensed"
-	fontdata.size = ScaleH(30)
+	fontdata.size = ScaleH(24)
 	surface.CreateFont("TFAAttachmentTTHeader", fontdata)
 
 	fontdata.font = "Roboto Lt"
-	fontdata.size = ScaleH(21)
+	fontdata.size = ScaleH(18)
 	surface.CreateFont("TFAAttachmentTTBody", fontdata)
 end
 

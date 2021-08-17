@@ -94,45 +94,11 @@ function PANEL:OnMousePressed()
 	end
 end
 
-surface.CreateFont("TFAAttachmentIconFont", {
-	font = "Roboto", -- Use the font-name which is shown to you by your operating system Font Viewer, not the file name
-	size = 12,
-	weight = 500,
-	blursize = 0,
-	scanlines = 0,
-	antialias = true,
-	underline = false,
-	italic = false,
-	strikeout = false,
-	symbol = false,
-	rotary = false,
-	shadow = false,
-	additive = false,
-	outline = false
-})
-
-surface.CreateFont("TFAAttachmentIconFontTiny", {
-	font = "Roboto", -- Use the font-name which is shown to you by your operating system Font Viewer, not the file name
-	size = 10,
-	weight = 500,
-	blursize = 0,
-	scanlines = 0,
-	antialias = true,
-	underline = false,
-	italic = false,
-	strikeout = false,
-	symbol = false,
-	rotary = false,
-	shadow = false,
-	additive = false,
-	outline = false
-})
-
 local function abbrev( str )
 	local tbl = string.Explode(" ",str,false)
 	local retstr = ""
 	for k,v in ipairs(tbl) do
-		local tmpstr = string.sub(v,1,1)
+		local tmpstr = utf8.sub(v,1,1)
 		retstr = retstr .. ( ( k == 1 ) and string.upper( tmpstr ) or string.lower( tmpstr ) )
 	end
 	return retstr
@@ -170,9 +136,20 @@ function PANEL:Paint(w, h)
 	surface.SetMaterial(attachmentIcon)
 	surface.DrawTexturedRect(padding, padding, w - padding * 2, h - padding * 2)
 	if not TFA.Attachments.Atts[self.Attachment].ShortName then
-		TFA.Attachments.Atts[self.Attachment].ShortName = abbrev( TFA.Attachments.Atts[self.Attachment].Name or "")
+		TFA.Attachments.Atts[self.Attachment].ShortName = abbrev( language.GetPhrase(TFA.Attachments.Atts[self.Attachment].Name) or "")
+		TFA.Attachments.Atts[self.Attachment].ShortNameGenerated = true
 	end
 	draw.SimpleText( string.upper( TFA.Attachments.Atts[self.Attachment].ShortName ) , "TFAAttachmentIconFontTiny", padding / 4, h, ColorAlpha(TFA.Attachments.Colors["primary"], self.Wep:GetInspectingProgress() * ( sel and 192 or 64 ) ), TEXT_ALIGN_LEFT, TEXT_ALIGN_BOTTOM)
 end
 
 vgui.Register("TFAAttachmentIcon", PANEL, "Panel")
+
+-- cleanup generated shortnames
+cvars.AddChangeCallback("gmod_language", function()
+	for id, att in pairs(TFA.Attachments.Atts or {}) do
+		if att.ShortNameGenerated then
+			att.ShortName = nil
+			att.ShortNameGenerated = nil
+		end
+	end
+end, "tfa_attachment_clearshortnames")
