@@ -854,6 +854,9 @@ SWEP.AttachmentTableOverride    = {} --[[{ -- overrides WeaponTable for attachme
 		},
 	}
 }]]
+SWEP.AttachmentIconOverride     = {} --[[{ -- overrides icons for attachments
+	["am_magnum"] = Material("entities/ammo_357.png", "smooth")
+}]]
 
 SWEP.DInv2_GridSizeX = nil -- DInventory/2 Specific. Determines weapon's width in grid. This is not TFA Base specific and can be specified to any Scripted SWEP.
 SWEP.DInv2_GridSizeY = nil -- DInventory/2 Specific. Determines weapon's height in grid. This is not TFA Base specific and can be specified to any Scripted SWEP.

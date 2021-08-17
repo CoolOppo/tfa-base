@@ -159,8 +159,15 @@ function PANEL:Paint(w, h)
 		TFA.Attachments.Atts[self.Attachment].Icon_Cached = Material( TFA.Attachments.Atts[self.Attachment].Icon, "noclamp smooth" )
 	end
 
+	local attachmentIcon = TFA.Attachments.Atts[self.Attachment].Icon_Cached
+
+	local iconOverride = self.Wep:GetStat("AttachmentIconOverride." .. self.Attachment)
+	if iconOverride and type(iconOverride) == "IMaterial" then
+		attachmentIcon = iconOverride
+	end
+
 	surface.SetDrawColor(ColorAlpha(color_white, self.Wep:GetInspectingProgress() * 255))
-	surface.SetMaterial(TFA.Attachments.Atts[self.Attachment].Icon_Cached)
+	surface.SetMaterial(attachmentIcon)
 	surface.DrawTexturedRect(padding, padding, w - padding * 2, h - padding * 2)
 	if not TFA.Attachments.Atts[self.Attachment].ShortName then
 		TFA.Attachments.Atts[self.Attachment].ShortName = abbrev( TFA.Attachments.Atts[self.Attachment].Name or "")
