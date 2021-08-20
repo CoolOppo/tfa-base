@@ -142,9 +142,9 @@ end
 
 function SWEP:FixIS()
 	local self2 = self:GetTable()
-	if self:GetStatRawL("SightsPos") and (not self:GetStatRawL("IronSightsPosition") or (self:GetStatRawL("IronSightsPosition.x") ~= self:GetStatRawL("SightsPos.x") and self:GetStatRawL("SightsPos.x") ~= 0)) then
-		self:SetStatRawL("IronSightsPosition", Vector())
-		self:SetStatRawL("IronSightsAngle", Vector())
+	if self:GetStatRawL("SightsPos") and (not self:GetStatRawL("IronSightsPosition") or (self:GetStatRawL("IronSightsPosition").x ~= self:GetStatRawL("SightsPos").x and self:GetStatRawL("SightsPos").x ~= 0)) then
+		self:SetStatRawL("IronSightsPosition", self:GetStatRawL("SightsPos") or Vector())
+		self:SetStatRawL("IronSightsAngle", self:GetStatRawL("SightsAng") or Vector())
 	end
 end
 
