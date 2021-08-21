@@ -674,25 +674,25 @@ function SWEP:InspectionVGUIAttachments(contentpanel)
 			vbar = scrollpanel:GetVBar()
 
 			vbar.Paint = function(myself, w, h)
-				if not mainpanel then return end
+				if not mainpanel or not mainpanel.BackgroundColor then return end
 				surface.SetDrawColor(mainpanel.BackgroundColor.r, mainpanel.BackgroundColor.g, mainpanel.BackgroundColor.b, mainpanel.BackgroundColor.a / 2)
 				surface.DrawRect(w * .65, 0, w * .35, h)
 			end
 
 			vbar.btnUp.Paint = function(myself, w, h)
-				if not mainpanel then return end
+				if not mainpanel or not mainpanel.PrimaryColor then return end
 				surface.SetDrawColor(mainpanel.PrimaryColor.r, mainpanel.PrimaryColor.g, mainpanel.PrimaryColor.b, mainpanel.PrimaryColor.a)
 				surface.DrawRect(w * .65, 0, w * .35, h)
 			end
 
 			vbar.btnDown.Paint = function(myself, w, h)
-				if not mainpanel then return end
+				if not mainpanel or not mainpanel.PrimaryColor then return end
 				surface.SetDrawColor(mainpanel.PrimaryColor.r, mainpanel.PrimaryColor.g, mainpanel.PrimaryColor.b, mainpanel.PrimaryColor.a)
 				surface.DrawRect(w * .65, 0, w * .35, h)
 			end
 
 			vbar.btnGrip.Paint = function(myself, w, h)
-				if not mainpanel then return end
+				if not mainpanel or not mainpanel.PrimaryColor then return end
 				surface.SetDrawColor(mainpanel.PrimaryColor.r, mainpanel.PrimaryColor.g, mainpanel.PrimaryColor.b, mainpanel.PrimaryColor.a)
 				surface.DrawRect(w * .65, 0, w * .35, h)
 			end
