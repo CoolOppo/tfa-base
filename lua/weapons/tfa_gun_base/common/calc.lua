@@ -141,7 +141,12 @@ function SWEP:CalculateRatios()
 		self:TFAFinishMove(owent, owent:GetVelocity())
 	end
 
-	self:SetSpreadRatio(l_mathClamp(self:GetSpreadRatio() - self2.GetStatL(self, "Primary.SpreadRecovery") * ft, 1, self2.GetStatL(self, "Primary.SpreadMultiplierMax")))
+	local lastrecoiltime = self2.GetLastRecoil(self, -1)
+
+	if lastrecoiltime < 0 or time >= (lastrecoiltime + self2.GetStatL(self, "Primary.SpreadRecoveryDelay")) then
+		self:SetSpreadRatio(l_mathClamp(self:GetSpreadRatio() - self2.GetStatL(self, "Primary.SpreadRecovery") * ft, 1, self2.GetStatL(self, "Primary.SpreadMultiplierMax")))
+	end
+
 	self:SetIronSightsProgress(l_mathApproach(self:GetIronSightsProgress(), ist, (ist - self:GetIronSightsProgress()) * ft * adstransitionspeed))
 	self:SetProceduralHolsterProgress(l_mathApproach(self:GetProceduralHolsterProgress(), sprt, (sprt - self:GetSprintProgress()) * ft * self2.ProceduralHolsterTime * 15))
 	self:SetInspectingProgress(l_mathApproach(self:GetInspectingProgress(), self:GetCustomizing() and 1 or 0, ((self:GetCustomizing() and 1 or 0) - self:GetInspectingProgress()) * ft * 10))

@@ -189,8 +189,9 @@ SWEP.Primary.DisplayIronSpread  = nil -- Defaults to Primary.DisplaySpread. Disp
 
 -- Unless you can do this manually, autodetect it.  If you decide to manually do these, uncomment this block and remove this line.
 SWEP.Primary.SpreadMultiplierMax = nil -- How far the spread can expand when you shoot. Example val: 2.5
-SWEP.Primary.SpreadIncrement    = nil -- What percentage of the modifier is added on, per shot.  Example val: 1/3.5
-SWEP.Primary.SpreadRecovery     = nil -- How much the spread recovers, per second. Example val: 3
+SWEP.Primary.SpreadIncrement     = nil -- What percentage of the modifier is added on, per shot.  Example val: 1/3.5
+SWEP.Primary.SpreadRecovery      = nil -- How much the spread recovers, per second. Example val: 3
+SWEP.Primary.SpreadRecoveryDelay = nil -- Delay in seconds before spread starts to recover
 
 ----------------- Range stats
 SWEP.Primary.DisplayFalloff     = nil -- Defaults to true (false for melees)

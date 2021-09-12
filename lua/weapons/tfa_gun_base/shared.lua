@@ -65,6 +65,7 @@ SWEP.Primary.DisplaySpread = true
 SWEP.Primary.SpreadMultiplierMax = -1 --How far the spread can expand when you shoot.
 SWEP.Primary.SpreadIncrement = -1 --What percentage of the modifier is added on, per shot.
 SWEP.Primary.SpreadRecovery = -1 --How much the spread recovers, per second.
+SWEP.Primary.SpreadRecoveryDelay = 0
 SWEP.Primary.IronAccuracy = 0
 SWEP.Primary.Range = -1--1200
 SWEP.Primary.RangeFalloff = -1--0.5
@@ -483,6 +484,8 @@ function SWEP:SetupDataTables()
 	self:NetworkVarTFA("Float", "RecoilLoopProgress")
 	self:NetworkVarTFA("Float", "RecoilLoopWait")
 	self:NetworkVarTFA("Float", "RecoilOutProgress")
+
+	self:NetworkVarTFA("Float", "LastRecoil")
 
 	if not self.get_event_status_lut then
 		self.get_event_status_lut = {}
