@@ -28,10 +28,16 @@ local version = 4.7
 local version_string = "4.7.0.0"
 local changelog = [[
 	* Semi-Breaking change: Implemented gun revision tracking (but should be backward compatible)
-	* PenetrationMaterials is now unfolded from baseclass
-	* Primary.MaxSurfacePenetrationCount is now working again
-	* Biased spread (width and height can be configured independently)
-	* Primary.DisplaySpread / Primary.DisplayIronSpread
+	* Tickrate independent RPM (for all your roleplaying at 10 ticks needs)
+	* Stencil sights native support (with 2D, model and quad reticles)
+	* Ironsights position resolver (WIP)
+	* Additional SCK features (translucency workaround toggle and attachment parent point)
+	* Weapons now emit sound hints (for engine NPCs)
+	* Primary.DisplaySpread / Primary.DisplayIronSpread toggle
+	* Spread recovery delay (per weapon, not present by default)
+	* Default attachments option (equipped on deselect)
+	* Various fixes, QoL changes and improvements (check commit history on GitLab)
+	* Expanded documentation (lua/tfa/documentation and template)
 ]]
 
 local function testFunc()

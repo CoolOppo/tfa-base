@@ -1,4 +1,17 @@
 # This is an archive of changelog messages from `tfa_loader.lua`. For proper changes list refer to the Git history.
+## 4.7.0.0
+* Semi-Breaking change: Implemented gun revision tracking (but should be backward compatible)
+* Tickrate independent RPM (for all your roleplaying at 10 ticks needs)
+* Stencil sights native support (with 2D, model and quad reticles)
+* Ironsights position resolver (WIP)
+* Additional SCK features (translucency workaround toggle and attachment parent point)
+* Weapons now emit sound hints (for engine NPCs)
+* Primary.DisplaySpread / Primary.DisplayIronSpread toggle
+* Spread recovery delay (per weapon, not present by default)
+* Default attachments option (equipped on deselect)
+* Various fixes, QoL changes and improvements (check commit history on GitLab)
+* Expanded documentation (lua/tfa/documentation and template)
+
 ## 4.6.1.1
 * Fixed idle animation not updating correctly for ironsights
 * Fixed inspection screen not appearing in some circumstances
