@@ -659,6 +659,8 @@ local function shouldDisplayDebug()
 end
 
 function SWEP.MainBullet:Penetrate(ply, traceres, dmginfo, weapon, penetrated, previousStartPos)
+	if hook.Run("TFA_Base_Penetrate", weapon, ply, traceres, dmginfo, penetrated, previousStartPos) == false then return end
+
 	--debugoverlay.Sphere( self.Src, 5, 5, color_white, true)
 
 	DisableOwnerDamage(ply, traceres, dmginfo)
