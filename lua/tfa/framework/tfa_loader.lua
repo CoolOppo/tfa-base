@@ -24,9 +24,9 @@ if SERVER then AddCSLuaFile() end
 TFA = TFA or {}
 
 local do_load = true
-local version = 4.7
-local version_string = "4.7.0.0"
-local changelog = [[
+local version = 4.701
+local version_string = "4.7.0.1"
+local changelog = [[4.7 changes:
 	* Semi-Breaking change: Implemented gun revision tracking (but should be backward compatible)
 	* Tickrate independent RPM (for all your roleplaying at 10 ticks needs)
 	* Stencil sights native support (with 2D, model and quad reticles)
@@ -38,6 +38,10 @@ local changelog = [[
 	* Default attachments option (equipped on deselect)
 	* Various fixes, QoL changes and improvements (check commit history on GitLab)
 	* Expanded documentation (lua/tfa/documentation and template)
+4.7.0.1 changes:
+	* Added TFA_Bullet_Penetrate hook
+	* Fixed 3D scoped weapons being zoomed in too much
+	* Fixed ironsights toggle convar not working properly
 ]]
 
 local function testFunc()

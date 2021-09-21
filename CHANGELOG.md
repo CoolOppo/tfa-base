@@ -1,4 +1,9 @@
 # This is an archive of changelog messages from `tfa_loader.lua`. For proper changes list refer to the Git history.
+## 4.7.0.1
+* Added TFA_Bullet_Penetrate hook
+* Fixed 3D scoped weapons being zoomed in too much
+* Fixed ironsights toggle convar not working properly
+
 ## 4.7.0.0
 * Semi-Breaking change: Implemented gun revision tracking (but should be backward compatible)
 * Tickrate independent RPM (for all your roleplaying at 10 ticks needs)
