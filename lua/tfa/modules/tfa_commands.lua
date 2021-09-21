@@ -315,11 +315,16 @@ if cv_ironsights == nil then
 	cv_ironsights = CreateReplConVar("sv_tfa_ironsights_enabled", "1", "Enable ironsights? Disabling this still allows scopes.")
 end
 
-hook.Add("TFA_GetStat", "TFA_IronsightsConVarToggle", function(wep, stat, val)
-	if not IsValid(wep) or stat ~= "Secondary.IronSightsEnabled" then return end
+local is_stats = {
+	["data.ironsights"] = 0,
+	["Secondary.IronSightsEnabled"] = false,
+}
 
-	if not cv_ironsights:GetBool() and not wep:GetStatL("Scoped") and not wep:GetStatL("Scoped_3D") then
-		return false
+hook.Add("TFA_GetStat", "TFA_IronsightsConVarToggle", function(wep, stat, val)
+	if not IsValid(wep) or is_stats[stat] == nil then return end
+
+	if not cv_ironsights:GetBool() and not wep:GetStatRawL("Scoped") and not wep:GetStatRawL("Scoped_3D") then
+		return is_stats[stat]
 	end
 end)
 
