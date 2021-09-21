@@ -49,6 +49,8 @@ function SWEP:Do3DScopeOverlay()
 end
 
 function SWEP:UpdateScopeType(force)
+	if not self.HasInitialized then return end
+
 	local target = self.Secondary_TFA or self.Secondary
 
 	if self.Scoped_3D and force then
