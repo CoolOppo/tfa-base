@@ -388,7 +388,7 @@ function SWEP:CalculateViewModelOffset(delta)
 	end
 
 	if ironSightsProgress > 0.02 and (self2.Sights_Mode == TFA.Enum.LOCOMOTION_LUA or self2.Sights_Mode == TFA.Enum.LOCOMOTION_HYBRID) then
-		local score = self2.VM_IronPositionScore
+		local score = self2.VM_IronPositionScore or 1
 		local getSightsPos = self2.IronSightsPositionCurrent or IronSightsPosition or self2.GetStatL(self, "SightsPos", vector_origin)
 
 		if targetPosCenter and score > 0.04 then
