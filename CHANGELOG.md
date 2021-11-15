@@ -1,4 +1,9 @@
 # This is an archive of changelog messages from `tfa_loader.lua`. For proper changes list refer to the Git history.
+## 4.7.0.2
+* Fixed ironsights position evaluator generating errors in some cases
+* Fixed flat reticle not being scaled by screen height when it's not scaled by aim progress
+* Added chat reminder to clueless users who only installed the base without any weapons
+
 ## 4.7.0.1
 * Added TFA_Bullet_Penetrate hook
 * Fixed 3D scoped weapons being zoomed in too much
