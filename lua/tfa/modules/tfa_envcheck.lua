@@ -27,6 +27,21 @@ local function checkEnv(plyIn)
 	local printFunc = chat and chat.AddText or print
 
 	if game.SinglePlayer() then
+		if CLIENT then
+			local found = false
+			for _, wepDefTable in ipairs(weapons.GetList()) do
+				if wepDefTable.Spawnable and weapons.IsBasedOn(wepDefTable.ClassName, "tfa_gun_base") then
+					found = true
+
+					break
+				end
+			end
+
+			if not found then
+				printFunc("[TFA Base] Thank you for installing our weapons base! It appears that you have installed only the base itself, which does not include any weapons by default. Please install some weapons/packs that utilize TFA Base for full experience!")
+			end
+		end
+
 		local shortsrc = debugInfoTbl.short_src
 
 		if shortsrc:StartWith("addons") then -- legacy/unpacked addon
