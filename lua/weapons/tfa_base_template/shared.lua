@@ -874,6 +874,7 @@ SWEP.StencilSight_UseMask = nil -- Use the .mask value of VElement's table as st
 -- SWEP.StencilSight_ReticleType = TFA.Enum.RETICLE_FLAT
 -- SWEP.StencilSight_ReticleMaterial = "models/weapons/yurie_bcry2/scope_assault/reddot" -- Reticle material, accepts either string or Material() object; must be a square texture!
 -- SWEP.StencilSight_ReticleSize = 256 -- Reticle size; scales with screen height using HL2 scale formula (size * (screen height / 480))
+-- SWEP.StencilSight_ScaleReticleByScreenHeight = nil -- Reticle size is affected by screen height; true by default
 -- SWEP.StencilSight_ScaleReticleByProgress = nil -- Scale reticle with aim progress for smoother fade-in; true by default
 -- SWEP.StencilSight_FollowRecoil = nil -- If enabled, reticle follows crosshair recoil instead of being locked in center; true by default; affected by crosshair settings
 -- SWEP.StencilSight_ReticleTint = nil -- Reticle color; Color(255, 255, 255) by default

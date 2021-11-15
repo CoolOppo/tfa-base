@@ -65,8 +65,12 @@ do -- Flat reticle, stays at center or moves with recoil
 		local ReticleSize = wep:GetStat("StencilSight_ReticleSize")
 		if not ReticleSize then return end
 
+		if wep:GetStat("StencilSight_ScaleReticleByScreenHeight", true) then
+			ReticleSize = ScreenScaleH(ReticleSize)
+		end
+
 		if wep:GetStat("StencilSight_ScaleReticleByProgress", true) then
-			ReticleSize = ScreenScaleH(ReticleSize) * wep.IronSightsProgress
+			ReticleSize = ReticleSize * wep.IronSightsProgress
 		end
 
 		local w, h = ScrW(), ScrH()
