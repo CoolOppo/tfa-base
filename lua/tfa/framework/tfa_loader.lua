@@ -24,12 +24,10 @@ if SERVER then AddCSLuaFile() end
 TFA = TFA or {}
 
 local do_load = true
-local version = 4.702
-local version_string = "4.7.0.2"
+local version = 4.703
+local version_string = "4.7.0.3"
 local changelog = [[
-	* Fixed ironsights position evaluator generating errors in some cases
-	* Fixed flat reticle not being scaled by screen height when it's not scaled by aim progress
-	* Added chat reminder to clueless users who only installed the base without any weapons
+	* Fixed legacy weapons patcher giving an error when weapon's code couldn't be read
 ]]
 
 local function testFunc()
