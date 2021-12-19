@@ -636,7 +636,12 @@ local PatchClassBlacklisted = {
 	tfa_scoped_base = true,
 }
 
+local cv_shouldpatchthink = GetConVar("sv_tfa_backcompat_patchswepthink") or CreateConVar("sv_tfa_backcompat_patchswepthink", "1", CLIENT and {FCVAR_REPLICATED} or {FCVAR_REPLICATED, FCVAR_ARCHIVE, FCVAR_NOTIFY}, "Enable patching of old weapons that override SWEP:Think function to work with newer version of the base?\n\tDISABLING THIS IS NOT RECOMMENDED AND MAY LEAD TO NON-FUNCTIONING WEAPONS!")
+
 hook.Add("InitPostEntity", "TFA_PatchThinkOverride", function()
+	if not cv_shouldpatchthink:GetBool() then return end
+	if not debug or not debug.getinfo then return end
+
 	for _, wepRefTable in ipairs(weapons.GetList()) do
 		local class = wepRefTable.ClassName
 
@@ -648,7 +653,7 @@ hook.Add("InitPostEntity", "TFA_PatchThinkOverride", function()
 
 		if wepRealTbl.Think then
 			local info = debug.getinfo(wepRealTbl.Think, "S")
-			if not info then goto THINK1FOUND end
+			if not info or not info.linedefined or not info.lastlinedefined then goto THINK1FOUND end
 
 			local src = info.short_src
 
@@ -657,14 +662,14 @@ hook.Add("InitPostEntity", "TFA_PatchThinkOverride", function()
 			end
 
 			local luafile = file.Read(src:sub(5), "LUA")
-			if not luafile then goto THINK1FOUND end
+			if not luafile or luafile == "" then goto THINK1FOUND end
 
-			local lua = luafile:Split("\n")
+			local lua = luafile:gsub("\r\n","\n"):gsub("\r","\n"):Split("\n")
 
 			for i = info.linedefined, info.lastlinedefined do
 				local line = lua[i]
 
-				if line:find("BaseClass%s*.%s*Think%s*%(") then
+				if not line or line:find("BaseClass%s*.%s*Think%s*%(") then
 					goto THINK1FOUND
 				end
 			end
