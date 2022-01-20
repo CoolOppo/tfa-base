@@ -766,8 +766,6 @@ function SWEP:AutoDetectLowAmmoSound()
 			if wt == "Shotgun" and not self:GetStatL("LoopedReload") then
 				self:SetStatRawL("LowAmmoSound", "TFA.LowAmmo.AutoShotgun")
 			end
-
-			print(self, wt, self:GetStatL("LowAmmoSound"))
 		end
 	end
 
@@ -780,8 +778,6 @@ function SWEP:AutoDetectLowAmmoSound()
 			if wt == "Shotgun" and not self:GetStatL("LoopedReload") then
 				self:SetStatRawL("LastAmmoSound", "TFA.LowAmmo.AutoShotgun_Dry")
 			end
-
-			print(self, wt, self:GetStatL("LastAmmoSound"))
 		end
 	end
 end
