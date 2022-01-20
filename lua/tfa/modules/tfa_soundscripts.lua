@@ -120,6 +120,7 @@ sound.Add({
 local ammos = {
 	["Handgun"] = "handgun",
 	["Shotgun"] = "shotgun",
+	["AutoShotgun"] = "shotgun_auto",
 	["MachineGun"] = "mg",
 	["AssaultRifle"] = "ar",
 	["DMR"] = "dmr",
