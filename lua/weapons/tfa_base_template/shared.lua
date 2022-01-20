@@ -34,6 +34,10 @@ SWEP.AutoSwitchTo               = true      -- Auto switch to if we pick it up
 SWEP.AutoSwitchFrom             = true      -- Auto switch from if you pick up a better weapon
 SWEP.Weight                     = 30            -- This controls how "good" the weapon is for autopickup.
 
+SWEP.Type                       = nil -- Weapon type. Autodetected, but in some cases needs to be set manually. PLEASE MAKE SURE THE TYPE IS SET PROPERLY so that autodetection code won't make funky stuff.
+                                      -- Recognized generic types: "Pistol", "Machine Pistol", "Revolver", "Sub-Machine Gun", "Rifle", "Carbine", "Light Machine Gun", "Shotgun", "Designated Marksman Rifle", "Sniper Rifle", "Grenade", "Launcher"; "Dual Pistols", "Dual Revolvers", "Dual Sub-Machine Guns" and "Dual Guns".
+SWEP.Type_Displayed             = nil -- Weapon type override for displaying in the inspection menu. If you want to add wacky text below the gun name, DO IT HERE AND NOT IN THE ACTUAL TYPE FIELD!
+
 ----------------- The Most basic weapon stats
 SWEP.Primary.RPM                = 600 -- This is in Rounds Per Minute / RPM
 SWEP.Primary.NumShots           = 1 -- The number of shots the weapon fires
@@ -86,6 +90,13 @@ SWEP.Primary.LoopSound_World    = nil -- Looped fire sound, unsilenced
 SWEP.Primary.LoopSoundSilenced_World = nil -- Looped fire sound, silenced
 SWEP.Primary.LoopSoundTail_World = nil -- Loop end/tail sound, unsilenced
 SWEP.Primary.LoopSoundTailSilenced_World = nil -- Loop end/tail sound, silenced
+
+-- LOW AMMO
+SWEP.FireSoundAffectedByClipSize = true -- Play low ammo and last shot sounds? Controlled by "Enable nearly-empty sounds" server option.
+SWEP.LowAmmoSoundThreshold      = nil -- Clip fill percentage below which low ammo sound will start playing; default is 0.33
+SWEP.LowAmmoSound               = nil -- Low ammo sound
+SWEP.LastAmmoSound              = nil -- Last shot sound
+-- Both are autodetected based on weapon type
 
 ----------------- Jamming mechanics
 SWEP.CanJam                     = true -- whenever weapon cam jam
@@ -158,11 +169,6 @@ SWEP.OnlyBurstFire                = false -- No auto, only burst/single?
 SWEP.BurstFireCount               = nil -- Burst fire count override (autocalculated by the clip size if nil)
 SWEP.DefaultFireMode              = "" -- Default to auto or whatev
 SWEP.FireModeName                 = nil -- Change to a text value to override it
-SWEP.FireSoundAffectedByClipSize  = true -- Whenever adjuct pitch (and proably other properties) of fire sound based on current clip / maxclip
--- This is always false when either:
--- Weapon has no primary clip
--- Weapon's clip is smaller than 4 rounds
--- Weapon is a shotgun
 
 ----------------- Ammo Related
 SWEP.Primary.ClipSize           = 0 -- This is the size of a clip
