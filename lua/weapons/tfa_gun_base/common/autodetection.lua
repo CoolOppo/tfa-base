@@ -708,76 +708,80 @@ function SWEP:SetUpSpreadLegacy()
 end
 
 SWEP.LowAmmoSoundTypeBlacklist = {
-	["Launcher"] = true,
-	["Grenade"] = true,
+	["launcher"] = true,
+	["grenade"] = true,
 }
 
 SWEP.LowAmmoSoundByType = {
-	["Pistol"] = "TFA.LowAmmo.Handgun",
-	["Dual Pistols"] = "TFA.LowAmmo.Handgun",
-	["Machine Pistol"] = "TFA.LowAmmo.Handgun",
-	["Revolver"] = "TFA.LowAmmo.Revolver",
-	["Dual Revolvers"] = "TFA.LowAmmo.Revolver",
-	["Shotgun"] = "TFA.LowAmmo.Shotgun",
-	["Machine Gun"] = "TFA.LowAmmo.MachineGun",
-	["Light Machine Gun"] = "TFA.LowAmmo.MachineGun",
-	["Heavy Machine Gun"] = "TFA.LowAmmo.MachineGun",
-	["Carbine"] = "TFA.LowAmmo.AssaultRifle",
-	["Rifle"] = "TFA.LowAmmo.AssaultRifle",
-	["Assault Rifle"] = "TFA.LowAmmo.AssaultRifle",
-	["Designated Marksman Rifle"] = "TFA.LowAmmo.DMR",
-	["Sniper Rifle"] = "TFA.LowAmmo.Sniper",
-	["Sub-Machine Gun"] = "TFA.LowAmmo.SMG",
+	["handgun"] = "TFA.LowAmmo.Handgun",
+	["pistol"] = "TFA.LowAmmo.Handgun",
+	["dualpistols"] = "TFA.LowAmmo.Handgun",
+	["machinepistol"] = "TFA.LowAmmo.Handgun",
+	["handcannon"] = "TFA.LowAmmo.Revolver",
+	["revolver"] = "TFA.LowAmmo.Revolver",
+	["dualrevolvers"] = "TFA.LowAmmo.Revolver",
+	["shotgun"] = "TFA.LowAmmo.Shotgun",
+	["machinegun"] = "TFA.LowAmmo.MachineGun",
+	["lightmachinegun"] = "TFA.LowAmmo.MachineGun",
+	["heavymachinegun"] = "TFA.LowAmmo.MachineGun",
+	["carbine"] = "TFA.LowAmmo.AssaultRifle",
+	["rifle"] = "TFA.LowAmmo.AssaultRifle",
+	["assaultrifle"] = "TFA.LowAmmo.AssaultRifle",
+	["dmr"] = "TFA.LowAmmo.DMR",
+	["designatedmarksmanrifle"] = "TFA.LowAmmo.DMR",
+	["sniperrifle"] = "TFA.LowAmmo.Sniper",
+	["smg"] = "TFA.LowAmmo.SMG",
+	["submachinegun"] = "TFA.LowAmmo.SMG",
 }
 SWEP.LastAmmoSoundByType = {
-	["Pistol"] = "TFA.LowAmmo.Handgun_Dry",
-	["Dual Pistols"] = "TFA.LowAmmo.Handgun_Dry",
-	["Machine Pistol"] = "TFA.LowAmmo.Handgun_Dry",
-	["Revolver"] = "TFA.LowAmmo.Revolver_Dry",
-	["Dual Revolvers"] = "TFA.LowAmmo.Revolver_Dry",
-	["Shotgun"] = "TFA.LowAmmo.Shotgun_Dry",
-	["Machine Gun"] = "TFA.LowAmmo.MachineGun_Dry",
-	["Light Machine Gun"] = "TFA.LowAmmo.MachineGun_Dry",
-	["Heavy Machine Gun"] = "TFA.LowAmmo.MachineGun_Dry",
-	["Carbine"] = "TFA.LowAmmo.AssaultRifle_Dry",
-	["Rifle"] = "TFA.LowAmmo.AssaultRifle_Dry",
-	["Assault Rifle"] = "TFA.LowAmmo.AssaultRifle_Dry",
-	["Designated Marksman Rifle"] = "TFA.LowAmmo.DMR_Dry",
-	["Sniper Rifle"] = "TFA.LowAmmo.Sniper_Dry",
-	["Sub-Machine Gun"] = "TFA.LowAmmo.SMG_Dry",
+	["handgun"] = "TFA.LowAmmo.Handgun_Dry",
+	["pistol"] = "TFA.LowAmmo.Handgun_Dry",
+	["dualpistols"] = "TFA.LowAmmo.Handgun_Dry",
+	["machinepistol"] = "TFA.LowAmmo.Handgun_Dry",
+	["handcannon"] = "TFA.LowAmmo.Revolver_Dry",
+	["revolver"] = "TFA.LowAmmo.Revolver_Dry",
+	["dualrevolvers"] = "TFA.LowAmmo.Revolver_Dry",
+	["shotgun"] = "TFA.LowAmmo.Shotgun_Dry",
+	["machinegun"] = "TFA.LowAmmo.MachineGun_Dry",
+	["lightmachinegun"] = "TFA.LowAmmo.MachineGun_Dry",
+	["heavymachinegun"] = "TFA.LowAmmo.MachineGun_Dry",
+	["carbine"] = "TFA.LowAmmo.AssaultRifle_Dry",
+	["rifle"] = "TFA.LowAmmo.AssaultRifle_Dry",
+	["assaultrifle"] = "TFA.LowAmmo.AssaultRifle_Dry",
+	["dmr"] = "TFA.LowAmmo.DMR_Dry",
+	["designatedmarksmanrifle"] = "TFA.LowAmmo.DMR_Dry",
+	["sniperrifle"] = "TFA.LowAmmo.Sniper_Dry",
+	["smg"] = "TFA.LowAmmo.SMG_Dry",
+	["submachinegun"] = "TFA.LowAmmo.SMG_Dry",
 }
 
 function SWEP:AutoDetectLowAmmoSound()
 	if not self.FireSoundAffectedByClipSize then return end
 
-	local wt = self:GetType()
+	local t1, t2 = self:GetType():lower():gsub("[^%w]+", ""), (self:GetStatRawL("Type_Displayed") or ""):lower():gsub("[^%w]+", "")
 
-	if self.LowAmmoSoundTypeBlacklist[wt] then return end
+	if self.LowAmmoSoundTypeBlacklist[t2] or self.LowAmmoSoundTypeBlacklist[t1] then return end
 
 	local clip1 = self:GetStatRawL("Primary.ClipSize")
-	if (not clip1 or clip1 <= 4) and not (self.LowAmmoSoundByType[wt] or self.LastAmmoSoundByType[wt]) then return end
+	if (not clip1 or clip1 <= 4) then return end
 
 	if not self.LowAmmoSound then
-		self:SetStatRawL("LowAmmoSound", "TFA.LowAmmo")
+		local snd = self.LowAmmoSoundByType[t2] or self.LowAmmoSoundByType[t1] or "TFA.LowAmmo"
 
-		if self.LowAmmoSoundByType[wt] then
-			self:SetStatRawL("LowAmmoSound", self.LowAmmoSoundByType[wt])
-
-			if wt == "Shotgun" and not self:GetStatL("LoopedReload") then
-				self:SetStatRawL("LowAmmoSound", "TFA.LowAmmo.AutoShotgun")
-			end
+		if (t2 == "shotgun" or t1 == "shotgun") and not self:GetStatL("LoopedReload") then
+			snd = "TFA.LowAmmo.AutoShotgun"
 		end
+
+		self:SetStatRawL("LowAmmoSound", snd)
 	end
 
 	if not self.LastAmmoSound then
-		self:SetStatRawL("LastAmmoSound", "TFA.LowAmmo_Dry")
+		local snd = self.LastAmmoSoundByType[t2] or self.LastAmmoSoundByType[t1] or "TFA.LowAmmo_Dry"
 
-		if self.LastAmmoSoundByType[wt] then
-			self:SetStatRawL("LastAmmoSound", self.LastAmmoSoundByType[wt])
-
-			if wt == "Shotgun" and not self:GetStatL("LoopedReload") then
-				self:SetStatRawL("LastAmmoSound", "TFA.LowAmmo.AutoShotgun_Dry")
-			end
+		if (t2 == "shotgun" or t1 == "shotgun") and not self:GetStatL("LoopedReload") then
+			snd = "TFA.LowAmmo.AutoShotgun_Dry"
 		end
+
+		self:SetStatRawL("LastAmmoSound", snd)
 	end
 end
