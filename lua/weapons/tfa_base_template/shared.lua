@@ -97,6 +97,8 @@ SWEP.LowAmmoSoundThreshold      = nil -- Clip fill percentage below which low am
 SWEP.LowAmmoSound               = nil -- Low ammo sound
 SWEP.LastAmmoSound              = nil -- Last shot sound
 -- Both are autodetected based on weapon type
+-- Low ammo sounds that are supplied by the base: "TFA.LowAmmo.Handgun", "TFA.LowAmmo.Shotgun", "TFA.LowAmmo.AutoShotgun", "TFA.LowAmmo.MachineGun", "TFA.LowAmmo.AssaultRifle", "TFA.LowAmmo.DMR", "TFA.LowAmmo.Revolver", "TFA.LowAmmo.Sniper", "TFA.LowAmmo.SMG", "TFA.LowAmmo.SciFi", "TFA.LowAmmo.GL"
+-- For last ammo sound just add _Dry at the end (for example "TFA.LowAmmo.Handgun_Dry")
 
 ----------------- Jamming mechanics
 SWEP.CanJam                     = true -- whenever weapon cam jam

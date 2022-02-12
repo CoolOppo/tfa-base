@@ -1,4 +1,7 @@
 # This is an archive of changelog messages from `tfa_loader.lua`. For proper changes list refer to the Git history.
+## 4.7.0.4
+* Updated low and last ammo sounds, added more types (including unused ones, examples are in the weapon template) and improved autodection.
+
 ## 4.7.0.3
 * Fixed legacy weapons patcher giving an error when weapon's code couldn't be read
 
