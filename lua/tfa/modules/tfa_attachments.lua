@@ -108,11 +108,11 @@ if SERVER then
 	end)
 else
 	net.Receive("TFA_Attachment_Set", function(len)
-		local wep = net.ReadEntity()
+		local cat = net.ReadUInt(8)
+		local ind = net.ReadString()
 
+		local wep = net.ReadEntity()
 		if IsValid(wep) and wep.SetTFAAttachment then
-			local cat = net.ReadUInt(8)
-			local ind = net.ReadString()
 			wep:SetTFAAttachment(cat, ind, false)
 		end
 	end)

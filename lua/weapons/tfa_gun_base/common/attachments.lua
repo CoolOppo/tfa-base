@@ -444,6 +444,8 @@ do
 			net.WriteString(attn)
 
 			if SERVER then
+				net.WriteEntity(self)
+
 				if isentity(nw) then
 					local filter = RecipientFilter()
 					filter:AddPVS(self:GetPos())
