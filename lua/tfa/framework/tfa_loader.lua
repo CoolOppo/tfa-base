@@ -24,10 +24,10 @@ if SERVER then AddCSLuaFile() end
 TFA = TFA or {}
 
 local do_load = true
-local version = 4.704
-local version_string = "4.7.0.4"
+local version = 4.705
+local version_string = "4.7.0.5"
 local changelog = [[
-	* Updated low and last ammo sounds, added more types (including unused ones, examples are in the weapon template) and improved autodection.
+	* Fixed attachments not being synchronized properly from server in multiplayer
 ]]
 
 local function testFunc()
