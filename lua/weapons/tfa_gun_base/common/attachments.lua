@@ -598,12 +598,18 @@ function SWEP:GenerateVGUIAttachmentTable()
 		end
 	end)
 
-	for i, k in ipairs(keyz) do
+	for _, k in ipairs(keyz) do
 		local v = self.Attachments[k]
-		self.VGUIAttachments[i] = tableCopy(v)
-		self.VGUIAttachments[i].cat = k
-		self.VGUIAttachments[i].offset = nil
-		self.VGUIAttachments[i].order = nil
+
+		if not v.hidden then
+			local aTbl = tableCopy(v)
+
+			aTbl.cat = k
+			aTbl.offset = nil
+			aTbl.order = nil
+
+			table.insert(self.VGUIAttachments, aTbl)
+		end
 	end
 
 	ATT_DIMENSION = math.Round(TFA.ScaleH(TFA.Attachments.IconSize))
