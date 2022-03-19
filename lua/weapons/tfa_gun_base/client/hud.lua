@@ -187,9 +187,15 @@ local function TextShadowPaint(myself, w, h)
 		myself.TextColor = ColorAlpha(color_white, 0)
 	end
 
-	draw.NoTexture()
-	draw.SimpleText(myself.Text, myself.Font, 2, 2, ColorAlpha(color_black, myself.TextColor.a), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
-	draw.SimpleText(myself.Text, myself.Font, 0, 0, myself.TextColor, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+	surface.SetFont(myself.Font)
+
+	surface.SetTextPos(2, 2)
+	surface.SetTextColor(0, 0, 0, myself.TextColor.a)
+	surface.DrawText(myself.Text)
+
+	surface.SetTextPos(0, 0)
+	surface.SetTextColor(myself.TextColor.r, myself.TextColor.g, myself.TextColor.b, myself.TextColor.a)
+	surface.DrawText(myself.Text)
 end
 
 local function WrapTextLines(textlines, maxwidth, font)
