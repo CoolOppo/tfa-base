@@ -192,6 +192,44 @@ local function TextShadowPaint(myself, w, h)
 	draw.SimpleText(myself.Text, myself.Font, 0, 0, myself.TextColor, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
 end
 
+local function WrapTextLines(textlines, maxwidth, font)
+	if type(textlines) == "string" then
+		textlines = string.Split(textlines, "\n")
+	end
+
+	local lines = {}
+
+	surface.SetFont(font)
+
+	for _, text in ipairs(textlines) do
+		local w, _ = surface.GetTextSize(text)
+
+		if w > maxwidth then
+			local line = ""
+
+			for _, word in ipairs(string.Explode(" ", text)) do
+				local added = line == "" and word or line .. " " .. word
+				w, _ = surface.GetTextSize(added)
+
+				if w > maxwidth then
+					table.insert(lines, line)
+					line = word
+				else
+					line = added
+				end
+			end
+
+			if line ~= "" then
+				table.insert(lines, line)
+			end
+		else
+			table.insert(lines, text)
+		end
+	end
+
+	return lines
+end
+
 local function kmtofeet(km)
 	return km * 3280.84
 end
@@ -300,7 +338,7 @@ function SWEP:InspectionVGUIMainInfo(contentpanel)
 
 		--First stat block
 		local descriptiontext = contentpanel:Add("DPanel")
-		descriptiontext.Text = (self.Description or self.Category) or self.Base
+		descriptiontext.Text = self.Category or self.Base
 
 		descriptiontext.Think = function(myself)
 			myself.TextColor = mainpanel.SecondaryColor
@@ -374,18 +412,42 @@ function SWEP:InspectionVGUIMainInfo(contentpanel)
 			ammotypetext.Paint = TextShadowPaint
 		end
 
+		local maxlinewidth = ScrW() * .5 - ScaleH(self.VGUIPaddingW) * 4
+
 		if self.Purpose and string.Trim(self.Purpose) ~= "" then
-			local purpose = contentpanel:Add("DPanel")
-			purpose.Text = infotextpad .. language.GetPhrase("tfa.inspect.purpose"):format(self.Purpose)
+			local lines = WrapTextLines(language.GetPhrase("tfa.inspect.purpose"):format(language.GetPhrase(self.Purpose)), maxlinewidth, "TFA_INSPECTION_SMALL")
 
-			purpose.Think = function(myself)
-				myself.TextColor = mainpanel.SecondaryColor
+			for _, line in pairs(lines) do
+				local purposeline = contentpanel:Add("DPanel")
+				purposeline.Text = infotextpad .. line
+
+				purposeline.Think = function(myself)
+					myself.TextColor = mainpanel.SecondaryColor
+				end
+
+				purposeline.Font = "TFA_INSPECTION_SMALL"
+				purposeline:Dock(TOP)
+				purposeline:SetSize(ScrW() * .5, TFA.Fonts.InspectionHeightSmall)
+				purposeline.Paint = TextShadowPaint
 			end
+		end
 
-			purpose.Font = "TFA_INSPECTION_SMALL"
-			purpose:Dock(TOP)
-			purpose:SetSize(ScrW() * .5, TFA.Fonts.InspectionHeightSmall)
-			purpose.Paint = TextShadowPaint
+		if self.Description and string.Trim(self.Description) ~= "" then
+			local lines = WrapTextLines(language.GetPhrase(self.Description), maxlinewidth, "TFA_INSPECTION_SMALL")
+
+			for _, line in ipairs(lines) do
+				local descline = contentpanel:Add("DPanel")
+				descline.Text = infotextpad .. line
+
+				descline.Think = function(myself)
+					myself.TextColor = mainpanel.SecondaryColor
+				end
+
+				descline.Font = "TFA_INSPECTION_SMALL"
+				descline:Dock(TOP)
+				descline:SetSize(ScrW() * .5, TFA.Fonts.InspectionHeightSmall)
+				descline.Paint = TextShadowPaint
+			end
 		end
 
 		hook.Run("TFA_InspectVGUI_InfoFinish", self, contentpanel)
