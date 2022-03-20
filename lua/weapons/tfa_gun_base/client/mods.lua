@@ -582,6 +582,13 @@ Purpose:  SWEP Construction Kit Compatibility / Basic Attachments.
 function SWEP:DrawWorldModel()
 	local self2 = self:GetTable()
 
+	local skinStat = self2.GetStatL(self, "Skin")
+	if isnumber(skinStat) then
+		if self:GetSkin() ~= skinStat then
+			self:SetSkin(skinStat)
+		end
+	end
+
 	if not self2.MaterialCached_W and self2.GetStatL(self, "MaterialTable_W") then
 		self2.MaterialCached_W = {}
 		self:SetSubMaterial()

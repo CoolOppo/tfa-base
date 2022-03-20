@@ -74,14 +74,9 @@ local function TFARenderScreen()
 	end
 
 	local skinStat = wep:GetStatL("Skin")
-
-	if skinStat and isnumber(skinStat) then
+	if isnumber(skinStat) then
 		if vm:GetSkin() ~= skinStat then
-			vm:SetSkin(wep:GetStatL("Skin"))
-		end
-
-		if wep:GetSkin() ~= skinStat then
-			wep:SetSkin(wep:GetStatL("Skin"))
+			vm:SetSkin(skinStat)
 		end
 	end
 
