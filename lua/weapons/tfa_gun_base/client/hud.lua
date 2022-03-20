@@ -1385,7 +1385,7 @@ function SWEP:DoDrawCrosshair()
 
 	local crossa = crossa_cvar:GetFloat() *
 		math.pow(math.min(1 - (((self2.IronSightsProgressUnpredicted2 or self:GetIronSightsProgress()) and
-			not self2.DrawCrosshairIronSights) and (self2.IronSightsProgressUnpredicted2 or self:GetIronSightsProgress()) or 0),
+			not self2.GetStatL(self, "DrawCrosshairIronSights")) and (self2.IronSightsProgressUnpredicted2 or self:GetIronSightsProgress()) or 0),
 			1 - self:GetSprintProgress(),
 			1 - self:GetInspectingProgress(),
 			self2.clrelp),
@@ -1393,7 +1393,7 @@ function SWEP:DoDrawCrosshair()
 
 	local outa = outa_cvar:GetFloat() *
 		math.pow(math.min(1 - (((self2.IronSightsProgressUnpredicted2 or self:GetIronSightsProgress()) and
-			not self2.DrawCrosshairIronSights) and (self2.IronSightsProgressUnpredicted2 or self:GetIronSightsProgress()) or 0),
+			not self2.GetStatL(self, "DrawCrosshairIronSights")) and (self2.IronSightsProgressUnpredicted2 or self:GetIronSightsProgress()) or 0),
 			1 - self:GetSprintProgress(),
 			1 - self:GetInspectingProgress(),
 			self2.clrelp),
