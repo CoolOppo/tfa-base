@@ -1080,6 +1080,14 @@ function SWEP:DoInspectionDerma()
 	if not self:OwnerIsValid() then return end
 end
 
+cvars.AddChangeCallback("gmod_language", function(convar, oldvalue, newvalue)
+	if oldvalue == newvalue then return end
+
+	if IsValid(TFA_INSPECTIONPANEL) then
+		TFA_INSPECTIONPANEL:Remove()
+	end
+end, "TFA_INSPECTIONPANEL_LANGCHECK")
+
 local crosscol = Color(255, 255, 255, 255)
 local crossa_cvar = GetConVar("cl_tfa_hud_crosshair_color_a")
 local outa_cvar = GetConVar("cl_tfa_hud_crosshair_outline_color_a")
