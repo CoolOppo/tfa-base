@@ -145,7 +145,7 @@ local function BlockDamageNew( ent, dmginfo )
 end
 
 
-hook.Add("EntityFirebullets","TFA_Melee_LogTracer",function(ent,bulv) --Record tracer for blocking
+hook.Add("EntityFireBullets","TFA_Melee_LogTracer",function(ent,bulv) --Record tracer for blocking
 	ent.TFALastTracer = bulv.TracerName or ""
 end)
 

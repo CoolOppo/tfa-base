@@ -278,6 +278,12 @@ local AttachArrowModel = function(a, b, c, wep)
 	end
 end
 
+function SWEP:AutoDetectForce()
+	if self:GetStatRawL("Primary.Force") == -1 or not self:GetStatRawL("Primary.Force") then
+		self:SetStatRawL("Primary.Force", self:GetStatRawL("Force") or self:GetStatRawL("Primary.Damage") / 6 * math.sqrt(self:GetStatRawL("Primary.KickUp") + self:GetStatRawL("Primary.KickDown") + self:GetStatRawL("Primary.KickHorizontal")))
+	end
+end
+
 function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet, bulletoverride)
 	if not IsFirstTimePredicted() and not game.SinglePlayer() then return end
 	local chargeTable = self:GetStatL("Primary.Damage_Charge")
@@ -302,7 +308,7 @@ function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet,
 
 	self.MainBullet.PenetrationCount = 0
 	self.MainBullet.AmmoType = self:GetPrimaryAmmoType()
-	self.MainBullet.Force = damage / 6 * math.sqrt(self:GetStatL("Primary.KickUp") + self:GetStatL("Primary.KickDown") + self:GetStatL("Primary.KickHorizontal")) * cv_forcemult:GetFloat() * self:GetAmmoForceMultiplier() * mult
+	self.MainBullet.Force = self:GetStatL("Primary.Force") * cv_forcemult:GetFloat() * self:GetAmmoForceMultiplier() * mult
 	self.MainBullet.Damage = damage * mult
 	self.MainBullet.HasAppliedRange = false
 	self.MainBullet.Velocity = self:GetStatL("Primary.Velocity") * mult * unitScale

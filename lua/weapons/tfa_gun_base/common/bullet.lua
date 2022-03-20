@@ -263,7 +263,7 @@ function SWEP:ShootBullet(damage, recoil, num_bullets, aimcone, disablericochet,
 	self.MainBullet.PenetrationPower = self:GetStatL("Primary.PenetrationPower") * sv_tfa_bullet_penetration_power_mul:GetFloat(1)
 	self.MainBullet.InitialPenetrationPower = self.MainBullet.PenetrationPower
 	self.MainBullet.AmmoType = self:GetPrimaryAmmoType()
-	self.MainBullet.Force = damage / 10 * self:GetAmmoForceMultiplier()
+	self.MainBullet.Force = self:GetStatL("Primary.Force") * cv_forcemult:GetFloat() * self:GetAmmoForceMultiplier()
 	self.MainBullet.Damage = damage
 	self.MainBullet.InitialDamage = damage
 	self.MainBullet.InitialForce = self.MainBullet.Force
