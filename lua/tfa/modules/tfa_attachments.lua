@@ -56,7 +56,6 @@ if SERVER then
 		for category, data in pairs(wep.Attachments or {}) do
 			if type(category) ~= "string" then
 				net.Start("TFA_Attachment_Set")
-				net.WriteEntity(wep)
 				net.WriteUInt(category, 8)
 
 				if data.atts and data.atts[data.sel] then
@@ -65,6 +64,7 @@ if SERVER then
 					net.WriteString("")
 				end
 
+				net.WriteEntity(wep)
 				net.Send(ply)
 			end
 		end
