@@ -1,4 +1,10 @@
 # This is an archive of changelog messages from `tfa_loader.lua`. For proper changes list refer to the Git history.
+## 4.7.1.0
+* Fixed bullet force value being completely ignored in favor of autocalculated one
+* Various inspection menu improvements (localized weapon type, multiline description with word wrap)
+* Fixed attachments not syncing properly from NPCs and other players
+* Fixed skins not updating on worldmodels
+
 ## 4.7.0.5
 * Fixed attachments not being synchronized properly from server in multiplayer
 

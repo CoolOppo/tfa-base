@@ -24,10 +24,13 @@ if SERVER then AddCSLuaFile() end
 TFA = TFA or {}
 
 local do_load = true
-local version = 4.705
-local version_string = "4.7.0.5"
+local version = 4.71
+local version_string = "4.7.1.0"
 local changelog = [[
-	* Fixed attachments not being synchronized properly from server in multiplayer
+	* Fixed bullet force value being completely ignored in favor of autocalculated one
+	* Various inspection menu improvements (localized weapon type, multiline description with word wrap)
+	* Fixed attachments not syncing properly from NPCs and other players
+	* Fixed skins not updating on worldmodels
 ]]
 
 local function testFunc()
