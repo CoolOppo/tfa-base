@@ -98,7 +98,7 @@ local function TFARenderScreen()
 		end
 	end
 
-	if not wep:GetStatL("RTDrawEnabled") and not wep:GetStatL("RTMaterialOverride") and not wep.RTCode then return end
+	if not wep:IsCurrently3DScoped() then return end
 	w, h = ScrW(), ScrH()
 
 	if not qualitySizes then

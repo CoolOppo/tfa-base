@@ -584,6 +584,18 @@ function SWEP:IsCurrentlyScoped()
 end
 
 --[[
+Function Name:  IsCurrently3DScoped
+Syntax: self:IsCurrently3DScoped().
+Returns:   Is player aiming down the sights while having a RT-enabled scope equipped?
+Notes:
+Purpose:  Utility
+]]
+--
+function SWEP:IsCurrently3DScoped()
+	return (self:GetStatL("RTDrawEnabled") or self.RTCode ~= nil) and self:GetIronSights()
+end
+
+--[[
 Function Name:  IsHidden
 Syntax: self:IsHidden().
 Returns:   Should we hide self?.
