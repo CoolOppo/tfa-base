@@ -274,6 +274,26 @@ SWEP.AmmoTypeStrings = {
 	["SniperPenetratedRound"] = "tfa.ammo.sniperpenetratedround"
 }
 
+SWEP.WeaponTypeStrings = {
+	["weapon"] = "tfa.weptype.generic",
+	["pistol"] = "tfa.weptype.pistol",
+	["machine pistol"] = "tfa.weptype.machpistol",
+	["revolver"] = "tfa.weptype.revolver",
+	["sub-machine gun"] = "tfa.weptype.smg",
+	["rifle"] = "tfa.weptype.rifle",
+	["carbine"] = "tfa.weptype.carbine",
+	["light machine gun"] = "tfa.weptype.lmg",
+	["shotgun"] = "tfa.weptype.shotgun",
+	["designated marksman rifle"] = "tfa.weptype.dmr",
+	["sniper rifle"] = "tfa.weptype.sniper",
+	["grenade"] = "tfa.weptype.grenade",
+	["launcher"] = "tfa.weptype.launcher",
+	["dual pistols"] = "tfa.weptype.pistol.dual",
+	["dual revolvers"] = "tfa.weptype.revolver.dual",
+	["dual sub-machine guns"] = "tfa.weptype.smg.dual",
+	["dual guns"] = "tfa.weptype.generic.dual",
+} -- if you have more generalized (and widely used) types that could be localized please let us know so that we can add them here!
+
 local att_enabled_cv = GetConVar("sv_tfa_attachments_enabled")
 
 SWEP.VGUIPaddingW = 32
@@ -325,7 +345,9 @@ function SWEP:InspectionVGUIMainInfo(contentpanel)
 		titletext:SetSize(ScrW() * .5, TFA.Fonts.InspectionHeightTitle)
 		titletext.Paint = TextShadowPaint
 		local typetext = contentpanel:Add("DPanel")
-		typetext.Text = self:GetStatL("Type_Displayed") or self:GetType()
+
+		local weptype = self:GetStatL("Type_Displayed") or self:GetType()
+		typetext.Text = language.GetPhrase(self.WeaponTypeStrings[weptype:lower()] or weptype)
 
 		typetext.Think = function(myself)
 			myself.TextColor = mainpanel.PrimaryColor
