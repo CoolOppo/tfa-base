@@ -98,7 +98,7 @@ local function TFARenderScreen()
 		end
 	end
 
-	if not wep:IsCurrently3DScoped() then return end
+	if not (wep:GetStatL("RTDrawEnabled") or wep.RTCode ~= nil) then return end
 	w, h = ScrW(), ScrH()
 
 	if not qualitySizes then
